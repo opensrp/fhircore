@@ -21,6 +21,10 @@ import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import dagger.hilt.android.testing.HiltTestApplication
 
+/**
+ * Custom [AndroidJUnitRunner] for running instrumentation tests. Used in the gradle
+ * 'testInstrumentationRunner' configuration
+ */
 class QuestTestRunner : AndroidJUnitRunner() {
 
   override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {

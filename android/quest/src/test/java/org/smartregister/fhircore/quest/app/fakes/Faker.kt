@@ -28,6 +28,7 @@ import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
@@ -110,6 +111,15 @@ object Faker {
         district = "Dist 1"
         city = "City 1"
       }
+    }
+  }
+
+  fun buildBasicResource(
+    id: String = "sampleId",
+  ): Basic {
+    return Basic().apply {
+      this.id = id
+      this.identifierFirstRep.value = id
     }
   }
 

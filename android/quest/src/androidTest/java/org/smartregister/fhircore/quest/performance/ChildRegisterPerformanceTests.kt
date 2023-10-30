@@ -23,15 +23,12 @@ import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 
 @HiltAndroidTest
 class ChildRegisterPerformanceTests : BaseRegisterPerformanceTest() {
 
   @get:Rule val benchmarkRule = BenchmarkRule()
-
-  @Inject lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var registerRepository: RegisterRepository
 

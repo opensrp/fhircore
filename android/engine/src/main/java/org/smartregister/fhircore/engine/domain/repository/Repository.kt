@@ -32,6 +32,7 @@ interface Repository {
   suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
     paramsMap: Map<String, String>? = emptyMap(),
   ): List<RepositoryResourceData>
 
@@ -41,6 +42,7 @@ interface Repository {
    */
   suspend fun countRegisterData(
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig? = null,
     paramsMap: Map<String, String>? = emptyMap(),
   ): Long
 

@@ -30,6 +30,8 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
+import com.google.android.fhir.search.include
+import com.google.android.fhir.search.revInclude
 import com.google.android.fhir.search.search
 import java.util.Date
 import java.util.LinkedList
@@ -66,7 +68,6 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -75,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 open class DefaultRepository
@@ -86,6 +88,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
+  open val fhirPathDataExtractor: FhirPathDataExtractor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -103,46 +106,42 @@ constructor(
     }
 
   suspend inline fun <reified T : Resource> searchResourceFor(
-    subjectId: String,
-    subjectType: ResourceType = ResourceType.Patient,
-    subjectParam: ReferenceClientParam,
-    filters: List<DataQuery>? = null,
-    configComputedRuleValues: Map<String, Any> = emptyMap(),
-  ): List<T> =
-    withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(subjectParam, subjectType, subjectId)
-        filters?.forEach { filterBy(it, configComputedRuleValues = configComputedRuleValues) }
-      }
-    }
-
-  suspend inline fun <reified T : Resource> searchResourceFor(
     token: TokenClientParam,
     subjectType: ResourceType,
     subjectId: String,
-    filters: List<DataQuery> = listOf(),
+    dataQueries: List<DataQuery> = listOf(),
     configComputedRuleValues: Map<String, Any>,
   ): List<T> =
     withContext(dispatcherProvider.io()) {
-      fhirEngine.search {
-        filterByResourceTypeId(token, subjectType, subjectId)
-        filters.forEach { filterBy(it, configComputedRuleValues) }
-      }
+      fhirEngine
+        .search<T> {
+          filterByResourceTypeId(token, subjectType, subjectId)
+          dataQueries.forEach {
+            filterBy(
+              dataQuery = it,
+              configComputedRuleValues = configComputedRuleValues,
+            )
+          }
+        }
+        .map { it.resource }
     }
 
-  suspend fun search(dataRequirement: DataRequirement) =
+  suspend fun searchCondition(dataRequirement: DataRequirement) =
     when (dataRequirement.type) {
       Enumerations.ResourceType.CONDITION.toCode() ->
-        fhirEngine.search<Condition> {
-          dataRequirement.codeFilter.forEach {
-            filter(TokenClientParam(it.path), { value = of(it.codeFirstRep) })
+        fhirEngine
+          .search<Condition> {
+            dataRequirement.codeFilter.forEach {
+              filter(TokenClientParam(it.path), { value = of(it.codeFirstRep) })
+            }
+            // TODO handle date filter
           }
-          // TODO handle date filter
-        }
+          .map { it.resource }
       else -> listOf()
     }
 
-  suspend inline fun <reified R : Resource> search(search: Search) = fhirEngine.search<R>(search)
+  suspend inline fun <reified R : Resource> search(search: Search) =
+    fhirEngine.search<R>(search).map { it.resource }
 
   /**
    * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
@@ -245,22 +244,20 @@ constructor(
     }
   }
 
-  suspend fun loadManagingEntity(group: Group, configComputedRuleValues: Map<String, Any>) =
+  suspend fun loadManagingEntity(group: Group) =
     group.managingEntity?.let { reference ->
-      searchResourceFor<RelatedPerson>(
-          token = RelatedPerson.RES_ID,
-          subjectType = ResourceType.RelatedPerson,
-          subjectId = reference.extractId(),
-          configComputedRuleValues = configComputedRuleValues,
-        )
+      fhirEngine
+        .search<RelatedPerson> {
+          filter(RelatedPerson.RES_ID, { value = of(reference.extractId()) })
+        }
+        .map { it.resource }
         .firstOrNull()
         ?.let { relatedPerson ->
-          searchResourceFor<Patient>(
-              token = Patient.RES_ID,
-              subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId(),
-              configComputedRuleValues = configComputedRuleValues,
-            )
+          fhirEngine
+            .search<Patient> {
+              filter(Patient.RES_ID, { value = of(relatedPerson.patient.extractId()) })
+            }
+            .map { it.resource }
             .firstOrNull()
         }
     }
@@ -415,7 +412,10 @@ constructor(
     resourceConfig.nestedSearchResources?.forEach {
       has(it.resourceType, ReferenceClientParam((it.referenceParam))) {
         it.dataQueries?.forEach { dataQuery ->
-          filterBy(dataQuery = dataQuery, configComputedRuleValues = configComputedRuleValues)
+          (this as Search).filterBy(
+            dataQuery = dataQuery,
+            configComputedRuleValues = configComputedRuleValues,
+          )
         }
       }
     }
@@ -448,19 +448,6 @@ constructor(
     relatedResourceWrapper: RelatedResourceWrapper,
     configComputedRuleValues: Map<String, Any>,
   ): RelatedResourceWrapper {
-    // Forward include related resources e.g. Members (Patient) referenced in Group resource
-    val forwardIncludeResourceConfigs =
-      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(false)
-    if (!forwardIncludeResourceConfigs.isNullOrEmpty()) {
-      searchWithRevInclude(
-        isRevInclude = false,
-        relatedResourcesConfigs = forwardIncludeResourceConfigs,
-        resources = resources,
-        relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues,
-      )
-    }
-
     val countResourceConfigs = relatedResourcesConfigs?.filter { it.resultAsCount }
     countResourceConfigs?.forEach { resourceConfig ->
       if (resourceConfig.searchParameter.isNullOrEmpty()) {
@@ -479,7 +466,10 @@ constructor(
                   }
                   apply
                 }
-              filter(ReferenceClientParam(resourceConfig.searchParameter), *filters.toTypedArray())
+              filter(
+                ReferenceClientParam(resourceConfig.searchParameter),
+                *filters.toTypedArray(),
+              )
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
                 sortData = false,
@@ -510,18 +500,12 @@ constructor(
       }
     }
 
-    // Reverse include related resources e.g. All CarePlans, Immunization for Patient resource
-    val reverseIncludeResourceConfigs =
-      relatedResourcesConfigs?.revIncludeRelatedResourceConfigs(true)
-    if (!reverseIncludeResourceConfigs.isNullOrEmpty()) {
-      searchWithRevInclude(
-        isRevInclude = true,
-        relatedResourcesConfigs = reverseIncludeResourceConfigs,
-        resources = resources,
-        relatedResourceWrapper = relatedResourceWrapper,
-        configComputedRuleValues = configComputedRuleValues,
-      )
-    }
+    searchIncludedResources(
+      relatedResourcesConfigs = relatedResourcesConfigs,
+      resources = resources,
+      relatedResourceWrapper = relatedResourceWrapper,
+      configComputedRuleValues = configComputedRuleValues,
+    )
 
     return relatedResourceWrapper
   }
@@ -581,13 +565,11 @@ constructor(
   }
 
   /**
-   * If [isRevInclude] is set to false, the forward include search API will be used; otherwise
-   * reverse include is used to retrieve related resources. [relatedResourceWrapper] is a data class
-   * that wraps the maps used to store Search Query results. The [relatedResourcesConfigs]
-   * configures which resources to load.
+   * This function searches for reverse/forward included resources as per the configuration;
+   * [RelatedResourceWrapper] data class is then used to wrap the maps used to store Search Query
+   * results. The [relatedResourcesConfigs] configures which resources to load.
    */
-  private suspend fun searchWithRevInclude(
-    isRevInclude: Boolean,
+  private suspend fun searchIncludedResources(
     relatedResourcesConfigs: List<ResourceConfig>?,
     resources: List<Resource>,
     relatedResourceWrapper: RelatedResourceWrapper,
@@ -609,26 +591,43 @@ constructor(
           filter(Resource.RES_ID, *filters.toTypedArray())
         }
 
-      relatedResourcesConfigs.forEach { resourceConfig ->
-        search.apply {
-          applyConfiguredSortAndFilters(
-            resourceConfig = resourceConfig,
-            sortData = true,
-            configComputedRuleValues = configComputedRuleValues,
-          )
-          if (isRevInclude) {
-            revInclude(
-              resourceConfig.resource,
-              ReferenceClientParam(resourceConfig.searchParameter),
+      // Forward include related resources e.g. Members (Patient) referenced in Group resource
+      val forwardIncludeResourceConfigs =
+        relatedResourcesConfigs.revIncludeRelatedResourceConfigs(false)
+
+      // Reverse include related resources e.g. All CarePlans, Immunization for Patient resource
+      val reverseIncludeResourceConfigs =
+        relatedResourcesConfigs.revIncludeRelatedResourceConfigs(true)
+
+      search.apply {
+        reverseIncludeResourceConfigs.forEach { resourceConfig ->
+          revInclude(
+            resourceConfig.resource,
+            ReferenceClientParam(resourceConfig.searchParameter),
+          ) {
+            (this as Search).applyConfiguredSortAndFilters(
+              resourceConfig = resourceConfig,
+              sortData = true,
+              configComputedRuleValues = configComputedRuleValues,
             )
-          } else {
-            include(ReferenceClientParam(resourceConfig.searchParameter), resourceConfig.resource)
+          }
+        }
+
+        forwardIncludeResourceConfigs.forEach { resourceConfig ->
+          include(
+            resourceConfig.resource,
+            ReferenceClientParam(resourceConfig.searchParameter),
+          ) {
+            (this as Search).applyConfiguredSortAndFilters(
+              resourceConfig = resourceConfig,
+              sortData = true,
+              configComputedRuleValues = configComputedRuleValues,
+            )
           }
         }
       }
 
       searchRelatedResources(
-        isRevInclude = isRevInclude,
         search = search,
         relatedResourcesConfigsMap = relatedResourcesConfigsMap,
         relatedResourceWrapper = relatedResourceWrapper,
@@ -638,16 +637,24 @@ constructor(
   }
 
   private suspend fun searchRelatedResources(
-    isRevInclude: Boolean,
     search: Search,
     relatedResourcesConfigsMap: Map<ResourceType, List<ResourceConfig>>,
     relatedResourceWrapper: RelatedResourceWrapper,
     configComputedRuleValues: Map<String, Any>,
   ) {
     kotlin
-      .runCatching { fhirEngine.searchWithRevInclude<Resource>(isRevInclude, search) }
+      .runCatching { fhirEngine.search<Resource>(search) }
       .onSuccess { searchResult ->
-        searchResult.values.forEach { theRelatedResourcesMap: Map<ResourceType, List<Resource>> ->
+        searchResult.forEach { currentSearchResult ->
+          val includedResources: Map<ResourceType, List<Resource>>? =
+            currentSearchResult.included?.values?.flatten()?.groupBy { it.resourceType }
+          val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
+            currentSearchResult.revIncluded?.values?.flatten()?.groupBy { it.resourceType }
+          val theRelatedResourcesMap =
+            mutableMapOf<ResourceType, List<Resource>>().apply {
+              includedResources?.let { putAll(it) }
+              reverseIncludedResources?.let { putAll(it) }
+            }
           theRelatedResourcesMap.forEach { entry ->
             val currentResourceConfigs = relatedResourcesConfigsMap[entry.key]
 
@@ -700,7 +707,7 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${subject.resourceType.name}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -713,7 +720,7 @@ constructor(
           configComputedRuleValues = computedValuesMap,
         )
       }
-    val resources = fhirEngine.search<Resource>(search)
+    val resources = fhirEngine.search<Resource>(search).map { it.resource }
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
       closeResource(it, resourceConfig)
@@ -735,7 +742,9 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
-        closeResource(resource, resourceConfig)
+        if (filterRelatedResource(resource, resourceConfig)) {
+          closeResource(resource, resourceConfig)
+        }
       }
     }
   }
@@ -752,49 +761,36 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
-        // https://github.com/opensrp/fhircore/issues/2488
-        /**
-         * The logic for closing PNC Condition makes 2 assumptions
-         * 1. The eventResource id value is "pncConditionToClose"
-         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
-         */
-        if (
-          resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
-            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
-        ) {
-          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
-          if (closePncCondition || closeSickChildCondition) {
-            resource.clinicalStatus =
-              CodeableConcept().apply {
-                coding =
-                  listOf(
-                    Coding().apply {
-                      system = SNOMED_SYSTEM
-                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                      code = PATIENT_CONDITION_RESOLVED_CODE
-                    },
-                  )
-              }
+        resource.clinicalStatus =
+          CodeableConcept().apply {
+            coding =
+              listOf(
+                Coding().apply {
+                  system = SNOMED_SYSTEM
+                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                  code = PATIENT_CONDITION_RESOLVED_CODE
+                },
+              )
           }
-        } else {
-          resource.clinicalStatus =
-            CodeableConcept().apply {
-              coding =
-                listOf(
-                  Coding().apply {
-                    system = SNOMED_SYSTEM
-                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                    code = PATIENT_CONDITION_RESOLVED_CODE
-                  },
-                )
-            }
-        }
       }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
+  }
+
+  /**
+   * Filtering the Related Resources is achieved by use of the filterFhirPathExpression
+   * configuration. It specifies which field and values to filter the resources by.
+   */
+  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
+      true
+    } else {
+      resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
+        fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
+          filterFhirPathExpression.value
+      } == true
+    }
   }
 
   /**

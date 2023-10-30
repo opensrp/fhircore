@@ -53,9 +53,9 @@ class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : 
 
       val lists = fhirEngine.search<QuestionnaireResponse>(search)
       Log.d("FIKRI TOTAL RES", lists.size.toString())
-      return lists
+      return lists.map { it.resource }
     } else {
-      return fhirEngine.search(xFhirQuery)
+      return fhirEngine.search(xFhirQuery).map { it.resource }
     }
   }
 }

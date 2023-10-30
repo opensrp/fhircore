@@ -34,6 +34,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
@@ -245,6 +246,26 @@ class RegisterFragmentTest : RobolectricTest() {
   }
 
   @Test
+  fun testHandleQuestionnaireSubmissionUpdatesFilterResourceConfig() {
+    val questionnaireConfig =
+      QuestionnaireConfig(id = "add-member", saveQuestionnaireResponse = false)
+    val questionnaireResponse = QuestionnaireResponse().apply { id = "1234" }
+    val questionnaireSubmission =
+      QuestionnaireSubmission(
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+      )
+    val registerFragmentSpy = spyk(registerFragment)
+
+    runBlocking { registerFragmentSpy.handleQuestionnaireSubmission(questionnaireSubmission) }
+
+    // Refresh data is called with QuestionnaireResponse param
+    val submissionSlot = slot<QuestionnaireResponse>()
+    coVerify { registerFragmentSpy.refreshRegisterData(capture(submissionSlot)) }
+    Assert.assertEquals(questionnaireResponse.id, submissionSlot.captured.id)
+  }
+
+  @Test
   fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
     val syncJobStatus =
       SyncJobStatus.Failed(
@@ -253,7 +274,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_failed) }
+    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
   }
 
   @Test
@@ -265,7 +286,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_failed) }
+    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
   }
 
   @Test

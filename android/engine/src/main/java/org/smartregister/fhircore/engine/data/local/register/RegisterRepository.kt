@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 class RegisterRepository
@@ -50,6 +51,7 @@ constructor(
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   Repository,
   DefaultRepository(
@@ -59,17 +61,19 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
       filterActiveResources = registerConfiguration.activeResourceFilters,
-      fhirResourceConfig = registerConfiguration.fhirResource,
+      fhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize,
@@ -110,11 +114,11 @@ constructor(
         .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
         .getOrDefault(emptyList())
 
-    return baseFhirResources.map { baseFhirResource ->
+    return baseFhirResources.map { searchResult ->
       val retrievedRelatedResources =
         withContext(dispatcherProvider.io()) {
           retrieveRelatedResources(
-            resources = listOf(baseFhirResource),
+            resources = listOf(searchResult.resource),
             relatedResourcesConfigs = relatedResourcesConfig,
             relatedResourceWrapper = RelatedResourceWrapper(),
             configComputedRuleValues = configComputedRuleValues,
@@ -122,12 +126,14 @@ constructor(
         }
       RepositoryResourceData(
         resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseFhirResource,
+        resource = searchResult.resource,
         relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
         relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
         secondaryRepositoryResourceData =
           withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
+              filterActiveResources,
+            )
           },
       )
     }
@@ -154,10 +160,12 @@ constructor(
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
   override suspend fun countRegisterData(
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+    val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val search =
       Search(baseResourceConfig.resource).apply {

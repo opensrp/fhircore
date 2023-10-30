@@ -19,8 +19,8 @@ package org.smartregister.fhircore.quest.app
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -110,7 +110,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirEngine.get(ResourceType.Composition, any()) } returns composition
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
@@ -141,7 +142,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { fhirResourceService.getResource("List?_id=123456") } returns bundle
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
@@ -172,7 +174,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any<Search>()) } returns listOf(composition)
+    coEvery { fhirEngine.search<Composition>(any()) } returns
+      listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {

@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.util.extension
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -39,6 +38,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
@@ -266,6 +266,9 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
 
     when (this) {
       is Patient -> generalPractitioner = arrayListOf(practitionerRef)
+      is Observation -> performer = arrayListOf(practitionerRef)
+      is QuestionnaireResponse -> author = practitionerRef
+      is Flag -> author = practitionerRef
       is Encounter ->
         participant =
           arrayListOf(
@@ -363,13 +366,12 @@ fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/"
  */
 suspend fun Task.updateDependentTaskDueDate(
   defaultRepository: DefaultRepository,
-  fhirEngine: FhirEngine,
 ): Task {
   return apply {
     val dependentTasks =
-      fhirEngine.search<Task> {
-        filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id })
-      }
+      defaultRepository.fhirEngine
+        .search<Task> { filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id }) }
+        .map { it.resource }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
         if (
@@ -384,7 +386,9 @@ suspend fun Task.updateDependentTaskDueDate(
                 if (taskOutReference.extractType()?.equals(ResourceType.Immunization) == true) {
                   val immunizationRef = taskOutReference.reference
                   val immunization =
-                    fhirEngine.get<Immunization>(immunizationRef.extractLogicalIdUuid())
+                    defaultRepository.fhirEngine.get<Immunization>(
+                      immunizationRef.extractLogicalIdUuid(),
+                    )
                   if (immunization.isResource && immunization.hasOccurrence()) {
                     val dependentTaskStartDate = dependantTask.executionPeriod.start
                     val immunizationDate =

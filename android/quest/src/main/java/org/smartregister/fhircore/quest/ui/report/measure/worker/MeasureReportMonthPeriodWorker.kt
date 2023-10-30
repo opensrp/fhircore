@@ -75,8 +75,7 @@ constructor(
 
           val subjects = measureReportRepository.fetchSubjects(config)
           val existing =
-            retrievePreviouslyGeneratedMeasureReports(
-              fhirEngine = fhirEngine,
+            fhirEngine.retrievePreviouslyGeneratedMeasureReports(
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
               measureUrl = config.url,

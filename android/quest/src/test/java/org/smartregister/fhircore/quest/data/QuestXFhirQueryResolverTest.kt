@@ -17,38 +17,44 @@
 package org.smartregister.fhircore.quest.data
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
-import io.mockk.coEvery
-import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class QuestXFhirQueryResolverTest {
+@HiltAndroidTest
+class QuestXFhirQueryResolverTest : RobolectricTest() {
 
-  private val fhirEngine = mockk<FhirEngine>()
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
 
   @Test
-  fun resolve() = runTest {
-    val patient = Patient()
-    val task = Task()
-    val resources = listOf<Resource>(patient, task)
-    coEvery { fhirEngine.search<Resource>(ofType<Search>()) } answers
-      {
-        val type = firstArg<Search>().type
-        resources.filter { it.resourceType == type }
-      }
-    val xFhirResolver = QuestXFhirQueryResolver(fhirEngine)
-    val result = xFhirResolver.resolve("Patient?active=true")
-    Assert.assertTrue(result.isNotEmpty())
-    Assert.assertTrue(
-      result.containsAll(resources.filter { it.resourceType == ResourceType.Patient }),
-    )
-  }
+  fun testQuestXFhirQueryResolver() =
+    runTest(timeout = 120.seconds) {
+      val patient = Patient()
+      val task = Task()
+      fhirEngine.create(patient, task)
+      val xFhirResolver = QuestXFhirQueryResolver(fhirEngine)
+      val result: List<Resource> = xFhirResolver.resolve("Patient?active=true")
+      Assert.assertTrue(result.isNotEmpty())
+      Assert.assertTrue(
+        result.all { it.resourceType == ResourceType.Patient },
+      )
+    }
 }

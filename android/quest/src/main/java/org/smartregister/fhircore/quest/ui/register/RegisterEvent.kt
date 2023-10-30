@@ -22,4 +22,6 @@ sealed class RegisterEvent {
   object MoveToNextPage : RegisterEvent()
 
   object MoveToPreviousPage : RegisterEvent()
+
+  object ResetFilterRecordsCount : RegisterEvent()
 }

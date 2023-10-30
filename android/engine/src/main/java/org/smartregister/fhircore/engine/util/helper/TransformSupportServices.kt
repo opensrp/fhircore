@@ -20,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.AdverseEvent
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
@@ -61,7 +62,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
   override fun createType(appInfo: Any, name: String): Base {
     return when (name) {
       "RiskAssessment_Prediction" -> RiskAssessmentPredictionComponent()
-      "Immunization_VaccinationProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
+      "Immunization_AppliedProtocol" -> Immunization.ImmunizationProtocolAppliedComponent()
       "Immunization_Reaction" -> Immunization.ImmunizationReactionComponent()
       "EpisodeOfCare_Diagnosis" -> EpisodeOfCare.DiagnosisComponent()
       "Encounter_Diagnosis" -> Encounter.DiagnosisComponent()
@@ -77,6 +78,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Input" -> Task.ParameterComponent()
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
+      "AdverseEvent_SuspectEntity" -> AdverseEvent.AdverseEventSuspectEntityComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

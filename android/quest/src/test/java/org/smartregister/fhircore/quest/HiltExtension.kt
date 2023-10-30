@@ -26,6 +26,7 @@ import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 /**
  * Inspired by the Hilt Extension in the Android Architectural samples here

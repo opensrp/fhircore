@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest
+package org.smartregister.fhircore.quest.ui.register
 
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.fhir.sync.SyncJobStatus
-import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 
-@ExcludeFromJacocoGeneratedReport
-@AndroidEntryPoint
-class HiltActivityForTest : AppCompatActivity(), OnSyncListener {
-  override fun onSync(syncJobStatus: SyncJobStatus) {
-    // DO nothing. This activity implements OnSyncListener for testing purposes
-  }
-}
+data class RegisterFilterState(
+  val fhirResourceConfig: FhirResourceConfig? = null,
+  val questionnaireResponse: QuestionnaireResponse? = null,
+)

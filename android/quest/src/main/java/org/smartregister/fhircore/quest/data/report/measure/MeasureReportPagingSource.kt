@@ -54,7 +54,10 @@ class MeasureReportPagingSource(
     return registerRepository.fhirEngine.search(xFhirQuery).map {
       resourceDataRulesExecutor.processResourceData(
         repositoryResourceData =
-          RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
+          RepositoryResourceData(
+            resourceRulesEngineFactId = it.resource.resourceType.name,
+            resource = it.resource,
+          ),
         ruleConfigs = registerConfiguration.registerCard.rules,
         params = emptyMap(),
       )

@@ -103,9 +103,15 @@ These are used when generating other tasks, CarePlans and related resources.See 
 
 ## Extra config properties
 
-|Property | Description | Required | Default |
-|--|--|:--:|:--:|
-planDefinitions | A list of questionnaire planDefinition uuids | no | null |
+| Property                                   | Description                                                                                        | Required | Default |
+|--------------------------------------------|----------------------------------------------------------------------------------------------------|:--------:|:-------:|
+| planDefinitions                            | A list of questionnaire planDefinition uuids                                                       |    no    |  null   |
+| cqlInputResources                          | A list of CQL Library `id`'s. The referenced Libraries are executed after questionnaire submission |    no    |  null   |
+| barcodeLinkId                              | The link ID for barcode widget used in the Questionnaire                                           |    no    |  null   |
+| saveQuestionnaireResponse                  | Indicate whether to save QuestionnaireResponse or not                                              |   yes    |  true   |
+| onSubmitActions                            | Configurations for actions invoked post Questionnaire submission                                   |    no    |  null   |
+| extractedResourceUniquePropertyExpressions | Configurations for unique properties used to identify resources during Questionnaire edit          |    no    |  null   |
+
 
 
 ## Sample questionnaire with an event workflow

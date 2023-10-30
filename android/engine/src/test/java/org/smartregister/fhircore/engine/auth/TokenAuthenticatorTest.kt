@@ -18,9 +18,11 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -121,13 +123,15 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testGetAccessTokenShouldInvalidateExpiredToken() {
     val account = Account(sampleUsername, PROVIDER)
     val accessToken = "gibberishaccesstoken"
+    val accountManagerFuture = mockk<AccountManagerFuture<Bundle>>()
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
     every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every { accountManagerFuture.result } returns bundleOf()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any(), true, any(), any())
-    } returns mockk()
+    } returns accountManagerFuture
 
     tokenAuthenticator.getAccessToken()
 
@@ -146,22 +150,26 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Test
   fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
     val account = Account(sampleUsername, PROVIDER)
+    val accountManagerFutureBundle = mockk<AccountManagerFuture<Bundle>>()
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     val accessToken = "gibberishaccesstoken"
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
     every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every { accountManagerFutureBundle.result } throws OperationCanceledException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws OperationCanceledException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManagerFutureBundle.result } throws IOException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws IOException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManagerFutureBundle.result } throws AuthenticatorException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws AuthenticatorException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
   }
 
@@ -295,8 +303,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
 
-    val refreshTokenSlot = slot<String>()
-    coEvery { oAuthService.logout(any(), any(), capture(refreshTokenSlot)) } returns
+    coEvery { oAuthService.logout(any(), any()) } returns
       Response.success(200, mockk<RealResponseBody>())
 
     every { accountManager.invalidateAuthToken(account.type, any()) } just runs
@@ -314,14 +321,14 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     val httpException = HttpException(Response.success(null))
 
-    coEvery { oAuthService.logout(any(), any(), any()) }.throws(httpException)
+    coEvery { oAuthService.logout(any(), any()) }.throws(httpException)
 
     var result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<HttpException>(httpException), result)
 
     val unknownHostException = UnknownHostException()
 
-    coEvery { oAuthService.logout(any(), any(), any()) }.throws(unknownHostException)
+    coEvery { oAuthService.logout(any(), any()) }.throws(unknownHostException)
 
     result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)

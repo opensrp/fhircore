@@ -18,13 +18,17 @@ package org.smartregister.fhircore.engine.util.extension
 
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
-import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_PRECISION
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_STRATEGY
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
 fun MeasureReport.StratifierGroupComponent.findPopulation(
@@ -33,10 +37,22 @@ fun MeasureReport.StratifierGroupComponent.findPopulation(
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
 }
 
+fun MeasureReport.StratifierGroupComponent.findCount():
+  MeasureReport.StratifierGroupPopulationComponent? {
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
+}
+
 fun MeasureReport.MeasureReportGroupComponent.findPopulation(
   id: MeasurePopulationType,
 ): MeasureReport.MeasureReportGroupPopulationComponent? {
   return this.population.find { it.id == id.toCode() || it.code.codingFirstRep.code == id.toCode() }
+}
+
+fun MeasureReport.MeasureReportGroupComponent.findCount():
+  MeasureReport.MeasureReportGroupPopulationComponent? {
+  return this.findPopulation(MeasurePopulationType.NUMERATOR)
+    ?: this.findPopulation(MeasurePopulationType.INITIALPOPULATION)
 }
 
 fun MeasureReport.MeasureReportGroupComponent.isMonthlyReport(): Boolean {
@@ -48,13 +64,12 @@ fun MeasureReport.MeasureReportGroupComponent.findRatio(): String {
 }
 
 fun MeasureReport.StratifierGroupComponent.findRatio(denominator: Int?): String {
-  return "${this.findPopulation(MeasurePopulationType.NUMERATOR)?.count}/$denominator"
+  return "${this.findCount()?.count}/$denominator"
 }
 
 fun MeasureReport.StratifierGroupComponent.findPercentage(
   denominator: Int,
-  roundingStrategy: RoundingStrategy,
-  roundingPrecision: Int,
+  reportConfiguration: ReportConfiguration?,
 ): String {
   return if (denominator == 0) {
     "0"
@@ -63,7 +78,11 @@ fun MeasureReport.StratifierGroupComponent.findPercentage(
       ?.count
       ?.toBigDecimal()
       ?.times(100.toBigDecimal())
-      ?.divide(denominator.toBigDecimal(), roundingPrecision, roundingStrategy.value)
+      ?.divide(
+        denominator.toBigDecimal(),
+        reportConfiguration?.roundingPrecision ?: DEFAULT_ROUNDING_PRECISION,
+        reportConfiguration?.roundingStrategy?.value ?: DEFAULT_ROUNDING_STRATEGY.value,
+      )
       .toString()
 }
 
@@ -105,8 +124,7 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  *   endDate: Date, operation: Operation = Operation.AND)
  * @return list of already generatedMeasureReports
  */
-suspend inline fun retrievePreviouslyGeneratedMeasureReports(
-  fhirEngine: FhirEngine,
+suspend inline fun FhirEngine.retrievePreviouslyGeneratedMeasureReports(
   startDateFormatted: String,
   endDateFormatted: String,
   measureUrl: String,
@@ -123,9 +141,10 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
       value = of(DateTimeType(endDateFormatted))
       prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
     },
+    operation = Operation.AND,
   )
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return fhirEngine.search(search)
+  return this.search<MeasureReport>(search).map { it.resource }
 }

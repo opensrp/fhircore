@@ -76,6 +76,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
       defaultRepository.fhirEngine
         .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
         .asSequence()
+        .map { it.resource }
         .filter {
           // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
           it.characteristic.firstOrNull { characteristic ->

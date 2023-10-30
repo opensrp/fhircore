@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.sync
 
 import com.google.android.fhir.sync.DownloadWorkManager
-import com.google.android.fhir.sync.Request
+import com.google.android.fhir.sync.download.DownloadRequest
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
 import org.hl7.fhir.r4.model.Resource
@@ -31,7 +31,7 @@ class OpenSrpDownloadManager(
 
   private val downloadWorkManager = ResourceParamsBasedDownloadWorkManager(syncParams, context)
 
-  override suspend fun getNextRequest(): Request? = downloadWorkManager.getNextRequest()
+  override suspend fun getNextRequest(): DownloadRequest? = downloadWorkManager.getNextRequest()
 
   override suspend fun getSummaryRequestUrls(): Map<ResourceType, String> =
     downloadWorkManager.getSummaryRequestUrls()

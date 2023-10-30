@@ -24,6 +24,7 @@ import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
+import io.mockk.spyk
 import javax.inject.Singleton
 import org.smartregister.fhircore.engine.di.DispatcherModule
 import org.smartregister.fhircore.engine.di.FhirEngineModule
@@ -36,6 +37,6 @@ class FakeFhirEngineModule {
   @Provides
   @Singleton
   fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return FhirEngineProvider.getInstance(context)
+    return spyk(FhirEngineProvider.getInstance(context))
   }
 }

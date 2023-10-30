@@ -48,6 +48,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
+  val fhirResourceUtil: FhirResourceUtil,
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
@@ -76,6 +77,8 @@ constructor(
         // complete CarePlan
         carePlan.status = CarePlan.CarePlanStatus.COMPLETED
         defaultRepository.update(carePlan)
+        // close related resources
+        fhirResourceUtil.closeRelatedResources(carePlan)
       }
 
       val updatedLastOffset =
@@ -90,18 +93,20 @@ constructor(
   }
 
   suspend fun getCarePlans(batchSize: Int, lastOffset: Int) =
-    defaultRepository.fhirEngine.search<CarePlan> {
-      filter(
-        CarePlan.STATUS,
-        { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
-        { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
-      )
-      count = batchSize
-      from = if (lastOffset > 0) lastOffset + 1 else 0
-    }
+    defaultRepository.fhirEngine
+      .search<CarePlan> {
+        filter(
+          CarePlan.STATUS,
+          { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.ENTEREDINERROR.toCode()) },
+          { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
+        )
+        count = batchSize
+        from = if (lastOffset > 0) lastOffset + 1 else 0
+      }
+      .map { it.resource }
 
   companion object {
     const val WORK_ID = "FhirCompleteCarePlanWorker"

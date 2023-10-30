@@ -82,7 +82,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -91,6 +91,66 @@ class ConfigExtensionsTest : RobolectricTest() {
       resourceConfig,
       slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsTrue() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 2384 }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsFalse() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = false,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = null,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
   }
 
   @Test
@@ -115,7 +175,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))

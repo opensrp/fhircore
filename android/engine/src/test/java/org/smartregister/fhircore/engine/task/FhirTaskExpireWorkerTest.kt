@@ -27,7 +27,7 @@ import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.SearchResult
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -50,6 +50,8 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -66,12 +68,17 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue
-  var fhirTaskUtil: FhirTaskUtil =
-    FhirTaskUtil(ApplicationProvider.getApplicationContext(), defaultRepository)
+  var fhirResourceUtil: FhirResourceUtil =
+    FhirResourceUtil(
+      ApplicationProvider.getApplicationContext(),
+      defaultRepository,
+      configurationRegistry,
+    )
   private lateinit var fhirTaskExpireWorker: FhirTaskExpireWorker
-  private lateinit var tasks: List<Task>
+  private lateinit var tasks: List<SearchResult<Task>>
 
   @Before
   fun setup() {
@@ -84,23 +91,28 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
 
     tasks =
       listOf(
-        Task().apply {
-          id = UUID.randomUUID().toString()
-          status = Task.TaskStatus.READY
-          executionPeriod =
-            Period().apply {
-              start = Date().plusMonths(-1)
-              end = Date()
-            }
-          restriction =
-            Task.TaskRestrictionComponent().apply {
-              period = Period().apply { end = DateTime().plusDays(-2).toDate() }
-            }
-        },
+        SearchResult(
+          resource =
+            Task().apply {
+              id = UUID.randomUUID().toString()
+              status = Task.TaskStatus.READY
+              executionPeriod =
+                Period().apply {
+                  start = Date().plusMonths(-1)
+                  end = Date()
+                }
+              restriction =
+                Task.TaskRestrictionComponent().apply {
+                  period = Period().apply { end = DateTime().plusDays(-2).toDate() }
+                }
+            },
+          null,
+          null,
+        ),
       )
 
     coEvery { defaultRepository.fhirEngine } returns fhirEngine
-    coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
+    coEvery { fhirEngine.search<Task>(any()) } returns tasks
   }
 
   @Test
@@ -116,19 +128,21 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
     val result = fhirTaskExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
-    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
   }
 
   @Test
   fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan was not found`() {
-    tasks.forEach { it.basedOn = listOf(Reference().apply { reference = "CarePlan/123" }) }
+    tasks
+      .map { it.resource }
+      .forEach { it.basedOn = listOf(Reference().apply { reference = "CarePlan/123" }) }
 
     coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, any()) } throws IllegalArgumentException()
     val result = fhirTaskExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
-    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
   }
 
   @Test
@@ -140,18 +154,20 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         activity =
           listOf(
             CarePlan.CarePlanActivityComponent().apply {
-              outcomeReference = listOf(tasks.first().asReference())
+              outcomeReference = listOf(tasks.first().resource.asReference())
             },
           )
         status = CarePlan.CarePlanStatus.ACTIVE
       }
-    tasks.forEach { it.addBasedOn(Reference().apply { reference = carePlan.referenceValue() }) }
+    tasks
+      .map { it.resource }
+      .forEach { it.addBasedOn(Reference().apply { reference = carePlan.referenceValue() }) }
     coEvery { defaultRepository.update(any()) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     val result = fhirTaskExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
     assertEquals(result, (ListenableWorker.Result.success()))
-    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
     assertNotEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
   }
 
@@ -165,20 +181,21 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
           listOf(
             CarePlan.CarePlanActivityComponent().apply {
               outcomeReference =
-                listOf(Reference().apply { reference = tasks.first().referenceValue() })
+                listOf(Reference().apply { reference = tasks.first().resource.referenceValue() })
             },
           )
       }
-    tasks.forEach { it.basedOn = listOf(carePlan.asReference()) }
-    coEvery { defaultRepository.update(tasks.first()) } just runs
+    tasks.map { it.resource }.forEach { it.basedOn = listOf(carePlan.asReference()) }
+    val resource = tasks.map { it.resource }.first()
+    coEvery { defaultRepository.update(resource) } just runs
     coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
     coEvery { defaultRepository.update(carePlan) } just runs
     val result = fhirTaskExpireWorker.startWork().get()
     coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
     coVerify { defaultRepository.update(carePlan) }
-    coVerify { defaultRepository.update(tasks.first()) }
+    coVerify { defaultRepository.update(resource) }
     assertEquals(result, (ListenableWorker.Result.success()))
-    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().status)
+    assertEquals(Task.TaskStatus.CANCELLED, tasks.first().resource.status)
     assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
   }
 
@@ -206,7 +223,7 @@ class FhirTaskExpireWorkerTest : RobolectricTest() {
         context = appContext,
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
-        fhirTaskUtil = fhirTaskUtil,
+        fhirResourceUtil = fhirResourceUtil,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
       )
     }

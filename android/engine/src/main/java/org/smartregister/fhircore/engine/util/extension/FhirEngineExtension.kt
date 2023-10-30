@@ -16,12 +16,10 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.database.SQLException
 import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import org.hl7.fhir.r4.model.Composition
@@ -31,7 +29,6 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.RelatedArtifact
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.Task
 import timber.log.Timber
 
 suspend inline fun <reified T : Resource> FhirEngine.loadResource(resourceId: String): T? {
@@ -46,17 +43,17 @@ suspend fun FhirEngine.searchCompositionByIdentifier(identifier: String): Compos
   this.search<Composition> {
       filter(Composition.IDENTIFIER, { value = of(Identifier().apply { value = identifier }) })
     }
+    .map { it.resource }
     .firstOrNull()
 
 suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: String) {
   // resource path could be Library/123 OR something like http://fhir.labs.common/Library/123
   val library =
     runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
-      ?: search<Library> { filter(Library.URL, { value = path }) }.firstOrNull()
+      ?: search<Library> { filter(Library.URL, { value = path }) }.map { it.resource }.firstOrNull()
 
   library?.let {
     fhirOperator.loadLib(it)
-
     it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
   }
 }
@@ -80,7 +77,9 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
     // resource path could be Measure/123 OR something like http://fhir.labs.common/Measure/123
     val measure: Measure? =
       if (UrlUtil.isValid(measurePath)) {
-        search<Measure> { filter(Measure.URL, { value = measurePath }) }.firstOrNull()
+        search<Measure> { filter(Measure.URL, { value = measurePath }) }
+          .map { it.resource }
+          .firstOrNull()
       } else {
         get(measurePath)
       }
@@ -92,16 +91,3 @@ suspend fun FhirEngine.loadCqlLibraryBundle(fhirOperator: FhirOperator, measureP
   } catch (exception: Exception) {
     Timber.e(exception)
   }
-
-suspend fun FhirEngine.addDateTimeIndex() {
-  try {
-    val addDateTimeIndexEntityIndexFromIndexQuery =
-      SearchQuery(
-        "CREATE INDEX IF NOT EXISTS `index_DateTimeIndexEntity_index_from` ON `DateTimeIndexEntity` (`index_from`)",
-        emptyList(),
-      )
-    search<Task>(addDateTimeIndexEntityIndexFromIndexQuery)
-  } catch (ex: SQLException) {
-    Timber.e(ex)
-  }
-}

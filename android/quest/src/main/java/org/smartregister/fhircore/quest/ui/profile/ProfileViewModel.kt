@@ -216,7 +216,7 @@ constructor(
    * [Group] resource members. This function only works when [Group] resource is the used as the
    * main resource.
    */
-  private fun changeManagingEntity(
+  fun changeManagingEntity(
     event: ProfileEvent.OverflowMenuClick,
     managingEntity: ManagingEntityConfig?,
   ) {

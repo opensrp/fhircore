@@ -79,13 +79,14 @@ constructor(
 
       fhirEngine
         .search<Measure> {}
+        .map { it.resource }
         .forEach {
           monthList?.forEachIndexed { index, date ->
             val startDateFormatted = date.firstDayOfMonth().formatDate(SDF_YYYY_MM_DD)
             val endDateFormatted = date.lastDayOfMonth().formatDate(SDF_YYYY_MM_DD)
             if (
-              retrievePreviouslyGeneratedMeasureReports(
-                  fhirEngine = fhirEngine,
+              fhirEngine
+                .retrievePreviouslyGeneratedMeasureReports(
                   startDateFormatted = startDateFormatted,
                   endDateFormatted = endDateFormatted,
                   measureUrl = it.url,
@@ -147,12 +148,11 @@ constructor(
       )
 
       val result =
-        retrievePreviouslyGeneratedMeasureReports(
-          fhirEngine,
-          startDateFormatted,
-          endDateFormatted,
-          measureUrl,
-          emptyList(),
+        fhirEngine.retrievePreviouslyGeneratedMeasureReports(
+          startDateFormatted = startDateFormatted,
+          endDateFormatted = endDateFormatted,
+          measureUrl = measureUrl,
+          subjects = emptyList(),
         )
       if (result.isNotEmpty()) defaultRepository.delete(result.last())
       defaultRepository.addOrUpdate(resource = measureReport)

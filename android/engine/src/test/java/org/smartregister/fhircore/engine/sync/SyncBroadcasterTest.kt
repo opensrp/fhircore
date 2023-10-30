@@ -76,7 +76,6 @@ class SyncBroadcasterTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
           syncListenerManager = syncListenerManager,
-          sync = mockk(relaxed = true),
           context = context,
         ),
       )

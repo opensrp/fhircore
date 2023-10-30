@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 
 package org.smartregister.fhircore.quest.ui.login
 
@@ -67,8 +67,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
@@ -145,16 +148,14 @@ fun LoginPage(
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-
   val coroutineScope = rememberCoroutineScope()
-  val bringIntoViewRequester = BringIntoViewRequester()
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
   val focusManager = LocalFocusManager.current
-  val usernameFocusRequester = remember { FocusRequester() }
-  val passwordFocusRequester = remember { FocusRequester() }
+  val (usernameFocusRequester, passwordFocusRequester) = FocusRequester.createRefs()
 
   LaunchedEffect(Unit) {
     delay(300)
-    usernameFocusRequester.requestFocus()
+    focusManager.moveFocus(FocusDirection.Next)
   }
 
   Surface(
@@ -219,8 +220,10 @@ fun LoginPage(
               .padding(vertical = 4.dp)
               .background(color = Color.Unspecified)
               .testTag(USERNAME_FIELD_TAG)
-              .focusRequester(usernameFocusRequester),
-          keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() }),
+              .focusRequester(usernameFocusRequester)
+              .focusProperties { next = passwordFocusRequester },
+          keyboardActions =
+            KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
@@ -358,18 +361,20 @@ fun LoginPage(
           Text(
             text = stringResource(id = R.string.powered_by),
             modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
+            fontWeight = FontWeight.Light,
           )
           Image(
-            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            painter = painterResource(id = R.drawable.ic_opensrplogo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(32.dp),
           )
         }
 
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
+          modifier = modifier.wrapContentWidth().padding(bottom = 8.dp).testTag(LOGIN_FOOTER),
+          fontWeight = FontWeight.Light,
         )
       }
     }
