@@ -28,10 +28,14 @@ group ExtractTask(
                task.priority = 'routine',
                task.description = 'Screening Test',
                task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
-               task.basedOn = reference(careplan),
                task.authoredOn = evaluate(subject, now()),
                task.requester = evaluate(subject, $this.generalPractitioner.first()),
                task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
+
+        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.id.replaceMatches('/_history/.*', '')) "r_task_based_on";
+        subject where(careplan.id.exists().not()) -> task.basedOn = reference(careplan) "r_task_based_on";
+
+        subject then extractUnder35Period(subject, task) "r_task_under35_period_extraction";
 
         subject then extractPeriod(subject, task) "r_task_period_extr";
 
@@ -65,6 +69,30 @@ group extractTaskCode(source subject : Task,target concept: CodeableConcept){
       subject-> concept.coding = c("http://smartregister.org/", "plan_definition") as coding,
            coding.display = 'Plan Definition Reference' "r_cp_cod_disp";
       subject ->  concept.text = 'Plan Definition Reference' "r_cp_cc_txt";
+}
+
+group extractUnder35Period(source subject : Patient, target task : Task) {
+    //check whether patient is under 35
+    subject where(subject.birthDate >= (today() - (((35 * 365).toString() + " days").toQuantity()))) then {
+       // Get number of years left till patient is elligible i.e is 35 years old
+        subject -> evaluate(subject, ( 35 - (today().toString().substring(0, 4).toInteger() - $this.birthDate.toString().substring(0, 4).toInteger())) ) as yearsToBeElligible then {
+            subject -> evaluate(task, $this.executionPeriod.start) as start then {
+                // Add the number of years the patient has left to be elligible to the execution period
+                subject -> evaluate(task, $this.executionPeriod.end) as end then {
+                    subject -> create('Period') as period then {
+                        subject -> period.start = create('dateTime') as startDateTime,
+                            startDateTime.value = evaluate(start, (($this + (((yearsToBeElligible.toInteger() * 365).toString() + ' days')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "r_extract_task_period_start";
+
+                        subject -> period.end = create('dateTime') as endDateTime,
+                            endDateTime.value = evaluate(end, (($this + (((yearsToBeElligible.toInteger() * 365).toString() + ' days')).toQuantity()).value.substring(0,10)) + 'T00:00:00.00Z') "r_extract_task_period_end";
+
+                        subject -> task.executionPeriod = period "r_task_per";
+                    } "rule_under35_period";
+            } "r_period_end";
+        } "r_period_start";
+    } "r_updated_under35_period";
+
+    }"r_under35";
 }
 
 group extractPeriod(source subject: Patient, target task: Task) {
