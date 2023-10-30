@@ -5,6 +5,7 @@
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
+      "filterId": "household",
       "dataQueries": [
         {
           "paramName": "type",
@@ -333,5 +334,47 @@
         }
       }
     }
-  ]
+  ],
+  "registerFilter": {
+    "dataFilterActions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "811730",
+          "title": "Filter Households",
+          "saveButtonText": "Apply Filters",
+          "saveQuestionnaireResponse": false,
+          "showClearAll": true
+        }
+      }
+    ],
+    "dataFilterFields": [
+      {
+        "filterId": "household",
+        "dataQueries": [
+          {
+            "paramName": "identifier",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataFilterLinkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
+                "dataType": "CODE"
+              }
+            ]
+          },
+          {
+            "paramName": "characteristic",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataFilterLinkId": "b742852c-8774-47d1-81f2-9bbe0f2fd511",
+                "dataType": "CODE"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

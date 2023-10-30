@@ -93,20 +93,16 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
 
        src.item as familyType where(linkId='603e8034-26d0-420a-86f7-577ab9c9bf9c') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
             familyType -> groupCharacteristic.code = create('CodeableConcept') as hhTypeCode then{
-                src -> hhTypeCode.coding = c("http://www.mpower-social.com/codes", "hh_type") as coding then {
-                src -> coding.display = 'Household Type' "r_cp_cod_disp_hh_type";
-                } "r_grp_hh_type_code";
-                src -> hhTypeCode.text = evaluate(src, $this.item.where(linkId = '603e8034-26d0-420a-86f7-577ab9c9bf9c').answer.value.code) "r_vcc_hh_type";
+                src -> hhTypeCode.coding = evaluate(familyType, $this.answer.value) "r_grp_hh_type_code";
+                src -> hhTypeCode.text = 'hh_type' "r_vcc_hh_type";
             } "r_cp_cc_coding_hh_type";
             familyType -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_type";
        } "r_group_char_hh_type";
 
        src.item as familyCluster where(linkId='b742852c-8774-47d1-81f2-9bbe0f2fd511') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
             familyCluster -> groupCharacteristic.code = create('CodeableConcept') as clusterCode then{
-                src -> clusterCode.coding = c("http://www.mpower-social.com/codes", "hh_cluster") as coding then {
-                src -> coding.display = 'Household Cluster' "r_cp_cod_disp_hh_cluster";
-                } "r_grp_hh_cluster_code";
-                src -> clusterCode.text = evaluate(src, $this.item.where(linkId = 'b742852c-8774-47d1-81f2-9bbe0f2fd511').answer.value.code) "r_vcc_hh_cluster";
+                src -> clusterCode.coding = evaluate(familyCluster, $this.answer.value) "r_grp_hh_cluster_code";
+                src -> clusterCode.text = 'hh_cluster' "r_vcc_hh_cluster";
             } "r_cp_cc_coding_hh_cluster";
             familyCluster -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_cluster";
        } "r_group_char_hh_cluster";
@@ -123,10 +119,8 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
 
        src.item as headOccupation where(linkId='023ca3f7-5591-46c6-8002-2fb31415c069') -> group.characteristic = create ('Group_Characteristic') as groupCharacteristic then {
             headOccupation -> groupCharacteristic.code = create('CodeableConcept') as occupation then {
-                src -> occupation.coding = c("http://snomed.info/sct", "184104002") as coding then {
-                src -> coding.display = 'Household Head Occupation' "r_cp_cod_disp_hh_head_occ";
-                } "r_grp_hh_head_occ";
-                src -> occupation.text = evaluate(src, $this.item.where(linkId = '023ca3f7-5591-46c6-8002-2fb31415c069').answer.value.code) "r_vcc_hh_head_occ";
+                src -> occupation.coding = evaluate(headOccupation, $this.answer.value) "r_grp_hh_head_occ";
+                src -> occupation.text = 'head_occupation' "r_vcc_hh_head_occ";
             } "r_cp_cc_coding_hh_head_occ";
             headOccupation -> groupCharacteristic.exclude = false "r_cp_cc_exclude_hh_head_occ";
        } "r_group_char_hh_head_occ";

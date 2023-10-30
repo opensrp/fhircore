@@ -293,8 +293,10 @@ constructor(
         }
       }
       it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
+        filterCriteria = newFilterCriteria,
       )
+    }?.filter {
+      it.filterCriteria.isNotEmpty()
     }
 
   private fun convertAnswerToFilterCriterion(

@@ -1314,37 +1314,13 @@
                       "context": "hhTypeCode",
                       "contextType": "variable",
                       "element": "coding",
-                      "variable": "coding",
-                      "transform": "c",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "http://www.mpower-social.com/codes"
+                          "valueId": "familyType"
                         },
                         {
-                          "valueString": "hh_type"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_cp_cod_disp_hh_type",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "Household Type"
-                            }
-                          ]
+                          "valueString": "$this.answer.value"
                         }
                       ]
                     }
@@ -1362,13 +1338,10 @@
                       "context": "hhTypeCode",
                       "contextType": "variable",
                       "element": "text",
-                      "transform": "evaluate",
+                      "transform": "copy",
                       "parameter": [
                         {
-                          "valueId": "src"
-                        },
-                        {
-                          "valueString": "$this.item.where(linkId = '603e8034-26d0-420a-86f7-577ab9c9bf9c').answer.value.code"
+                          "valueString": "hh_type"
                         }
                       ]
                     }
@@ -1458,37 +1431,13 @@
                       "context": "clusterCode",
                       "contextType": "variable",
                       "element": "coding",
-                      "variable": "coding",
-                      "transform": "c",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "http://www.mpower-social.com/codes"
+                          "valueId": "familyCluster"
                         },
                         {
-                          "valueString": "hh_cluster"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_cp_cod_disp_hh_cluster",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "Household Cluster"
-                            }
-                          ]
+                          "valueString": "$this.answer.value"
                         }
                       ]
                     }
@@ -1506,13 +1455,10 @@
                       "context": "clusterCode",
                       "contextType": "variable",
                       "element": "text",
-                      "transform": "evaluate",
+                      "transform": "copy",
                       "parameter": [
                         {
-                          "valueId": "src"
-                        },
-                        {
-                          "valueString": "$this.item.where(linkId = 'b742852c-8774-47d1-81f2-9bbe0f2fd511').answer.value.code"
+                          "valueString": "hh_cluster"
                         }
                       ]
                     }
@@ -1746,37 +1692,13 @@
                       "context": "occupation",
                       "contextType": "variable",
                       "element": "coding",
-                      "variable": "coding",
-                      "transform": "c",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "http://snomed.info/sct"
+                          "valueId": "headOccupation"
                         },
                         {
-                          "valueString": "184104002"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_cp_cod_disp_hh_head_occ",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "coding",
-                          "contextType": "variable",
-                          "element": "display",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "Household Head Occupation"
-                            }
-                          ]
+                          "valueString": "$this.answer.value"
                         }
                       ]
                     }
@@ -1794,13 +1716,10 @@
                       "context": "occupation",
                       "contextType": "variable",
                       "element": "text",
-                      "transform": "evaluate",
+                      "transform": "copy",
                       "parameter": [
                         {
-                          "valueId": "src"
-                        },
-                        {
-                          "valueString": "$this.item.where(linkId = '023ca3f7-5591-46c6-8002-2fb31415c069').answer.value.code"
+                          "valueString": "head_occupation"
                         }
                       ]
                     }

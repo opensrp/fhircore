@@ -89,7 +89,7 @@ fun TopScreenSection(
   ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp).testTag(TITLE_ROW_TEST_TAG),
+      modifier = modifier.padding(8.dp).testTag(TITLE_ROW_TEST_TAG),
     ) {
       IconButton(onClick = { onClick.invoke(ToolbarClickEvent.Navigate) }) {
         Icon(
@@ -111,7 +111,6 @@ fun TopScreenSection(
       if (isFilterIconEnabled) {
         IconButton(
           onClick = { onClick.invoke(ToolbarClickEvent.FilterData) },
-          modifier = Modifier.padding(horizontal = 16.dp),
         ) {
           BadgedBox(
             badge = {
@@ -138,7 +137,6 @@ fun TopScreenSection(
       if (isNotificationIconEnabled) {
         IconButton(
           onClick = { onClick.invoke(ToolbarClickEvent.ShowNotification) },
-          modifier = Modifier.padding(horizontal = 16.dp),
         ) {
           BadgedBox(
             badge = {
