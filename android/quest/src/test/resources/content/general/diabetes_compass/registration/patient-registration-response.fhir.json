@@ -6,7 +6,7 @@
             "text": "Personal Health Number",
             "answer": [
                 {
-                    "valueString": "0981234567"
+                    "valueString": "2832893211"
                 }
             ]
         },
@@ -28,7 +28,7 @@
             "text": "Passport Number",
             "answer": [
                 {
-                    "valueString": "AA123000"
+                    "valueString": "PP123933"
                 }
             ]
         },
@@ -67,7 +67,7 @@
             "text": "Age",
             "answer": [
                 {
-                    "valueInteger": 55
+                    "valueInteger": 54
                 }
             ]
         },
@@ -89,7 +89,20 @@
             "text": "Contact details",
             "answer": [
                 {
-                    "valueString": "+012900900100"
+                    "valueString": "4834848484"
+                }
+            ]
+        },
+        {
+            "linkId": "preferred-language",
+            "text": "Preferred Language",
+            "answer": [
+                {
+                    "valueCoding": {
+                        "system": "urn:ietf:bcp:47",
+                        "code": "si",
+                        "display": "Sinhala"
+                    }
                 }
             ]
         },
@@ -98,18 +111,7 @@
             "text": "calculated year"
         },
         {
-            "linkId": "family-head-choice",
-            "text": "Is family head?",
-            "answer": [
-                {
-                    "valueCoding": {
-                        "id": "db16ca66-a958-4042-8b69-b6274d7a1cf8",
-                        "system": "urn:uuid:7b6761a6-2f3d-4cda-9155-cf089c94403a",
-                        "code": "yes",
-                        "display": "Yes"
-                    }
-                }
-            ]
+            "linkId": "toggle-is-family-head"
         }
     ]
 }
