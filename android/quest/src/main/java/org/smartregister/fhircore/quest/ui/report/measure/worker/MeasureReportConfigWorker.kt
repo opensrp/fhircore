@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import timber.log.Timber
@@ -92,6 +93,11 @@ constructor(
               existing = existing,
               practitionerId = null,
               params = mapOf(), // TODO do we also want practitioner based reports prebuilt
+              onFailure = {
+                it?.let {
+                  context.showToast(it)
+                }
+              }
             )
           }
         }

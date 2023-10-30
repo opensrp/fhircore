@@ -83,6 +83,7 @@ constructor(
     existing: List<MeasureReport>,
     practitionerId: String?,
     params: Map<String, String>,
+    onFailure: ((String?) -> Unit)
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -126,6 +127,7 @@ constructor(
         addOrUpdate(resource = report)
       }
     } catch (exception: NullPointerException) {
+      onFailure("Exception message: ${exception.message} with measureUrl: $measureUrl")
       Timber.e(exception, "Exception thrown with measureUrl: $measureUrl.")
     }
     return measureReport

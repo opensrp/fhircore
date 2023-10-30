@@ -79,6 +79,7 @@ import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.retrievePreviouslyGeneratedMeasureReports
 import org.smartregister.fhircore.engine.util.extension.rounding
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.valueCode
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
@@ -345,6 +346,11 @@ constructor(
                     existing = existingValidReports,
                     practitionerId = practitionerId,
                     params = mapOf(ResourceType.PRACTITIONER.name to (practitionerId ?: "")),
+                    onFailure = {
+                     it?.let {
+                       navController.context.showToast(it)
+                     }
+                    }
                   )
                 } else {
                   existingValidReports
