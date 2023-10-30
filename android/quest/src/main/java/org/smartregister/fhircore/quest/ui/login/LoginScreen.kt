@@ -363,18 +363,20 @@ fun LoginPage(
           Text(
             text = stringResource(id = R.string.powered_by),
             modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
+            fontWeight = FontWeight.Light,
           )
           Image(
-            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            painter = painterResource(id = R.drawable.ic_opensrplogo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(32.dp),
           )
         }
 
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
+          modifier = modifier.wrapContentWidth().padding(bottom = 8.dp).testTag(LOGIN_FOOTER),
+          fontWeight = FontWeight.Light,
         )
       }
     }
