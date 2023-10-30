@@ -24,12 +24,28 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
-import org.opencds.cqf.fhir.cr.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_PRECISION
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_STRATEGY
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
+
+enum class MeasurePopulationType(
+  private val code: String,
+) {
+  INITIALPOPULATION("initial-population"),
+  NUMERATOR("numerator"),
+  DENOMINATOR("denominator"),
+  ;
+
+  val system: String
+    get() = "http://hl7.org/fhir/measure-population"
+
+  fun toCode(): String {
+    return this.code
+  }
+}
+
 fun MeasureReport.StratifierGroupComponent.findPopulation(
   id: MeasurePopulationType,
 ): MeasureReport.StratifierGroupPopulationComponent? {

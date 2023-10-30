@@ -30,14 +30,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
-import org.hl7.fhir.instance.model.api.IBaseParameters
-import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Reference
@@ -45,12 +42,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.opencds.cqf.cql.evaluator.activitydefinition.r4.ActivityDefinitionProcessor
-import org.opencds.cqf.cql.evaluator.expression.ExpressionEvaluator
-import org.opencds.cqf.cql.evaluator.fhir.dal.FhirDal
-import org.opencds.cqf.cql.evaluator.library.LibraryProcessor
-import org.opencds.cqf.cql.evaluator.plandefinition.OperationParametersParser
-import org.opencds.cqf.cql.evaluator.plandefinition.r4.PlanDefinitionProcessor
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import timber.log.Timber
 
@@ -141,37 +132,32 @@ constructor(
     output: CarePlan,
   ) {
     val patientId = IdType(patient.id).idPart
-    val planDefinitionId = IdType(planDefinition.id).idPart
 
     if (cqlLibraryIdList.isEmpty()) {
       loadPlanDefinitionResourcesFromDb()
     }
 
     val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
-    val carePlanProposal =
-      r4PlanDefinitionProcessor.apply(
-        IdType("PlanDefinition", planDefinitionId),
-        patientId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        Parameters(),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-      ) as CarePlan
+    // TODO Fix after resolving dependency issues
+    /*val carePlanProposal = CarePlan()
+    r4PlanDefinitionProcessor.
+     apply(
+       id =  null,
+       canonical =  planDefinition.idElement,
+       planDefinition =  null,
+       subject =  patientId,
+       encounterId =  null,
+       practitionerId =  null,
+       organizationId =  null,
+       userType =  null,
+       userLanguage =  null,
+       userTaskContext =  null,
+       setting =  null,
+       settingContext =  null
+    ) as CarePlan*/
 
     // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
-    acceptCarePlan(carePlanProposal, output)
+    //    acceptCarePlan(carePlanProposal, output)
 
     resolveDynamicValues(
       planDefinition = planDefinition,
@@ -182,23 +168,14 @@ constructor(
   }
 
   private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
-    val fhirDal = getPrivateProperty("fhirEngineDal", fhirOperator) as FhirDal
-    val libraryProcessor = getPrivateProperty("libraryProcessor", fhirOperator) as LibraryProcessor
-    val expressionEvaluator =
-      getPrivateProperty("expressionEvaluator", fhirOperator) as ExpressionEvaluator
-    val activityDefinitionProcessor =
-      getPrivateProperty("activityDefinitionProcessor", fhirOperator) as ActivityDefinitionProcessor
-    val operationParametersParser =
-      getPrivateProperty("operationParametersParser", fhirOperator) as OperationParametersParser
+    // val repository = getPrivateProperty("repository", fhirOperator) as ProxyRepository
+    // val evaluationSettings = getPrivateProperty("evaluationSettings", fhirOperator) as
+    // EvaluationSettings
 
     return R4PlanDefinitionProcessor(
-      fhirContext = fhirContext,
-      fhirDal = fhirDal,
-      libraryProcessor = libraryProcessor,
-      expressionEvaluator = expressionEvaluator,
-      activityDefinitionProcessor = activityDefinitionProcessor,
-      operationParametersParser = operationParametersParser,
-    )
+      // repository = repository,
+      // evaluationSettings = evaluationSettings
+      )
   }
 
   private fun resolveDynamicValues(
@@ -330,34 +307,23 @@ constructor(
   }
 
   inner class R4PlanDefinitionProcessor
-  constructor(
-    fhirContext: FhirContext,
-    fhirDal: FhirDal,
-    libraryProcessor: LibraryProcessor,
-    expressionEvaluator: ExpressionEvaluator,
-    activityDefinitionProcessor: ActivityDefinitionProcessor,
-    operationParametersParser: OperationParametersParser,
-  ) :
-    PlanDefinitionProcessor(
-      fhirContext,
-      fhirDal,
-      libraryProcessor,
-      expressionEvaluator,
-      activityDefinitionProcessor,
-      operationParametersParser,
-    ) {
-    override fun resolveDynamicValue(
-      language: String?,
-      expression: String?,
-      path: String?,
-      altLanguage: String?,
-      altExpression: String?,
-      altPath: String?,
-      libraryUrl: String?,
-      resource: IBaseResource?,
-      params: IBaseParameters?,
-    ) {
-      // no need to add dynamic value in RequestGroup resource
-    }
-  }
+  /*inner class R4PlanDefinitionProcessor
+    constructor(
+      repository: ProxyRepository,
+      evaluationSettings: EvaluationSettings,
+    ) :
+      PlanDefinitionProcessor(
+        repository,
+        evaluationSettings
+      )
+  {
+      fun resolveDynamicValue(
+        result: MutableList<IBase>?,
+        path: String?,
+        requestAction: IElement?,
+        resource: IBase?
+      ) {
+        // no need to add dynamic value in RequestGroup resource
+      }
+    }*/
 }
