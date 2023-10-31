@@ -55,7 +55,6 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
 ) {
-  val fhirEngine = defaultRepository.fhirEngine
 
   /**
    * Fetches and returns tasks whose Task.status is either "requested", "ready", "accepted",
@@ -63,6 +62,7 @@ constructor(
    * The size of the tasks is between 0 to (tasksCount * 2).
    */
   suspend fun expireOverdueTasks(): List<Task> {
+    val fhirEngine = defaultRepository.fhirEngine
     Timber.i("Fetch and expire overdue tasks")
     val tasksResult =
       fhirEngine
@@ -227,11 +227,11 @@ constructor(
 
   suspend fun closeResourcesRelatedToCompletedServiceRequests() {
     Timber.i("Fetch completed service requests and close related resources")
-    fhirEngine
+    defaultRepository.fhirEngine
       .search<ServiceRequest> {
         filter(
           ServiceRequest.STATUS,
-          { value = of(TaskStatus.COMPLETED.toCoding()) },
+          { value = of(ServiceRequest.ServiceRequestStatus.COMPLETED.toCode()) },
         )
       }
       .map { it.resource }

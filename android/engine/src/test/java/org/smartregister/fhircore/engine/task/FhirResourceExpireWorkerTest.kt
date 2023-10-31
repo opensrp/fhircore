@@ -43,6 +43,7 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
@@ -79,6 +80,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
     )
   private lateinit var fhirResourceExpireWorker: FhirResourceExpireWorker
   private lateinit var tasks: List<SearchResult<Task>>
+  private lateinit var serviceRequests: List<SearchResult<ServiceRequest>>
 
   @Before
   fun setup() {
@@ -88,7 +90,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
       TestListenableWorkerBuilder<FhirResourceExpireWorker>(
           ApplicationProvider.getApplicationContext(),
         )
-        .setWorkerFactory(FhirTaskExpireJobWorkerFactory())
+        .setWorkerFactory(FhirResourceExpireJobWorkerFactory())
         .build()
 
     tasks =
@@ -113,8 +115,22 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
         ),
       )
 
+    serviceRequests =
+      listOf(
+        SearchResult(
+          resource =
+            ServiceRequest().apply {
+              id = UUID.randomUUID().toString()
+              status = ServiceRequest.ServiceRequestStatus.COMPLETED
+            },
+          null,
+          null,
+        ),
+      )
+
     coEvery { defaultRepository.fhirEngine } returns fhirEngine
     coEvery { fhirEngine.search<Task>(any()) } returns tasks
+    coEvery { fhirEngine.search<ServiceRequest>(any()) } returns serviceRequests
   }
 
   @Test
@@ -125,7 +141,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskExpireWorker doWork task expires when past end no reference to careplan`() {
+  fun `FhirResourceExpireWorker doWork task expires when past end no reference to careplan`() {
     coEvery { defaultRepository.update(any()) } just runs
     val result = fhirResourceExpireWorker.startWork().get()
     coVerify { defaultRepository.update(any()) }
@@ -134,7 +150,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan was not found`() {
+  fun `FhirResourceExpireWorker doWork task expires when past end found CarePlan was not found`() {
     tasks
       .map { it.resource }
       .forEach { it.basedOn = listOf(Reference().apply { reference = "CarePlan/123" }) }
@@ -148,7 +164,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan no reference to current task ID`() {
+  fun `FhirResourceExpireWorker doWork task expires when past end found CarePlan no reference to current task ID`() {
     val carePlanId = "123"
     val carePlan =
       CarePlan().apply {
@@ -174,7 +190,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   }
 
   @Test
-  fun `FhirTaskExpireWorker doWork task expires when past end found CarePlan and this is last task`() {
+  fun `FhirResourceExpireWorker doWork task expires when past end found CarePlan and this is last task`() {
     val carePlanId = "123"
     val carePlan =
       CarePlan().apply {
@@ -215,7 +231,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
     )
   }
 
-  inner class FhirTaskExpireJobWorkerFactory : WorkerFactory() {
+  inner class FhirResourceExpireJobWorkerFactory : WorkerFactory() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,

@@ -47,6 +47,6 @@ constructor(
   }
 
   companion object {
-    const val WORK_ID = "FhirTaskExpire"
+    const val WORK_ID = "FhirResourceExpire"
   }
 }
