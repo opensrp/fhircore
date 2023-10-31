@@ -21,12 +21,10 @@ import androidx.annotation.VisibleForTesting.Companion.PROTECTED
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.BaseSearch
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.has
@@ -99,7 +97,7 @@ constructor(
     sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
   }
 
-  private fun Search.validTasksFilters() {
+  private val filtersForValidTask: BaseSearch.() -> Unit = {
     filter(
       TokenClientParam("_tag"),
       { value = of(tracingCoding) },
@@ -134,7 +132,7 @@ constructor(
 
           if (page >= 0) from = page * PaginationConstant.DEFAULT_PAGE_SIZE
 
-          has<Task>(Task.SUBJECT) { this@search.validTasksFilters() }
+          has<Task>(Task.SUBJECT) { filtersForValidTask() }
 
           filters.patientCategory?.let {
             val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
@@ -193,7 +191,7 @@ constructor(
       if (patientrefs.isNotEmpty()) {
         fhirEngine
           .search<Task> {
-            validTasksFilters()
+            filtersForValidTask()
             filter(Task.SUBJECT, *patientrefs, operation = Operation.OR)
           }
           .map { it.resource }
@@ -274,7 +272,7 @@ constructor(
   ): List<RegisterData> {
 
     val tracingPatients =
-      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { this@search.validTasksFilters() } }
+      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }
 
     return tracingPatients
       .map { it.resource }
@@ -394,9 +392,9 @@ constructor(
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     val patients =
-      fhirEngine
-        .search<Patient> { has<Task>(Task.SUBJECT) { this@search.validTasksFilters() } }
-        .map { it.resource }
+      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }.map {
+        it.resource
+      }
     return patients.count { validTasks(it).any() }.toLong()
   }
 
@@ -407,7 +405,7 @@ constructor(
     val patientTasks =
       fhirEngine
         .search<Task> {
-          validTasksFilters()
+          filtersForValidTask()
           filter(Task.SUBJECT, { value = patient.referenceValue() })
         }
         .map { it.resource }
