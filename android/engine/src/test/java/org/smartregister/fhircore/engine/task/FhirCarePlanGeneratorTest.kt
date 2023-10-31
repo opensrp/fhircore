@@ -698,16 +698,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         .decodeResourceFromString<PlanDefinition>()
 
     val questionnaireResponse =
-      "plans/diabetes_compass/patient_registration_questionnaire_response.json"
+      "plans/diabetes_compass/phone_call_follow_up_trigger_visit_response.fhir.json"
         .readFile()
         .decodeResourceFromString<QuestionnaireResponse>()
 
     val patient =
       "plans/diabetes_compass/adult-patient.json".readFile().decodeResourceFromString<Patient>()
 
-    val structureMapScript = "plans/diabetes_compass/patient_screening_task.map".readFile()
+    val structureMapScript = "plans/diabetes_compass/home-visit-follow-up.map".readFile()
     val structureMap =
-      structureMapUtilities.parse(structureMapScript, "DC Routine Screening").also {
+      structureMapUtilities.parse(structureMapScript, "Diabetes Compass Home Visit Follow-up").also {
         // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
         //  so use only months and that would have the unit replaced with 'months'
         println(it.encodeResourceToString().replace("''", "'month'"))
@@ -717,7 +717,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val booleanSlot = slot<Boolean>()
     coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
       emptyList()
-    coEvery { fhirEngine.get<StructureMap>("routine-screening-sm") } returns structureMap
+    coEvery { fhirEngine.get<StructureMap>("dc-home-visit-follow-up-sm") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
     fhirCarePlanGenerator

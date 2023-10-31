@@ -229,7 +229,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap =
-      "content/general/diabetes_compass/screening/patient_screening_task_generation.map".readFile()
+      "content/general/diabetes_compass/registration/patient_registration.map".readFile()
     // val sMap =
     // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
@@ -237,7 +237,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val structureMap = structureMapUtilities.parse(sMap, "Screening")
+    val structureMap = structureMapUtilities.parse(sMap, "Patient Registration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
 
