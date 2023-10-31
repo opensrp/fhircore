@@ -32,8 +32,9 @@ group ExtractTask(
                task.requester = evaluate(subject, $this.generalPractitioner.first()),
                task.owner = evaluate(subject, $this.generalPractitioner.first()) "r_task_data";
 
-        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, 'CarePlan/' + $this.id.replaceMatches('/_history/.*', '').replaceMatches('CarePlan/', '')) "r_task_based_on";
+        subject where(careplan.id.exists()) -> task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.id.replaceMatches('/_history/.*', '')) "r_task_based_on";
         subject where(careplan.id.exists().not()) -> task.basedOn = reference(careplan) "r_task_based_on";
+
         subject then extractPeriod(subject, task) "r_task_period_extr";
 
         // Screening form
@@ -58,6 +59,10 @@ group ExtractTask(
                  subject -> evaluate(careplan, activity.where(detail.kind = 'Task')) as activity, activity.outcomeReference = reference(task) "r_cp_task_ref";
                  subject -> careplan.contained = task  "r_add_task";
         } "r_cp_task";
+
+        // Add restriction period
+        subject then extractTaskRestriction(subject, task) "r_task_restriction";
+
     } "r_task";
 }
 
@@ -75,8 +80,25 @@ group extractPeriod(source subject: Patient, target task: Task) {
 
             subject -> period.end = create('dateTime') as dateTime,
                 dateTime.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_per_start";
-            
+
             subject -> task.executionPeriod = period "r_task_per";
         } "rule_period";
     } "r_per";
+}
+
+group extractTaskRestriction(source subject: Patient, target task: Task) {
+    subject -> evaluate(task, $this.executionPeriod.start) as start then {
+        subject -> evaluate(task, $this.executionPeriod.end) as end then {
+            subject -> create("Task_Restriction") as taskRestriction then {
+                subject -> taskRestriction.period = create("Period") as taskRestrictionPeriod then {
+                    subject -> taskRestrictionPeriod.start = create('dateTime') as startDateTime,
+                        startDateTime.value = evaluate(start, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_extract_task_restriction_period_start";
+
+                    subject -> taskRestrictionPeriod.end = create('dateTime') as endDateTime,
+                        endDateTime.value = evaluate(end, $this.value.substring(0,10) + 'T00:00:00.00Z') "r_extract_task_restriction_period_start";
+                    subject -> task.restriction = taskRestriction "r_extract_task_restriction_period_restriction";
+                } "r_extract_task_restriction_period";
+            } "r_extract_task_restriction_start_end";
+        } "r_extract_task_period_end";
+    } "r_extract_task_restriction";
 }
