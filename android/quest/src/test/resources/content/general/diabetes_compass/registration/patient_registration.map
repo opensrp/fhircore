@@ -1,4 +1,4 @@
-map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-patient-registration" = 'Patient Registration'
+map "https://fhir.demo.smartregister.org/fhir/StructureMap/dc-patient-registration-sm" = 'Patient Registration'
 
 uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
 uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
@@ -69,6 +69,16 @@ group ExtractPatient(source src : QuestionnaireResponse, target patient : Patien
         src -> patientTelecom.value = evaluate(src, $this.item.where(linkId ='contact-details').answer.value) "rule_patient_contact_details";
         src -> patientTelecom.use = "mobile" "rule_patient_telecom_use";
     } "rule_patient_concact";
+
+    src -> patient.communication as prefCommunication then {
+            src -> prefCommunication.language = create('CodeableConcept') as concept then {
+                src.item as preferredLanguage where(linkId = 'preferred-language') then {
+                    src->concept.text = evaluate(preferredLanguage, $this.answer.value.display) "r_patient_language_text";
+                    src->concept.coding = evaluate(preferredLanguage, $this.answer.value) "r_patient_language_cc";
+                } "preferred_lang";
+            } "r_comm_lang";
+            src -> prefCommunication.preferred = true "rule_patient_comm_pref_bool";
+    } "r_patient_comm";
 
     src.item as head_of_household_check where(linkId ='family-head-choice' and answer.value.code = 'yes') then {
         head_of_household_check -> bundle.entry as entry, entry.resource = create('RelatedPerson') as relatedPerson then {
