@@ -773,7 +773,11 @@ constructor(
               )
           }
       }
-      is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
+      is ServiceRequest -> {
+        if (resource.status != ServiceRequest.ServiceRequestStatus.COMPLETED) {
+          resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
+        }
+      }
     }
     fhirEngine.update(resource)
   }
