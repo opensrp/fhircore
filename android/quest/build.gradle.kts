@@ -150,7 +150,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
   testOptions {
     animationsDisabled = true
@@ -161,7 +161,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.10" }
+  testCoverage { jacocoVersion = "0.8.11" }
 
   lint { abortOnError = false }
 

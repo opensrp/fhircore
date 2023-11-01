@@ -182,8 +182,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
 
       if (launchContextResources.isNotEmpty()) {
-        questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(
-          launchContextResources.map { it.json() },
+        questionnaireFragmentBuilder.setQuestionnaireLaunchContextMap(
+          launchContextResources.associate {
+            Pair(it.resourceType.name.lowercase(), it.encodeResourceToString())
+          },
         )
       }
 

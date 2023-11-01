@@ -65,7 +65,7 @@ android {
     dataBinding = true
     buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
   packagingOptions {
     resources.excludes.addAll(
@@ -101,7 +101,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.10" }
+  testCoverage { jacocoVersion = "0.8.11" }
 }
 
 tasks.withType<Test> {
@@ -191,6 +191,7 @@ dependencies {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
+    exclude(group = "com.google.android.fhir", module = "common")
   }
   api(libs.workflow) {
     isTransitive = true
