@@ -50,7 +50,6 @@ import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -172,29 +171,42 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   @Test
   fun `FhirResourceExpireWorker doWork task expires when past end found CarePlan no reference to current task ID`() =
     runTest {
-      val carePlanId = "123"
+      val carePlanId = "1234"
+      val taskReferencedInCarePlan =
+        Task().apply {
+          id = UUID.randomUUID().toString()
+          status = Task.TaskStatus.READY
+          executionPeriod =
+            Period().apply {
+              start = Date().plusMonths(-1)
+              end = Date().plusDays(-1)
+            }
+          restriction =
+            Task.TaskRestrictionComponent().apply {
+              period = Period().apply { end = DateTime().plusDays(-2).toDate() }
+            }
+        }
       val carePlan =
         CarePlan().apply {
           id = carePlanId
           activity =
             listOf(
               CarePlan.CarePlanActivityComponent().apply {
-                outcomeReference = listOf(task.asReference())
+                outcomeReference = listOf(taskReferencedInCarePlan.asReference())
               },
             )
           status = CarePlan.CarePlanStatus.ACTIVE
         }
       task.addBasedOn(Reference().apply { reference = carePlan.referenceValue() })
-      fhirEngine.create(task)
-      val taskSlot = slot<Task>()
-      coEvery { defaultRepository.update(any()) } just runs
+      fhirEngine.create(task, carePlan)
       coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
       val result = fhirResourceExpireWorker.startWork().get()
-      coVerify { defaultRepository.update(capture(taskSlot)) }
+
       assertEquals(result, (ListenableWorker.Result.success()))
-      val updatedTask = taskSlot.captured
+      val updatedCarePlan = fhirEngine.get<CarePlan>(carePlanId)
+      assertEquals(CarePlan.CarePlanStatus.ACTIVE, updatedCarePlan.status)
+      val updatedTask = fhirEngine.get<Task>(task.id)
       assertEquals(Task.TaskStatus.CANCELLED, updatedTask.status)
-      assertNotEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
     }
 
   @Test
@@ -210,22 +222,19 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
                 outcomeReference = listOf(Reference().apply { reference = task.referenceValue() })
               },
             )
+          status = CarePlan.CarePlanStatus.ACTIVE
         }
       task.basedOn = listOf(carePlan.asReference())
-      fhirEngine.create(task)
-      // coEvery { defaultRepository.update(task) } just runs
-      coEvery { fhirEngine.get(ResourceType.CarePlan, carePlanId) } returns carePlan
-      // coEvery { defaultRepository.update(carePlan) } just runs
+      fhirEngine.create(task, carePlan)
 
       val result = fhirResourceExpireWorker.startWork().get()
       coVerify { fhirEngine.get(ResourceType.CarePlan, carePlanId) }
-      val carePlanSlot = slot<CarePlan>()
-      coVerify { defaultRepository.update(capture(carePlanSlot)) }
-      val taskSlot = slot<Task>()
-      coVerify { defaultRepository.update(capture(taskSlot)) }
+
       assertEquals(result, (ListenableWorker.Result.success()))
-      assertEquals(Task.TaskStatus.CANCELLED, taskSlot.captured.status)
-      assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+      val updatedCarePlan = fhirEngine.get<CarePlan>(carePlanId)
+      assertEquals(CarePlan.CarePlanStatus.COMPLETED, updatedCarePlan.status)
+      val updatedTask = fhirEngine.get<Task>(task.id)
+      assertEquals(Task.TaskStatus.CANCELLED, updatedTask.status)
     }
 
   private fun initializeWorkManager() {
