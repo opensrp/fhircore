@@ -55,7 +55,6 @@ android {
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 34
     versionCode = 7
     versionName = "1.0.1"
     multiDexEnabled = true
@@ -87,7 +86,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {}
+    getByName("debug") { enableUnitTestCoverage = true }
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
@@ -103,7 +102,7 @@ android {
     }
   }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",

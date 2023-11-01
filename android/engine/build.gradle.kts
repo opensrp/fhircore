@@ -23,7 +23,6 @@ android {
 
   defaultConfig {
     minSdk = 26
-    targetSdk = 34
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -34,7 +33,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {}
+    getByName("debug") { enableUnitTestCoverage = true }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))
@@ -67,7 +66,7 @@ android {
   }
   composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "license.html",

@@ -23,14 +23,13 @@ android {
 
   defaultConfig {
     minSdk = 26
-    targetSdk = 34
     buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
   }
 
   buildTypes {
-    getByName("debug") {}
+    getByName("debug") { enableUnitTestCoverage = true }
     create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
@@ -59,7 +58,7 @@ android {
 
   composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
