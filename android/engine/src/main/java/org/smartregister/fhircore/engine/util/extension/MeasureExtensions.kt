@@ -25,7 +25,10 @@ import com.google.android.fhir.search.search
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
 import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -115,8 +118,7 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   fhirEngine: FhirEngine,
   startDateFormatted: String,
   endDateFormatted: String,
-  measureUrl: String,
-  subjects: List<String>,
+  measureUrl: String
 ): List<MeasureReport> {
   val search = Search(ResourceType.MeasureReport)
   search.filter(
@@ -132,8 +134,6 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
     operation = Operation.AND
   )
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
-  subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
-
   return fhirEngine.search(search)
 }
 
@@ -154,3 +154,47 @@ suspend inline fun fetchReportSubjects(
     }
   } else emptyList()
 }
+
+fun MeasureReport.belongToSubject(subject: Reference?) = belongToSubject(subject?.reference)
+
+fun MeasureReport.belongToSubject(subject: String?) =
+  with(IdType(this.subject?.reference) to IdType(subject)) {
+    this.first.resourceType == this.second.resourceType && this.first.idPart == this.second.idPart
+  }
+
+fun MeasureReport.hasParams(params: Map<String, String>): Boolean {
+  // no params in report or filter
+  if (this.contained.filterIsInstance<Parameters>().isEmpty() && params.isEmpty()) return true
+
+  val reportParams: Parameters =
+    (this.contained.singleOrNull { it is Parameters } ?: return false) as Parameters
+
+  // all params should map exactly
+  if (reportParams.parameter.size != params.size) return false
+
+  return reportParams.parameter.associate { it.name to it.value.valueToString() }.all {
+    params[it.key] == it.value
+  }
+}
+
+fun MeasureReport.addParams(params: Map<String, String>) {
+  if (params.isEmpty()) return
+
+  this.contained.singleOrNull { it is Parameters }?.let {
+    it as Parameters
+    it.addAll(params)
+  }
+    ?: this.contained.add(Parameters().apply { addAll(params) })
+}
+
+fun MeasureReport.isSameAs(other: MeasureReport) =
+  this.measure == other.measure &&
+    this.belongToSubject(other.subject) &&
+    this.hasParams(other.extractParameters())
+
+fun MeasureReport.extractParameters() =
+  this.contained
+    .filterIsInstance<Parameters>()
+    .flatMap { it.parameter }
+    .map { it.name to it.value.valueToString() }
+    .toMap()

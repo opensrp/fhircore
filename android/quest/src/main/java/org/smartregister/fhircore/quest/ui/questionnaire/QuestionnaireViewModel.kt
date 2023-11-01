@@ -343,13 +343,14 @@ constructor(
       val practitionerRef = it.asReference(ResourceType.Practitioner)
       when (resource) {
         is Patient -> resource.generalPractitioner = arrayListOf(practitionerRef)
-        is Observation -> resource.performer= arrayListOf(practitionerRef)
-        is QuestionnaireResponse -> resource.author= practitionerRef
+        is Observation -> resource.performer = arrayListOf(practitionerRef)
+        is QuestionnaireResponse -> resource.author = practitionerRef
         is Flag -> resource.author = practitionerRef
-        is Encounter -> resource.participant =
-          arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
-          )
+        is Encounter ->
+          resource.participant =
+            arrayListOf(
+              Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
+            )
       }
     }
   }
@@ -774,8 +775,6 @@ constructor(
         )
       }
     }
-
-
 
   /**
    * Loads resources to be populated into a Questionnaire Response.

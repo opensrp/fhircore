@@ -49,20 +49,15 @@ suspend fun <T : Any> KClass<T>.callSuspendFunctionOnField(
 }
 
 inline fun <reified T : Any> getPrivateProperty(property: String, obj: T): Any? {
-  return T::class
-    .declaredMemberProperties
-    .find { it.name == property }!!
+  return T::class.declaredMemberProperties.find { it.name == property }!!
     .apply { isAccessible = true }
     .get(obj)
 }
 
 fun <T : Any> Any.callSuperPrivateMember(method: String, vararg args: Any?): T {
-  return this::class
-    .superclasses
-    .first()
-    .declaredFunctions
-    .find { it.name == method }!!
+  return this::class.superclasses.first().declaredFunctions.find { it.name == method }!!
     .apply { isAccessible = true }
     .also { it }
-    .call(this, *args) as T
+    .call(this, *args) as
+    T
 }

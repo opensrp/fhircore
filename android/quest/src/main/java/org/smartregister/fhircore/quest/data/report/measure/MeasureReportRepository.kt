@@ -34,7 +34,9 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addParams
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.isSameAs
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
@@ -103,26 +105,27 @@ constructor(
             .forEach { subject -> measureReport.add(subject) }
         } else {
           runMeasureReport(
-              measureUrl = measureUrl,
-              reportType = MeasureReportViewModel.POPULATION,
-              startDateFormatted = startDateFormatted,
-              endDateFormatted = endDateFormatted,
-              subject = null,
-              practitionerId = practitionerId,
-              params = params,
-            )
+            measureUrl = measureUrl,
+            reportType = MeasureReportViewModel.POPULATION,
+            startDateFormatted = startDateFormatted,
+            endDateFormatted = endDateFormatted,
+            subject = null,
+            practitionerId = practitionerId,
+            params = params,
+          )
             .also { measureReport.add(it) }
         }
       }
 
       measureReport.forEach { report ->
-        // if report exists override instead of creating a new one
-        existing
-          .find {
-            it.measure == report.measure &&
-              (!it.hasSubject() || it.subject.reference == report.subject.reference)
-          }
-          ?.let { existing -> report.id = existing.id }
+        // add parameters sent to library runner in contained as Parameters to track the exact/all
+        // filters passed
+        report.addParams(params)
+
+        // if report exists override instead of creating a new one; existing report should satisfy
+        // all filters
+        existing.find { report.isSameAs(it) }?.let { report.id = it.id }
+
         addOrUpdate(resource = report)
       }
     } catch (exception: NullPointerException) {

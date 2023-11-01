@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.belongToSubject
 import org.smartregister.fhircore.engine.util.extension.codingOf
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -73,6 +74,7 @@ import org.smartregister.fhircore.engine.util.extension.findPopulation
 import org.smartregister.fhircore.engine.util.extension.findRatio
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.hasParams
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.loadCqlLibraryBundle
 import org.smartregister.fhircore.engine.util.extension.parseDate
@@ -301,15 +303,18 @@ constructor(
                 if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
+                val params = mapOf(ResourceType.PRACTITIONER.name to (practitionerId ?: ""))
 
                 val existingReports =
                   retrievePreviouslyGeneratedMeasureReports(
                     fhirEngine = fhirEngine,
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
-                    measureUrl = config.url,
-                    subjects = listOf(),
+                    measureUrl = config.url
                   )
+                    .filter { report ->
+                      report.hasParams(params) && subjects.any { report.belongToSubject(it) }
+                    }
 
                 val existingValidReports = mutableListOf<MeasureReport>()
 
@@ -344,7 +349,7 @@ constructor(
                     subjects = subjects,
                     existing = existingValidReports,
                     practitionerId = practitionerId,
-                    params = mapOf(ResourceType.PRACTITIONER.name to (practitionerId ?: "")),
+                    params = params,
                   )
                 } else {
                   existingValidReports

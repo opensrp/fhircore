@@ -75,8 +75,7 @@ constructor(
               fhirEngine = fhirEngine,
               startDateFormatted = startDateFormatted,
               endDateFormatted = endDateFormatted,
-              measureUrl = config.url,
-              subjects = listOf()
+              measureUrl = config.url
             )
 
           if (existing.isEmpty()) {
