@@ -87,7 +87,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") {}
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
