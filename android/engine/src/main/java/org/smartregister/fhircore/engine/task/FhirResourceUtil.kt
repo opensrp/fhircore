@@ -225,6 +225,11 @@ constructor(
       }
   }
 
+  /**
+   * This function fetches completed service requests from the local database. For each of the
+   * service requests functionality for closing related resources is triggered The related resources
+   * are configured in the application config file.
+   */
   suspend fun closeResourcesRelatedToCompletedServiceRequests() {
     Timber.i("Fetch completed service requests and close related resources")
     defaultRepository.fhirEngine
