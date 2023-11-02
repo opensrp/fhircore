@@ -191,7 +191,7 @@ constructor(
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
-        context.showToast(context.getString(R.string.questionnaire_alert_invalid_message))
+        context.showToast(context.getString(R.string.questionnaire_response_invalid))
         setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
         return@launch
       }
