@@ -146,7 +146,7 @@ internal val Questionnaire.QuestionnaireItemComponent.expressionBasedExtensions
  * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
  * `this-question` is the link ID of the current questionnaire item).
  */
-internal fun Questionnaire.QuestionnaireItemComponent.isReferencedBy(
+internal fun Questionnaire.QuestionnaireItemComponent.isExpressionReferencedBy(
   item: Questionnaire.QuestionnaireItemComponent
 ) =
   item.expressionBasedExtensions.any {
@@ -156,6 +156,27 @@ internal fun Questionnaire.QuestionnaireItemComponent.isReferencedBy(
       .replace(" ", "")
       .contains(Regex(".*linkId='${this.linkId}'.*"))
   }
+
+/**
+ * Whether [item] has any expression directly referencing the current questionnaire item by link ID
+ * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
+ * `this-question` is the link ID of the current questionnaire item).
+ */
+internal fun Questionnaire.QuestionnaireItemComponent.isEnableWhenReferencedBy(
+  item: Questionnaire.QuestionnaireItemComponent,
+) =
+  item.enableWhen.any { it.question == this.linkId }
+
+/**
+ * Whether [item] has any expression directly referencing the current questionnaire item by link ID
+ * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
+ * `this-question` is the link ID of the current questionnaire item).
+ */
+internal fun Questionnaire.QuestionnaireItemComponent.isVariableReferencedBy(
+  questionnaire: Questionnaire,
+) = questionnaire.variableExpressions.any {
+  it.expression.replace(" ", "").contains(Regex(".*linkId='${this.linkId}'.*"))
+}
 
 /**
  * The [ItemControlTypes] of the questionnaire item if it is specified by the item control
