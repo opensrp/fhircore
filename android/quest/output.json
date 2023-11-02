@@ -1,0 +1,2514 @@
+{
+  "resourceType": "StructureMap",
+  "id": "213",
+  "url": "http://hl7.org/fhir/StructureMap/213",
+  "name": "IPC Activity",
+  "structure": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/Parameters",
+      "mode": "source"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/CarePlan",
+      "mode": "target"
+    }
+  ],
+  "group": [
+    {
+      "name": "IPCSchedule",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "Parameters",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "CarePlan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_careplan",
+          "source": [
+            {
+              "context": "src"
+            }
+          ],
+          "target": [
+            {
+              "variable": "subject",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'subject').resource"
+                }
+              ]
+            },
+            {
+              "variable": "definition",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'definition').resource"
+                }
+              ]
+            },
+            {
+              "variable": "questionnaireResponse",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'depends-on').resource.entry.where(resource is QuestionnaireResponse).resource"
+                }
+              ]
+            },
+            {
+              "variable": "period",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'period').value"
+                }
+              ]
+            },
+            {
+              "variable": "version",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "src"
+                },
+                {
+                  "valueString": "$this.parameter.where(name = 'version').value"
+                }
+              ]
+            }
+          ],
+          "dependent": [
+            {
+              "name": "extractTask",
+              "variable": [
+                "period",
+                "version",
+                "subject",
+                "definition",
+                "careplan"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTask",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "period",
+          "type": "Period",
+          "mode": "source"
+        },
+        {
+          "name": "version",
+          "type": "Integer",
+          "mode": "source"
+        },
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "CarePlan",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "task",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task"
+                }
+              ]
+            },
+            {
+              "variable": "currentDose",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "definition"
+                },
+                {
+                  "valueString": "$this.dosage.skip(version).first()"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_task_data",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "id",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "identifier",
+                  "variable": "iden",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "value",
+                  "transform": "uuid"
+                },
+                {
+                  "context": "iden",
+                  "contextType": "variable",
+                  "element": "use",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "official"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "status",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "requested"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "intent",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "plan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "executionPeriod",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueId": "period"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "priority",
+                  "transform": "copy",
+                  "parameter": [
+                    {
+                      "valueString": "routine"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "description",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "definition"
+                    },
+                    {
+                      "valueString": "$this.product.text"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "for",
+                  "variable": "patientReference",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                },
+                {
+                  "context": "patientReference",
+                  "contextType": "variable",
+                  "element": "reference",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.id.replaceMatches('/_history/.*', '')"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "basedOn",
+                  "transform": "reference",
+                  "parameter": [
+                    {
+                      "valueId": "careplan"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "authoredOn",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "now()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "requester",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "owner",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.generalPractitioner.first()"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "code",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "definition"
+                    },
+                    {
+                      "valueString": "code"
+                    }
+                  ]
+                },
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonCode",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "definition"
+                    },
+                    {
+                      "valueString": "product"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_period_extraction",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractPeriod",
+                  "variable": [
+                    "subject",
+                    "task"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_questions",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "reasonReference",
+                  "variable": "reasonReference",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Reference"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_name_001",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '001'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_1",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/54"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_002",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '002'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_2",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/202"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_003",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '003'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_3",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/204"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_004",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '004'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_4",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/203"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_005",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '005'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_5",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/55"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_006",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '006'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_6",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/64"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_007",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '007'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_7",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/212"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_009",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '009'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_9",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/57"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_010",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '010'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_10",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/205"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_011",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '011'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_11",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/56"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_012",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '012'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_12",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/206"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_013",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '013'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_13",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/58"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_014",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '014'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_14",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/64"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_015",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '015'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_15",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/212"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_017",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '017'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_17",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/61"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_018",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '018'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_18",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/59"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_019",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '019'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_19",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/60"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_020",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '020'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_20",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/207"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_021",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '021'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_21",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/208"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_022",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '022'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_22",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/64"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_023",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '023'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_23",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/212"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_025",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '025'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_25",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/211"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_026",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '026'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_26",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/62"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_027",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '027'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_27",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/210"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_028",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '028'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_28",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/209"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_029",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '029'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_29",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/63"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_030",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '030'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_30",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/64"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_name_031",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(definition.code.where(coding.code = '031'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "embed_31",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "reasonReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Questionnaire/212"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_group_identifier",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "groupIdentifier",
+                  "variable": "groupIdentifier",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Identifier"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_group_identifierule_value",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupIdentifier",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "definition"
+                        },
+                        {
+                          "valueString": "$this.dosage.skip(version).first().select(timing.repeat.period.toString() + '_' + timing.repeat.periodUnit)"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_group_identifierule_use",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "groupIdentifier",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "secondary"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_create_restriction_end_duration",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "groupIdentifierValue",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "task"
+                    },
+                    {
+                      "valueString": "$this.groupIdentifier.value"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_create_restriction_end_duration_9_years",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(groupIdentifierValue = '108_mo')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_restriction",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "maxDays",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "'3285'"
+                            }
+                          ]
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "extractTaskRestriction",
+                          "variable": [
+                            "subject",
+                            "task",
+                            "definition",
+                            "version",
+                            "maxDays"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_create_restriction_end_duration_9half_years",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(groupIdentifierValue = '114_mo')"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_restriction",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "maxDays",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "'3467.5'"
+                            }
+                          ]
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "extractTaskRestriction",
+                          "variable": [
+                            "subject",
+                            "task",
+                            "definition",
+                            "version",
+                            "maxDays"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_create_restriction_end_duration_5_years",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "((groupIdentifierValue != '114_mo') and (groupIdentifierValue != '108_mo'))"
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_restriction",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "variable": "maxDays",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "subject"
+                            },
+                            {
+                              "valueString": "'1825'"
+                            }
+                          ]
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "extractTaskRestriction",
+                          "variable": [
+                            "subject",
+                            "task",
+                            "definition",
+                            "version",
+                            "maxDays"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_input",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "context": "task",
+                  "contextType": "variable",
+                  "element": "input",
+                  "variable": "inputTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task_Input"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_codeable_concept",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "inputTask",
+                      "contextType": "variable",
+                      "element": "type",
+                      "variable": "concept",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CodeableConcept"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_concept_coding",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "concept",
+                          "contextType": "variable",
+                          "element": "coding",
+                          "variable": "coding",
+                          "transform": "c",
+                          "parameter": [
+                            {
+                              "valueString": "http://snomed.info/sct"
+                            },
+                            {
+                              "valueString": "371154000"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_coding_display",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "Dependent (qualifier value)"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_input_value",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "inputTask",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueInteger": 28
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_dosage",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "preReqName",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "definition"
+                    },
+                    {
+                      "valueString": "$this.product.text + ' ' + (currentDose.sequence - 1).toString()"
+                    }
+                  ]
+                },
+                {
+                  "variable": "preReqTask",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "careplan"
+                    },
+                    {
+                      "valueString": "$this.contained.where(description.contains(preReqName))"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_task_part_of",
+                  "source": [
+                    {
+                      "context": "subject",
+                      "condition": "(preReqTask.exists())"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "partOf",
+                      "variable": "partOfReference",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Reference"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_reference_id",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "partOfReference",
+                          "contextType": "variable",
+                          "element": "reference",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "preReqTask"
+                            },
+                            {
+                              "valueString": "'Task/' + id"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_task_reference_input",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "extractTaskReferenceInput",
+                  "variable": [
+                    "subject",
+                    "task",
+                    "definition",
+                    "version",
+                    "careplan"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_careplan_activity",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "(careplan.activity.where(detail.kind = 'Task').exists().not())"
+                }
+              ],
+              "target": [
+                {
+                  "context": "careplan",
+                  "contextType": "variable",
+                  "element": "activity",
+                  "variable": "activity",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "CarePlan_Activity"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_activity_detail",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "activity",
+                      "contextType": "variable",
+                      "element": "detail",
+                      "variable": "ActivityDefinition",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "CarePlan_ActivityDetail"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_activity_detail_data",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "ActivityDefinition",
+                          "contextType": "variable",
+                          "element": "kind",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "Task"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "rule_careplan_task",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_careplan_task_reference",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "activity",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "careplan"
+                        },
+                        {
+                          "valueString": "activity.where(detail.kind = 'Task')"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "activity",
+                      "contextType": "variable",
+                      "element": "outcomeReference",
+                      "transform": "reference",
+                      "parameter": [
+                        {
+                          "valueId": "task"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_add_task",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "careplan",
+                      "contextType": "variable",
+                      "element": "contained",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "task"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTaskReferenceInput",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "task",
+          "type": "Task",
+          "mode": "target"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "version",
+          "type": "Integer",
+          "mode": "source"
+        },
+        {
+          "name": "careplan",
+          "type": "CarePlan",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task_part_of_reference",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "taskPartOfReference",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.partOf.last()"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_task_part_of_reference_exists",
+              "source": [
+                {
+                  "context": "subject",
+                  "condition": "(taskPartOfReference.empty().not())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_task_input",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "input",
+                      "variable": "inputTask",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Task_Input"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_codeable_concept",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "inputTask",
+                          "contextType": "variable",
+                          "element": "type",
+                          "variable": "concept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_task_concept_coding",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "concept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://snomed.info/sct"
+                                },
+                                {
+                                  "valueString": "900000000000457003"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "rule_coding_display",
+                              "source": [
+                                {
+                                  "context": "subject"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Reference set attribute (foundation metadata concept)"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "rule_task_part_of_reference",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "inputTask",
+                          "contextType": "variable",
+                          "element": "value",
+                          "variable": "partOfReference",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Reference"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_task_reference_id",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "partOfReference",
+                              "contextType": "variable",
+                              "element": "reference",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "subject"
+                                },
+                                {
+                                  "valueString": "taskPartOfReference.reference.toString()"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractTaskRestriction",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "task",
+          "type": "Task",
+          "mode": "target"
+        },
+        {
+          "name": "definition",
+          "type": "ActivityDefinition",
+          "mode": "source"
+        },
+        {
+          "name": "version",
+          "type": "Integer",
+          "mode": "source"
+        },
+        {
+          "name": "restrictionEndDate",
+          "type": "String",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task_execution_period",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "start",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.executionPeriod.start"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_birth_date",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "patientBirthDate",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "subject"
+                    },
+                    {
+                      "valueString": "$this.birthDate"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_task_restriction",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "taskRestriction",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Task_Restriction"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_task_restriction_period",
+                      "source": [
+                        {
+                          "context": "subject"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "taskRestriction",
+                          "contextType": "variable",
+                          "element": "period",
+                          "variable": "taskRestrictionPeriod",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "Period"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "rule_period_start",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "taskRestrictionPeriod",
+                              "contextType": "variable",
+                              "element": "start",
+                              "variable": "startDateTime",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "dateTime"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "startDateTime",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "start"
+                                },
+                                {
+                                  "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_period_end",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "taskRestrictionPeriod",
+                              "contextType": "variable",
+                              "element": "end",
+                              "variable": "endDateTime",
+                              "transform": "create",
+                              "parameter": [
+                                {
+                                  "valueString": "dateTime"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "endDateTime",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "start"
+                                },
+                                {
+                                  "valueString": "(($this + (((restrictionEndDate).toString() + ' \\\\ 'days\\\\ '')).toQuantity()).value.substring(0, 10)) + 'T00:00:00.00Z'"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "rule_restriction_period",
+                          "source": [
+                            {
+                              "context": "subject"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "task",
+                              "contextType": "variable",
+                              "element": "restriction",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueId": "taskRestriction"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extractPeriod",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "subject",
+          "type": "Patient",
+          "mode": "source"
+        },
+        {
+          "name": "task",
+          "type": "Task",
+          "mode": "target"
+        }
+      ],
+      "rule": [
+        {
+          "name": "rule_task_execution_period",
+          "source": [
+            {
+              "context": "subject"
+            }
+          ],
+          "target": [
+            {
+              "variable": "start",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.executionPeriod.start"
+                }
+              ]
+            },
+            {
+              "variable": "end",
+              "transform": "evaluate",
+              "parameter": [
+                {
+                  "valueId": "task"
+                },
+                {
+                  "valueString": "$this.executionPeriod.end"
+                }
+              ]
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_period",
+              "source": [
+                {
+                  "context": "subject"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "period",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Period"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_period_start",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "start",
+                      "variable": "startDateTime",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "dateTime"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "startDateTime",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "start"
+                        },
+                        {
+                          "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_period_end",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "end",
+                      "variable": "endDateTime",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "dateTime"
+                        }
+                      ]
+                    },
+                    {
+                      "context": "endDateTime",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "end"
+                        },
+                        {
+                          "valueString": "$this.value.substring(0, 10) + 'T00:00:00.00Z'"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_execution_period",
+                  "source": [
+                    {
+                      "context": "subject"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "task",
+                      "contextType": "variable",
+                      "element": "executionPeriod",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueId": "period"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

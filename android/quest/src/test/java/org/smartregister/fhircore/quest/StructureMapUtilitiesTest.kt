@@ -38,6 +38,7 @@ import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import java.io.File
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -239,6 +240,12 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val mapString = iParser.encodeResourceToString(structureMap)
 
     Assert.assertNotNull(mapString)
+
+    val fileName = "output.json" // Replace this with your desired file name
+    val fileContent = mapString.toByteArray()
+
+    val file = File(fileName)
+    file.writeBytes(fileContent)
   }
 
   @Test
