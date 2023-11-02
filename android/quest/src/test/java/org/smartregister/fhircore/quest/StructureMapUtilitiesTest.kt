@@ -160,7 +160,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization)
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Patient.name.lowercase() to patient,
+            ResourceType.Immunization.name.lowercase() to immunization,
+          ),
+        )
     }
 
     structureMapUtilities.transform(contextR4, questionnaireResponse, structureMap, targetResource)
@@ -187,7 +194,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     var questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Patient.name.lowercase() to patient,
+            ResourceType.RelatedPerson.name.lowercase() to relatedPerson,
+          ),
+        )
     }
 
     val packageCacheManager = FilesystemPackageCacheManager(true)
@@ -222,7 +236,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     var questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, Patient())
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Immunization.name.lowercase() to immunization,
+            ResourceType.Patient.name.lowercase() to Patient(),
+          ),
+        )
     }
 
     val packageCacheManager = FilesystemPackageCacheManager(true)
@@ -571,7 +592,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val carePlan =
       fhirOperator.generateCarePlan(
         planDefinitionId = "IMMZD2DTMeasles",
-        patientId = "IMMZ-Patient-NoVaxeninfant-f",
+        subject = "IMMZ-Patient-NoVaxeninfant-f",
       )
 
     println(jsonParser.encodeResourceToString(carePlan))
