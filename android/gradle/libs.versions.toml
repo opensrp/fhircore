@@ -1,6 +1,4 @@
 [versions]
-accompanist-flowlayout = "0.23.1"
-accompanist-placeholder = "0.23.1"
 activity-compose = "1.7.2"
 activity-ktx = "1.7.2"
 appcompat = "1.6.1"
@@ -22,7 +20,7 @@ easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
 fhir-common-utils = "0.0.10-SNAPSHOT"
 fhir-engine = "0.1.0-beta05-preview1-SNAPSHOT"
-foundation = "1.3.1"
+foundation = "1.4.6"
 fragment-ktx = "1.6.1"
 fragment-testing = "1.6.1"
 glide = "4.14.2"
@@ -96,8 +94,6 @@ workflow = "0.1.0-alpha04-preview-SNAPSHOT"
 xercesImpl = "2.12.2"
 
 [libraries]
-accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
-accompanist-placeholder = { group = "com.google.accompanist", name = "accompanist-placeholder", version.ref = "accompanist-placeholder" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

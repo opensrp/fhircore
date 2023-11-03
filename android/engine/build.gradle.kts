@@ -165,8 +165,6 @@ dependencies {
   api(libs.paging.compose)
   api(libs.activity.compose)
   api(libs.kotlinx.serialization.json)
-  api(libs.accompanist.flowlayout)
-  api(libs.accompanist.placeholder)
   api(libs.work.runtime.ktx)
   api(libs.prettytime)
   api(libs.kotlinx.coroutines.core)
