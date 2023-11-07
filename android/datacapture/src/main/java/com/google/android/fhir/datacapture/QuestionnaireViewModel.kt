@@ -343,6 +343,8 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
       modifiedQuestionnaireResponseItemSet.add(questionnaireResponseItem)
 
+      modificationCount.update { it + 1 }
+
       var isReferenced = false
       kotlin.run {
         isReferenced = questionnaireItem.isVariableReferencedBy(questionnaire)

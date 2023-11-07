@@ -174,8 +174,27 @@ internal fun Questionnaire.QuestionnaireItemComponent.isEnableWhenReferencedBy(
  */
 internal fun Questionnaire.QuestionnaireItemComponent.isVariableReferencedBy(
   questionnaire: Questionnaire,
-) = questionnaire.variableExpressions.any {
-  it.expression.replace(" ", "").contains(Regex(".*linkId='${this.linkId}'.*"))
+): Boolean {
+  val expressionBasedExtensions = questionnaire.item.flattened()
+    .asSequence()
+    .flatMap { it.expressionBasedExtensions }
+    .filter { it.url == EXTENSION_ENABLE_WHEN_EXPRESSION_URL }
+    .map { it.value as Expression }
+    .toList()
+
+  val regex = Regex(".*linkId='$linkId'.*")
+  return questionnaire.variableExpressions.any { variableExpression ->
+    val strippedExpression1 = variableExpression.expression.replace(" ", "")
+    val isVariableReferenced = regex.containsMatchIn(strippedExpression1)
+    if (!isVariableReferenced) return@any false
+
+    // check if variable is used in other expression based extensions
+    val variableName = variableExpression.name
+    expressionBasedExtensions.any { expression ->
+      val strippedExpression2 = expression.expression.replace(" ", "")
+      strippedExpression2.contains("%$variableName")
+    }
+  }
 }
 
 /**
