@@ -1,6 +1,6 @@
-# In-app reporting
+# In-app Reporting
 
-In App Reporting feature empowers the health worker to see how she is performing against her daily task list, and allows for offline peer-to-peer syncing of the data collected on a daily basis. This greatly simplifies reporting requirements by eliminating the need for cumbersome paper registries and tally sheets.
+The in-app reporting feature empowers the health worker to see how she is performing against her daily task list, and allows for offline peer-to-peer syncing of the data collected on a daily basis. This greatly simplifies reporting requirements by eliminating the need for cumbersome paper registries and tally sheets.
 
 
 ## Measure
@@ -176,9 +176,9 @@ A [elm java app](https://github.com/cqframework/clinical_quality_language/blob/m
 
 The [fhir-resources](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing) repository has a testing module which allows to not only get the complete Library resource to directly save to server but also allows to test the Measure output and make changes on the fly. Check the cucumber tests [Feature File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/resources/measure-report/household-members.feature), the [Test Code File](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/measure/HouseholdMembersMeasureTest.kt#L28) and the [Convertor Util Method](https://github.com/opensrp/fhir-resources/blob/main/fhircore-testing/src/test/kotlin/com/fhircore/resources/testing/CqlUtils.kt#L31)
 
-**FHIR Core Unit Tests**
+**OpenSRP Unit Tests**
 
-The CQL can also be translated to Library using an approach as used by FHIR Core as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
+The CQL can also be translated to Library using an approach as used by OpenSRP as in [CQL Content Tests](https://github.com/opensrp/fhircore/blob/main/android/quest/src/test/java/org/smartregister/fhircore/quest/CqlContentTest.kt#L57). A complete Library resource is output to console as a result.
 
 ## Testing the Measure CQL Library
 
@@ -425,7 +425,7 @@ Details of some notable fields in above MeasureReport (calculated from Measure) 
 5. **stratifier**: Count for given indicator disaggregated by each type. The stratifier misses the values where counts are zero. Hence if stratifier has predefined criteria, each should be a calculated as separate group.
 
 
-## FHIR Core Integration
+## OpenSRP Integration
 
 Once your Measure, and Library is ready add these to sync_config.json to make sure that the Measure and all dependent Library resources are always synced.
 1. Save/Update Measure on server i.e. POST - https://your.fhir.server/fhir/Measure OR PUT - https://your.fhir.server/fhir/Measure/measure-id
@@ -472,6 +472,6 @@ Once your Measure, and Library is ready add these to sync_config.json to make su
   ]
 ```
 
-## Screenshot of MeasureReport on FHIR Core
+## Screenshot of MeasureReport on OpenSRP
 
 <img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478590-93474727-4ef2-4ba7-acfc-8eb6ac9e32d5.png"/> <img width="200" height="400" src="https://user-images.githubusercontent.com/4829880/188478602-e3941d73-4582-43a2-bc24-423eb1253fe0.png"/>
