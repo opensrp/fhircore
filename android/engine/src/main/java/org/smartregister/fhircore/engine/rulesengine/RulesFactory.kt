@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.lang.NumberFormatException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -44,6 +45,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.calculateAgeFromDays
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -459,6 +461,16 @@ constructor(
           }
       }
       return serviceStatus
+    }
+
+    fun extractAgeFromDays(ageInDays: String): String {
+      try {
+        val age:Int = ageInDays.replace("d", "").toInt()
+        return calculateAgeFromDays(age, context)
+      }catch (e:NumberFormatException){
+        Timber.e(e, "Invalid age")
+        return ageInDays;
+      }
     }
   }
 
