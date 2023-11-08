@@ -5,7 +5,7 @@ sidebar_label: App Features
 
 # App Features
 
-As of release [**v0.2.4**](https://github.com/opensrp/fhircore/releases/tag/v0.2.4-opensrp) (July 18th, 2023)
+As of release [**v1.0.1**](https://github.com/opensrp/fhircore/releases/tag/v1.0.1-opensrp-rc1) (September 21st, 2023)
 
 ## Patient and family registration
 
@@ -14,6 +14,10 @@ A common step in community health programs is creating a list of all persons and
 Patients and households are associated to a health worker through a location. A health worker is assigned to a specific area or set of areas, and every person they register is assigned to the same area or set of areas.
 
 In cases where patients visit or health workers cover multiple clinics across area, both the patient and the health worker would be assigned to a higher level location. For example, instead of being assigned to a village, they would be assigned to a facility area or county. That would result in a patient showing up on any of the facility patient lists in that higher level area, and for that patients medical record to be synced to the health worker's device.
+
+### Editing submitted form data
+
+If there is a typo in a patients name or address, load the patients into a form, fix the typo and resubmit. Configuration options give you the flexibility to specify what fields can be edited.
 
 ## Finding patients
 
@@ -123,5 +127,4 @@ Through sync insights OpenSRP makes it possible to understand which data has bee
 ![sync insights](/img/sync-insights.png)
 
 ## Roadmap for 2023–2024
-- Editing submitted form data
 - Draft and in-progress forms
