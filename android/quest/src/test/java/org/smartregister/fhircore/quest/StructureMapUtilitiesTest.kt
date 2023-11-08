@@ -530,55 +530,55 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
   @Test
   fun generateMeaslesCarePlan() = runTest {
-    loadFile("content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/FHIRHelpers.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/FHIRHelpers.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
+      "/content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
       ::installToIgManager,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZConcepts.json",
+      "/content/general/who-eir/measles-immunizations/IMMZConcepts.json",
       ::installToIgManager,
     )
-    loadFile("content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
+    loadFile("//content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
-      ::installToIgManager,
-    )
-    loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json",
+      "/content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
       ::installToIgManager,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZINDMeasles.json",
+      "/content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json",
       ::installToIgManager,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json",
+      "/content/general/who-eir/measles-immunizations/IMMZINDMeasles.json",
       ::installToIgManager,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
+      "/content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json",
       ::installToIgManager,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
+      "/content/general/who-eir/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
       ::installToIgManager,
     )
-    loadFile("content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
-    loadFile("content/general/who-eir/measles-immunizations/WHOConcepts.json", ::installToIgManager)
     loadFile(
-      "content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
+      "/content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
+      ::installToIgManager,
+    )
+    loadFile("/content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/WHOConcepts.json", ::installToIgManager)
+    loadFile(
+      "/content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
       ::installToIgManager,
     )
 
     loadFile(
-      "content/general/who-eir/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json",
+      "/content/general/who-eir/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json",
       ::importToFhirEngine,
     )
     loadFile(
-      "content/general/who-eir/measles-immunizations/birthweightnormal-NoVaxeninfant-f.json",
+      "/content/general/who-eir/measles-immunizations/birthweightnormal-NoVaxeninfant-f.json",
       ::importToFhirEngine,
     )
 
