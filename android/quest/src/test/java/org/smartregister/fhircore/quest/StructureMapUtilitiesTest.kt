@@ -25,6 +25,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
+import junit.framework.TestCase
 import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
@@ -35,6 +36,7 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
@@ -541,7 +543,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "/content/general/who-eir/measles-immunizations/IMMZConcepts.json",
       ::installToIgManager,
     )
-    loadFile("//content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
       ::installToIgManager,
@@ -591,8 +593,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val carePlan =
       fhirOperator.generateCarePlan(
-        planDefinitionId = "IMMZD2DTMeasles",
-        subject = "IMMZ-Patient-NoVaxeninfant-f",
+        planDefinition = CanonicalType("http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles"),
+        subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
       )
 
     println(jsonParser.encodeResourceToString(carePlan))
