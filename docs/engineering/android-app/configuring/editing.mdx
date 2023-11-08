@@ -2,7 +2,54 @@
 
 You can manage edits through 
 
-1. complex structure maps to ensure that any potential downstream affects of an edit (like changing CarePlan or Task status) are accounted for,r
-2. limiting what is editable to only those pieces that do not have downstream affects.
+1. complex structure maps to ensure that any potential downstream effects of an edit (like changing CarePlan or Task status) are accounted for.
+2. limiting what is editable to only those fields(data elements) that do not have downstream affects.
 
-We suggest following approach (2.) to reduce the chance of errors and the resulting inconsistent data.
+We suggest following approach (2.) to reduce the chance of errors and the resulting inconsistent data unless a clear path on how to deal with downstream effects are correctly figured out.
+Below is how this can be achieved via app configs;
+i).  Create a new hidden item in the target questionnaire to hold the `is-edit-mode` value
+`
+ {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "is-edit-profile",
+      "type": "boolean"
+ }
+`
+ii). Pre-populate the new item on questionnaire form load using a static rule holding a boolean value of true, this can be done at the various edit form launching menus or buttons
+sample rule
+`
+    {
+      "name": "isEditProfile",
+      "condition": "true",
+      "actions": [
+        "data.put('isEditProfile', true)"
+      ]
+    }
+`
+sample pre-population
+`
+ {
+    "paramType": "PREPOPULATE",
+    "linkId": "is-edit-profile",
+    "dataType": "BOOLEAN",
+    "key": "isEditProfile",
+    "value": "@{isEditProfile}"
+ }
+`
+iii). Use the pre-set value of the edit mode item to enable the eventful items in the questionnaire such as dob and gender using the `enableWhen` questionnaire item attribute
+`
+"enableWhen": [
+        {
+          "question": "is-edit-profile",
+          "operator": "exists",
+          "answerBoolean": false
+        }
+      ],
+      "enableBehavior": "any",
+`
+iv). Launch the questionnaire normally and prepopulate the previously captured items and edit the form normally, this route allows to you to use the existing questionnaire and structure wihtout the need to recreate any of those
