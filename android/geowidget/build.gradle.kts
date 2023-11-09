@@ -109,7 +109,7 @@ configurations { all { exclude(group = "xpp3") } }
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
 
-  implementation(project(":engine"))
+  implementation(project(":engine")) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   implementation(libs.core.ktx)
   implementation(libs.appcompat)
   implementation(libs.material)
