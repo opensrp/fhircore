@@ -25,7 +25,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
-import junit.framework.TestCase
 import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
@@ -533,7 +532,10 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun generateMeaslesCarePlan() = runTest {
     loadFile("/content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
-    loadFile("/content/general/who-eir/measles-immunizations/FHIRHelpers.json", ::installToIgManager)
+    loadFile(
+      "/content/general/who-eir/measles-immunizations/FHIRHelpers.json",
+      ::installToIgManager
+    )
     loadFile("/content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
@@ -569,7 +571,10 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       ::installToIgManager,
     )
     loadFile("/content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
-    loadFile("/content/general/who-eir/measles-immunizations/WHOConcepts.json", ::installToIgManager)
+    loadFile(
+      "/content/general/who-eir/measles-immunizations/WHOConcepts.json",
+      ::installToIgManager
+    )
     loadFile(
       "/content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
       ::installToIgManager,
@@ -593,7 +598,10 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val carePlan =
       fhirOperator.generateCarePlan(
-        planDefinition = CanonicalType("http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles"),
+        planDefinition =
+          CanonicalType(
+            "http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles"
+          ),
         subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
       )
 

@@ -140,8 +140,8 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9"){
-    exclude(group="org.codelibs",module="xpp3")
+  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
+    exclude(group = "org.codelibs", module = "xpp3")
   }
 
   // Shared dependencies
