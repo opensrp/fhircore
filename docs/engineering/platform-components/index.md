@@ -45,6 +45,6 @@ The [FHIR Access Proxy](https://github.com/google/fhir-access-proxy) is an open 
 
 This allows the user to view data in a health data store and perform common editing and management tasks on this data.
 
-#### FHIR Web
+#### fhir-web
 
-The open source [FHIR Web](https://github.com/opensrp/web) web application allows you to view FHIR resources, create new FHIR resources, and manage user access to FHIR systems through FHIR Practitioner resources associated with an IAM.
+The source available [fhir-web](https://github.com/opensrp/web) web application allows you to view FHIR resources, create new FHIR resources, and manage user access to FHIR systems through FHIR Practitioner resources associated with an IAM.
