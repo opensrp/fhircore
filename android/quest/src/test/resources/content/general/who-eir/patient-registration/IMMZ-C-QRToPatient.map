@@ -11,13 +11,13 @@ group QRestToIMMZC (
   source qr : QResp,
   target bundle: Bundle
 ) {
-  qr -> bundle.id = uuid() "rule_bundle_id";
-  qr -> bundle.type = 'collection' "rule_bundle_type";
+  qr -> bundle.id = uuid() "ruleBundleId";
+  qr -> bundle.type = 'collection' "ruleBundleType";
   qr -> bundle.entry as entry, entry.resource = create('Patient') as patient,
     create("http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZCRegisterClient") as model
       then{
         qr -> model then QRespToIMMZC( qr, model) "QRtoLM";
         qr -> patient then IMMZCToPatient( model, patient ) "LMtoPatient";
-        qr -> patient.active = true "rule_patient_active";
+        qr -> patient.active = true "rulePatientActive";
       } "QRtoPatient";
 }

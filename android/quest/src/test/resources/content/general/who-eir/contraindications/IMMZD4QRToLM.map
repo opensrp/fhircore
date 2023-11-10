@@ -1,0 +1,15 @@
+map "http://smart.who.int/ig/smart-immunizations-measles/StructureMap/IMMZD4QRToLM" = "IMMZD4QRToLM"
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
+uses "http://smart.who.int/ig/smart-immunizations-measles/StructureDefinition/IMMZD4CheckContraindicationsMeasles" alias IMMZD4 as target
+
+group QRespToIMMZD4 ( source qr : QResp, target immz : IMMZD4) {
+
+  qr.subject as patient -> immz.patient = patient "SetPatient";
+  qr.item as item where linkId = 'contraindications' then {
+    item.answer as answer then {
+      answer.value as val  -> immz.contraindications = val  "SetContraindication";
+    } "SetContraindicationAnswer";
+
+  } "processItems";
+}
