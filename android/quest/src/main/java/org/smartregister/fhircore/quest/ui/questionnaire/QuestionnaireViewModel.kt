@@ -659,10 +659,8 @@ constructor(
       )
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
-      defaultRepository.addOrUpdate(resource = group)
-    } else {
-      defaultRepository.addOrUpdate(resource = group)
     }
+    defaultRepository.addOrUpdate(resource = group)
   }
 
   /**
