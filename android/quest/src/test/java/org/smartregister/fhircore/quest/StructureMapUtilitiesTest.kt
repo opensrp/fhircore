@@ -22,9 +22,12 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.io.InputStream
 import javax.inject.Inject
@@ -49,6 +52,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -62,12 +66,17 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
  */
 class StructureMapUtilitiesTest : RobolectricTest() {
 
-  @Inject lateinit var fhirEngine: FhirEngine
   private val context: Context = ApplicationProvider.getApplicationContext<Context>()
+  lateinit var fhirEngine: FhirEngine
   private val knowledgeManager = KnowledgeManager.create(context)
   private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
   private val jsonParser = fhirContext.getCustomJsonParser()
   private val xmlParser = fhirContext.newXmlParser()
+
+  @Before
+  fun setUp() {
+    fhirEngine = FhirEngineProvider.getInstance(context)
+  }
 
   @Test
   fun `perform family extraction`() {
@@ -530,7 +539,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   }
 
   @Test
-  fun generateMeaslesCarePlan() = runTest {
+  fun generateMeaslesCarePlan(): Unit = runBlockingOnWorkerThread {
     loadFile("/content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/FHIRHelpers.json",
@@ -671,4 +680,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     // TODO added only for temp purpose
     return Library()
   }
+
+  internal fun <T> runBlockingOnWorkerThread(block: suspend (CoroutineScope) -> T) =
+    runBlocking(Dispatchers.IO) { block(this) }
 }
