@@ -534,7 +534,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     loadFile("/content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/FHIRHelpers.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile("/content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
     loadFile(
@@ -573,7 +573,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     loadFile("/content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/WHOConcepts.json",
-      ::installToIgManager
+      ::installToIgManager,
     )
     loadFile(
       "/content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
@@ -600,7 +600,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       fhirOperator.generateCarePlan(
         planDefinition =
           CanonicalType(
-            "http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles"
+            "http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles",
           ),
         subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
       )

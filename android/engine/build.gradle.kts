@@ -142,14 +142,15 @@ dependencies {
   implementation(libs.slf4j.nop)
   api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
     exclude(group = "org.codelibs", module = "xpp3")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
   // Shared dependencies
   api(libs.glide)
-  api(libs.knowledge)
+  api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
   api(libs.jjwt)
-  api(libs.fhir.common.utils)
+  api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.lifecycle.livedata.ktx)
   api(libs.lifecycle.viewmodel.ktx)
   api(libs.ui)
@@ -192,6 +193,7 @@ dependencies {
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   api(libs.workflow) {
     isTransitive = true
