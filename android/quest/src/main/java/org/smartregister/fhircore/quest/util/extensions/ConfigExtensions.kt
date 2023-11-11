@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -142,6 +145,13 @@ fun List<ActionConfig>.handleClickEvent(
           MainNavigationScreen.GeoWidget.route,
           bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
+      ApplicationWorkflow.LAUNCH_DIALER -> {
+        val actionParameter = interpolatedParams.first()
+        val patientPhoneNumber = actionParameter.value
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:$patientPhoneNumber")
+        ContextCompat.startActivity(navController.context, intent, null)
+      }
       else -> return
     }
   }
