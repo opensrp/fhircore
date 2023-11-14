@@ -4,92 +4,20 @@ sidebar_label: Backend
 
 # Backend Application Setup
 
-### Android Client
+- Deploy a FHIR Store, e.g HAPI FHIR
 
-- Update `local.properties` file
+- Deploy the [FHIR Information Gateway](https://github.com/google/fhir-gateway) with [OpenSRP plugins](https://hub.docker.com/r/onaio/fhir-gateway-plugin/tags)
 
-    1. Update `FHIR_BASE_URL` value to the `url` of the FHIR Gateway Host
+- [Optional] Deploy the [fhir-web](https://github.com/onaio/fhir-web) admin dashboard.
 
-- Setting strategy 
-
-    1. Update the Application Configuration Sync Strategy to only contain one specific Sync strategy e.g. Location for sync by location. Note, currently the configuration accepts an array but a subsequent update will enforce a single value .[See configuration here](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/application_config.json)
-
-### Server Backend
-
-- Deploy the FHIR Store e.g HAPI
-
-- Deploy the FHIR Gateway
-
-- Deploy OpenSRP 2.0  Web Portal.
-
-### User management
+## User management
 
 User management can be done in two ways currently:
 
-- Manually
-- From fhir-web
+- manually via the APIs or user interfaces for keycloak and the FHIR API, or
+- in fhir-web user interface.
 
-### Manual User Management
-On Keycloak, one needs to:
-
-- Create the users on Keycloak 
-- Assign the roles required for the user e.g. provider, supervisor
-- Create a mapping to the JWT via a protocol mapper
-
-    1. Locate your FHIR Core Oauth client on Keycloak e.g. **my-client**
-    1. Click on the `Client Scopes` tab
-    1. From the list look for an entry `<my-client>`-dedicated and click on it
-    1. Click on the `Add mapper` button
-    1. Select `Configure a new mapper`
-    1. Form the list select `User Attribute`
-    1. Give it a name e.g. FHIR Core App ID
-    1. Enter `fhir_core_app_id` for `User Attribute` and `Token Claim name`. These should match the key in the previous step.
-    1. Save the details
-
-- Set up the `fhir_core_app_id` user attribute
-
-    1. Go to `Users` on Keycloak and select user
-    1. Click on `Attributes` tab
-    1. Enter the key as `fhir_core_app_id` 
-    1. Enter the value as the corresponding user’s app id e.g. `quest`,`cha`
-
-### Assignment via fhir-web
-
-- This requires a web portal pointing to the Keycloak Realm of interest deployed
-- TBD - **to be documented**
-
-##  Set up and Configuration steps 
-
-### Android application
-
-- Update `local.properties` file
-    1. Update `FHIR_BASE_URL` value to the `url` of the FHIR Gateway Host
-
-- Data Filtering - configure sync strategy 
-    1. Update the `application_configuration.json` with the sync strategy for the deployment, e.g. for sync by Location:
-
-    ```
-
-    "syncStrategy": ["Location"]
-
-    ```
-    1. **Note**: Currently the configuration accepts an array but a subsequent update will enforce a single value. See configuration here: [application_config.json](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/application_config.json)
-
-- Composition JSON
-    1. Update the identifier to the value of the application id
-
-    ```
-    "identifier": {
-    "use": "official",
-    "value": "<app id>"
-    }
-
-    ```
-    1. **Note**: `identifier.value` above should correspond to `fhir_core_app_id` mentioned in the user management Keycloak section below.
-
-- Update the `sync_config.json` to remove all the non patient/client data resources. These should be referenced from the Composition resource so they can be exempted from the Data filter. See configuration here: [sync_config.json](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/sync_config.json)
-
-### User management (On Keycloak)
+### Keycloak user management
 
 - Create the user on Keycloak 
 
@@ -116,9 +44,7 @@ On Keycloak, one needs to:
     
     1. For keycloak below v20 `Clients` > `your-client-id` >` Mappers` > `Create`
 
-### User management (In FHIR)
-
-#### Architecture
+### FHIR API user management
 
 - For each Practitioner resource, a corresponding Group resource is created with the `Practitioner.id` referenced in the `Group.member` attribute.
     
@@ -142,9 +68,39 @@ On Keycloak, one needs to:
 - The Location child parent relationship is defined by the `Location.partOf` attribute.
     1. The parent location is referenced on the child's `Location.partOf` attribute.
 
-### How to set up
+### Assignment via fhir-web
 
-- Set up user Locations, Organizations, CareTeams TBD
+- This requires deploying a web portal pointing to the Keycloak Realm of interest
+- **TBD**
+
+## Android application
+
+- Update `local.properties` file
+    1. Update `FHIR_BASE_URL` value to the `url` of the FHIR Gateway Host
+
+- Data Filtering - configure sync strategy 
+    1. Update the `application_configuration.json` with the sync strategy for the deployment, e.g. for sync by Location:
+
+    ```
+
+    "syncStrategy": ["Location"]
+
+    ```
+    1. **Note**: Currently the configuration accepts an array but a subsequent update will enforce a single value. See configuration here: [application_config.json](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/assets/configs/app/application_config.json)
+
+- Composition JSON
+    1. Update the identifier to the value of the application id
+
+    ```
+    "identifier": {
+    "use": "official",
+    "value": "<app id>"
+    }
+
+    ```
+    1. **Note**: `identifier.value` above should correspond to `fhir_core_app_id` mentioned in the user management Keycloak section below.
+
+- Update the `sync_config.json` to remove all the non patient/client data resources. These should be referenced from the Composition resource so they can be exempted from the Data filter. See configuration here: [sync_config.json](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/sync_config.json)
 
 ## FHIR API and data store
 
