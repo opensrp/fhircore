@@ -1,0 +1,32 @@
+---
+sidebar_position: 4
+sidebar_label: FHIR Info Gateway
+---
+
+# FHIR Info Gateway Setup  & Configuration
+
+## How it works
+
+The Gateway is a proxy that sits between the clients and the FHIR store(backend). The idea is to have authorization handled by the gateway rather than via the HAPI - Keycloak integration. Once the gateway is deployed, the HAPI FHIR backend is deployed with the integrated Keycloak configuration disabled. Any requests made to the backend by the client would be made to the gateway which then proxies the request to the HAPI backend and only allows access to the API endpoints if the token provided by the client has the relevant authorization. 
+
+    **Note**: In a production environment the FHIR Store e.g. HAPI FHIR backend would be inaccessible from the public but only accessible from the IP of the gateway or via a VPN.
+
+The OpenSRP Gateway is forked from the Google FHIR Gateway and new Plugins written for it. The Plugins functionality added include: Permission Checker, Data Access, Data Requesting
+
+    - **Permissions Checker** - Authorization per FHIR Endpoint per HTTP Verb
+
+    - **Data Access Checker** - Data filtering based on user assignment (Sync strategy enhancements) i.e. Support for sync by Team/Organization, Location, Practitioner, Careteam 
+    
+    - **Data Requesting** - Data fetching mechanism for FHIR Resources defining patient data vs OpenSRP 2.0 application sync config resources
+
+## How filtering is done from server
+
+The OpenSRP 2.0  client application has logic that tags all the resources created with meta tags that correspond to all the possible sync strategies i.e. Team/Organization, Location, Practitioner, CareTeam. This way, if we ever need to change a sync strategy for a deployment or support different for various roles we’d just need to change their sync strategy and the relevant data would be downloaded since it is already tagged.
+
+## How to set up the FHIR Gateway host
+
+The Gateway setup and configuration is documented here: 
+- [FHIR Gateway Setup and configuration](https://github.com/opensrp/fhir-gateway) 
+
+- [FHIR Gateway Docker image](https://hub.docker.com/r/opensrp/fhir-gateway/tags)  
+

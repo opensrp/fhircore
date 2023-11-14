@@ -1,0 +1,223 @@
+# Application Setup
+
+## Android Client
+
+- Update `local.properties` file
+
+    1. Update `FHIR_BASE_URL` value to the `url` of the FHIR Gateway Host
+
+- Setting strategy 
+
+    1. Update the Application Configuration Sync Strategy to only contain one specific Sync strategy e.g. Location for sync by location. Note, currently the configuration accepts an array but a subsequent update will enforce a single value .[See configuration here](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/application_config.json)
+
+### Server Backend
+
+- Deploy the FHIR Store e.g HAPI
+
+- Deploy the FHIR Gateway
+
+- Deploy OpenSRP 2.0  Web Portal.
+
+### User management
+
+User management can be done in two ways currently:
+
+- Manually
+
+- From OpenSRP 2.0  Web
+
+- Automatically via tooling **(Unimplemented)**
+
+### Manual User Management
+On Keycloak, one needs to:
+
+- Create the users on Keycloak 
+- Assign the roles required for the user e.g. provider, supervisor
+- Create a mapping to the JWT via a protocol mapper
+
+    1. Locate your FHIR Core Oauth client on Keycloak e.g. **my-client**
+    1. Click on the `Client Scopes` tab
+    1. From the list look for an entry `<my-client>`-dedicated and click on it
+    1. Click on the `Add mapper` button
+    1. Select `Configure a new mapper`
+    1. Form the list select `User Attribute`
+    1. Give it a name e.g. FHIR Core App ID
+    1. Enter `fhir_core_app_id` for `User Attribute` and `Token Claim name`. These should match the key in the previous step.
+    1. Save the details
+
+- Set up the `fhir_core_app_id` user attribute
+
+    1. Go to `Users` on Keycloak and select user
+    1. Click on `Attributes` tab
+    1. Enter the key as `fhir_core_app_id` 
+    1. Enter the value as the corresponding user’s app id e.g. `quest`,`cha`
+
+### Assignment from FHIR Web portal
+- This requires a web portal pointing to the Keycloak Realm of interest deployed
+
+- TBD - **to be documented**
+
+### FHIR Core Tooling (in Roadmap)
+- This is **unscoped** and **unimplemented** for now but is part of the OpenSRP roadmap
+
+- Ideally it would work in the same way to set up a FHIR Core deployment as documented for OpenSRP v1 here :[OpenSRP Data Import](https://github.com/opensrp/opensrp-data-import)
+
+
+##  Set up and Configuration steps 
+
+### Android application
+
+- Update `local.properties` file
+    1. Update `FHIR_BASE_URL` value to the `url` of the FHIR Gateway Host
+
+- Data Filtering - configure sync strategy 
+    1. Update the `application_configuration.json` with the sync strategy for the deployment, e.g. for sync by Location:
+
+    ```
+
+    "syncStrategy": ["Location"]
+
+    ```
+    1. **Note**: Currently the configuration accepts an array but a subsequent update will enforce a single value. See configuration here: [application_config.json](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/application_config.json)
+
+- Composition JSON
+    1. Update the identifier to the value of the application id
+
+    ```
+    "identifier": {
+    "use": "official",
+    "value": "<app id>"
+    }
+
+    ```
+    1. **Note**: `identifier.value` above should correspond to `fhir_core_app_id` mentioned in the user management Keycloak section below.
+
+- Update the `sync_config.json` to remove all the non patient/client data resources. These should be referenced from the Composition resource so they can be exempted from the Data filter. See configuration here: [sync_config.json](https://github.com/opensrp/fhircore/blob/b7c24616d4224bd8d16c53b0c2a4f14a1075ce7c/android/quest/src/main/assets/configs/app/sync_config.json)
+
+### User management (On Keycloak)
+
+- Create the user on Keycloak 
+
+- Create the required groups e.g. create `PROVIDER`.Other groups are Supervisor
+
+- Create roles for all the resources your application uses e.g. for permissions on the Patient resource create the roles `GET_PATIENT`, `PUT_PATIENT`, `POST_PATIENT`.  See all the required Provider Roles in the section **PROVIDER group roles on Keycloak**
+
+    1. The KeyCloak definition is as follows:
+        1. `HTTP` methods educate the permissions a user can have on any endpoint. We also have an additional Manage role which is a composite of the 4 HTTP methods-related roles
+
+        1. The Permissions checker plugin currently handles the following HTTP methods. `POST`, `GET`, `PUT` & `DELETE`
+
+        1. The permissions use the following format `HTTP_METHOD_RESOURCE_NAME`. The `RESOURCE_NAME` being the FHIR resource name e.g Patient.
+
+        1. **Note**: Keycloak Roles are case sensitive.
+
+- Assign the roles to the corresponding group e.g. for the above assign to `PROVIDER`
+
+- Assign the created Group e.g. Provider to the user 
+
+- Add a new user attribute with the key `fhir_core_app_id` and a value corresponding to the user’s assigned android client application id on the Composition resource `(composition_config.json)`.
+
+- Create a protocol mapper with Mapper Type `User Attribute` at the client level, area path (Keycloak v20+) `Clients` > `Client Details` > `Dedicated Scopes` > `Add mapper`. The **User attribute** and **Token claim name** field values should match the attribute  key `fhir_core_app_id` created in the previous step.
+    
+    1. For keycloak below v20 `Clients` > `your-client-id` >` Mappers` > `Create`
+
+### User management (On Backend)
+
+#### Architecture
+
+- For each Practitioner resource, a corresponding Group resource is created with the `Practitioner.id` referenced in the `Group.member` attribute.
+    
+    1. This Group resource is used to link the Practitioner to a CarePlan resource in cases where the Practitioner is the CarePlan subject.
+
+- When creating a Practitioner resource, a PractitionerRole resource is also created.
+    
+    1. This resource is used to link the Practitioner to an Organization resource in cases where the Practitioner is the Organization (Team) member.
+    1. The PractitionerRole resource also highlights the actual role of the Practitioner in the Organization (Team) using the Practitioner or Supervisor role.
+
+- The Practitioner is then assigned to the CareTeam by adding the Practitioner reference to the `CareTeam.participant.member` attribute.
+
+    1. The CareTeam is assigned to the Organization (Team) by adding an Organization (Team) reference to the `CareTeam.managingOrganization` attribute.
+    1. The Organization (Team) reference is also added to the `CareTeam.participant.member` attribute of the CareTeam resource for easy search.
+
+- The Organization (Team) is assigned to a location via the OrganizationAffiliation resource.
+
+    1. The Organization is referenced on the `OrganizationAffiliation.organization` attribute.
+    1. The location is referenced on the `OrganizationAffiliation.location` attribute.
+
+- The Location child <> parent relationship is defined by the `Location.partOf` attribute.
+    1. The parent location is referenced on the child's `Location.partOf` attribute.
+
+### How to set up
+
+- Set up user Locations, Teams/Organizations, CareTeams TBD
+
+## Server Backend
+
+- Deploy the FHIR Store e.g HAPI
+
+    1. The steps here depend on the FHIR Store of choice e.g to deploy the HAPI FHIR Server using JPA you can follow the steps in the link below [HAPI FHIR IPA Server](https://github.com/hapifhir/hapi-fhir-jpaserver-starter)
+
+- Post the binary resources referenced in the `composition_config.json`
+
+    1. Post all the non-patient data resources used by the application. Examples of these resources are Questionnaires, StructureMaps, PlanDefinitions, Measures, LIbraries and any Lists referencing other resources. 
+
+**Note**:  When POSTing the Binary configuration files in the `composition_config.json` remember to first encode the payload to Base64 before submitting.
+**Note**:  As mentioned in the `How it works` section, the server should have no authentication as this will be handled by the FHIR Gateway.
+
+- Deploy the FHIR Gateway
+
+    1. Link to the [Docker image](https://hub.docker.com/r/onaio/fhir-gateway-plugin) 
+    1. The main documentation for deploying can be found in the [Github READ ME](https://github.com/onaio/fhir-gateway-plugin/blob/main/README.md)For configuration parameters, check out Read Me file for setting environment variables.
+    1. For configuration parameters, check out Read Me file for setting environment variables.
+    1. OpenSRP nuances: Provide/export  the System variable `ALLOWED_QUERIES_FILE` with value `"resources/hapi_page_url_allowed_queries.json"`[HAPI Page URL Allowed Queries](https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_page_url_allowed_queries.json)
+    1. For each deployment the configuration entries for resources here should match the specific  `Composition` resource ID and `Binary` resources IDs
+
+- Provide System variable `SYNC_FILTER_IGNORE_RESOURCES_FILE` with value `"resources/hapi_sync_filter_ignored_queries.json"`[HAPI Sync Filter](https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_sync_filter_ignored_queries.json)
+
+    1. For the `List` entry add the specific ID of the List resource here. This enables us to use the List Resources outside of our configs use case
+
+- In the HAPI FHIR application.yaml disable validations by setting to `false*` [HAPI FHIR IPA Server](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/a06c0b9ce47a05f0719edeaba2a325ff5bef8cce/src/main/resources/application.yaml#L182)
+
+- Deploy FHIR Web Portal.
+
+    1. The OpenSRP 2.0 web portal deployment docs can be found [here](https://github.com/opensrp/web/blob/master/docs/fhir-web-docker-deployment.md)
+    1. This platform doesn’t yet target the Gateway server. We are working to build plugins for it to use.  
+
+
+## Gotchas
+
+- Keycloak redirect - You need to disable [keycloak authentication](https://github.com/opensrp/hapi-fhir-keycloak) in HAPI FHIR 
+
+- Binary resource base64 encoding - You need to make sure that you properly set the Binary resource for application configuration 
+
+- Keycloak/Role configuration -  Roles for all the different resources - including `PUT`, `POST`, `GET` for Binary should exist, Client Mapper for the `fhir_core_app_id` and corresponding user attribute should not be missing
+
+- The `TOKEN_ISSUER` specified in your backend deployment e.g [here](https://github.com/onaio/infrastructure/blob/98da52e64da4297a104318396b8b9536ea7962b7/helm/releases/fhir-shared.dev.k8s.onalabs.org/opensrp/fhir-gateway/values.yaml#LL38C77-L38C77) should be the same Realm used by the application to fetch an access token for authentication and authorization.
+
+- Remove Resource entries from the `sync_confguration.json` file that should not be part of the normal data sync but rather part of the Composition file e.g. Questionnaire
+
+- When testing the set up **DO NOT** use debug app ids e.g. `app/debug`. The Gateway’s implementation is tightly coupled with the server hosted application resources
+
+
+## Resources
+
+- [FHIR Gateway](https://github.com/opensrp/fhir-gateway)
+- [Permission Checker Spec](https://github.com/opensrp/fhircore/discussions/1603)
+- [Data Access Filter Spec](https://github.com/opensrp/fhircore/discussions/1604)
+- [Data Requesting Spec](https://github.com/opensrp/fhircore/discussions/1612)
+- [FHIR Gateway Tags](https://hub.docker.com/r/opensrp/fhir-gateway/tags)
+- [FHIR Web Docker Deployment](https://github.com/opensrp/web/blob/master/docs/fhir-web-docker-deployment.md)
+- [OpenSRP Web Issue 1094](https://github.com/opensrp/web/issues/1094)
+- [OpenSRP Web Issue 1095](https://github.com/opensrp/web/issues/1095)
+- [OpenSRP Web Issue 553](https://github.com/opensrp/web/issues/553)
+- [OpenSRP Web Issue 842](https://github.com/opensrp/web/issues/842)
+- [OpenSRP Web Issue 552](https://github.com/opensrp/web/issues/552)
+- [OpenSRP Web Issue 665](https://github.com/opensrp/web/issues/665)
+- [OpenSRP Web Issue 1080](https://github.com/opensrp/web/issues/1080)
+- [OpenSRP Web Issue 663](https://github.com/opensrp/web/issues/663)
+- [OpenSRP Web Issue 1079](https://github.com/opensrp/web/issues/1079)
+- [OpenSRP V2 RBAC ROLES](https://docs.google.com/document/d/1MEw41Rtfdmos9gqqDamQ31_Y58E8Thgo_8i9UXD8ET4)
+- [How to Migrate to the Gateway server for sync](https://docs.google.com/document/d/1OeznAQsZe4p2NDiHhpfNKWB2y-qVhgEva5k_GeHTiKc/edit?usp=sharing)
+
+
+
