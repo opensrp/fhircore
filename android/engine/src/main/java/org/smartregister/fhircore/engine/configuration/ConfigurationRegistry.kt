@@ -160,7 +160,7 @@ constructor(
     val resourceBundle =
       configsJsonMap[bundleName.camelCase()] // Convention for config map keys is camelCase
     if (resourceBundle != null) {
-      return PropertyResourceBundle(resourceBundle.byteInputStream())
+      return PropertyResourceBundle(resourceBundle.reader())
     }
     if (bundleName.contains("_")) {
       return retrieveResourceBundleConfiguration(

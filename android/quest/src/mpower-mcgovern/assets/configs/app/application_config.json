@@ -7,7 +7,7 @@
   "reportRepeatTime": "23:22",
   "remoteSyncPageSize": 100,
   "languages": [
-    "en"
+    "en", "bn"
   ],
   "useDarkTheme": false,
   "syncInterval": 30,

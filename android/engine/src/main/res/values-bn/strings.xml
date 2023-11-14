@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync">সিঙ্ক</string>
+    <string name="language">ভাষা</string>
+    <string name="please_wait">অনুগ্রহপূর্বক অপেক্ষা করুন…</string>
+    <string name="clear_database">ডেটা রিসেট করুন</string>
+    <string name="transfer_data">ডেটা স্থানান্তর করুন</string>
+    <string name="clear_database_title">ডাটাবেস রিসেট করুন!</string>
+    <string name="clear_database_message">ডাটাবেস রিসেট করলে আপনার ডিভাইস থেকে সমস্ত রেকর্ড মুছে যাবে। যা আর পূর্বাবস্থায় ফেরানো যাবে না।</string>
+    <string name="resetting_app">অ্যাপ্লিকেশন রিসেট করা হচ্ছে…</string>
+    <string name="logout">লগ আউট</string>
+    <string name="register">নিবন্ধন</string>
+    <string name="visits">ভিজিট</string>
+    <string name="reports">রিপোর্ট</string>
+    <string name="profile">প্রোফাইল</string>
+    <string name="settings">সেটিংস</string>
+    <string name="insights">ইনসাইট</string>
+    <string name="dismiss">খারিজ করুন</string>
+    <string name="unsynced_resources">আনসিঙ্ক করা ডেটা</string>
+    <string name="all_data_synced">সমস্ত ডেটা সিঙ্ক হয়েছে</string>
+    <string name="str_page_info">পৃষ্ঠা %1$d / %2$d</string>
+</resources>

@@ -309,9 +309,9 @@
     "contentScrollable": "true",
     "contentPadding": 0,
     "tabs": [
-      "সদস্য",
-      "বাকি",
-      "পূর্বের তথ্য"
+      "{{hh.member}}",
+      "{{hh.due}}",
+      "{{hh.history}}"
     ],
     "tabIndicatorColor": "#FFFF00",
     "tabContents": [
@@ -622,12 +622,12 @@
                         },
                         {
                           "viewType": "COMPOUND_TEXT",
-                          "primaryText": "লিঙ্গঃ @{patientGender}, বয়সঃ @{patientAge}",
+                          "primaryText": "{{patient.gender}} @{patientGender}, {{patient.age}}  @{patientAge}",
                           "primaryTextColor": "#939596"
                         },
                         {
                           "viewType": "COMPOUND_TEXT",
-                          "primaryText": "সম্পর্কঃ @{patientRelationship}",
+                          "primaryText": "{{patient.relation}} @{patientRelationship}",
                           "primaryTextColor": "#939596"
                         }
                       ],
@@ -1359,7 +1359,7 @@
   },
   "overFlowMenuItems": [
     {
-      "title": "Family details",
+      "title": "{{family.details}}",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [
@@ -1387,7 +1387,7 @@
       ]
     },
     {
-      "title": "Change family head",
+      "title": "{{change.family.head}}",
       "titleColor": "#000000",
       "visible": "true",
       "actions": [

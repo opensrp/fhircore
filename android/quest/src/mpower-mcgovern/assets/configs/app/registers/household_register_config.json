@@ -265,7 +265,7 @@
       "id": "ActionButton",
       "visible": true,
       "animate": false,
-      "display": "Add Household",
+      "display": "{{add.family}}",
       "menuIconConfig": {
         "type": "local",
         "reference": "ic_households"

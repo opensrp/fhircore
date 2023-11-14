@@ -74,6 +74,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import java.util.Locale
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -142,7 +143,7 @@ fun AppDrawer(
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,
-            endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
+            endText = String.format(Locale.getDefault(), "%d", appUiState.registerCountMap[navigationMenu.id] ?: 0),
             showEndText = navigationMenu.showCount,
           ) {
             openDrawer(false)
@@ -171,7 +172,7 @@ fun AppDrawer(
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,
-            endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
+            endText = String.format(Locale.getDefault(), "%d", appUiState.registerCountMap[navigationMenu.id] ?: 0),
             showEndText = navigationMenu.showCount,
           ) {
             openDrawer(false)

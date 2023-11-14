@@ -165,6 +165,7 @@ constructor(
     viewModelScope.launch {
       navigationConfiguration.run {
         clientRegisters.countRegisterData()
+        staticMenu.countRegisterData()
         bottomSheetRegisters?.registers?.countRegisterData()
       }
     }

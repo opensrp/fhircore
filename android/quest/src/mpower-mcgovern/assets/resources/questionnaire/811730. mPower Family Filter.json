@@ -36,7 +36,24 @@
     {
       "linkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
       "type": "choice",
-      "text": "গ্রামের নাম",
+      "text": "Village name",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "bn"
+              },
+              {
+                "url": "content",
+                "valueString": "গ্রামের নাম"
+              }
+            ]
+          }
+        ]
+      },
       "required": false,
       "answerOption": [
         {
@@ -217,7 +234,24 @@
     {
       "linkId": "b742852c-8774-47d1-81f2-9bbe0f2fd511",
       "type": "choice",
-      "text": "ক্লাস্টার",
+      "text": "Cluster",
+      "_text": {
+        "extension": [
+          {
+            "url": "http://hl7.org/fhir/StructureDefinition/translation",
+            "extension": [
+              {
+                "url": "lang",
+                "valueCode": "bn"
+              },
+              {
+                "url": "content",
+                "valueString": "ক্লাস্টার"
+              }
+            ]
+          }
+        ]
+      },
       "required": false,
       "extension": [
         {

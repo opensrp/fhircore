@@ -1028,9 +1028,9 @@
     "contentScrollable": "true",
     "contentPadding": 0,
     "tabs": [
-      "বাকি",
-      "অন্যান্য সেবা",
-      "পূর্বের তথ্য"
+      "{{patient.due}}",
+      "{{patient.other}}",
+      "{{patient.history}}"
     ],
     "tabIndicatorColor": "#FFFF00",
     "tabContents": [
