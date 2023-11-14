@@ -35,6 +35,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -64,7 +65,7 @@ class MeasureReportViewModel
 @Inject
 constructor(
   val fhirEngine: FhirEngine,
-  val fhirOperator: FhirOperator,
+  val fhirOperator: Provider<FhirOperator>,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DefaultDispatcherProvider,
   val measureReportRepository: MeasureReportRepository,
@@ -210,7 +211,7 @@ constructor(
             withContext(dispatcherProvider.io()) {
               fhirEngine.loadCqlLibraryBundle(
                 context = context,
-                fhirOperator = fhirOperator,
+                fhirOperator = fhirOperator.get(),
                 sharedPreferencesHelper = sharedPreferencesHelper,
                 resourcesBundlePath = measureResourceBundleUrl
               )
@@ -218,15 +219,17 @@ constructor(
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
               val measureReport =
                 withContext(dispatcherProvider.io()) {
-                  fhirOperator.evaluateMeasure(
-                    measureUrl = measureUrl,
-                    start = startDateFormatted,
-                    end = endDateFormatted,
-                    reportType = SUBJECT,
-                    subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
-                    practitioner = loggedInPractitioner?.id,
-                    lastReceivedOn = null // Non-null value not supported yet
-                  )
+                  fhirOperator
+                    .get()
+                    .evaluateMeasure(
+                      measureUrl = measureUrl,
+                      start = startDateFormatted,
+                      end = endDateFormatted,
+                      reportType = SUBJECT,
+                      subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
+                      practitioner = loggedInPractitioner?.id,
+                      lastReceivedOn = null // Non-null value not supported yet
+                    )
                 }
 
               if (measureReport.type == MeasureReport.MeasureReportType.INDIVIDUAL) {
@@ -262,15 +265,17 @@ constructor(
   ) {
     val measureReport =
       withContext(dispatcherProvider.io()) {
-        fhirOperator.evaluateMeasure(
-          measureUrl = measureUrl,
-          start = startDateFormatted,
-          end = endDateFormatted,
-          reportType = POPULATION,
-          subject = null,
-          practitioner = loggedInPractitioner?.id,
-          lastReceivedOn = null // Non-null value not supported yet
-        )
+        fhirOperator
+          .get()
+          .evaluateMeasure(
+            measureUrl = measureUrl,
+            start = startDateFormatted,
+            end = endDateFormatted,
+            reportType = POPULATION,
+            subject = null,
+            practitioner = loggedInPractitioner?.id,
+            lastReceivedOn = null // Non-null value not supported yet
+          )
       }
 
     measureReportPopulationResults.value = formatPopulationMeasureReport(measureReport)

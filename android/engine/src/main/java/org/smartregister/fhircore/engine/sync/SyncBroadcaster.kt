@@ -17,15 +17,25 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
+import androidx.lifecycle.asFlow
+import androidx.work.WorkManager
+import androidx.work.hasKeyWithValueOfType
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
@@ -57,6 +67,14 @@ constructor(
   val tokenAuthenticator: TokenAuthenticator,
   @ApplicationContext val appContext: Context
 ) {
+
+  private inline fun <reified W : FhirSyncWorker> getWorkerInfo(): Flow<SyncJobStatus> {
+    val oneTimeWorkName = "${W::class.java.name}-oneTimeSync"
+    val periodicWorkName = "${W::class.java.name}-periodicSync"
+
+    return getWorkerInfo(oneTimeWorkName)
+  }
+
   fun runSync(networkState: (Context) -> Boolean = { NetworkState(it).invoke() }) {
     Timber.i("Running one-time sync...")
     CoroutineScope(dispatcherProvider.io()).launch {
@@ -78,7 +96,9 @@ constructor(
         sharedSyncStatus.emit(SyncJobStatus.Failed(listOf(authFailResourceSyncException)))
         return@launch
       }
-      Sync.oneTimeSync<AppSyncWorker>(appContext).collect {
+
+      Sync.oneTimeSync<AppSyncWorker>(appContext)
+      getWorkerInfo<AppSyncWorker>().collect {
         sharedSyncStatus.emit(it)
         this@SyncBroadcaster.traceSync(it)
       }
@@ -110,6 +130,28 @@ constructor(
       }
     }
   }
+
+  /**
+   * Workaround to ensure terminal SyncJobStatus, i.e SyncJobStatus.Failed and
+   * SyncJobStatus.Finished, get emitted
+   *
+   * Gets the worker info for the [FhirSyncWorker], including outputData
+   */
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private fun getWorkerInfo(workerName: String): Flow<SyncJobStatus> =
+    WorkManager.getInstance(appContext)
+      .getWorkInfosForUniqueWorkLiveData(workerName)
+      .asFlow()
+      .flatMapConcat { it.asFlow() }
+      .flatMapConcat { workInfo ->
+        flowOf(workInfo.progress, workInfo.outputData)
+          .filter { it.keyValueMap.isNotEmpty() && it.hasKeyWithValueOfType<String>("StateType") }
+          .mapNotNull {
+            val state = it.getString("StateType")!!
+            val stateData = it.getString("State")
+            Sync.gson.fromJson(stateData, Class.forName(state)) as SyncJobStatus
+          }
+      }
 
   companion object {
     const val SYNC_TRACE = "runSync"
