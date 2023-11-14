@@ -101,10 +101,6 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
 
-    debug {
-      enableUnitTestCoverage = true
-      enableAndroidTestCoverage = true
-    }
   }
 
   packaging {
