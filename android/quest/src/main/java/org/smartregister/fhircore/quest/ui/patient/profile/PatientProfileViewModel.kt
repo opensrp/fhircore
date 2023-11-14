@@ -138,6 +138,9 @@ constructor(
       HealthStatus.EXPOSED_INFANT -> OverflowMenuHost.EXPOSED_INFANT_PROFILE
       HealthStatus.CHILD_CONTACT -> OverflowMenuHost.CHILD_CONTACT_PROFILE
       HealthStatus.SEXUAL_CONTACT -> OverflowMenuHost.SEXUAL_CONTACT_PROFILE
+      HealthStatus.SIBLING_CONTACT -> OverflowMenuHost.SIBLING_CONTACT_PROFILE
+      HealthStatus.BIOLOGICAL_PARENT_CONTACT -> OverflowMenuHost.BIOLOGICAL_PARENT_CONTACT_PROFILE
+      HealthStatus.SOCIAL_NETWORK_CONTACT -> OverflowMenuHost.SOCIAL_NETWORK_CONTACT_PROFILE
       HealthStatus.COMMUNITY_POSITIVE -> OverflowMenuHost.COMMUNITY_POSITIVE_PROFILE
       else -> OverflowMenuHost.PATIENT_PROFILE
     }

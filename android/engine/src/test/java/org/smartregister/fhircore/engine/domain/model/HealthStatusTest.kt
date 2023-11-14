@@ -29,5 +29,8 @@ class HealthStatusTest {
     Assert.assertNotNull(HealthStatus.valueOf("COMMUNITY_POSITIVE"))
     Assert.assertNotNull(HealthStatus.valueOf("CHILD_CONTACT"))
     Assert.assertNotNull(HealthStatus.valueOf("SEXUAL_CONTACT"))
+    Assert.assertNotNull(HealthStatus.valueOf("SIBLING_CONTACT"))
+    Assert.assertNotNull(HealthStatus.valueOf("SOCIAL_NETWORK_CONTACT"))
+    Assert.assertNotNull(HealthStatus.valueOf("BIOLOGICAL_PARENT_CONTACT"))
   }
 }
