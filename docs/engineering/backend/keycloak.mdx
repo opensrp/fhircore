@@ -6,30 +6,20 @@ sidebar_label: Keycloak
 
 ## Keycloak user management
 
-- Create the user on Keycloak
+1. Create the user on Keycloak
+1. Create the required groups, e.g. create the `PROVIDER` and `SUPERVISOR` groups
+1. Create roles for all the resources your application uses, e.g. for permissions on the `Patient` resource create the roles `GET_PATIENT`, `PUT_PATIENT`, `POST_PATIENT`. The KeyCloak definition is as follows:
+    1. `HTTP` methods define the permissions a user can have on any endpoint. We also use an additional `Manage` role which is a composite of the 4 `HTTP` method roles
+    1. The Permissions checker plugin currently handles the `POST`, `GET`, `PUT`, `DELETE` HTTP methods
+    1. The permissions use the following format: `[HTTP_METHOD]_[RESOURCE_NAME]`. Where `RESOURCE_NAME` is the FHIR resource name, e.g `Patient`.
 
-- Create the required groups e.g. create `PROVIDER` and `SUPERVISOR` groups
+> **Note:** Keycloak Roles are case sensitive.
 
-- Create roles for all the resources your application uses e.g. for permissions on the Patient resource create the roles `GET_PATIENT`, `PUT_PATIENT`, `POST_PATIENT`.  See all the required Provider Roles in the section **PROVIDER group roles on Keycloak**
-
-    1. The KeyCloak definition is as follows:
-        1. `HTTP` methods educate the permissions a user can have on any endpoint. We also have an additional Manage role which is a composite of the 4 HTTP methods-related roles
-
-        1. The Permissions checker plugin currently handles the following HTTP methods. `POST`, `GET`, `PUT` & `DELETE`
-
-        1. The permissions use the following format `HTTP_METHOD_RESOURCE_NAME`. The `RESOURCE_NAME` being the FHIR resource name e.g Patient.
-
-        1. **Note**: Keycloak Roles are case sensitive.
-
-- Assign the roles to the corresponding group e.g. for the above assign to `PROVIDER`
-
-- Assign the created Group e.g. Provider to the user
-
-- Add a new user attribute with the key `fhir_core_app_id` and a value corresponding to the user’s assigned android client application id on the Composition resource `(composition_config.json)`.
-
-- Create a protocol mapper with Mapper Type `User Attribute` at the client level, area path (Keycloak v20+) `Clients` > `Client Details` > `Dedicated Scopes` > `Add mapper`. The **User attribute** and **Token claim name** field values should match the attribute  key `fhir_core_app_id` created in the previous step.
-
-    1. For keycloak below v20 `Clients` > `your-client-id` >` Mappers` > `Create`
+4. Assign the roles to the corresponding group, e.g. for the above assign to `PROVIDER`
+1. Assign the created Group, e.g. Provider to the user
+1. Add a new user attribute with the key `fhir_core_app_id` and a value corresponding to the user’s assigned android client application id on the Composition resource (`composition_config.json`).
+1. Create a protocol mapper with Mapper Type `User Attribute` at the client level, area path (Keycloak v20+) `Clients` > `Client Details` > `Dedicated Scopes` > `Add mapper`. The **User attribute** and **Token claim name** field values should match the attribute key `fhir_core_app_id` created in the previous step.
+    - For keycloak below v20, `Clients` > `your-client-id` >` Mappers` > `Create`
 
 ### Keycloak auth token configuration
 
@@ -45,25 +35,25 @@ When setting up identity and access management via Keycloak, the access and refr
 
 ## Configuring Keycloak for fhir-web
 
-- Navigate to the Keycloak Admin UI, e.g `http://keycloak:8080`
-- Create realm with name `fhir` or anything else
-- In the realm previously created, create new Client Scope "fhir_core_app_id", set it as Default, and add mapper user attribute `fhir_core_app_id`
-- Create client for OpenSRP v2.0 client-side application, e.g. `opensrp-v2-app-client`
-  - In "Capability config", turn on "Client authentication".
-    - When it is ON, the OIDC type is set to confidential access type. When it is OFF, it is set to public access type)
-  - Set "Valid redirect URIs" to `*` or other as needed
-  - Copy & paste the client secret from "Credentials" tab
-- Create client for `fhir-web`
-  - In "Capability config", turn on "Client authentication".
-  - Set "Valid redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
-  - Set "Valid post logout redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
-  - Set "Web origins" to the domain name of your `fhir-web` installation, e.g. `https://fhir-web.example.org` or other as needed
-  - Copy the client secret from the "Credentials" tab, paste it wherever needed
-- Create realm roles based on [OpenSRP V2 RBAC ROLES](https://docs.google.com/document/d/1MEw41Rtfdmos9gqqDamQ31_Y58E8Thgo_8i9UXD8ET4/edit)
-  - **TODO:** Add script + payload to load all these to the Keycloak instance
-- Create the groups "Super Admin" and "Provider"
-  - Add roles in the "Role Mapping"
-  - Add attribute `fhir_core_app_id` in the group, or in each user
+1. Navigate to the Keycloak Admin UI, e.g `http://keycloak:8080`
+1. Create realm with name `fhir` or anything else
+1. In the realm previously created, create new Client Scope "fhir_core_app_id", set it as Default, and add mapper user attribute `fhir_core_app_id`
+1. Create client for OpenSRP v2.0 client-side application, e.g. `opensrp-v2-app-client`
+    - In "Capability config", turn on "Client authentication".
+        - When it is ON, the OIDC type is set to confidential access type. When it is OFF, it is set to public access type)
+    - Set "Valid redirect URIs" to `*` or other as needed
+    - Copy & paste the client secret from "Credentials" tab
+1. Create client for `fhir-web`
+    - In "Capability config", turn on "Client authentication".
+    - Set "Valid redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
+    - Set "Valid post logout redirect URIs" to the domain name of your `fhir-web` installation + wildcard as suffix, e.g. `https://fhir-web.example.org/*` or other as needed
+    - Set "Web origins" to the domain name of your `fhir-web` installation, e.g. `https://fhir-web.example.org` or other as needed
+    - Copy the client secret from the "Credentials" tab, paste it wherever needed
+1. Create realm roles based on [OpenSRP V2 RBAC ROLES](https://docs.google.com/document/d/1MEw41Rtfdmos9gqqDamQ31_Y58E8Thgo_8i9UXD8ET4/edit)
+    - **TODO:** Add script + payload to load all these to the Keycloak instance
+1. Create the groups "Super Admin" and "Provider"
+    - Add roles in the "Role Mapping"
+    - Add attribute `fhir_core_app_id` in the group, or in each user
 
 ### Notes
 
