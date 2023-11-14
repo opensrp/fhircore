@@ -538,35 +538,32 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
   @Test
   fun generateMeaslesCarePlan(): Unit = runBlockingOnWorkerThread {
-    loadFile("/content/general/who-eir/measles-immunizations/FHIRCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/Library-FHIRCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/Library-FHIRHelpers.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/Library-IMMZCommon.json", ::installToIgManager)
     loadFile(
-      "/content/general/who-eir/measles-immunizations/FHIRHelpers.json",
-      ::installToIgManager,
-    )
-    loadFile("/content/general/who-eir/measles-immunizations/IMMZCommon.json", ::installToIgManager)
-    loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZCommonIzDataElements.json",
+      "/content/general/who-eir/measles-immunizations/Library-IMMZCommonIzDataElements.json",
       ::installToIgManager,
     )
     loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZConcepts.json",
+      "/content/general/who-eir/measles-immunizations/Library-IMMZConcepts.json",
       ::installToIgManager,
     )
-    loadFile("/content/general/who-eir/measles-immunizations/IMMZConfig.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/Library-IMMZConfig.json", ::installToIgManager)
     loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZD2DTMeasles.json",
-      ::installToIgManager,
-    )
-    loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZIndicatorCommon.json",
+      "/content/general/who-eir/measles-immunizations/Library-IMMZD2DTMeaslesLogic.json",
       ::installToIgManager,
     )
     loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZINDMeasles.json",
+      "/content/general/who-eir/measles-immunizations/Library-IMMZIndicatorCommon.json",
       ::installToIgManager,
     )
     loadFile(
-      "/content/general/who-eir/measles-immunizations/IMMZVaccineLibrary.json",
+      "/content/general/who-eir/measles-immunizations/Library-IMMZINDMeasles.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/content/general/who-eir/measles-immunizations/Library-IMMZVaccineLibrary.json",
       ::installToIgManager,
     )
     loadFile(
@@ -577,11 +574,8 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "/content/general/who-eir/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
       ::installToIgManager,
     )
-    loadFile("/content/general/who-eir/measles-immunizations/WHOCommon.json", ::installToIgManager)
-    loadFile(
-      "/content/general/who-eir/measles-immunizations/WHOConcepts.json",
-      ::installToIgManager,
-    )
+    loadFile("/content/general/who-eir/measles-immunizations/Library-WHOCommon.json", ::installToIgManager)
+    loadFile("/content/general/who-eir/measles-immunizations/Library-WHOConcepts.json", ::installToIgManager)
     loadFile(
       "/content/general/who-eir/measles-immunizations/ValueSet-HIVstatus-values.json",
       ::installToIgManager,
@@ -605,10 +599,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     val carePlan =
       fhirOperator.generateCarePlan(
-        planDefinition =
-          CanonicalType(
-            "http://fhir.org/guides/who/smart-immunization/PlanDefinition/IMMZD2DTMeasles",
-          ),
+        planDefinition = CanonicalType("http://smart.who.int/smart-immunizations-measles/PlanDefinition/IMMZD2DTMeasles"),
         subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
       )
 
