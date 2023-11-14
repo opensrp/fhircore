@@ -112,7 +112,7 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed, is SyncJobStatus.Glitch -> {
+            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
               isSyncing.value = false
               fetchPatientProfileDataWithChildren()
             }

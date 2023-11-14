@@ -107,12 +107,6 @@ android {
         abortOnError false
     }
 
-    configurations.all {
-        resolutionStrategy {
-            force "ca.uhn.hapi.fhir:org.hl7.fhir.utilities:5.5.7"
-        }
-    }
-
     packagingOptions {
         exclude 'META-INF/ASL-2.0.txt'
         exclude 'META-INF/LGPL-3.0.txt'

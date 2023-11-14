@@ -118,7 +118,6 @@ constructor(
         tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, syncJobStatus::class.java.simpleName)
         tracer.stopTrace(SYNC_TRACE)
       }
-      is SyncJobStatus.Glitch -> tracer.incrementMetric(SYNC_TRACE, SYNC_GLITCHES_METRIC, 1)
       is SyncJobStatus.InProgress -> {}
       is SyncJobStatus.Started -> {
         tracer.startTrace(SYNC_TRACE)
@@ -155,7 +154,6 @@ constructor(
 
   companion object {
     const val SYNC_TRACE = "runSync"
-    const val SYNC_GLITCHES_METRIC = "sync_glitches"
     const val SYNC_ATTR_TYPE = "sync_type"
     const val SYNC_ATTR_RESULT = "sync_result"
     const val SYNC_ATTR_RETRY = "sync_retry_count"

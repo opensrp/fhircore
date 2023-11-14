@@ -163,19 +163,6 @@ abstract class BaseRegisterActivity :
         }
       }
       is SyncJobStatus.Finished, is SyncJobStatus.Failed -> setLastSyncTimestamp(state)
-      is SyncJobStatus.Glitch -> {
-        progressSync.hide()
-        val lastSyncTimestamp =
-          sharedPreferencesHelper.read(
-            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            getString(R.string.syncing_retry)
-          )
-        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
-        containerProgressSync.apply {
-          background = this.getDrawable(R.drawable.ic_sync)
-          setOnClickListener { syncButtonClick() }
-        }
-      }
     }
   }
 
@@ -392,7 +379,7 @@ abstract class BaseRegisterActivity :
         showToast(getString(R.string.syncing))
         registerActivityBinding.updateSyncStatus(state)
       }
-      is SyncJobStatus.Failed, is SyncJobStatus.Glitch -> {
+      is SyncJobStatus.Failed -> {
         handleSyncFailed(state)
       }
       is SyncJobStatus.Finished -> {
@@ -703,7 +690,6 @@ abstract class BaseRegisterActivity :
 
     val exceptions =
       when (state) {
-        is SyncJobStatus.Glitch -> if (state.exceptions != null) state.exceptions else emptyList()
         is SyncJobStatus.Failed -> if (state.exceptions != null) state.exceptions else emptyList()
         else -> listOf()
       }

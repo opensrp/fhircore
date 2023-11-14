@@ -44,8 +44,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import java.io.InterruptedIOException
-import java.net.UnknownHostException
 import java.time.OffsetDateTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.ResourceType
@@ -379,7 +377,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSync_with_syncStatus_started() {
     // Status Sync Started
-    testRegisterActivity.onSync(SyncJobStatus.Started())
+    testRegisterActivity.onSync(SyncJobStatus.Started)
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(
@@ -430,7 +428,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         }
       }
 
-    testRegisterActivity.onSync(SyncJobStatus.Finished())
+    testRegisterActivity.onSync(SyncJobStatus.Finished)
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
@@ -470,25 +468,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         null
       )
     )
-  }
-
-  @Test
-  fun testOnSync_with_syncStatus_glitch() {
-    val registerActivityBinding = testRegisterActivity.registerActivityBinding
-    testRegisterActivity.onSync(
-      SyncJobStatus.Glitch(
-        listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
-      )
-    )
-    Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
-    val syncStatus =
-      testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-        testRegisterActivity.getString(R.string.syncing_retry)
-      )
-    Assert.assertEquals(syncStatus, registerActivityBinding.tvLastSyncTimestamp.text.toString())
-    Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
-    Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())
   }
 
   @Test
@@ -605,18 +584,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testHandleSyncFailed_should_verifyAllInternalState() {
-    val glitchState =
-      SyncJobStatus.Glitch(
-        listOf(
-          mockk {
-            every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-          }
-        )
-      )
-
-    handleSyncFailed(glitchState)
-    verify(exactly = 1) { accountAuthenticator.logout(any()) }
-
     val failedState =
       SyncJobStatus.Failed(
         listOf(
@@ -627,65 +594,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       )
 
     handleSyncFailed(failedState)
-    verify(exactly = 1, inverse = true) { accountAuthenticator.logout(any()) }
-
-    val glitchStateInterruptedIOException =
-      SyncJobStatus.Glitch(
-        listOf(
-          mockk {
-            every { exception } returns
-              mockk<InterruptedIOException> {
-                every { message } returns "java.io.InterruptedIOException: timeout"
-              }
-          }
-        )
-      )
-
-    handleSyncFailed(glitchStateInterruptedIOException)
-    Assert.assertEquals(
-      View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
-    )
-    Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
-    )
-
-    val glitchStateUnknownHostException =
-      SyncJobStatus.Glitch(
-        listOf(
-          mockk {
-            every { exception } returns
-              mockk<UnknownHostException> {
-                every { message } returns
-                  "java.net.UnknownHostException: Unable to resolve host fhir.labs.smartregister.org: No address associated with hostname"
-              }
-          }
-        )
-      )
-
-    handleSyncFailed(glitchStateUnknownHostException)
-    Assert.assertEquals(
-      View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
-    )
-    Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
-    )
-
-    handleSyncFailed(SyncJobStatus.Glitch(listOf()))
-    Assert.assertFalse(
-      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
-    )
-    Assert.assertEquals(
-      View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
-    )
-    Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
-    )
-    Assert.assertTrue(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.hasOnClickListeners()
-    )
+    verify(exactly = 1) { accountAuthenticator.logout(any()) }
   }
 
   private fun handleSyncFailed(state: SyncJobStatus) {

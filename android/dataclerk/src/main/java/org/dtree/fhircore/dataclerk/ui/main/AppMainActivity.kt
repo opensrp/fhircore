@@ -74,14 +74,6 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         )
         appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
       }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, lastSyncTime = null))
-        Timber.w(
-          (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
-            it.exception.message.toString()
-          }
-        )
-      }
       is SyncJobStatus.Failed -> {
         if (!state?.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
@@ -93,7 +85,7 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           return
         }
         if (lastSyncState !is SyncJobStatus.Failed) {
-          showToast(getString(org.smartregister.fhircore.engine.R.string.sync_failed_text))
+          showToast(getString(R.string.sync_failed_text))
         }
 
         appMainViewModel.onEvent(
@@ -102,7 +94,7 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             lastSyncTime =
               if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
                 getString(
-                  org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
+                  R.string.last_sync_timestamp,
                   appMainViewModel.retrieveLastSyncTimestamp()
                 )
               else null
@@ -111,16 +103,13 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
       is SyncJobStatus.Finished -> {
         if (lastSyncState !is SyncJobStatus.Finished) {
-          showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
+          showToast(getString(R.string.sync_completed))
         }
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
               state,
-              getString(
-                org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.timestamp)
-              )
+              getString(R.string.last_sync_timestamp, formatLastSyncTimestamp(state.timestamp))
             )
           )
           updateLastSyncTimestamp(state.timestamp)
