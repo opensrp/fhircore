@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest
 
+import android.accounts.AccountManager
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import org.smartregister.fhircore.engine.util.extension.getActivity
-import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
 
@@ -147,9 +147,15 @@ class QuestApplication :
         name !in activitiesAccessWithoutAuth
       }
       ?.let {
-        mForegroundActivityContext
-          ?.getActivity()
-          ?.launchActivityWithNoBackStackHistory<LoginActivity>()
+        mForegroundActivityContext?.getActivity()?.run {
+          this.startActivity(
+            Intent(this, LoginActivity::class.java).apply {
+              accountAuthenticator.retrieveLastLoggedInUsername()?.takeIf { it.isNotBlank() }?.let {
+                putExtra(AccountManager.KEY_ACCOUNT_NAME, it)
+              }
+            }
+          )
+        }
       }
   }
 
