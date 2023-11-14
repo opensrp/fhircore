@@ -1,6 +1,37 @@
-# Setting up Keycloak
+---
+sidebar_label: Keycloak
+---
 
-## Keycloak auth token configuration
+#
+
+## Keycloak user management
+
+- Create the user on Keycloak
+
+- Create the required groups e.g. create `PROVIDER` and `SUPERVISOR` groups
+
+- Create roles for all the resources your application uses e.g. for permissions on the Patient resource create the roles `GET_PATIENT`, `PUT_PATIENT`, `POST_PATIENT`.  See all the required Provider Roles in the section **PROVIDER group roles on Keycloak**
+
+    1. The KeyCloak definition is as follows:
+        1. `HTTP` methods educate the permissions a user can have on any endpoint. We also have an additional Manage role which is a composite of the 4 HTTP methods-related roles
+
+        1. The Permissions checker plugin currently handles the following HTTP methods. `POST`, `GET`, `PUT` & `DELETE`
+
+        1. The permissions use the following format `HTTP_METHOD_RESOURCE_NAME`. The `RESOURCE_NAME` being the FHIR resource name e.g Patient.
+
+        1. **Note**: Keycloak Roles are case sensitive.
+
+- Assign the roles to the corresponding group e.g. for the above assign to `PROVIDER`
+
+- Assign the created Group e.g. Provider to the user
+
+- Add a new user attribute with the key `fhir_core_app_id` and a value corresponding to the user’s assigned android client application id on the Composition resource `(composition_config.json)`.
+
+- Create a protocol mapper with Mapper Type `User Attribute` at the client level, area path (Keycloak v20+) `Clients` > `Client Details` > `Dedicated Scopes` > `Add mapper`. The **User attribute** and **Token claim name** field values should match the attribute  key `fhir_core_app_id` created in the previous step.
+
+    1. For keycloak below v20 `Clients` > `your-client-id` >` Mappers` > `Create`
+
+### Keycloak auth token configuration
 
 When making API requests, the app uses an access token that represent authorization to access resources on the server.
 
@@ -12,7 +43,7 @@ The refresh token lifespan will be equal to the smallest value among (`SSO Sessi
 
 When setting up identity and access management via Keycloak, the access and refresh token values are required to ensure the access token renewal works as expected in the app.
 
-## Configuring Keycloak with fhir-web
+## Configuring Keycloak for fhir-web
 
 - Navigate to the Keycloak Admin UI, e.g `http://keycloak:8080`
 - Create realm with name `fhir` or anything else
@@ -34,6 +65,6 @@ When setting up identity and access management via Keycloak, the access and refr
   - Add roles in the "Role Mapping"
   - Add attribute `fhir_core_app_id` in the group, or in each user
 
-### Extra notes
+### Notes
 
 - Create users via `fhir-web`. This helps by automatically creating the additional required FHIR resources of "[Practitioner](http://hl7.org/fhir/R4/practitioner.html)" and "[PractitionerRole](http://hl7.org/fhir/R4/practitionerrole.html)" for new users / healthcare workers.
