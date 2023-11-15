@@ -1,6 +1,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
-import org.gradle.api.tasks.testing.logging.TestLogEvent
 import java.io.FileReader
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -418,7 +418,6 @@ dependencies {
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
-
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
@@ -446,7 +445,7 @@ task("evaluatePerformanceBenchmarkResults") {
 
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
-        getJSONArray("benchmarks").iterator().forEach  { any ->
+        getJSONArray("benchmarks").iterator().forEach { any ->
           val benchmarkResult = any as JSONObject
           val fullName = benchmarkResult.getTestName()
           val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
