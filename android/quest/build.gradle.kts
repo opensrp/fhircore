@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import java.io.FileReader
+import org.json.JSONArray
+import org.json.JSONObject
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -415,7 +418,7 @@ dependencies {
  * an error if the result is past the expected result and margin. A message will also be printed if
  * the performance significantly improves.
  */
-/*
+
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
   val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
@@ -428,22 +431,22 @@ task("evaluatePerformanceBenchmarkResults") {
       JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
         keys().forEach { key ->
           val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-          val methodExpectedResults = this.getJSONObject(key)
+          val methodExpectedResults = this.getJSONObject(key.toString())
 
           methodExpectedResults.keys().forEach { expectedResultsKey ->
             resultMaxDeltaMap.put(
-              expectedResultsKey,
-              methodExpectedResults.getDouble(expectedResultsKey),
+              expectedResultsKey.toString(),
+              methodExpectedResults.getDouble(expectedResultsKey.toString()),
             )
           }
 
-          expectedResultsMap[key] = resultMaxDeltaMap
+          expectedResultsMap[key.toString()] = resultMaxDeltaMap
         }
       }
 
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
-        getJSONArray("benchmarks").forEachIndexed { index, any ->
+        getJSONArray("benchmarks").iterator().forEach  { any ->
           val benchmarkResult = any as JSONObject
           val fullName = benchmarkResult.getTestName()
           val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
@@ -489,4 +492,6 @@ fun JSONObject.getTestName(): String {
 
   return "$className#$methodName"
 }
- */
+
+operator fun JSONArray.iterator(): Iterator<JSONObject> =
+  (0 until length()).asSequence().map { get(it) as JSONObject }.iterator()
