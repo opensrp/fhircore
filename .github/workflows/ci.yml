@@ -227,3 +227,7 @@ jobs:
         if: matrix.api-level == 30 # Only upload coverage on API level 30
         working-directory: android
         run:  bash <(curl -s https://codecov.io/bash) -F quest -f "quest/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
+        
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+
