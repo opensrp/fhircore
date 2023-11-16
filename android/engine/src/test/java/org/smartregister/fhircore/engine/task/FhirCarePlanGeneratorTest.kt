@@ -41,6 +41,17 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.io.File
+import java.io.InputStream
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Calendar
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.reflect.KSuspendFunction1
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -113,17 +124,6 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.updateDependentTaskDueDate
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import java.io.File
-import java.io.InputStream
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
-import kotlin.reflect.KSuspendFunction1
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -2202,9 +2202,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val carePlan =
       fhirOperator.generateCarePlan(
         planDefinition =
-        CanonicalType(
-          "http://smart.who.int/smart-immunizations-measles/PlanDefinition/IMMZD2DTMeasles",
-        ),
+          CanonicalType(
+            "http://smart.who.int/smart-immunizations-measles/PlanDefinition/IMMZD2DTMeasles",
+          ),
         subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
       )
 
