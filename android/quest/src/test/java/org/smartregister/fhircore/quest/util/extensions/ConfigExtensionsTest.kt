@@ -27,6 +27,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -290,6 +291,26 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testLaunchDiallerOnClick() {
+    val patientWithPhoneNumber = patient.copy()
+    patientWithPhoneNumber.apply {
+      addTelecom(ContactPoint().apply {
+        this.value = "0700000000"
+      })
+    }
+
+    val computedValuesWithPhoneNumberMutable = resourceData
+      .computedValuesMap
+      .toMutableMap()
+    computedValuesWithPhoneNumberMutable["telecom"] = patientWithPhoneNumber.telecom
+    val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
+
+    val resourceDataWithPhoneNumber =
+      ResourceData(
+        baseResourceId = patient.logicalId,
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = computedValuesWithPhoneNumber
+      )
+
     val clickAction =
       ActionConfig(
         id = "diallerId",
@@ -297,7 +318,8 @@ class ConfigExtensionsTest : RobolectricTest() {
         workflow = ApplicationWorkflow.LAUNCH_DIALER.name
       )
 
-    listOf(clickAction).handleClickEvent(navController, resourceData) // make a clicking action
+    listOf(clickAction).handleClickEvent(navController, resourceDataWithPhoneNumber) // make a clicking action
+
     verify {
       context.startActivity( // make sure startActivity is called
         withArg {
