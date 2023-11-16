@@ -133,5 +133,32 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
     )
-  )
+  ),
+  SIBLING_CONTACT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
+    )
+  ),
+  SOCIAL_NETWORK_CONTACT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
+    )
+  ),
+  BIOLOGICAL_PARENT_CONTACT_PROFILE(
+    listOf(
+      OverflowMenuItem(R.id.hiv_test_and_next_appointment, R.string.hiv_test_and_next_appointment),
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+      OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
+      OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
+      OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
+    )
+  ),
 }
