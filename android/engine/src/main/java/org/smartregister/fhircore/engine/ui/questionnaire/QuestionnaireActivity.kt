@@ -356,6 +356,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (result is ExtractionProgress.Success) {
         onPostSave(true, questionnaireResponse, result.extras)
       } else {
+        result as ExtractionProgress.Failed
+        AlertDialogue.showErrorAlert(
+          this,
+          result.errorMessages ?: "",
+          getString(R.string.questionnaire_alert_extraction_fail)
+        )
+
         onPostSave(false, questionnaireResponse)
       }
     }

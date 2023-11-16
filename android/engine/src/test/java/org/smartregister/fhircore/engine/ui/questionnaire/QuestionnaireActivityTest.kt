@@ -31,6 +31,7 @@ import androidx.fragment.app.commitNow
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator.checkQuestionnaireResponse
 import dagger.hilt.android.testing.BindValue
@@ -38,6 +39,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -45,10 +47,15 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import javax.inject.Inject
+import javax.inject.Provider
 import kotlin.test.assertFailsWith
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.CanonicalType
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
@@ -78,8 +85,6 @@ import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_FRAGMENT_TAG
 import org.smartregister.fhircore.engine.util.AssetUtil
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.distinctifyLinkId
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -100,8 +105,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-  val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
-
   private val parser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
@@ -110,25 +113,29 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @BindValue val syncBroadcaster = mockk<SyncBroadcaster>()
 
-  @BindValue
-  val questionnaireViewModel: QuestionnaireViewModel =
-    spyk(
-      QuestionnaireViewModel(
-        fhirEngine = mockk(),
-        defaultRepository = mockk { coEvery { addOrUpdate(true, any()) } just runs },
-        configurationRegistry = mockk(),
-        transformSupportServices = mockk(),
-        dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = mockk(),
-        libraryEvaluatorProvider = { mockk<LibraryEvaluator>() },
-        tracer = FakePerformanceReporter()
-      )
-    )
+  @Inject lateinit var fhirValidatorProvider: Provider<FhirValidator>
+
+  @BindValue lateinit var questionnaireViewModel: QuestionnaireViewModel
 
   @Before
   fun setUp() {
     // TODO Proper set up
     hiltRule.inject()
+    questionnaireViewModel =
+      spyk(
+        QuestionnaireViewModel(
+          fhirEngine = mockk(),
+          defaultRepository = mockk { coEvery { addOrUpdate(true, any()) } just runs },
+          configurationRegistry = mockk(),
+          transformSupportServices = mockk(),
+          dispatcherProvider = coroutinesTestRule.testDispatcherProvider,
+          sharedPreferencesHelper = mockk(),
+          libraryEvaluatorProvider = { mockk<LibraryEvaluator>() },
+          fhirValidatorProvider = fhirValidatorProvider,
+          tracer = FakePerformanceReporter()
+        )
+      )
+
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     intent =
       Intent().apply {
@@ -509,6 +516,53 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
+  fun testHandleQuestionnaireSubmitWithExtractionProgressFailureShowsErrorDialog() = runTest {
+    val sampleExtractedCarePlan = CarePlan()
+    coEvery { questionnaireViewModel.performExtraction(any(), any(), any()) } returns
+      org.hl7.fhir.r4.model.Bundle().apply {
+        addEntry().apply { resource = sampleExtractedCarePlan }
+      }
+    val questionnaire =
+      Questionnaire().apply {
+        addExtension(
+          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+          CanonicalType("1234")
+        )
+      }
+
+    ReflectionHelpers.setField(
+      questionnaireViewModel,
+      "questionnaireConfig",
+      QuestionnaireConfig("form", "title", "form-id", setPractitionerDetails = false)
+    )
+    ReflectionHelpers.setField(questionnaireActivity, "questionnaire", questionnaire)
+    questionnaireActivity.handleQuestionnaireSubmit()
+    advanceUntilIdle()
+
+    val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
+    val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
+
+    Assert.assertNotNull(questionnaireViewModel.extractionProgress.value)
+    Assert.assertTrue(questionnaireViewModel.extractionProgress.value is ExtractionProgress.Failed)
+
+    val alertDialogText = alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+    Assert.assertTrue(
+      "CarePlan.status: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/CarePlan) - CarePlan" in
+        alertDialogText
+    )
+    Assert.assertTrue(
+      "CarePlan.intent: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/CarePlan) - CarePlan" in
+        alertDialogText
+    )
+    Assert.assertTrue(
+      "CarePlan.subject: minimum required = 1, but only found 0 (from http://hl7.org/fhir/StructureDefinition/CarePlan) - CarePlan" in
+        alertDialogText
+    )
+
+    coVerify(exactly = 0) { questionnaireViewModel.defaultRepository.addOrUpdate(resource = any()) }
+  }
+
+  @Test
   fun testOnClickSaveButtonShouldShowSubmitConfirmationAlert() {
     ReflectionHelpers.setField(
       questionnaireActivity,
@@ -599,7 +653,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testPostSaveSuccessfulWithExtractionMessageShouldShowAlert() = runTest {
-    questionnaireActivity.questionnaireViewModel.extractionProgressMessage.postValue("ABC")
+    questionnaireActivity.questionnaireViewModel._extractionProgressMessage.postValue("ABC")
     questionnaireActivity.postSaveSuccessful(QuestionnaireResponse())
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
