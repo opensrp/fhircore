@@ -13,7 +13,7 @@ sidebar_label: Keycloak
     1. The Permissions checker plugin currently handles the `POST`, `GET`, `PUT`, `DELETE` HTTP methods
     1. The permissions use the following format: `[HTTP_METHOD]_[RESOURCE_NAME]`. Where `RESOURCE_NAME` is the FHIR resource name, e.g `Patient`.
 
-> **Note:** Keycloak Roles are case sensitive.
+> **Note:** Keycloak Roles are case sensitive. OpenSRP 2 uses uppercase letters in its role naming.  
 
 4. Assign the roles to the corresponding group, e.g. for the above assign to `PROVIDER`
 1. Assign the created Group, e.g. Provider to the user
