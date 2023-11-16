@@ -49,52 +49,52 @@ import org.smartregister.fhircore.quest.R
 
 @Composable
 fun UserSettingInsightScreen(
-  unsyncedResources: List<Pair<String, Int>>,
-  onDismissRequest: () -> Unit,
+    unsyncedResources: List<Pair<String, Int>>,
+    onDismissRequest: () -> Unit,
 ) {
-  Box(Modifier.clip(RectangleShape).fillMaxWidth().background(Color.White)) {
-    Dialog(onDismissRequest = onDismissRequest) {
-      Column(
-        modifier = Modifier.fillMaxWidth().wrapContentHeight().background(Color.White),
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        Text(
-          text = stringResource(id = R.string.unsynced_resources),
-          modifier = Modifier.padding(11.dp),
-          style = TextStyle(color = Color.Black, fontSize = 20.sp),
-          fontWeight = FontWeight.Light,
-        )
-        LazyColumn(modifier = Modifier.wrapContentHeight()) {
-          items(unsyncedResources) { language ->
-            Box(Modifier.fillMaxWidth().padding(15.dp)) {
-              Text(
-                text = language.first,
-                modifier = Modifier.align(Alignment.CenterStart),
-                fontWeight = FontWeight.Light,
-              )
-              Text(
-                text = language.second.toString(),
-                modifier = Modifier.align(Alignment.CenterEnd),
-              )
-            }
-            Spacer(modifier = Modifier.padding(1.dp))
-          }
-        }
-        Column(Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp)) {
-          Surface(shape = RoundedCornerShape(0.dp)) {
-            OutlinedButton(
-              onClick = onDismissRequest,
-              border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
+    Box(Modifier.clip(RectangleShape).fillMaxWidth().background(Color.White)) {
+        Dialog(onDismissRequest = onDismissRequest) {
+            Column(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight().background(Color.White),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-              Text(
-                text = stringResource(R.string.dismiss),
-                modifier = Modifier.padding(6.dp),
-                style = TextStyle(color = MaterialTheme.colors.primarySurface, fontSize = 14.sp),
-              )
+                Text(
+                    text = stringResource(id = R.string.unsynced_resources),
+                    modifier = Modifier.padding(11.dp),
+                    style = TextStyle(color = Color.Black, fontSize = 20.sp),
+                    fontWeight = FontWeight.Light,
+                )
+                LazyColumn(modifier = Modifier.wrapContentHeight()) {
+                    items(unsyncedResources) { language ->
+                        Box(Modifier.fillMaxWidth().padding(15.dp)) {
+                            Text(
+                                text = language.first,
+                                modifier = Modifier.align(Alignment.CenterStart),
+                                fontWeight = FontWeight.Light,
+                            )
+                            Text(
+                                text = language.second.toString(),
+                                modifier = Modifier.align(Alignment.CenterEnd),
+                            )
+                        }
+                        Spacer(modifier = Modifier.padding(1.dp))
+                    }
+                }
+                Column(Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp)) {
+                    Surface(shape = RoundedCornerShape(0.dp)) {
+                        OutlinedButton(
+                            onClick = onDismissRequest,
+                            border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.dismiss),
+                                modifier = Modifier.padding(6.dp),
+                                style = TextStyle(color = MaterialTheme.colors.primarySurface, fontSize = 14.sp),
+                            )
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="sync"> Synchronisation</string>
+    <string name="sync"> Synchronisation manuelle</string>
     <string name="language">Langue</string>
     <string name="logout_as_user">Déconnexion</string>
     <string name="show_overdue">Afficher en retard</string>
@@ -129,6 +129,8 @@
     <string name="error_loading_config_general">Erreur de connexion au serveur. Veuillez contacter l\'administrateur système</string>
     <string name="error_loading_config_http_error">Impossible de charger la configuration. Veuillez réessayer plus tard</string>
     <string name="insights">Statistiques</string>
+    <string name="contact_help">Contacter l\'aide</string>
+    <string name="offline_map">Hors Ligne Carte</string>
     <string name="dismiss">Rejeter</string>
     <string name="unsynced_resources">Non Synchronisé</string>
     <string name="all_data_synced">Tout synchronisé</string>

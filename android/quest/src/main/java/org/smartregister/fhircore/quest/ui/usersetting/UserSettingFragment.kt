@@ -24,46 +24,52 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment() {
 
-  val userSettingViewModel by viewModels<UserSettingViewModel>()
+    val userSettingViewModel by viewModels<UserSettingViewModel>()
+    private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?,
-  ): View {
-    return ComposeView(requireContext()).apply {
-      setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-      setContent {
-        AppTheme {
-          UserSettingScreen(
-            username = userSettingViewModel.retrieveUsername(),
-            allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
-            selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
-            allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
-            languages = userSettingViewModel.languages,
-            onEvent = userSettingViewModel::onEvent,
-            showDatabaseResetConfirmation =
-              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            progressBarState =
-              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
-            isDebugVariant = BuildConfig.DEBUG,
-            mainNavController = findNavController(),
-            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
-            showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
-            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
-            dismissInsightsView = userSettingViewModel::dismissInsightsView,
-          )
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                AppTheme {
+                    UserSettingScreen(
+                        appUiState = appMainViewModel.appMainUiState.value,
+                        username = userSettingViewModel.retrieveUsername(),
+                        userInfo = userSettingViewModel.retrieveUserInfo(),
+                        allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+                        selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+                        allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
+                        languages = userSettingViewModel.languages,
+                        onEvent = userSettingViewModel::onEvent,
+                        showDatabaseResetConfirmation =
+                        userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+                        progressBarState =
+                        userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
+                        isDebugVariant = BuildConfig.DEBUG,
+                        mainNavController = findNavController(),
+                        lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
+                        showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+                        unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
+                        dismissInsightsView = userSettingViewModel::dismissInsightsView,
+                    )
+                }
+            }
         }
-      }
     }
-  }
 }
