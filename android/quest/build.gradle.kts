@@ -348,7 +348,7 @@ tasks.withType<Test> {
 
 configurations {
   all {
-    exclude(group = "commons-logging")
+    // exclude(group = "commons-logging")
     exclude(group = "xpp3")
   }
 }
