@@ -98,7 +98,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -212,8 +211,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
     val questionnaireResponse = extractionQuestionnaireResponse()
     val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission =
-      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
     // Throw ResourceNotFoundException existing QuestionnaireResponse
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
