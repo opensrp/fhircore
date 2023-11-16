@@ -63,6 +63,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -313,11 +315,13 @@ fun UserSettingScreen(
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
+        val resId = R.drawable.ic_opensrplogo
         Image(
-          painterResource(R.drawable.ic_opensrplogo),
+          painterResource(resId),
           "content description",
+          colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
           modifier =
-            modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally),
+            modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally).testTag(resId.toString()),
           contentScale = ContentScale.Fit,
         )
 
