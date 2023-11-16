@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -26,11 +27,14 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.mockito.hamcrest.MockitoHamcrest.argThat
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadows.ShadowActivity
+import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -47,6 +51,8 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import kotlin.test.assertEquals
+
 
 class ConfigExtensionsTest : RobolectricTest() {
 
@@ -280,6 +286,26 @@ class ConfigExtensionsTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+  }
+
+  @Test
+  fun testLaunchDiallerOnClick() {
+    val clickAction =
+      ActionConfig(
+        id = "diallerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_DIALER.name
+      )
+
+    listOf(clickAction).handleClickEvent(navController, resourceData) // make a clicking action
+    verify {
+      context.startActivity( // make sure startActivity is called
+        withArg {
+          assert(it.action == Intent.ACTION_DIAL) // make sure correct action
+          assert(it.dataString!!.slice(0..3) == "tel:") // make sure correct prefix to phone number
+        }
+      )
+    }
   }
 
   @Test
