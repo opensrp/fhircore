@@ -660,6 +660,9 @@ constructor(
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
     }
+    // here Group is coming with groupIdentifier thus it make sense that
+    // there is an interaction inside group rather addingMemberItems only for above check
+    // so for every cases group is to be updated
     defaultRepository.addOrUpdate(resource = group)
   }
 
