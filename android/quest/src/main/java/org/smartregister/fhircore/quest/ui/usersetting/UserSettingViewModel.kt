@@ -83,10 +83,7 @@ constructor(
         key = SharedPreferenceKey.USER_INFO.name,
     )
 
-    fun practitionerDetails() =
-        sharedPreferencesHelper.read<PractitionerDetails>(
-            key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        )
+    fun practitionerLocation() = secureSharedPreference.readPractitionerLocation()
 
     fun retrieveLastSyncTimestamp(): String? =
         sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)

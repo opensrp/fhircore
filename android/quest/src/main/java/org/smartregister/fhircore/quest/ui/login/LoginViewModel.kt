@@ -308,6 +308,7 @@ constructor(
             bundle.entry.forEach { entry ->
                 val practitionerDetails = entry.resource as PractitionerDetails
 
+
                 val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
                 val organizations =
                     practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()

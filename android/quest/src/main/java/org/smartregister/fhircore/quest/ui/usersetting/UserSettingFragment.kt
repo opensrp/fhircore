@@ -51,6 +51,7 @@ class UserSettingFragment : Fragment() {
                     UserSettingScreen(
                         appUiState = appMainViewModel.appMainUiState.value,
                         username = userSettingViewModel.retrieveUsername(),
+                        practitionerLocation = userSettingViewModel.practitionerLocation(),
                         userInfo = userSettingViewModel.retrieveUserInfo(),
                         allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                         selectedLanguage = userSettingViewModel.loadSelectedLanguage(),

@@ -110,6 +110,7 @@ fun UserSettingScreen(
     appUiState: AppMainUiState?,
     modifier: Modifier = Modifier,
     username: String?,
+    practitionerLocation:String?,
     userInfo: UserInfo?,
     allowSwitchingLanguages: Boolean,
     selectedLanguage: String,
@@ -186,7 +187,7 @@ fun UserSettingScreen(
                         fontWeight = FontWeight.Normal,
                     )
                     Text(
-                        text = userInfo?.location?.capitalize(Locale.current) ?: "",
+                        text = practitionerLocation?.capitalize(Locale.current) ?:"",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                     )
@@ -300,6 +301,7 @@ fun UserSettingScreen(
                 clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
                 modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
                 showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+                canSwitchToScreen = true
             )
 
             if (allowP2PSync) {
@@ -493,6 +495,7 @@ fun UserSettingPreview() {
         appUiState = null,
         username = "Jam",
         userInfo = null,
+        practitionerLocation = "",
         allowSwitchingLanguages = true,
         selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
         languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
