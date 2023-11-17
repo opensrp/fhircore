@@ -663,6 +663,12 @@ constructor(
     // here Group is coming with groupIdentifier thus it make sense that
     // there is an interaction inside group rather addingMemberItems only for above check
     // so for every cases group is to be updated
+    
+    /**
+    * The Group Resource is fetched by the `groupIdentifier`.  
+    * We trigger the group update every time anything linked to it in order to change the `_lastUpdated` timestamp.
+    * This helps us with order the last updated group (household) on the top of the register. 
+    */
     defaultRepository.addOrUpdate(resource = group)
   }
 
