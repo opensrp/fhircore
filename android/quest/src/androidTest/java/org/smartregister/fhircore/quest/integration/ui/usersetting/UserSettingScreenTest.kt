@@ -18,7 +18,9 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
@@ -153,6 +155,12 @@ class UserSettingScreenTest {
 
     composeRule.onNodeWithText("Encounters").assertExists()
     composeRule.onNodeWithText("5").assertExists()
+  }
+
+  @Test
+  fun testThatOpenSRPLogoIsVisible() {
+    initComposable()
+    composeRule.onNodeWithTag(R.drawable.ic_opensrplogo.toString()).assertIsDisplayed()
   }
 
   @Test
