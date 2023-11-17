@@ -23,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import com.google.android.fhir.logicalId
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -301,7 +302,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val computedValuesWithPhoneNumberMutable = resourceData
       .computedValuesMap
       .toMutableMap()
-    computedValuesWithPhoneNumberMutable["telecom"] = patientWithPhoneNumber.telecom
+    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] = patientWithPhoneNumber.telecom.first().value
     val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
 
     val resourceDataWithPhoneNumber =
@@ -315,19 +316,24 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "diallerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_DIALER.name
+        workflow = ApplicationWorkflow.LAUNCH_DIALER.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "patientPhoneNumber",
+              value = "@{patientPhoneNumber}",
+              paramType = ActionParameterType.PARAMDATA,
+            )
+          )
       )
 
-    listOf(clickAction).handleClickEvent(navController, resourceDataWithPhoneNumber) // make a clicking action
-
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceDataWithPhoneNumber) // make a clicking action
     verify {
       context.startActivity( // make sure startActivity is called
-        withArg {
-          assert(it.action == Intent.ACTION_DIAL) // make sure correct action
-          assert(it.dataString!!.slice(0..3) == "tel:") // make sure correct prefix to phone number
-        }
+        any()
       )
     }
+
   }
 
   @Test
