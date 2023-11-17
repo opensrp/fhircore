@@ -1,0 +1,58 @@
+map "http://smart.who.int/immunizations-measles/StructureMap/IMMZD1QRToLM" = "IMMZD1QRToLM"
+// Immunization - Client History - Extract QuestionnaireResponse to logical model
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
+uses "http://smart.who.int/immunizations-measles/StructureDefinition/IMMZD1ClientHistoryMeasles" alias IMMZD1 as target
+
+group QRespToIMMZD1 ( source qr : QResp, target immz : IMMZD1) {
+
+  qr.subject as patient -> immz.patient = patient "SetPatient";
+
+  qr.item as item then {
+
+    item.answer first as answer where item.linkId = 'dose0' then {
+      answer.value as content -> immz.dose0 = content  "SetDose0";
+    } "FirstAnswerForDose0";
+
+    item.answer first as answer where item.linkId = 'completedPrimarySeries' then {
+      answer.value as content -> immz.completedPrimarySeries = content  "SetCompletedPrimarySeries";
+    } "FirstAnswerForCompletedPrimarySeries";
+
+    item.answer first as answer where item.linkId = 'dateSeriesCompleted' then {
+      answer.value as content -> immz.dateSeriesCompleted = content "SetDateSeriesCompleted";
+    } "FirstAnswerDateSeriesCompleted";
+
+    item.answer first as answer where item.linkId = 'hivStatus' then {
+      answer.value as coding -> immz.hivStatus = coding "SetHIVStatus";
+    } "FirstAnswerForHIVStatus";
+
+    item.answer first as answer where item.linkId = 'pretermBirth' then {
+      answer.value as content -> immz.pretermBirth = content  "SetPretermBirth";
+    } "FirstAnswerForPretermBirth";
+
+    item.answer first as answer where item.linkId = 'severelyImmunosuppressed' then {
+      answer.value as content -> immz.severelyImmunosuppressed = content  "SetSeverelyImmunosuppressed";
+    } "FirstAnswerForSeverelyImmunosuppressed";
+
+
+    item.answer first as answer where item.linkId = 'artStartDate' then {
+      answer.value as content -> immz.artStartDate = content "SetARTStartDated";
+    } "FirstAnswerARTStartDate";
+
+    item as history where item.linkId = 'vaccineHistory' -> immz.vaccineHistory as vaccine then {
+      history.item as entry then {
+        entry.answer as answer where entry.linkId = 'vaccineType' then {
+          answer.value as coding -> vaccine.vaccineType = coding "SetVaccineType";
+        } "AnswerForVaccineType";
+
+        entry.answer as answer where entry.linkId = 'vaccineDate' then {
+          answer.value as content -> vaccine.vaccineDate = content "SetVaccineDate";
+        } "AnswerForVaccineDate";
+
+      } "HistoryLoop";
+
+    } "ForVaccineHistory";
+  
+  } "processItems";
+
+}

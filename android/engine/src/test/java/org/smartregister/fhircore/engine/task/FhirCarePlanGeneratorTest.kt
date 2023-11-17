@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -61,6 +62,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
@@ -74,6 +76,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
@@ -86,6 +89,7 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskOutputComponent
 import org.hl7.fhir.r4.model.Task.TaskStatus
+import org.hl7.fhir.r4.model.ValueSet
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.junit.Assert.assertEquals
@@ -105,6 +109,7 @@ import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest.Companion.readFile
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -2211,6 +2216,55 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     println(jsonParser.encodeResourceToString(carePlan))
 
     assertNotNull(carePlan)
+  }
+
+  @Test
+  fun `generate capture client history measles careplan using $apply`(): Unit = runBlockingOnWorkerThread {
+    createResource<Library>("/plans/measles-immunizations/Library-FHIRCommon.json")
+    createResource<Library>("/plans/measles-immunizations/Library-FHIRHelpers.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZCommon.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZCommonIzDataElements.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZConcepts.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZConfig.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZD2DTMeaslesLogic.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZIndicatorCommon.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZINDMeasles.json")
+    createResource<Library>("/plans/measles-immunizations/Library-IMMZVaccineLibrary.json")
+    createResource<Library>("/plans/measles-immunizations/Library-WHOCommon.json")
+    createResource<Library>("/plans/measles-immunizations/Library-WHOConcepts.json")
+    createResource<ActivityDefinition>("/plans/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json")
+    createResource<PlanDefinition>("/plans/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json")
+    createResource<ValueSet>("/plans/measles-immunizations/ValueSet-HIVstatus-values.json")
+    createResource<Patient>("/plans/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json")
+
+    val resourceSlot = slot<Resource>()
+    coEvery { defaultRepository.create(any(), capture(resourceSlot)) } answers
+      {
+        runBlocking(Dispatchers.IO) { fhirEngine.create(resourceSlot.captured) }
+        listOf()
+      }
+
+    val data = Bundle().apply {
+      addEntry().apply {
+        resource = "/plans/measles-immunizations/birthweightnormal-NoVaxeninfant-f.json"
+          .readFile()
+          .decodeResourceFromString<Observation>()
+
+      }
+    }
+
+    val carePlan = fhirCarePlanGenerator.generateOrUpdateCarePlan(
+      planDefinition = fhirEngine.get("IMMZD2DTMeasles"),
+      subject = fhirEngine.get<Patient>("IMMZ-Patient-NoVaxeninfant-f"),
+      data = data,
+      generateCarePlanWithWorkflowApi = true
+    )
+
+    assertNotNull(carePlan)
+  }
+
+  private suspend inline fun <reified T : Resource> createResource(path: String) {
+    fhirEngine.create(path.readFile().decodeResourceFromString<T>())
   }
 
   private suspend fun loadFile(path: String, importFunction: KSuspendFunction1<Resource, Unit>) {

@@ -1,0 +1,20 @@
+map "http://smart.who.int/immunizations-measles/StructureMap/IMMZD1QRToResources" = "IMMZD1QRToResources"
+// Immunization - Client History - Extract QuestionnaireResponse to resources
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireResponse" alias QResp as source
+uses "http://smart.who.int/immunizations-measles/StructureDefinition/IMMZD1ClientHistoryMeasles" alias IMMZD1 as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" alias Bundle as target
+
+imports "http://smart.who.int/immunizations-measles/StructureMap/IMMZD1QRToLM"
+imports "http://smart.who.int/immunizations-measles/StructureMap/IMMZD1LMToResources"
+
+group QRespToBundle (
+  source qr : QResp,
+  target bundle: Bundle
+) {
+  qr -> create("http://smart.who.int/immunizations-measles/StructureDefinition/IMMZD1ClientHistoryMeasles") as model 
+  then{
+    qr -> model then QRespToIMMZD1( qr, model) "QRtoLM";
+    qr -> bundle then IMMZD1ToBundle( model, bundle ) "LMtoBundle";
+  } "QRtoBundle";
+}
