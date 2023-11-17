@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.model.practitioner.PractitionerDetails
 import org.smartregister.p2p.utils.startP2PScreen
 import java.util.Locale
 import javax.inject.Inject
@@ -81,6 +82,11 @@ constructor(
     fun retrieveUserInfo() = sharedPreferencesHelper.read<UserInfo>(
         key = SharedPreferenceKey.USER_INFO.name,
     )
+
+    fun practitionerDetails() =
+        sharedPreferencesHelper.read<PractitionerDetails>(
+            key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        )
 
     fun retrieveLastSyncTimestamp(): String? =
         sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
