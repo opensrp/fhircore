@@ -49,5 +49,5 @@ enum class ApplicationWorkflow {
   CHANGE_MANAGING_ENTITY,
 
   /** A workflow that launches the dialer with the phone number ready to place a call */
-  LAUNCH_DIALER,
+  LAUNCH_DIALLER,
 }

@@ -145,7 +145,7 @@ fun List<ActionConfig>.handleClickEvent(
           MainNavigationScreen.GeoWidget.route,
           bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
-      ApplicationWorkflow.LAUNCH_DIALER -> {
+      ApplicationWorkflow.LAUNCH_DIALLER -> {
         val actionParameter = interpolatedParams.first()
         val patientPhoneNumber = actionParameter.value
         val intent = Intent(Intent.ACTION_DIAL)

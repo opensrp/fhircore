@@ -309,7 +309,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "diallerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_DIALER.name,
+        workflow = ApplicationWorkflow.LAUNCH_DIALLER.name,
         params =
           listOf(
             ActionParameter(
