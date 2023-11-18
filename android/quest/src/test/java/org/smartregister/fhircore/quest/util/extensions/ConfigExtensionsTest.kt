@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
@@ -28,14 +26,13 @@ import com.google.android.fhir.logicalId
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import io.mockk.spyk
 import io.mockk.verify
+import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -47,14 +44,11 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import kotlin.test.assertEquals
-
 
 class ConfigExtensionsTest : RobolectricTest() {
 
@@ -294,22 +288,21 @@ class ConfigExtensionsTest : RobolectricTest() {
   fun testLaunchDiallerOnClick() {
     val patientWithPhoneNumber = patient.copy()
     patientWithPhoneNumber.apply {
-      addTelecom(ContactPoint().apply {
-        this.value = "0700000000"
-      })
+      addTelecom(
+        ContactPoint().apply { this.value = "0700000000" },
+      )
     }
 
-    val computedValuesWithPhoneNumberMutable = resourceData
-      .computedValuesMap
-      .toMutableMap()
-    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] = patientWithPhoneNumber.telecom.first().value
+    val computedValuesWithPhoneNumberMutable = resourceData.computedValuesMap.toMutableMap()
+    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] =
+      patientWithPhoneNumber.telecom.first().value
     val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
 
     val resourceDataWithPhoneNumber =
       ResourceData(
         baseResourceId = patient.logicalId,
         baseResourceType = ResourceType.Patient,
-        computedValuesMap = computedValuesWithPhoneNumber
+        computedValuesMap = computedValuesWithPhoneNumber,
       )
 
     val clickAction =
@@ -323,11 +316,15 @@ class ConfigExtensionsTest : RobolectricTest() {
               key = "patientPhoneNumber",
               value = "@{patientPhoneNumber}",
               paramType = ActionParameterType.PARAMDATA,
-            )
-          )
+            ),
+          ),
       )
 
-    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceDataWithPhoneNumber) // make a clicking action
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceDataWithPhoneNumber,
+      ) // make a clicking action
 
     // make sure no errors thrown when the new activity is started. should return nothing
     every { context.startActivity(any()) } returns Unit
