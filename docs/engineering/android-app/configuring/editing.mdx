@@ -1,0 +1,70 @@
+# Editing
+
+You can manage edits through
+
+1. complex structure maps to ensure that any potential downstream effects of an edit (like changing CarePlan or Task status) are accounted for, or
+2. limiting what is editable to only those fields(data elements) that do not have downstream affects.
+
+We suggest following approach (2.) to reduce the chance of errors and the resulting inconsistent data.
+
+## Limiting what is editable
+
+Below we describe how to limit what is editable while reusing the same FHIR resources that created the data. This assumes that you have
+
+- a Questionniare that data is originally entered in and will be edited in,
+- a StructureMap that extracts data from the QuestionnaireResponse into other resources,
+- a config the specifies one interface to launch the Questionnaire for creation and another to launch it for editing.
+
+1.  Create a new hidden item in the Questionnaire to hold the `is-edit-mode` value
+
+```
+{
+    "extension": [
+        {
+            "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+            "valueBoolean": true
+        }
+    ],
+    "linkId": "is-edit-profile",
+    "type": "boolean"
+ }
+```
+
+2. Pre-populate the new item on when loading the questionnaire, to use a static rule with a boolean value of true. Do this for any button or menu-item that you want to launch the edit form.
+
+> Sample rule:
+>```
+>{
+>    "name": "isEditProfile",
+>    "condition": "true",
+>    "actions": [
+>        "data.put('isEditProfile', true)"
+>    ]
+>}
+>```
+
+> Sample pre-population:
+>```
+>{
+>    "paramType": "PREPOPULATE",
+>    "linkId": "is-edit-profile",
+>    "dataType": "BOOLEAN",
+>    "key": "isEditProfile",
+>    "value": "@{isEditProfile}"
+>}
+>```
+
+3. Use the pre-set value of the edit mode item, `isEditProfile`, to enable the items with downstream effects in the Questionnaire, such as date of birth and gender, using the `enableWhen` Questionnaire item attribute. This will cause those items only to show when `isEditProfile` is false, i.e. when creating data.
+
+```
+"enableWhen": [
+    {
+        "question": "is-edit-profile",
+        "operator": "exists",
+        "answerBoolean": false
+    }
+],
+"enableBehavior": "any"
+```
+
+4. Launch the Questionnaire from an edit menu just as would is creating, but prepopulate the previously captured items. This approach allows to you to use the existing Questionnaire and StructureMap.
