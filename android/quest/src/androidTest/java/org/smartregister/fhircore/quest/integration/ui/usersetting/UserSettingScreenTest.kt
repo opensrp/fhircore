@@ -18,7 +18,9 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
@@ -32,6 +34,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_CONTACT_HELP
+import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_INSIGHTS
+import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_OFFLINE_MAP
+import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_SYNC
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen
 
 class UserSettingScreenTest {
@@ -54,12 +60,15 @@ class UserSettingScreenTest {
   fun testUserProfileShouldDisplayCorrectContent() {
     initComposable()
     composeRule.onNodeWithText("Johndoe").assertExists()
+    composeRule.onNodeWithText("Quest").assertExists()
+    composeRule.onNodeWithText("Jam Kenya").assertExists()
+    composeRule.onNodeWithText("Gateway Remote Location").assertExists()
     composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
     composeRule
       .onNodeWithText(activity.getString(R.string.clear_database_message))
       .assertDoesNotExist()
 
-    composeRule.onNodeWithText("Sync").assertExists()
+    composeRule.onNodeWithText("Manual Sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
@@ -133,7 +142,37 @@ class UserSettingScreenTest {
   @Test
   fun testInsightsIsRenderedOnProfileScreen() {
     initComposable()
-    composeRule.onNodeWithText("Insights").assertExists()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_INSIGHTS).assertExists()
+  }
+
+  @Test
+  fun testSyncIsRenderedOnProfileScreen() {
+    initComposable()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_SYNC).assertExists()
+  }
+
+  @Test
+  fun testOfflineMapIsRenderedOnProfile(){
+    initComposable()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_OFFLINE_MAP).assertExists()
+  }
+
+  @Test
+  fun testOfflineMapIsClickable(){
+    initComposable()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_OFFLINE_MAP).assertHasClickAction()
+  }
+
+  @Test
+  fun testContactHelpIsRenderedOnProfile(){
+    initComposable()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_CONTACT_HELP).assertExists()
+  }
+
+  @Test
+  fun testContactHelpIsClickable(){
+    initComposable()
+    composeRule.onNodeWithTag(USER_SETTING_ROW_CONTACT_HELP).assertHasClickAction()
   }
 
   @Test
@@ -174,6 +213,9 @@ class UserSettingScreenTest {
     scenario.onActivity { activity ->
       activity.setContent {
         UserSettingScreen(
+          appTitle = "Quest" ,
+          fullname = "Jam Kenya",
+          practitionerLocation = "Gateway Remote Location",
           username = "Johndoe",
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),

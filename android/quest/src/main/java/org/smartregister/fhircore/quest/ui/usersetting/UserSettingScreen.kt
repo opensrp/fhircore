@@ -103,15 +103,16 @@ const val USER_SETTING_ROW_P2P = "userSettingRowP2P"
 const val USER_SETTING_ROW_INSIGHTS = "userSettingRowInsights"
 const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
 const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
+const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingScreen(
-    appUiState: AppMainUiState?,
+    appTitle: String?,
     modifier: Modifier = Modifier,
     username: String?,
     practitionerLocation:String?,
-    userInfo: UserInfo?,
+    fullname: String?,
     allowSwitchingLanguages: Boolean,
     selectedLanguage: String,
     languages: List<Language>,
@@ -172,17 +173,17 @@ fun UserSettingScreen(
                         )
                     }
                     Text(
-                        text = appUiState?.appTitle ?: "",
+                        text = appTitle ?: "",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = userInfo?.name?.capitalize(Locale.current) ?: "",
+                        text = fullname?.capitalize(Locale.current) ?: "",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                     )
                     Text(
-                        text = "@${username.capitalize(Locale.current)}",
+                        text = username.capitalize(Locale.current),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                     )
@@ -219,7 +220,7 @@ fun UserSettingScreen(
                 icon = Icons.Rounded.Sync,
                 text = stringResource(id = R.string.sync),
                 clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
-                modifier = modifier,
+                modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
             )
 
             UserSettingRow(
@@ -492,10 +493,10 @@ fun ConfirmClearDatabaseDialog(
 @PreviewWithBackgroundExcludeGenerated
 fun UserSettingPreview() {
     UserSettingScreen(
-        appUiState = null,
+        appTitle = "Quest",
         username = "Jam",
-        userInfo = null,
-        practitionerLocation = "",
+        fullname = "Jam Kenya",
+        practitionerLocation = "Gateway Remote Location",
         allowSwitchingLanguages = true,
         selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
         languages = listOf(Language("en", "English"), Language("sw", "Swahili")),

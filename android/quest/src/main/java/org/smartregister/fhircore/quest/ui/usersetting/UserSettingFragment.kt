@@ -49,10 +49,10 @@ class UserSettingFragment : Fragment() {
             setContent {
                 AppTheme {
                     UserSettingScreen(
-                        appUiState = appMainViewModel.appMainUiState.value,
+                        appTitle  = appMainViewModel.appMainUiState.value.appTitle,
                         username = userSettingViewModel.retrieveUsername(),
                         practitionerLocation = userSettingViewModel.practitionerLocation(),
-                        userInfo = userSettingViewModel.retrieveUserInfo(),
+                        fullname = userSettingViewModel.retrieveUserInfo()?.name,
                         allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                         selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
                         allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
