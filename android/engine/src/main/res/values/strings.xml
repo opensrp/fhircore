@@ -149,6 +149,7 @@
     <string name="error_occurred" translatable="false">Something went wrong...</string>
     <string name="insights">Insights</string>
     <string name="dismiss">Dismiss</string>
+    <string name="refresh">Refresh</string>
     <string name="unsynced_resources">Unsynced Resources</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
