@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import java.time.LocalDate
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
@@ -38,6 +39,11 @@ fun Patient.extractGender(context: Context): String? =
 fun Patient.extractAge(context: Context): String {
   if (!hasBirthDate()) return ""
   return calculateAge(birthDate, context)
+}
+
+fun Patient.extractAgeAtDate(context: Context, date: LocalDate): String {
+  if (!hasBirthDate()) return ""
+  return calculateAge(birthDate, context, date)
 }
 
 fun String?.join(other: String?, separator: String) =
