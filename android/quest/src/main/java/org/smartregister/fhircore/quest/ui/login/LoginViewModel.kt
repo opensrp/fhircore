@@ -31,6 +31,7 @@ import io.sentry.Sentry
 import io.sentry.protocol.User
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -339,6 +340,13 @@ constructor(
                         }
                     }
 
+                val location =
+                    withContext(dispatcherProvider.io()) {
+                        defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+                            locations.map { it.name }
+                        }
+                    }
+
                 defaultRepository.createRemote(false, *practitioners.toTypedArray())
                 practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
                     defaultRepository.createRemote(false, *it)
@@ -354,6 +362,7 @@ constructor(
 
                 if (practitionerId.isNotEmpty()) {
                     writePractitionerDetailsToShredPref(
+                        location = location,
                         fhirPractitionerDetails = practitionerDetails,
                         careTeams = careTeamIds,
                         organizations = organizationIds,
@@ -371,6 +380,7 @@ constructor(
                             identifier.value == userInfo!!.keycloakUuid
                         ) {
                             writePractitionerDetailsToShredPref(
+                                location = location,
                                 fhirPractitionerDetails = practitionerDetails,
                                 careTeams = careTeamIds,
                                 organizations = organizationIds,
@@ -395,6 +405,7 @@ constructor(
         )
     }
     private fun writePractitionerDetailsToShredPref(
+        location:List<String>,
         fhirPractitionerDetails: PractitionerDetails,
         careTeams: List<String>,
         organizations: List<String>,
@@ -415,6 +426,10 @@ constructor(
         sharedPreferences.write(
             SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
             locationHierarchies,
+        )
+        sharedPreferences.write(
+            key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+            value = location.joinToString(separator = "")
         )
     }
 

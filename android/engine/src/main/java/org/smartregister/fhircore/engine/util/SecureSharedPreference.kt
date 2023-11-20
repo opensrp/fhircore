@@ -93,7 +93,6 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     fun retrieveSessionPin() =
         secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
 
-    fun readPractitionerLocation() = secureSharedPreferences.getString(ResourceType.Location.name,null)
 
     fun deleteSessionPin() =
         secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_PIN_KEY.name) }

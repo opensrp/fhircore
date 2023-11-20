@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -83,7 +84,7 @@ constructor(
         key = SharedPreferenceKey.USER_INFO.name,
     )
 
-    fun practitionerLocation() = secureSharedPreference.readPractitionerLocation()
+    fun practitionerLocation() = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name,null)
 
     fun retrieveLastSyncTimestamp(): String? =
         sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
