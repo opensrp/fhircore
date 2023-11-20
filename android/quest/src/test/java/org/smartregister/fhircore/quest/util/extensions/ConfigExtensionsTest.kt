@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentCaptor
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -334,10 +333,13 @@ class ConfigExtensionsTest : RobolectricTest() {
 
     // make sure correct function with correct signature is called
     verify {
-      context.startActivity(withArg {
-        assertEquals(it.action, Intent.ACTION_DIAL)
-        assertEquals(it.data, Uri.parse("tel:0700000000"))
-      }, null)
+      context.startActivity(
+        withArg {
+          assertEquals(it.action, Intent.ACTION_DIAL)
+          assertEquals(it.data, Uri.parse("tel:0700000000"))
+        },
+        null,
+      )
     }
   }
 
