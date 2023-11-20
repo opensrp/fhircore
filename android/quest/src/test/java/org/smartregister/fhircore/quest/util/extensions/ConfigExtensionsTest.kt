@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
@@ -33,6 +35,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentCaptor
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -328,6 +331,14 @@ class ConfigExtensionsTest : RobolectricTest() {
 
     // make sure no errors thrown when the new activity is started. should return nothing
     every { context.startActivity(any()) } returns Unit
+
+    // make sure correct function with correct signature is called
+    verify {
+      context.startActivity(withArg {
+        assertEquals(it.action, Intent.ACTION_DIAL)
+        assertEquals(it.data, Uri.parse("tel:0700000000"))
+      }, null)
+    }
   }
 
   @Test
