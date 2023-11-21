@@ -32,7 +32,8 @@ class UserInsightScreenFragment : Fragment() {
                     UserSettingInsightScreen(
                         unsyncedResources = userSettingViewModel.unsyncedResourcesMutableSharedFlow.collectAsState(initial = listOf()).value,
                         syncedResources = userSettingViewModel.unsyncedResourcesMutableSharedFlow.collectAsState(initial = listOf()).value,
-                        mainNavController =  findNavController()
+                        navController =  findNavController(),
+                        onRefreshRequest = {}
                     )
                 }
             }
