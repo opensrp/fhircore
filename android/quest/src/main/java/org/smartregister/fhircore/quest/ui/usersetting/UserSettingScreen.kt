@@ -348,7 +348,7 @@ fun UserSettingScreen(
       val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
       if (unSyncedResources.isNotEmpty()) {
-        UserSettingInsightScreen(unSyncedResources, dismissInsightsView)
+        UserSettingInsightScreen(unSyncedResources, unSyncedResources)
       }
     }
   }

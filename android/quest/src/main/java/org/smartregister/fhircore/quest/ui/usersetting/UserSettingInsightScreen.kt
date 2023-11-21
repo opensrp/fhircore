@@ -26,12 +26,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -47,11 +51,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -62,19 +62,18 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.usersetting.components.UserSettingInsightView
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingInsightScreen(
     unsyncedResources: List<Pair<String, Int>>,
-    onRefreshRequest : () -> Unit
+    syncedResources: List<Pair<String, Int>>,
 ) {
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(org.smartregister.fhircore.engine.R.string.insights)) },
+                title = { Text(text = stringResource(R.string.insights)) },
                 navigationIcon = {
                     IconButton(onClick = { }) {
                         Icon(Icons.Filled.ArrowBack, null)
@@ -84,88 +83,155 @@ fun UserSettingInsightScreen(
                 backgroundColor = MaterialTheme.colors.primary,
             )
         },
-        backgroundColor = colorResource(id = org.smartregister.fhircore.engine.R.color.backgroundGray),
+        backgroundColor = Color.White,
     ) {
-        Box(
-            Modifier
-                .clip(RectangleShape)
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            LazyColumn {
-                item {
-                    UserSettingInsightView(
-                        unsyncedResources = unsyncedResources,
-                        syncedResources = unsyncedResources
-                    )
-                }
 
-                item {
-                    Column {
-                        InfoView(text = stringResource(id = R.string.user_info))
-                    }
-            }
-                item {
-                    Column(
-                        Modifier
-                            .wrapContentWidth()
-                            .wrapContentHeight()
-                            .padding(4.dp)
+//        LazyColumn(
+//            Modifier
+//                .fillMaxSize()
+//                .padding( 16.dp)
+//                .background(Color.White),
+//            horizontalAlignment = Alignment.Start,
+//
+//            ) {
+//
+//            item{
+//                Text(
+//                    text = if (unsyncedResources.isNullOrEmpty()) {
+//                        stringResource(id = R.string.synced_statistics)
+//                    } else stringResource(id = R.string.unsynced_resources),
+//                    modifier = Modifier.padding(11.dp),
+//                    style = TextStyle(color = Color.Black, fontSize = 18.sp),
+//                    fontWeight = FontWeight.Bold,
+//                )
+//            }
+//
+//            items(unsyncedResources){ unsynced->
+//                Row(
+//                    Modifier
+//                        .fillMaxWidth(),
+//
+    //                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = unsynced.first,
+//                        fontWeight = FontWeight.Light,
+//                    )
+//                    Text(
+//                        text = unsynced.second.toString(),
+//                    )
+//                }
+//
+//                Spacer(modifier = Modifier.padding(4.dp))
+//            }
+//            items(syncedResources) { synced ->
+//                Row(
+//                    Modifier
+//                        .fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        text = synced.first,
+//                        fontWeight = FontWeight.Light,
+//                    )
+//                    Text(
+//                        text = synced.second.toString(),
+//                    )
+//                }
+//
+//            }
+//            item {
+//                Divider(color = DividerColor)
+//
+//                Spacer(modifier = Modifier.padding(8.dp))
+//            }
+
+         /*   InfoView(title = stringResource(id = R.string.user_info), data = unsyncedResources)
+            InfoView(title = stringResource(id = R.string.app_info), data = unsyncedResources)
+            InfoView(
+                title = stringResource(id = R.string.assignment_info),
+                data = unsyncedResources
+            )
+            InfoView(title = stringResource(id = R.string.device_info), data = unsyncedResources)
+            Column(
+                Modifier
+                    .wrapContentWidth()
+                    .wrapContentHeight()
+                    .padding(4.dp)
+            ) {
+                Surface(shape = RoundedCornerShape(0.dp)) {
+                    OutlinedButton(
+                        modifier = Modifier.width(300.dp),
+                        onClick = onRefreshRequest,
+                        border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
                     ) {
-                        Surface(shape = RoundedCornerShape(0.dp)) {
-                            OutlinedButton(
-                                modifier = Modifier.width(300.dp),
-                                onClick = onRefreshRequest,
-                                border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.refresh),
-                                    modifier = Modifier.padding(6.dp),
-                                    style = TextStyle(
-                                        color = MaterialTheme.colors.primarySurface,
-                                        fontSize = 14.sp
-                                    ),
-                                )
-                            }
-                        }
+                        Text(
+                            text = stringResource(R.string.refresh),
+                            modifier = Modifier.padding(6.dp),
+                            style = TextStyle(
+                                color = MaterialTheme.colors.primarySurface,
+                                fontSize = 14.sp
+                            ),
+                        )
                     }
                 }
-            }
-
-        }
+            }*/
     }
 }
 
 
 @Composable
 fun InfoView(
-    text: String,
+    title: String,
+    data: List<Pair<String, Int>>,
     modifier: Modifier = Modifier,
     textColor: Color = LoginDarkColor,
 ) {
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(color = colorResource(id = org.smartregister.fhircore.engine.R.color.white))
-            .padding(vertical = 16.dp, horizontal = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+    LazyColumn(
     ) {
-        Row {
-            Text(text = text, fontSize = 18.sp, color = textColor, fontWeight = FontWeight.Bold)
-            Spacer(modifier = modifier.width(20.dp))
+        item {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                color = textColor,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = modifier.height(4.dp))
         }
+        items(data) { info ->
+            Row(
+                modifier = modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = info.first,
+                    fontSize = 16.sp,
+                    color = textColor,
+                    fontWeight = FontWeight.Normal
+                )
+                Text(
+                    text = info.second.toString(),
+                    fontSize = 16.sp,
+                    color = textColor,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        }
+
+
     }
     Divider(color = DividerColor)
 }
 
 
-
 @Preview
 @Composable
 fun UserSettingInsightScreenPreview() {
-
-    UserSettingInsightScreen(unsyncedResources = listOf(Pair("",1))) {
-        
+    Column() {
+        UserSettingInsightScreen(unsyncedResources = listOf(Pair("", 1)), syncedResources = listOf(Pair("", 1)))
     }
 }
