@@ -139,6 +139,8 @@ fun List<ActionConfig>.handleClickEvent(
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
+      ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
+        navController.navigate(MainNavigationScreen.Insight.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(

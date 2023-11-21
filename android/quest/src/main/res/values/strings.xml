@@ -109,5 +109,7 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

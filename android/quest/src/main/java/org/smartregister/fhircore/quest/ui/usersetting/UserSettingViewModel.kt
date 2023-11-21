@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.internal.composableLambdaN
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -127,6 +129,9 @@ constructor(
         updateProgressBarState(event.show, event.messageResourceId)
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
       is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
+      is UserSettingsEvent.ShowInsightsScreen -> {
+        event.navController.navigate(MainNavigationScreen.Insight.route)
+      }
     }
   }
 

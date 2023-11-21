@@ -37,6 +37,7 @@ sealed class MainNavigationScreen(
     MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
 
   object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
+  object Insight : MainNavigationScreen(route = R.id.userInsightScreenFragment)
 
   fun eventId(id: String) = route.toString() + "_" + id
 }
