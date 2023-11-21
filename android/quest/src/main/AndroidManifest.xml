@@ -16,7 +16,6 @@
         android:theme="@style/AppTheme.NoActionBar"
         android:usesCleartextTraffic="false"
         android:windowSoftInputMode="adjustResize"
-        android:requestLegacyExternalStorage="true"
         tools:ignore="UnusedAttribute,LockedOrientationActivity"
         tools:replace="android:theme">
         <profileable
@@ -92,5 +91,4 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 </manifest>
