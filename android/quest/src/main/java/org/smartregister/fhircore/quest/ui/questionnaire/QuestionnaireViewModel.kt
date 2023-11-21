@@ -192,6 +192,7 @@ constructor(
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
+        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
         return@launch
       }
 
@@ -658,8 +659,17 @@ constructor(
       )
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
-      defaultRepository.addOrUpdate(resource = group)
     }
+    // here Group is coming with groupIdentifier thus it make sense that
+    // there is an interaction inside group rather addingMemberItems only for above check
+    // so for every cases group is to be updated
+
+    /**
+     * The Group Resource is fetched by the `groupIdentifier`. We trigger the group update every
+     * time anything linked to it in order to change the `_lastUpdated` timestamp. This helps us
+     * with order the last updated group (household) on the top of the register.
+     */
+    defaultRepository.addOrUpdate(resource = group)
   }
 
   /**
