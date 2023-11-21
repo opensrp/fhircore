@@ -38,6 +38,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
@@ -55,172 +58,63 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.smartregister.fhircore.engine.ui.theme.DividerColor
-import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
+import androidx.compose.ui.window.Dialog
 import org.smartregister.fhircore.quest.R
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingInsightScreen(
-    unsyncedResources: List<Pair<String, Int>>,
-    syncedResources: List<Pair<String, Int>>,
+  unsyncedResources: List<Pair<String, Int>>,
+  onDismissRequest: () -> Unit,
 ) {
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.insights)) },
-                navigationIcon = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Filled.ArrowBack, null)
-                    }
-                },
-                contentColor = Color.White,
-                backgroundColor = MaterialTheme.colors.primary,
-            )
-        },
-        backgroundColor = Color.White,
-    ) {
-
-//        LazyColumn(
-//            Modifier
-//                .fillMaxSize()
-//                .padding( 16.dp)
-//                .background(Color.White),
-//            horizontalAlignment = Alignment.Start,
-//
-//            ) {
-//
-//            item{
-//                Text(
-//                    text = if (unsyncedResources.isNullOrEmpty()) {
-//                        stringResource(id = R.string.synced_statistics)
-//                    } else stringResource(id = R.string.unsynced_resources),
-//                    modifier = Modifier.padding(11.dp),
-//                    style = TextStyle(color = Color.Black, fontSize = 18.sp),
-//                    fontWeight = FontWeight.Bold,
-//                )
-//            }
-//
-//            items(unsyncedResources){ unsynced->
-//                Row(
-//                    Modifier
-//                        .fillMaxWidth(),
-//
-    //                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Text(
-//                        text = unsynced.first,
-//                        fontWeight = FontWeight.Light,
-//                    )
-//                    Text(
-//                        text = unsynced.second.toString(),
-//                    )
-//                }
-//
-//                Spacer(modifier = Modifier.padding(4.dp))
-//            }
-//            items(syncedResources) { synced ->
-//                Row(
-//                    Modifier
-//                        .fillMaxWidth(),
-//                    horizontalArrangement = Arrangement.SpaceBetween,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Text(
-//                        text = synced.first,
-//                        fontWeight = FontWeight.Light,
-//                    )
-//                    Text(
-//                        text = synced.second.toString(),
-//                    )
-//                }
-//
-//            }
-//            item {
-//                Divider(color = DividerColor)
-//
-//                Spacer(modifier = Modifier.padding(8.dp))
-//            }
-
-         /*   InfoView(title = stringResource(id = R.string.user_info), data = unsyncedResources)
-            InfoView(title = stringResource(id = R.string.app_info), data = unsyncedResources)
-            InfoView(
-                title = stringResource(id = R.string.assignment_info),
-                data = unsyncedResources
-            )
-            InfoView(title = stringResource(id = R.string.device_info), data = unsyncedResources)
-            Column(
-                Modifier
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-                    .padding(4.dp)
-            ) {
-                Surface(shape = RoundedCornerShape(0.dp)) {
-                    OutlinedButton(
-                        modifier = Modifier.width(300.dp),
-                        onClick = onRefreshRequest,
-                        border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.refresh),
-                            modifier = Modifier.padding(6.dp),
-                            style = TextStyle(
-                                color = MaterialTheme.colors.primarySurface,
-                                fontSize = 14.sp
-                            ),
-                        )
-                    }
-                }
-            }*/
-    }
-}
-
-
-@Composable
-fun InfoView(
-    title: String,
-    data: List<Pair<String, Int>>,
-    modifier: Modifier = Modifier,
-    textColor: Color = LoginDarkColor,
-) {
-
-    LazyColumn(
-    ) {
-        item {
-            Text(
-                text = title,
-                fontSize = 18.sp,
-                color = textColor,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = modifier.height(4.dp))
-        }
-        items(data) { info ->
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = info.first,
-                    fontSize = 16.sp,
-                    color = textColor,
-                    fontWeight = FontWeight.Normal
-                )
-                Text(
-                    text = info.second.toString(),
-                    fontSize = 16.sp,
-                    color = textColor,
-                    fontWeight = FontWeight.Normal
-                )
+  Box(Modifier.clip(RectangleShape).fillMaxWidth().background(Color.White)) {
+    Dialog(onDismissRequest = onDismissRequest) {
+      Column(
+        modifier = Modifier.fillMaxWidth().wrapContentHeight().background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(
+          text = stringResource(id = R.string.unsynced_resources),
+          modifier = Modifier.padding(11.dp),
+          style = TextStyle(color = Color.Black, fontSize = 20.sp),
+          fontWeight = FontWeight.Light,
+        )
+        LazyColumn(modifier = Modifier.wrapContentHeight()) {
+          items(unsyncedResources) { language ->
+            Box(Modifier.fillMaxWidth().padding(15.dp)) {
+              Text(
+                text = language.first,
+                modifier = Modifier.align(Alignment.CenterStart),
+                fontWeight = FontWeight.Light,
+              )
+              Text(
+                text = language.second.toString(),
+                modifier = Modifier.align(Alignment.CenterEnd),
+              )
             }
+            Spacer(modifier = Modifier.padding(1.dp))
+          }
         }
+        Column(Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp)) {
+          Surface(shape = RoundedCornerShape(0.dp)) {
+            OutlinedButton(
+              onClick = onDismissRequest,
+              border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
+            ) {
+              Text(
+                text = stringResource(R.string.dismiss),
+                modifier = Modifier.padding(6.dp),
+                style = TextStyle(color = MaterialTheme.colors.primarySurface, fontSize = 14.sp),
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 
     }

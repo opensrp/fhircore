@@ -291,7 +291,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Insights,
         text = stringResource(id = R.string.insights),
-        clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
+        clickListener = { onEvent(UserSettingsEvent.ShowInsightsScreen( navController = mainNavController)) },
         modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
         showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
       )
@@ -348,7 +348,7 @@ fun UserSettingScreen(
       val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
       if (unSyncedResources.isNotEmpty()) {
-        UserSettingInsightScreen(unSyncedResources, unSyncedResources)
+        // UserSettingInsightScreen(unSyncedResources, unSyncedResources)
       }
     }
   }
