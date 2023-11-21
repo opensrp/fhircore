@@ -20,7 +20,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
@@ -34,10 +33,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_CONTACT_HELP
-import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_INSIGHTS
-import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_OFFLINE_MAP
-import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_SYNC
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen
 
 class UserSettingScreenTest {
@@ -142,37 +137,31 @@ class UserSettingScreenTest {
   @Test
   fun testInsightsIsRenderedOnProfileScreen() {
     initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_INSIGHTS).assertExists()
+    composeRule.onNodeWithText("Insights").assertExists()
   }
 
   @Test
-  fun testSyncIsRenderedOnProfileScreen() {
+  fun testOfflineMapIsRenderedOnProfile() {
     initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_SYNC).assertExists()
+    composeRule.onNodeWithText("Offline Maps").assertExists()
   }
 
   @Test
-  fun testOfflineMapIsRenderedOnProfile(){
+  fun testOfflineMapIsClickable() {
     initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_OFFLINE_MAP).assertExists()
+    composeRule.onNodeWithText("Offline Maps").assertHasClickAction()
   }
 
   @Test
-  fun testOfflineMapIsClickable(){
+  fun testContactHelpIsRenderedOnProfile() {
     initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_OFFLINE_MAP).assertHasClickAction()
+    composeRule.onNodeWithText("Contact help").assertExists()
   }
 
   @Test
-  fun testContactHelpIsRenderedOnProfile(){
+  fun testContactHelpIsClickable() {
     initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_CONTACT_HELP).assertExists()
-  }
-
-  @Test
-  fun testContactHelpIsClickable(){
-    initComposable()
-    composeRule.onNodeWithTag(USER_SETTING_ROW_CONTACT_HELP).assertHasClickAction()
+    composeRule.onNodeWithText("Contact help").assertHasClickAction()
   }
 
   @Test
@@ -213,7 +202,7 @@ class UserSettingScreenTest {
     scenario.onActivity { activity ->
       activity.setContent {
         UserSettingScreen(
-          appTitle = "Quest" ,
+          appTitle = "Quest",
           fullname = "Jam Kenya",
           practitionerLocation = "Gateway Remote Location",
           username = "Johndoe",

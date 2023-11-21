@@ -90,322 +90,322 @@ private val DividerColor = MenuItemColor.copy(alpha = 0.2f)
 
 @Composable
 fun AppDrawer(
-    modifier: Modifier = Modifier,
-    appUiState: AppMainUiState,
-    navController: NavController,
-    openDrawer: (Boolean) -> Unit,
-    onSideMenuClick: (AppMainEvent) -> Unit,
-    appVersionPair: Pair<Int, String>? = null,
+  modifier: Modifier = Modifier,
+  appUiState: AppMainUiState,
+  navController: NavController,
+  openDrawer: (Boolean) -> Unit,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  appVersionPair: Pair<Int, String>? = null,
 ) {
-    val context = LocalContext.current
-    val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
+  val context = LocalContext.current
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
-    val navigationConfiguration = appUiState.navigationConfiguration
-    Scaffold(
-        topBar = {
-            Column(modifier = modifier.background(SideMenuDarkColor)) {
-                // Display the app name and version
-                NavTopSection(modifier, appUiState, versionCode, versionName)
+  val navigationConfiguration = appUiState.navigationConfiguration
+  Scaffold(
+    topBar = {
+      Column(modifier = modifier.background(SideMenuDarkColor)) {
+        // Display the app name and version
+        NavTopSection(modifier, appUiState, versionCode, versionName)
 
-                // Display menu action button
-                MenuActionButton(
-                    modifier = modifier,
-                    navigationConfiguration = navigationConfiguration,
-                    navController = navController,
-                )
+        // Display menu action button
+        MenuActionButton(
+          modifier = modifier,
+          navigationConfiguration = navigationConfiguration,
+          navController = navController,
+        )
 
-                Divider(color = DividerColor)
+        Divider(color = DividerColor)
+      }
+    },
+    bottomBar = { // Display bottom section of the nav (sync)
+      NavBottomSection(modifier, appUiState, onSideMenuClick, openDrawer)
+    },
+    backgroundColor = SideMenuDarkColor,
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
+        item {
+          Column(modifier = modifier.background(SideMenuDarkColor)) {
+            if (navigationConfiguration.clientRegisters.isNotEmpty()) {
+              Text(
+                text = stringResource(id = R.string.registers).uppercase(),
+                fontSize = 14.sp,
+                color = MenuItemColor,
+                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
+              )
             }
-        },
-        bottomBar = { // Display bottom section of the nav (sync)
-            NavBottomSection(modifier, appUiState, onSideMenuClick, openDrawer)
-        },
-        backgroundColor = SideMenuDarkColor,
-    ) { innerPadding ->
-        Box(modifier = modifier.padding(innerPadding)) {
-            LazyColumn(modifier = modifier.padding(horizontal = 16.dp)) {
-                item {
-                    Column(modifier = modifier.background(SideMenuDarkColor)) {
-                        if (navigationConfiguration.clientRegisters.isNotEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.registers).uppercase(),
-                                fontSize = 14.sp,
-                                color = MenuItemColor,
-                                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
-                            )
-                        }
-                    }
-                }
-
-                // Display list of configurable client registers
-                items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
-                    SideMenuItem(
-                        imageConfig = navigationMenu.menuIconConfig,
-                        title = navigationMenu.display,
-                        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
-                        showEndText = navigationMenu.showCount,
-                    ) {
-                        openDrawer(false)
-                        onSideMenuClick(
-                            AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
-                        )
-                    }
-                }
-
-                item {
-                    if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
-                        Column {
-                            OtherPatientsItem(
-                                navigationConfiguration = navigationConfiguration,
-                                onSideMenuClick = onSideMenuClick,
-                                openDrawer = openDrawer,
-                                navController = navController,
-                            )
-                            if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
-                        }
-                    }
-                }
-
-                // Display list of configurable static menu
-                items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
-                    SideMenuItem(
-                        imageConfig = navigationMenu.menuIconConfig,
-                        title = navigationMenu.display,
-                        endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
-                        showEndText = navigationMenu.showCount,
-                    ) {
-                        openDrawer(false)
-                        onSideMenuClick(
-                            AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
-                        )
-                    }
-                }
-            }
+          }
         }
+
+        // Display list of configurable client registers
+        items(navigationConfiguration.clientRegisters, { it.id }) { navigationMenu ->
+          SideMenuItem(
+            imageConfig = navigationMenu.menuIconConfig,
+            title = navigationMenu.display,
+            endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
+            showEndText = navigationMenu.showCount,
+          ) {
+            openDrawer(false)
+            onSideMenuClick(
+              AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
+            )
+          }
+        }
+
+        item {
+          if (navigationConfiguration.bottomSheetRegisters?.registers?.isNotEmpty() == true) {
+            Column {
+              OtherPatientsItem(
+                navigationConfiguration = navigationConfiguration,
+                onSideMenuClick = onSideMenuClick,
+                openDrawer = openDrawer,
+                navController = navController,
+              )
+              if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
+            }
+          }
+        }
+
+        // Display list of configurable static menu
+        items(navigationConfiguration.staticMenu, { it.id }) { navigationMenu ->
+          SideMenuItem(
+            imageConfig = navigationMenu.menuIconConfig,
+            title = navigationMenu.display,
+            endText = appUiState.registerCountMap[navigationMenu.id]?.toString() ?: "",
+            showEndText = navigationMenu.showCount,
+          ) {
+            openDrawer(false)
+            onSideMenuClick(
+              AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationMenu),
+            )
+          }
+        }
+      }
     }
+  }
 }
 
 @Composable
 private fun NavBottomSection(
-    modifier: Modifier,
-    appUiState: AppMainUiState,
-    onSideMenuClick: (AppMainEvent) -> Unit,
-    openDrawer: (Boolean) -> Unit,
+  modifier: Modifier,
+  appUiState: AppMainUiState,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  openDrawer: (Boolean) -> Unit,
 ) {
-    val context = LocalContext.current
-    Box(
-        modifier =
-        modifier
-            .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-            .background(SideMenuBottomItemDarkColor)
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+  val context = LocalContext.current
+  Box(
+    modifier =
+      modifier
+        .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
+        .background(SideMenuBottomItemDarkColor)
+        .padding(horizontal = 16.dp, vertical = 4.dp),
+  ) {
+    SideMenuItem(
+      modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+      title = stringResource(R.string.sync),
+      endText = appUiState.lastSyncTime,
+      showEndText = true,
+      endTextColor = SubtitleTextColor,
     ) {
-        SideMenuItem(
-            modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-            imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-            title = stringResource(R.string.sync),
-            endText = appUiState.lastSyncTime,
-            showEndText = true,
-            endTextColor = SubtitleTextColor,
-        ) {
-            openDrawer(false)
-            onSideMenuClick(AppMainEvent.SyncData(context))
-        }
+      openDrawer(false)
+      onSideMenuClick(AppMainEvent.SyncData(context))
     }
+  }
 }
 
 @Composable
 private fun OtherPatientsItem(
-    navigationConfiguration: NavigationConfiguration,
-    onSideMenuClick: (AppMainEvent) -> Unit,
-    openDrawer: (Boolean) -> Unit,
-    navController: NavController,
+  navigationConfiguration: NavigationConfiguration,
+  onSideMenuClick: (AppMainEvent) -> Unit,
+  openDrawer: (Boolean) -> Unit,
+  navController: NavController,
 ) {
-    val context = LocalContext.current
-    SideMenuItem(
-        imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
+  val context = LocalContext.current
+  SideMenuItem(
+    imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
+    title =
+      navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
+        stringResource(R.string.other_patients)
+      },
+    endText = "",
+    showEndText = false,
+    endImageVector = Icons.Filled.KeyboardArrowRight,
+    endTextColor = SubtitleTextColor,
+  ) {
+    openDrawer(false)
+    onSideMenuClick(
+      AppMainEvent.OpenRegistersBottomSheet(
+        registersList = navigationConfiguration.bottomSheetRegisters?.registers,
+        navController = navController,
         title =
-        navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
-            stringResource(R.string.other_patients)
-        },
-        endText = "",
-        showEndText = false,
-        endImageVector = Icons.Filled.KeyboardArrowRight,
-        endTextColor = SubtitleTextColor,
-    ) {
-        openDrawer(false)
-        onSideMenuClick(
-            AppMainEvent.OpenRegistersBottomSheet(
-                registersList = navigationConfiguration.bottomSheetRegisters?.registers,
-                navController = navController,
-                title =
-                if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
-                    context.getString(R.string.other_patients)
-                } else {
-                    navigationConfiguration.bottomSheetRegisters?.display
-                },
-            ),
-        )
-    }
+          if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
+            context.getString(R.string.other_patients)
+          } else {
+            navigationConfiguration.bottomSheetRegisters?.display
+          },
+      ),
+    )
+  }
 }
 
 @Composable
 private fun NavTopSection(
-    modifier: Modifier,
-    appUiState: AppMainUiState,
-    versionCode: Int,
-    versionName: String?,
+  modifier: Modifier,
+  appUiState: AppMainUiState,
+  versionCode: Int,
+  versionName: String?,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier =
-        modifier
-            .fillMaxWidth()
-            .background(SideMenuTopItemDarkColor)
-            .padding(horizontal = 16.dp)
-            .testTag(NAV_TOP_SECTION_TEST_TAG),
-    ) {
-        Text(
-            text = appUiState.appTitle,
-            fontSize = 22.sp,
-            color = AppTitleColor,
-            modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = "$versionCode($versionName)",
-            fontSize = 22.sp,
-            color = AppTitleColor,
-            modifier = modifier.padding(vertical = 16.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
+  Row(
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .background(SideMenuTopItemDarkColor)
+        .padding(horizontal = 16.dp)
+        .testTag(NAV_TOP_SECTION_TEST_TAG),
+  ) {
+    Text(
+      text = appUiState.appTitle,
+      fontSize = 22.sp,
+      color = AppTitleColor,
+      modifier = modifier.padding(top = 16.dp, bottom = 16.dp, end = 8.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis,
+    )
+    Text(
+      text = "$versionCode($versionName)",
+      fontSize = 22.sp,
+      color = AppTitleColor,
+      modifier = modifier.padding(vertical = 16.dp),
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis,
+    )
+  }
 }
 
 @Composable
 private fun MenuActionButton(
-    modifier: Modifier = Modifier,
-    navigationConfiguration: NavigationConfiguration,
-    navController: NavController,
+  modifier: Modifier = Modifier,
+  navigationConfiguration: NavigationConfiguration,
+  navController: NavController,
 ) {
-    if (
-        navigationConfiguration.menuActionButton != null &&
-        navigationConfiguration.menuActionButton?.visible == true
+  if (
+    navigationConfiguration.menuActionButton != null &&
+      navigationConfiguration.menuActionButton?.visible == true
+  ) {
+    Row(
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .clickable {
+            navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
+          }
+          .padding(16.dp)
+          .testTag(MENU_BUTTON_TEST_TAG),
+      verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable {
-                    navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
-                }
-                .padding(16.dp)
-                .testTag(MENU_BUTTON_TEST_TAG),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(
-                modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    modifier = modifier.testTag(MENU_BUTTON_ICON_TEST_TAG),
-                    contentDescription = null,
-                )
-            }
-            Spacer(modifier.width(16.dp))
-            Text(
-                modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
-                text = navigationConfiguration.menuActionButton?.display?.uppercase()
-                    ?: stringResource(id = R.string.register_new_client),
-                color = MenuActionButtonTextColor,
-                fontSize = 18.sp,
-            )
-        }
+      Box(
+        modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
+        contentAlignment = Alignment.Center,
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          modifier = modifier.testTag(MENU_BUTTON_ICON_TEST_TAG),
+          contentDescription = null,
+        )
+      }
+      Spacer(modifier.width(16.dp))
+      Text(
+        modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
+        text = navigationConfiguration.menuActionButton?.display?.uppercase()
+            ?: stringResource(id = R.string.register_new_client),
+        color = MenuActionButtonTextColor,
+        fontSize = 18.sp,
+      )
     }
+  }
 }
 
 @Composable
 private fun SideMenuItem(
-    modifier: Modifier = Modifier,
-    imageConfig: ImageConfig? = null,
-    title: String,
-    endText: String = "",
-    endTextColor: Color = Color.White,
-    showEndText: Boolean,
-    endImageVector: ImageVector? = null,
-    onSideMenuClick: () -> Unit,
+  modifier: Modifier = Modifier,
+  imageConfig: ImageConfig? = null,
+  title: String,
+  endText: String = "",
+  endTextColor: Color = Color.White,
+  showEndText: Boolean,
+  endImageVector: ImageVector? = null,
+  onSideMenuClick: () -> Unit,
 ) {
+  Row(
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .clickable { onSideMenuClick() }
+        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier =
-        modifier
-            .fillMaxWidth()
-            .clickable { onSideMenuClick() }
-            .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
-        verticalAlignment = Alignment.CenterVertically,
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
+      verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                paddingEnd = 10,
-                imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
-                tint = MenuItemColor,
-            )
-            SideMenuItemText(title = title, textColor = Color.White)
-        }
-        if (showEndText) {
-            SideMenuItemText(title = endText, textColor = endTextColor)
-        }
-        endImageVector?.let { imageVector ->
-            Icon(
-                imageVector = imageVector,
-                contentDescription = null,
-                tint = MenuItemColor,
-                modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
-            )
-        }
+      Image(
+        paddingEnd = 10,
+        imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
+        tint = MenuItemColor,
+      )
+      SideMenuItemText(title = title, textColor = Color.White)
     }
+    if (showEndText) {
+      SideMenuItemText(title = endText, textColor = endTextColor)
+    }
+    endImageVector?.let { imageVector ->
+      Icon(
+        imageVector = imageVector,
+        contentDescription = null,
+        tint = MenuItemColor,
+        modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
+      )
+    }
+  }
 }
 
 @Composable
 private fun SideMenuItemText(title: String, textColor: Color) {
-    Text(
-        text = title,
-        color = textColor,
-        fontSize = 18.sp,
-        modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
-    )
+  Text(
+    text = title,
+    color = textColor,
+    fontSize = 18.sp,
+    modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun AppDrawerPreview() {
-    AppDrawer(
-        appUiState =
-        appMainUiStateOf(
-            appTitle = "MOH VTS",
-            username = "Demo",
-            lastSyncTime = "05:30 PM, Mar 3",
-            currentLanguage = "English",
-            languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-            navigationConfiguration =
-            NavigationConfiguration(
-                appId = "appId",
-                configType = ConfigType.Navigation.name,
-                staticMenu = listOf(),
-                clientRegisters = listOf(),
-                menuActionButton =
-                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
-            ),
-        ),
-        navController = rememberNavController(),
-        openDrawer = {},
-        onSideMenuClick = {},
-        appVersionPair = Pair(1, "0.0.1"),
-    )
+  AppDrawer(
+    appUiState =
+      appMainUiStateOf(
+        appTitle = "MOH VTS",
+        username = "Demo",
+        lastSyncTime = "05:30 PM, Mar 3",
+        currentLanguage = "English",
+        languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+        navigationConfiguration =
+          NavigationConfiguration(
+            appId = "appId",
+            configType = ConfigType.Navigation.name,
+            staticMenu = listOf(),
+            clientRegisters = listOf(),
+            menuActionButton =
+              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+          ),
+      ),
+    navController = rememberNavController(),
+    openDrawer = {},
+    onSideMenuClick = {},
+    appVersionPair = Pair(1, "0.0.1"),
+  )
 }

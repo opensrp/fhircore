@@ -156,7 +156,6 @@ class UserSettingViewModelTest : RobolectricTest() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
-
   @Test
   fun testLogoutUserShouldCallAuthLogoutService() {
     val activity = mockk<HiltActivityForTest>(relaxed = true)
