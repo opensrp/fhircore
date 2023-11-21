@@ -13,7 +13,6 @@ env:
 
 jobs:
   quest-performance-tests:
-    if: false
     runs-on: macos-latest
     strategy:
       matrix:
