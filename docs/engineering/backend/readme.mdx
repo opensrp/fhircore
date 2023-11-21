@@ -76,25 +76,16 @@ You can manage users manually via the APIs and/or user interfaces for keycloak a
 
 2. `POST` the binary resources referenced in the `composition_config.json`
 
-    - `POST` all non-patient data resources used by the application. Examples of these resources are Questionnaires, StructureMaps, PlanDefinitions, Measures, Libraries, and any Lists referencing other resources.
-
-> **Note:**  When `POST`ing the Binary configuration files in the `composition_config.json` remember to first encode the payload to Base64 before submitting.
-
 > **Note:**  As described in the [FHIR Gateway](backend/info-gateway) section, the server should be in an internal network behind a DMZ and therefore not require authentication, which will be handled by the FHIR Information Gateway.
 
 ## Deploy the FHIR Gateway
 
-1. Link to the [Docker image](https://hub.docker.com/r/onaio/fhir-gateway-plugin)
-1. The main documentation for deploying can be found in the [Github READ ME](https://github.com/onaio/fhir-gateway-plugin/blob/main/README.md)For configuration parameters, check out Read Me file for setting environment variables.
+1. Link to the [Docker image](https://hub.docker.com/r/onaio/fhir-gateway-plugin/tags )
+1. The main documentation for deploying can be found in the [Github READ ME](https://github.com/google/fhir-gateway/blob/main/README.md)For configuration parameters, check out Read Me file for setting environment variables.
 1. For configuration parameters, check out Read Me file for setting environment variables.
 1. OpenSRP nuances: Provide/export  the System variable `ALLOWED_QUERIES_FILE` with value `"resources/hapi_page_url_allowed_queries.json"`[HAPI Page URL Allowed Queries](https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_page_url_allowed_queries.json)
 1. For each deployment the configuration entries for resources here should match the specific  `Composition` resource ID and `Binary` resources IDs
-
-- Provide System variable `SYNC_FILTER_IGNORE_RESOURCES_FILE` with value `"resources/hapi_sync_filter_ignored_queries.json"`[HAPI Sync Filter](https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_sync_filter_ignored_queries.json)
-
-    1. For the `List` entry add the specific ID of the List resource here. This enables us to use the List Resources outside of our configs use case
-
-- In the HAPI FHIR application.yaml disable validations by setting to `false*` [HAPI FHIR IPA Server](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/a06c0b9ce47a05f0719edeaba2a325ff5bef8cce/src/main/resources/application.yaml#L182)
+1. Refer to the [FHIR Info Gateway Plugin Deployment Documentation](https://docs.google.com/document/d/1dVFwI3B6AR-J3HTgLdbM-AJuoxMorrOqe2z7y_t_B2Y/edit?usp=sharing)
 
 ## Deploy fhir-web
 
@@ -110,11 +101,20 @@ You can manage users manually via the APIs and/or user interfaces for keycloak a
 
 - Keycloak/Role configuration -  Roles for all the different resources - including `PUT`, `POST`, `GET` for Binary should exist, Client Mapper for the `fhir_core_app_id` and corresponding user attribute should not be missing
 
-- The `TOKEN_ISSUER` specified in your backend deployment e.g [here](https://github.com/onaio/infrastructure/blob/98da52e64da4297a104318396b8b9536ea7962b7/helm/releases/fhir-shared.dev.k8s.onalabs.org/opensrp/fhir-gateway/values.yaml#LL38C77-L38C77) should be the same Realm used by the application to fetch an access token for authentication and authorization.
+- The `TOKEN_ISSUER` specified in your backend deployment should be the same Realm used by the application to fetch an access token for authentication and authorization.
+
+```
+env:
+  - name: TOKEN_ISSUER
+    value: https://<yourkeycloak>.smartregister.org/auth/realms/FHIR_Android
+```    
 
 - Remove Resource entries from the `sync_confguration.json` file that should not be part of the normal data sync but rather part of the Composition file e.g. Questionnaire
 
 - When testing the set up **DO NOT** use debug app ids e.g. `app/debug`. The Gateway’s implementation is tightly coupled with the server hosted application resources
+
+- In the HAPI FHIR application.yaml disable validations by setting to `false*`. This is however not highly recommended.
+
 
 
 ## Resources
