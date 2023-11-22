@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.usersetting
 import android.content.Context
 import android.os.Looper
 import android.widget.Toast
+import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
@@ -59,6 +60,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -81,6 +83,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
   private var fhirResourceDataSource: FhirResourceDataSource
   private val sync = mockk<Sync>(relaxed = true)
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -283,5 +286,13 @@ class UserSettingViewModelTest : RobolectricTest() {
     userSettingViewModelSpy.onEvent(userSettingsEvent)
 
     verify { userSettingViewModelSpy.renderInsightsView(context) }
+  }
+
+  @Test
+  fun testShowInsightScreen() {
+    val userSettingViewModelSpy = spyk(userSettingViewModel)
+    val showInsightScreenEvent = UserSettingsEvent.ShowInsightsScreen(navController)
+    userSettingViewModelSpy.onEvent(showInsightScreenEvent)
+    verify { navController.navigate(MainNavigationScreen.Insight.route) }
   }
 }
