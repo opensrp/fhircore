@@ -171,7 +171,7 @@ private fun RowScope.RenderDetails(
   resourceData: ResourceData,
 ) {
   val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
-  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
+  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
