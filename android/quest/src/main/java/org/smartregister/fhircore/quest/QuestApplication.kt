@@ -143,6 +143,7 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
       startActivity(intent)
     }
   }
+
   override fun getFhirServerHost(): String {
     fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL).host
     return fhirServerHost ?: ""
