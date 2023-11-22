@@ -36,5 +36,6 @@ sealed class UserSettingsEvent {
   data class SyncData(val context: Context) : UserSettingsEvent()
 
   data class ShowInsightsView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
-  data class ShowInsightsScreen(val navController: NavController,) : UserSettingsEvent()
+
+  data class ShowInsightsScreen(val navController: NavController) : UserSettingsEvent()
 }

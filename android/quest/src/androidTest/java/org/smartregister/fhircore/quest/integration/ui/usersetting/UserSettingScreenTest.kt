@@ -141,7 +141,9 @@ class UserSettingScreenTest {
   @Test
   fun testOnClickingInsightsUnsavedDataShowsSyncStats() {
     val unsyncedResources = listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
-    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
+    initComposable(
+      unsyncedResourcesFlow = MutableStateFlow(unsyncedResources),
+    )
     composeRule.onNodeWithText("Insights").performClick()
     composeRule.onNodeWithText("Dismiss").assertExists()
 
