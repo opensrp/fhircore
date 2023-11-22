@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -409,6 +410,20 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
+        val resourceData = currentRegisterConfiguration.configRules?.let {
+          val computedValuesMap = resourceDataRulesExecutor.computeResourceDataRules(
+            ruleConfigs = it,
+            repositoryResourceData = null,
+            params = paramsMap,
+          )
+
+          ResourceData(
+            baseResourceId = "",
+            baseResourceType = ResourceType.Location,
+            computedValuesMap = computedValuesMap
+          )
+        }
+
         currentRegisterConfiguration.registerNotification?.let {
           val actionConfig = it.first()
           actionConfig.id?.let { notificationId ->
@@ -438,6 +453,7 @@ constructor(
               sharedPreferencesHelper
                 .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
                 .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+            resourceData = resourceData,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,

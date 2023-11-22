@@ -2,6 +2,15 @@
   "appId": "app",
   "configType": "register",
   "id": "householdRegister",
+  "configRules": [
+    {
+      "name": "practitionerLocationId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerLocationId', service.retrievePractitionerLocationId())"
+      ]
+    }
+  ],
   "fhirResource": {
     "baseResource": {
       "resource": "Group",
@@ -279,13 +288,22 @@
             "title": "Add Household",
             "saveButtonText": "ADD HOUSEHOLD",
             "setPractitionerDetails": true,
-            "setOrganizationDetails": true
+            "setOrganizationDetails": true,
+            "snackBarMessage": {
+              "message": "New Household Added",
+              "actionLabel": "",
+              "duration": "Short"
+            }
           },
-          "snackBarMessage": {
-            "message": "New Household Added",
-            "actionLabel": "",
-            "duration": "Short"
-          }
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "a8e0a3fb-f4d5-4b24-86e2-f2f4bd3dce80",
+              "dataType": "STRING",
+              "key": "practitionerLocationId",
+              "value": "@{practitionerLocationId}"
+            }
+          ]
         }
       ]
     }

@@ -118,6 +118,7 @@ fun RegisterScreen(
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           fabActions = fabActions,
+          resourceData = registerUiState.resourceData,
           navController = navController,
           lazyListState = lazyListState,
         )

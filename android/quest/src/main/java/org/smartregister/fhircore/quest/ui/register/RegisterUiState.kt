@@ -19,10 +19,12 @@ package org.smartregister.fhircore.quest.ui.register
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 
 data class RegisterUiState(
   val screenTitle: String = "",
   val isFirstTimeSync: Boolean = false,
+  val resourceData: ResourceData? = null,
   val registerConfiguration: RegisterConfiguration? = null,
   val registerId: String = "",
   val totalRecordsCount: Long = 0,

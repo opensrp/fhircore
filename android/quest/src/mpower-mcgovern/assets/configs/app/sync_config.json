@@ -46,7 +46,8 @@
           "Measure",
           "MeasureReport",
           "Flag",
-          "List"
+          "List",
+          "Location"
         ]
       }
     },

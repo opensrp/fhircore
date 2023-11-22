@@ -19,9 +19,11 @@ package org.smartregister.fhircore.engine.rulesengine
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rules
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.rulesengine.services.DateService
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
@@ -34,9 +36,12 @@ import timber.log.Timber
  * incorrect results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine
  * context of the caller.
  */
-class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPathDataExtractor) :
-  RulesListener() {
+class ConfigRulesExecutor @Inject constructor(
+  val configurationRegistry: ConfigurationRegistry,
+  val fhirPathDataExtractor: FhirPathDataExtractor
+) : RulesListener() {
 
+  private val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
 
   fun fireRules(rules: Rules, baseResource: Resource? = null): Map<String, Any> {
@@ -44,6 +49,7 @@ class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPat
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>())
+        put(SERVICE, rulesEngineService)
         put(DATE_SERVICE, DateService)
         if (baseResource != null) {
           put(baseResource.resourceType.name, baseResource)
@@ -56,7 +62,14 @@ class ConfigRulesExecutor @Inject constructor(val fhirPathDataExtractor: FhirPat
     return facts.get(DATA) as Map<String, Any>
   }
 
+  inner class RulesEngineService {
+    fun retrievePractitionerLocationId(): String {
+      return configurationRegistry.sharedPreferencesHelper.read<List<String>>(ResourceType.Location.name)?.first() ?: ""
+    }
+  }
+
   companion object {
     private const val DATE_SERVICE = "dateService"
+    private const val SERVICE = "service"
   }
 }
