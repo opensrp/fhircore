@@ -276,7 +276,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     verify { accountAuthenticator.invalidateSession(any()) }
   }
 
-  @Test
+ /* @Test
   fun testShowInsightsView() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
     every { userSettingViewModelSpy.resetAppData(any()) } just runs
@@ -286,7 +286,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     userSettingViewModelSpy.onEvent(userSettingsEvent)
 
     verify { userSettingViewModelSpy.renderInsightsView(context) }
-  }
+  }*/
 
   @Test
   fun testShowInsightScreen() {

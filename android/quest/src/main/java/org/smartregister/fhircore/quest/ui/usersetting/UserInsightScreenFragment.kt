@@ -43,6 +43,16 @@ class UserInsightScreenFragment : Fragment() {
       setContent {
         AppTheme {
           UserSettingInsightScreen(
+            fullName = userSettingViewModel.retrieveUserInfo()?.name ,
+            team = userSettingViewModel.retrieveUserInfo()?.organization,
+            locality = userSettingViewModel.retrieveUserInfo()?.location,
+            userName = userSettingViewModel.retrieveUsername() ,
+            organization = userSettingViewModel.retrieveOrganization(),
+            careTeam = userSettingViewModel.retrieveCareTeam(),
+            location = userSettingViewModel.practitionerLocation(),
+            appVersionCode = userSettingViewModel.appVersionCode.toString(),
+            appVersion = userSettingViewModel.appVersionName,
+            buildDate = userSettingViewModel.buildDate,
             unsyncedResources =
               userSettingViewModel.unsyncedResourcesMutableSharedFlow
                 .collectAsState(initial = listOf())

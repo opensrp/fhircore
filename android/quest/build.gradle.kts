@@ -2,6 +2,9 @@ import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Date
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")
@@ -52,6 +55,8 @@ sonar {
 android {
   compileSdk = 34
 
+  val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
@@ -67,6 +72,7 @@ android {
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
+    buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"

@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.usersetting
 
+import android.annotation.SuppressLint
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +68,17 @@ const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 
 @Composable
 fun UserSettingInsightScreen(
-    unsyncedResources: List<Pair<String, Int>>,
+    fullName:String?,
+  team: String?,
+  locality: String?,
+  userName: String?,
+  organization: String?,
+  careTeam: String?,
+  location: String?,
+  appVersionCode: String,
+  appVersion: String,
+  buildDate: String,
+  unsyncedResources: List<Pair<String, Int>>,
     navController: NavController,
     onRefreshRequest: () -> Unit,
 ) {
@@ -127,68 +139,61 @@ fun UserSettingInsightScreen(
             item {
                 UserInfoView(
                     title = stringResource(id = R.string.user_info),
-                    name = "Tembo",
-                    team = "Tembo",
-                    locality = "Ps Dev-a",
+                    name = fullName?:"",
+                    team = team?:"",
+                    locality = locality?:"",
                 )
             }
             item {
                 AppInfoView(
                     title = stringResource(id = R.string.app_info),
-                    userName = "User_name",
-                    organization = "team_organization",
-                    careTeam = "care_team",
-                    location = "location",
+                    userName = userName?:"",
+                    organization = organization?:"",
+                    careTeam = careTeam?:"",
+                    location = location?:"",
                 )
             }
 
             item {
                 AssignmentInfoView(
                     title = stringResource(id = R.string.assignment_info),
-                    appVersion = "v2.3.4",
-                    appVersionCode = "119",
+                    appVersion = appVersion,
+                    appVersionCode = appVersionCode,
                     databaseVersion = "31",
-                    buildDate = "29 Jan 2023",
+                    buildDate = buildDate,
                 )
             }
 
-            item {
-                DeviceInfoView(
-                    title = stringResource(id = R.string.device_info),
-                    manufacture = "Sumsung",
-                    device = "Sm-Tmo",
-                    osVersion = "R",
-                    date = "Jan 29 2023 3:02:19 PM",
-                )
+      item {
+        DeviceInfoView(
+          title = stringResource(id = R.string.device_info),
+        )
+      }
+      item {
+        Column(
+          Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp),
+        ) {
+          Surface(shape = RoundedCornerShape(0.dp)) {
+            OutlinedButton(
+              modifier = Modifier.fillMaxWidth(),
+              onClick = onRefreshRequest,
+              border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
+            ) {
+              Text(
+                text = stringResource(R.string.refresh),
+                modifier = Modifier.padding(6.dp),
+                style =
+                  TextStyle(
+                    color = MaterialTheme.colors.primarySurface,
+                    fontSize = 14.sp,
+                  ),
+              )
             }
-            item {
-                Column(
-                  Modifier
-                    .wrapContentWidth()
-                    .wrapContentHeight()
-                    .padding(4.dp),
-                ) {
-                    Surface(shape = RoundedCornerShape(0.dp)) {
-                        OutlinedButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = onRefreshRequest,
-                            border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
-                        ) {
-                            Text(
-                                text = stringResource(R.string.refresh),
-                                modifier = Modifier.padding(6.dp),
-                                style =
-                                TextStyle(
-                                    color = MaterialTheme.colors.primarySurface,
-                                    fontSize = 14.sp,
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
+          }
         }
+      }
     }
+  }
 }
 
 @Composable
@@ -472,12 +477,9 @@ fun AssignmentInfoView(
 }
 
 @Composable
+@SuppressLint("HadwareIds")
 fun DeviceInfoView(
-    title: String,
-    manufacture: String,
-    device: String,
-    osVersion: String,
-    date: String,
+  title: String,
 ) {
     Column {
         Text(
@@ -499,7 +501,7 @@ fun DeviceInfoView(
                 fontWeight = FontWeight.Normal,
             )
             Text(
-                text = manufacture,
+                text = Build.MANUFACTURER,
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Bold,
@@ -519,7 +521,7 @@ fun DeviceInfoView(
                 fontWeight = FontWeight.Normal,
             )
             Text(
-                text = device,
+                text = Build.DEVICE,
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Bold,
@@ -539,7 +541,7 @@ fun DeviceInfoView(
                 fontWeight = FontWeight.Normal,
             )
             Text(
-                text = osVersion,
+                text = Build.VERSION.RELEASE,
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Bold,
@@ -554,13 +556,13 @@ fun DeviceInfoView(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "Date",
+                text = "Model",
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Normal,
             )
             Text(
-                text = date,
+                text = Build.MODEL,
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Bold,
@@ -576,7 +578,17 @@ fun DeviceInfoView(
 fun UserSettingInsightScreenPreview() {
     Column() {
         UserSettingInsightScreen(
-            unsyncedResources = listOf(Pair("", 1)),
+            fullName = "Tembo" ,
+      team = "Team_tembo",
+      locality = "Ps Dev-a",
+      userName = "user_name" ,
+      organization = "team_organization",
+      careTeam = "care_team",
+      location = "location",
+      appVersionCode = "v2.3.4",
+      appVersion = "119",
+      buildDate = "29 Jan 2023",
+      unsyncedResources = listOf(Pair("", 1)),
             navController = rememberNavController(),
             onRefreshRequest = {},
         )

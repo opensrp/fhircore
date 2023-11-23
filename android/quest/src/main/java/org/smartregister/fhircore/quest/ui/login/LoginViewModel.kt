@@ -345,6 +345,19 @@ constructor(
             }
           }
 
+        val careTeam =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+              careTeams.map { it.name }
+            }
+          }
+        val organization =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+              organizations.map { it.name }
+            }
+          }
+
         defaultRepository.createRemote(false, *practitioners.toTypedArray())
         practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
           defaultRepository.createRemote(false, *it)
@@ -358,6 +371,8 @@ constructor(
 
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
+            careTeam = careTeam,
+            organization = organization,
             location = location,
             fhirPractitionerDetails = practitionerDetails,
             careTeams = careTeamIds,
@@ -376,6 +391,8 @@ constructor(
                 identifier.value == userInfo!!.keycloakUuid
             ) {
               writePractitionerDetailsToShredPref(
+                careTeam = careTeam,
+                organization = organization,
                 location = location,
                 fhirPractitionerDetails = practitionerDetails,
                 careTeams = careTeamIds,
@@ -401,6 +418,8 @@ constructor(
   }
 
   private fun writePractitionerDetailsToShredPref(
+    careTeam:List<String>,
+    organization:List<String>,
     location: List<String>,
     fhirPractitionerDetails: PractitionerDetails,
     careTeams: List<String>,
@@ -426,6 +445,14 @@ constructor(
     sharedPreferences.write(
       key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
       value = location.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.CARE_TEAM.name,
+      value = careTeam.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.ORGANIZATION.name,
+      value = organization.joinToString(separator = ""),
     )
   }
 

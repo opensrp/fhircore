@@ -324,16 +324,6 @@ fun UserSettingScreen(
         )
       }
 
-      if (allowP2PSync) {
-        UserSettingRow(
-          icon = Icons.Rounded.Share,
-          text = stringResource(id = R.string.transfer_data),
-          clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
-          modifier = modifier.testTag(USER_SETTING_ROW_P2P),
-          canSwitchToScreen = true,
-        )
-      }
-
       UserSettingRow(
         icon = Icons.Rounded.Insights,
         text = stringResource(id = R.string.insights),

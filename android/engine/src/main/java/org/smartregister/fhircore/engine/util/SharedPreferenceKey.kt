@@ -30,4 +30,6 @@ enum class SharedPreferenceKey {
   LOGIN_PIN_SALT,
   LAST_OFFSET,
   USER_INFO,
+  CARE_TEAM,
+  ORGANIZATION,
 }

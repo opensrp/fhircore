@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -77,6 +78,9 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  val appVersionCode = BuildConfig.VERSION_CODE
+  val appVersionName = BuildConfig.VERSION_NAME
+  val buildDate = BuildConfig.BUILD_DATE
   init {
       fetchUnsyncedResources()
   }
@@ -89,6 +93,9 @@ constructor(
 
   fun practitionerLocation() =
     sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+
+  fun retrieveOrganization() = sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name,null)
+  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name,null)
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -189,20 +196,9 @@ constructor(
             .eachCount()
             .map { it.key to it.value }
 
-        showProgressIndicatorFlow.emit(false)
-
-//        if (unsyncedResources.isNullOrEmpty()) {
-//          withContext(dispatcherProvider.main()) {
-//            context.showToast(context.getString(R.string.all_data_synced))
-//          }
-//        } else {
+          showProgressIndicatorFlow.emit(false)
           unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
         }
       }
     }
   }
-
-//  fun dismissInsightsView() {
-//    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
-//  }
-//}
