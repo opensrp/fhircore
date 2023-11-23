@@ -55,8 +55,9 @@ class UserSettingScreenTest {
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    initComposable()
-    composeRule.onNodeWithText("Johndoe").assertExists()
+    val userName = "JohnDoe"
+    initComposable(userName = userName)
+    composeRule.onNodeWithText("@$userName").assertExists()
     composeRule.onNodeWithText("Quest").assertExists()
     composeRule.onNodeWithText("Jam Kenya").assertExists()
     composeRule.onNodeWithText("Gateway Remote Location").assertExists()
@@ -201,6 +202,7 @@ class UserSettingScreenTest {
   }
 
   private fun initComposable(
+    userName: String = "JohnDoe",
     allowSwitchingLanguages: Boolean = true,
     allowMainClockAutoAdvance: Boolean = false,
     isShowProgressBar: Boolean = false,
@@ -215,7 +217,7 @@ class UserSettingScreenTest {
           appTitle = "Quest",
           fullname = "Jam Kenya",
           practitionerLocation = "Gateway Remote Location",
-          username = "Johndoe",
+          username = userName,
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),

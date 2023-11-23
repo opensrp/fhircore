@@ -181,7 +181,7 @@ fun UserSettingScreen(
             fontWeight = FontWeight.Normal,
           )
           Text(
-            text = username.capitalize(Locale.current),
+            text = "@${username.capitalize(Locale.current)}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
           )
@@ -294,15 +294,6 @@ fun UserSettingScreen(
         LoaderDialog(modifier = modifier, stringResource(messageResource))
       }
 
-      UserSettingRow(
-        icon = Icons.Rounded.Insights,
-        text = stringResource(id = R.string.insights),
-        clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
-        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
-        canSwitchToScreen = true,
-      )
-
       if (allowP2PSync) {
         UserSettingRow(
           icon = Icons.Rounded.Share,
@@ -310,21 +301,6 @@ fun UserSettingScreen(
           clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
           modifier = modifier.testTag(USER_SETTING_ROW_P2P),
           canSwitchToScreen = true,
-        )
-      }
-
-      if (isDebugVariant) {
-        UserSettingRow(
-          icon = Icons.Rounded.DeleteForever,
-          text = stringResource(id = R.string.clear_database),
-          clickListener = {
-            onEvent(
-              UserSettingsEvent.ShowResetDatabaseConfirmationDialog(
-                true,
-              ),
-            )
-          },
-          modifier = modifier.testTag(USER_SETTING_ROW_RESET_DATA),
         )
       }
 
@@ -367,6 +343,8 @@ fun UserSettingScreen(
         },
         modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
         showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+        canSwitchToScreen = true,
+      )
       UserSettingRow(
         icon = Icons.Rounded.Phone,
         text = stringResource(id = R.string.contact_help),
