@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -144,6 +145,9 @@ constructor(
       is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
       is UserSettingsEvent.ShowContactView -> {}
       is UserSettingsEvent.OnOfflineMap -> {}
+      is UserSettingsEvent.ShowInsightsScreen -> {
+        event.navController.navigate(MainNavigationScreen.Insight.route)
+      }
     }
   }
 

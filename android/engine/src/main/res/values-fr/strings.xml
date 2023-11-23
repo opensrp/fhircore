@@ -27,6 +27,7 @@
     <string name="status_vaccinated">Vacciné</string>
     <string name="status_overdue">En retard</string>
     <string name="status_received_vaccine">Vaccin %1$d \n%2$s</string>
+    <string name="refresh">rafraîchir</string>
     <string name="fully_vaccinated">Complètement vacciné</string>
     <string name="already_fully_vaccinated">Ne peut pas recevoir une autre dose. Déjà complètement vacciné</string>
     <string name="record_vaccine_nl">Registre\nVaccin</string>

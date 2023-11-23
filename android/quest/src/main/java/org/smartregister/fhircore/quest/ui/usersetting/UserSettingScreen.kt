@@ -65,6 +65,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -338,6 +340,33 @@ fun UserSettingScreen(
         )
       }
 
+      if (isDebugVariant) {
+        UserSettingRow(
+          icon = Icons.Rounded.DeleteForever,
+          text = stringResource(id = R.string.clear_database),
+          clickListener = { onEvent(UserSettingsEvent.ShowResetDatabaseConfirmationDialog(true)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_RESET_DATA),
+        )
+      }
+
+      if (allowP2PSync) {
+        UserSettingRow(
+          icon = Icons.Rounded.Share,
+          text = stringResource(id = R.string.transfer_data),
+          clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_P2P),
+          canSwitchToScreen = true,
+        )
+      }
+
+      UserSettingRow(
+        icon = Icons.Rounded.Insights,
+        text = stringResource(id = R.string.insights),
+        clickListener = {
+          onEvent(UserSettingsEvent.ShowInsightsScreen(navController = mainNavController))
+        },
+        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
       UserSettingRow(
         icon = Icons.Rounded.Phone,
         text = stringResource(id = R.string.contact_help),
@@ -365,11 +394,17 @@ fun UserSettingScreen(
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
+        val resId = R.drawable.ic_opensrplogo
         Image(
-          painterResource(R.drawable.ic_opensrplogo),
+          painterResource(resId),
           "content description",
+          colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
           modifier =
-            modifier.padding(top = 8.dp).requiredHeight(32.dp).align(Alignment.CenterHorizontally),
+            modifier
+              .padding(top = 8.dp)
+              .requiredHeight(32.dp)
+              .align(Alignment.CenterHorizontally)
+              .testTag(resId.toString()),
           contentScale = ContentScale.Fit,
         )
 
@@ -392,7 +427,7 @@ fun UserSettingScreen(
       val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
       if (unSyncedResources.isNotEmpty()) {
-        UserSettingInsightScreen(unSyncedResources, dismissInsightsView)
+        // UserSettingInsightScreen(unSyncedResources, unSyncedResources)
       }
     }
   }
