@@ -32,7 +32,6 @@ class UserSettingInsightScreenTest {
     composeRule.setContent {
       UserSettingInsightScreen(
         unsyncedResources = listOf(Pair("Li", 4)),
-        syncedResources = listOf(Pair("Pa", 7)),
         navController = rememberNavController(),
         onRefreshRequest = {},
       )
@@ -48,7 +47,6 @@ class UserSettingInsightScreenTest {
     composeRule.setContent {
       UserSettingInsightScreen(
         unsyncedResources = listOf(Pair("Li", 4)),
-        syncedResources = listOf(Pair("Pa", 7)),
         navController = rememberNavController(),
         onRefreshRequest = {},
       )

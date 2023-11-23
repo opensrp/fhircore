@@ -77,6 +77,9 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  init {
+      fetchUnsyncedResources()
+  }
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
@@ -142,12 +145,9 @@ constructor(
       is UserSettingsEvent.ShowLoaderView ->
         updateProgressBarState(event.show, event.messageResourceId)
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
-      is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
       is UserSettingsEvent.ShowContactView -> {}
       is UserSettingsEvent.OnOfflineMap -> {}
-      is UserSettingsEvent.ShowInsightsScreen -> {
-        event.navController.navigate(MainNavigationScreen.Insight.route)
-      }
+      is UserSettingsEvent.ShowInsightsScreen -> { event.navController.navigate(MainNavigationScreen.Insight.route)}
     }
   }
 
@@ -176,7 +176,7 @@ constructor(
 
   fun enabledDeviceToDeviceSync(): Boolean = applicationConfiguration.deviceToDeviceSync != null
 
-  fun renderInsightsView(context: Context) {
+  fun fetchUnsyncedResources() {
     viewModelScope.launch {
       showProgressIndicatorFlow.emit(true)
 
@@ -191,18 +191,18 @@ constructor(
 
         showProgressIndicatorFlow.emit(false)
 
-        if (unsyncedResources.isNullOrEmpty()) {
-          withContext(dispatcherProvider.main()) {
-            context.showToast(context.getString(R.string.all_data_synced))
-          }
-        } else {
+//        if (unsyncedResources.isNullOrEmpty()) {
+//          withContext(dispatcherProvider.main()) {
+//            context.showToast(context.getString(R.string.all_data_synced))
+//          }
+//        } else {
           unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
         }
       }
     }
   }
 
-  fun dismissInsightsView() {
-    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
-  }
-}
+//  fun dismissInsightsView() {
+//    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
+//  }
+//}

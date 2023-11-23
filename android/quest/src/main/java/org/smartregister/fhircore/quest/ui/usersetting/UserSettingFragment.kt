@@ -66,7 +66,6 @@ class UserSettingFragment : Fragment() {
             lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
             showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
             unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
-            dismissInsightsView = userSettingViewModel::dismissInsightsView,
           )
         }
       }

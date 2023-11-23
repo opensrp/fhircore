@@ -126,7 +126,6 @@ fun UserSettingScreen(
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
-  dismissInsightsView: () -> Unit,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -516,5 +515,5 @@ fun UserSettingPreview() {
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
     unsyncedResourcesFlow = MutableSharedFlow(),
-  ) {}
+  )
 }
