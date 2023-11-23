@@ -48,6 +48,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.primarySurface
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.quest.R
@@ -69,19 +72,23 @@ const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 @Composable
 fun UserSettingInsightScreen(
     fullName:String?,
-  team: String?,
-  locality: String?,
-  userName: String?,
-  organization: String?,
-  careTeam: String?,
-  location: String?,
-  appVersionCode: String,
-  appVersion: String,
-  buildDate: String,
-  unsyncedResources: List<Pair<String, Int>>,
+    team: String?,
+    locality: String?,
+    userName: String?,
+    organization: String?,
+    careTeam: String?,
+    location: String?,
+    appVersionCode: String,
+    appVersion: String,
+    buildDate: String,
+    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
     navController: NavController,
     onRefreshRequest: () -> Unit,
 ) {
+
+
+    val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -102,10 +109,10 @@ fun UserSettingInsightScreen(
         backgroundColor = Color.White,
     ) { paddingValues ->
         LazyColumn(
-          Modifier
-            .fillMaxSize()
-            .padding(paddingValues)
-            .background(Color.White),
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color.White),
             horizontalAlignment = Alignment.Start,
             contentPadding = PaddingValues(16.dp),
         ) {
@@ -116,25 +123,27 @@ fun UserSettingInsightScreen(
                     fontWeight = FontWeight.Bold,
                 )
             }
+            if(unsyncedResources.isNotEmpty()){
+                items(unsyncedResources) { unsynced ->
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(15.dp),
+                    ) {
+                        Text(
+                            text = unsynced.first,
+                            modifier = Modifier.align(Alignment.CenterStart),
+                            fontWeight = FontWeight.Light,
+                        )
+                        Text(
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            text = unsynced.second.toString(),
+                        )
+                    }
 
-            items(unsyncedResources) { unsynced ->
-                Box(
-                    Modifier.fillMaxWidth()
-                        .padding(15.dp),
-                ) {
-                    Text(
-                        text = unsynced.first,
-                        modifier = Modifier.align(Alignment.CenterStart),
-                        fontWeight = FontWeight.Light,
-                    )
-                    Text(
-                        modifier = Modifier.align(Alignment.CenterEnd),
-                        text = unsynced.second.toString(),
-                    )
+                    Divider(color = DividerColor)
+                    Spacer(modifier = Modifier.padding(8.dp))
                 }
-
-                Divider(color = DividerColor)
-                Spacer(modifier = Modifier.padding(8.dp))
             }
             item {
                 UserInfoView(
@@ -171,7 +180,10 @@ fun UserSettingInsightScreen(
       }
       item {
         Column(
-          Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp),
+            Modifier
+                .wrapContentWidth()
+                .wrapContentHeight()
+                .padding(4.dp),
         ) {
           Surface(shape = RoundedCornerShape(0.dp)) {
             OutlinedButton(
@@ -211,8 +223,8 @@ fun UserInfoView(
         )
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -231,8 +243,8 @@ fun UserInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -251,8 +263,8 @@ fun UserInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -290,8 +302,8 @@ fun AppInfoView(
         )
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -310,8 +322,8 @@ fun AppInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -330,8 +342,8 @@ fun AppInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -351,8 +363,8 @@ fun AppInfoView(
 
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -391,8 +403,8 @@ fun AssignmentInfoView(
         )
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -411,8 +423,8 @@ fun AssignmentInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -431,8 +443,8 @@ fun AssignmentInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -452,8 +464,8 @@ fun AssignmentInfoView(
 
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -489,8 +501,8 @@ fun DeviceInfoView(
         )
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -509,8 +521,8 @@ fun DeviceInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -529,8 +541,8 @@ fun DeviceInfoView(
         }
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -550,8 +562,8 @@ fun DeviceInfoView(
 
         Row(
             modifier = Modifier
-              .fillMaxWidth()
-              .padding(8.dp),
+                .fillMaxWidth()
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -588,7 +600,7 @@ fun UserSettingInsightScreenPreview() {
       appVersionCode = "v2.3.4",
       appVersion = "119",
       buildDate = "29 Jan 2023",
-      unsyncedResources = listOf(Pair("", 1)),
+      unsyncedResourcesFlow = MutableSharedFlow(),
             navController = rememberNavController(),
             onRefreshRequest = {},
         )

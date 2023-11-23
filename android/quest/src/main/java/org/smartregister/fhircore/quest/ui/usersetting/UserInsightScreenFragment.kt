@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -42,6 +43,9 @@ class UserInsightScreenFragment : Fragment() {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
         AppTheme {
+          LaunchedEffect(key1 = true, block ={
+            userSettingViewModel.fetchUnsyncedResources()
+          } )
           UserSettingInsightScreen(
             fullName = userSettingViewModel.retrieveUserInfo()?.name ,
             team = userSettingViewModel.retrieveUserInfo()?.organization,
@@ -53,10 +57,8 @@ class UserInsightScreenFragment : Fragment() {
             appVersionCode = userSettingViewModel.appVersionCode.toString(),
             appVersion = userSettingViewModel.appVersionName,
             buildDate = userSettingViewModel.buildDate,
-            unsyncedResources =
-              userSettingViewModel.unsyncedResourcesMutableSharedFlow
-                .collectAsState(initial = listOf())
-                .value,
+            unsyncedResourcesFlow =
+              userSettingViewModel.unsyncedResourcesMutableSharedFlow,
             navController = findNavController(),
             onRefreshRequest = {},
           )

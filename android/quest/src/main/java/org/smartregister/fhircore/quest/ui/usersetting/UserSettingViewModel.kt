@@ -54,6 +54,7 @@ import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 @HiltViewModel
 class UserSettingViewModel
@@ -81,9 +82,6 @@ constructor(
   val appVersionCode = BuildConfig.VERSION_CODE
   val appVersionName = BuildConfig.VERSION_NAME
   val buildDate = BuildConfig.BUILD_DATE
-  init {
-      fetchUnsyncedResources()
-  }
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
