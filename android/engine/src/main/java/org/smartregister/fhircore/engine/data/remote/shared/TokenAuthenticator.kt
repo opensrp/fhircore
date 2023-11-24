@@ -130,7 +130,7 @@ constructor(
 
   private fun getRolesList(authToken: String?): List<String> {
     return authToken
-      ?.takeIf { it.isNotBlank() }
+      ?.takeIf { it.isNotBlank() && isTokenActive(it) }
       ?.substringBeforeLast('.')
       ?.plus(".")
       ?.let {

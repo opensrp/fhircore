@@ -165,45 +165,40 @@ constructor(
                     return@forEach
                   }
 
-                  val appSyncStrategies = applicationConfiguration.syncStrategy
-
-                  val syncStrategy = appSyncStrategies.single()
-                  val syncStrategyMatching =
-                    when (syncStrategy.lowercase()) {
-                      "location" -> {
-                        val currentLocations =
-                          sharedPreferences.read<List<String>>(key = ResourceType.Location.name)
-                            ?: emptyList()
-                        val userLocations =
-                          it.fhirPractitionerDetails.locations.map { location ->
-                            location.id.extractLogicalIdUuid()
-                          }
-                        currentLocations.all { location -> userLocations.contains(location) }
-                      }
-                      "careteam" -> {
-                        val currentCareTeams =
-                          sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name)
-                            ?: emptyList()
-                        val userCareTeams =
-                          it.fhirPractitionerDetails.careTeams.map { careTeam ->
-                            careTeam.id.extractLogicalIdUuid()
-                          }
-                        currentCareTeams.all { careTeam -> userCareTeams.contains(careTeam) }
-                      }
-                      "organization" -> {
-                        val currentOrganizations =
-                          sharedPreferences.read<List<String>>(key = ResourceType.Organization.name)
-                            ?: emptyList()
-                        val userOrganizations =
-                          it.fhirPractitionerDetails.organizations.map { org ->
-                            org.id.extractLogicalIdUuid()
-                          }
-                        currentOrganizations.all { org -> userOrganizations.contains(org) }
-                      }
-                      else -> throw NotImplementedError()
+                  val existingLocations =
+                    sharedPreferences.read<List<String>>(key = ResourceType.Location.name)
+                      ?: emptyList()
+                  val userLocations =
+                    it.fhirPractitionerDetails.locations.map { location ->
+                      location.id.extractLogicalIdUuid()
                     }
+                  val locationsMatching =
+                    existingLocations.isNotEmpty() &&
+                      existingLocations.all { location -> userLocations.contains(location) }
 
-                  if (syncStrategyMatching) {
+                  val existingCareTeams =
+                    sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name)
+                      ?: emptyList()
+                  val userCareTeams =
+                    it.fhirPractitionerDetails.careTeams.map { careTeam ->
+                      careTeam.id.extractLogicalIdUuid()
+                    }
+                  val careTeamsMatching =
+                    existingCareTeams.isNotEmpty() &&
+                      existingCareTeams.all { careTeam -> userCareTeams.contains(careTeam) }
+
+                  val existingOrganizations =
+                    sharedPreferences.read<List<String>>(key = ResourceType.Organization.name)
+                      ?: emptyList()
+                  val userOrganizations =
+                    it.fhirPractitionerDetails.organizations.map { org ->
+                      org.id.extractLogicalIdUuid()
+                    }
+                  val organizationsMatching =
+                    existingOrganizations.isNotEmpty() &&
+                      existingOrganizations.all { org -> userOrganizations.contains(org) }
+
+                  if (locationsMatching && careTeamsMatching && organizationsMatching) {
                     savePractitionerDetails(it, userInfo) {
                       _showProgressBar.postValue(false)
                       updateNavigateHome(true)
