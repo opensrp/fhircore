@@ -48,7 +48,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.primarySurface
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,110 +67,93 @@ import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.quest.R
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
+const val INSIGHT_UNSYNCED_DATA = "insightUnsynceData"
 
 @Composable
 fun UserSettingInsightScreen(
-    fullName:String?,
-    team: String?,
-    locality: String?,
-    userName: String?,
-    organization: String?,
-    careTeam: String?,
-    location: String?,
-    appVersionCode: String,
-    appVersion: String,
-    buildDate: String,
-    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
-    navController: NavController,
-    onRefreshRequest: () -> Unit,
+  fullName: String?,
+  team: String?,
+  locality: String?,
+  userName: String?,
+  organization: String?,
+  careTeam: String?,
+  location: String?,
+  appVersionCode: String,
+  appVersion: String,
+  buildDate: String,
+  unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
+  navController: NavController,
+  onRefreshRequest: () -> Unit,
 ) {
+  val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
 
-
-    val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.insights)) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            modifier = Modifier.testTag(USER_INSIGHT_TOP_APP_BAR),
-                            contentDescription = null,
-                        )
-                    }
-                },
-                contentColor = Color.White,
-                backgroundColor = MaterialTheme.colors.primary,
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = { Text(text = stringResource(R.string.insights)) },
+        navigationIcon = {
+          IconButton(onClick = { navController.popBackStack() }) {
+            Icon(
+              imageVector = Icons.Filled.ArrowBack,
+              modifier = Modifier.testTag(USER_INSIGHT_TOP_APP_BAR),
+              contentDescription = null,
             )
+          }
         },
-        backgroundColor = Color.White,
-    ) { paddingValues ->
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White),
-            horizontalAlignment = Alignment.Start,
-            contentPadding = PaddingValues(16.dp),
-        ) {
-            item {
-                Text(
-                    text = stringResource(id = R.string.unsynced_resources),
-                    style = TextStyle(color = Color.Black, fontSize = 18.sp),
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-            if(unsyncedResources.isNotEmpty()){
-                items(unsyncedResources) { unsynced ->
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(15.dp),
-                    ) {
-                        Text(
-                            text = unsynced.first,
-                            modifier = Modifier.align(Alignment.CenterStart),
-                            fontWeight = FontWeight.Light,
-                        )
-                        Text(
-                            modifier = Modifier.align(Alignment.CenterEnd),
-                            text = unsynced.second.toString(),
-                        )
-                    }
+        contentColor = Color.White,
+        backgroundColor = MaterialTheme.colors.primary,
+      )
+    },
+    backgroundColor = Color.White,
+  ) { paddingValues ->
+    LazyColumn(
+      Modifier.fillMaxSize().padding(paddingValues).background(Color.White),
+      horizontalAlignment = Alignment.Start,
+      contentPadding = PaddingValues(16.dp),
+    ) {
+      item {
+        Text(
+          text = stringResource(id = R.string.unsynced_resources),
+          style = TextStyle(color = Color.Black, fontSize = 18.sp),
+          fontWeight = FontWeight.Bold,
+        )
+      }
+      if (unsyncedResources.isNotEmpty()) {
+        items(unsyncedResources) { unsynced ->
+          UnsyncedDataView(
+            first = unsynced.first,
+            second = unsynced.second.toString(),
+          )
+          Divider(color = DividerColor)
+          Spacer(modifier = Modifier.padding(8.dp))
+        }
+      }
+      item {
+        UserInfoView(
+          title = stringResource(id = R.string.user_info),
+          name = fullName ?: "",
+          team = team ?: "",
+          locality = locality ?: "",
+        )
+      }
+      item {
+        AppInfoView(
+          title = stringResource(id = R.string.app_info),
+          userName = userName ?: "",
+          organization = organization ?: "",
+          careTeam = careTeam ?: "",
+          location = location ?: "",
+        )
+      }
 
-                    Divider(color = DividerColor)
-                    Spacer(modifier = Modifier.padding(8.dp))
-                }
-            }
-            item {
-                UserInfoView(
-                    title = stringResource(id = R.string.user_info),
-                    name = fullName?:"",
-                    team = team?:"",
-                    locality = locality?:"",
-                )
-            }
-            item {
-                AppInfoView(
-                    title = stringResource(id = R.string.app_info),
-                    userName = userName?:"",
-                    organization = organization?:"",
-                    careTeam = careTeam?:"",
-                    location = location?:"",
-                )
-            }
-
-            item {
-                AssignmentInfoView(
-                    title = stringResource(id = R.string.assignment_info),
-                    appVersion = appVersion,
-                    appVersionCode = appVersionCode,
-                    databaseVersion = "31",
-                    buildDate = buildDate,
-                )
-            }
+      item {
+        AssignmentInfoView(
+          title = stringResource(id = R.string.assignment_info),
+          appVersion = appVersion,
+          appVersionCode = appVersionCode,
+          buildDate = buildDate,
+        )
+      }
 
       item {
         DeviceInfoView(
@@ -180,10 +162,7 @@ fun UserSettingInsightScreen(
       }
       item {
         Column(
-            Modifier
-                .wrapContentWidth()
-                .wrapContentHeight()
-                .padding(4.dp),
+          Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp),
         ) {
           Surface(shape = RoundedCornerShape(0.dp)) {
             OutlinedButton(
@@ -209,283 +188,265 @@ fun UserSettingInsightScreen(
 }
 
 @Composable
-fun UserInfoView(
-    title: String,
-    name: String,
-    team: String,
-    locality: String,
+fun UnsyncedDataView(
+  first: String,
+  second: String,
 ) {
-    Column {
-        Text(
-            text = title,
-            style = TextStyle(color = Color.Black, fontSize = 18.sp),
-            fontWeight = FontWeight.Bold,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(R.string.user),
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = name,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(R.string.team),
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = team,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = stringResource(R.string.locality),
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = locality,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-        Spacer(modifier = Modifier.height(4.dp))
+  Box(
+    Modifier.fillMaxWidth().padding(15.dp),
+  ) {
+    Text(
+      text = first,
+      modifier = Modifier.align(Alignment.CenterStart).testTag(INSIGHT_UNSYNCED_DATA),
+      color = LoginDarkColor,
+      fontWeight = FontWeight.Normal,
+    )
+    Text(
+      modifier = Modifier.align(Alignment.CenterEnd),
+      text = second,
+      color = LoginDarkColor,
+      fontWeight = FontWeight.Bold,
+    )
+  }
+}
+
+@Composable
+fun UserInfoView(
+  title: String,
+  name: String,
+  team: String,
+  locality: String,
+) {
+  Column {
+    Text(
+      text = title,
+      style = TextStyle(color = Color.Black, fontSize = 18.sp),
+      fontWeight = FontWeight.Bold,
+    )
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.user),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = name,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
     }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.team),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = team,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.locality),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = locality,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
+    Spacer(modifier = Modifier.height(4.dp))
+  }
 }
 
 @Composable
 fun AppInfoView(
-    title: String,
-    userName: String,
-    organization: String,
-    careTeam: String,
-    location: String,
+  title: String,
+  userName: String,
+  organization: String,
+  careTeam: String,
+  location: String,
 ) {
-    Column {
-        Text(
-            text = title,
-            style = TextStyle(color = Color.Black, fontSize = 18.sp),
-            fontWeight = FontWeight.Bold,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Username",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = userName,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Team(Organization)",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = organization,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Care Team",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = careTeam,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Location",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = location,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-        Spacer(modifier = Modifier.height(4.dp))
+  Column {
+    Text(
+      text = title,
+      style = TextStyle(color = Color.Black, fontSize = 18.sp),
+      fontWeight = FontWeight.Bold,
+    )
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(id = R.string.username),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = userName,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
     }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.team_organization),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = organization,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.care_team),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = careTeam,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.location),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = location,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
+    Spacer(modifier = Modifier.height(4.dp))
+  }
 }
 
 @Composable
 fun AssignmentInfoView(
-    title: String,
-    appVersion: String,
-    appVersionCode: String,
-    databaseVersion: String,
-    buildDate: String,
+  title: String,
+  appVersion: String,
+  appVersionCode: String,
+  buildDate: String,
 ) {
-    Column {
-        Text(
-            text = title,
-            style = TextStyle(color = Color.Black, fontSize = 18.sp),
-            fontWeight = FontWeight.Bold,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "App Version",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = appVersion,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "App Version Code",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = appVersionCode,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Database Version",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = databaseVersion,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Build Date",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = buildDate,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-        Spacer(modifier = Modifier.height(4.dp))
+  Column {
+    Text(
+      text = title,
+      style = TextStyle(color = Color.Black, fontSize = 18.sp),
+      fontWeight = FontWeight.Bold,
+    )
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.app_versions),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = appVersion,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
     }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.app_version_code),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = appVersionCode,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.build_date),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = buildDate,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
+    Spacer(modifier = Modifier.height(4.dp))
+  }
 }
 
 @Composable
@@ -493,107 +454,99 @@ fun AssignmentInfoView(
 fun DeviceInfoView(
   title: String,
 ) {
-    Column {
-        Text(
-            text = title,
-            style = TextStyle(color = Color.Black, fontSize = 18.sp),
-            fontWeight = FontWeight.Bold,
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Manufacture",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = Build.MANUFACTURER,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Device",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = Build.DEVICE,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "OS Version",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = Build.VERSION.RELEASE,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(
-                text = "Model",
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                text = Build.MODEL,
-                fontSize = 16.sp,
-                color = LoginDarkColor,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
+  Column {
+    Text(
+      text = title,
+      style = TextStyle(color = Color.Black, fontSize = 18.sp),
+      fontWeight = FontWeight.Bold,
+    )
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.manufacture),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = Build.MANUFACTURER,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
     }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.device),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = Build.DEVICE,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.os_version),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = Build.VERSION.RELEASE,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+      Text(
+        text = stringResource(R.string.model),
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Normal,
+      )
+      Text(
+        text = Build.MODEL,
+        fontSize = 16.sp,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
+    }
+
+    Spacer(modifier = Modifier.height(4.dp))
+  }
 }
 
 @Preview
 @Composable
 fun UserSettingInsightScreenPreview() {
-    Column() {
-        UserSettingInsightScreen(
-            fullName = "Tembo" ,
+  Column() {
+    UserSettingInsightScreen(
+      fullName = "Tembo",
       team = "Team_tembo",
       locality = "Ps Dev-a",
-      userName = "user_name" ,
+      userName = "user_name",
       organization = "team_organization",
       careTeam = "care_team",
       location = "location",
@@ -601,8 +554,8 @@ fun UserSettingInsightScreenPreview() {
       appVersion = "119",
       buildDate = "29 Jan 2023",
       unsyncedResourcesFlow = MutableSharedFlow(),
-            navController = rememberNavController(),
-            onRefreshRequest = {},
-        )
-    }
+      navController = rememberNavController(),
+      onRefreshRequest = {},
+    )
+  }
 }

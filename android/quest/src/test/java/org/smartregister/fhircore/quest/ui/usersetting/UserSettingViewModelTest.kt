@@ -30,7 +30,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -39,11 +38,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -57,7 +51,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -292,13 +285,12 @@ class UserSettingViewModelTest : RobolectricTest() {
     verify { navController.navigate(MainNavigationScreen.Insight.route) }
   }
 
-
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchUnsyncedResources() = runTest {
-    userSettingViewModel.fetchUnsyncedResources()
     coEvery {
-      fhirEngine.getUnsyncedLocalChanges()
+      fhirEngine
+        .getUnsyncedLocalChanges()
         .distinctBy { it.resourceId }
         .groupingBy { it.resourceType.spaceByUppercase() }
         .eachCount()

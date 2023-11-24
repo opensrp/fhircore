@@ -35,7 +35,6 @@ sealed class UserSettingsEvent {
 
   data class SyncData(val context: Context) : UserSettingsEvent()
 
-
   data class ShowContactView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 
   data class OnOfflineMap(val isShow: Boolean, val context: Context) : UserSettingsEvent()

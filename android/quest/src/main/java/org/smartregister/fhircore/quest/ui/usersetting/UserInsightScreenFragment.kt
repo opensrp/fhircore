@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -43,24 +42,21 @@ class UserInsightScreenFragment : Fragment() {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
         AppTheme {
-          LaunchedEffect(key1 = true, block ={
-            userSettingViewModel.fetchUnsyncedResources()
-          } )
+          LaunchedEffect(key1 = true, block = { userSettingViewModel.fetchUnsyncedResources() })
           UserSettingInsightScreen(
-            fullName = userSettingViewModel.retrieveUserInfo()?.name ,
+            fullName = userSettingViewModel.retrieveUserInfo()?.name,
             team = userSettingViewModel.retrieveUserInfo()?.organization,
             locality = userSettingViewModel.retrieveUserInfo()?.location,
-            userName = userSettingViewModel.retrieveUsername() ,
+            userName = userSettingViewModel.retrieveUsername(),
             organization = userSettingViewModel.retrieveOrganization(),
             careTeam = userSettingViewModel.retrieveCareTeam(),
             location = userSettingViewModel.practitionerLocation(),
             appVersionCode = userSettingViewModel.appVersionCode.toString(),
             appVersion = userSettingViewModel.appVersionName,
             buildDate = userSettingViewModel.buildDate,
-            unsyncedResourcesFlow =
-              userSettingViewModel.unsyncedResourcesMutableSharedFlow,
+            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
             navController = findNavController(),
-            onRefreshRequest = {},
+            onRefreshRequest = { userSettingViewModel.fetchUnsyncedResources() },
           )
         }
       }

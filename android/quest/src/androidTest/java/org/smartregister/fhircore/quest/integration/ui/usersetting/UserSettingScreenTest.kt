@@ -168,27 +168,6 @@ class UserSettingScreenTest {
   }
 
   @Test
-  fun testOnClickingInsightsUnsavedDataShowsSyncStats() {
-    val unsyncedResources = listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
-    initComposable(
-      unsyncedResourcesFlow = MutableStateFlow(unsyncedResources),
-    )
-    composeRule.onNodeWithText("Insights").performClick()
-    composeRule.onNodeWithText("Dismiss").assertExists()
-
-    // Assert correct Sync stats content is rendered
-
-    composeRule.onNodeWithText("Patient").assertExists()
-    composeRule.onNodeWithText("10").assertExists()
-
-    composeRule.onNodeWithText("Observations").assertExists()
-    composeRule.onNodeWithText("20").assertExists()
-
-    composeRule.onNodeWithText("Encounters").assertExists()
-    composeRule.onNodeWithText("5").assertExists()
-  }
-
-  @Test
   fun testThatOpenSRPLogoIsVisible() {
     initComposable()
     composeRule.onNodeWithTag(R.drawable.ic_opensrplogo.toString()).assertIsDisplayed()

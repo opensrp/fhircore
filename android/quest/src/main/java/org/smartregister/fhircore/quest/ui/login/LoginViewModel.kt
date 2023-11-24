@@ -418,8 +418,8 @@ constructor(
   }
 
   private fun writePractitionerDetailsToShredPref(
-    careTeam:List<String>,
-    organization:List<String>,
+    careTeam: List<String>,
+    organization: List<String>,
     location: List<String>,
     fhirPractitionerDetails: PractitionerDetails,
     careTeams: List<String>,

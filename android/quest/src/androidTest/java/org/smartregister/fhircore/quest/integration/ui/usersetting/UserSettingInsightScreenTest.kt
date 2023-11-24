@@ -18,23 +18,23 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.quest.ui.usersetting.UserInfoView
+import org.smartregister.fhircore.quest.ui.usersetting.INSIGHT_UNSYNCED_DATA
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingInsightScreen
 
 class UserSettingInsightScreenTest {
 
-  @get:Rule(order = 1) val composeRule = createComposeRule()
+  @get:Rule(order = 1) val composeRule = createEmptyComposeRule()
   private lateinit var scenario: ActivityScenario<ComponentActivity>
   private lateinit var activity: ComponentActivity
 
@@ -49,43 +49,79 @@ class UserSettingInsightScreenTest {
   }
 
   @Test
- fun testUserInfoViewAndAllItsViewIsShown(){
-   composeRule.setContent {
-     UserInfoView(title = "User Info", name = "John Doe", team = "user_team", locality = "locality")
+  fun testUserInfoViewAndAllItsViewIsShown() {
+    initComposable()
+    composeRule.onNodeWithText("User info").assertExists()
+    composeRule.onNodeWithText("full_name").assertExists()
+    composeRule.onNodeWithText("user_team").assertExists()
+    composeRule.onNodeWithText("locality").assertExists()
+    composeRule.onNodeWithText("User").assertExists()
+    composeRule.onNodeWithText("Team").assertExists()
+    composeRule.onNodeWithText("Locality").assertExists()
+  }
 
-     composeRule.onNodeWithText("User Info").assertExists()
-     composeRule.onNodeWithText("John Doe").assertExists()
-     composeRule.onNodeWithText("user_team").assertExists()
-     composeRule.onNodeWithText("locality").assertExists()
-     composeRule.onNodeWithText("User").assertExists()
-     composeRule.onNodeWithText("Team").assertExists()
-     composeRule.onNodeWithText("Locality").assertExists()
-   }
- }
+  @Test
+  fun testAppInfoViewAndAllItsItemIsShown() {
+    initComposable()
+    composeRule.onNodeWithText("App info").assertExists()
+    composeRule.onNodeWithText("user_name").assertExists()
+    composeRule.onNodeWithText("organization").assertExists()
+    composeRule.onNodeWithText("care_team").assertExists()
+    composeRule.onNodeWithText("location").assertExists()
+    composeRule.onNodeWithText("Location").assertExists()
+    composeRule.onNodeWithText("Care Team").assertExists()
+    composeRule.onNodeWithText("Username").assertExists()
+    composeRule.onNodeWithText("Team(Organization)").assertExists()
+  }
 
+  @Test
+  fun testAssignmentInfoViewAndAllItsItemIsShown() {
+    initComposable()
+    composeRule.onNodeWithText("Assignment info").assertExists()
+    composeRule.onNodeWithText("3").assertExists()
+    composeRule.onNodeWithText("v.123").assertExists()
+    composeRule.onNodeWithText("29 jan 2023").assertExists()
+    composeRule.onNodeWithText("App version").assertExists()
+    composeRule.onNodeWithText("App version code").assertExists()
+    composeRule.onNodeWithText("Build date").assertExists()
+  }
+
+  @Test
+  fun testUnsyncedViewIsShowIfUnsyncedResourceIsNotEmpty() {
+    val unsyncedResources = listOf("Patient" to 10)
+    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
+    composeRule.onNodeWithTag(INSIGHT_UNSYNCED_DATA).assertExists()
+  }
+
+  @Test
+  fun testUnsyncViewIsNotShowIfUnsyncedResourceIsEmpty() {
+    val unsyncedResources = emptyList<Pair<String, Int>>()
+    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
+    composeRule.onNodeWithTag(INSIGHT_UNSYNCED_DATA).assertDoesNotExist()
+  }
 
   private fun initComposable(
     unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
-    ) {
-    scenario.onActivity { activity->
+  ) {
+    scenario.onActivity { activity ->
       activity.setContent {
         UserSettingInsightScreen(
           fullName = "full_name",
-          team = "team",
-          locality = "locality" ,
-          userName = "username",
+          team = "user_team",
+          locality = "locality",
+          userName = "user_name",
           organization = "organization",
           careTeam = "care_team",
           location = "location",
           appVersionCode = "v.123",
-          appVersion = "7",
-          buildDate = "29 jan 2023" ,
+          appVersion = "3",
+          buildDate = "29 jan 2023",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
-          navController = rememberNavController()
-        ) {
-
-        }
+          navController = rememberNavController(),
+          onRefreshRequest = {},
+        )
       }
+      this.activity = activity
     }
   }
 }

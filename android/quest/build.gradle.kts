@@ -1,10 +1,10 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.Date
 
 buildscript {
   apply(from = "../jacoco.gradle.kts")

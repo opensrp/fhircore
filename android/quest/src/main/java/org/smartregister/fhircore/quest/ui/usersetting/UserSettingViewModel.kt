@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -49,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
@@ -81,6 +81,7 @@ constructor(
   val appVersionCode = BuildConfig.VERSION_CODE
   val appVersionName = BuildConfig.VERSION_NAME
   val buildDate = BuildConfig.BUILD_DATE
+
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
@@ -91,8 +92,10 @@ constructor(
   fun practitionerLocation() =
     sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
 
-  fun retrieveOrganization() = sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name,null)
-  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name,null)
+  fun retrieveOrganization() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+
+  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -151,7 +154,9 @@ constructor(
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
       is UserSettingsEvent.ShowContactView -> {}
       is UserSettingsEvent.OnOfflineMap -> {}
-      is UserSettingsEvent.ShowInsightsScreen -> { event.navController.navigate(MainNavigationScreen.Insight.route)}
+      is UserSettingsEvent.ShowInsightsScreen -> {
+        event.navController.navigate(MainNavigationScreen.Insight.route)
+      }
     }
   }
 
@@ -192,9 +197,9 @@ constructor(
             .eachCount()
             .map { it.key to it.value }
 
-          showProgressIndicatorFlow.emit(false)
-          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
-        }
+        showProgressIndicatorFlow.emit(false)
+        unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
       }
     }
   }
+}
