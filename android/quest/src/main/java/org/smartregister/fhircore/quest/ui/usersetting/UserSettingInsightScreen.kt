@@ -229,7 +229,7 @@ fun UserInfoView(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "User",
+                text = stringResource(R.string.user),
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Normal,
@@ -249,7 +249,7 @@ fun UserInfoView(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "Team",
+                text = stringResource(R.string.team),
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Normal,
@@ -269,7 +269,7 @@ fun UserInfoView(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "Locality",
+                text = stringResource(R.string.locality),
                 fontSize = 16.sp,
                 color = LoginDarkColor,
                 fontWeight = FontWeight.Normal,

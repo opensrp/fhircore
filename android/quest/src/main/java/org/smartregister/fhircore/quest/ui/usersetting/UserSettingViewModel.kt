@@ -54,7 +54,6 @@ import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.p2p.utils.startP2PScreen
-import timber.log.Timber
 
 @HiltViewModel
 class UserSettingViewModel
@@ -183,9 +182,8 @@ constructor(
 
   fun fetchUnsyncedResources() {
     viewModelScope.launch {
-      showProgressIndicatorFlow.emit(true)
-
       withContext(dispatcherProvider.io()) {
+        showProgressIndicatorFlow.emit(true)
         val unsyncedResources =
           fhirEngine
             .getUnsyncedLocalChanges()

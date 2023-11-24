@@ -229,7 +229,6 @@ class UserSettingScreenTest {
           allowP2PSync = isP2PAvailable,
           lastSyncTime = "05:30 PM, Mar 3",
           unsyncedResourcesFlow = unsyncedResourcesFlow,
-          dismissInsightsView = {},
           showProgressIndicatorFlow = MutableStateFlow(false),
         )
       }
