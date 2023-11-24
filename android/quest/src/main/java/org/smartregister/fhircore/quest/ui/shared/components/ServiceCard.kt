@@ -74,6 +74,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
 const val DIVIDER_TEST_TAG = "dividerTestTag"
+const val NUMBER_OF_ICONS_DISPLAYED = 3
 
 @Composable
 fun ServiceCard(
@@ -170,8 +171,8 @@ private fun RowScope.RenderDetails(
   navController: NavController,
   resourceData: ResourceData,
 ) {
-  val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
-  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }
+  val iconsSplit = serviceMemberIcons?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
+  val nMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
@@ -191,31 +192,34 @@ private fun RowScope.RenderDetails(
       }
     }
     // Display 2 icons and counter if icons are more than 2
-    if (twoMemberIcons.isNotEmpty()) {
+    if (nMemberIcons.isNotEmpty()) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.wrapContentWidth(),
         horizontalArrangement = Arrangement.End,
       ) {
-        twoMemberIcons.forEach {
+        nMemberIcons.forEach {
           if (
             it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)
           ) {
             Icon(
               painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
               contentDescription = null,
-              modifier = Modifier.size(18.dp).padding(0.dp),
+              modifier = Modifier.size(15.dp).padding(0.dp),
               tint = Color.Unspecified,
             )
           }
         }
-        if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
+        if (
+          nMemberIcons.size == NUMBER_OF_ICONS_DISPLAYED &&
+            iconsSplit.size > NUMBER_OF_ICONS_DISPLAYED
+        ) {
           Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.clip(CircleShape).size(22.dp).background(DefaultColor.copy(0.1f)),
           ) {
             Text(
-              text = "+${iconsSplit.size - 2}",
+              text = "+${iconsSplit.size - NUMBER_OF_ICONS_DISPLAYED}",
               fontSize = 10.sp,
               color = Color.DarkGray,
               softWrap = false,
