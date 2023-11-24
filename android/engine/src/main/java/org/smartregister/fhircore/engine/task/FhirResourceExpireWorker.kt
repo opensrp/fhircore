@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 /** This job runs periodically to mark overdue Tasks as Expired */
 @HiltWorker
-class FhirTaskExpireWorker
+class FhirResourceExpireWorker
 @AssistedInject
 constructor(
   @Assisted val context: Context,
@@ -41,11 +41,12 @@ constructor(
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
       fhirResourceUtil.expireOverdueTasks()
+      fhirResourceUtil.closeResourcesRelatedToCompletedServiceRequests()
       Result.success()
     }
   }
 
   companion object {
-    const val WORK_ID = "FhirTaskExpire"
+    const val WORK_ID = "FhirResourceExpire"
   }
 }

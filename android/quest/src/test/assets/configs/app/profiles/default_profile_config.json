@@ -35,6 +35,20 @@
       "actions": [
         "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.identifier[0].value'))"
       ]
+    },
+    {
+      "name": "patientPhoneNumber",
+      "condition": "true",
+      "actions": [
+        "data.put('patientPhoneNumber', fhirPath.extractValue(Patient, 'Patient.telecom[0].value'))"
+      ]
+    },
+    {
+      "name": "phoneNumberAvailable",
+      "condition": "true",
+      "actions": [
+        "data.put('phoneNumberAvailable', !empty(data.get('patientPhoneNumber')))"
+      ]
     }
   ],
   "views": [
@@ -57,6 +71,38 @@
                   "viewType": "COMPOUND_TEXT",
                   "primaryText": "ID: @{patientId}",
                   "primaryTextColor": "#000000"
+                },
+                {
+                "viewType": "SPACER",
+                "height": 10,
+                "visible": "@{phoneNumberAvailable}"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#000000",
+                  "primaryText": "PHONE NUMBER",
+                  "visible": "@{phoneNumberAvailable}"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryText": "@{patientPhoneNumber}",
+                  "primaryTextColor": "#0077CC",
+                  "fontSize": 14,
+                  "visible": "@{phoneNumberAvailable}",
+                  "clickable": "true",
+                  "primaryTextActions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "LAUNCH_DIALLER",
+                      "params": [
+                        {
+                          "paramType": "PARAMDATA",
+                          "key": "patientPhoneNumber",
+                          "value": "@{patientPhoneNumber}"
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
                   "viewType": "ROW",
