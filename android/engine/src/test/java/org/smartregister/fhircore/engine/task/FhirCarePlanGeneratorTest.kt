@@ -705,13 +705,15 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient =
       "plans/diabetes_compass/adult-patient.json".readFile().decodeResourceFromString<Patient>()
 
-    val structureMapScript = "plans/diabetes_compass/home-visit-follow-up.map".readFile()
+    val structureMapScript = "plans/diabetes_compass/phone-call-follow-up.map".readFile()
     val structureMap =
-      structureMapUtilities.parse(structureMapScript, "Diabetes Compass Home Visit Follow-up").also {
-        // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
-        //  so use only months and that would have the unit replaced with 'months'
-        println(it.encodeResourceToString().replace("''", "'month'"))
-      }
+      structureMapUtilities
+        .parse(structureMapScript, "Diabetes Compass Phone Call Follow-up")
+        .also {
+          // TODO: IMP - The parser does not recognize the time unit i.e. months and prints as ''
+          //  so use only months and that would have the unit replaced with 'months'
+          println(it.encodeResourceToString().replace("''", "'month'"))
+        }
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
@@ -738,7 +740,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           DateTimeType.now().value.makeItReadable(),
           carePlan.period.start.makeItReadable(),
         )
-       /* assertEquals(
+        /* assertEquals(
           patient.birthDate.plusYears(5).makeItReadable(),
           carePlan.period.end.makeItReadable(),
         )*/

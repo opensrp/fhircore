@@ -1,19 +1,23 @@
 {
   "resourceType": "PlanDefinition",
-  "id": "dc-diabetes-screening-intervention",
-  "meta": {
-    "versionId": "8",
-    "lastUpdated": "2023-10-29T20:06:16.413+00:00",
-    "source": "#2d856f62aae8bd5a"
-  },
   "language": "en-GB",
+  "id": "dc-diabetes-screening-intervention",
+  "name": "DiabetesScreeningIntervention",
+  "title": "Schedule of screening & follow-ups for registered patients",
+  "description": "Schedule of screening & follow-ups for registered patients",
+  "version": "0.0.1",
+  "status": "active",
+  "publisher": "ONA",
+  "meta": {
+    "versionId": "1"
+  },
   "contained": [
     {
       "resourceType": "ActivityDefinition",
       "id": "dc-init-care-plan-activity",
       "title": "Diabetes Screening Handler Activity",
-      "status": "active",
       "description": "This will initialize Diabetes Screening CarePlan",
+      "status": "active",
       "kind": "CarePlan",
       "dynamicValue": [
         {
@@ -118,9 +122,9 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
+          "frequency": 1,
           "duration": 7,
           "durationUnit": "d",
-          "frequency": 1,
           "period": 0,
           "periodUnit": "d"
         }
@@ -135,9 +139,9 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
+          "frequency": 1,
           "duration": 30,
           "durationUnit": "d",
-          "frequency": 1,
           "period": 3,
           "periodUnit": "a"
         }
@@ -152,9 +156,9 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
+          "frequency": 1,
           "duration": 30,
           "durationUnit": "d",
-          "frequency": 1,
           "period": 14,
           "periodUnit": "d"
         }
@@ -169,21 +173,15 @@
       "kind": "Task",
       "timingTiming": {
         "repeat": {
+          "frequency": 1,
           "duration": 30,
           "durationUnit": "d",
-          "frequency": 1,
           "period": 30,
           "periodUnit": "d"
         }
       }
     }
   ],
-  "version": "0.0.1",
-  "name": "DiabetesScreeningIntervention",
-  "title": "Schedule of screening & follow-ups for registered patients",
-  "status": "active",
-  "publisher": "ONA",
-  "description": "Schedule of screening & follow-ups for registered patients",
   "goal": [
     {
       "category": {
@@ -218,8 +216,8 @@
   "action": [
     {
       "prefix": "1",
-      "description": "This will initialize CarePlan on Diabetes Screening",
       "priority": "routine",
+      "description": "This will initialize CarePlan on Diabetes Screening",
       "reason": [
         {
           "coding": [
@@ -253,8 +251,8 @@
     },
     {
       "prefix": "1",
-      "description": "Generate a screening task when the patient has not been screened for diabetes",
       "priority": "routine",
+      "description": "Generate a screening task when the patient has not been screened for diabetes",
       "condition": [
         {
           "kind": "applicability",
@@ -292,8 +290,8 @@
     },
     {
       "prefix": "1",
-      "description": "Generate a three-year follow-up when the patient has low risk of diabetes from initial screening",
       "priority": "routine",
+      "description": "Generate a three-year follow-up when the patient has low risk of diabetes from initial screening",
       "condition": [
         {
           "kind": "applicability",
@@ -331,8 +329,8 @@
     },
     {
       "prefix": "1",
-      "description": "Generate a phone call follow-up when the patient is at high risk of diabetes from initial screening and has been referred to a HLC",
       "priority": "routine",
+      "description": "Generate a phone call follow-up when the patient is at high risk of diabetes from initial screening and has been referred to a HLC",
       "condition": [
         {
           "kind": "applicability",
@@ -370,8 +368,8 @@
     },
     {
       "prefix": "1",
-      "description": "Generate a home visit follow-up when the patient is unreachable after being referred to a HLC",
       "priority": "routine",
+      "description": "Generate a home visit follow-up when the patient is unreachable after being referred to a HLC",
       "condition": [
         {
           "kind": "applicability",
