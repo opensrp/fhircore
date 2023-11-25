@@ -115,6 +115,7 @@ constructor(
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
+          configurationRegistry.clearConfigsCache()
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
         }
@@ -162,6 +163,7 @@ constructor(
         val unsyncedResources =
           fhirEngine
             .getUnsyncedLocalChanges()
+            .distinctBy { it.resourceId }
             .groupingBy { it.resourceType.spaceByUppercase() }
             .eachCount()
             .map { it.key to it.value }

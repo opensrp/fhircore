@@ -5,9 +5,9 @@ sidebar_label: Introduction
 
 # Introduction
 
-This documentation covers the OpenSRP Android App, which is code-named "FHIR Core" throughout. FHIR Core is a Kotlin application for delivering configurable, offline-capable, and mobile-first healthcare project implementations.
+This documentation covers the OpenSRP Android App. This is a Kotlin application for delivering configurable, offline-capable, and mobile-first healthcare project implementations.
 
-FHIR Core is architected as a FHIR-native platform powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/). FHIR Core users experience a module-oriented design based on over a decade of real world experience implementing digital health projects with [OpenSRP](https://opensrp.io/). 
+OpenSRP is architected as a FHIR-native platform powered by Google's [Android FHIR SDK](https://github.com/google/android-fhir) and [HAPI FHIR](https://hapifhir.io/). OpenSRP users experience a module-oriented design based on over a decade of real world experience implementing digital health projects.
 
 This repository contains the Android mobile application built to:
 
@@ -58,7 +58,7 @@ The OpenSRP Android app includes automated style, coverage, unit, user inteface 
 
 #### Style and coverage tests
 
-We use [ktlint](https://github.com/pinterest/ktlint) via [spotless](https://github.com/diffplug/spotless) to run style checks against the entire codebase. We target to make these style checks as strict as possible in order to reduce bikeshedding in code reviews. 
+We use [ktlint](https://github.com/pinterest/ktlint) via [spotless](https://github.com/diffplug/spotless) to run style checks against the entire codebase. We target to make these style checks as strict as possible in order to reduce bikeshedding in code reviews.
 
 We use [Jacoco](https://www.jacoco.org/jacoco/) for code coverage report generation and then [codecov](https://app.codecov.io/gh/opensrp/fhircore) to track changes in coverage over time. We enforce a minimum coverage percent on the new code added in a pull request and a minimum reduction in overall coverage percentage change when consider the changes introduced through a pull request.
 

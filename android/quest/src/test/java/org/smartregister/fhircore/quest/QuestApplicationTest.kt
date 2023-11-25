@@ -26,6 +26,7 @@ import io.mockk.spyk
 import io.sentry.Sentry
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
+import kotlin.test.assertNotNull
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -101,5 +102,8 @@ class QuestApplicationTest : RobolectricTest() {
 
     val intent = Intent(application, AppSettingActivity::class.java)
     application.startActivity(intent)
+    assertNotNull(application.workerFactory)
+    assertNotNull(application.referenceUrlResolver)
+    assertNotNull(application.xFhirQueryResolver)
   }
 }

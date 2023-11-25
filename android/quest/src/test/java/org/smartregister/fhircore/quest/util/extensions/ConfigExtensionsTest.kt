@@ -17,7 +17,10 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -27,6 +30,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlin.test.assertEquals
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -280,6 +284,63 @@ class ConfigExtensionsTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+  }
+
+  @Test
+  fun testLaunchDiallerOnClick() {
+    val patientWithPhoneNumber = patient.copy()
+    patientWithPhoneNumber.apply {
+      addTelecom(
+        ContactPoint().apply { this.value = "0700000000" },
+      )
+    }
+
+    val computedValuesWithPhoneNumberMutable = resourceData.computedValuesMap.toMutableMap()
+    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] =
+      patientWithPhoneNumber.telecom.first().value
+    val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
+
+    val resourceDataWithPhoneNumber =
+      ResourceData(
+        baseResourceId = patient.logicalId,
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = computedValuesWithPhoneNumber,
+      )
+
+    val clickAction =
+      ActionConfig(
+        id = "diallerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_DIALLER.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "patientPhoneNumber",
+              value = "@{patientPhoneNumber}",
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
+      )
+
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceDataWithPhoneNumber,
+      ) // make a clicking action
+
+    // make sure no errors thrown when the new activity is started. should return nothing
+    every { context.startActivity(any()) } returns Unit
+
+    // make sure correct function with correct signature is called
+    verify {
+      context.startActivity(
+        withArg {
+          assertEquals(it.action, Intent.ACTION_DIAL)
+          assertEquals(it.data, Uri.parse("tel:0700000000"))
+        },
+        null,
+      )
+    }
   }
 
   @Test
