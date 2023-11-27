@@ -74,7 +74,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
 const val DIVIDER_TEST_TAG = "dividerTestTag"
-const val NUMBER_OF_ICONS_DISPLAYED = 3
+const val NUMBER_OF_ICONS_DISPLAYED = 2
 
 @Composable
 fun ServiceCard(
@@ -191,7 +191,7 @@ private fun RowScope.RenderDetails(
         )
       }
     }
-    // Display 2 icons and counter if icons are more than 2
+    // Display N icons and counter if icons are more than N
     if (nMemberIcons.isNotEmpty()) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -205,7 +205,7 @@ private fun RowScope.RenderDetails(
             Icon(
               painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
               contentDescription = null,
-              modifier = Modifier.size(15.dp).padding(0.dp),
+              modifier = Modifier.size(18.dp).padding(0.dp),
               tint = Color.Unspecified,
             )
           }
