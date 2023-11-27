@@ -119,12 +119,13 @@ constructor(
     var carePlanModified = false
 
     if (generateCarePlanWithWorkflowApi) {
-      output = workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
-        planDefinition = planDefinition,
-        patient = subject as Patient,
-        data = data,
-        output = output,
-      )
+      output =
+        workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
+          planDefinition = planDefinition,
+          patient = subject as Patient,
+          data = data,
+          output = output,
+        )
       carePlanModified = true
     } else {
       planDefinition.action.forEach { action ->

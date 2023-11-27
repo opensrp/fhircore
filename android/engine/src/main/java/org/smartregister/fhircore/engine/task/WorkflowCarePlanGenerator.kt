@@ -25,6 +25,12 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
+import java.util.Objects
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Bundle
@@ -44,12 +50,6 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import timber.log.Timber
-import java.io.File
-import java.util.Objects
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
 
 @Singleton
 class WorkflowCarePlanGenerator
@@ -106,8 +106,14 @@ constructor(
       val referenceToContained = definition.value.startsWith("#")
       if (!referenceToContained) {
         val resourceName = resolveResourceName(definition, planDefinition)
-        if (Enumerations.FHIRAllTypes.fromCode(Objects.requireNonNull<String?>(resourceName)) == Enumerations.FHIRAllTypes.ACTIVITYDEFINITION) {
-          val availableDefinition = defaultRepository.loadResource<ActivityDefinition>(definition.value.substringAfterLast("/"))
+        if (
+          Enumerations.FHIRAllTypes.fromCode(Objects.requireNonNull<String?>(resourceName)) ==
+            Enumerations.FHIRAllTypes.ACTIVITYDEFINITION
+        ) {
+          val availableDefinition =
+            defaultRepository.loadResource<ActivityDefinition>(
+              definition.value.substringAfterLast("/")
+            )
           knowledgeManager.install(writeToFile(availableDefinition!!))
         }
       }
@@ -169,11 +175,11 @@ constructor(
       loadPlanDefinitionResourcesFromDb()
     }
 
-    val carePlan = fhirOperator.generateCarePlan(
-      planDefinition =
-      CanonicalType(planDefinition.url),
-      subject = patient.referenceValue(),
-    ) as CarePlan
+    val carePlan =
+      fhirOperator.generateCarePlan(
+        planDefinition = CanonicalType(planDefinition.url),
+        subject = patient.referenceValue(),
+      ) as CarePlan
     val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
     // TODO Fix after resolving dependency issues
     /*val carePlanProposal = CarePlan()

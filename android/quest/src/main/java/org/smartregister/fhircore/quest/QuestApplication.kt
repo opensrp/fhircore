@@ -27,9 +27,9 @@ import dagger.hilt.android.HiltAndroidApp
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
-import org.hl7.fhir.utilities.npm.NpmPackage
 import java.net.URL
 import javax.inject.Inject
+import org.hl7.fhir.utilities.npm.NpmPackage
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
@@ -106,7 +106,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
             QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
-          npmPackage = NpmPackage.fromPackage(assets.open("who_eir/packages/package.r4.tgz"))
+          npmPackage = NpmPackage.fromPackage(assets.open("who_eir/packages/package.r4.tgz")),
         )
     return configuration as DataCaptureConfig
   }
