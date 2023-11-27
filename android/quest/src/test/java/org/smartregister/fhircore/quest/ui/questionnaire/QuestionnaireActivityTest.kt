@@ -105,7 +105,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   private val dispatcherProvider: DispatcherProvider = spyk(DefaultDispatcherProvider())
   private val fhirEngine: FhirEngine = mockk()
   private val defaultRepository: DefaultRepository =
-    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk())
+    DefaultRepository(fhirEngine, dispatcherProvider, mockk(), mockk(), mockk(), mockk(), mockk())
 
   @BindValue
   val questionnaireViewModel: QuestionnaireViewModel =

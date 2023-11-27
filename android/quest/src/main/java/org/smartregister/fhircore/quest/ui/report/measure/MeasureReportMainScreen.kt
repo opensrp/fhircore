@@ -37,10 +37,11 @@ fun MeasureReportMainScreen(
   reportId: String,
   practitionerId: String,
   mainNavController: NavController,
-  measureReportViewModel: MeasureReportViewModel,
+  measureReportViewModel: MeasureReportViewModel
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
+  val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
   NavHost(
     navController = navController,
@@ -49,7 +50,7 @@ fun MeasureReportMainScreen(
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportModule.route) {
       MeasureReportListScreen(
-        mainNavController = mainNavController,
+        navController = navController,
         dataList = measureReportViewModel.reportMeasuresList(reportId),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
@@ -60,6 +61,7 @@ fun MeasureReportMainScreen(
             ),
           )
         },
+        showProgressIndicator = uiState.showProgressIndicator
       )
     }
     // Page for selecting report date
@@ -76,8 +78,9 @@ fun MeasureReportMainScreen(
       ReportDateSelectorScreen(
         reportId = reportId,
         practitionerId = practitionerId,
-        screenTitle = stringResource(R.string.select_date_range),
+        screenTitle = stringResource(R.string.select_month),
         navController = navController,
+        mainNavController = mainNavController,
         measureReportViewModel = measureReportViewModel,
       )
     }

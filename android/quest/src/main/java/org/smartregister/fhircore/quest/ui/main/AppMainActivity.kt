@@ -175,8 +175,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
-              syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp)
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp)
             )
           )
         }

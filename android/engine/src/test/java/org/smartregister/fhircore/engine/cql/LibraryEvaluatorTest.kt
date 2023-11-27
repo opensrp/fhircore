@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.FileUtil
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 @HiltAndroidTest
@@ -77,6 +78,7 @@ class LibraryEvaluatorTest : RobolectricTest() {
   var evaluatorId = "ANCRecommendationA2"
   var context = "Patient"
   var contextLabel = "mom-with-anemia"
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
@@ -189,7 +191,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         sharedPreferencesHelper,
         configurationRegistry,
         configService,
-        configRulesExecutor
+        configRulesExecutor,
+        fhirPathDataExtractor
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -250,7 +253,8 @@ class LibraryEvaluatorTest : RobolectricTest() {
         sharedPreferencesHelper,
         configurationRegistry,
         configService,
-        configRulesExecutor
+        configRulesExecutor,
+        fhirPathDataExtractor
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary

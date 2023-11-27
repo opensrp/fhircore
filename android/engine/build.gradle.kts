@@ -139,6 +139,14 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
   }
+  implementation(libs.cql.evaluator.measure) {
+    exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "ca.uhn.hapi.fhir")
+  }
+  implementation(libs.cql.evaluator.measure.hapi) {
+    exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "ca.uhn.hapi.fhir")
+  }
   implementation(libs.cql.evaluator.dagger) {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")

@@ -23,7 +23,7 @@ data-capture = "1.0.0-preview11-SNAPSHOT"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.0"
-fhir-common-utils = "0.0.7-SNAPSHOT"
+fhir-common-utils = "0.0.10-SNAPSHOT"
 fhir-engine = "0.1.0-beta03-preview9.5-SNAPSHOT"
 foundation = "1.3.1"
 fragment-ktx = "1.5.5"
@@ -71,7 +71,7 @@ navigation-ui-ktx = "2.5.3"
 okhttp = "4.10.0"
 okhttp-logging-interceptor = "4.10.0"
 orchestrator = "1.4.2"
-p2p-lib = "0.6.6-SNAPSHOT"
+p2p-lib = "0.6.8-composition-1.2.1-SNAPSHOT"
 paging-compose = "1.0.0-alpha17"
 paging-runtime-ktx = "3.1.1"
 preference-ktx = "1.2.0"
@@ -119,7 +119,8 @@ cql-engine-jackson = { group = "org.opencds.cqf.cql", name = "engine.jackson", v
 cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }
 cql-evaluator-dagger = { group = "org.opencds.cqf.cql", name = "evaluator.dagger", version.ref = "cql-evaluator" }
 cql-evaluator-plandefinition = { group = "org.opencds.cqf.cql", name = "evaluator.plandefinition", version.ref = "cql-evaluator" }
-cql-measure-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator" }
+cql-evaluator-measure = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator" }
+cql-evaluator-measure-hapi = { group = "org.opencds.cqf.cql", name = "evaluator.measure-hapi", version.ref = "cql-evaluator" }
 cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-to-elm" }
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }

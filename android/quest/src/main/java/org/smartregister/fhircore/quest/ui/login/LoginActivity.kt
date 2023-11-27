@@ -73,14 +73,13 @@ open class LoginActivity : BaseMultiLanguageActivity() {
         if ((loginActivity.deviceOnline() && loginActivity.isRefreshTokenActive()) ||
             !loginActivity.deviceOnline()
         ) {
-
           navigateToPinLogin(launchSetup = false)
         }
       }
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
-          if (!hasActivePin) downloadNowWorkflowConfigs()
+          downloadNowWorkflowConfigs()
           if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
           else loginActivity.navigateToHome()
         }

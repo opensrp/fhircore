@@ -89,7 +89,8 @@ data class ResourceConfig(
   val nestedSearchResources: List<NestedSearchConfig>? = null,
   val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
-  val attributesToUpdate: List<KeyValueConfig>? = emptyList()
+  val attributesToUpdate: List<KeyValueConfig>? = emptyList(),
+  val filterFhirPathExpressions: List<KeyValueConfig>? = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 @Serializable

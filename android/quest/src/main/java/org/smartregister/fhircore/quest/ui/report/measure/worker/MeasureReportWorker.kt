@@ -85,8 +85,7 @@ constructor(
                 fhirEngine = fhirEngine,
                 startDateFormatted = startDateFormatted,
                 endDateFormatted = endDateFormatted,
-                measureUrl = it.url,
-                subjects = emptyList(),
+                measureUrl = it.url
               )
               .isEmpty()
           ) {
@@ -145,8 +144,7 @@ constructor(
           fhirEngine,
           startDateFormatted,
           endDateFormatted,
-          measureUrl,
-          emptyList()
+          measureUrl
         )
       if (result.isNotEmpty()) defaultRepository.delete(result.last())
       defaultRepository.addOrUpdate(resource = measureReport)

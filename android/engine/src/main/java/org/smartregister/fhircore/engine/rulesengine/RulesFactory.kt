@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.isDue
 import org.smartregister.fhircore.engine.util.extension.isOverDue
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.engine.util.extension.prettifyDate
@@ -74,11 +75,15 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+  fun fireRules(
+    rules: Rules,
+    repositoryResourceData: RepositoryResourceData?,
+    params: Map<String, String>,
+  ): Map<String, Any> {
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, mutableMapOf<String, Any>())
+        put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {
@@ -373,6 +378,11 @@ constructor(
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
       relatedResourceCounts?.sumOf { it.count } ?: 0
 
+    /** This function combines two lists of resources into one list */
+    fun combineLists(listOne: List<Any>?, listTwo: List<Any>?): List<Any> {
+      return (listOne ?: emptyList()) + (listTwo ?: emptyList())
+    }
+
     fun retrieveCount(
       parentResourceId: String,
       relatedResourceCounts: List<RelatedResourceCount>?
@@ -446,9 +456,29 @@ constructor(
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
             Task.TaskStatus.INPROGRESS -> ServiceStatus.IN_PROGRESS.name
             Task.TaskStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+            else -> {
+              Timber.e("Task.status is null", Exception())
+              ServiceStatus.UPCOMING.name
+            }
           }
       }
       return serviceStatus
+    }
+
+    fun generateListTaskServiceStatus(tasks: List<Task>): String {
+      val finalTaskForStatus =
+        tasks.find { task -> task.isOverDue() }
+          ?: tasks.find { task -> task.isDue() }
+            ?: tasks.find { task ->
+            (task.status == Task.TaskStatus.REQUESTED ||
+              task.status == Task.TaskStatus.NULL ||
+              task.status == Task.TaskStatus.RECEIVED)
+          }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.INPROGRESS }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.COMPLETED }
+            ?: tasks.find { task -> task.status == Task.TaskStatus.CANCELLED } ?: Task()
+
+      return generateTaskServiceStatus(finalTaskForStatus)
     }
   }
 

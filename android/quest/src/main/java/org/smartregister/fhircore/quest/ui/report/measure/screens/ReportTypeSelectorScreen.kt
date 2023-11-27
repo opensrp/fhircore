@@ -76,7 +76,6 @@ import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundEx
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.parseDate
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportEvent
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.ReportTypeSelectorUiState
@@ -102,6 +101,7 @@ fun ReportDateSelectorScreen(
   practitionerId: String = "",
   screenTitle: String,
   navController: NavController,
+  mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
   modifier: Modifier = Modifier,
 ) {
@@ -120,10 +120,7 @@ fun ReportDateSelectorScreen(
     onBackPressed = {
       // Reset UI state
       measureReportViewModel.resetState()
-      navController.popBackStack(
-        route = MeasureReportNavigationScreen.MeasureReportModule.route,
-        inclusive = false,
-      )
+      mainNavController.popBackStack()
     },
     onSelectReportDate = { date ->
       measureReportViewModel.onEvent(

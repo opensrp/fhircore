@@ -32,13 +32,13 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirTaskUtil: FhirTaskUtil,
+  val fhirTaskUtil: FhirResourceUtil,
   val dispatcherProvider: DispatcherProvider
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-      fhirTaskUtil.updateTaskStatuses()
+      fhirTaskUtil.updateUpcomingTasksToDue()
       Result.success()
     }
   }
