@@ -20,9 +20,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,9 +54,11 @@ fun CardView(
   val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
-    Spacer(modifier = modifier.height(8.dp))
     Row(
-      modifier = modifier.fillMaxWidth(),
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .conditional(viewProperties.header != null, { padding(top = 24.dp, bottom = 8.dp) }),
       verticalAlignment = Alignment.Top,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -82,7 +82,6 @@ fun CardView(
         }
       }
     }
-    Spacer(modifier = modifier.height(8.dp))
     // Card section
     Card(
       elevation = viewProperties.elevation.dp,
@@ -91,7 +90,6 @@ fun CardView(
           .padding(
             start = viewProperties.padding.dp,
             end = viewProperties.padding.dp,
-            bottom = viewProperties.padding.dp,
           )
           .fillMaxWidth()
           .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
@@ -170,8 +168,7 @@ private fun CardViewWithPaddingPreview() {
                   ),
               ),
             ),
-          header =
-            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16),
+          header = null,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),

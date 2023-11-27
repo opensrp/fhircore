@@ -1,20 +1,15 @@
----
-sidebar_position: 1
-sidebar_label: Overview
----
+# Configurations
 
-# Overview of Configurations
+An OpenSRP application needs configurations to work properly. These configurations are used to define application workflows (or events), user interface content, which user interface component to display and which data (FHIR Resources) to load.
 
-A FHIR Core application needs configurations to work properly. These configurations are used to define application workflows (or events), user interface content, which user interface component to display and which data (FHIR Resources) to load.
-
-FHIR Core configs are represented using two types of FHIR resources ([Composition](https://build.fhir.org/composition.html) and [Binary](https://build.fhir.org/binary.html)) which are stored in JSON format.  A Binary  resource can contain any content including custom JSONs modeled for FHIR Core's use case. These Binary resources are referenced in the `Composition` resource sections; each Binary resource representing a valid configuration. A `Composition` section can nested in other sections; commonly used to group related configs. 
+OpenSRP configs are represented using two types of FHIR resources ([Composition](https://build.fhir.org/composition.html) and [Binary](https://build.fhir.org/binary.html)) which are stored in JSON format.  A Binary  resource can contain any content including custom JSONs modeled for OpenSRP's use case. These Binary resources are referenced in the `Composition` resource sections; each Binary resource representing a valid configuration. A `Composition` section can nested in other sections; commonly used to group related configs.
 
 A `Composition` resource acts as the application  config manifest. It MUST have a unique identifier to differentiate the application from the rest of the applications sharing the same server.
 
 
 ## Configuration Types
 
-FHIR Core supports the following types of configurations:
+OpenSRP supports the following types of configurations:
 
 |Config type| Function  | Cardinality |
 |--|--|:--:|
