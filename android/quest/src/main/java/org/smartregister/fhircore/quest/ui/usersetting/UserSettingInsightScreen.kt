@@ -63,7 +63,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableSharedFlow
-import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.quest.R
 
@@ -118,6 +117,9 @@ fun UserSettingInsightScreen(
           style = TextStyle(color = Color.Black, fontSize = 18.sp),
           fontWeight = FontWeight.Bold,
         )
+        if (unsyncedResources.isEmpty()) {
+          Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
+        }
       }
       if (unsyncedResources.isNotEmpty()) {
         items(unsyncedResources) { unsynced ->
@@ -125,7 +127,7 @@ fun UserSettingInsightScreen(
             first = unsynced.first,
             second = unsynced.second.toString(),
           )
-          Divider(color = DividerColor)
+          Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
           Spacer(modifier = Modifier.padding(8.dp))
         }
       }
