@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @AndroidEntryPoint
@@ -65,7 +66,7 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
     val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, BuildConfig.APP_ID)?.trimEnd()
 
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {
