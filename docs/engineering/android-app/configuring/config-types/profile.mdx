@@ -144,3 +144,87 @@ rules name | Unique identifier for the rules                       | Yes | empty
 `paramType`  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA | No | `null` |
 `key`        | Action ParameterType unique key if defined but not tag is given | Yes | |
 `value`      | Action ParameterType corresponding key's value        | Yes | |
+
+## **Working with contacts**
+
+If you would like to store and display profile contacts.
+The Person (e.g. Patient or Practitioner) has an extractable telecom value in their object body.
+By extracting it you can configure which contact values to show on a Profile.
+Here is an example of an extraction rule that extracts a patient's phone number.
+
+``` json
+{
+    "name": "patientPhoneNumber",
+    "condition": "true",
+    "actions": [
+    "data.put('patientPhoneNumber', fhirPath.extractValue(Patient, 'Patient.telecom[0].value'))"
+    ]
+}
+```
+## Practitioner calling a patient phone number
+
+If the patient's phone number has been extracted and displayed on the UI via a COMPOUND_TEXT
+viewType (or any other view type of your choice), the LAUNCH_DIALLER workflow is provided to allow the
+Practitioner to call the patient. The workflow passes the telephone number data to the device's dialler
+and from there, the Practitioner can proceed with the call.
+
+Below is an example configuration for the view type.
+``` json
+{
+    "viewType": "COMPOUND_TEXT",
+    "primaryText": "@{patientPhoneNumber}",
+    "primaryTextColor": "#0077CC",
+    "fontSize": 14,
+    "visible": "@{phoneNumberAvailable}",
+    "clickable": "true",
+    "primaryTextActions": [
+    {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_DIALLER",
+        "params": [
+        {
+            "paramType": "PARAMDATA",
+            "key": "patientPhoneNumber",
+            "value": "@{patientPhoneNumber}"
+        }
+        ]
+    }
+    ]
+}
+```
+Some notable configurations to enable the LAUNCH_DIALLER workflow include
+
+1. ```clickable": "true"``` The view type displaying the phone number must be clickable. This allows the
+ON_CLICK trigger to be activated so it can call the ```LAUNCH_DIALLER``` workflow.
+
+2. ```visible: {RULE}``` By configuring a rule that determines whether the phone number is visible,
+we avoid showing the phone number when a Profile does not have one.
+
+Here is an example of a rule to determine the availability of a phone number
+```json
+{
+    "name": "phoneNumberAvailable",
+    "condition": "true",
+    "actions": [
+    "data.put('phoneNumberAvailable', !empty(data.get('patientPhoneNumber')))"
+    ]
+}
+```
+
+The rule above checks the data map being maintained globally by the app and inserts a key ```phoneNumberAvailable```
+with a value based on whether or not ```patientPhoneNumber``` is available in the same map.
+
+## Practitioner calling patient phone number config properties
+`clickable` and `primaryTextActions` are relevant if using COMPOUND_TEXT to display the phone number
+
+|Property | Description | Required | Default |
+|--|--|:--:|--|
+rules name | Unique identifier for the rules                       | Yes | empty string |
+`clickable`  | set the clickability of the view type displaying the phone number                        | Yes | `false` |
+`primaryTextActions`    | an array of the rule logic with a fhirPathExpression  | Yes | `null` |
+`trigger`    | application workflow action                           | Yes | |
+`workflow`   | An application event that can trigger a workflow      | Yes | `null` |
+`params`     | An array of actionParameters to pass to another profile | No | emptyArray |
+`paramType`  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA | No | `null` |
+`key`        | Action ParameterType unique key if defined but not tag is given | Yes | |
+`value`      | Action ParameterType corresponding key's value        | Yes | |
