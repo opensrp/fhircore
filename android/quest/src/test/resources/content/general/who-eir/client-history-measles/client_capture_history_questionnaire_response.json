@@ -1,0 +1,76 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "eeaddad0-9c38-4e4d-8a0a-c5152e840137",
+  "meta": {
+    "lastUpdated": "2023-11-17T18:50:22.986+05:00"
+  },
+  "questionnaire": "Questionnaire/0fbd4938-6134-4c56-8d49-6c91dd306fbd",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/2bc9e8d4-9584-42fe-9fe7-370dbd80568d"
+  },
+  "authored": "2023-11-17T18:50:22+05:00",
+  "author": {
+    "reference": "Practitioner/59f47fdd-5d30-4d55-82f6-cc562cb5c749"
+  },
+  "item": [
+    {
+      "linkId": "dose0",
+      "text": "Indicates if the client has received a supplementary dose",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "completedPrimarySeries",
+      "text": "Indicates if the client has completed the primary vaccination series of a product/antigen. If the client has not yet completed their primary series, it means they may be expected to receive more doses to complete their vaccination regimen for the respective product/antigen.",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "dateSeriesCompleted",
+      "text": "The date when the client completed the primary vaccination series - per product/antigen",
+      "answer": [
+        {
+          "valueDate": "2023-11-15"
+        }
+      ]
+    },
+    {
+      "linkId": "hivStatus",
+      "text": "The current human immunodeficiency virus HIV status of the client"
+    },
+    {
+      "linkId": "pretermBirth",
+      "text": "The infant was preterm; the mother gave birth to the infant when gestational age was less than 37 weeks",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "severelyImmunosuppressed",
+      "text": "The client is known to be severely immunosuppressed",
+      "answer": [
+        {
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "artStartDate",
+      "text": "The date on which the client started or restarted antiretroviral therapy ART",
+      "answer": [
+        {
+          "valueDate": "2023-11-16"
+        }
+      ]
+    }
+  ]
+}

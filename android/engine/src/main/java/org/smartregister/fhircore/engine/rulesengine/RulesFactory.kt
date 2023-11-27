@@ -488,6 +488,31 @@ constructor(
     }
   }
 
+  @JvmOverloads
+  fun generateMedicationServiceStatus(
+    medicationRequest: MedicationRequest,
+  ): String {
+    val serviceStatus =
+      when (medicationRequest.status) {
+        MedicationRequest.MedicationRequestStatus.NULL,
+        MedicationRequest.MedicationRequestStatus.ENTEREDINERROR, -> {
+          Timber.e("MedicationRequest.status is null", Exception())
+          ServiceStatus.UPCOMING.name
+        }
+        MedicationRequest.MedicationRequestStatus.DRAFT -> ServiceStatus.UPCOMING.name
+        MedicationRequest.MedicationRequestStatus.ACTIVE -> ServiceStatus.DUE.name
+        MedicationRequest.MedicationRequestStatus.CANCELLED -> ServiceStatus.OVERDUE.name
+        MedicationRequest.MedicationRequestStatus.STOPPED -> ServiceStatus.OVERDUE.name
+        MedicationRequest.MedicationRequestStatus.ONHOLD -> ServiceStatus.IN_PROGRESS.name
+        MedicationRequest.MedicationRequestStatus.COMPLETED -> ServiceStatus.COMPLETED.name
+        else -> {
+          Timber.e("MedicationRequest.status is null", Exception())
+          ServiceStatus.UPCOMING.name
+        }
+      }
+    return serviceStatus
+  }
+
   companion object {
 
     private const val SERVICE = "service"

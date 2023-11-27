@@ -1,0 +1,106 @@
+map "http://smart.who.int/immunizations-measles/StructureMap/IMMZD1LMToResources" = "IMMZD1LMToResources"
+// Immunization - Client History - Transform logical model to resources
+
+uses "http://smart.who.int/immunizations-measles/StructureDefinition/IMMZD1ClientHistoryMeasles" alias IMMZD1 as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" alias Bundle as target
+
+group IMMZD1ToBundle (source immz : IMMZD1, target bundle: Bundle) {
+  immz -> bundle.type = 'collection' "SetCollection";
+
+  immz.patient as patient then {
+
+
+    immz.dose0 as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE80' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetDose0Observation";
+
+    immz.completedPrimarySeries as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE8' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetPrimarySeriesObservation";
+
+    immz.dateSeriesCompleted as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE81' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetDateSeriesObservation";
+
+    immz.hivStatus as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE10' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+
+      content -> obs.value = create('CodeableConcept') as code then {
+        content -> code.coding = content "SetCoding";
+      } "SetCodeableConcept";
+    } "SetHIVStatusObservation";
+
+    immz.pretermBirth as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE15' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetPretermBirthObservation";
+
+    immz.severelyImmunosuppressed as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE92' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetSeverelyImmunosuppressedObservation";
+
+    immz.artStartDate as content -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+      patient -> obs.subject = patient "SetPatient";
+      content -> obs.code  = create('CodeableConcept') as code then {
+        content -> code.coding = create('Coding') as coding then {
+          content -> coding.system = 'http://smart.who.int/immunizations-measles/CodeSystem/IMMZ.D1' "SetObsSystem";
+          content -> coding.code = 'DE49' "SetObsCode";
+        } "SetObsCoding";
+      } "SetObsCode";
+      content -> obs.value = content "SetValue";
+    } "SetARTDateObservation";
+
+    immz.vaccineHistory as history -> bundle.entry as entry, entry.resource = create('Immunization') as imm then {
+      patient -> imm.patient = patient "SetPatient";
+      history -> imm.status = 'completed' "SetStatus";
+
+      history.vaccineType as vaccine -> imm.vaccineCode as code then {
+        vaccine -> code.coding = vaccine "SetVaccineCoding";
+      } "SetVaccineType";
+      history.vaccineDate as date -> imm.occurrence = cast(date, 'string') "SetDate";
+
+    } "SetVaccineHistoryObservation";
+
+  } "GetPatient";
+
+}

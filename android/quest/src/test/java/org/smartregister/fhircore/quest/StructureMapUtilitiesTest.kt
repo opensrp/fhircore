@@ -41,6 +41,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServicesMatchBox
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import java.io.File
 
 /**
  * Provides a playground for quickly testing and authoring questionnaire.json and the respective
@@ -252,7 +253,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
       "content/general/who-eir/contraindications/IMMZD4QRToLM.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
@@ -603,5 +604,44 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
     val patient = targetResource.entryFirstRep.resource as Condition
     Assert.assertEquals("Condition", patient.resourceType.toString())
+  }
+
+  @Test
+  fun `perform extraction for capture client history`() {
+    val captureClientHistoryQuestionnResponse: String =
+      "content/general/who-eir/client-history-measles/client_capture_history_questionnaire_response.json".readFile()
+    val locationStructureMap =
+      "content/general/who-eir/client-history-measles/IMMZD1QRToResources.fml".readFile()
+    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(
+        NpmPackage.fromPackage(
+          File(
+            ClassLoader.getSystemResource(immunizationIg).file,
+          )
+            .inputStream(),
+        ),
+        true,
+      )
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+
+    val transformSupportServices =
+      TransformSupportServicesMatchBox(
+        contextR4,
+      )
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZD1QRToResources")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, captureClientHistoryQuestionnResponse)
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    Assert.assertEquals(2, targetResource.entry.size)
   }
 }

@@ -25,13 +25,12 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
-import javax.inject.Inject
-import javax.inject.Singleton
-import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.jvm.isAccessible
+import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
@@ -43,7 +42,14 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import timber.log.Timber
+import java.io.File
+import java.util.Objects
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.jvm.isAccessible
 
 @Singleton
 class WorkflowCarePlanGenerator
@@ -94,7 +100,32 @@ constructor(
 
       bundleCollection += resource
     }
+
+    for (action in planDefinition.action) {
+      val definition = action.definitionCanonicalType
+      val referenceToContained = definition.value.startsWith("#")
+      if (!referenceToContained) {
+        val resourceName = resolveResourceName(definition, planDefinition)
+        if (Enumerations.FHIRAllTypes.fromCode(Objects.requireNonNull<String?>(resourceName)) == Enumerations.FHIRAllTypes.ACTIVITYDEFINITION) {
+          val availableDefinition = defaultRepository.loadResource<ActivityDefinition>(definition.value.substringAfterLast("/"))
+          knowledgeManager.install(writeToFile(availableDefinition!!))
+        }
+      }
+    }
+
     return bundleCollection
+  }
+
+  fun resolveResourceName(canonical: CanonicalType, resource: MetadataResource?): String? {
+    if (canonical.hasValue()) {
+      var id = canonical.value
+      if (id.contains("/")) {
+        id = id.replace(id.substring(id.lastIndexOf("/")), "")
+        return if (id.contains("/")) id.substring(id.lastIndexOf("/") + 1) else id
+      }
+      return null
+    }
+    throw FHIRException("CanonicalType must have a value for resource name extraction")
   }
 
   /**
@@ -112,6 +143,7 @@ constructor(
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
     for (planDefinition in availablePlanDefinitions) {
+      knowledgeManager.install(writeToFile(planDefinition))
       getPlanDefinitionDependentResources(planDefinition)
     }
   }
@@ -130,13 +162,18 @@ constructor(
     patient: Patient,
     data: Bundle = Bundle(),
     output: CarePlan,
-  ) {
+  ): CarePlan {
     val patientId = IdType(patient.id).idPart
 
     if (cqlLibraryIdList.isEmpty()) {
       loadPlanDefinitionResourcesFromDb()
     }
 
+    val carePlan = fhirOperator.generateCarePlan(
+      planDefinition =
+      CanonicalType(planDefinition.url),
+      subject = patient.referenceValue(),
+    ) as CarePlan
     val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
     // TODO Fix after resolving dependency issues
     /*val carePlanProposal = CarePlan()
@@ -163,8 +200,10 @@ constructor(
       planDefinition = planDefinition,
       input = data,
       subject = patient,
-      output,
+      carePlan,
     )
+
+    return carePlan
   }
 
   private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {

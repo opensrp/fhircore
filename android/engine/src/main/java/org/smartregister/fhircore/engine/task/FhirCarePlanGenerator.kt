@@ -100,7 +100,7 @@ constructor(
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     // Only one CarePlan per plan, update or init a new one if not exists
-    val output =
+    var output =
       fhirEngine
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
@@ -119,7 +119,7 @@ constructor(
     var carePlanModified = false
 
     if (generateCarePlanWithWorkflowApi) {
-      workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
+      output = workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
         planDefinition = planDefinition,
         patient = subject as Patient,
         data = data,
