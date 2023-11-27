@@ -45,7 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.engine.R
 
 @Composable
 fun UserSettingInsightScreen(

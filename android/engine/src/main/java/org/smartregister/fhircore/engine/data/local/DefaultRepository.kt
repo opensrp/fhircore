@@ -160,7 +160,7 @@ constructor(
   suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       preProcessResources(addResourceTags, *resource)
-      fhirEngine.createRemote(*resource)
+      fhirEngine.create(*resource, isLocalOnly = true)
     }
   }
 
@@ -773,7 +773,11 @@ constructor(
               )
           }
       }
-      is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
+      is ServiceRequest -> {
+        if (resource.status != ServiceRequest.ServiceRequestStatus.COMPLETED) {
+          resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
+        }
+      }
     }
     fhirEngine.update(resource)
   }

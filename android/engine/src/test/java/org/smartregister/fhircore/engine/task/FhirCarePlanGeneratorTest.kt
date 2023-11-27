@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.task
 
+import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
@@ -24,9 +25,11 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.get
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
+import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.Runs
@@ -38,6 +41,8 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import java.io.File
+import java.io.InputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -45,7 +50,9 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.reflect.KSuspendFunction1
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -66,6 +73,7 @@ import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
@@ -107,6 +115,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -133,6 +142,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  private val context: Context = ApplicationProvider.getApplicationContext()
+  private val knowledgeManager = KnowledgeManager.create(context)
+  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
   private lateinit var structureMapUtilities: StructureMapUtilities
@@ -141,7 +155,9 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   private lateinit var opv0: Task
   private lateinit var opv1: Task
   private val defaultRepository: DefaultRepository = mockk()
-  private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  private val iParser: IParser = fhirContext.newJsonParser()
+  private val jsonParser = fhirContext.getCustomJsonParser()
+  private val xmlParser = fhirContext.newXmlParser()
 
   @Before
   fun setup() {
@@ -2103,6 +2119,164 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       assertEquals(planDefinition.title, carePlan.title)
       assertEquals(planDefinition.description, carePlan.description)
     }
+
+  @Test
+  fun generateMeaslesCarePlan(): Unit = runBlockingOnWorkerThread {
+    loadFile(
+      "/plans/measles-immunizations/Library-FHIRCommon.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-FHIRHelpers.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZCommon.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZCommonIzDataElements.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZConcepts.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZConfig.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZD2DTMeaslesLogic.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZIndicatorCommon.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZINDMeasles.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-IMMZVaccineLibrary.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-WHOCommon.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/Library-WHOConcepts.json",
+      ::installToIgManager,
+    )
+    loadFile(
+      "/plans/measles-immunizations/ValueSet-HIVstatus-values.json",
+      ::installToIgManager,
+    )
+
+    loadFile(
+      "/plans/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json",
+      ::importToFhirEngine,
+    )
+    loadFile(
+      "/plans/measles-immunizations/birthweightnormal-NoVaxeninfant-f.json",
+      ::importToFhirEngine,
+    )
+
+    val fhirOperator =
+      FhirOperator.Builder(context)
+        .fhirEngine(fhirEngine)
+        .fhirContext(fhirContext)
+        .knowledgeManager(knowledgeManager)
+        .build()
+
+    val carePlan =
+      fhirOperator.generateCarePlan(
+        planDefinition =
+          CanonicalType(
+            "http://smart.who.int/smart-immunizations-measles/PlanDefinition/IMMZD2DTMeasles",
+          ),
+        subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
+      )
+
+    println(jsonParser.encodeResourceToString(carePlan))
+
+    assertNotNull(carePlan)
+  }
+
+  private suspend fun loadFile(path: String, importFunction: KSuspendFunction1<Resource, Unit>) {
+    val resource =
+      if (path.endsWith(suffix = ".xml")) {
+        xmlParser.parseResource(open(path)) as Resource
+      } else if (path.endsWith(".json")) {
+        jsonParser.parseResource(open(path)) as Resource
+      } else if (path.endsWith(".cql")) {
+        toFhirLibrary(open(path))
+      } else {
+        throw IllegalArgumentException("Only xml and json and cql files are supported")
+      }
+    loadResource(resource, importFunction)
+  }
+
+  private suspend fun importToFhirEngine(resource: Resource) {
+    fhirEngine.create(resource)
+  }
+
+  private suspend fun installToIgManager(resource: Resource) {
+    knowledgeManager.install(writeToFile(resource))
+  }
+
+  private suspend fun loadResource(
+    resource: Resource,
+    importFunction: KSuspendFunction1<Resource, Unit>,
+  ) {
+    when (resource.resourceType) {
+      ResourceType.Bundle -> loadBundle(resource as Bundle, importFunction)
+      else -> importFunction(resource)
+    }
+  }
+
+  private fun open(path: String) = javaClass.getResourceAsStream(path)!!
+
+  private suspend fun loadBundle(
+    bundle: Bundle,
+    importFunction: KSuspendFunction1<Resource, Unit>,
+  ) {
+    for (entry in bundle.entry) {
+      val resource = entry.resource
+      loadResource(resource, importFunction)
+    }
+  }
+
+  private fun writeToFile(resource: Resource): File {
+    val fileName =
+      if (resource is MetadataResource && resource.name != null) {
+        resource.name
+      } else {
+        resource.idElement.idPart
+      }
+    return File(context.filesDir, fileName).apply {
+      writeText(jsonParser.encodeResourceToString(resource))
+    }
+  }
+
+  private fun toFhirLibrary(cql: InputStream): Library {
+    // return CqlBuilder.compileAndBuild(cql)
+    // TODO added only for temp purpose
+    return Library()
+  }
+
+  internal fun <T> runBlockingOnWorkerThread(block: suspend (CoroutineScope) -> T) =
+    runBlocking(Dispatchers.IO) { block(this) }
 
   data class PlanDefinitionResources(
     val planDefinition: PlanDefinition,

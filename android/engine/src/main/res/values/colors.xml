@@ -2,10 +2,10 @@
 <resources>
     <color name="colorError">#DD0000</color>
     <color name="colorErrorDull">#f2d0d3</color>
-    <color name="colorPrimary">#005084</color>
-    <color name="colorPrimaryDark">#003D66</color>
-    <color name="colorPrimaryLight">#006EB8</color>
-    <color name="colorAccent">#0283DA</color>
+    <color name="colorPrimary">#0077CC</color>
+    <color name="colorPrimaryDark">#006BBA</color>
+    <color name="colorPrimaryLight">#0077CC</color>
+    <color name="colorAccent">#0077CC</color>
     <color name="colorPrimaryLightDull">#DEECF6</color>
     <color name="white">#FFFFFF</color>
     <color name="drawer_menu_highlighted_bg_color">#005084</color>

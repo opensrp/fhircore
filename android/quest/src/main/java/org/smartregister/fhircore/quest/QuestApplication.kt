@@ -17,9 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import android.app.Application
-import android.content.Intent
 import android.database.CursorWindow
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
@@ -34,9 +32,7 @@ import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
-import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 
@@ -47,6 +43,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
   private var configuration: DataCaptureConfig? = null
 
   override fun onCreate() {
@@ -119,28 +116,4 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(workerFactory)
       .build()
-
-  private val globalExceptionHandler =
-    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
-
-  /**
-   * This method captures all uncaught exceptions in the app and redirects to the Launch Page in the
-   * case that the exception was thrown on the main thread This will therefore prevent any app
-   * crashes so we need some more handling for reporting the errors once we have a crash manager
-   * installed
-   *
-   * TODO add crash reporting when a crash reporting tool is selected e.g. Fabric Crashlytics or
-   * Sentry
-   */
-  private fun handleUncaughtException(e: Throwable) {
-    showToast(this.getString(R.string.error_occurred))
-    Timber.e(e)
-
-    if (Looper.myLooper() == Looper.getMainLooper()) {
-      val intent = Intent(applicationContext, AppSettingActivity::class.java)
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-      startActivity(intent)
-    }
-  }
 }

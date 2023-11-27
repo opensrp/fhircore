@@ -1,11 +1,8 @@
 [versions]
-accompanist-flowlayout = "0.23.1"
-accompanist-placeholder = "0.23.1"
 activity-compose = "1.7.2"
 activity-ktx = "1.7.2"
 appcompat = "1.6.1"
 benchmark-junit = "1.1.1"
-caffeine = "2.9.1"
 cardview = "1.0.0"
 commonsJexl3 = "3.2.1"
 compressor = "3.0.1"
@@ -16,17 +13,14 @@ converter-gson = "2.9.0"
 core-ktx = "1.10.1"
 core-ktx-test= "1.5.0"
 core-testing = "2.2.0"
-cql-engine = "2.4.0"
-cql-evaluator = "2.4.0"
-cql-to-elm = "2.4.0"
 dagger-hilt-compiler = "2.45"
-data-capture = "1.0.0-preview19-SNAPSHOT"
-desugar-jdk-libs = "1.1.5"
+data-capture = "1.0.0-preview22-SNAPSHOT"
+desugar-jdk-libs = "2.0.3"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
 fhir-common-utils = "0.0.10-SNAPSHOT"
-fhir-engine = "0.1.0-beta04-preview4-SNAPSHOT"
-foundation = "1.3.1"
+fhir-engine = "0.1.0-beta05-preview3-SNAPSHOT"
+foundation = "1.4.6"
 fragment-ktx = "1.6.1"
 fragment-testing = "1.6.1"
 glide = "4.14.2"
@@ -45,8 +39,8 @@ junit-jupiter-api = "5.8.2"
 junit-jupiter-engine = "5.8.2"
 junit-ktx = "1.1.5"
 junit-vintage-engine = "5.8.2"
-knowledger = "0.1.0-alpha001-preview-SNAPSHOT"
-kotlin = "1.8.10"
+knowledge = "0.1.0-alpha03-preview-SNAPSHOT"
+kotlin = "1.8.20"
 kotlinx-coroutines-android = "1.6.4"
 kotlinx-coroutines-core = "1.6.2"
 kotlinx-coroutines-debug = "1.6.4"
@@ -65,8 +59,8 @@ material = "1.9.0"
 material-icons-core = "1.5.0"
 material-icons-extended = "1.5.0"
 material3 = "1.1.1"
-mockk = "1.12.3"
-mockk-android = "1.12.3"
+mockk = "1.13.8"
+mockk-android = "1.13.8"
 msg-simple = "1.2"
 navigation-compose = "2.5.3"
 navigation-fragment-ktx = "2.5.3"
@@ -75,7 +69,7 @@ navigation-ui-ktx = "2.5.3"
 okhttp = "4.10.0"
 okhttp-logging-interceptor = "4.10.0"
 orchestrator = "1.4.2"
-p2p-lib = "0.6.8-SNAPSHOT"
+p2p-lib = "0.6.9-SNAPSHOT"
 paging-compose = "3.2.0"
 paging-runtime-ktx = "3.2.0"
 preference-ktx = "1.2.1"
@@ -96,17 +90,14 @@ ui-test-manifest = "1.4.3"
 ui-tooling = "1.4.3"
 work-runtime-ktx = "2.8.1"
 work-testing = "2.8.1"
-workflow = "0.1.0-alpha02-preview9.1-SNAPSHOT"
+workflow = "0.1.0-alpha04-preview-SNAPSHOT"
 xercesImpl = "2.12.2"
 
 [libraries]
-accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
-accompanist-placeholder = { group = "com.google.accompanist", name = "accompanist-placeholder", version.ref = "accompanist-placeholder" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 benchmark-junit = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "benchmark-junit" }
-caffeine = { group = "com.github.ben-manes.caffeine", name = "caffeine", version.ref = "caffeine" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 commons-jexl3 = { module = "org.apache.commons:commons-jexl3", version.ref = "commonsJexl3" }
 compressor = { group = "id.zelory", name = "compressor", version.ref = "compressor" }
@@ -118,14 +109,6 @@ core-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 core-ktx-test = { group = "androidx.test", name = "core-ktx", version.ref = "core-ktx-test" }
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core-testing" }
-cqf-cql-engine = { group = "org.opencds.cqf.cql", name = "engine", version.ref = "cql-engine" }
-cqf-cql-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator", version.ref = "cql-evaluator" }
-cql-engine-jackson = { group = "org.opencds.cqf.cql", name = "engine.jackson", version.ref = "cql-engine" }
-cql-evaluator-builder = { group = "org.opencds.cqf.cql", name = "evaluator.builder", version.ref = "cql-evaluator" }
-cql-evaluator-dagger = { group = "org.opencds.cqf.cql", name = "evaluator.dagger", version.ref = "cql-evaluator" }
-cql-evaluator-plandefinition = { group = "org.opencds.cqf.cql", name = "evaluator.plandefinition", version.ref = "cql-evaluator" }
-cql-measure-evaluator = { group = "org.opencds.cqf.cql", name = "evaluator.measure", version.ref = "cql-evaluator" }
-cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "cql-to-elm" }
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }
@@ -151,7 +134,7 @@ junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", v
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
 junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junit-ktx" }
 junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit-vintage-engine" }
-knowledger = { module = "org.smartregister:knowledger", version.ref = "knowledger" }
+knowledge = { group = "org.smartregister", name = "knowledge", version.ref = "knowledge" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines-android" }

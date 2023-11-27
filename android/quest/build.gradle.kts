@@ -1,6 +1,7 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.json.JSONArray
 import org.json.JSONObject
 
 buildscript {
@@ -52,10 +53,11 @@ sonar {
 android {
   compileSdk = 34
 
+  namespace = "org.smartregister.fhircore.quest"
+
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 34
     versionCode = 7
     versionName = "1.0.1"
     multiDexEnabled = true
@@ -87,7 +89,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
@@ -103,7 +105,7 @@ android {
     }
   }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -134,12 +136,12 @@ android {
 
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility", "-opt-in=kotlin.RequiresOptIn")
   }
 
@@ -147,9 +149,10 @@ android {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
   testOptions {
     animationsDisabled = true
@@ -160,7 +163,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.11" }
 
   lint { abortOnError = false }
 
@@ -345,7 +348,7 @@ tasks.withType<Test> {
 
 configurations {
   all {
-    exclude(group = "commons-logging")
+    // exclude(group = "commons-logging")
     exclude(group = "xpp3")
   }
 }
@@ -361,7 +364,6 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
@@ -410,6 +412,7 @@ dependencies {
   ktlint(project(":linting"))
 }
 
+// TODO Resolve type mismatch errors
 /**
  * This task compares the performance benchmark results to the expected benchmark results and throws
  * an error if the result is past the expected result and margin. A message will also be printed if
@@ -427,22 +430,22 @@ task("evaluatePerformanceBenchmarkResults") {
       JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
         keys().forEach { key ->
           val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-          val methodExpectedResults = this.getJSONObject(key)
+          val methodExpectedResults = this.getJSONObject(key.toString())
 
           methodExpectedResults.keys().forEach { expectedResultsKey ->
             resultMaxDeltaMap.put(
-              expectedResultsKey,
-              methodExpectedResults.getDouble(expectedResultsKey),
+              expectedResultsKey.toString(),
+              methodExpectedResults.getDouble(expectedResultsKey.toString()),
             )
           }
 
-          expectedResultsMap[key] = resultMaxDeltaMap
+          expectedResultsMap[key.toString()] = resultMaxDeltaMap
         }
       }
 
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
-        getJSONArray("benchmarks").forEachIndexed { index, any ->
+        getJSONArray("benchmarks").iterator().forEach { any ->
           val benchmarkResult = any as JSONObject
           val fullName = benchmarkResult.getTestName()
           val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
@@ -488,3 +491,6 @@ fun JSONObject.getTestName(): String {
 
   return "$className#$methodName"
 }
+
+operator fun JSONArray.iterator(): Iterator<JSONObject> =
+  (0 until length()).asSequence().map { get(it) as JSONObject }.iterator()

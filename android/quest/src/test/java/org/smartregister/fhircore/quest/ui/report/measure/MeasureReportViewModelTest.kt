@@ -66,7 +66,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -78,6 +77,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.MeasurePopulationType
 import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD

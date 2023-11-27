@@ -11,14 +11,14 @@ buildscript {
   }
 
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
-    classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.10")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
+    classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.20")
     classpath("com.google.dagger:hilt-android-gradle-plugin:2.45")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
     classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
-    classpath("com.android.tools.build:gradle:7.1.3")
+    classpath("com.android.tools.build:gradle:8.0.2")
     classpath("org.jetbrains.dokka:dokka-base:1.8.20")
     classpath("org.owasp:dependency-check-gradle:8.2.1")
   }
@@ -93,16 +93,17 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.7")
+          "org.jacoco" -> useVersion("0.8.11")
         }
       }
+      force("com.google.guava:guava:32.1.2-android")
     }
   }
 
-  tasks.withType<Test> {
+ tasks.withType<Test> {
     configure<JacocoTaskExtension> {
       isIncludeNoLocationClasses = true
-      excludes = listOf("jdk.internal.*")
+      excludes = listOf("jdk.internal.*", "**org.hl7*")
     }
   }
 }

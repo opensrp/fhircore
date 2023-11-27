@@ -19,9 +19,10 @@ plugins {
 android {
   compileSdk = 34
 
+  namespace = "org.smartregister.fhircore.engine"
+
   defaultConfig {
     minSdk = 26
-    targetSdk = 34
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -32,7 +33,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))
@@ -50,21 +51,22 @@ android {
   }
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
   }
   buildFeatures {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "license.html",
@@ -98,7 +100,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.11" }
 }
 
 tasks.withType<Test> {
@@ -135,34 +137,20 @@ dependencies {
   implementation(libs.compressor)
   implementation(libs.xercesImpl)
   implementation(libs.msg.simple)
-  implementation(libs.cqf.cql.engine)
-  implementation(libs.cql.engine.jackson)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  implementation(libs.cqf.cql.evaluator) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.builder) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.plandefinition) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.dagger) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
+  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
+    exclude(group = "org.codelibs", module = "xpp3")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
   // Shared dependencies
   api(libs.glide)
-  api(libs.knowledger)
+  api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
   api(libs.jjwt)
-  api(libs.fhir.common.utils)
+  api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.lifecycle.livedata.ktx)
   api(libs.lifecycle.viewmodel.ktx)
   api(libs.ui)
@@ -181,15 +169,12 @@ dependencies {
   api(libs.paging.compose)
   api(libs.activity.compose)
   api(libs.kotlinx.serialization.json)
-  api(libs.accompanist.flowlayout)
-  api(libs.accompanist.placeholder)
   api(libs.work.runtime.ktx)
   api(libs.prettytime)
   api(libs.kotlinx.coroutines.core)
   api(libs.kotlinx.coroutines.android)
   api(libs.kotlin.reflect)
   api(libs.stax.api)
-  api(libs.caffeine)
   api(libs.gson)
   api(libs.timber)
   api(libs.retrofit)
@@ -207,13 +192,14 @@ dependencies {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")
     exclude(group = "com.github.java-json-tools")
     exclude(group = "org.codehaus.woodstox")
-    exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")

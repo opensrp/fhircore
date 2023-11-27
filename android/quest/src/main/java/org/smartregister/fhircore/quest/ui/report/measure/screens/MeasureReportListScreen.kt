@@ -45,8 +45,8 @@ import androidx.navigation.NavController
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable

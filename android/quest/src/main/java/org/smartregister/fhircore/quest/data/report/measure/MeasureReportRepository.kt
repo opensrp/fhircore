@@ -148,7 +148,7 @@ constructor(
       start = startDateFormatted,
       end = endDateFormatted,
       reportType = reportType,
-      subject = subject,
+      subjectId = subject,
       practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
     )
   }

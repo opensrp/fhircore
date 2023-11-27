@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
+import android.os.Process
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -83,6 +84,12 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+
+  init {
+    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+      Process.killProcess(Process.myPid())
+    }
+  }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
@@ -545,7 +552,7 @@ constructor(
   suspend fun create(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach { it.generateMissingId() }
-      fhirEngine.createRemote(*resources)
+      fhirEngine.create(*resources, isLocalOnly = true)
     }
   }
 
@@ -597,6 +604,8 @@ constructor(
       entry = bundleEntryComponents
     }
   }
+
+  fun clearConfigsCache() = configCacheMap.clear()
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
