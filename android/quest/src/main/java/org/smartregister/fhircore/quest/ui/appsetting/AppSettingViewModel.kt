@@ -90,7 +90,7 @@ constructor(
   }
 
   fun setShowProgressBar(state: Boolean) {
-    showProgressBar.postValue(state)
+    showProgressBar.value = state
   }
   /**
    * Fetch the [Composition] resource whose identifier matches the provided [appId]. Save the
