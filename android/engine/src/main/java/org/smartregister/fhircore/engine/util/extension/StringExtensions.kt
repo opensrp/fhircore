@@ -103,7 +103,7 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  * Get the practitioner endpoint url and append the keycloak-uuid. The original String is assumed to
  * be a keycloak-uuid.
  */
-fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+fun String.practitionerEndpointUrl(): String = "PractitionerDetail?keycloak-uuid=$this"
 
 /** Remove double white spaces from text and also remove space before comma */
 fun String.removeExtraWhiteSpaces(): String =
