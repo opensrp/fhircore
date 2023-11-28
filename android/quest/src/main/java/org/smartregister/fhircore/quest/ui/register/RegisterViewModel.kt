@@ -104,15 +104,21 @@ constructor(
     return Pager(
       config = PagingConfig(pageSize = pageSize, enablePlaceholders = false),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, resourceDataRulesExecutor, ruleConfigs).apply {
-          setPatientPagingSourceState(
-            RegisterPagingSourceState(
-              registerId = registerId,
-              loadAll = loadAll,
-              currentPage = if (loadAll) 0 else currentPage.value,
-            ),
+        RegisterPagingSource(
+            registerRepository = registerRepository,
+            resourceDataRulesExecutor = resourceDataRulesExecutor,
+            ruleConfigs = ruleConfigs,
+            actionParameters = registerUiState.value.params,
           )
-        }
+          .apply {
+            setPatientPagingSourceState(
+              RegisterPagingSourceState(
+                registerId = registerId,
+                loadAll = loadAll,
+                currentPage = if (loadAll) 0 else currentPage.value,
+              ),
+            )
+          }
       },
     )
   }
@@ -210,6 +216,7 @@ constructor(
             progressPercentage = _percentageProgress,
             isSyncUpload = _isUploadSync,
             dismissLoaderView = dismissLoaderView,
+            params = paramsMap,
           )
       }
     }

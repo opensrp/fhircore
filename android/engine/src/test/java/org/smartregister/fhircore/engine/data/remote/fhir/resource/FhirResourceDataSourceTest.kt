@@ -131,4 +131,15 @@ class FhirResourceDataSourceTest {
       )
     }
   }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testPostShouldRetrieveResource() {
+    runTest {
+      val bundle = Bundle()
+      coEvery { resourceService.post(any(), any()) } returns bundle
+      val result = fhirResourceDataSource.post("http://fake.url", mockk())
+      Assert.assertEquals(bundle, result)
+    }
+  }
 }

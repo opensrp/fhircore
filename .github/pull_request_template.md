@@ -1,6 +1,6 @@
 **IMPORTANT: Where possible all PRs must be linked to a Github issue**
 
-Fixes #[issue number] or Closes #[issue number]
+Fixes [link to issue]
 
 **Engineer Checklist**
 - [ ] I have written **Unit tests** for any new feature(s) and edge cases for bug fixes

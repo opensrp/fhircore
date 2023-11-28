@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ability to configure resource Id used to open profiles
 - [App Performance] Profile the time it takes for the app to load the configs and patient data from the local DB
 - Add progress indicator during report generation
+- Add config property in QuestionnaireConfig to indicate when to udpate or create new extracted resource
 
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.

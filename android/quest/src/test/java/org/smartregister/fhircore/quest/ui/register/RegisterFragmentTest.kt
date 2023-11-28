@@ -253,7 +253,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_failed) }
+    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
   }
 
   @Test
@@ -265,7 +265,7 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_failed) }
+    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
   }
 
   @Test

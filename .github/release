@@ -1,5 +1,5 @@
 # .github/release.yml
-
+---
 changelog:
   exclude:
     labels:
@@ -7,14 +7,14 @@ changelog:
     authors:
       - dependabot
   categories:
-    - title: Added :tada: 
+    - title: Added 🎉
       labels:
         - new-feature
+        - Enhancement
         - breaking-change
-    - title: Fixed 🛠 
+    - title: Fixed 🛠
       labels:
         - bug-fix
-        - enhancement
     - title: Changed
       labels:
         - "*"

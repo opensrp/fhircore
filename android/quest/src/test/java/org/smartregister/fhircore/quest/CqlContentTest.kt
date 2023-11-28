@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.CqlTranslatorOptions
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -63,6 +65,8 @@ class CqlContentTest : RobolectricTest() {
   private lateinit var defaultRepository: DefaultRepository
   private val fhirEngine = mockk<FhirEngine>()
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -75,6 +79,7 @@ class CqlContentTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
     evaluator = LibraryEvaluator(defaultRepository).apply { initialize() }

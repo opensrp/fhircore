@@ -1,0 +1,74 @@
+name: Dependency Check Scan
+
+on:
+  push:
+    branches:
+      # - main
+      - security-automation-additions-latest-main
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      # - main
+      - security-automation-additions-latest-main
+  workflow_dispatch:
+    # inputs:    
+env:
+  FHIR_BASE_URL: ${{secrets.FHIR_BASE_URL}}
+  OAUTH_BASE_URL: ${{secrets.OAUTH_BASE_URL}}
+  OAUTH_CIENT_ID: ${{secrets.OAUTH_CLIENT_ID}}
+  OAUTH_CLIENT_SECRET: ${{secrets.OAUTH_CLIENT_SECRET}}
+  OAUTH_SCOPE: ${{secrets.OAUTH_SCOPE}}
+  MAPBOX_SDK_TOKEN: ${{secrets.MAPBOX_SDK_TOKEN}}
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
+
+      - name: Run Dependency Check
+        run: |
+          cd android
+          ./gradlew dependencyCheckAggregate 
+
+      - name: Upload Dependency Check report in XML format
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependency-check-report
+          path: android/build/reports/dependency-check-report.xml
+          
+#       - name: import dependency check report into defectdojo
+#         run: |
+#            curl -X POST -H "Content-Type: application/json" \
+#            -H "Authorization: Token ${DEFECTDOJO_API_KEY}" \
+#            -d @android/build/reports/dependency-check-report.xml \
+#            "${DEFECTDOJO_API_URL}/api/v2/engagements/45/tests/247/import-scan/"
+#          env:
+#            DEFECTDOJO_API_URL: ${{ secrets.DEFECTDOJO_API_URL }}
+#            DEFECTDOJO_API_KEY: ${{ secrets.DEFECTDOJO_API_KEY }}
+        
+
+
+      # - name: Run Dependency Check
+      #   uses: dependency-check/Dependency-Check_Action@main
+      #   env:
+      #     JAVA_HOME: /opt/jdk
+      #   with:
+      #     project: "fhircore"
+      #     path: "."
+      #     format: 'XML'
+      #     out: 'reports'

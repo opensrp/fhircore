@@ -56,7 +56,7 @@ fun List<ActionConfig>.handleClickEvent(
     val resourceId =
       interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
         ?: resourceData?.baseResourceId
-    when (onClickAction.workflow) {
+    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
@@ -80,7 +80,20 @@ fun List<ActionConfig>.handleClickEvent(
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
               NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          navController.navigate(MainNavigationScreen.Profile.route, args)
+          val navOptions =
+            when (actionConfig.popNavigationBackStack) {
+              false,
+              null, -> null
+              true ->
+                navController.currentDestination?.id?.let { currentDestId ->
+                  navOptions(resId = currentDestId, inclusive = true)
+                }
+            }
+          navController.navigate(
+            resId = MainNavigationScreen.Profile.route,
+            args = args,
+            navOptions = navOptions,
+          )
         }
       }
       ApplicationWorkflow.LAUNCH_REGISTER -> {
