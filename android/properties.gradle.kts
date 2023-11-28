@@ -44,4 +44,4 @@ requiredKeystoreProperties.forEach { property ->
 
 // set APP_ID property
 val appIdProperty = "APP_ID"
-project.extra.set(appIdProperty, "")
+project.extra.set(appIdProperty, localProperties.getProperty(appIdProperty,  """""""" ))  // set empty string if property is null

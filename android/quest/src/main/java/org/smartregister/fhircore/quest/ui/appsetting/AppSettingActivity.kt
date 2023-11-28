@@ -88,10 +88,10 @@ class AppSettingActivity : AppCompatActivity() {
           val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
           val error by appSettingViewModel.error.observeAsState("")
 
-          if(!appId.isNullOrEmpty()) { // in the case where a non empty buildConfig.APP_ID is not null or "" and thus gave a value to appId
-            appSettingViewModel.fetchConfigurations(LocalContext.current)
-            appSettingViewModel.setShowProgressBar(true) // have to set it as true to make the button disabled
-          }
+//          if(!appId.isNullOrEmpty()) { // in the case where a non empty buildConfig.APP_ID is not null or "" and thus gave a value to appId
+//            appSettingViewModel.fetchConfigurations(LocalContext.current)
+//            appSettingViewModel.setShowProgressBar(true) // have to set it as true to make the button disabled
+//          }
 
           AppSettingScreen(
             appId = appId,
