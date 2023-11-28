@@ -26,6 +26,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -66,7 +67,13 @@ class AppSettingActivity : AppCompatActivity() {
       }
     }
     val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, BuildConfig.APP_ID)?.trimEnd()
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+
+    // if app id doesn't exist (i.e we don't have a previous successful initialization)
+    // check if we have an app id in local.properties and make it the one we want to load from
+    if(!BuildConfig.APP_ID.isNullOrEmpty()) {
+      appSettingViewModel.onApplicationIdChanged(BuildConfig.APP_ID)
+    }
 
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {
@@ -80,6 +87,12 @@ class AppSettingActivity : AppCompatActivity() {
           val appId by appSettingViewModel.appId.observeAsState("")
           val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
           val error by appSettingViewModel.error.observeAsState("")
+
+          if(!appId.isNullOrEmpty()) { // in the case where a non empty buildConfig.APP_ID is not null or "" and thus gave a value to appId
+            appSettingViewModel.fetchConfigurations(LocalContext.current)
+            appSettingViewModel.setShowProgressBar(true) // have to set it as true to make the button disabled
+          }
+
           AppSettingScreen(
             appId = appId,
             onAppIdChanged = appSettingViewModel::onApplicationIdChanged,

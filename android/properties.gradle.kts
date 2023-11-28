@@ -26,8 +26,7 @@ val requiredFhirProperties =
     "OAUTH_CLIENT_ID",
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
-    "SENTRY_DSN",
-          "APP_ID"
+    "SENTRY_DSN"
   )
 
 val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "local.properties").toString())
@@ -42,3 +41,7 @@ val keystoreProperties = readProperties((project.properties["keystorePropertiesF
 requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, keystoreProperties.getProperty(property,"sample_" + property))
 }
+
+// set APP_ID property
+val appIdProperty = "APP_ID"
+project.extra.set(appIdProperty, "")
