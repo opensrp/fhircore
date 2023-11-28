@@ -1,0 +1,32 @@
+---
+sidebar_label: FHIR Gateway
+---
+
+# FHIR Information Gateway 
+
+### How it works
+
+The FHIR Information Gateway is a proxy that sits between the clients and the FHIR API. This allows us to consistently handle authorization agnostic to the system that happens to be providing the FHIR API we are fetching data from, i.e.  the client will connect to the FHIR Information Gateway the same way regardless of whether the underlying FHIR API is being provided HAPI FHIR, Google Cloud Healthcare API, Azure Health Data Service, or anything else.
+
+When using HAPI as the FHIR API, after the FHIR Information Gateway is deployed, the HAPI FHIR backend is deployed with the integrated Keycloak configuration disabled. Any requests made to the backend by the client are now made to the FHIR Information Gateway, which then proxies the request to the HAPI FHIR API and only allows access to the API endpoints if the token provided by the client has the relevant authorization. 
+> **Note**: In a production environment the FHIR API and data store, e.g. HAPI FHIR backend, would be inaccessible to the public and only accessible from the IP of the FHIR Information Gateway or via a VPN.
+
+We have written a set of plugins that extend the FHIR Information Gateway functionality to provide features useful to OpenSRP. This includes the following plugins:
+
+    - **Permissions Checker** - Authorization per FHIR Endpoint per HTTP Verb
+
+    - **Data Access Checker** - Data filtering based on user assignment, i.e. filtering by Organization, Location, Practitioner, or CareTeam 
+    
+    - **Data Requesting** - Data fetching mechanism for FHIR Resources defining patient data vs OpenSRP 2.0 application sync config resources
+
+### Filtering FHIR API data based on meta tags
+
+The OpenSRP 2.0  client application has logic that tags all the resources created with meta tags that correspond to the supported sync strategies i.e. Organization, Location, Practitioner, and CareTeam. This way, if we need to change a sync strategy for a deployment or support different strategies for various roles we can change their sync strategy and the relevant data would be downloaded since it is already tagged.
+
+### How to set up the FHIR Gateway host
+
+The Gateway setup and configuration is documented here: 
+- [FHIR Gateway Setup and configuration](https://github.com/google/fhir-gateway) 
+
+- [FHIR Gateway Docker image](https://hub.docker.com/r/opensrp/fhir-gateway/tags)  
+
