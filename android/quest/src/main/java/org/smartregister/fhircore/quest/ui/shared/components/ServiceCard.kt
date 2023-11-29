@@ -172,7 +172,7 @@ private fun RowScope.RenderDetails(
   resourceData: ResourceData,
 ) {
   val iconsSplit = serviceMemberIcons?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
-  val nMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
+  val memberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
@@ -192,13 +192,13 @@ private fun RowScope.RenderDetails(
       }
     }
     // Display N icons and counter if icons are more than N
-    if (nMemberIcons.isNotEmpty()) {
+    if (memberIcons.isNotEmpty()) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.wrapContentWidth(),
         horizontalArrangement = Arrangement.End,
       ) {
-        nMemberIcons.forEach {
+        memberIcons.forEach {
           if (
             it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)
           ) {
@@ -211,7 +211,7 @@ private fun RowScope.RenderDetails(
           }
         }
         if (
-          nMemberIcons.size == NUMBER_OF_ICONS_DISPLAYED &&
+          memberIcons.size == NUMBER_OF_ICONS_DISPLAYED &&
             iconsSplit.size > NUMBER_OF_ICONS_DISPLAYED
         ) {
           Box(
