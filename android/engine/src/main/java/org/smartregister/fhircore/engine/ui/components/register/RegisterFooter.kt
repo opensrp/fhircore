@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.view.RegisterFooterProperties
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 
@@ -51,9 +52,10 @@ fun RegisterFooter(
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
+  registerFooterProperties: RegisterFooterProperties = RegisterFooterProperties()
 ) {
   if (resultCount > 0) {
-    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG).padding(bottom = 32.dp)) {
+    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG).padding(bottom = registerFooterProperties.bottomPadding.dp)) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
       ) {
