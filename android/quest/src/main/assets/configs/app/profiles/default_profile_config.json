@@ -2195,6 +2195,10 @@
           ]
         }
       ]
+    },
+    {
+      "viewType": "SPACER",
+      "height": 32
     }
   ],
   "overFlowMenuItems": [
