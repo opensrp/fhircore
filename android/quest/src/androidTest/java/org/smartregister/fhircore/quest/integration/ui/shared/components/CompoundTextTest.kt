@@ -21,7 +21,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.testing.TestNavHostController
-import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -33,7 +32,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.GenerateView
 
 class CompoundTextTest {
-  private val resourceData = mockk<ResourceData>(relaxed = true, relaxUnitFun = true)
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -94,7 +92,7 @@ class CompoundTextTest {
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
-        resourceData = resourceData,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
       )
     }
@@ -118,7 +116,7 @@ class CompoundTextTest {
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
-        resourceData = resourceData,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
         navController = TestNavHostController(LocalContext.current),
       )
     }

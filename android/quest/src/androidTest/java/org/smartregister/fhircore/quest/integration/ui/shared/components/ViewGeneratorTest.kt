@@ -24,7 +24,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.testing.TestNavHostController
-import io.mockk.mockk
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -59,7 +58,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.SIDE_MENU_ITEM_REMO
 class ViewGeneratorTest {
 
   @get:Rule val composeRule = createComposeRule()
-  private val resourceData = mockk<ResourceData>(relaxed = true, relaxUnitFun = true)
+  private val resourceData = ResourceData("", ResourceType.Patient, emptyMap())
 
   @Test
   fun canGenerateServiceCardViewCorrectly() {
