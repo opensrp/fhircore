@@ -38,10 +38,8 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
@@ -64,10 +62,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-
-  val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
-  }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -168,8 +162,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder()
         .setQuestionnaire(questionnaire.json())
-        .showAsterisk(applicationConfiguration.showQuestionnaireRequiredAsterisk)
-        .showRequiredText(applicationConfiguration.showQuestionnaireRequiredText)
+        .showAsterisk(questionnaireConfig.showQuestionnaireRequiredAsterisk)
+        .showRequiredText(questionnaireConfig.showQuestionnaireRequiredText)
 
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =

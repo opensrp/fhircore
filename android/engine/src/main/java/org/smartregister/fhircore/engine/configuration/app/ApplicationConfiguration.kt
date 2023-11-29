@@ -41,6 +41,4 @@ data class ApplicationConfiguration(
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
-  val showQuestionnaireRequiredAsterisk: Boolean = true,
-  val showQuestionnaireRequiredText: Boolean = false,
 ) : Configuration()
