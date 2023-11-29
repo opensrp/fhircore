@@ -57,8 +57,8 @@ data class QuestionnaireConfig(
   val generateCarePlanWithWorkflowApi: Boolean = false,
   val cqlInputResources: List<String>? = emptyList(),
   val showClearAll: Boolean = false,
-  val showQuestionnaireRequiredAsterisk: Boolean = true,
-  val showQuestionnaireRequiredText: Boolean = false,
+  val showRequiredTextAsterisk: Boolean = true,
+  val showRequiredText: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =

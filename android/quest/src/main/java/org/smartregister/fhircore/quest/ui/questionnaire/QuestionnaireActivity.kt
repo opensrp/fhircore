@@ -159,8 +159,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder()
         .setQuestionnaire(questionnaire.json())
-        .showAsterisk(questionnaireConfig.showQuestionnaireRequiredAsterisk)
-        .showRequiredText(questionnaireConfig.showQuestionnaireRequiredText)
+        .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
+        .showRequiredText(questionnaireConfig.showRequiredText)
 
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =
