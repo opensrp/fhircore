@@ -104,10 +104,7 @@ constructor(
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(
-          SharedPreferenceKey.LANG.name,
-          Locale.ENGLISH.toLanguageTag(),
-        )
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
@@ -147,13 +144,18 @@ constructor(
         }
       }
       is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
-        showDBResetConfirmationDialog.postValue(event.isShow)
+        showDBResetConfirmationDialog.postValue(
+          event.isShow,
+        )
       is UserSettingsEvent.ResetDatabaseFlag -> if (event.isReset) this.resetAppData(event.context)
       is UserSettingsEvent.ShowLoaderView ->
-        updateProgressBarState(event.show, event.messageResourceId)
+        updateProgressBarState(
+          event.show,
+          event.messageResourceId,
+        )
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
       is UserSettingsEvent.ShowContactView -> {}
-      is UserSettingsEvent.OnOfflineMap -> {}
+      is UserSettingsEvent.OnLaunchOfflineMap -> {}
       is UserSettingsEvent.ShowInsightsScreen -> {
         event.navController.navigate(MainNavigationScreen.Insight.route)
       }

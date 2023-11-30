@@ -65,7 +65,6 @@ class UserSettingFragment : Fragment() {
             mainNavController = findNavController(),
             lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
             showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
-            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
           )
         }
       }

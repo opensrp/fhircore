@@ -82,7 +82,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -125,7 +124,6 @@ fun UserSettingScreen(
   allowP2PSync: Boolean,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
-  unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -223,7 +221,7 @@ fun UserSettingScreen(
       UserSettingRow(
         icon = Icons.Rounded.Map,
         text = stringResource(id = R.string.offline_map),
-        clickListener = { onEvent(UserSettingsEvent.OnOfflineMap(true, context)) },
+        clickListener = { onEvent(UserSettingsEvent.OnLaunchOfflineMap(true, context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_OFFLINE_MAP),
         canSwitchToScreen = true,
       )
@@ -390,12 +388,6 @@ fun UserSettingScreen(
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
         )
       }
-
-      val unSyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
-
-      if (unSyncedResources.isNotEmpty()) {
-        // UserSettingInsightScreen(unSyncedResources, unSyncedResources)
-      }
     }
   }
 }
@@ -504,6 +496,5 @@ fun UserSettingPreview() {
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
-    unsyncedResourcesFlow = MutableSharedFlow(),
   )
 }

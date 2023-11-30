@@ -37,7 +37,7 @@ sealed class UserSettingsEvent {
 
   data class ShowContactView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 
-  data class OnOfflineMap(val isShow: Boolean, val context: Context) : UserSettingsEvent()
+  data class OnLaunchOfflineMap(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 
   data class ShowInsightsScreen(val navController: NavController) : UserSettingsEvent()
 }

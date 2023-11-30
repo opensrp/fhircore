@@ -27,7 +27,6 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
@@ -188,7 +187,6 @@ class UserSettingScreenTest {
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
-    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -207,7 +205,6 @@ class UserSettingScreenTest {
           mainNavController = rememberNavController(),
           allowP2PSync = isP2PAvailable,
           lastSyncTime = "05:30 PM, Mar 3",
-          unsyncedResourcesFlow = unsyncedResourcesFlow,
           showProgressIndicatorFlow = MutableStateFlow(false),
         )
       }

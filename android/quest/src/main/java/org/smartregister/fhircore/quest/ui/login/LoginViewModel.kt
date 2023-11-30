@@ -156,10 +156,7 @@ constructor(
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
           } else if (
-            accountAuthenticator.validateLoginCredentials(
-              trimmedUsername,
-              passwordAsCharArray,
-            )
+            accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)
           ) {
             try {
               // Configure Sentry scope

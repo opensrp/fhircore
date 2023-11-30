@@ -27,7 +27,6 @@ buildscript {
 plugins {
   id("org.jetbrains.dokka") version "1.8.20"
   id("org.owasp.dependencycheck") version "8.2.1"
-    alias(libs.plugins.org.jetbrains.kotlin.android) apply false
 }
 
 tasks.dokkaHtmlMultiModule {
