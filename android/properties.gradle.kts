@@ -42,7 +42,7 @@ val keystoreProperties = readProperties((project.properties["keystorePropertiesF
 requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property, when {
     property.contains("URL") -> "https://sample.url/fhir/"
-    property.equals("OPENSRP_APP_ID") -> ""
+    property.equals("OPENSRP_APP_ID") -> """"""""
     else -> "sample_" + property
   }))
 }
