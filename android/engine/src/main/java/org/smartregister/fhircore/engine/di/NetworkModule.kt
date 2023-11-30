@@ -38,6 +38,7 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -54,6 +55,7 @@ import timber.log.Timber
 @InstallIn(SingletonComponent::class)
 @Module
 class NetworkModule {
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   @Provides
   @NoAuthorizationOkHttpClientQualifier
@@ -84,7 +86,7 @@ class NetworkModule {
           try {
             var request = chain.request()
             val requestPath = request.url.encodedPath.substring(1)
-            val resourcePath = requestPath.replace("fhir/", "")
+            val resourcePath = if (!_isNonProxy) requestPath.replace("fhir/", "") else requestPath
 
             openSrpApplication?.let {
               if (
