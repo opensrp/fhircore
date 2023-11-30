@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -63,12 +64,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.quest.R
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsynceData"
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingInsightScreen(
   fullName: String?,
@@ -105,20 +108,21 @@ fun UserSettingInsightScreen(
       )
     },
     backgroundColor = Color.White,
-  ) { paddingValues ->
+  ) {
     LazyColumn(
-      Modifier.fillMaxSize().padding(paddingValues).background(Color.White),
+      Modifier.fillMaxSize().background(Color.White),
       horizontalAlignment = Alignment.Start,
-      contentPadding = PaddingValues(16.dp),
+      contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
     ) {
       item {
         Text(
           text = stringResource(id = R.string.unsynced_resources),
-          style = TextStyle(color = Color.Black, fontSize = 18.sp),
+          style = TextStyle(color = Color.Black, fontSize = 20.sp),
           fontWeight = FontWeight.Bold,
         )
         if (unsyncedResources.isEmpty()) {
-          Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
+          Spacer(modifier = Modifier.height(24.dp))
+          Divider(color = DividerColor)
         }
       }
       if (unsyncedResources.isNotEmpty()) {
@@ -127,8 +131,8 @@ fun UserSettingInsightScreen(
             first = unsynced.first,
             second = unsynced.second.toString(),
           )
-          Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-          Spacer(modifier = Modifier.padding(8.dp))
+          Spacer(modifier = Modifier.height(24.dp))
+          Divider(color = DividerColor)
         }
       }
       item {
@@ -174,12 +178,13 @@ fun UserSettingInsightScreen(
               border = BorderStroke(0.7.dp, MaterialTheme.colors.primarySurface),
             ) {
               Text(
-                text = stringResource(R.string.refresh),
+                text = stringResource(R.string.refresh).uppercase(),
                 modifier = Modifier.padding(6.dp),
                 style =
                   TextStyle(
                     color = MaterialTheme.colors.primarySurface,
                     fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
                   ),
               )
             }
@@ -195,14 +200,16 @@ fun UnsyncedDataView(
   first: String,
   second: String,
 ) {
+  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
   Box(
-    Modifier.fillMaxWidth().padding(15.dp),
+    Modifier.fillMaxWidth().padding(16.dp),
   ) {
     Text(
       text = first,
       modifier = Modifier.align(Alignment.CenterStart).testTag(INSIGHT_UNSYNCED_DATA),
-      color = LoginDarkColor,
-      fontWeight = FontWeight.Normal,
+      fontSize = 16.sp,
+      color = contentColor,
+      fontWeight = FontWeight.Medium,
     )
     Text(
       modifier = Modifier.align(Alignment.CenterEnd),
@@ -220,22 +227,29 @@ fun UserInfoView(
   team: String,
   locality: String,
 ) {
-  Column {
-    Text(
-      text = title,
-      style = TextStyle(color = Color.Black, fontSize = 18.sp),
-      fontWeight = FontWeight.Bold,
-    )
+  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
+
+  Spacer(modifier = Modifier.height(24.dp))
+
+  Text(
+    text = title,
+    style = TextStyle(color = Color.Black, fontSize = 20.sp),
+    fontWeight = FontWeight.Bold,
+  )
+
+  Spacer(modifier = Modifier.height(16.dp))
+
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.user),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = name,
@@ -245,15 +259,15 @@ fun UserInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.team),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = team,
@@ -263,15 +277,15 @@ fun UserInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.locality),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = locality,
@@ -280,8 +294,8 @@ fun UserInfoView(
         fontWeight = FontWeight.Bold,
       )
     }
-    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(16.dp))
+    Divider(color = DividerColor)
   }
 }
 
@@ -293,22 +307,28 @@ fun AppInfoView(
   careTeam: String,
   location: String,
 ) {
-  Column {
-    Text(
-      text = title,
-      style = TextStyle(color = Color.Black, fontSize = 18.sp),
-      fontWeight = FontWeight.Bold,
-    )
+  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
+
+  Spacer(modifier = Modifier.height(24.dp))
+
+  Text(
+    text = title,
+    style = TextStyle(color = Color.Black, fontSize = 20.sp),
+    fontWeight = FontWeight.Bold,
+  )
+  Spacer(modifier = Modifier.height(16.dp))
+
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(id = R.string.username),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = userName,
@@ -318,15 +338,15 @@ fun AppInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.team_organization),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = organization.take(10),
@@ -339,15 +359,15 @@ fun AppInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.care_team),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = careTeam,
@@ -358,15 +378,15 @@ fun AppInfoView(
     }
 
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.location),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = location,
@@ -375,9 +395,8 @@ fun AppInfoView(
         fontWeight = FontWeight.Bold,
       )
     }
-
-    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(16.dp))
+    Divider(color = DividerColor)
   }
 }
 
@@ -388,22 +407,29 @@ fun AssignmentInfoView(
   appVersionCode: String,
   buildDate: String,
 ) {
-  Column {
-    Text(
-      text = title,
-      style = TextStyle(color = Color.Black, fontSize = 18.sp),
-      fontWeight = FontWeight.Bold,
-    )
+  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
+
+  Spacer(modifier = Modifier.height(24.dp))
+
+  Text(
+    text = title,
+    style = TextStyle(color = Color.Black, fontSize = 20.sp),
+    fontWeight = FontWeight.Bold,
+  )
+
+  Spacer(modifier = Modifier.height(16.dp))
+
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.app_versions),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = appVersion,
@@ -413,15 +439,15 @@ fun AssignmentInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.app_version_code),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = appVersionCode,
@@ -432,15 +458,15 @@ fun AssignmentInfoView(
     }
 
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.build_date),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = buildDate,
@@ -449,9 +475,8 @@ fun AssignmentInfoView(
         fontWeight = FontWeight.Bold,
       )
     }
-
-    Divider(thickness = 1.dp, color = LoginDarkColor.copy(alpha = 0.67f))
-    Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(16.dp))
+    Divider(color = DividerColor)
   }
 }
 
@@ -460,22 +485,28 @@ fun AssignmentInfoView(
 fun DeviceInfoView(
   title: String,
 ) {
-  Column {
-    Text(
-      text = title,
-      style = TextStyle(color = Color.Black, fontSize = 18.sp),
-      fontWeight = FontWeight.Bold,
-    )
+  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
+  Spacer(modifier = Modifier.height(24.dp))
+
+  Text(
+    text = title,
+    style = TextStyle(color = Color.Black, fontSize = 20.sp),
+    fontWeight = FontWeight.Bold,
+  )
+
+  Spacer(modifier = Modifier.height(16.dp))
+
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.manufacture),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = Build.MANUFACTURER,
@@ -485,15 +516,15 @@ fun DeviceInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.device),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = Build.DEVICE,
@@ -503,15 +534,15 @@ fun DeviceInfoView(
       )
     }
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.os_version),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = Build.VERSION.RELEASE,
@@ -522,15 +553,15 @@ fun DeviceInfoView(
     }
 
     Row(
-      modifier = Modifier.fillMaxWidth().padding(8.dp),
+      modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
       Text(
         text = stringResource(R.string.model),
         fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Normal,
+        color = contentColor,
+        fontWeight = FontWeight.Medium,
       )
       Text(
         text = Build.MODEL,
@@ -539,15 +570,14 @@ fun DeviceInfoView(
         fontWeight = FontWeight.Bold,
       )
     }
-
-    Spacer(modifier = Modifier.height(4.dp))
   }
+  Spacer(modifier = Modifier.height(24.dp))
 }
 
 @Preview
 @Composable
 fun UserSettingInsightScreenPreview() {
-  Column() {
+  Column {
     UserSettingInsightScreen(
       fullName = "Tembo",
       team = "Team_tembo",

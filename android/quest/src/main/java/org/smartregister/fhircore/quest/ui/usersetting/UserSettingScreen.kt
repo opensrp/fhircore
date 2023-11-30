@@ -103,6 +103,7 @@ const val USER_SETTING_ROW_INSIGHTS = "userSettingRowInsights"
 const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
 const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
 const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
+const val OPENSRP_LOGO_TEST_TAG = "opensrpLogoTestTag"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -359,9 +360,8 @@ fun UserSettingScreen(
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        val resId = R.drawable.ic_opensrplogo
         Image(
-          painterResource(resId),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
           colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
           modifier =
@@ -369,7 +369,7 @@ fun UserSettingScreen(
               .padding(top = 8.dp)
               .requiredHeight(32.dp)
               .align(Alignment.CenterHorizontally)
-              .testTag(resId.toString()),
+              .testTag(OPENSRP_LOGO_TEST_TAG),
           contentScale = ContentScale.Fit,
         )
 
