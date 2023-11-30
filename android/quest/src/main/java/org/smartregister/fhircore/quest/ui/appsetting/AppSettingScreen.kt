@@ -161,7 +161,6 @@ fun AppSettingScreen(
           )
         }
 
-
         if (showProgressBar) {
           CircularProgressIndicator(
             modifier = modifier.align(Alignment.Center).size(18.dp),

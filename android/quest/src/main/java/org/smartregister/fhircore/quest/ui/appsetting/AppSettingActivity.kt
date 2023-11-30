@@ -26,10 +26,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -70,34 +68,22 @@ class AppSettingActivity : AppCompatActivity() {
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
-
-
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {
       appSettingViewModel.run {
         onApplicationIdChanged(existingAppId)
         loadConfigurations(appSettingActivity)
       }
+    } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
+      // this part simulates what the user would have done manually via the text field and button
+      appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
+      appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {
-      // if app id doesn't exist (i.e we don't have a previous successful initialization)
-      // check if we have an app id in local.properties and make it the one we want to load from
-      // check build config here since we shouldn't check if there was already an existing app id
-
       setContent {
         AppTheme {
-          if(!BuildConfig.APP_ID.isNullOrEmpty()) {
-            appSettingViewModel.onApplicationIdChanged(BuildConfig.APP_ID)
-            appSettingViewModel.fetchConfigurations(LocalContext.current)
-          }
-
           val appId by appSettingViewModel.appId.observeAsState("")
           val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
           val error by appSettingViewModel.error.observeAsState("")
-
-//          if(!appId.isNullOrEmpty()) { // in the case where a non empty buildConfig.APP_ID is not null or "" and thus gave a value to appId
-//            appSettingViewModel.fetchConfigurations(LocalContext.current)
-//            appSettingViewModel.setShowProgressBar(true) // have to set it as true to make the button disabled
-//          }
 
           AppSettingScreen(
             appId = appId,
