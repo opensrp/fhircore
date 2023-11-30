@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [App Performance] Profile the time it takes for the app to load the configs and patient data from the local DB
 - Add progress indicator during report generation
 - Add config property in QuestionnaireConfig to indicate when to udpate or create new extracted resource
+- Use `ButtonProperties.buttonType` to configure button size (BIG, MEDIUM or TINY). Deleted `ButtonProperties.smallSized`
+- Background worker for closing resources related to copleted Service requets 
 
 ### Fixed
 - Incorrect error shown for failed authentication when the credentials are invalid.

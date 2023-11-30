@@ -24,7 +24,7 @@ class StringExtensionTest {
   @Test
   fun practitionerEndpointUrlShouldMatch() {
     Assert.assertEquals(
-      "practitioner-details?keycloak-uuid=my-keycloak-id",
+      "PractitionerDetail?keycloak-uuid=my-keycloak-id",
       "my-keycloak-id".practitionerEndpointUrl(),
     )
   }
