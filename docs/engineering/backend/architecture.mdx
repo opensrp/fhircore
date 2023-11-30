@@ -1,9 +1,4 @@
----
-sidebar_position: 3
----
-
-
-# Platform Components
+# Architecture
 
 ### FHIR Data Store
 
