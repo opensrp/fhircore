@@ -89,10 +89,6 @@ constructor(
     _error.value = ""
   }
 
-  fun setShowProgressBar(state: Boolean) {
-    showProgressBar.value = state
-  }
-
   /**
    * Fetch the [Composition] resource whose identifier matches the provided [appId]. Save the
    * composition resource and all the nested resources referenced in the
