@@ -369,7 +369,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     dismissSaveProcessing()
     if (result) {
       // Put Sync Here
-      syncBroadcaster.runSync()
+      /** Disabled sync after submitting a questionnaire [SyncBroadcaster.runSync] */
       postSaveSuccessful(questionnaireResponse, extras)
     } else {
       Timber.e("An error occurred during extraction")
