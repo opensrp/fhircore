@@ -63,6 +63,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
@@ -136,35 +139,57 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        UserInfoView(
+        InsightInfoView(
           title = stringResource(id = R.string.user_info),
-          name = fullName ?: "",
-          team = team ?: "",
-          locality = locality ?: "",
+          headingOne = stringResource(R.string.user),
+          contentOne = fullName,
+          headingTwo = stringResource(R.string.team),
+          contentTwo = team,
+          headingThree = stringResource(R.string.locality),
+          contentThree = locality,
+          headingFour = null,
+          contentFour = null,
         )
       }
       item {
-        AppInfoView(
+        InsightInfoView(
           title = stringResource(id = R.string.app_info),
-          userName = userName ?: "",
-          organization = organization ?: "",
-          careTeam = careTeam ?: "",
-          location = location ?: "",
+          headingOne = stringResource(id = R.string.username),
+          contentOne = userName,
+          headingTwo = stringResource(R.string.team_organization),
+          contentTwo = organization?.take(10),
+          headingThree = stringResource(R.string.care_team),
+          contentThree = careTeam,
+          headingFour = stringResource(R.string.location),
+          contentFour = location,
         )
       }
 
       item {
-        AssignmentInfoView(
+        InsightInfoView(
           title = stringResource(id = R.string.assignment_info),
-          appVersion = appVersion,
-          appVersionCode = appVersionCode,
-          buildDate = buildDate,
+          headingOne = stringResource(R.string.app_versions),
+          contentOne = appVersion,
+          headingTwo = stringResource(R.string.app_version_code),
+          contentTwo = appVersionCode,
+          headingThree = stringResource(R.string.build_date),
+          contentThree = buildDate,
+          headingFour = null,
+          contentFour = null,
         )
       }
 
       item {
-        DeviceInfoView(
+        InsightInfoView(
           title = stringResource(id = R.string.device_info),
+          headingOne = stringResource(R.string.manufacture),
+          contentOne = Build.MANUFACTURER,
+          headingTwo = stringResource(R.string.device),
+          contentTwo = Build.DEVICE,
+          headingThree = stringResource(R.string.os_version),
+          contentThree = Build.VERSION.BASE_OS,
+          headingFour = stringResource(R.string.device_date),
+          contentFour = formatTimestamp(Build.TIME),
         )
       }
       item {
@@ -200,7 +225,6 @@ fun UnsyncedDataView(
   first: String,
   second: String,
 ) {
-  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
   Box(
     Modifier.fillMaxWidth().padding(16.dp),
   ) {
@@ -208,7 +232,7 @@ fun UnsyncedDataView(
       text = first,
       modifier = Modifier.align(Alignment.CenterStart).testTag(INSIGHT_UNSYNCED_DATA),
       fontSize = 16.sp,
-      color = contentColor,
+      color = colorResource(id = R.color.grayText),
       fontWeight = FontWeight.Medium,
     )
     Text(
@@ -221,14 +245,17 @@ fun UnsyncedDataView(
 }
 
 @Composable
-fun UserInfoView(
+fun InsightInfoView(
   title: String,
-  name: String,
-  team: String,
-  locality: String,
+  headingOne: String?,
+  contentOne: String?,
+  headingTwo: String?,
+  contentTwo: String?,
+  headingThree: String?,
+  contentThree: String?,
+  headingFour: String?,
+  contentFour: String?,
 ) {
-  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
-
   Spacer(modifier = Modifier.height(24.dp))
 
   Text(
@@ -236,342 +263,102 @@ fun UserInfoView(
     style = TextStyle(color = Color.Black, fontSize = 20.sp),
     fontWeight = FontWeight.Bold,
   )
-
   Spacer(modifier = Modifier.height(16.dp))
 
   Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.user),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = name,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
+    if (headingOne != null && contentOne != null) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        Text(
+          text = headingOne,
+          fontSize = 16.sp,
+          color = colorResource(id = R.color.grayText),
+          fontWeight = FontWeight.Medium,
+        )
+        Text(
+          text = contentOne,
+          fontSize = 16.sp,
+          color = LoginDarkColor,
+          fontWeight = FontWeight.Bold,
+        )
+      }
     }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.team),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = team,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
+    if (headingTwo != null && contentTwo != null) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        Text(
+          text = headingTwo,
+          fontSize = 16.sp,
+          color = colorResource(id = R.color.grayText),
+          fontWeight = FontWeight.Medium,
+        )
+        Text(
+          text = contentTwo,
+          fontSize = 16.sp,
+          color = LoginDarkColor,
+          fontWeight = FontWeight.Bold,
+          softWrap = true,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
     }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.locality),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = locality,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
+    if (headingThree != null && contentThree != null) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        Text(
+          text = headingThree,
+          fontSize = 16.sp,
+          color = colorResource(id = R.color.grayText),
+          fontWeight = FontWeight.Medium,
+        )
+        Text(
+          text = contentThree,
+          fontSize = 16.sp,
+          color = LoginDarkColor,
+          fontWeight = FontWeight.Bold,
+        )
+      }
+    }
+
+    if (headingFour != null && contentFour != null) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        Text(
+          text = headingFour,
+          fontSize = 16.sp,
+          color = colorResource(id = R.color.grayText),
+          fontWeight = FontWeight.Medium,
+        )
+        Text(
+          text = contentFour,
+          fontSize = 16.sp,
+          color = LoginDarkColor,
+          fontWeight = FontWeight.Bold,
+        )
+      }
     }
     Spacer(modifier = Modifier.height(16.dp))
     Divider(color = DividerColor)
   }
 }
 
-@Composable
-fun AppInfoView(
-  title: String,
-  userName: String,
-  organization: String,
-  careTeam: String,
-  location: String,
-) {
-  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
-
-  Spacer(modifier = Modifier.height(24.dp))
-
-  Text(
-    text = title,
-    style = TextStyle(color = Color.Black, fontSize = 20.sp),
-    fontWeight = FontWeight.Bold,
-  )
-  Spacer(modifier = Modifier.height(16.dp))
-
-  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(id = R.string.username),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = userName,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.team_organization),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = organization.take(10),
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-        softWrap = true,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-      )
-    }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.care_team),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = careTeam,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.location),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = location,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-    Divider(color = DividerColor)
-  }
-}
-
-@Composable
-fun AssignmentInfoView(
-  title: String,
-  appVersion: String,
-  appVersionCode: String,
-  buildDate: String,
-) {
-  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
-
-  Spacer(modifier = Modifier.height(24.dp))
-
-  Text(
-    text = title,
-    style = TextStyle(color = Color.Black, fontSize = 20.sp),
-    fontWeight = FontWeight.Bold,
-  )
-
-  Spacer(modifier = Modifier.height(16.dp))
-
-  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.app_versions),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = appVersion,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.app_version_code),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = appVersionCode,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.build_date),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = buildDate,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Spacer(modifier = Modifier.height(16.dp))
-    Divider(color = DividerColor)
-  }
-}
-
-@Composable
-@SuppressLint("HadwareIds")
-fun DeviceInfoView(
-  title: String,
-) {
-  val contentColor = colorResource(id = org.smartregister.fhircore.engine.R.color.grayText)
-  Spacer(modifier = Modifier.height(24.dp))
-
-  Text(
-    text = title,
-    style = TextStyle(color = Color.Black, fontSize = 20.sp),
-    fontWeight = FontWeight.Bold,
-  )
-
-  Spacer(modifier = Modifier.height(16.dp))
-
-  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.manufacture),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = Build.MANUFACTURER,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.device),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = Build.DEVICE,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.os_version),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = Build.VERSION.RELEASE,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = stringResource(R.string.model),
-        fontSize = 16.sp,
-        color = contentColor,
-        fontWeight = FontWeight.Medium,
-      )
-      Text(
-        text = Build.MODEL,
-        fontSize = 16.sp,
-        color = LoginDarkColor,
-        fontWeight = FontWeight.Bold,
-      )
-    }
-  }
-  Spacer(modifier = Modifier.height(24.dp))
+fun formatTimestamp(timestamp: Long): String {
+  val date = Date(timestamp * 1000)
+  val sdf = SimpleDateFormat("MMM dd, yyyy h:mm a", Locale.getDefault())
+  return sdf.format(date)
 }
 
 @Preview

@@ -34,6 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.quest.ui.usersetting.OPENSRP_LOGO_TEST_TAG
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen
 
 class UserSettingScreenTest {
@@ -169,7 +170,7 @@ class UserSettingScreenTest {
   @Test
   fun testThatOpenSRPLogoIsVisible() {
     initComposable()
-    composeRule.onNodeWithTag(R.drawable.ic_opensrplogo.toString()).assertIsDisplayed()
+    composeRule.onNodeWithTag(OPENSRP_LOGO_TEST_TAG).assertIsDisplayed()
   }
 
   @Test

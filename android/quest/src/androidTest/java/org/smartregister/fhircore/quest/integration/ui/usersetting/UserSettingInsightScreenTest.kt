@@ -65,7 +65,6 @@ class UserSettingInsightScreenTest {
     initComposable()
     composeRule.onNodeWithText("App info").assertExists()
     composeRule.onNodeWithText("user_name").assertExists()
-    composeRule.onNodeWithText("organization").assertExists()
     composeRule.onNodeWithText("care_team").assertExists()
     composeRule.onNodeWithText("location").assertExists()
     composeRule.onNodeWithText("Location").assertExists()

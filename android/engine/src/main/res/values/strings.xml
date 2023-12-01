@@ -24,7 +24,7 @@
     <string name="syncing_down" translatable="false">Syncing down</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later</string>
-    <string name="sync_completed_with_errors">Sync completed with errors. Retrying…</string>
+    <string name="sync_completed_with_errors" translatable="false">Sync completed with errors. Retrying…</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="refresh_token_fail_error_message">Failed to retrieve credentials from the server. Please check your internet connection.</string>
     <string name="try_again">Try again</string>
@@ -160,18 +160,18 @@
     <string name="synced_statistics" translatable="false">Synced Statistics</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
-    <string name="select_month">Select Month</string>
-    <string name="user">User</string>
-    <string name="team">Team</string>
-    <string name="locality">Locality</string>
-    <string name="team_organization">Team(Organization)</string>
-    <string name="care_team">Care Team</string>
-    <string name="location">Location</string>
-    <string name="app_version_code">App version code</string>
-    <string name="build_date">Build date</string>
-    <string name="manufacture">Manufacture</string>
-    <string name="app_versions">App version</string>
-    <string name="os_version">OS Version</string>
-    <string name="model">Model</string>
-    <string name="device">Device</string>
+    <string name="select_month" translatable="false">Select Month</string>
+    <string name="user" translatable="false">User</string>
+    <string name="team" translatable="false">Team</string>
+    <string name="locality" translatable="false">Locality</string>
+    <string name="team_organization" translatable="false">Team(Organization)</string>
+    <string name="care_team" translatable="false">Care Team</string>
+    <string name="location" translatable="false">Location</string>
+    <string name="app_version_code" translatable="false">App version code</string>
+    <string name="build_date" translatable="false">Build date</string>
+    <string name="manufacture" translatable="false">Manufacture</string>
+    <string name="app_versions" translatable="false">App version</string>
+    <string name="os_version" translatable="false">OS Version</string>
+    <string name="device_date" translatable="false">Date</string>
+    <string name="device" translatable="false">Device</string>
 </resources>
