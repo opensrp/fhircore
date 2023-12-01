@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -848,6 +849,63 @@ class RulesFactoryTest : RobolectricTest() {
     Assert.assertEquals(
       period.years.toString() + "y",
       rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate())),
+    )
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsPractitionerId() {
+
+    val sharedPreferenceKey = "PRACTITIONER_ID"
+    val result = rulesEngineService.extractSharedPrefValues(
+      sharedPreferenceKey
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+  @Test
+  fun testExtractSharedPrefValuesReturnsLocation() {
+    val result = rulesEngineService.extractSharedPrefValues(
+      key = "34"
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+  @Test
+  fun testExtractSharedPrefValuesReturnsCareTeams() {
+    val result = rulesEngineService.extractSharedPrefValues(
+      key = "34"
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+  @Test
+  fun testExtractSharedPrefValuesReturnsOrganisations() {
+    val result = rulesEngineService.extractSharedPrefValues(
+      key = "34"
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+  @Test
+  fun testFetchingPractitionerAssignedOrganisations() {
+    val result = rulesEngineService.extractSharedPrefValues(
+      key = "34"
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+    )
+  }
+  @Test
+  fun testFetchingPractitionerAssignedOrganisations() {
+    val result = rulesEngineService.extractSharedPrefValues(
+      key = "34"
+    )
+    Assert.assertNotNull(
+      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
 }

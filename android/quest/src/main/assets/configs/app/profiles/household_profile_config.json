@@ -484,6 +484,13 @@
                 "actions": [
                   "data.put('statuses', service.joinToString([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient'), data.get('getFamilyHeadStatus'), ...]))"
                 ]
+              },
+              {
+                "name": "practitionerId",
+                "condition": "true",
+                "actions": [
+                  "data.put('practitionerId',service.extractSharedPrefValues('PRACTITIONER_ID'))"
+                ]
               }
             ],
             "views": [

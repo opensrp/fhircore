@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -42,7 +43,9 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.PractitionerKey
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -299,6 +302,41 @@ constructor(
      */
     fun prettifyDate(inputDateString: String): String {
       return PrettyTime().format(DateTime(inputDateString).toDate())
+    }
+
+    /**
+     * This function fetches assignment data separately that is;
+     * PractitionerId, PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the configs.
+     */
+
+    fun extractSharedPrefValues(practitionerKey: String): String? {
+      val key = PractitionerKey.valueOf(practitionerKey)
+      try {
+      return when(key) {
+        PractitionerKey.PRACTITIONER_ID -> configurationRegistry.sharedPreferencesHelper.read(
+          SharedPreferenceKey.PRACTITIONER_ID.name
+        )
+
+        PractitionerKey.PRACTITIONER_CARETEAM -> configurationRegistry.sharedPreferencesHelper.read(
+          ResourceType.CareTeam.name
+        )
+
+        PractitionerKey.PRACTITIONER_ORGANIZATION -> configurationRegistry.sharedPreferencesHelper.read(
+          ResourceType.Organization.name
+        )
+
+        PractitionerKey.PRACTITIONER_LOCATION -> configurationRegistry.sharedPreferencesHelper.read(
+          ResourceType.Location.name
+        )
+      }
+      }
+      catch (exception: Exception){
+        if (exception is IllegalArgumentException){
+          Timber.e("key is not a member of practitioner keys: ", exception)
+        }
+        else {Timber.e("An exception occurred while fetching your key from sharedPrefs: ",exception)}
+      }
+      return ""
     }
 
     /**
