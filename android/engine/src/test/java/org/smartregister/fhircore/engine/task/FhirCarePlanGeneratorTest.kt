@@ -2233,10 +2233,10 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       createResource<Library>("/plans/measles-immunizations/Library-WHOCommon.json")
       createResource<Library>("/plans/measles-immunizations/Library-WHOConcepts.json")
       createResource<ActivityDefinition>(
-        "/plans/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json"
+        "/plans/measles-immunizations/ActivityDefinition-IMMZD2DTMeaslesMR.json",
       )
       createResource<PlanDefinition>(
-        "/plans/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json"
+        "/plans/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json",
       )
       createResource<ValueSet>("/plans/measles-immunizations/ValueSet-HIVstatus-values.json")
       createResource<Patient>("/plans/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json")

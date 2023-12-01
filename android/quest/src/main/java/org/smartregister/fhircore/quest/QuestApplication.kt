@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest
 
 import android.content.Intent
 import android.database.CursorWindow
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
@@ -29,11 +30,14 @@ import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.hl7.fhir.utilities.npm.NpmPackage
+import org.smartregister.fhircore.engine.OpenSrpApplication
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 

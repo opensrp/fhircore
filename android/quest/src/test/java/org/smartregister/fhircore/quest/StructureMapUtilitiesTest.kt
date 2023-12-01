@@ -639,7 +639,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val baseElement =
       iParser.parseResource(
         QuestionnaireResponse::class.java,
-        captureClientHistoryQuestionnResponse
+        captureClientHistoryQuestionnResponse,
       )
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)

@@ -112,7 +112,7 @@ constructor(
         ) {
           val availableDefinition =
             defaultRepository.loadResource<ActivityDefinition>(
-              definition.value.substringAfterLast("/")
+              definition.value.substringAfterLast("/"),
             )
           knowledgeManager.install(writeToFile(availableDefinition!!))
         }
