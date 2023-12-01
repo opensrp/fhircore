@@ -305,36 +305,37 @@ constructor(
     }
 
     /**
-     * This function fetches assignment data separately that is;
-     * PractitionerId, PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the configs.
+     * This function fetches assignment data separately that is; PractitionerId,
+     * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
+     * configs.
      */
-
     fun extractSharedPrefValues(practitionerKey: String): String? {
       val key = PractitionerKey.valueOf(practitionerKey)
       try {
-      return when(key) {
-        PractitionerKey.PRACTITIONER_ID -> configurationRegistry.sharedPreferencesHelper.read(
-          SharedPreferenceKey.PRACTITIONER_ID.name
-        )
-
-        PractitionerKey.PRACTITIONER_CARETEAM -> configurationRegistry.sharedPreferencesHelper.read(
-          ResourceType.CareTeam.name
-        )
-
-        PractitionerKey.PRACTITIONER_ORGANIZATION -> configurationRegistry.sharedPreferencesHelper.read(
-          ResourceType.Organization.name
-        )
-
-        PractitionerKey.PRACTITIONER_LOCATION -> configurationRegistry.sharedPreferencesHelper.read(
-          ResourceType.Location.name
-        )
-      }
-      }
-      catch (exception: Exception){
-        if (exception is IllegalArgumentException){
-          Timber.e("key is not a member of practitioner keys: ", exception)
+        return when (key) {
+          PractitionerKey.PRACTITIONER_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_ID.name,
+            )
+          PractitionerKey.PRACTITIONER_CARETEAM ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              ResourceType.CareTeam.name,
+            )
+          PractitionerKey.PRACTITIONER_ORGANIZATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              ResourceType.Organization.name,
+            )
+          PractitionerKey.PRACTITIONER_LOCATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              ResourceType.Location.name,
+            )
         }
-        else {Timber.e("An exception occurred while fetching your key from sharedPrefs: ",exception)}
+      } catch (exception: Exception) {
+        if (exception is IllegalArgumentException) {
+          Timber.e("key is not a member of practitioner keys: ", exception)
+        } else {
+          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+        }
       }
       return ""
     }

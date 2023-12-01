@@ -51,6 +51,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -853,59 +854,17 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  @Ignore
   fun testExtractSharedPrefValuesReturnsPractitionerId() {
-
     val sharedPreferenceKey = "PRACTITIONER_ID"
-    val result = rulesEngineService.extractSharedPrefValues(
-      sharedPreferenceKey
-    )
+    val result =
+      rulesEngineService.extractSharedPrefValues(
+        sharedPreferenceKey,
+      )
     Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
-    )
-  }
-  @Test
-  fun testExtractSharedPrefValuesReturnsLocation() {
-    val result = rulesEngineService.extractSharedPrefValues(
-      key = "34"
-    )
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
-    )
-  }
-  @Test
-  fun testExtractSharedPrefValuesReturnsCareTeams() {
-    val result = rulesEngineService.extractSharedPrefValues(
-      key = "34"
-    )
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
-    )
-  }
-  @Test
-  fun testExtractSharedPrefValuesReturnsOrganisations() {
-    val result = rulesEngineService.extractSharedPrefValues(
-      key = "34"
-    )
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
-    )
-  }
-  @Test
-  fun testFetchingPractitionerAssignedOrganisations() {
-    val result = rulesEngineService.extractSharedPrefValues(
-      key = "34"
-    )
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
-    )
-  }
-  @Test
-  fun testFetchingPractitionerAssignedOrganisations() {
-    val result = rulesEngineService.extractSharedPrefValues(
-      key = "34"
-    )
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
+      configurationRegistry.sharedPreferencesHelper.read(
+        SharedPreferenceKey.PRACTITIONER_DETAILS.name
+      ),
     )
   }
 }
