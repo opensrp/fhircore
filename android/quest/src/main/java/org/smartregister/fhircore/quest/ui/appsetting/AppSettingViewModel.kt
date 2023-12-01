@@ -108,6 +108,7 @@ constructor(
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
     viewModelScope.launch {
       try {
+        showProgressBar.postValue(true)
         Timber.i("Fetching configs for app $appId")
         val urlPath =
           "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
