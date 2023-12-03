@@ -121,6 +121,26 @@
           "id": "pncRegister"
         }
       ]
+    },
+    {
+      "id": "taskRegister",
+      "display": "Priority followup",
+      "showCount": true,
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_tasks_priority"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REGISTER",
+          "id": "taskRegister"
+        },
+        {
+          "trigger": "ON_COUNT",
+          "id": "taskRegister"
+        }
+      ]
     }
   ],
   "staticMenu": [

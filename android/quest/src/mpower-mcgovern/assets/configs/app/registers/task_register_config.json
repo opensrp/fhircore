@@ -1,0 +1,227 @@
+{
+  "appId": "app",
+  "configType": "register",
+  "id": "taskRegister",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Task",
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "ready"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "isRevInclude": false,
+        "searchParameter": "subject"
+      }
+    ]
+  },
+  "searchBar": {
+    "visible": true,
+    "display": "{{ search.by.task.practitioner.patient }}",
+    "computedRules": [
+      "taskName",
+      "practitionerName",
+      "patientName"
+    ]
+  },
+  "registerCard": {
+    "rules": [
+      {
+        "name": "totalPatient",
+        "condition": "true",
+        "actions": [
+          "data.put('totalPatient', size(Patient))"
+        ]
+      },
+      {
+        "name": "taskName",
+        "condition": "true",
+        "actions": [
+          "data.put('taskName', fhirPath.extractValue(Task, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskStatus",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatus', fhirPath.extractValue(Task, 'Task.status'))"
+        ]
+      },
+      {
+        "name": "taskStatusColorCode",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStatusColorCode', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : data.get('taskStatus').equals('completed') ? 'COMPLETED' : 'UPCOMING')"
+        ]
+      },
+      {
+        "name": "taskExecutionStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('taskExecutionStartDate', fhirPath.extractValue(Task, 'Task.executionPeriod.start'))"
+        ]
+      },
+      {
+        "name": "taskStartDate",
+        "condition": "true",
+        "actions": [
+          "data.put('taskStartDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+        ]
+      },
+      {
+        "name": "taskDescription",
+        "condition": "true",
+        "actions": [
+          "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskReasonDisplay",
+        "condition": "true",
+        "actions": [
+          "data.put('taskReasonDisplay', fhirPath.extractValue(Task, 'Task.input[0].value.coding.display'))"
+        ]
+      },
+      {
+        "name": "taskId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskId', fhirPath.extractValue(Task, 'Task.id'))"
+        ]
+      },
+      {
+        "name": "taskFor",
+        "condition": "true",
+        "actions": [
+          "data.put('taskFor', fhirPath.extractValue(Task, 'Task.for.reference'))"
+        ]
+      },
+      {
+        "name": "taskQuestionnaireId",
+        "condition": "true",
+        "actions": [
+          "data.put('taskQuestionnaireId', fhirPath.extractValue(Task, 'Task.reasonReference.reference'))"
+        ]
+      },
+      {
+        "name": "patientName",
+        "condition": "true",
+        "actions": [
+          "data.put('patientName', fhirPath.extractValue(Patient.get(0), \"Patient.name.text\"))"
+        ]
+      },
+      {
+        "name": "patientMobile",
+        "condition": "true",
+        "actions": [
+          "data.put('patientMobile', fhirPath.extractValue(Patient.get(0), \"Patient.telecom.value\"))"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "viewType": "COLUMN",
+        "children": [
+          {
+            "viewType": "SERVICE_CARD",
+            "details": [
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "@{taskName}",
+                "primaryTextColor": "#000000"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ task.start.date }}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ patient.col.name }}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{ patient.col.mobile }}",
+                "primaryTextColor": "#5A5A5A",
+                "fontSize": 14.0
+              }
+            ],
+            "showVerticalDivider": false,
+            "serviceButton": {
+              "visible": true,
+              "text": "@{taskStatus}",
+              "status": "@{taskStatusColorCode}",
+              "smallSized": false,
+              "actions": [
+                {
+                  "trigger": "ON_CLICK",
+                  "workflow": "LAUNCH_QUESTIONNAIRE",
+                  "questionnaire": {
+                    "id": "@{taskQuestionnaireId}",
+                    "title": "@{taskDescription}",
+                    "saveButtonText": "Save",
+                    "taskId": "@{taskId}",
+                    "resourceIdentifier": "@{taskFor}"
+                  },
+                  "params": [
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "ae2f17cb-deff-48a6-8ece-27e6bd475f30",
+                      "dataType": "DATE",
+                      "key": "taskStartDate",
+                      "value": "@{taskStartDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "c706016d-b8e9-44c7-9acb-155bb4e6092c",
+                      "dataType": "STRING",
+                      "key": "taskReasonDisplay",
+                      "value": "@{taskReasonDisplay}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "bb2b5f1d-3aee-4d19-883a-f5a65b349f5f",
+                      "dataType": "DATE",
+                      "key": "lmpDate",
+                      "value": "@{lmpDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "93ff6669-bbee-47fd-e54d-8c9e9cda1f94",
+                      "dataType": "INTEGER",
+                      "key": "noOfBracAncVisit",
+                      "value": "@{noOfBracAncVisit}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "5d8ac884-da47-4ec3-f077-1dd9812d0d43",
+                      "dataType": "INTEGER",
+                      "key": "patientHeight",
+                      "value": "@{patientHeight}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
