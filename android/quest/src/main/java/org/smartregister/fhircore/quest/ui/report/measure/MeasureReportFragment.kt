@@ -28,12 +28,14 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.ui.profile.ProfileViewModel
 
 @AndroidEntryPoint
 class MeasureReportFragment : Fragment() {
 
   private val measureReportFragmentArgs by navArgs<MeasureReportFragmentArgs>()
   val measureReportViewModel by viewModels<MeasureReportViewModel>()
+  val profileViewModel by viewModels<ProfileViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -48,6 +50,7 @@ class MeasureReportFragment : Fragment() {
             reportId = measureReportFragmentArgs.reportId,
             practitionerId = measureReportFragmentArgs.resourceId,
             measureReportViewModel = measureReportViewModel,
+            profileViewModel = profileViewModel,
             mainNavController = findNavController(),
           )
         }

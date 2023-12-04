@@ -35,6 +35,18 @@ class MeasureReportListScreenTest {
 
   @get:Rule(order = 0) val composeTestRule = createComposeRule()
   private val navController: NavController = mockk(relaxUnitFun = true)
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  val profileUiState =
+    ProfileUiState(
+      resourceData =
+        ResourceData(
+          baseResourceId = "patientId",
+          baseResourceType = ResourceType.Patient,
+          computedValuesMap = emptyMap(),
+        ),
+      profileConfiguration =
+        configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
+    )
   private val dataList =
     Pager(PagingConfig(10)) {
         MeasureReportPagingSource(
@@ -52,6 +64,7 @@ class MeasureReportListScreenTest {
       MeasureReportListScreen(
         navController = navController,
         dataList = dataList,
+        profileUiState = profileUiState,
         onReportMeasureClicked = {},
       )
     }
@@ -65,6 +78,7 @@ class MeasureReportListScreenTest {
       MeasureReportListScreen(
         navController = navController,
         dataList = dataList,
+        profileUiState = profileUiState,
         onReportMeasureClicked = {},
         showProgressIndicator = true,
       )

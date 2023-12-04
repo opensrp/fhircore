@@ -118,7 +118,6 @@ fun ProfileScreen(
       }
     },
     floatingActionButton = {
-
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
@@ -153,7 +152,13 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary,
         )
       }
-      LazyColumn(state = lazyListState, modifier = Modifier.padding(bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp)) {
+      LazyColumn(
+        state = lazyListState,
+        modifier =
+          Modifier.padding(
+            bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp
+          )
+      ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),

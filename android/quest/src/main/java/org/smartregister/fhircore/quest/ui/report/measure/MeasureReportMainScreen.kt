@@ -27,6 +27,7 @@ import androidx.navigation.navArgument
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.profile.ProfileViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
@@ -38,10 +39,12 @@ fun MeasureReportMainScreen(
   practitionerId: String,
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
+  profileViewModel: ProfileViewModel,
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
+  val profileUiState = profileViewModel.profileUiState.value
 
   NavHost(
     navController = navController,
@@ -62,6 +65,7 @@ fun MeasureReportMainScreen(
           )
         },
         showProgressIndicator = uiState.showProgressIndicator,
+        profileUiState = profileUiState,
       )
     }
     // Page for selecting report date

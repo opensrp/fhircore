@@ -47,6 +47,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.profile.ProfileUiState
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable
@@ -55,10 +56,11 @@ fun MeasureReportListScreen(
   dataList: Flow<PagingData<ReportConfiguration>>,
   onReportMeasureClicked: (List<ReportConfiguration>) -> Unit,
   modifier: Modifier = Modifier,
+  profileUiState: ProfileUiState,
   showProgressIndicator: Boolean = false,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
-
+  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     topBar = {
       TopAppBar(
@@ -92,7 +94,16 @@ fun MeasureReportListScreen(
           }
         }
       } else {
-        LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
+        LazyColumn(
+          modifier =
+            modifier
+              .background(Color.White)
+              .fillMaxSize()
+              .padding(
+                bottom =
+                  if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp
+              )
+        ) {
           lazyReportItems.keys.forEach { key ->
             item {
               key?.let { it1 ->
