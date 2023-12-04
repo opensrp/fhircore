@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2022-2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,20 +48,8 @@ internal fun evaluateToDisplay(expressions: List<String>, data: Resource) =
 internal fun evaluateToBoolean(
   questionnaireResponse: QuestionnaireResponse,
   questionnaireResponseItemComponent: QuestionnaireResponseItemComponent,
-  expression: String
-) =
-  fhirPathEngine.evaluateToBoolean(
-    questionnaireResponse,
-    null,
-    questionnaireResponseItemComponent,
-    expression
-  )
-
-internal fun evaluateToBoolean(
-  questionnaireResponse: QuestionnaireResponse,
-  questionnaireResponseItemComponent: QuestionnaireResponseItemComponent,
   expression: String,
-  contextMap: Map<String, Base?>
+  contextMap: Map<String, Base?> = mapOf(),
 ): Boolean {
   val expressionNode = fhirPathEngine.parse(expression)
   return fhirPathEngine.evaluateToBoolean(
@@ -69,6 +57,6 @@ internal fun evaluateToBoolean(
     questionnaireResponse,
     null,
     questionnaireResponseItemComponent,
-    expressionNode
+    expressionNode,
   )
 }

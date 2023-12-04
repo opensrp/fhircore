@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2022-2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,10 @@ internal object EditTextIntegerViewHolderFactory :
       QuestionnaireItemEditTextViewHolderDelegate(
         InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_SIGNED,
       ) {
-      override fun handleInput(editable: Editable, questionnaireViewItem: QuestionnaireViewItem) {
+      override suspend fun handleInput(
+        editable: Editable,
+        questionnaireViewItem: QuestionnaireViewItem,
+      ) {
         val input = editable.toString()
         if (input.isEmpty()) {
           questionnaireViewItem.clearAnswer()
@@ -48,7 +51,7 @@ internal object EditTextIntegerViewHolderFactory :
         if (inputInteger != null) {
           questionnaireViewItem.setAnswer(
             QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-              .setValue(IntegerType(input))
+              .setValue(IntegerType(input)),
           )
         } else {
           questionnaireViewItem.setDraftAnswer(input)
@@ -80,7 +83,7 @@ internal object EditTextIntegerViewHolderFactory :
             textInputEditText.context.getString(
               R.string.integer_format_validation_error_msg,
               formatInteger(Int.MIN_VALUE),
-              formatInteger(Int.MAX_VALUE)
+              formatInteger(Int.MAX_VALUE),
             )
         }
       }

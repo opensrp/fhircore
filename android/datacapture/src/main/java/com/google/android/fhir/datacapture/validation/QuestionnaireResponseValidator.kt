@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2022-2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.google.android.fhir.datacapture.validation
 
 import android.content.Context
+import com.google.android.fhir.datacapture.XFhirQueryResolver
 import com.google.android.fhir.datacapture.enablement.EnablementEvaluator
 import com.google.android.fhir.datacapture.extensions.packRepeatedGroups
 import org.hl7.fhir.r4.model.Questionnaire
@@ -29,41 +30,42 @@ object QuestionnaireResponseValidator {
   /**
    * Validates [QuestionnaireResponse] using the constraints defined in the [Questionnaire].
    * - Each item in the [QuestionnaireResponse] must have a corresponding item in the
-   * [Questionnaire] with the same `linkId` and `type`
+   *   [Questionnaire] with the same `linkId` and `type`
    * - The order of items in the [QuestionnaireResponse] must be the same as the order of the items
-   * in the [Questionnaire]
-   * -
-   * [Items nested under group](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item)
-   * and
-   * [items nested under answer](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.answer.item)
-   * should follow the same rules recursively
+   *   in the
+   *   [Questionnaire] - [Items nested under group](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item)
+   *   and
+   *   [items nested under answer](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.answer.item)
+   *   should follow the same rules recursively
    *
    * Note that although all the items in the [Questionnaire] SHOULD be included in the
    * [QuestionnaireResponse], we do not throw an exception for missing items. This allows the
    * [QuestionnaireResponse] to not include items that are not enabled due to `enableWhen`.
    *
+   * @return a map[linkIdToValidationResultMap] of linkIds to list of ValidationResult
    * @throws IllegalArgumentException if `questionnaireResponse` does not match `questionnaire`'s
-   * URL (if specified)
+   *   URL (if specified)
    * @throws IllegalArgumentException if there is no questionnaire item with the same `linkId` as a
-   * questionnaire response item
+   *   questionnaire response item
    * @throws IllegalArgumentException if the questionnaire response items are out of order
    * @throws IllegalArgumentException if multiple answers are provided for a non-repeat
-   * questionnaire item
+   *   questionnaire item
    *
    * See http://www.hl7.org/fhir/questionnaireresponse.html#link for more information.
-   *
-   * @return a map[linkIdToValidationResultMap] of linkIds to list of ValidationResult
    */
-  fun validateQuestionnaireResponse(
+  suspend fun validateQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
-    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
-    launchContextMap: Map<String, Resource>?
+    questionnaireItemParentMap:
+      Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> =
+      mapOf(),
+    launchContextMap: Map<String, Resource>? = mapOf(),
+    xFhirQueryResolver: XFhirQueryResolver? = null,
   ): Map<String, List<ValidationResult>> {
     require(
       questionnaireResponse.questionnaire == null ||
-        questionnaire.url == questionnaireResponse.questionnaire
+        questionnaire.url == questionnaireResponse.questionnaire,
     ) {
       "Mismatching Questionnaire ${questionnaire.url} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire})"
     }
@@ -74,23 +76,25 @@ object QuestionnaireResponseValidator {
       questionnaire.item,
       questionnaireResponse.item,
       context,
-      EnablementEvaluator(questionnaireResponse),
+      EnablementEvaluator(
+        questionnaire,
+        questionnaireResponse,
+        questionnaireItemParentMap,
+        launchContextMap,
+        xFhirQueryResolver,
+      ),
       linkIdToValidationResultMap,
-      questionnaire, questionnaireItemParentMap, launchContextMap
     )
 
     return linkIdToValidationResultMap
   }
 
-  private fun validateQuestionnaireResponseItems(
+  private suspend fun validateQuestionnaireResponseItems(
     questionnaireItemList: List<Questionnaire.QuestionnaireItemComponent>,
     questionnaireResponseItemList: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
     context: Context,
     enablementEvaluator: EnablementEvaluator,
     linkIdToValidationResultMap: MutableMap<String, MutableList<ValidationResult>>,
-    questionnaire: Questionnaire,
-    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
-    launchContextMap: Map<String, Resource>?
   ): Map<String, List<ValidationResult>> {
     val questionnaireItemListIterator = questionnaireItemList.iterator()
     val questionnaireResponseItemListIterator = questionnaireResponseItemList.iterator()
@@ -105,7 +109,11 @@ object QuestionnaireResponseValidator {
         questionnaireItem = questionnaireItemListIterator.next()
       } while (questionnaireItem!!.linkId != questionnaireResponseItem.linkId)
 
-      val enabled = enablementEvaluator.evaluate(questionnaireItem, questionnaireResponseItem, questionnaire, questionnaireItemParentMap, launchContextMap)
+      val enabled =
+        enablementEvaluator.evaluate(
+          questionnaireItem,
+          questionnaireResponseItem,
+        )
 
       if (enabled) {
         validateQuestionnaireResponseItem(
@@ -114,27 +122,22 @@ object QuestionnaireResponseValidator {
           context,
           enablementEvaluator,
           linkIdToValidationResultMap,
-          questionnaire, questionnaireItemParentMap, launchContextMap
         )
       }
     }
     return linkIdToValidationResultMap
   }
 
-  private fun validateQuestionnaireResponseItem(
+  private suspend fun validateQuestionnaireResponseItem(
     questionnaireItem: Questionnaire.QuestionnaireItemComponent,
     questionnaireResponseItem: QuestionnaireResponse.QuestionnaireResponseItemComponent,
     context: Context,
     enablementEvaluator: EnablementEvaluator,
     linkIdToValidationResultMap: MutableMap<String, MutableList<ValidationResult>>,
-    questionnaire: Questionnaire,
-    questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
-    launchContextMap: Map<String, Resource>?
   ): Map<String, List<ValidationResult>> {
-
     when (checkNotNull(questionnaireItem.type) { "Questionnaire item must have type" }) {
       Questionnaire.QuestionnaireItemType.DISPLAY,
-      Questionnaire.QuestionnaireItemType.NULL -> Unit
+      Questionnaire.QuestionnaireItemType.NULL, -> Unit
       Questionnaire.QuestionnaireItemType.GROUP ->
         // Nested items under group
         // http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item
@@ -144,7 +147,6 @@ object QuestionnaireResponseValidator {
           context,
           enablementEvaluator,
           linkIdToValidationResultMap,
-          questionnaire, questionnaireItemParentMap, launchContextMap
         )
       else -> {
         require(questionnaireItem.repeats || questionnaireResponseItem.answer.size <= 1) {
@@ -158,7 +160,6 @@ object QuestionnaireResponseValidator {
             context,
             enablementEvaluator,
             linkIdToValidationResultMap,
-            questionnaire, questionnaireItemParentMap, launchContextMap
           )
         }
 
@@ -167,8 +168,8 @@ object QuestionnaireResponseValidator {
           QuestionnaireResponseItemValidator.validate(
             questionnaireItem,
             questionnaireResponseItem.answer,
-            context
-          )
+            context,
+          ),
         )
       }
     }
@@ -178,50 +179,49 @@ object QuestionnaireResponseValidator {
   /**
    * Checks that the [QuestionnaireResponse] is structurally consistent with the [Questionnaire].
    * - Each item in the [QuestionnaireResponse] must have a corresponding item in the
-   * [Questionnaire] with the same `linkId` and `type`
+   *   [Questionnaire] with the same `linkId` and `type`
    * - The order of items in the [QuestionnaireResponse] must be the same as the order of the items
-   * in the [Questionnaire]
-   * -
-   * [Items nested under group](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item)
-   * and
-   * [items nested under answer](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.answer.item)
-   * should follow the same rules recursively
+   *   in the
+   *   [Questionnaire] - [Items nested under group](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item)
+   *   and
+   *   [items nested under answer](http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.answer.item)
+   *   should follow the same rules recursively
    *
    * Note that although all the items in the [Questionnaire] SHOULD be included in the
    * [QuestionnaireResponse], we do not throw an exception for missing items. This allows the
    * [QuestionnaireResponse] to not include items that are not enabled due to `enableWhen`.
    *
    * @throws IllegalArgumentException if `questionnaireResponse` does not match `questionnaire`'s
-   * URL (if specified)
+   *   URL (if specified)
    * @throws IllegalArgumentException if there is no questionnaire item with the same `linkId` as a
-   * questionnaire response item
+   *   questionnaire response item
    * @throws IllegalArgumentException if the questionnaire response items are out of order
    * @throws IllegalArgumentException if the type of a questionnaire response item does not match
-   * that of the questionnaire item
+   *   that of the questionnaire item
    * @throws IllegalArgumentException if multiple answers are provided for a non-repeat
-   * questionnaire item
+   *   questionnaire item
    *
    * See http://www.hl7.org/fhir/questionnaireresponse.html#link for more information.
    */
   fun checkQuestionnaireResponse(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
   ) {
     require(
       questionnaireResponse.questionnaire == null ||
-        questionnaire.url == questionnaireResponse.questionnaire
+        questionnaire.url == questionnaireResponse.questionnaire,
     ) {
       "Mismatching Questionnaire ${questionnaire.url} and QuestionnaireResponse (for Questionnaire ${questionnaireResponse.questionnaire})"
     }
     checkQuestionnaireResponseItems(
       questionnaire.item,
-      questionnaireResponse.copy().apply { packRepeatedGroups() }.item
+      questionnaireResponse.copy().apply { packRepeatedGroups() }.item,
     )
   }
 
   private fun checkQuestionnaireResponseItems(
     questionnaireItemList: List<Questionnaire.QuestionnaireItemComponent>,
-    questionnaireResponseItemList: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+    questionnaireResponseItemList: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ) {
     val questionnaireItemIterator = questionnaireItemList.iterator()
     val questionnaireResponseInputItemIterator = questionnaireResponseItemList.iterator()
@@ -246,7 +246,7 @@ object QuestionnaireResponseValidator {
   ) {
     when (checkNotNull(questionnaireItem.type) { "Questionnaire item must have type" }) {
       Questionnaire.QuestionnaireItemType.DISPLAY,
-      Questionnaire.QuestionnaireItemType.NULL -> Unit
+      Questionnaire.QuestionnaireItemType.NULL, -> Unit
       Questionnaire.QuestionnaireItemType.GROUP ->
         // Nested items under group
         // http://www.hl7.org/fhir/questionnaireresponse-definitions.html#QuestionnaireResponse.item.item
@@ -264,13 +264,13 @@ object QuestionnaireResponseValidator {
 
   private fun checkQuestionnaireResponseAnswerItem(
     questionnaireItem: Questionnaire.QuestionnaireItemComponent,
-    answerItem: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent
+    answerItem: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent,
   ) {
     if (answerItem.hasValue()) {
       checkQuestionnaireResponseAnswerItemType(
         questionnaireItem.linkId,
         questionnaireItem.type,
-        answerItem.value
+        answerItem.value,
       )
     }
     // Nested items under answer
@@ -281,7 +281,7 @@ object QuestionnaireResponseValidator {
   private fun checkQuestionnaireResponseAnswerItemType(
     linkId: String,
     questionnaireItemType: Questionnaire.QuestionnaireItemType,
-    value: Type
+    value: Type,
   ) {
     val answerType = value.fhirType()
     when (questionnaireItemType) {
@@ -322,7 +322,7 @@ object QuestionnaireResponseValidator {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }
       Questionnaire.QuestionnaireItemType.CHOICE,
-      Questionnaire.QuestionnaireItemType.OPENCHOICE ->
+      Questionnaire.QuestionnaireItemType.OPENCHOICE, ->
         require(answerType == "Coding" || answerType == "string") {
           "Mismatching question type $questionnaireItemType and answer type $answerType for $linkId"
         }

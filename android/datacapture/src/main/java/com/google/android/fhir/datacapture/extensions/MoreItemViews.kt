@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,14 +53,15 @@ fun getRequiredOrOptionalText(questionnaireViewItem: QuestionnaireViewItem, cont
 fun getValidationErrorMessage(
   context: Context,
   questionnaireViewItem: QuestionnaireViewItem,
-  validationResult: ValidationResult
+  validationResult: ValidationResult,
 ): String? {
   return when (validationResult) {
     is NotValidated,
-    Valid -> null
+    Valid, -> null
     is Invalid -> {
       val validationMessage = validationResult.getSingleStringValidationMessage()
-      if (questionnaireViewItem.questionnaireItem.required &&
+      if (
+        questionnaireViewItem.questionnaireItem.required &&
           questionnaireViewItem.questionViewTextConfiguration.showRequiredText
       ) {
         context.getString(R.string.required_text_and_new_line) + validationMessage

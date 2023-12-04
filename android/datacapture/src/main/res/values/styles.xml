@@ -126,6 +126,10 @@
         >@style/Questionnaire.SubmitButtonStyle
         </item>
         <item
+            name="questionnaireCancelButtonStyle"
+        >@style/Questionnaire.CancelButtonStyle
+        </item>
+        <item
             name="questionnaireEditButtonStyle"
         >@style/Questionnaire.EditButtonStyle
         </item>
@@ -208,16 +212,16 @@
         <item name="android:layout_gravity">center</item>
         <item
             name="android:layout_marginTop"
-            >@dimen/item_media_image_margin_vertical</item>
+        >@dimen/item_media_image_margin_vertical</item>
         <item
             name="android:layout_marginBottom"
-            >@dimen/item_media_image_margin_vertical</item>
+        >@dimen/item_media_image_margin_vertical</item>
         <item
             name="android:layout_marginStart"
-            >@dimen/item_media_image_margin_horizontal</item>
+        >@dimen/item_media_image_margin_horizontal</item>
         <item
             name="android:layout_marginEnd"
-            >@dimen/item_media_image_margin_horizontal</item>
+        >@dimen/item_media_image_margin_horizontal</item>
 
     </style>
 
@@ -372,12 +376,12 @@
         >@dimen/option_item_after_text_padding</item>
     </style>
 
-    <style
+  <style
         name="Questionnaire.HelpIconStyle"
         parent="Widget.MaterialComponents.Button.TextButton.Icon"
-        >
-        <item name="android:padding">@dimen/help_icon_padding</item>
-    </style>
+    >
+    <item name="android:padding">@dimen/help_icon_padding</item>
+  </style>
 
     <style
         name="Questionnaire.EditButtonStyle"
@@ -391,7 +395,13 @@
         name="Questionnaire.SubmitButtonStyle"
         parent="Widget.Material3.Button"
     >
-        <item name="android:text">@string/submit_questionnaire</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:visibility">visible</item>
+    </style>
+    <style
+        name="Questionnaire.CancelButtonStyle"
+        parent="Widget.Material3.Button.OutlinedButton"
+    >
         <item name="android:textAllCaps">false</item>
         <item name="android:visibility">visible</item>
     </style>
@@ -464,5 +474,4 @@
             name="android:paddingLeft"
         >@dimen/attachment_action_button_padding_horizontal</item>
     </style>
-
 </resources>
