@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
-import org.smartregister.fhircore.engine.rulesengine.services.PractitionerKey
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
@@ -309,8 +308,8 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    fun extractSharedPrefValues(practitionerKey: String): String? {
-      val key = PractitionerKey.valueOf(practitionerKey)
+    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
+      val key = SharedPreferenceKey.valueOf(practitionerKey)
       try {
         return when (key) {
           PractitionerKey.PRACTITIONER_ID ->

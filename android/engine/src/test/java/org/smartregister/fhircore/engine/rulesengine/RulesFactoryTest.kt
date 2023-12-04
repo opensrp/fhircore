@@ -854,13 +854,11 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore
   fun testExtractSharedPrefValuesReturnsPractitionerId() {
     val sharedPreferenceKey = "PRACTITIONER_ID"
+    val expectedValue = "1234"
     val result =
-      rulesEngineService.extractSharedPrefValues(
-        sharedPreferenceKey,
-      )
+      rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
     Assert.assertNotNull(
       configurationRegistry.sharedPreferencesHelper.read(
         SharedPreferenceKey.PRACTITIONER_DETAILS.name
