@@ -51,7 +51,6 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.format.DateTimeFormatter
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
@@ -62,7 +61,6 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -857,12 +855,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun testExtractSharedPrefValuesReturnsPractitionerId() {
     val sharedPreferenceKey = "PRACTITIONER_ID"
     val expectedValue = "1234"
-    val result =
-      rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
-    Assert.assertNotNull(
-      configurationRegistry.sharedPreferencesHelper.read(
-        SharedPreferenceKey.PRACTITIONER_DETAILS.name
-      ),
-    )
+    every { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") } returns
+      expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
   }
 }

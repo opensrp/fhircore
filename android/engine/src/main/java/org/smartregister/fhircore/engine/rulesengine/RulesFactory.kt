@@ -25,11 +25,11 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import org.apache.commons.lang3.NotImplementedException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -312,22 +312,27 @@ constructor(
       val key = SharedPreferenceKey.valueOf(practitionerKey)
       try {
         return when (key) {
-          PractitionerKey.PRACTITIONER_ID ->
+          SharedPreferenceKey.PRACTITIONER_ID ->
             configurationRegistry.sharedPreferencesHelper.read(
               SharedPreferenceKey.PRACTITIONER_ID.name,
+              "",
             )
-          PractitionerKey.PRACTITIONER_CARETEAM ->
+          SharedPreferenceKey.CARE_TEAM ->
             configurationRegistry.sharedPreferencesHelper.read(
-              ResourceType.CareTeam.name,
+              SharedPreferenceKey.CARE_TEAM.name,
+              "",
             )
-          PractitionerKey.PRACTITIONER_ORGANIZATION ->
+          SharedPreferenceKey.ORGANIZATION ->
             configurationRegistry.sharedPreferencesHelper.read(
-              ResourceType.Organization.name,
+              SharedPreferenceKey.ORGANIZATION.name,
+              "",
             )
-          PractitionerKey.PRACTITIONER_LOCATION ->
+          SharedPreferenceKey.PRACTITIONER_LOCATION ->
             configurationRegistry.sharedPreferencesHelper.read(
-              ResourceType.Location.name,
+              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+              "",
             )
+          else -> throw NotImplementedException("Provided key doesn't exist in shared preferences")
         }
       } catch (exception: Exception) {
         if (exception is IllegalArgumentException) {
