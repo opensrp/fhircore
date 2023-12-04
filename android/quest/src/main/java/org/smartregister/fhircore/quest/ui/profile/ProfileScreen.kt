@@ -94,7 +94,7 @@ fun ProfileScreen(
   LaunchedEffect(Unit) {
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
-
+  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
@@ -118,7 +118,6 @@ fun ProfileScreen(
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.profileConfiguration?.fabActions
 
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
@@ -154,7 +153,7 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary,
         )
       }
-      LazyColumn(state = lazyListState) {
+      LazyColumn(state = lazyListState, modifier = Modifier.padding(bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp)) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
