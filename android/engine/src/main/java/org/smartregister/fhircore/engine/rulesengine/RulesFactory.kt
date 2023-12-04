@@ -25,7 +25,6 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
-import org.apache.commons.lang3.NotImplementedException
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
@@ -332,7 +331,7 @@ constructor(
               SharedPreferenceKey.PRACTITIONER_LOCATION.name,
               "",
             )
-          else -> throw NotImplementedException("Provided key doesn't exist in shared preferences")
+          else -> ""
         }
       } catch (exception: Exception) {
         if (exception is IllegalArgumentException) {
