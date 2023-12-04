@@ -60,9 +60,7 @@ fun List<ActionConfig>.handleClickEvent(
     when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
-          Log.d("FIKRIbef", questionnaireConfig.type)
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
-          Log.d("FIKRIaf", questionnaireConfigInterpolated.type)
 
           // Questionnaire is NOT launched via navigation component. It is started for result.
           if (navController.context is QuestionnaireHandler) {
