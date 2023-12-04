@@ -489,7 +489,28 @@
                 "name": "practitionerId",
                 "condition": "true",
                 "actions": [
-                  "data.put('practitionerId',service.extractSharedPrefValues('PRACTITIONER_ID'))"
+                  "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
+                ]
+              },
+              {
+                "name": "careTeam",
+                "condition": "true",
+                "actions": [
+                  "data.put('careTeam',service.extractPractitionerInfoFromSharedPrefs('CARE_TEAM'))"
+                ]
+              },
+              {
+                "name": "organization",
+                "condition": "true",
+                "actions": [
+                  "data.put('organization',service.extractPractitionerInfoFromSharedPrefs('ORGANIZATION'))"
+                ]
+              },
+              {
+                "name": "practitionerLocation",
+                "condition": "true",
+                "actions": [
+                  "data.put('practitionerLocation',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_LOCATION'))"
                 ]
               }
             ],
