@@ -27,7 +27,9 @@ import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.util.Locale
+import java.util.zip.ZipException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -210,7 +212,8 @@ constructor(
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
         val timestamp = today().formatDate("yyyyMMdd-HHmmss")
-        var backupPath = File(downloadsDir, "${applicationConfiguration.appTitle.replace(" ", "_")}_$timestamp.db")
+        var backupPath =
+          File(downloadsDir, "${applicationConfiguration.appTitle.replace(" ", "_")}_$timestamp.db")
 
         decryptDb(appDbPath, backupPath, passphrase)
         zipPlaintextDb(backupPath, "password")
@@ -265,13 +268,21 @@ constructor(
     zipParameters.encryptionMethod = EncryptionMethod.AES
 
     val zipFile = ZipFile("${plaintextDbFile.absolutePath}.zip", password.toCharArray())
-    zipFile.addFile(plaintextDbFile, zipParameters)
-
-    if (!plaintextDbFile.delete()) {
-      Timber.e("Failed to delete plaintext database file");
+    try {
+      zipFile.addFile(plaintextDbFile, zipParameters)
+    } catch (e: ZipException) {
+      Timber.e(e, "Failed to add file to zip")
     }
-    if (File("${plaintextDbFile.absolutePath}-journal").delete()) {
-      Timber.e("Failed to delete plaintext database journal file");
+
+    try {
+      if (!plaintextDbFile.delete()) {
+        Timber.e("Failed to delete plaintext database file")
+      }
+      if (File("${plaintextDbFile.absolutePath}-journal").delete()) {
+        Timber.e("Failed to delete plaintext database journal file")
+      }
+    } catch (e: IOException) {
+      Timber.e(e)
     }
   }
 }
