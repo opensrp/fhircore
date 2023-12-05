@@ -28,4 +28,5 @@ sealed class UserSettingsEvent {
   data class ShowLoaderView(val show: Boolean, val messageResourceId: Int) : UserSettingsEvent()
   data class SyncData(val context: Context) : UserSettingsEvent()
   data class ShowInsightsView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
+  data class ExportDB(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 }

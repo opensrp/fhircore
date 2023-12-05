@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Insights
+import androidx.compose.material.icons.rounded.IosShare
 import androidx.compose.material.icons.rounded.Logout
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Sync
@@ -281,6 +282,14 @@ fun UserSettingScreen(
         clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
         modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
         showProgressIndicator = showProgressIndicatorFlow.collectAsState().value
+      )
+
+      UserSettingRow(
+        icon = Icons.Rounded.IosShare,
+        text = stringResource(id = R.string.export_db),
+        clickListener = { onEvent(UserSettingsEvent.ExportDB(true, context)) },
+        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
       )
 
       UserSettingRow(

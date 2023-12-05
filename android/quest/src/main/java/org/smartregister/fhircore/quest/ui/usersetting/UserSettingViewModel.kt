@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
+import android.os.Environment
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,12 +25,20 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
+import java.io.FileNotFoundException
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.lingala.zip4j.ZipFile
+import net.lingala.zip4j.model.ZipParameters
+import net.lingala.zip4j.model.enums.CompressionLevel
+import net.lingala.zip4j.model.enums.EncryptionMethod
+import net.sqlcipher.database.SQLiteDatabase
+import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -40,6 +49,7 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -47,10 +57,13 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import org.smartregister.fhircore.quest.util.DBEncryptionProvider
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 @HiltViewModel
 class UserSettingViewModel
@@ -123,6 +136,11 @@ constructor(
         updateProgressBarState(event.show, event.messageResourceId)
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
       is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
+      is UserSettingsEvent.ExportDB -> {
+        updateProgressBarState(true, R.string.exporting_db)
+        copyDatabase(event.context)
+        updateProgressBarState(false, R.string.exporting_db)
+      }
     }
   }
 
@@ -178,5 +196,82 @@ constructor(
 
   fun dismissInsightsView() {
     viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
+  }
+
+  private fun copyDatabase(context: Context) {
+    viewModelScope.launch {
+      try {
+        val passphrase = DBEncryptionProvider.getOrCreatePassphrase("fhirEngineDbPassphrase")
+
+        var dbFileName = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
+        val appDbPath = File("/data/data/${context.packageName}/databases/$dbFileName.db")
+
+        val downloadsDir =
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+
+        val timestamp = today().formatDate("yyyyMMdd-HHmmss")
+        var backupPath = File(downloadsDir, "${applicationConfiguration.appTitle.replace(" ", "_")}_$timestamp.db")
+
+        decryptDb(appDbPath, backupPath, passphrase)
+        zipPlaintextDb(backupPath, "password")
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to copy application's database")
+      }
+    }
+  }
+
+  private fun decryptDb(databaseFile: File, backupFile: File, passphrase: ByteArray?) {
+    if (databaseFile.exists()) {
+      val encryptedDb =
+        SQLiteDatabase.openDatabase(databaseFile.absolutePath, passphrase, null, 0, null, null)
+
+      android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(
+          backupFile.absolutePath,
+          null,
+          null
+        )
+        .close() // create an empty database
+
+      val statement = encryptedDb.compileStatement("ATTACH DATABASE ? AS plaintext KEY ''")
+
+      statement.bindString(1, backupFile.absolutePath)
+      statement.execute()
+      encryptedDb.rawExecSQL("SELECT sqlcipher_export('plaintext')")
+      encryptedDb.rawExecSQL("DETACH DATABASE plaintext")
+
+      val version = encryptedDb.version
+
+      statement.close()
+      encryptedDb.close()
+
+      val plaintTextDb =
+        android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(
+          backupFile.absolutePath,
+          null,
+          null
+        )
+
+      plaintTextDb.version = version
+      plaintTextDb.close()
+    } else {
+      throw FileNotFoundException(databaseFile.absolutePath + " not found")
+    }
+  }
+
+  private fun zipPlaintextDb(plaintextDbFile: File, password: String) {
+    val zipParameters = ZipParameters()
+    zipParameters.isEncryptFiles = true
+    zipParameters.compressionLevel = CompressionLevel.HIGHER
+    zipParameters.encryptionMethod = EncryptionMethod.AES
+
+    val zipFile = ZipFile("${plaintextDbFile.absolutePath}.zip", password.toCharArray())
+    zipFile.addFile(plaintextDbFile, zipParameters)
+
+    if (!plaintextDbFile.delete()) {
+      Timber.e("Failed to delete plaintext database file");
+    }
+    if (File("${plaintextDbFile.absolutePath}-journal").delete()) {
+      Timber.e("Failed to delete plaintext database journal file");
+    }
   }
 }
