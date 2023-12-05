@@ -76,7 +76,7 @@ priority | Specifies the priority of the component. The priority value determine
 
 ## Using the `generateTaskServiceStatus()` rule
 
-This rule is used within the ruels engine or workflow to generate the correct service status when given the `Task.status` . Only one parameter is passed of the type `TaskStatus`. Below is an example:
+This rule is used within the rules engine or workflow to generate the correct service status when given the `Task.status` . Only one parameter is passed of the type `TaskStatus`. Below is an example:
 
 ```
 
@@ -89,3 +89,21 @@ This rule is used within the ruels engine or workflow to generate the correct se
       ]
     }
 ```
+
+## Using the `extractPractitionerInfoFromSharedPrefs()` rule
+
+This rule is used within the rules engine or workflow to extract `PractitionerId`, `PractitionerCareTeam`, `PractitionerOrganization` and `PractitionerLocation` from `Shared Preference`.
+
+```
+
+...
+    {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+         "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
+      ]
+    }
+```
+
+
