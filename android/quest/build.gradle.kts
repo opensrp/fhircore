@@ -1,4 +1,5 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import java.io.FileReader
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
@@ -51,6 +52,11 @@ sonar {
 
 android {
   compileSdk = 34
+
+  val isUsingNonProxy: String? =
+    System.getenv("isUsingNonProxy")
+      ?: gradleLocalProperties(rootDir).getProperty("isUsingNonProxy")
+  testBuildType = if (isUsingNonProxy == "true") "debugNonProxy" else testBuildType
 
   defaultConfig {
     applicationId = "org.smartregister.opensrp"

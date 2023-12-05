@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 buildscript {
@@ -18,6 +19,11 @@ plugins {
 
 android {
   compileSdk = 34
+
+  val isUsingNonProxy: String? =
+    System.getenv("isUsingNonProxy")
+      ?: gradleLocalProperties(rootDir).getProperty("isUsingNonProxy")
+  testBuildType = if (isUsingNonProxy == "true") "debugNonProxy" else testBuildType
 
   defaultConfig {
     minSdk = 26
