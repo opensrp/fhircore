@@ -723,11 +723,7 @@ class RulesFactoryTest : RobolectricTest() {
   fun evaluateToBooleanDefaultMatchAllIsFalse() {
     val fhirPathExpression = "Patient.active"
     val patients =
-      mutableListOf(
-        Patient().setActive(true),
-        Patient().setActive(true),
-        Patient().setActive(true),
-      )
+      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
 
     Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
   }
