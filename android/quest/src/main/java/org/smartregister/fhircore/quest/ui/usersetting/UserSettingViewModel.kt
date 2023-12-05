@@ -144,7 +144,7 @@ constructor(
       is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
       is UserSettingsEvent.ExportDB -> {
         // updateProgressBarState(true, R.string.exporting_db)
-        Toast.makeText(event.context, R.string.exporting_db, Toast.LENGTH_SHORT).show();
+        Toast.makeText(event.context, R.string.exporting_db, Toast.LENGTH_SHORT).show()
 
         copyDatabase(event.context)
       }
@@ -246,7 +246,7 @@ constructor(
       }
 
       // updateProgressBarState(false, R.string.exporting_db)
-      Toast.makeText(context, R.string.exporting_db_complete, Toast.LENGTH_SHORT).show();
+      Toast.makeText(context, R.string.exporting_db_complete, Toast.LENGTH_SHORT).show()
     }
   }
 
