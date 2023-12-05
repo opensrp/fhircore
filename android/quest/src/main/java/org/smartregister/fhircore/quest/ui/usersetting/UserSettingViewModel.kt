@@ -228,11 +228,7 @@ constructor(
         val backupPath = File(downloadsDir, backupFilename)
 
         if (BuildConfig.DEBUG && downloadsDir.canWrite() && appDbPath.exists()) {
-          val src = FileInputStream(appDbPath).channel
-          val dst = FileOutputStream(backupPath).channel
-          dst.transferFrom(src, 0, src.size())
-          src.close()
-          dst.close()
+          copyUnencryptedDb(appDbPath, backupPath)
         } else {
           decryptDb(appDbPath, backupPath, passphrase)
         }
@@ -251,6 +247,14 @@ constructor(
         onCopyCompleteListener.invoke()
       }
     }
+  }
+
+  private fun copyUnencryptedDb(appDbFile: File, backupFile: File) {
+    val src = FileInputStream(appDbFile).channel
+    val dst = FileOutputStream(backupFile).channel
+    dst.transferFrom(src, 0, src.size())
+    src.close()
+    dst.close()
   }
 
   private fun decryptDb(databaseFile: File, backupFile: File, passphrase: ByteArray?) {
