@@ -26,6 +26,7 @@
       "title" : "Administer Medication 1",
       "prefix": "1",
       "priority": "routine",
+      "kind" : "Task",
       "dynamicValue": [
         {
           "path": "title",
@@ -42,34 +43,6 @@
           }
         },
         {
-          "path": "instantiatesCanonical",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
-          }
-        },
-        {
-          "path": "status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'active'"
-          }
-        },
-        {
-          "path": "intent",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'plan'"
-          }
-        },
-        {
-          "path": "created",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "now()"
-          }
-        },
-        {
           "path": "subject",
           "expression": {
             "language": "text/fhirpath",
@@ -80,7 +53,7 @@
           "path": "author",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
+            "expression": "%subject.generalPractitioner.first()"
           }
         },
         {
@@ -98,31 +71,17 @@
           }
         },
         {
-          "path": "activity.detail.kind",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'Task'"
-          }
-        },
-        {
-          "path": "activity.detail.status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'in-progress'"
-          }
-        },
-        {
-          "path": "activity.detail.description",
+          "path": "%action.description",
           "expression": {
             "language": "text/fhirpath",
             "expression": "'This action will assess careplan on registration to init careplan'"
           }
         },
         {
-          "path": "activity.detail.performer",
+          "path": "%action.performer",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
+            "expression": "%subject.generalPractitioner.first()"
           }
         }
       ]
