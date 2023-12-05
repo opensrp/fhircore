@@ -287,7 +287,9 @@ constructor(
         Timber.e("Failed to delete plaintext database journal file")
       }
     } catch (e: IOException) {
-      Timber.e(e)
+      Timber.e(e, "File could not be deleted")
+    } catch (e: SecurityException) {
+      Timber.e(e, "No permissions to delete file")
     }
   }
 }
