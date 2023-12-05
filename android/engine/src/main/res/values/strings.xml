@@ -150,7 +150,6 @@
     <string name="insights">Insights</string>
     <string name="export_db" translatable="false">Export DB</string>
     <string name="exporting_db" translatable="false">Exporting DB...</string>
-    <string name="exporting_db_complete" translatable="false">Completed exporting DB</string>
     <string name="dismiss">Dismiss</string>
     <string name="unsynced_resources">Unsynced Resources</string>
     <string name="all_data_synced">All data synced</string>
