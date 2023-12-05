@@ -232,7 +232,14 @@ constructor(
         var backupPath = File(downloadsDir, backupFilename)
 
         decryptDb(appDbPath, backupPath, passphrase)
-        zipPlaintextDb(backupPath, String.format("%s:%s", username, practitionerId))
+        zipPlaintextDb(
+          backupPath,
+          String.format(
+            "%s_%s",
+            username,
+            practitionerId!!.substring(0, practitionerId!!.indexOf("-"))
+          )
+        )
       } catch (e: Exception) {
         Timber.e(e, "Failed to copy application's database")
       }
