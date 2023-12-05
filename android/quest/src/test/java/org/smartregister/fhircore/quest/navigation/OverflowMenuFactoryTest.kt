@@ -81,6 +81,23 @@ class OverflowMenuFactoryTest : RobolectricTest() {
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
     Assert.assertNotNull(uiProfilePatient)
     Assert.assertEquals(5, uiProfilePatient.size)
+
+    val uiProfileSiblingContact =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SEXUAL_CONTACT_PROFILE)
+    Assert.assertNotNull(uiProfileSiblingContact)
+    Assert.assertEquals(5, uiProfileSiblingContact.size)
+
+    val uiProfileSocialNetworkContact =
+      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.SOCIAL_NETWORK_CONTACT_PROFILE)
+    Assert.assertNotNull(uiProfileSocialNetworkContact)
+    Assert.assertEquals(5, uiProfileSocialNetworkContact.size)
+
+    val uiProfileBiologicalParentContact =
+      overflowMenuFactory.retrieveOverflowMenuItems(
+        OverflowMenuHost.BIOLOGICAL_PARENT_CONTACT_PROFILE
+      )
+    Assert.assertNotNull(uiProfileBiologicalParentContact)
+    Assert.assertEquals(5, uiProfileBiologicalParentContact.size)
   }
 
   @Test

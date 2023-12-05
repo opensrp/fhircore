@@ -31,6 +31,15 @@ enum class HealthStatus(var display: String = "") {
   CHILD_CONTACT {
     override fun priority(): StatusPriority = 3
   },
+  SIBLING_CONTACT {
+    override fun priority(): StatusPriority = 3
+  },
+  SOCIAL_NETWORK_CONTACT {
+    override fun priority(): StatusPriority = 3
+  },
+  BIOLOGICAL_PARENT_CONTACT {
+    override fun priority(): StatusPriority = 3
+  },
   SEXUAL_CONTACT {
     override fun priority(): StatusPriority = 3
   },
