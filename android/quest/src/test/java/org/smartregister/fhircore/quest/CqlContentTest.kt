@@ -50,6 +50,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -72,6 +73,8 @@ class CqlContentTest : RobolectricTest() {
 
   @Inject lateinit var fhirOperator: FhirOperator
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -79,7 +82,7 @@ class CqlContentTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = configService,

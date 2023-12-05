@@ -73,6 +73,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (!::questionnaireConfig.isInitialized) {
       showToast(getString(R.string.missing_questionnaire_config))
       finish()
+      return
     }
 
     viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
@@ -86,7 +87,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
             is QuestionnaireProgressState.QuestionnaireLaunch ->
               AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
-            null -> null
+            else -> null
           }
         }
     }
