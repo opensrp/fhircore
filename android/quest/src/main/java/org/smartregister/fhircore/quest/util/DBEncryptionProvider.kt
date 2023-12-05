@@ -33,8 +33,8 @@ import javax.crypto.Mac
 import javax.crypto.SecretKey
 
 /**
- * TODO: This was copied from the SDK since the SDK class is internal.
- * Need to have the functionality exposed from the SDK to avoid the duplication
+ * TODO: This was copied from the SDK since the SDK class is internal. Need to have the
+ * functionality exposed from the SDK to avoid the duplication
  */
 object DBEncryptionProvider {
   private const val ANDROID_KEYSTORE_NAME = "AndroidKeyStore"

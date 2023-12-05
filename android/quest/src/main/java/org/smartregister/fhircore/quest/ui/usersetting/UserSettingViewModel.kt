@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
+import android.content.Intent
 import android.os.Environment
 import android.widget.Toast
+import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -206,8 +208,8 @@ constructor(
       try {
         val passphrase = DBEncryptionProvider.getPassphrase("fhirEngineDbPassphrase")
 
-        val dbFileName = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
-        val appDbPath = File("/data/data/${context.packageName}/databases/$dbFileName.db")
+        val dbFilename = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
+        val appDbPath = File("/data/data/${context.packageName}/databases/$dbFilename.db")
 
         val downloadsDir =
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -233,14 +235,17 @@ constructor(
           decryptDb(appDbPath, backupPath, passphrase)
         }
 
-        zipPlaintextDb(
-          backupPath,
-          String.format(
-            "%s_%s",
-            username,
-            practitionerId!!.substring(0, practitionerId!!.indexOf("-"))
+        val zipFile =
+          zipPlaintextDb(
+            backupPath,
+            String.format(
+              "%s_%s",
+              username,
+              practitionerId!!.substring(0, practitionerId!!.indexOf("-"))
+            )
           )
-        )
+
+        if (zipFile != null) shareFile(context, zipFile)
       } catch (e: Exception) {
         Timber.e(e, "Failed to copy application's database")
       } finally {
@@ -295,30 +300,50 @@ constructor(
     }
   }
 
-  private fun zipPlaintextDb(plaintextDbFile: File, password: String) {
+  private fun zipPlaintextDb(plaintextDbFile: File, password: String): File? {
     val zipParameters = ZipParameters()
     zipParameters.isEncryptFiles = true
     zipParameters.compressionLevel = CompressionLevel.HIGHER
     zipParameters.encryptionMethod = EncryptionMethod.AES
 
-    val zipFile = ZipFile("${plaintextDbFile.absolutePath}.zip", password.toCharArray())
+    val zipFilename = "${plaintextDbFile.absolutePath}.zip"
+    val zipFile = ZipFile(zipFilename, password.toCharArray())
     try {
       zipFile.addFile(plaintextDbFile, zipParameters)
     } catch (e: ZipException) {
       Timber.e(e, "Failed to add file to zip")
+      return null
     }
 
     try {
       if (!plaintextDbFile.delete()) {
         Timber.e("Failed to delete plaintext database file")
       }
-      if (File("${plaintextDbFile.absolutePath}-journal").delete()) {
+      if (!File("${plaintextDbFile.absolutePath}-journal").delete()) {
         Timber.e("Failed to delete plaintext database journal file")
       }
     } catch (e: IOException) {
       Timber.e(e, "File could not be deleted")
     } catch (e: SecurityException) {
       Timber.e(e, "No permissions to delete file")
+    }
+
+    return File(zipFilename)
+  }
+
+  private fun shareFile(context: Context, file: File) {
+    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+
+    val shareIntent = Intent(Intent.ACTION_SEND)
+    shareIntent.type = "text/plain"
+    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
+    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+    val chooser =
+      Intent.createChooser(shareIntent, "Share ${applicationConfiguration.appTitle} Database")
+
+    if (shareIntent.resolveActivity(context.packageManager) != null) {
+      context.startActivity(chooser)
     }
   }
 }
