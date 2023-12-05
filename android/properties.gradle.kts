@@ -26,12 +26,19 @@ val requiredFhirProperties =
     "OAUTH_CLIENT_ID",
     "OAUTH_SCOPE",
     "MAPBOX_SDK_TOKEN",
-    "SENTRY_DSN"
+    "SENTRY_DSN",
+    "OPENSRP_APP_ID"
   )
 
 val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "local.properties").toString())
+
 requiredFhirProperties.forEach { property ->
-  project.extra.set(property, localProperties.getProperty(property,if(property.contains("URL")) "https://sample.url/fhir/" else "sample_" + property))
+  project.extra.set(property, localProperties.getProperty(property, when {
+    property.contains("URL") -> "https://sample.url/fhir/"
+    property.equals("OPENSRP_APP_ID") -> """"""""
+    else -> "sample_" + property
+  }
+  ))
 }
 
 // Set required keystore properties
