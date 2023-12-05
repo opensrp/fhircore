@@ -204,7 +204,7 @@ constructor(
   private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
     viewModelScope.launch(dispatcherProvider.io()) {
       try {
-        val passphrase = DBEncryptionProvider.getOrCreatePassphrase("fhirEngineDbPassphrase")
+        val passphrase = DBEncryptionProvider.getPassphrase("fhirEngineDbPassphrase")
 
         val dbFileName = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
         val appDbPath = File("/data/data/${context.packageName}/databases/$dbFileName.db")

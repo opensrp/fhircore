@@ -20,9 +20,7 @@ import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties.KEY_ALGORITHM_HMAC_SHA256
 import android.security.keystore.KeyProperties.PURPOSE_SIGN
-import android.util.ArrayMap
 import androidx.annotation.RequiresApi
-import androidx.annotation.VisibleForTesting
 import com.google.android.fhir.db.DatabaseEncryptionException
 import com.google.android.fhir.db.DatabaseEncryptionException.DatabaseEncryptionErrorCode.UNSUPPORTED
 import com.google.android.fhir.db.databaseEncryptionException
@@ -34,21 +32,18 @@ import javax.crypto.KeyGenerator
 import javax.crypto.Mac
 import javax.crypto.SecretKey
 
-/** A singleton object for generating or getting previously generated storage keys. */
+/**
+ * TODO: This was copied from the SDK since the SDK class is internal.
+ * Need to have the functionality exposed from the SDK to avoid the duplication
+ */
 object DBEncryptionProvider {
-  private val keyMap = ArrayMap<String, ByteArray>()
-  /** Returns a previous generated storage passphrase with name [keyName]. */
+  private const val ANDROID_KEYSTORE_NAME = "AndroidKeyStore"
+
+  private const val MESSAGE_TO_BE_SIGNED = "Android FHIR SDK rocks!"
+
   @Synchronized
   @RequiresApi(Build.VERSION_CODES.M)
-  fun getOrCreatePassphrase(keyName: String): ByteArray {
-    if (!isDatabaseEncryptionSupported()) {
-      throw UnsupportedOperationException("Database encryption is not supported on this device.")
-    }
-
-    keyMap[keyName]?.let {
-      return it
-    }
-
+  fun getPassphrase(keyName: String): ByteArray {
     val keyStore =
       try {
         KeyStore.getInstance(ANDROID_KEYSTORE_NAME)
@@ -74,31 +69,9 @@ object DBEncryptionProvider {
             keyGenerator.generateKey()
           }
       hmac.init(signingKey)
-      val key = hmac.doFinal(MESSAGE_TO_BE_SIGNED.toByteArray(StandardCharsets.UTF_8))
-      keyMap[keyName] = key
-      return key
+      return hmac.doFinal(MESSAGE_TO_BE_SIGNED.toByteArray(StandardCharsets.UTF_8))
     } catch (exception: KeyStoreException) {
       throw exception.databaseEncryptionException
     }
   }
-
-  fun isDatabaseEncryptionSupported() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-
-  @VisibleForTesting
-  fun clearKeyCache() {
-    keyMap.clear()
-  }
-
-  /**
-   * The name of Android Keystore provider which manages our keys for deriving our database
-   * encryption secret.
-   */
-  @VisibleForTesting const val ANDROID_KEYSTORE_NAME = "AndroidKeyStore"
-  /**
-   * A message used to derive the database encryption key.
-   *
-   * The content of the message doesn't matter. However, once it is selected, we must not change it
-   * unless we introduce a mechanism to change the database encryption key.
-   */
-  private const val MESSAGE_TO_BE_SIGNED = "Android FHIR SDK rocks!"
 }
