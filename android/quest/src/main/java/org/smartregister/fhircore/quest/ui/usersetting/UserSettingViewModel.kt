@@ -216,12 +216,23 @@ constructor(
         val downloadsDir =
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
 
+        val username = secureSharedPreference.retrieveSessionUsername()
+        val practitionerId =
+          sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
+
         val timestamp = today().formatDate("yyyyMMdd-HHmmss")
-        var backupPath =
-          File(downloadsDir, "${applicationConfiguration.appTitle.replace(" ", "_")}_$timestamp.db")
+        var backupFilename =
+          String.format(
+            "%s_%s_%s_%s.db",
+            applicationConfiguration.appTitle.replace(" ", "_"),
+            username,
+            practitionerId,
+            timestamp
+          )
+        var backupPath = File(downloadsDir, backupFilename)
 
         decryptDb(appDbPath, backupPath, passphrase)
-        zipPlaintextDb(backupPath, "password")
+        zipPlaintextDb(backupPath, String.format("%s:%s", username, practitionerId))
       } catch (e: Exception) {
         Timber.e(e, "Failed to copy application's database")
       }
