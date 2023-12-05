@@ -39,12 +39,10 @@ fun MeasureReportMainScreen(
   practitionerId: String,
   mainNavController: NavController,
   measureReportViewModel: MeasureReportViewModel,
-  profileViewModel: ProfileViewModel,
 ) {
   // Use a different navController internally for navigating Report Composable screens
   val navController = rememberNavController()
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
-  val profileUiState = profileViewModel.profileUiState.value
 
   NavHost(
     navController = navController,
@@ -65,7 +63,6 @@ fun MeasureReportMainScreen(
           )
         },
         showProgressIndicator = uiState.showProgressIndicator,
-        profileUiState = profileUiState,
       )
     }
     // Page for selecting report date

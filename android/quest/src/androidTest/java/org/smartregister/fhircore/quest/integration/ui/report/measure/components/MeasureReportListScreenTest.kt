@@ -21,8 +21,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.NavController
+import androidx.navigation.testing.TestNavHostController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
@@ -34,19 +36,7 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_
 class MeasureReportListScreenTest {
 
   @get:Rule(order = 0) val composeTestRule = createComposeRule()
-  private val navController: NavController = mockk(relaxUnitFun = true)
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  val profileUiState =
-    ProfileUiState(
-      resourceData =
-        ResourceData(
-          baseResourceId = "patientId",
-          baseResourceType = ResourceType.Patient,
-          computedValuesMap = emptyMap(),
-        ),
-      profileConfiguration =
-        configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
-    )
+  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val dataList =
     Pager(PagingConfig(10)) {
         MeasureReportPagingSource(
@@ -64,7 +54,6 @@ class MeasureReportListScreenTest {
       MeasureReportListScreen(
         navController = navController,
         dataList = dataList,
-        profileUiState = profileUiState,
         onReportMeasureClicked = {},
       )
     }
@@ -78,7 +67,6 @@ class MeasureReportListScreenTest {
       MeasureReportListScreen(
         navController = navController,
         dataList = dataList,
-        profileUiState = profileUiState,
         onReportMeasureClicked = {},
         showProgressIndicator = true,
       )

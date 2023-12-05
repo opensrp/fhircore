@@ -60,9 +60,7 @@ fun RegisterFooter(
         modifier
           .fillMaxWidth()
           .testTag(SEARCH_FOOTER_TAG)
-          .padding(
-            bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp
-          )
+          .padding(bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp)
     ) {
       Box(
         modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),

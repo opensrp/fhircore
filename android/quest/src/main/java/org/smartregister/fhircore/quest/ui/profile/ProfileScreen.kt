@@ -154,10 +154,7 @@ fun ProfileScreen(
       }
       LazyColumn(
         state = lazyListState,
-        modifier =
-          Modifier.padding(
-            bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp
-          )
+        modifier = Modifier.padding(bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp)
       ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(

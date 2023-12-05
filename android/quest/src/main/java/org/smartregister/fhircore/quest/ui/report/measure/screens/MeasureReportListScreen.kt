@@ -56,11 +56,9 @@ fun MeasureReportListScreen(
   dataList: Flow<PagingData<ReportConfiguration>>,
   onReportMeasureClicked: (List<ReportConfiguration>) -> Unit,
   modifier: Modifier = Modifier,
-  profileUiState: ProfileUiState,
   showProgressIndicator: Boolean = false,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
-  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     topBar = {
       TopAppBar(
@@ -99,10 +97,7 @@ fun MeasureReportListScreen(
             modifier
               .background(Color.White)
               .fillMaxSize()
-              .padding(
-                bottom =
-                  if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp
-              )
+              .padding(bottom = 32.dp)
         ) {
           lazyReportItems.keys.forEach { key ->
             item {
