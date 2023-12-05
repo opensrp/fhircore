@@ -26,7 +26,9 @@ import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 import java.util.zip.ZipException
@@ -209,7 +211,7 @@ constructor(
       try {
         val passphrase = DBEncryptionProvider.getOrCreatePassphrase("fhirEngineDbPassphrase")
 
-        var dbFileName = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
+        val dbFileName = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
         val appDbPath = File("/data/data/${context.packageName}/databases/$dbFileName.db")
 
         val downloadsDir =
@@ -220,7 +222,7 @@ constructor(
           sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
 
         val timestamp = today().formatDate("yyyyMMdd-HHmmss")
-        var backupFilename =
+        val backupFilename =
           String.format(
             "%s_%s_%s_%s.db",
             applicationConfiguration.appTitle.replace(" ", "_"),
@@ -228,9 +230,18 @@ constructor(
             practitionerId,
             timestamp
           )
-        var backupPath = File(downloadsDir, backupFilename)
+        val backupPath = File(downloadsDir, backupFilename)
 
-        decryptDb(appDbPath, backupPath, passphrase)
+        if (BuildConfig.DEBUG && downloadsDir.canWrite() && appDbPath.exists()) {
+          val src = FileInputStream(appDbPath).channel
+          val dst = FileOutputStream(backupPath).channel
+          dst.transferFrom(src, 0, src.size())
+          src.close()
+          dst.close()
+        } else {
+          decryptDb(appDbPath, backupPath, passphrase)
+        }
+
         zipPlaintextDb(
           backupPath,
           String.format(
