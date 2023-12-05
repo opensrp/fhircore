@@ -35,4 +35,5 @@ sealed class UserSettingsEvent {
   data class SyncData(val context: Context) : UserSettingsEvent()
 
   data class ShowInsightsView(val isShow: Boolean, val context: Context) : UserSettingsEvent()
+  data class ExportDB(val isShow: Boolean, val context: Context) : UserSettingsEvent()
 }
