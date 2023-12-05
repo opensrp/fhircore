@@ -25,10 +25,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Decode google-services.json
         run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
@@ -65,10 +65,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Decode google-services.json
         run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json

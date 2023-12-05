@@ -138,7 +138,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         listOf(),
         workDataOf(
           "StateType" to SyncJobStatus.Started::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Started())
+          "State" to gson.toJson(SyncJobStatus.Started)
         ),
         0,
         0
@@ -151,7 +151,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         listOf(),
         workDataOf(
           "StateType" to SyncJobStatus.Finished::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Finished())
+          "State" to gson.toJson(SyncJobStatus.Finished)
         ),
         0,
         0
