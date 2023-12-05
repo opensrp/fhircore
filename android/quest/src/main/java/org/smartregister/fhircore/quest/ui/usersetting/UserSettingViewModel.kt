@@ -143,10 +143,8 @@ constructor(
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
       is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
       is UserSettingsEvent.ExportDB -> {
-        // updateProgressBarState(true, R.string.exporting_db)
-        Toast.makeText(event.context, R.string.exporting_db, Toast.LENGTH_SHORT).show()
-
-        copyDatabase(event.context)
+        updateProgressBarState(true, R.string.exporting_db)
+        copyDatabase(event.context) { updateProgressBarState(false, R.string.exporting_db) }
       }
     }
   }
@@ -206,8 +204,8 @@ constructor(
     viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
   }
 
-  private fun copyDatabase(context: Context) {
-    viewModelScope.launch {
+  private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
+    viewModelScope.launch(dispatcherProvider.io()) {
       try {
         val passphrase = DBEncryptionProvider.getOrCreatePassphrase("fhirEngineDbPassphrase")
 
@@ -243,10 +241,9 @@ constructor(
         )
       } catch (e: Exception) {
         Timber.e(e, "Failed to copy application's database")
+      } finally {
+        onCopyCompleteListener.invoke()
       }
-
-      // updateProgressBarState(false, R.string.exporting_db)
-      Toast.makeText(context, R.string.exporting_db_complete, Toast.LENGTH_SHORT).show()
     }
   }
 

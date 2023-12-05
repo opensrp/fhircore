@@ -57,6 +57,7 @@ import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -77,6 +78,8 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -107,8 +110,8 @@ fun UserSettingScreen(
   allowSwitchingLanguages: Boolean,
   selectedLanguage: String,
   languages: List<Language>,
-  showDatabaseResetConfirmation: Boolean,
-  progressBarState: Pair<Boolean, Int>,
+  showDatabaseResetConfirmationLiveData: LiveData<Boolean>,
+  progressBarStateLiveData: LiveData<Pair<Boolean, Int>>,
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
@@ -120,7 +123,9 @@ fun UserSettingScreen(
   dismissInsightsView: () -> Unit,
 ) {
   val context = LocalContext.current
-  val (showProgressBar, messageResource) = progressBarState
+  val showDatabaseResetConfirmation by showDatabaseResetConfirmationLiveData.observeAsState(false)
+  val progressState by progressBarStateLiveData.observeAsState(Pair(false, 0))
+  val (showProgressBar, messageResource) = progressState
   var expanded by remember { mutableStateOf(false) }
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   val contentColor = colorResource(id = R.color.grayText)
@@ -447,8 +452,8 @@ fun UserSettingPreview() {
     allowSwitchingLanguages = true,
     selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-    showDatabaseResetConfirmation = false,
-    progressBarState = Pair(false, R.string.resetting_app),
+    showDatabaseResetConfirmationLiveData = MutableLiveData(false),
+    progressBarStateLiveData = MutableLiveData(Pair(false, R.string.resetting_app)),
     isDebugVariant = true,
     onEvent = {},
     mainNavController = rememberNavController(),
@@ -456,7 +461,6 @@ fun UserSettingPreview() {
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
-    unsyncedResourcesFlow = MutableSharedFlow(),
-    dismissInsightsView = {},
-  )
+    unsyncedResourcesFlow = MutableSharedFlow()
+  ) {}
 }
