@@ -64,9 +64,9 @@ fun RegisterFooter(
           .testTag(SEARCH_FOOTER_TAG)
           .padding(
             bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible)
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
                 PADDING_BOTTOM_WITH_FAB.dp
-              else PADDING_BOTTOM_WITHOUT_FAB.dp,
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
           ),
     ) {
       Box(
