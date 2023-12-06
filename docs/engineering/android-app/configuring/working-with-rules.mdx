@@ -103,7 +103,40 @@ This rule is used within the rules engine or workflow to extract `PractitionerId
       "actions": [
          "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
       ]
+    },
+
+    {
+      "name": "careTeam",
+      "condition": "true",
+      "actions": [
+         "data.put('careTeam',service.extractPractitionerInfoFromSharedPrefs('CARE_TEAM'))"
+      ]
+    },
+
+    {
+      "name": "organization",
+       "condition": "true",
+       "actions": [
+          "data.put('organization',service.extractPractitionerInfoFromSharedPrefs('ORGANIZATION'))"
+      ]
+    },
+      {
+        "name": "practitionerLocation",
+        "condition": "true",
+        "actions": [
+           "data.put('practitionerLocation',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_LOCATION'))"
+      ]
     }
+
+    This is a tabular representation of the enums used to fetch each of the practitioner info.
+
+    | Practitioner Info| Enum|
+    | ---- | ---- |
+    | `PractitionerId` | PRACTITIONER_ID |
+    | `PractitionerCareTeam` | CARE_TEAM |
+    | `PractitionerOrganization` | ORGANIZATION |
+    | `PractitionerLocation` | PRACTITIONER_LOCATION |
+
 ```
 
 
