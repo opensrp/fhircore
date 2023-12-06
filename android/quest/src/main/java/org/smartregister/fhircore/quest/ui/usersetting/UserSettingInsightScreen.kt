@@ -139,57 +139,60 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        InsightInfoView(
-          title = stringResource(id = R.string.user_info),
-          headingOne = stringResource(R.string.user),
-          contentOne = fullName,
-          headingTwo = stringResource(R.string.team),
-          contentTwo = team,
-          headingThree = stringResource(R.string.locality),
-          contentThree = locality,
-          headingFour = null,
-          contentFour = null,
-        )
+
+        if(fullName!=null && team!=null && locality!=null){
+          val items = listOf(
+            stringResource(R.string.user) to fullName,
+            stringResource(R.string.team) to team,
+            stringResource(R.string.locality) to locality,
+          )
+
+          InsightInfoView(
+            title = stringResource(id = R.string.user_info),
+            items = items,
+          )
+        }
+
       }
       item {
-        InsightInfoView(
-          title = stringResource(id = R.string.app_info),
-          headingOne = stringResource(id = R.string.username),
-          contentOne = userName,
-          headingTwo = stringResource(R.string.team_organization),
-          contentTwo = organization?.take(10),
-          headingThree = stringResource(R.string.care_team),
-          contentThree = careTeam,
-          headingFour = stringResource(R.string.location),
-          contentFour = location,
-        )
+        if(userName!=null && organization!=null && careTeam!=null && location!=null){
+          val items = listOf(
+            stringResource(id = R.string.username) to userName,
+            stringResource(R.string.team_organization) to organization.take(10),
+            stringResource(R.string.care_team)to careTeam,
+            stringResource(R.string.location) to location
+          )
+          InsightInfoView(
+            title = stringResource(id = R.string.app_info),
+            items = items,
+          )
+        }
       }
 
       item {
+        val items = listOf(
+          stringResource(R.string.app_versions) to appVersion,
+          stringResource(R.string.app_version_code) to appVersionCode,
+          stringResource(R.string.build_date) to buildDate
+
+        )
         InsightInfoView(
           title = stringResource(id = R.string.assignment_info),
-          headingOne = stringResource(R.string.app_versions),
-          contentOne = appVersion,
-          headingTwo = stringResource(R.string.app_version_code),
-          contentTwo = appVersionCode,
-          headingThree = stringResource(R.string.build_date),
-          contentThree = buildDate,
-          headingFour = null,
-          contentFour = null,
+          items = items,
         )
       }
 
       item {
+        val items = listOf(
+          stringResource(R.string.manufacture) to Build.MANUFACTURER,
+          stringResource(R.string.device) to Build.DEVICE,
+          stringResource(R.string.os_version) to Build.VERSION.BASE_OS,
+          stringResource(R.string.device_date) to formatTimestamp(Build.TIME),
+
+        )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
-          headingOne = stringResource(R.string.manufacture),
-          contentOne = Build.MANUFACTURER,
-          headingTwo = stringResource(R.string.device),
-          contentTwo = Build.DEVICE,
-          headingThree = stringResource(R.string.os_version),
-          contentThree = Build.VERSION.BASE_OS,
-          headingFour = stringResource(R.string.device_date),
-          contentFour = formatTimestamp(Build.TIME),
+          items = items,
         )
       }
       item {
@@ -247,111 +250,42 @@ fun UnsyncedDataView(
 @Composable
 fun InsightInfoView(
   title: String,
-  headingOne: String?,
-  contentOne: String?,
-  headingTwo: String?,
-  contentTwo: String?,
-  headingThree: String?,
-  contentThree: String?,
-  headingFour: String?,
-  contentFour: String?,
+  items: List<Pair<String, String>>,
+  headerTextStyle: TextStyle = TextStyle(color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Medium),
+  contentTextStyle: TextStyle = TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
+  dividerColor: Color = DividerColor
 ) {
   Spacer(modifier = Modifier.height(24.dp))
 
   Text(
     text = title,
-    style = TextStyle(color = Color.Black, fontSize = 20.sp),
-    fontWeight = FontWeight.Bold,
+    style = TextStyle(color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold),
   )
   Spacer(modifier = Modifier.height(16.dp))
 
   Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
-    if (headingOne != null && contentOne != null) {
+    for ((header, content) in items) {
       Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
       ) {
         Text(
-          text = headingOne,
-          fontSize = 16.sp,
-          color = colorResource(id = R.color.grayText),
-          fontWeight = FontWeight.Medium,
+          text = header,
+          style = headerTextStyle,
         )
         Text(
-          text = contentOne,
-          fontSize = 16.sp,
-          color = LoginDarkColor,
-          fontWeight = FontWeight.Bold,
-        )
-      }
-    }
-    if (headingTwo != null && contentTwo != null) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-      ) {
-        Text(
-          text = headingTwo,
-          fontSize = 16.sp,
-          color = colorResource(id = R.color.grayText),
-          fontWeight = FontWeight.Medium,
-        )
-        Text(
-          text = contentTwo,
-          fontSize = 16.sp,
-          color = LoginDarkColor,
-          fontWeight = FontWeight.Bold,
+          text = content,
+          style = contentTextStyle,
           softWrap = true,
-          maxLines = 1,
           overflow = TextOverflow.Ellipsis,
-        )
-      }
-    }
-    if (headingThree != null && contentThree != null) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-      ) {
-        Text(
-          text = headingThree,
-          fontSize = 16.sp,
-          color = colorResource(id = R.color.grayText),
-          fontWeight = FontWeight.Medium,
-        )
-        Text(
-          text = contentThree,
-          fontSize = 16.sp,
-          color = LoginDarkColor,
-          fontWeight = FontWeight.Bold,
+          maxLines = 1
         )
       }
     }
 
-    if (headingFour != null && contentFour != null) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-      ) {
-        Text(
-          text = headingFour,
-          fontSize = 16.sp,
-          color = colorResource(id = R.color.grayText),
-          fontWeight = FontWeight.Medium,
-        )
-        Text(
-          text = contentFour,
-          fontSize = 16.sp,
-          color = LoginDarkColor,
-          fontWeight = FontWeight.Bold,
-        )
-      }
-    }
     Spacer(modifier = Modifier.height(16.dp))
-    Divider(color = DividerColor)
+    Divider(color = dividerColor)
   }
 }
 
