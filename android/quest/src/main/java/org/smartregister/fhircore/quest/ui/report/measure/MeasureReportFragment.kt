@@ -28,7 +28,6 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.ui.profile.ProfileViewModel
 
 @AndroidEntryPoint
 class MeasureReportFragment : Fragment() {

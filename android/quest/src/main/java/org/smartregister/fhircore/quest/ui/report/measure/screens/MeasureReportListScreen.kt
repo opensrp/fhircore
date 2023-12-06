@@ -47,7 +47,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.ui.profile.ProfileUiState
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable
@@ -93,11 +92,7 @@ fun MeasureReportListScreen(
         }
       } else {
         LazyColumn(
-          modifier =
-            modifier
-              .background(Color.White)
-              .fillMaxSize()
-              .padding(bottom = 32.dp)
+          modifier = modifier.background(Color.White).fillMaxSize().padding(bottom = 32.dp),
         ) {
           lazyReportItems.keys.forEach { key ->
             item {

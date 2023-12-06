@@ -27,7 +27,6 @@ import androidx.navigation.navArgument
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MeasureReportNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.profile.ProfileViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportResultScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportSubjectsScreen
