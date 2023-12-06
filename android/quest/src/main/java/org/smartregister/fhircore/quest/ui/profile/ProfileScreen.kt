@@ -79,6 +79,8 @@ const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
 const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun ProfileScreen(
@@ -157,7 +159,7 @@ fun ProfileScreen(
         modifier =
           Modifier.padding(
             bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp,
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) PADDING_BOTTOM_WITH_FAB.dp else PADDING_BOTTOM_WITHOUT_FAB.dp,
           ),
       ) {
         item(key = profileUiState.resourceData?.baseResourceId) {

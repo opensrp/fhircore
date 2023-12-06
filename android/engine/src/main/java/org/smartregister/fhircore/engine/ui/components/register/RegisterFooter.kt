@@ -43,6 +43,8 @@ const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
 const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
 const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun RegisterFooter(
@@ -62,7 +64,7 @@ fun RegisterFooter(
           .testTag(SEARCH_FOOTER_TAG)
           .padding(
             bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) 80.dp else 32.dp,
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) PADDING_BOTTOM_WITH_FAB.dp else PADDING_BOTTOM_WITHOUT_FAB.dp,
           ),
     ) {
       Box(
