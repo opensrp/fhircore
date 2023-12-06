@@ -139,29 +139,29 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-
-        if(fullName!=null && team!=null && locality!=null){
-          val items = listOf(
-            stringResource(R.string.user) to fullName,
-            stringResource(R.string.team) to team,
-            stringResource(R.string.locality) to locality,
-          )
+        if (fullName != null && team != null && locality != null) {
+          val items =
+            listOf(
+              stringResource(R.string.user) to fullName,
+              stringResource(R.string.team) to team,
+              stringResource(R.string.locality) to locality,
+            )
 
           InsightInfoView(
             title = stringResource(id = R.string.user_info),
             items = items,
           )
         }
-
       }
       item {
-        if(userName!=null && organization!=null && careTeam!=null && location!=null){
-          val items = listOf(
-            stringResource(id = R.string.username) to userName,
-            stringResource(R.string.team_organization) to organization.take(10),
-            stringResource(R.string.care_team)to careTeam,
-            stringResource(R.string.location) to location
-          )
+        if (userName != null && organization != null && careTeam != null && location != null) {
+          val items =
+            listOf(
+              stringResource(id = R.string.username) to userName,
+              stringResource(R.string.team_organization) to organization.take(10),
+              stringResource(R.string.care_team) to careTeam,
+              stringResource(R.string.location) to location,
+            )
           InsightInfoView(
             title = stringResource(id = R.string.app_info),
             items = items,
@@ -170,12 +170,12 @@ fun UserSettingInsightScreen(
       }
 
       item {
-        val items = listOf(
-          stringResource(R.string.app_versions) to appVersion,
-          stringResource(R.string.app_version_code) to appVersionCode,
-          stringResource(R.string.build_date) to buildDate
-
-        )
+        val items =
+          listOf(
+            stringResource(R.string.app_versions) to appVersion,
+            stringResource(R.string.app_version_code) to appVersionCode,
+            stringResource(R.string.build_date) to buildDate,
+          )
         InsightInfoView(
           title = stringResource(id = R.string.assignment_info),
           items = items,
@@ -183,13 +183,13 @@ fun UserSettingInsightScreen(
       }
 
       item {
-        val items = listOf(
-          stringResource(R.string.manufacture) to Build.MANUFACTURER,
-          stringResource(R.string.device) to Build.DEVICE,
-          stringResource(R.string.os_version) to Build.VERSION.BASE_OS,
-          stringResource(R.string.device_date) to formatTimestamp(Build.TIME),
-
-        )
+        val items =
+          listOf(
+            stringResource(R.string.manufacture) to Build.MANUFACTURER,
+            stringResource(R.string.device) to Build.DEVICE,
+            stringResource(R.string.os_version) to Build.VERSION.BASE_OS,
+            stringResource(R.string.device_date) to formatTimestamp(Build.TIME),
+          )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
           items = items,
@@ -251,9 +251,11 @@ fun UnsyncedDataView(
 fun InsightInfoView(
   title: String,
   items: List<Pair<String, String>>,
-  headerTextStyle: TextStyle = TextStyle(color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Medium),
-  contentTextStyle: TextStyle = TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
-  dividerColor: Color = DividerColor
+  headerTextStyle: TextStyle =
+    TextStyle(color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Medium),
+  contentTextStyle: TextStyle =
+    TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
+  dividerColor: Color = DividerColor,
 ) {
   Spacer(modifier = Modifier.height(24.dp))
 
@@ -279,7 +281,7 @@ fun InsightInfoView(
           style = contentTextStyle,
           softWrap = true,
           overflow = TextOverflow.Ellipsis,
-          maxLines = 1
+          maxLines = 1,
         )
       }
     }
