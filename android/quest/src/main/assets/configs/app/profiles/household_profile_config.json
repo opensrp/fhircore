@@ -384,8 +384,8 @@
                 "name": "serviceMemberIcons",
                 "condition": "true",
                 "actions": [
-                  "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years')\") == 'true'? 'CHILD': '', service.mapResourcesToLabeledCSV(Condition, \"Condition.code.text = 'Pregnant'\", 'PREGNANT_WOMAN')], ','))"
-                ]
+                  "data.put('serviceMemberIcons', StringUtils:join([fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years') and (Patient.gender= 'male')\") == 'true'? 'BABY_BOY': '', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate >= today() - 5 'years') and (Patient.gender= 'female')\") == 'true'? 'BABY_GIRL': '', fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 20 'years') and (Patient.gender = 'female')\") == 'true'? 'WOMAN_OF_REPRODUCTIVE_AGE': '',fhirPath.extractValue(Patient, \"Patient.active and (Patient.birthDate <= today() - 60 'years')\") == 'true'? 'ELDERLY': ''], ','))"
+                  ]
               },
               {
                 "name": "relatedPersonCount",
