@@ -269,7 +269,6 @@ fun InsightInfoView(
     TextStyle(color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Medium),
   contentTextStyle: TextStyle =
     TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
-  dividerColor: Color = DividerColor,
 ) {
   Text(
     text = title,
