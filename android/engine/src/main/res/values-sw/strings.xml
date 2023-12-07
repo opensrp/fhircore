@@ -136,4 +136,6 @@
     <string name="unsynced_resources">Zilizobakia Kwa Simu</string>
     <string name="all_data_synced">Zote zimesawazishwa</string>
     <string name="invalid_offline_login_state">Usanidi wa mtumiaji unahitajika. Washa mtandao</string>
+    <string name="sync_completed_with_errors">Usawazishaji umekamilika na hitilafu. Inajaribu tena…</string>
+    <string name="error_occurred">Hitilafu fulani imetokea...</string>
 </resources>
