@@ -27,7 +27,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
@@ -167,7 +166,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadRegisterDataWithForwardAndReverseIncludedResources() =
-    runTest(timeout = 90.seconds) {
+    runTest(dispatchTimeoutMs = 90) {
       runTest {
         val registerId = HOUSEHOLD_REGISTER_ID
         every { registerRepository.retrieveRegisterConfiguration(registerId, emptyMap()) } returns
@@ -251,7 +250,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadProfileDataWithForwardAndReverseIncludedResources() =
-    runTest(timeout = 120.seconds) {
+    runTest(dispatchTimeoutMs = 120) {
       val profileId = "profile"
       every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
         ProfileConfiguration(

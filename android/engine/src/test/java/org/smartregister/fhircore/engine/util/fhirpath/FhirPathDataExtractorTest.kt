@@ -22,7 +22,9 @@ import javax.inject.Inject
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -78,8 +80,13 @@ class FhirPathDataExtractorTest : RobolectricTest() {
         deceased = BooleanType(false)
         addName().family = "Doe"
       }
-    val expression = "Patient.name.family"
-    Assert.assertEquals("Doe", fhirPathDataExtractor.extractValue(patient, expression))
+    val childTask = Task().apply {
+      id = "childTaskId"
+      partOf = listOf(Reference().apply { reference = "Task/parentTaskId" })
+    }
+//    val expression = "Patient.name.family"
+    val expression = "Task.partOf.first().reference"
+    Assert.assertEquals("Doe", fhirPathDataExtractor.extractValue(childTask, expression))
   }
 
   @Test

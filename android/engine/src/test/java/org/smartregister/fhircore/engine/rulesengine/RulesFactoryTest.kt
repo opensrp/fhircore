@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -264,15 +265,20 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun retrieveRelatedResourcesReturnsCorrectResource() {
     populateFactsWithResources()
+    val parentTask = Task().apply {
+      id = "parentTaskId"
+//      partOf = listOf(Reference().apply { reference = "Task/parentTaskId" })
+    }
     val result =
       rulesEngineService.retrieveRelatedResources(
-        resource = Faker.buildPatient(),
-        relatedResourceKey = ResourceType.CarePlan.name,
-        referenceFhirPathExpression = "CarePlan.subject.reference",
+        resource = parentTask,
+        relatedResourceKey = "availableTasks",
+        referenceFhirPathExpression = "Task.partOf.first().reference",
       )
     Assert.assertEquals(1, result.size)
-    Assert.assertEquals("CarePlan", result[0].resourceType.name)
-    Assert.assertEquals("careplan-1", result[0].logicalId)
+    Assert.assertEquals("Task", result[0].resourceType.name)
+    Assert.assertEquals("childTaskId", result[0].logicalId)
+    Assert.assertEquals("what", (result[0] as Task).partOfFirstRep.reference)
   }
 
   @Test
@@ -290,14 +296,19 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun retrieveParentResourcesReturnsCorrectResource() {
     populateFactsWithResources()
+    val childTask = Task().apply {
+      id = "childTaskId"
+      partOf = listOf(Reference().apply { reference = "Task/parentTaskId" })
+    }
     val result =
       rulesEngineService.retrieveParentResource(
-        childResource = Faker.buildCarePlan(),
-        parentResourceType = "Patient",
-        fhirPathExpression = "CarePlan.subject.reference",
+        childResource = childTask,
+        parentResourceType = "Task",
+        fhirPathExpression = "Task.partOf.first().reference",
       )
-    Assert.assertEquals("Patient", result!!.resourceType.name)
-    Assert.assertEquals("sampleId", result.logicalId)
+    Assert.assertEquals(false, result == null)
+    Assert.assertEquals("Task", result?.resourceType?.name ?: "NULL")
+    Assert.assertEquals("parentTaskId", result?.logicalId ?: "NULL")
   }
 
   @Test
@@ -814,10 +825,18 @@ class RulesFactoryTest : RobolectricTest() {
   private fun populateFactsWithResources() {
     val carePlanRelatedResource = mutableListOf(Faker.buildCarePlan())
     val patientRelatedResource = mutableListOf(Faker.buildPatient())
+    val parentTask = Task().apply {
+      id = "parentTaskId"
+    }
+    val childTask = Task().apply {
+      id = "childTaskId"
+      partOf = listOf(Reference().apply { reference = "Task/parentTaskId" })
+    }
     val facts = ReflectionHelpers.getField<Facts>(rulesFactory, "facts")
     facts.apply {
       put(carePlanRelatedResource[0].resourceType.name, carePlanRelatedResource)
       put(patientRelatedResource[0].resourceType.name, patientRelatedResource)
+      put("availableTasks", listOf(parentTask, childTask))
     }
     ReflectionHelpers.setField(rulesFactory, "facts", facts)
   }

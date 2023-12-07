@@ -104,7 +104,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
     )
     Assert.assertEquals("1", interpolatedConfig.readOnlyLinkIds!![0])
     Assert.assertEquals("2", interpolatedConfig.readOnlyLinkIds!![1])
-    Assert.assertEquals("EDIT", interpolatedConfig.type.name)
+    Assert.assertEquals("EDIT", interpolatedConfig.type)
   }
 
   @Test

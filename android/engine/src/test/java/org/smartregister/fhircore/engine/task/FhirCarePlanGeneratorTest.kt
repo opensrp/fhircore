@@ -1984,7 +1984,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Test
   fun `updateDependentTaskDueDate sets executionPeriod start correctly`() =
-    runTest(timeout = 60.seconds) {
+    runTest(dispatchTimeoutMs = 60) {
       // Prepare database for testing
       fhirEngine.create(
         opv0,

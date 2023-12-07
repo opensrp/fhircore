@@ -365,7 +365,7 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun loadManagingEntityShouldReturnPatient() =
-    runTest(timeout = 30.seconds) {
+    runTest(dispatchTimeoutMs = 30) {
       val patient = Faker.buildPatient(id = "12345")
 
       val relatedPerson =
