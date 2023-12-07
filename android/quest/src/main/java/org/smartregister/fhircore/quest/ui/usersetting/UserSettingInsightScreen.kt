@@ -21,7 +21,6 @@ import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -118,20 +117,16 @@ fun UserSettingInsightScreen(
       horizontalAlignment = Alignment.Start,
       contentPadding = PaddingValues(vertical = 24.dp, horizontal = 16.dp),
     ) {
-      item {
-        Text(
-          text = stringResource(id = R.string.unsynced_resources),
-          style = TextStyle(color = Color.Black, fontSize = 20.sp),
-          fontWeight = FontWeight.Bold,
-
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (unsyncedResources.isEmpty()) {
-          Divider(color = DividerColor)
-        }
-      }
       if (unsyncedResources.isNotEmpty()) {
+        item {
+          Text(
+            text = stringResource(id = R.string.unsynced_resources),
+            style = TextStyle(color = Color.Black, fontSize = 20.sp),
+            fontWeight = FontWeight.Bold,
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+        }
+
         items(unsyncedResources) { unsynced ->
           UnsyncedDataView(
             first = unsynced.first,
@@ -139,6 +134,11 @@ fun UserSettingInsightScreen(
           )
         }
 
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
       }
       item {
         if (fullName != null && team != null && locality != null) {
@@ -182,6 +182,11 @@ fun UserSettingInsightScreen(
           title = stringResource(id = R.string.assignment_info),
           items = items,
         )
+      }
+      item {
+        Spacer(modifier = Modifier.height(16.dp))
+        Divider(color = dividerColor)
+        Spacer(modifier = Modifier.height(24.dp))
       }
 
       item {
@@ -232,25 +237,24 @@ fun UnsyncedDataView(
   first: String,
   second: String,
 ) {
-
   Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
     Row(
       modifier = Modifier.fillMaxWidth(),
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
-    ){
-    Text(
-      text = first,
-      modifier = Modifier.testTag(INSIGHT_UNSYNCED_DATA),
-      fontSize = 16.sp,
-      color = colorResource(id = R.color.grayText),
-      fontWeight = FontWeight.Medium,
-    )
-    Text(
-      text = second,
-      color = LoginDarkColor,
-      fontWeight = FontWeight.Bold,
-    )
+    ) {
+      Text(
+        text = first,
+        modifier = Modifier.testTag(INSIGHT_UNSYNCED_DATA),
+        fontSize = 16.sp,
+        color = colorResource(id = R.color.grayText),
+        fontWeight = FontWeight.Medium,
+      )
+      Text(
+        text = second,
+        color = LoginDarkColor,
+        fontWeight = FontWeight.Bold,
+      )
     }
   }
 
@@ -267,10 +271,6 @@ fun InsightInfoView(
     TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
   dividerColor: Color = DividerColor,
 ) {
-  Spacer(modifier = Modifier.height(16.dp))
-  Divider(color = dividerColor)
-  Spacer(modifier = Modifier.height(24.dp))
-
   Text(
     text = title,
     style = TextStyle(color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold),
