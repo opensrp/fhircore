@@ -87,6 +87,7 @@ fun UserSettingInsightScreen(
   appVersionCode: String,
   appVersion: String,
   buildDate: String,
+  dividerColor: Color = DividerColor,
   unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
   navController: NavController,
   onRefreshRequest: () -> Unit,
@@ -122,9 +123,11 @@ fun UserSettingInsightScreen(
           text = stringResource(id = R.string.unsynced_resources),
           style = TextStyle(color = Color.Black, fontSize = 20.sp),
           fontWeight = FontWeight.Bold,
+
         )
+        Spacer(modifier = Modifier.height(8.dp))
+
         if (unsyncedResources.isEmpty()) {
-          Spacer(modifier = Modifier.height(24.dp))
           Divider(color = DividerColor)
         }
       }
@@ -134,9 +137,8 @@ fun UserSettingInsightScreen(
             first = unsynced.first,
             second = unsynced.second.toString(),
           )
-          Spacer(modifier = Modifier.height(24.dp))
-          Divider(color = DividerColor)
         }
+
       }
       item {
         if (fullName != null && team != null && locality != null) {
@@ -195,10 +197,12 @@ fun UserSettingInsightScreen(
           items = items,
         )
       }
+
       item {
         Column(
           Modifier.wrapContentWidth().wrapContentHeight().padding(4.dp),
         ) {
+          Spacer(modifier = Modifier.height(16.dp))
           Surface(shape = RoundedCornerShape(0.dp)) {
             OutlinedButton(
               modifier = Modifier.fillMaxWidth(),
@@ -228,23 +232,29 @@ fun UnsyncedDataView(
   first: String,
   second: String,
 ) {
-  Box(
-    Modifier.fillMaxWidth().padding(16.dp),
-  ) {
+
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Top)) {
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween,
+    ){
     Text(
       text = first,
-      modifier = Modifier.align(Alignment.CenterStart).testTag(INSIGHT_UNSYNCED_DATA),
+      modifier = Modifier.testTag(INSIGHT_UNSYNCED_DATA),
       fontSize = 16.sp,
       color = colorResource(id = R.color.grayText),
       fontWeight = FontWeight.Medium,
     )
     Text(
-      modifier = Modifier.align(Alignment.CenterEnd),
       text = second,
       color = LoginDarkColor,
       fontWeight = FontWeight.Bold,
     )
+    }
   }
+
+  Spacer(modifier = Modifier.height(8.dp))
 }
 
 @Composable
@@ -257,6 +267,8 @@ fun InsightInfoView(
     TextStyle(color = LoginDarkColor, fontSize = 16.sp, fontWeight = FontWeight.Bold),
   dividerColor: Color = DividerColor,
 ) {
+  Spacer(modifier = Modifier.height(16.dp))
+  Divider(color = dividerColor)
   Spacer(modifier = Modifier.height(24.dp))
 
   Text(
@@ -286,8 +298,7 @@ fun InsightInfoView(
       }
     }
 
-    Spacer(modifier = Modifier.height(16.dp))
-    Divider(color = dividerColor)
+    Spacer(modifier = Modifier.height(8.dp))
   }
 }
 
