@@ -126,7 +126,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
   @Test
   fun testThatActivityFinishesWhenQuestionnaireIsNull() {
-    val toast = mockk<Toast>()
+    val toast = mockk<Toast>(relaxed = true)
     every { toast.show() } just runs
     mockkStatic(Toast::class)
     every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
