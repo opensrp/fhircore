@@ -36,7 +36,7 @@ data class QuestionnaireConfig(
   val title: String? = null,
   val saveButtonText: String? = null,
   val planDefinitions: List<String>? = null,
-  var type: QuestionnaireType = QuestionnaireType.DEFAULT,
+  var type: String = "DEFAULT",
   val resourceIdentifier: String? = null,
   val resourceType: ResourceType? = null,
   val removeResource: Boolean? = null,
@@ -66,6 +66,7 @@ data class QuestionnaireConfig(
       id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
       taskId = taskId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
+      type = type.interpolate(computedValuesMap),
       resourceIdentifier =
         resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
       groupResource =
