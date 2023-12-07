@@ -1,5 +1,5 @@
 <resources>
-    <string name="sync">Sync</string>
+    <string name="sync">Manual Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
     <string name="show_overdue">Show overdue</string>
@@ -20,11 +20,11 @@
     <string name="logout_user">Log out as %1$s</string>
     <string name="sync_completed">Sync complete</string>
     <string name="syncing">Syncing</string>
-    <string name="syncing_up" translatable="false">Syncing up</string>
-    <string name="syncing_down" translatable="false">Syncing down</string>
+    <string name="syncing_up" >Syncing up</string>
+    <string name="syncing_down" >Syncing down</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later</string>
-    <string name="sync_completed_with_errors">Sync completed with errors. Retrying…</string>
+    <string name="sync_completed_with_errors"> Sync completed with errors. Retrying…</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="refresh_token_fail_error_message">Failed to retrieve credentials from the server. Please check your internet connection.</string>
     <string name="try_again">Try again</string>
@@ -88,7 +88,7 @@
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
     <string name="application_id">Application ID</string>
-    <string name="app_id_sample">e.g. ecbis, quest, cha</string>
+    <string name="app_id_sample" translatable="false">e.g. ecbis, quest, cha</string>
     <string name="load_configurations">LOAD CONFIGURATIONS</string>
     <string name="fhir_core_app" translatable="false">FHIRCORE APP</string>
     <string name="remember_app">Remember application</string>
@@ -135,10 +135,10 @@
     <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
     <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
     <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
-    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
-    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
-    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
+    <string name="sync_strategy_careteam_display">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display">Practitioner Location</string>
+    <string name="sync_strategy_organization_display">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display">Practitioner</string>
     <string name="year">Year</string>
     <string name="month">Month</string>
     <string name="weeks">Week(s)</string>
@@ -146,11 +146,32 @@
     <string name="initializing">Initializing settings &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
-    <string name="error_occurred" translatable="false">Something went wrong...</string>
+    <string name="error_occurred">Something went wrong...</string>
     <string name="insights">Insights</string>
+    <string name="contact_help">"Contact help"</string>
+    <string name="offline_map">"Offline Maps"</string>
     <string name="dismiss">Dismiss</string>
+    <string name="user_info">User info</string>
+    <string name="assignment_info">Assignment info</string>
+    <string name="app_info">App info</string>
+    <string name="device_info">Device info</string>
+    <string name="refresh">Refresh</string>
     <string name="unsynced_resources">Unsynced Resources</string>
+    <string name="synced_statistics">Synced Statistics</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
     <string name="select_month">Select Month</string>
+    <string name="user">User</string>
+    <string name="team">Team</string>
+    <string name="locality" >Locality</string>
+    <string name="team_organization">Team(Organization)</string>
+    <string name="care_team">Care Team</string>
+    <string name="location">Location</string>
+    <string name="app_version_code">App version code</string>
+    <string name="build_date">Build date</string>
+    <string name="manufacture">Manufacture</string>
+    <string name="app_versions">App version</string>
+    <string name="os_version">OS Version</string>
+    <string name="device_date">Date</string>
+    <string name="device">Device</string>
 </resources>

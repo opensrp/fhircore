@@ -20,23 +20,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 
 @AndroidEntryPoint
-class UserSettingFragment : Fragment() {
-
+class UserInsightScreenFragment : Fragment() {
   val userSettingViewModel by viewModels<UserSettingViewModel>()
-  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -47,24 +42,21 @@ class UserSettingFragment : Fragment() {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
         AppTheme {
-          UserSettingScreen(
-            appTitle = appMainViewModel.appMainUiState.value.appTitle,
-            username = userSettingViewModel.retrieveUsername(),
-            practitionerLocation = userSettingViewModel.practitionerLocation(),
-            fullname = userSettingViewModel.retrieveUserInfo()?.name,
-            allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
-            selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
-            allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
-            languages = userSettingViewModel.languages,
-            onEvent = userSettingViewModel::onEvent,
-            showDatabaseResetConfirmation =
-              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            progressBarState =
-              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
-            isDebugVariant = BuildConfig.DEBUG,
-            mainNavController = findNavController(),
-            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
-            showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+          LaunchedEffect(key1 = true, block = { userSettingViewModel.fetchUnsyncedResources() })
+          UserSettingInsightScreen(
+            fullName = userSettingViewModel.retrieveUserInfo()?.name,
+            team = userSettingViewModel.retrieveUserInfo()?.organization,
+            locality = userSettingViewModel.retrieveUserInfo()?.location,
+            userName = userSettingViewModel.retrieveUsername(),
+            organization = userSettingViewModel.retrieveOrganization(),
+            careTeam = userSettingViewModel.retrieveCareTeam(),
+            location = userSettingViewModel.practitionerLocation(),
+            appVersionCode = userSettingViewModel.appVersionCode.toString(),
+            appVersion = userSettingViewModel.appVersionName,
+            buildDate = userSettingViewModel.buildDate,
+            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
+            navController = findNavController(),
+            onRefreshRequest = { userSettingViewModel.fetchUnsyncedResources() },
           )
         }
       }
