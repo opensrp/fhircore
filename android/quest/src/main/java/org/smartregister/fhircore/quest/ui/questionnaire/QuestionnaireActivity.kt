@@ -114,7 +114,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
         with(viewBinding) {
           questionnaireToolbar.apply {
-            setNavigationIcon(R.drawable.ic_arrow_back)
+            setNavigationIcon(R.drawable.ic_cancel)
             setNavigationOnClickListener { handleBackPress() }
           }
           questionnaireTitle.apply { text = questionnaireConfig.title }
@@ -161,6 +161,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         .setQuestionnaire(questionnaire.json())
         .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
         .showRequiredText(questionnaireConfig.showRequiredText)
+        .showOptionalText(questionnaireConfig.showOptionalText)
 
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =
