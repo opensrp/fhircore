@@ -17,10 +17,8 @@
 package org.smartregister.fhircore.quest.ui.usersetting
 
 import android.content.Context
-import android.content.Intent
 import android.os.Environment
 import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,22 +26,12 @@ import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.Locale
-import java.util.zip.ZipException
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.lingala.zip4j.ZipFile
-import net.lingala.zip4j.model.ZipParameters
-import net.lingala.zip4j.model.enums.CompressionLevel
-import net.lingala.zip4j.model.enums.EncryptionMethod
-import net.sqlcipher.database.SQLiteDatabase
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -67,7 +55,8 @@ import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
-import org.smartregister.fhircore.quest.util.DBEncryptionProvider
+import org.smartregister.fhircore.quest.util.DBUtils
+import org.smartregister.fhircore.quest.util.FileUtils
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
 
@@ -206,10 +195,10 @@ constructor(
   private fun copyDatabase(context: Context, onCopyCompleteListener: () -> Unit) {
     viewModelScope.launch(dispatcherProvider.io()) {
       try {
-        val passphrase = DBEncryptionProvider.getPassphrase("fhirEngineDbPassphrase")
+        val passphrase = DBUtils.getEncryptionPassphrase("fhirEngineDbPassphrase")
 
         val dbFilename = if (BuildConfig.DEBUG) "resources" else "resources_encrypted"
-        val appDbPath = File("/data/data/${context.packageName}/databases/$dbFilename.db")
+        val dbFile = File("/data/data/${context.packageName}/databases/$dbFilename.db")
 
         val downloadsDir =
           Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
@@ -218,132 +207,47 @@ constructor(
         val practitionerId =
           sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, username)
 
-        val timestamp = today().formatDate("yyyyMMdd-HHmmss")
-        val backupFilename =
-          String.format(
-            "%s_%s_%s_%s.db",
-            applicationConfiguration.appTitle.replace(" ", "_"),
-            username,
-            practitionerId,
-            timestamp
+        val backupFile =
+          File(
+            downloadsDir,
+            String.format(
+              "%s_%s_%s_%s.db",
+              applicationConfiguration.appTitle.replace(" ", "_"),
+              username,
+              practitionerId,
+              today().formatDate("yyyyMMdd-HHmmss")
+            )
           )
-        val backupPath = File(downloadsDir, backupFilename)
 
-        if (BuildConfig.DEBUG && downloadsDir.canWrite() && appDbPath.exists()) {
-          copyUnencryptedDb(appDbPath, backupPath)
-        } else {
-          decryptDb(appDbPath, backupPath, passphrase)
-        }
+        var dbCopied =
+          if (BuildConfig.DEBUG) {
+            DBUtils.copyUnencryptedDb(dbFile, backupFile)
+          } else {
+            DBUtils.decryptDb(dbFile, backupFile, passphrase)
+          }
 
-        val zipFile =
-          zipPlaintextDb(
-            backupPath,
+        if (dbCopied) {
+          // The password is currently set as: {username}_{first 8 characters of the
+          // practitioner_id}
+          val zipFile = File("${backupFile.absolutePath}.zip")
+          FileUtils.zipFiles(
+            zipFile,
+            listOf(backupFile),
             String.format(
               "%s_%s",
               username,
               practitionerId!!.substring(0, practitionerId!!.indexOf("-"))
-            )
+            ),
+            true
           )
 
-        if (zipFile != null) shareFile(context, zipFile)
+          if (zipFile.exists()) FileUtils.shareFile(context, zipFile)
+        }
       } catch (e: Exception) {
         Timber.e(e, "Failed to copy application's database")
       } finally {
         onCopyCompleteListener.invoke()
       }
-    }
-  }
-
-  private fun copyUnencryptedDb(appDbFile: File, backupFile: File) {
-    val src = FileInputStream(appDbFile).channel
-    val dst = FileOutputStream(backupFile).channel
-    dst.transferFrom(src, 0, src.size())
-    src.close()
-    dst.close()
-  }
-
-  private fun decryptDb(databaseFile: File, backupFile: File, passphrase: ByteArray?) {
-    if (databaseFile.exists()) {
-      val encryptedDb =
-        SQLiteDatabase.openDatabase(databaseFile.absolutePath, passphrase, null, 0, null, null)
-
-      android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(
-          backupFile.absolutePath,
-          null,
-          null
-        )
-        .close() // create an empty database
-
-      val statement = encryptedDb.compileStatement("ATTACH DATABASE ? AS plaintext KEY ''")
-
-      statement.bindString(1, backupFile.absolutePath)
-      statement.execute()
-      encryptedDb.rawExecSQL("SELECT sqlcipher_export('plaintext')")
-      encryptedDb.rawExecSQL("DETACH DATABASE plaintext")
-
-      val version = encryptedDb.version
-
-      statement.close()
-      encryptedDb.close()
-
-      val plaintTextDb =
-        android.database.sqlite.SQLiteDatabase.openOrCreateDatabase(
-          backupFile.absolutePath,
-          null,
-          null
-        )
-
-      plaintTextDb.version = version
-      plaintTextDb.close()
-    } else {
-      throw FileNotFoundException(databaseFile.absolutePath + " not found")
-    }
-  }
-
-  private fun zipPlaintextDb(plaintextDbFile: File, password: String): File? {
-    val zipParameters = ZipParameters()
-    zipParameters.isEncryptFiles = true
-    zipParameters.compressionLevel = CompressionLevel.HIGHER
-    zipParameters.encryptionMethod = EncryptionMethod.AES
-
-    val zipFilename = "${plaintextDbFile.absolutePath}.zip"
-    val zipFile = ZipFile(zipFilename, password.toCharArray())
-    try {
-      zipFile.addFile(plaintextDbFile, zipParameters)
-    } catch (e: ZipException) {
-      Timber.e(e, "Failed to add file to zip")
-      return null
-    }
-
-    try {
-      if (!plaintextDbFile.delete()) {
-        Timber.e("Failed to delete plaintext database file")
-      }
-      if (!File("${plaintextDbFile.absolutePath}-journal").delete()) {
-        Timber.e("Failed to delete plaintext database journal file")
-      }
-    } catch (e: IOException) {
-      Timber.e(e, "File could not be deleted")
-    } catch (e: SecurityException) {
-      Timber.e(e, "No permissions to delete file")
-    }
-
-    return File(zipFilename)
-  }
-
-  private fun shareFile(context: Context, file: File) {
-    val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-
-    val shareIntent = Intent(Intent.ACTION_SEND)
-    shareIntent.type = "text/plain"
-    shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-
-    val chooser =
-      Intent.createChooser(shareIntent, "Share ${applicationConfiguration.appTitle} Database")
-
-    if (shareIntent.resolveActivity(context.packageManager) != null) {
-      context.startActivity(chooser)
     }
   }
 }
