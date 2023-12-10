@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
@@ -299,6 +300,47 @@ constructor(
      */
     fun prettifyDate(inputDateString: String): String {
       return PrettyTime().format(DateTime(inputDateString).toDate())
+    }
+
+    /**
+     * This function fetches assignment data separately that is; PractitionerId,
+     * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
+     * configs.
+     */
+    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
+      val key = SharedPreferenceKey.valueOf(practitionerKey)
+      try {
+        return when (key) {
+          SharedPreferenceKey.PRACTITIONER_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_ID.name,
+              "",
+            )
+          SharedPreferenceKey.CARE_TEAM ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.CARE_TEAM.name,
+              "",
+            )
+          SharedPreferenceKey.ORGANIZATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.ORGANIZATION.name,
+              "",
+            )
+          SharedPreferenceKey.PRACTITIONER_LOCATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+              "",
+            )
+          else -> ""
+        }
+      } catch (exception: Exception) {
+        if (exception is IllegalArgumentException) {
+          Timber.e("key is not a member of practitioner keys: ", exception)
+        } else {
+          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+        }
+      }
+      return ""
     }
 
     /**

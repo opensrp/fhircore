@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -47,6 +48,8 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -75,7 +78,24 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  val appVersionCode = BuildConfig.VERSION_CODE
+  val appVersionName = BuildConfig.VERSION_NAME
+  val buildDate = BuildConfig.BUILD_DATE
+
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun retrieveUserInfo() =
+    sharedPreferencesHelper.read<UserInfo>(
+      key = SharedPreferenceKey.USER_INFO.name,
+    )
+
+  fun practitionerLocation() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+
+  fun retrieveOrganization() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+
+  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
@@ -109,7 +129,10 @@ constructor(
         if (event.context.isDeviceOnline()) {
           viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
         } else {
-          event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          event.context.showToast(
+            event.context.getString(R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
@@ -121,12 +144,21 @@ constructor(
         }
       }
       is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
-        showDBResetConfirmationDialog.postValue(event.isShow)
+        showDBResetConfirmationDialog.postValue(
+          event.isShow,
+        )
       is UserSettingsEvent.ResetDatabaseFlag -> if (event.isReset) this.resetAppData(event.context)
       is UserSettingsEvent.ShowLoaderView ->
-        updateProgressBarState(event.show, event.messageResourceId)
+        updateProgressBarState(
+          event.show,
+          event.messageResourceId,
+        )
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
-      is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
+      is UserSettingsEvent.ShowContactView -> {}
+      is UserSettingsEvent.OnLaunchOfflineMap -> {}
+      is UserSettingsEvent.ShowInsightsScreen -> {
+        event.navController.navigate(MainNavigationScreen.Insight.route)
+      }
     }
   }
 
@@ -155,11 +187,10 @@ constructor(
 
   fun enabledDeviceToDeviceSync(): Boolean = applicationConfiguration.deviceToDeviceSync != null
 
-  fun renderInsightsView(context: Context) {
+  fun fetchUnsyncedResources() {
     viewModelScope.launch {
-      showProgressIndicatorFlow.emit(true)
-
       withContext(dispatcherProvider.io()) {
+        showProgressIndicatorFlow.emit(true)
         val unsyncedResources =
           fhirEngine
             .getUnsyncedLocalChanges()
@@ -169,19 +200,8 @@ constructor(
             .map { it.key to it.value }
 
         showProgressIndicatorFlow.emit(false)
-
-        if (unsyncedResources.isNullOrEmpty()) {
-          withContext(dispatcherProvider.main()) {
-            context.showToast(context.getString(R.string.all_data_synced))
-          }
-        } else {
-          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
-        }
+        unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
       }
     }
-  }
-
-  fun dismissInsightsView() {
-    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
   }
 }
