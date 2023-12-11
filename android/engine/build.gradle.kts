@@ -141,6 +141,7 @@ dependencies {
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
   implementation(libs.datastore)
+  implementation(libs.datastore.preferences)
   implementation(libs.cqf.cql.evaluator) {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
