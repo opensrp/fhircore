@@ -50,7 +50,6 @@ import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.quest.R
@@ -77,7 +76,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT,
+        type = "DEFAULT",
         extraParams =
           listOf(
             ActionParameter(
