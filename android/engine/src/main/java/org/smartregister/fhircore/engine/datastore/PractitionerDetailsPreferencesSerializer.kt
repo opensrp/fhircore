@@ -6,14 +6,14 @@ import org.apache.commons.lang3.SerializationException
 import java.io.InputStream
 import java.io.OutputStream
 
-object PractitionerDetailsPreferencesSerializer: Serializer<SerializablePractitionerDetails> {
-    override val defaultValue: SerializablePractitionerDetails
-        get() = SerializablePractitionerDetails()
+object PractitionerDetailsPreferencesSerializer: Serializer<ProtoDataStoreParams> {
+    override val defaultValue: ProtoDataStoreParams
+        get() = ProtoDataStoreParams()
 
-    override suspend fun readFrom(input: InputStream): SerializablePractitionerDetails {
+    override suspend fun readFrom(input: InputStream): ProtoDataStoreParams {
         return try {
             Json.decodeFromString(
-                deserializer = SerializablePractitionerDetails.serializer(),
+                deserializer = ProtoDataStoreParams.serializer(),
                 string = input.readBytes().decodeToString()
             )
         } catch (e: SerializationException) {
@@ -22,10 +22,10 @@ object PractitionerDetailsPreferencesSerializer: Serializer<SerializablePractiti
         }
     }
 
-    override suspend fun writeTo(t: SerializablePractitionerDetails, output: OutputStream) {
+    override suspend fun writeTo(t: ProtoDataStoreParams, output: OutputStream) {
         output.write(
             Json.encodeToString(
-                    serializer = SerializablePractitionerDetails.serializer(),
+                    serializer = ProtoDataStoreParams.serializer(),
                     value = t
             ).encodeToByteArray()
         )
