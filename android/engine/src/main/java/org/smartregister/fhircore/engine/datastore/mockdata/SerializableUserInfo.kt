@@ -1,4 +1,4 @@
-package org.smartregister.fhircore.engine.datastore
+package org.smartregister.fhircore.engine.datastore.mockdata
 
 import kotlinx.serialization.Serializable
 
