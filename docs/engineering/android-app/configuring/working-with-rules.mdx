@@ -89,3 +89,45 @@ This rule is used within the ruels engine or workflow to generate the correct se
       ]
     }
 ```
+
+## Reading practitioner details from shared preferences using rules
+Below is a sample rules config to extract practitioner details from shared preferences. Note, the parameter passed inside  extractPractitionerInfoFromSharedPrefs
+should be named as shown on the rule. i.e
+
+| ParamName | Description | SharedPrefKey |
+|--|--|:--:|:--:|
+practitionerId | This is the assigned practitioner's ID | PRACTITIONER_ID |
+organization | This is the assigned practitioner's Organization | ORGANIZATION |
+careTeam | This is the assigned practitioner's Care Team | CARE_TEAM |
+practitionerLocation | This is the assigned practitioner's Location | PRACTITIONER_LOCATION |
+
+``` json
+        {
+          "name": "practitionerId",
+          "condition": "true",
+          "actions": [
+            "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
+          ]
+        },
+        {
+          "name": "careTeam",
+          "condition": "true",
+          "actions": [
+            "data.put('careTeam',service.extractPractitionerInfoFromSharedPrefs('CARE_TEAM'))"
+          ]
+        },
+        {
+          "name": "organization",
+          "condition": "true",
+          "actions": [
+            "data.put('organization',service.extractPractitionerInfoFromSharedPrefs('ORGANIZATION'))"
+          ]
+        },
+        {
+          "name": "practitionerLocation",
+          "condition": "true",
+          "actions": [
+            "data.put('practitionerLocation',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_LOCATION'))"
+          ]
+        }
+```
