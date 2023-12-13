@@ -79,7 +79,7 @@ fun ActionableButton(
     OutlinedButton(
       onClick = {
         if (buttonProperties.enabled.toBoolean() &&
-            (status == ServiceStatus.DUE.name || status == ServiceStatus.OVERDUE.name || clickable)
+            (status == ServiceStatus.DUE.name || status == ServiceStatus.OVERDUE.name || true)
         ) {
           buttonProperties.actions.handleClickEvent(
             navController = navController,

@@ -105,7 +105,6 @@ constructor(
             { value = of(CarePlanStatus.DRAFT.toCode()) },
             { value = of(CarePlanStatus.ACTIVE.toCode()) },
             { value = of(CarePlanStatus.ONHOLD.toCode()) },
-            { value = of(CarePlanStatus.ENTEREDINERROR.toCode()) },
             { value = of(CarePlanStatus.UNKNOWN.toCode()) }
           )
         }
