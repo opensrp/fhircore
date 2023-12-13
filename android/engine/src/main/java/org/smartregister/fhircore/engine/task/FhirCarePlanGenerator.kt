@@ -74,7 +74,7 @@ constructor(
   val fhirPathEngine: FHIRPathEngine,
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
-  val fhirTaskUtil: FhirTaskUtil
+  val fhirTaskUtil: FhirResourceUtil
 ) {
   val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -176,9 +176,16 @@ constructor(
       }
     }
 
+    val carePlanTasks = output.contained.filterIsInstance<Task>()
+
     if (carePlanModified) saveCarePlan(output)
 
-    fhirTaskUtil.updateTaskStatuses()
+    if (carePlanTasks.isNotEmpty()) {
+      fhirTaskUtil.updateUpcomingTasksToDue(
+        subject = subject.asReference(),
+        taskResourcesToFilterBy = carePlanTasks,
+      )
+    }
 
     return if (output.hasActivity()) output else null
   }
@@ -358,17 +365,6 @@ constructor(
       }
   }
 
-  fun closeResource(resource: Resource) {
-    when (resource) {
-      is Task -> {
-        resource.status = TaskStatus.CANCELLED
-        resource.lastModified = Date()
-      }
-      is CarePlan -> {
-        resource.status = CarePlan.CarePlanStatus.COMPLETED
-      }
-    }
-  }
   fun evaluateToBoolean(
     subject: Resource,
     bundle: Bundle,

@@ -28,12 +28,16 @@ import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
+import org.smartregister.fhircore.engine.cql.R4MeasureProcessorExt
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.addParams
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.isSameAs
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -47,7 +51,8 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
-  val fhirOperator: FhirOperator
+  private val fhirOperator: FhirOperator,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -56,7 +61,10 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
   ) {
+
+  val measureProcessorExt by lazy { R4MeasureProcessorExt.buildMeasureProcessorExt(fhirOperator) }
 
   /**
    * If running a measure for any subject throws a null pointer exception the measures for
@@ -76,6 +84,7 @@ constructor(
     subjects: List<String>,
     existing: List<MeasureReport>,
     practitionerId: String?,
+    params: Map<String, String>,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -90,6 +99,7 @@ constructor(
                 endDateFormatted = endDateFormatted,
                 subject = it,
                 practitionerId = practitionerId,
+                params = params,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
@@ -101,19 +111,21 @@ constructor(
             endDateFormatted = endDateFormatted,
             subject = null,
             practitionerId = practitionerId,
+            params = params,
           )
             .also { measureReport.add(it) }
         }
       }
 
       measureReport.forEach { report ->
-        // if report exists override instead of creating a new one
-        existing
-          .find {
-            it.measure == report.measure &&
-              (!it.hasSubject() || it.subject.reference == report.subject.reference)
-          }
-          ?.let { existing -> report.id = existing.id }
+        // add parameters sent to library runner in contained as Parameters to track the exact/all
+        // filters passed
+        report.addParams(params)
+
+        // if report exists override instead of creating a new one; existing report should satisfy
+        // all filters
+        existing.find { report.isSameAs(it) }?.let { report.id = it.id }
+
         addOrUpdate(resource = report)
       }
     } catch (exception: NullPointerException) {
@@ -139,14 +151,16 @@ constructor(
     endDateFormatted: String,
     subject: String?,
     practitionerId: String?,
+    params: Map<String, String>,
   ): MeasureReport {
-    return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
-      start = startDateFormatted,
-      end = endDateFormatted,
-      reportType = reportType,
-      subject = subject,
-      practitioner = practitionerId,
+    return measureProcessorExt.evaluateMeasure(
+      measureUrl,
+      startDateFormatted,
+      endDateFormatted,
+      reportType,
+      subject,
+      practitionerId,
+      params,
     )
   }
 

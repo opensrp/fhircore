@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
@@ -85,6 +86,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -102,6 +104,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private lateinit var defaultRepository: DefaultRepository
   @Inject lateinit var configRulesExecutor: ConfigRulesExecutor
   private lateinit var spiedConfigService: ConfigService
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Before
   fun setUp() {
@@ -117,7 +120,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
-        configRulesExecutor = configRulesExecutor
+        configRulesExecutor = configRulesExecutor,
+        fhirPathDataExtractor = fhirPathDataExtractor
       )
   }
 
@@ -564,7 +568,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          configRulesExecutor = mockk()
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } returns
@@ -639,7 +644,8 @@ class DefaultRepositoryTest : RobolectricTest() {
           sharedPreferencesHelper = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
-          configRulesExecutor = mockk()
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor
         )
       )
 
@@ -804,6 +810,50 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlan.status)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnTrueIfProvidedExpressionEvaluatesToTrue() {
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "ready"))
+      )
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertTrue(result)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnFalseIfProvidedExpressionEvaluatesToFalse() {
+    val resourceConfig =
+      ResourceConfig(
+        resource = ResourceType.Task,
+        filterFhirPathExpressions = listOf(KeyValueConfig("Task.status", "cancelled"))
+      )
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertFalse(result)
+  }
+
+  @Test
+  fun testFilterRelatedResourcesShouldReturnTrueIfExpressionIsNotProvided() {
+    val resourceConfig = ResourceConfig(resource = ResourceType.Task)
+    val task =
+      Task().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Task.TaskStatus.READY
+      }
+    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    Assert.assertTrue(result)
   }
 
   @Test

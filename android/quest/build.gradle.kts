@@ -53,8 +53,8 @@ android {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 33
-    versionCode = 3
-    versionName = "0.2.4"
+    versionCode = 8
+    versionName = "1.0.2"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -171,11 +171,11 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
     }
 
-    create("ecbis_preview") {
+    create("ecbis_training") {
       dimension = "apps"
-      applicationIdSuffix = ".ecbis_preview"
-      versionNameSuffix = "-ecbis_preview"
-      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
+      applicationIdSuffix = ".ecbis_training"
+      versionNameSuffix = "-ecbis_training"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Training"
     }
 
     create("g6pd") {
@@ -326,7 +326,10 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
+  implementation(libs.cql.evaluator.measure.hapi) {
+    exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "ca.uhn.hapi.fhir")
+  }
 
   // Annotation processors
   kapt(libs.hilt.compiler)

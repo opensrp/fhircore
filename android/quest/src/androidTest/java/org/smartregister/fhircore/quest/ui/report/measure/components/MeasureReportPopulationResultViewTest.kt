@@ -49,7 +49,7 @@ class MeasureReportPopulationResultViewTest {
         count = "2",
         indicatorTitle = "Indicator1",
         dataList = measureReportIndividualResultList,
-        measureReportDenominator = 2
+        measureReportDenominator = "2"
       )
     )
 
@@ -75,7 +75,7 @@ class MeasureReportPopulationResultViewTest {
     composeTestRule.onNodeWithTag(POPULATION_COUNT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule
       .onNodeWithText(
-        measureReportPopulationResultList.first().measureReportDenominator.toString().uppercase()
+        measureReportPopulationResultList.first().measureReportDenominator.uppercase()
       )
       .assertExists()
       .assertIsDisplayed()

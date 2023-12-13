@@ -66,7 +66,6 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -76,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 open class DefaultRepository
@@ -86,7 +86,8 @@ constructor(
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
-  open val configRulesExecutor: ConfigRulesExecutor
+  open val configRulesExecutor: ConfigRulesExecutor,
+  open val fhirPathDataExtractor: FhirPathDataExtractor,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -649,8 +650,21 @@ constructor(
 
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val computedValuesMap =
+    val initialComputedValuesMap =
       configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
+
+    /**
+     * Data queries for retrieving resources require the id to be provided in the format
+     * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
+     * up to the server the id is updated with history information e.g
+     * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
+     * [ResourceType/UUID] format and updated in the computedValuesMap
+     */
+    val computedValuesMap = mutableMapOf<String, Any>()
+    initialComputedValuesMap.forEach { entry ->
+      computedValuesMap[entry.key] =
+        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+    }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
     val search =
@@ -684,7 +698,9 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        closeResource(resource, resourceConfig)
+        if (filterRelatedResource(resource, resourceConfig)) {
+          closeResource(resource, resourceConfig)
+        }
       }
     }
   }
@@ -700,48 +716,36 @@ constructor(
       is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
       is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
       is Condition -> {
-        // TODO Remove the hardcoded custom logic for closing PNC Condition i.e remove if block
-        // https://github.com/opensrp/fhircore/issues/2488
-        /**
-         * The logic for closing PNC Condition makes 2 assumptions
-         * 1. The eventResource id value is "pncConditionToClose" or "sickChildConditionToClose"
-         * 2. Conditions to be closed must have an onset that is more than 28 days in the past
-         */
-        if (resourceConfig.id == PNC_CONDITION_TO_CLOSE_RESOURCE_ID ||
-            resourceConfig.id == SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID
-        ) {
-          val closePncCondition = resource.onset.dateTimeValue().value.daysPassed() > 28
-          val closeSickChildCondition = resource.onset.dateTimeValue().value.daysPassed() > 7
-          if (closePncCondition || closeSickChildCondition) {
-            resource.clinicalStatus =
-              CodeableConcept().apply {
-                coding =
-                  listOf(
-                    Coding().apply {
-                      system = SNOMED_SYSTEM
-                      display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                      code = PATIENT_CONDITION_RESOLVED_CODE
-                    }
-                  )
-              }
+        resource.clinicalStatus =
+          CodeableConcept().apply {
+            coding =
+              listOf(
+                Coding().apply {
+                  system = SNOMED_SYSTEM
+                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
+                  code = PATIENT_CONDITION_RESOLVED_CODE
+                },
+              )
           }
-        } else {
-          resource.clinicalStatus =
-            CodeableConcept().apply {
-              coding =
-                listOf(
-                  Coding().apply {
-                    system = SNOMED_SYSTEM
-                    display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                    code = PATIENT_CONDITION_RESOLVED_CODE
-                  }
-                )
-            }
-        }
       }
       is ServiceRequest -> resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
     }
     fhirEngine.update(resource)
+  }
+
+  /**
+   * Filtering the Related Resources is achieved by use of the filterFhirPathExpression
+   * configuration. It specifies which field and values to filter the resources by.
+   */
+  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+    return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
+      true
+    } else {
+      resourceConfig.filterFhirPathExpressions?.any { filterFhirPathExpression ->
+        fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
+          filterFhirPathExpression.value
+      } == true
+    }
   }
 
   /**
@@ -754,9 +758,9 @@ constructor(
   )
 
   companion object {
-    const val SNOMED_SYSTEM = "http://www.snomed.org/"
-    const val PATIENT_CONDITION_RESOLVED_CODE = "370996005"
-    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "resolved"
+    const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
+    const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
+    const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
     const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
     const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
   }
