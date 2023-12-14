@@ -42,6 +42,16 @@ The app is architectured in the following manner:
 
 Generated documentation is available [here](https://docs.opensrp.io/dokka/).
 
+#### Data flow diagrams
+
+OpenSRP apps are defined through data that creates functionality and is mediated by tooling. THe below digram describes these relationships.
+
+![](/img/structure-of-a-fhir-app.png)
+
+The below digram shows how healthcare workflows are implemented through content and tooling in the context of an antenatal care program with generated data.
+
+![](/img/health-workflows-fhir-app.png)
+
 ### Data Access
 
 The application uses FHIR Engine APIs from Google's [Android FHIR SDK](https://github.com/google/android-fhir) (which internally uses
