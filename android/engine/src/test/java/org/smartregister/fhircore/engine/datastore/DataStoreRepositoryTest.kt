@@ -13,6 +13,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.datastore.mockdata.PrefsDataStoreParams
+import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -44,6 +45,16 @@ internal class DataStoreRepositoryTest: RobolectricTest() {
     }
 
     @Test
+    fun testReadInitialPractitionerProtoStore() {
+        val expectedProtoStoreValue = SerializablePractitionerDetails()
+        runTest {
+            dataStoresRepository.practitioner.map {
+                assert(it.equals(expectedProtoStoreValue))
+            }
+        }
+    }
+
+    @Test
     fun testWriteAppId() {
         val newAppId = "new_app_id"
         val key = keys.APP_ID
@@ -51,6 +62,17 @@ internal class DataStoreRepositoryTest: RobolectricTest() {
         runTest {
             dataStoresRepository.writePrefs(key, newAppId)
             assert(dataStoresRepository.preferences.first().appId.equals(newAppId))
+        }
+    }
+
+    @Test
+    fun testWritePractitionerDetails() {
+        val valueToWrite = SerializablePractitionerDetails( name = "Kelvin", id = 1 )
+        runTest {
+            dataStoresRepository.writePractitioner(valueToWrite)
+            dataStoresRepository.practitioner.map {
+                assert(it.equals(valueToWrite))
+            }
         }
     }
 }
