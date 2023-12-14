@@ -32,6 +32,8 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.datastore.DataStoreHelper
+import org.smartregister.fhircore.engine.datastore.DataStoresRepository
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -61,10 +63,23 @@ class CoreModule {
   fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
     KnowledgeManager.create(context)
 
-  @Singleton @Provides fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
+  @Singleton
+  @Provides
+  fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
 
   @Singleton
   @Provides
   fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
     FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
+
+  @Singleton
+  @Provides
+  fun provideDataStoresRepository(@ApplicationContext context: Context): DataStoresRepository =
+          DataStoresRepository(context)
+
+  @Singleton
+  @Provides
+  fun provideDataStoreHelper(repository: DataStoresRepository) =
+          DataStoreHelper(repository)
+
 }
