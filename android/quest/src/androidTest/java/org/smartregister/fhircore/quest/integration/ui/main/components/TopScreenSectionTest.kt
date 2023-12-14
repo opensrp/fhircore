@@ -22,7 +22,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.main.components.LEADING_ICON_TEST_TAG
@@ -39,7 +38,6 @@ class TopScreenSectionTest {
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  @Ignore("Flaky test to be fixed")
   @Test
   fun testTopScreenSectionRendersTitleRowCorrectly() {
     composeTestRule.setContent {
@@ -70,7 +68,6 @@ class TopScreenSectionTest {
   }
 
   @Test
-  @Ignore("Flaky test to be fixed")
   fun testTopScreenSectionRendersSearchRowCorrectly() {
     composeTestRule.setContent {
       TopScreenSection(
@@ -99,7 +96,6 @@ class TopScreenSectionTest {
       .assertIsDisplayed()
   }
 
-  @Ignore("Flaky test to be fixed")
   @Test
   fun testThatTrailingIconClickCallsTheListener() {
     var clicked = false
