@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
 
 @Singleton
 class DataStoresRepository @Inject constructor( private val context: Context ) {
-    companion object PreferenceKeys {
+    companion object Keys {
         val APP_ID = stringPreferencesKey("appId")
         val LANG = stringPreferencesKey("lang")
     }

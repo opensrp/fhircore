@@ -16,7 +16,7 @@ import javax.inject.Singleton
 class DataStoreHelper @Inject constructor(private val dataStoresRepository: DataStoresRepository){
 
     val preferences = dataStoresRepository.preferences
-    suspend fun <T> writePreference ( key: Preferences.Key<T>, value: T ) = dataStoresRepository.writePrefs(key, value)
+    suspend fun <T> writePreference ( key: Preferences.Key<T>, value: T) = dataStoresRepository.writePrefs(key, value)
 
     val practitionerDetails = dataStoresRepository.practitioner
     suspend fun writePractitioner (serializablePractitionerDetails: SerializablePractitionerDetails) = dataStoresRepository.writePractitioner(serializablePractitionerDetails)
