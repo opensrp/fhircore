@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.0.0">
 <title data-rh="true">Introduction | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/engineering/android-app"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Introduction | OpenSRP Documentation"><meta data-rh="true" name="description" content="This documentation covers the OpenSRP Android App. This is a Kotlin application for delivering configurable, offline-capable, and mobile-first healthcare project implementations."><meta data-rh="true" property="og:description" content="This documentation covers the OpenSRP Android App. This is a Kotlin application for delivering configurable, offline-capable, and mobile-first healthcare project implementations."><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/engineering/android-app"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/android-app" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/android-app" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.6faaae7e.css">
-<script src="/assets/js/runtime~main.61954e71.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.95eedea9.js" defer="defer"></script>
 <script src="/assets/js/main.95c7d12e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -42,6 +42,11 @@
 <li>The entry point of the application also follows Single-Activity architecture after the user is logged in.</li>
 </ol>
 <p>Generated documentation is available <a href="https://docs.opensrp.io/dokka/" target="_blank" rel="noopener noreferrer">here</a>.</p>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="data-flow-diagrams">Data flow diagrams<a href="#data-flow-diagrams" class="hash-link" aria-label="Direct link to Data flow diagrams" title="Direct link to Data flow diagrams">​</a></h4>
+<p>OpenSRP apps are defined through data that creates functionality and is mediated by tooling. THe below digram describes these relationships.</p>
+<p><img loading="lazy" src="/assets/images/structure-of-a-fhir-app-a406c7f2bfe728674b28dafdde426f60.png" width="1856" height="972" class="img_ev3q"></p>
+<p>The below digram shows how healthcare workflows are implemented through content and tooling in the context of an antenatal care program with generated data.</p>
+<p><img loading="lazy" src="/assets/images/health-workflows-fhir-app-1dde38991f65ef689b52aa6db993c767.png" width="2141" height="988" class="img_ev3q"></p>
 <h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-access">Data Access<a href="#data-access" class="hash-link" aria-label="Direct link to Data Access" title="Direct link to Data Access">​</a></h3>
 <p>The application uses FHIR Engine APIs from Google&#x27;s <a href="https://github.com/google/android-fhir" target="_blank" rel="noopener noreferrer">Android FHIR SDK</a> (which internally uses
 <a href="https://developer.android.com/jetpack/androidx/releases/room" target="_blank" rel="noopener noreferrer">Room</a> libary) to access the local Sqlite database.</p>
