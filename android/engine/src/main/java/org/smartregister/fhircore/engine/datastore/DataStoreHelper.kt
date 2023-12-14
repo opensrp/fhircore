@@ -1,6 +1,8 @@
 package org.smartregister.fhircore.engine.datastore
 
-import org.smartregister.fhircore.engine.datastore.prefsdatastore.PrefsDataStoreProvider
+import androidx.datastore.preferences.core.Preferences
+import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
+import org.smartregister.fhircore.engine.datastore.mockdata.SerializableUserInfo
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,25 +13,32 @@ import javax.inject.Singleton
  *
  */
 @Singleton
-class DataStoreHelper @Inject constructor(
-        private val prefsDataStoreProvider: PrefsDataStoreProvider,
-){
+class DataStoreHelper @Inject constructor(private val dataStoresRepository: DataStoresRepository){
 
-    fun <String, Boole> read() {
-    prefsDataStoreProvider.
-    }
+    val preferences = dataStoresRepository.preferences
+    suspend fun <T> writePreference ( key: Preferences.Key<T>, value: T ) = dataStoresRepository.writePrefs(key, value)
 
-    fun read() {
+    val practitionerDetails = dataStoresRepository.practitioner
+    suspend fun writePractitioner (serializablePractitionerDetails: SerializablePractitionerDetails) = dataStoresRepository.writePractitioner(serializablePractitionerDetails)
 
-    }
+    val userInfo = dataStoresRepository.userInfo
+    suspend fun writeUserInfo(serializableUserInfo: SerializableUserInfo) = dataStoresRepository.writeUserInfo(serializableUserInfo)
 
-    // For writing Primitives
-    fun <T> write(key: String, value: T) {
-        when(value) {
-            is Int ->
-                storesProvider.write
-        }
-    }
-
-    fun
+    /*
+    * Attempt at generics for proto data store fails unless we introduce a key that enables us to know the data type before hand
+    * Second attempt still failed. cant cast generic to concrete type. Can only check if it is of that type
+     */
+//    suspend fun <T: Object> writeObject(value: T ) {
+//        when(value) {
+//            is String, Int, Long, Boolean -> throw RuntimeException("Error: writeObject() does not accept built in Objects. Use writePreference()") // we don't want to store primitive data types here. Serialization cost
+//            is SerializablePractitionerDetails -> dataStoresRepository.writePractitioner(T as SerializablePractitionerDetails)
+//            is SerializablePractitionerDetails -> dataStoresRepository.writeUserInfo(T as SerializablePractitionerDetails)
+//        }
+//    }
+//
+//    suspend fun <T> writeClass( key: ProtoKeys, value: T) {
+//        when(key) {
+//            ProtoKeys.PRACTITIONER_DETAILS -> dataStoresRepository.writePractitioner(T as SerializablePractitionerDetails)
+//        }
+//    }
 }

@@ -14,12 +14,12 @@ const val DATASTORE_NAME = "app_primitive_params"
 val Context.dataStore by preferencesDataStore(name = DATASTORE_NAME)
 
 // Proto Datastore(s)
-private val Context.practitioner: DataStore<SerializablePractitionerDetails> by dataStore(
+val Context.practitionerProtoStore: DataStore<SerializablePractitionerDetails> by dataStore(
         fileName = fileNames.PRACTITIONER_DETAILS_DATASTORE_JSON,
         serializer = PractitionerDetailsDataStoreSerializer
 )
 
-private val Context.userInfoProtoStore: DataStore<SerializableUserInfo> by dataStore(
+val Context.userInfoProtoStore: DataStore<SerializableUserInfo> by dataStore(
         fileName = fileNames.USER_INFO_DATASTORE_JSON,
         serializer = UserInfoDataStoreSerializer
 )
