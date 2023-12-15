@@ -75,6 +75,28 @@ Below is a sample dataQuery config to filter register data by configRules.
 `configRules` | List of `RuleConfig`s | No | `null` |
 `contentBackgroundColor` | `String` | No | `#FFFFFF` |
 
+## Dynamic data pass between relatedResources
+
+The related resources contains an array that lists related resources along the associated search parameters e.g Conditions ,Tasks and Careplans
+
+```json
+    "relatedResources": [
+      {
+        "resource": "Condition",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
+  
+```
+
 ## Dynamic data pass between profiles and registers
 
 For you to pass data between profiles you can make use of **action config params** which are executed when **LAUNCH_PROFILE** is invoked.
