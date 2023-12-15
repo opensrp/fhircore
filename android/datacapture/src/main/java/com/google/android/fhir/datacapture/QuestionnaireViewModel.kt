@@ -43,6 +43,7 @@ import com.google.android.fhir.datacapture.extensions.isHidden
 import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.extensions.isExpressionReferencedBy
 import com.google.android.fhir.datacapture.extensions.isEnableWhenReferencedBy
+import com.google.android.fhir.datacapture.extensions.isHelpCode
 import com.google.android.fhir.datacapture.extensions.isVariableReferencedBy
 import com.google.android.fhir.datacapture.extensions.localizedTextSpanned
 import com.google.android.fhir.datacapture.extensions.packRepeatedGroups
@@ -257,6 +258,19 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
 
   /** Toggles review mode. */
   private val isInReviewModeFlow = MutableStateFlow(shouldShowReviewPageFirst)
+
+  /** Tracks which help card has been opened. */
+  private val openedHelpCardSet: MutableStateFlow<MutableSet<String>> =
+    MutableStateFlow(mutableSetOf())
+
+  /** Callback to save the help card state. */
+  private val helpCardStateChangedCallback: (Boolean, String) -> Unit = { shouldBeVisible, linkId ->
+    if (shouldBeVisible) {
+      openedHelpCardSet.update { it.apply { add(linkId) } }
+    } else {
+      openedHelpCardSet.update { it.apply { remove(linkId) } }
+    }
+  }
 
   private val isLoadingNextPage = MutableStateFlow(false)
 
@@ -834,6 +848,9 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
     }
 
     val items = buildList {
+      val itemHelpCard = questionnaireItem.item.firstOrNull { it.isHelpCode }
+      val isHelpCard = itemHelpCard != null
+      val isHelpCardOpen = openedHelpCardSet.value.any { it == itemHelpCard?.linkId }
       // Add an item for the question itself
       add(
         QuestionnaireAdapterItem.Question(
@@ -858,6 +875,8 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
                 showRequiredText = showRequiredText,
                 showOptionalText = showOptionalText,
               ),
+            isHelpCardOpen = isHelpCard && isHelpCardOpen,
+            helpCardStateChangedCallback = helpCardStateChangedCallback,
           ),
         ),
       )
