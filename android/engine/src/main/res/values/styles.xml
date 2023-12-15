@@ -65,7 +65,7 @@
             @style/TextAppearance.Material3.BodyLarge
         </item>
         <item name="questionnaireHelpHeaderStyle">@style/AppTheme.HelpHeaderStyle</item>
-<!--        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>-->
+        <item name="questionnaireMediaImageStyle">@style/AppTheme.MediaImageStyle</item>
     </style>
 
     <style name="AppTheme.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
@@ -87,6 +87,7 @@
     </style>
 
     <style name="AppTheme.MediaImageStyle" parent="">
+<!--        <item name="android:maxHeight">@dimen/item_media_image_max_width</item>-->
         <item name="android:layout_gravity">center</item>
         <item
             name="android:layout_marginTop"
@@ -94,12 +95,12 @@
         <item
             name="android:layout_marginBottom"
             >@dimen/item_media_image_margin_vertical</item>
-        <item
-            name="android:layout_marginStart"
-            >@dimen/item_media_image_margin_horizontal</item>
-        <item
-            name="android:layout_marginEnd"
-            >@dimen/item_media_image_margin_horizontal</item>
+<!--        <item-->
+<!--            name="android:layout_marginStart"-->
+<!--            >@dimen/item_media_image_margin_horizontal</item>-->
+<!--        <item-->
+<!--            name="android:layout_marginEnd"-->
+<!--            >@dimen/item_media_image_margin_horizontal</item>-->
     </style>
 
 </resources>
