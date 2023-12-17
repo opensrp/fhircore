@@ -1,0 +1,102 @@
+{
+    "resourceType": "Measure",
+    "id": "1147502",
+    "meta": {
+      "versionId": "3",
+      "lastUpdated": "2023-12-03T12:49:21.184+00:00",
+      "source": "#MG7H1c4G2mBq5Dd2"
+    },
+    "url": "http://fhir.mpower-social.com:7070/fhir/Measure/1147502",
+    "name": "HOUSEHOLDIND01",
+    "title": "Household and members indicators by age and gender",
+    "status": "draft",
+    "experimental": false,
+    "relatedArtifact": [
+      {
+        "type": "depends-on",
+        "label": "FHIRHelpers|4.0.1",
+        "resource": "http://fhir.mpower-social.com:7070/fhir/Library/971427"
+      }
+    ],
+    "library": [
+      "http://fhir.mpower-social.com:7070/fhir/Library/1147501"
+    ],
+    "scoring": {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-scoring",
+          "code": "cohort"
+        }
+      ]
+    },
+    "type": [
+      {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/measure-type",
+            "code": "process"
+          }
+        ]
+      }
+    ],
+    "improvementNotation": {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/measure-improvement-notation",
+          "code": "increase"
+        }
+      ]
+    },
+    "group": [
+      {
+        "id": "by-gender",
+        "population": [
+          {
+            "id": "initial-population",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/measure-population",
+                  "code": "initial-population"
+                }
+              ]
+            },
+            "criteria": {
+              "language": "text/cql-identifier",
+              "expression": "Patients"
+            }
+          }
+        ],
+        "stratifier": [
+          {
+            "criteria": {
+              "language": "text/cql-identifier",
+              "expression": "Gender Stratifier"
+            }
+          },
+          {
+            "criteria": {
+              "language": "text/cql-identifier",
+              "expression": "Age Stratifier"
+            }
+          }
+        ]
+      }
+    ],
+    "supplementalData": [
+      {
+        "code": {
+          "coding": [
+            {
+              "code": "populationId",
+              "display": "Households"
+            }
+          ]
+        },
+        "criteria": {
+          "language": "text/cql-identifier",
+          "expression": "Group"
+        }
+      }
+    ]
+  }

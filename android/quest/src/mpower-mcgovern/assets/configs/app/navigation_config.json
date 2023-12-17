@@ -287,6 +287,22 @@
       ]
     },
     {
+      "id": "serviceDeliveryReports",
+      "visible": true,
+      "display": "Service Delivery Reports",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_reports"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_REPORT",
+          "id": "serviceDeliveryMeasureReport"
+        }
+      ]
+    },
+    {
       "id": "settings",
       "visible": true,
       "display": "Settings",
