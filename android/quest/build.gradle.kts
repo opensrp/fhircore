@@ -243,11 +243,26 @@ android {
       manifestPlaceholders["appLabel"] = "SID EIR"
     }
 
-    create("wdf") {
+    create("diabetesCompass") {
       dimension = "apps"
-      applicationIdSuffix = ".wdf"
-      versionNameSuffix = "-wdf"
+      applicationIdSuffix = ".diabetesCompass"
+      versionNameSuffix = "-diabetesCompass"
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
+    }
+
+
+    create("diabetesCompassTz") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassTz"
+      versionNameSuffix = "-diabetesCompassTz"
+      manifestPlaceholders["appLabel"] = "Gothomis-C"
+    }
+
+    create("diabetesCompassClinic") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassClinic"
+      versionNameSuffix = "-diabetesCompassClinic"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass Clinic"
     }
 
     create("zeir") {
