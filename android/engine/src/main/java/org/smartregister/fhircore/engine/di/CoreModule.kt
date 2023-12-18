@@ -28,13 +28,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.datastore.DataStoreHelper
-import org.smartregister.fhircore.engine.datastore.DataStoresRepository
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module(includes = [NetworkModule::class, DispatcherModule::class, WorkManagerModule::class])
@@ -71,15 +69,5 @@ class CoreModule {
   @Provides
   fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
     FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
-
-  @Singleton
-  @Provides
-  fun provideDataStoresRepository(@ApplicationContext context: Context): DataStoresRepository =
-          DataStoresRepository(context)
-
-  @Singleton
-  @Provides
-  fun provideDataStoreHelper(repository: DataStoresRepository) =
-          DataStoreHelper(repository)
 
 }
