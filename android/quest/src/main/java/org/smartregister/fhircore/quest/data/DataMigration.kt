@@ -86,10 +86,11 @@ constructor(
    * shared preferences and performs the migration only if the new version is greater than or equal
    * to the latest migration version.
    *
-   * This function uses JSONPath instead of FHIRPath, syntax appear similar with a few differences.
-   * JSONPath uses the '$' to refer to the root of the JSON unlike FHIRPath that uses the
-   * [ResourceType] .The implementation uses both '$' and '[ResourceType]', the [ResourceType] will
-   * be replaced with a dollar sign at runtime.
+   * This function uses JSONPath instead of FHIRPath because JSONPath allows setting of values for a
+   * given path. The syntax is almost similar to FHIRPath with a few exceptions. JSONPath uses the
+   * '$' to refer to the root of the JSON unlike FHIRPath that uses the [ResourceType] .The
+   * implementation uses both '$' and '[ResourceType]', the [ResourceType] will be replaced with a
+   * dollar sign at runtime.
    *
    * Examples: Given this Patient object:
    * ```
@@ -115,7 +116,7 @@ constructor(
    * }
    * ```
    *
-   * Valid expression (format in key, value -> description):
+   * Valid expressions (format in key, value -> description) include:
    * ```
    * "$.name[0].use", "casual" -> Update the first name usage from "official" to "casual"
    * "Patient.gender", "male" -> Update the gender from "female" to "male"
