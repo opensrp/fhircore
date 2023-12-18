@@ -1,23 +1,24 @@
 package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
+import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializableUserInfo
-import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment.Companion.TAG
-import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+const val DATASTORE_NAME = "preferences_datastore"
+val Context.dataStore : DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
+
 @Singleton
-class DataStoresPreference @Inject constructor(@ApplicationContext val context: Context ) {
+class PreferenceDataStore @Inject constructor(@ApplicationContext val context: Context ) {
     fun <T> read(key: Preferences.Key<T>) = context.dataStore.data
         .catch { exception ->
         if (exception is IOException) {
@@ -36,7 +37,9 @@ class DataStoresPreference @Inject constructor(@ApplicationContext val context: 
     }
 
     companion object Keys {
-        val APP_ID = stringPreferencesKey("appId")
-        val LANG = stringPreferencesKey("lang")
+        val appIdKeyName = "appId"
+        val langKeyName = "lang"
+        val APP_ID by lazy { stringPreferencesKey(appIdKeyName) }
+        val LANG by lazy { stringPreferencesKey(langKeyName) }
     }
 }

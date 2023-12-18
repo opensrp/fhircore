@@ -4,6 +4,8 @@ import androidx.datastore.core.Serializer
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
 import org.smartregister.fhircore.engine.datastore.mockdata.SerializableUserInfo
+import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
+import timber.log.Timber
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -18,7 +20,7 @@ object UserInfoDataStoreSerializer: Serializer<SerializableUserInfo> {
                     string = input.readBytes().decodeToString()
             )
         } catch (e: SerializationException) {
-            e.printStackTrace()
+            Timber.tag(SerializerConstants.PROTOSTORE_SERIALIZER_TAG).d(e)
             defaultValue
         }
     }
