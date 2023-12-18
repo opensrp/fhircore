@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2023 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
@@ -8,38 +24,36 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 
 const val DATASTORE_NAME = "preferences_datastore"
-val Context.dataStore : DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
+val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
 
 @Singleton
-class PreferenceDataStore @Inject constructor(@ApplicationContext val context: Context ) {
-    fun <T> read(key: Preferences.Key<T>) = context.dataStore.data
-        .catch { exception ->
+class PreferenceDataStore @Inject constructor(@ApplicationContext val context: Context) {
+  fun <T> read(key: Preferences.Key<T>) =
+    context.dataStore.data
+      .catch { exception ->
         if (exception is IOException) {
-            emit(emptyPreferences())
+          emit(emptyPreferences())
         } else {
-            throw exception
+          throw exception
         }
-        }.map { preferences ->
-           preferences[key] as T
-        }
+      }
+      .map { preferences -> preferences[key] as T }
 
-    suspend fun <T> write(key: Preferences.Key<T>, data: T) {
-        context.dataStore.edit {preferences ->
-            preferences[key] = data
-        }
-    }
+  suspend fun <T> write(key: Preferences.Key<T>, data: T) {
+    context.dataStore.edit { preferences -> preferences[key] = data }
+  }
 
-    companion object Keys {
-        val appIdKeyName = "appId"
-        val langKeyName = "lang"
-        val APP_ID by lazy { stringPreferencesKey(appIdKeyName) }
-        val LANG by lazy { stringPreferencesKey(langKeyName) }
-    }
+  companion object Keys {
+    val appIdKeyName = "appId"
+    val langKeyName = "lang"
+    val APP_ID by lazy { stringPreferencesKey(appIdKeyName) }
+    val LANG by lazy { stringPreferencesKey(langKeyName) }
+  }
 }

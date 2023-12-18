@@ -22,6 +22,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -56,9 +59,6 @@ import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import javax.inject.Inject
 
 @HiltViewModel
 class AppSettingViewModel
