@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.configuration.migration
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  PRACTITIONER_LOCATION,
-  REMOTE_SYNC_RESOURCES,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET,
-  USER_INFO,
-  CARE_TEAM,
-  ORGANIZATION,
-  MIGRATION_VERSION,
-}
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.Configuration
+
+@Serializable
+data class DataMigrationConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.DataMigration.name,
+  val migrations: List<MigrationConfig>? = null,
+) : Configuration()
