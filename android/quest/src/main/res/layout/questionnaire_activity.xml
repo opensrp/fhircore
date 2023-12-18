@@ -51,6 +51,10 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp"
+            android:paddingRight="16dp"
+            android:paddingLeft="16dp"
             app:layout_constraintStart_toStartOf="parent" />
     </LinearLayout>
 </layout>
