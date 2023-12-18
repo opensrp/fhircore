@@ -8,104 +8,13 @@
       "title": "Child Immunization CarePlan",
       "status": "active",
       "description": "This action will assess careplan on registration to init careplan",
-      "kind": "CarePlan",
+      "kind": "Task",
       "dynamicValue": [
-        {
-          "path": "title",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%rootResource.title"
-          }
-        },
         {
           "path": "description",
           "expression": {
             "language": "text/fhirpath",
             "expression": "%rootResource.description"
-          }
-        },
-        {
-          "path": "instantiatesCanonical",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
-          }
-        },
-        {
-          "path": "status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'active'"
-          }
-        },
-        {
-          "path": "intent",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'plan'"
-          }
-        },
-        {
-          "path": "created",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "now()"
-          }
-        },
-        {
-          "path": "subject.reference",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.id.replaceMatches('/_history/.*', '')"
-          }
-        },
-        {
-          "path": "author",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
-          }
-        },
-        {
-          "path": "period.start",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.birthDate"
-          }
-        },
-        {
-          "path": "period.end",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.birthDate + 4017 'days'"
-          }
-        },
-        {
-          "path": "activity.detail.kind",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'Task'"
-          }
-        },
-        {
-          "path": "activity.detail.status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'in-progress'"
-          }
-        },
-        {
-          "path": "activity.detail.description",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'This action will assess careplan on registration to init careplan'"
-          }
-        },
-        {
-          "path": "activity.detail.performer",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "$this.generalPractitioner.first()"
           }
         }
       ]
@@ -650,7 +559,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -672,7 +581,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -695,7 +604,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -718,7 +627,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -741,7 +650,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -764,7 +673,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -787,7 +696,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -810,7 +719,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -833,7 +742,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -856,7 +765,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "$this is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= $this.birthDate"
+            "expression": "%subject is Patient and %resource.entry.first().resource is Patient and (today() - 60 'months') <= %subject.birthDate"
           }
         }
       ],
@@ -879,7 +788,7 @@
           "kind": "applicability",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "(($this is Patient) and (%resource.entry.first().resource is Patient) and ((today() - 60 'months') <= $this.birthDate) and ($this.gender = 'female'))"
+            "expression": "((%subject is Patient) and (%resource.entry.first().resource is Patient) and ((today() - 60 'months') <= %subject.birthDate) and (%subject.gender = 'female'))"
           }
         }
       ],

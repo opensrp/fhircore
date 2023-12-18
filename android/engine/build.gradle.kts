@@ -100,6 +100,8 @@ android {
     }
   }
 
+  lint { baseline = file("lint-baseline.xml") }
+
   testCoverage { jacocoVersion = "0.8.11" }
 }
 
@@ -195,6 +197,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
+  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9-SNAPSHOT")
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")

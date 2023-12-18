@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593" = 'eCBIS Child Immunization'
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593" = 'eCBIS Child Immunization'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
