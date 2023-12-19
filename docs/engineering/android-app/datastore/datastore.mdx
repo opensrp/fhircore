@@ -9,7 +9,7 @@ To register a key-value pair that you intend to store in the preferences datasto
 
 The read() method returns a flow. To observe the flow, call the function in the view model and store the resulting flow. You may then convert it to a StateFlow and expose it to the UI.
 
-The write() method can be used in the UI directly but it is preferable to expose it through a view model to follow the MVVM pattern.
+The `write()` method can be used in the UI directly but it is preferable to expose it through a view model to follow the MVVM pattern.
 
 Both `read()` and `write()` are Generic methods.
 
