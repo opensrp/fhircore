@@ -7,7 +7,7 @@ The interfaces exposing access to these two storage options are located in ```en
 ***PreferenceDataStore.kt***<br/>
 To register a key-value pair that you intend to store in the preferences datastore, add a key that enforces the type of data being stored and the name of the key in the Keys companion object.
 
-The read() method returns a flow. To observe the flow, call the function in the view model and store the resulting flow. You may then convert it to a StateFlow and expose it to the UI.
+The `read()` method returns a flow. To observe the flow, call the function in the view model and store the resulting flow. You may then convert it to a `StateFlow` and expose it to the UI.
 
 The `write()` method can be used in the UI directly but it is preferable to expose it through a view model to follow the MVVM pattern.
 
