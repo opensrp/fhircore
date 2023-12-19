@@ -11,7 +11,7 @@ The read() method returns a flow. To observe the flow, call the function in the 
 
 The write() method can be used in the UI directly but it is preferable to expose it through a view model to follow the MVVM pattern.
 
-Both read() and write() are Generic methods.
+Both `read()` and `write()` are Generic methods.
 
 ***ProtoDataStore.kt***<br/>
 Proto DataStore allows us to store objects in a type-safe way. For ease of adaptation, we use [Kotlinx serialization](https://kotlinlang.org/docs/serialization.html#serialize-and-deserialize-json) to allow us to use Kotlin data classes instead of Protobuf files to define the schema of the data being stored.
