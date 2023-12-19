@@ -26,8 +26,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializableUserInfo
+import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
+import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -48,7 +48,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testReadPractitionerDetails() {
-    val expectedPreferencesValue = SerializablePractitionerDetails()
+    val expectedPreferencesValue = PractitionerDetails()
     runTest {
       protoDataStore.practitioner.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
@@ -58,7 +58,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testWritePractitionerDetails() {
-    val valueToWrite = SerializablePractitionerDetails(name = "Kelvin", id = 1)
+    val valueToWrite = PractitionerDetails(name = "Kelvin", id = 1)
     runTest {
       protoDataStore.writePractitioner(valueToWrite)
       protoDataStore.practitioner.map { assert(it == (valueToWrite)) }
@@ -67,7 +67,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testReadUserInfo() {
-    val expectedPreferencesValue = SerializablePractitionerDetails()
+    val expectedPreferencesValue = PractitionerDetails()
     runTest {
       protoDataStore.practitioner.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
@@ -77,7 +77,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testWriteUserInfo() {
-    val valueToWrite = SerializableUserInfo(name = "Kelvin")
+    val valueToWrite = UserInfo(name = "Kelvin")
     runTest {
       protoDataStore.writeUserInfo(valueToWrite)
       protoDataStore.userInfo.map { assert(it == valueToWrite) }

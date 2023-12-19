@@ -19,6 +19,6 @@ package org.smartregister.fhircore.engine.datastore.mockdata
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SerializableUserInfo(
+data class UserInfo(
   val name: String = "sample name",
 )

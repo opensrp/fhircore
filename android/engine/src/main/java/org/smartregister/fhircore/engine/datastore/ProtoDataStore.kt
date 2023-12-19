@@ -24,8 +24,8 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.catch
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializableUserInfo
+import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
+import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
 import timber.log.Timber
@@ -34,13 +34,13 @@ private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.js
 private const val USER_INFO_DATASTORE_JSON = "user_info.json"
 private const val TAG = "Proto DataStore"
 
-val Context.practitionerProtoStore: DataStore<SerializablePractitionerDetails> by
+val Context.practitionerProtoStore: DataStore<PractitionerDetails> by
   dataStore(
     fileName = PRACTITIONER_DETAILS_DATASTORE_JSON,
     serializer = PractitionerDetailsDataStoreSerializer,
   )
 
-val Context.userInfoProtoStore: DataStore<SerializableUserInfo> by
+val Context.userInfoProtoStore: DataStore<UserInfo> by
   dataStore(
     fileName = USER_INFO_DATASTORE_JSON,
     serializer = UserInfoDataStoreSerializer,
@@ -53,17 +53,17 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
     context.practitionerProtoStore.data.catch { exception ->
       if (exception is IOException) {
         Timber.tag(TAG).e(exception, "Error reading practitioner details preferences.")
-        emit(SerializablePractitionerDetails())
+        emit(PractitionerDetails())
       } else {
         throw exception
       }
     }
 
-  suspend fun writePractitioner(serializablePractitionerDetails: SerializablePractitionerDetails) {
+  suspend fun writePractitioner(practitionerDetails: PractitionerDetails) {
     context.practitionerProtoStore.updateData { practitionerData ->
       practitionerData.copy(
-        name = serializablePractitionerDetails.name,
-        id = serializablePractitionerDetails.id,
+        name = practitionerDetails.name,
+        id = practitionerDetails.id,
       )
     }
   }
@@ -72,16 +72,16 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
     context.userInfoProtoStore.data.catch { exception ->
       if (exception is IOException) {
         Timber.tag(TAG).e(exception, "Error reading practitioner details preferences.")
-        emit(SerializableUserInfo())
+        emit(UserInfo())
       } else {
         throw exception
       }
     }
 
-  suspend fun writeUserInfo(serializableUserInfo: SerializableUserInfo) {
+  suspend fun writeUserInfo(userInfo: UserInfo) {
     context.userInfoProtoStore.updateData { userInfo ->
       userInfo.copy(
-        name = serializableUserInfo.name,
+        name = userInfo.name,
       )
     }
   }

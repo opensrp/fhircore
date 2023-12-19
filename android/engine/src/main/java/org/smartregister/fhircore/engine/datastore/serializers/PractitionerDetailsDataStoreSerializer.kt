@@ -21,17 +21,17 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.datastore.mockdata.SerializablePractitionerDetails
+import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
 import timber.log.Timber
 
-object PractitionerDetailsDataStoreSerializer : Serializer<SerializablePractitionerDetails> {
-  override val defaultValue: SerializablePractitionerDetails
-    get() = SerializablePractitionerDetails()
+object PractitionerDetailsDataStoreSerializer : Serializer<PractitionerDetails> {
+  override val defaultValue: PractitionerDetails
+    get() = PractitionerDetails()
 
-  override suspend fun readFrom(input: InputStream): SerializablePractitionerDetails {
+  override suspend fun readFrom(input: InputStream): PractitionerDetails {
     return try {
       Json.decodeFromString(
-        deserializer = SerializablePractitionerDetails.serializer(),
+        deserializer = PractitionerDetails.serializer(),
         string = input.readBytes().decodeToString(),
       )
     } catch (e: SerializationException) {
@@ -40,10 +40,10 @@ object PractitionerDetailsDataStoreSerializer : Serializer<SerializablePractitio
     }
   }
 
-  override suspend fun writeTo(t: SerializablePractitionerDetails, output: OutputStream) {
+  override suspend fun writeTo(t: PractitionerDetails, output: OutputStream) {
     output.write(
       Json.encodeToString(
-          serializer = SerializablePractitionerDetails.serializer(),
+          serializer = PractitionerDetails.serializer(),
           value = t,
         )
         .encodeToByteArray(),
