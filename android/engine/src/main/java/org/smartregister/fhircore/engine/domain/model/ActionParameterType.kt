@@ -26,6 +26,7 @@ import kotlinx.serialization.json.JsonNames
 enum class ActionParameterType {
   /** Represents parameters that are used to pre-populate Questionnaire items with initial values */
   @JsonNames("pre_populate", "PrePopulate") PREPOPULATE,
+  @JsonNames("pre_populate_uniqe_id", "PrePopulateUniqueID") PREPOPULATE_UNIQUE_ID,
   @JsonNames("param_data", "ParamData") PARAMDATA,
   @JsonNames("update_date_on_edit", "UpdateDateOnEdit") UPDATE_DATE_ON_EDIT,
   @JsonNames("qr_population_resource", "QRPopulateResource")
