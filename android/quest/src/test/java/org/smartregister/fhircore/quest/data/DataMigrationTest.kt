@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.data
 
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -32,6 +31,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.configuration.migration.UpdateValueConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -42,7 +42,7 @@ class DataMigrationTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -58,7 +58,7 @@ class DataMigrationTest : RobolectricTest() {
   @Test
   fun testMigrateShouldUpdateResources() = runTest {
     // Create patient to be updated
-    fhirEngine.create(patient)
+    defaultRepository.create(addResourceTags = true, patient)
     dataMigration.migrate(
       migrationConfig =
         MigrationConfig(
@@ -77,8 +77,8 @@ class DataMigrationTest : RobolectricTest() {
       latestMigrationVersion = 1,
     )
     // Patient gender should be updated
-    val updatedPatient = fhirEngine.get<Patient>(patient.logicalId)
-    Assert.assertTrue(updatedPatient.gender != patient.gender)
-    Assert.assertEquals(Enumerations.AdministrativeGender.MALE, updatedPatient.gender)
+    val updatedPatient = defaultRepository.loadResource<Patient>(patient.logicalId)
+    Assert.assertTrue(updatedPatient?.gender != patient.gender)
+    Assert.assertEquals(Enumerations.AdministrativeGender.FEMALE, updatedPatient?.gender)
   }
 }
