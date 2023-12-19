@@ -81,6 +81,7 @@ data class QuestionnaireConfig(
         ),
       planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
       readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) },
+      extraParams = extraParams?.map { it.interpolate(computedValuesMap) },
       onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
       barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
