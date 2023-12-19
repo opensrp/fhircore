@@ -134,7 +134,7 @@ class DataMigrationTest : RobolectricTest() {
 
       defaultRepository.create(addResourceTags = true, patient, carePlan, task)
 
-      // Fix reference via DataMigration to be "Patient/sampleId" instead of just "sampleId"
+      // Fix Task.basedOn reference FROM "careplan-1" TO "CarePlan/careplan-1"
       dataMigration.migrate(
         migrationConfigs =
           listOf(
@@ -145,7 +145,9 @@ class DataMigrationTest : RobolectricTest() {
               updateValues =
                 listOf(
                   UpdateValueConfig(
-                    jsonPathExpression = "\$.basedOn[0]",
+                    // Expression should be exact; '$.basedOn[0].reference' is also valid
+                    // JsonPath allows replacing JSON elements on provided path. FHIRPath doesn't.
+                    jsonPathExpression = "Task.basedOn[0].reference",
                     valueRule =
                       RuleConfig(
                         name = "value",
