@@ -23,6 +23,7 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
@@ -39,9 +40,8 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.configuration.migration.UpdateValueConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -55,7 +55,7 @@ class DataMigrationTest : RobolectricTest() {
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var dataMigration: DataMigration
 
@@ -65,7 +65,6 @@ class DataMigrationTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    sharedPreferencesHelper.write(SharedPreferenceKey.MIGRATION_VERSION.name, 0L)
   }
 
   @Test
@@ -100,7 +99,7 @@ class DataMigrationTest : RobolectricTest() {
       // Version updated to 2
       Assert.assertEquals(
         2,
-        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0),
+        preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
       )
     }
 
@@ -169,7 +168,7 @@ class DataMigrationTest : RobolectricTest() {
       // Version updated to 2
       Assert.assertEquals(
         2,
-        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0),
+        preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
       )
     }
 }

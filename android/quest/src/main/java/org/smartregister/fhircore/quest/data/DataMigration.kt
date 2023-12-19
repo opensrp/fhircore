@@ -24,6 +24,7 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -34,12 +35,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.migration.DataMigrationConfiguration
 import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import timber.log.Timber
@@ -58,7 +58,7 @@ class DataMigration
 constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
@@ -72,11 +72,11 @@ constructor(
       configurationRegistry
         .retrieveConfiguration<DataMigrationConfiguration>(configType = ConfigType.DataMigration)
         .migrations
-
-    val previousVersion =
-      sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0).toInt()
-    val newMigrations = migrations?.filter { it.version > previousVersion }
-    runBlocking { migrate(newMigrations, previousVersion) }
+    runBlocking {
+      val previousVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first()
+      val newMigrations = migrations?.filter { it.version > previousVersion }
+      migrate(newMigrations, previousVersion)
+    }
   }
 
   /**
@@ -170,10 +170,7 @@ constructor(
         Timber.e(throwable)
       }
     }
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.MIGRATION_VERSION.name,
-      maxVersion.plus(1),
-    )
+    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion.plus(1))
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {

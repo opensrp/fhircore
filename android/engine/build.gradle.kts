@@ -140,8 +140,6 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  implementation(libs.datastore)
-  implementation(libs.datastore.preferences)
   implementation(libs.cqf.cql.evaluator) {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
@@ -160,6 +158,8 @@ dependencies {
   }
 
   // Shared dependencies
+  api(libs.datastore)
+  api(libs.datastore.preferences)
   api(libs.glide)
   api(libs.knowledger)
   api(libs.p2p.lib)
