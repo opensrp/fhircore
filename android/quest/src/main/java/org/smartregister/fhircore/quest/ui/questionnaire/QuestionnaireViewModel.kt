@@ -57,6 +57,8 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.isEditable
+import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -135,9 +137,9 @@ constructor(
 
     val questionnaire =
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditable()) {
+        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.type.isReadOnly(),
+            readOnly = questionnaireConfig.isReadOnly(),
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
           )
         }
@@ -192,6 +194,7 @@ constructor(
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
         context.showToast(context.getString(R.string.questionnaire_response_invalid))
+        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
         return@launch
       }
 
@@ -226,7 +229,7 @@ constructor(
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        if (subject != null && !questionnaireConfig.type.isReadOnly()) {
+        if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
           generateCarePlan(
@@ -305,7 +308,7 @@ constructor(
         ) {
           currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
-        if (questionnaireConfig.type.isEditable()) {
+        if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
             this.id = currentQuestionnaireResponse.subject.extractId()
           } else if (
@@ -378,7 +381,7 @@ constructor(
   ): MutableMap<ResourceType, MutableList<Resource>> {
     val referencedResources = mutableMapOf<ResourceType, MutableList<Resource>>()
     if (
-      questionnaireConfig.type.isEditable() &&
+      questionnaireConfig.isEditable() &&
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
         subjectType != null
     ) {
@@ -658,8 +661,17 @@ constructor(
       )
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
-      defaultRepository.addOrUpdate(resource = group)
     }
+    // here Group is coming with groupIdentifier thus it make sense that
+    // there is an interaction inside group rather addingMemberItems only for above check
+    // so for every cases group is to be updated
+
+    /**
+     * The Group Resource is fetched by the `groupIdentifier`. We trigger the group update every
+     * time anything linked to it in order to change the `_lastUpdated` timestamp. This helps us
+     * with order the last updated group (household) on the top of the register.
+     */
+    defaultRepository.addOrUpdate(resource = group)
   }
 
   /**

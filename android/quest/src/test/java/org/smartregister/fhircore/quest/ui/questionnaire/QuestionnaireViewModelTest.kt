@@ -77,7 +77,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -167,7 +166,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT,
+        type = "DEFAULT",
       )
 
     questionnaireViewModel =
@@ -958,7 +957,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig.copy(
         resourceIdentifier = patient.logicalId,
         saveQuestionnaireResponse = false,
-        type = QuestionnaireType.EDIT,
+        type = "EDIT",
         extractedResourceUniquePropertyExpressions =
           listOf(
             ExtractedResourceUniquePropertyExpression(

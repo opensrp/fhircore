@@ -106,6 +106,7 @@ fun RegisterCardList(
           resultCount = pagingItems.itemCount,
           currentPage = currentPage.value.plus(1),
           pagesCount = registerUiState.pagesCount,
+          fabActions = registerUiState.registerConfiguration?.fabActions,
           previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
           nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
         )

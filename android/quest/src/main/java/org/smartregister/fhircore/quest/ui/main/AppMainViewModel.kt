@@ -62,7 +62,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirMonthlyEddNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirStockOutNotifierWorker
-import org.smartregister.fhircore.engine.task.FhirTaskExpireWorker
+import org.smartregister.fhircore.engine.task.FhirResourceExpireWorker
 import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -318,8 +318,8 @@ constructor(
         requiresNetwork = false,
       )
 
-      schedulePeriodically<FhirTaskExpireWorker>(
-        workId = FhirTaskExpireWorker.WORK_ID,
+      schedulePeriodically<FhirResourceExpireWorker>(
+        workId = FhirResourceExpireWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskExpireJobDuration),
         requiresNetwork = false,
       )

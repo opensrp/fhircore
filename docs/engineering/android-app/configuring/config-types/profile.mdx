@@ -1,0 +1,252 @@
+---
+title: Profiles
+---
+
+# Profile configuration
+
+These configurations are used to control the content of the profile screen as well as how to render the profile UI. Typically for every register in application there is a corresponding profile. Technically the same implementation is used for all profiles, however the content configured.
+
+:::info
+For every register in the application there should at least be one profile configuration. Similar registers can re-use the same profile configuration.
+:::
+
+### Working with dynamic data queries
+Assume you would like to filter resource data based on a criteria that needs computation before application. e.g show patients who are under 5 years or over 18 below, then this is the config to use.
+
+Before you use this rule on a dataQuery, you need  to execute it first. The rules are executed within a `configRules` block which follows rules engine standard and default priority of 1 which can be change based on requirement.
+
+Below is a JSON config that shows how to execute rules. Refer to working with rules section.
+``` json
+{
+  "appId": "appId",
+  "configType": "register",
+  "id": "childRegister",
+  "configRules": [
+    {
+      "name": "under5",
+      "condition": "true",
+      "actions": [
+        "data.put('under5', dateService.addOrSubtractYearFromCurrentDate(5,'-'))"
+      ]
+    }
+  ]
+}
+```
+
+Below is a sample dataQuery config to filter register data by configRules.
+
+``` json
+"fhirResource": {
+  "baseResource": {
+    "resource": "Patient",
+    "dataQueries": [
+      {
+        "paramName": "birthdate",
+        "filterCriteria": [
+          {
+            "dataType": "DATE",
+            "computedRule": "under5",
+            "prefix": "GREATERTHAN_OR_EQUALS"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|--|
+`appId` | `String` - unique identifier for the application | Yes | |
+`configType` | Type of configuration | Yes |  `profile` |
+`id` | `String` | Yes | |
+`fhirResource` | `FhirResourceConfig` | Yes | |
+`secondaryResources` | List of `FhirResourceConfig`s | No |
+`managingEntity` | `ManagingEntityConfig` | No | |
+`profileParams` | A list Strings | Yes |  |
+`rules` | List of `RuleConfig`s | Yes | `emptyList()` |
+`topAppBar` | `TopBarConfig` | No | |
+`views` | List of `ViewProperties` | Yes | |
+`fabActions` | List of `NavigationMenuConfig`s| Yes | `emptyList()` |
+`overFlowMenuItems` | List of `OverflowMenuItemConfig`s | Yes | `emptyList()` |
+`filterActiveResources` | List of `ActiveResourceFilterConfig`s | Yes | `listOf(ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true), ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true))` |
+`configRules` | List of `RuleConfig`s | No | `null` |
+`contentBackgroundColor` | `String` | No | `#FFFFFF` |
+
+## Dynamic data pass between relatedResources
+
+The related resources contains an array that lists related resources along the associated search parameters e.g Conditions ,Tasks and Careplans
+
+```json
+    "relatedResources": [
+      {
+        "resource": "Condition",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "CarePlan",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Task",
+        "searchParameter": "subject"
+      }
+    ]
+  
+```
+
+## Dynamic data pass between profiles and registers
+
+For you to pass data between profiles you can make use of **action config params** which are executed when **LAUNCH_PROFILE** is invoked.
+
+Data extraction happens during rules execution and is persisted in `computedValuesMap` which is later used to interpolate values annotated with `@value`.
+
+For example, assume the `LAUNCH_PROFILE` `onClick` function of `practitioner_profile_config` takes you to `household_profile` screen and you would like pass send `practitionerId` from `practitioner_profile_config` to `household_profile`, define it as described below.
+
+### Practitioner **LAUNCH_PROFILE**
+1. Write rules to extract the data you need.
+  ``` json
+  "rules":[
+    {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerId', fhirPath.extractValue(Practitioner, 'Practitioner.id.replace(\"Practitioner/\",\"\")').split(\"/\").get(0))"
+      ]
+    }
+  ]
+  ```
+
+2. Add your params in **LAUNCH_REGISTER** section of `practition_register_config.json`
+  ``` json
+  "actions": [
+    {
+      "trigger": "ON_CLICK",
+      "workflow": "LAUNCH_PROFILE",
+      "id": "practitionerProfile",
+      "params": [
+        {
+          "paramType": "PARAMDATA",
+          "key": "practitionerId",
+          "value": "@{practitionerId}"
+        }
+      ]
+    }
+  ]
+  ```
+
+### household_config.json
+A dataquery config to filter by `practitionerId`. For more info refer to dataquery section.
+
+``` json
+{
+  "id": "householdQueryPractitionerId",
+  "filterType": "TOKEN",
+  "key": "_tag",
+  "valueType": "CODING",
+  "valueCoding": {
+    "system": "https://smartregister.org/",
+    "code": "@{practitionerId}"
+  }
+}
+```
+
+## Dynamic data pass between profiles config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|--|
+rules name | Unique identifier for the rules                       | Yes | empty string |
+`condition`  | specification of execution                            | Yes | `false` |
+`actions`    | an array of the rule logic with a fhirPathExpression  | Yes | `null` |
+`trigger`    | application workflow action                           | Yes | |
+`workflow`   | An application event that can trigger a workflow      | Yes | `null` |
+`params`     | An array of actionParameters to pass to another profile | No | emptyArray |
+`paramType`  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA | No | `null` |
+`key`        | Action ParameterType unique key if defined but not tag is given | Yes | |
+`value`      | Action ParameterType corresponding key's value        | Yes | |
+
+## **Working with contacts**
+
+If you would like to store and display profile contacts.
+The Person (e.g. Patient or Practitioner) has an extractable telecom value in their object body.
+By extracting it you can configure which contact values to show on a Profile.
+Here is an example of an extraction rule that extracts a patient's phone number.
+
+``` json
+{
+    "name": "patientPhoneNumber",
+    "condition": "true",
+    "actions": [
+    "data.put('patientPhoneNumber', fhirPath.extractValue(Patient, 'Patient.telecom[0].value'))"
+    ]
+}
+```
+## Practitioner calling a patient phone number
+
+If the patient's phone number has been extracted and displayed on the UI via a COMPOUND_TEXT
+viewType (or any other view type of your choice), the LAUNCH_DIALLER workflow is provided to allow the
+Practitioner to call the patient. The workflow passes the telephone number data to the device's dialler
+and from there, the Practitioner can proceed with the call.
+
+Below is an example configuration for the view type.
+``` json
+{
+    "viewType": "COMPOUND_TEXT",
+    "primaryText": "@{patientPhoneNumber}",
+    "primaryTextColor": "#0077CC",
+    "fontSize": 14,
+    "visible": "@{phoneNumberAvailable}",
+    "clickable": "true",
+    "primaryTextActions": [
+    {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_DIALLER",
+        "params": [
+        {
+            "paramType": "PARAMDATA",
+            "key": "patientPhoneNumber",
+            "value": "@{patientPhoneNumber}"
+        }
+        ]
+    }
+    ]
+}
+```
+Some notable configurations to enable the LAUNCH_DIALLER workflow include
+
+1. ```clickable": "true"``` The view type displaying the phone number must be clickable. This allows the
+ON_CLICK trigger to be activated so it can call the ```LAUNCH_DIALLER``` workflow.
+
+2. ```visible: {RULE}``` By configuring a rule that determines whether the phone number is visible,
+we avoid showing the phone number when a Profile does not have one.
+
+Here is an example of a rule to determine the availability of a phone number
+```json
+{
+    "name": "phoneNumberAvailable",
+    "condition": "true",
+    "actions": [
+    "data.put('phoneNumberAvailable', !empty(data.get('patientPhoneNumber')))"
+    ]
+}
+```
+
+The rule above checks the data map being maintained globally by the app and inserts a key ```phoneNumberAvailable```
+with a value based on whether or not ```patientPhoneNumber``` is available in the same map.
+
+## Practitioner calling patient phone number config properties
+`clickable` and `primaryTextActions` are relevant if using COMPOUND_TEXT to display the phone number
+
+|Property | Description | Required | Default |
+|--|--|:--:|--|
+rules name | Unique identifier for the rules                       | Yes | empty string |
+`clickable`  | set the clickability of the view type displaying the phone number                        | Yes | `false` |
+`primaryTextActions`    | an array of the rule logic with a fhirPathExpression  | Yes | `null` |
+`trigger`    | application workflow action                           | Yes | |
+`workflow`   | An application event that can trigger a workflow      | Yes | `null` |
+`params`     | An array of actionParameters to pass to another profile | No | emptyArray |
+`paramType`  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA | No | `null` |
+`key`        | Action ParameterType unique key if defined but not tag is given | Yes | |
+`value`      | Action ParameterType corresponding key's value        | Yes | |

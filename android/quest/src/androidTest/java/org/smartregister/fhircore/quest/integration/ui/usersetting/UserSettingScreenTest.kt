@@ -18,13 +18,15 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
@@ -32,6 +34,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.quest.ui.usersetting.OPENSRP_LOGO_TEST_TAG
 import org.smartregister.fhircore.quest.ui.usersetting.UserSettingScreen
 
 class UserSettingScreenTest {
@@ -52,14 +55,18 @@ class UserSettingScreenTest {
 
   @Test
   fun testUserProfileShouldDisplayCorrectContent() {
-    initComposable()
-    composeRule.onNodeWithText("Johndoe").assertExists()
+    val userName = "JohnDoe"
+    initComposable(userName = userName)
+    composeRule.onNodeWithText("@$userName").assertExists()
+    composeRule.onNodeWithText("Quest").assertExists()
+    composeRule.onNodeWithText("Jam Kenya").assertExists()
+    composeRule.onNodeWithText("Gateway Remote Location").assertExists()
     composeRule.onNodeWithText(activity.getString(R.string.resetting_app)).assertDoesNotExist()
     composeRule
       .onNodeWithText(activity.getString(R.string.clear_database_message))
       .assertDoesNotExist()
 
-    composeRule.onNodeWithText("Sync").assertExists()
+    composeRule.onNodeWithText("Manual Sync").assertExists()
 
     composeRule.onNodeWithText("Log out").assertExists()
   }
@@ -137,22 +144,33 @@ class UserSettingScreenTest {
   }
 
   @Test
-  fun testOnClickingInsightsUnsavedDataShowsSyncStats() {
-    val unsyncedResources = listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
-    initComposable(unsyncedResourcesFlow = MutableStateFlow(unsyncedResources))
-    composeRule.onNodeWithText("Insights").performClick()
-    composeRule.onNodeWithText("Dismiss").assertExists()
+  fun testOfflineMapIsRenderedOnProfile() {
+    initComposable()
+    composeRule.onNodeWithText("Offline Maps").assertExists()
+  }
 
-    // Assert correct Sync stats content is rendered
+  @Test
+  fun testOfflineMapIsClickable() {
+    initComposable()
+    composeRule.onNodeWithText("Offline Maps").assertHasClickAction()
+  }
 
-    composeRule.onNodeWithText("Patient").assertExists()
-    composeRule.onNodeWithText("10").assertExists()
+  @Test
+  fun testContactHelpIsRenderedOnProfile() {
+    initComposable()
+    composeRule.onNodeWithText("Contact help").assertExists()
+  }
 
-    composeRule.onNodeWithText("Observations").assertExists()
-    composeRule.onNodeWithText("20").assertExists()
+  @Test
+  fun testContactHelpIsClickable() {
+    initComposable()
+    composeRule.onNodeWithText("Contact help").assertHasClickAction()
+  }
 
-    composeRule.onNodeWithText("Encounters").assertExists()
-    composeRule.onNodeWithText("5").assertExists()
+  @Test
+  fun testThatOpenSRPLogoIsVisible() {
+    initComposable()
+    composeRule.onNodeWithTag(OPENSRP_LOGO_TEST_TAG).assertIsDisplayed()
   }
 
   @Test
@@ -163,18 +181,21 @@ class UserSettingScreenTest {
   }
 
   private fun initComposable(
+    userName: String = "JohnDoe",
     allowSwitchingLanguages: Boolean = true,
     allowMainClockAutoAdvance: Boolean = false,
     isShowProgressBar: Boolean = false,
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
-    unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>> = MutableSharedFlow(),
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
         UserSettingScreen(
-          username = "Johndoe",
+          appTitle = "Quest",
+          fullname = "Jam Kenya",
+          practitionerLocation = "Gateway Remote Location",
+          username = userName,
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
@@ -185,8 +206,6 @@ class UserSettingScreenTest {
           mainNavController = rememberNavController(),
           allowP2PSync = isP2PAvailable,
           lastSyncTime = "05:30 PM, Mar 3",
-          unsyncedResourcesFlow = unsyncedResourcesFlow,
-          dismissInsightsView = {},
           showProgressIndicatorFlow = MutableStateFlow(false),
         )
       }

@@ -23,10 +23,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -68,13 +68,15 @@ fun List(
   val density = LocalDensity.current
   val currentListResourceData = resourceData.listResourceDataMap?.get(viewProperties.id)
   if (currentListResourceData.isNullOrEmpty()) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxSize()) {
-      Text(
-        text = viewProperties.emptyList?.message ?: "",
-        modifier = modifier.padding(8.dp).align(Alignment.Center),
-        color = DefaultColor,
-        fontStyle = FontStyle.Italic,
-      )
+    if (!viewProperties.emptyList?.message.isNullOrEmpty()) {
+      Box(contentAlignment = Alignment.Center, modifier = modifier.wrapContentSize()) {
+        Text(
+          text = viewProperties.emptyList?.message!!,
+          modifier = modifier.padding(8.dp).align(Alignment.Center),
+          color = DefaultColor,
+          fontStyle = FontStyle.Italic,
+        )
+      }
     }
   } else {
     Box(
@@ -157,7 +159,7 @@ private fun ListWithHorizontalOrientationPreview() {
           id = "listId",
           padding = 8,
           borderRadius = 10,
-          emptyList = NoResultsConfig(message = "No care Plans"),
+          emptyList = NoResultsConfig(message = ""),
           resources =
             listOf(ListResource(id = "carePlanList", resourceType = ResourceType.CarePlan)),
           fillMaxHeight = true,

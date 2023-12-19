@@ -113,4 +113,9 @@
             app:argType="string"
             app:nullable="false" />
     </fragment>
+
+    <fragment
+        android:id="@+id/userInsightScreenFragment"
+        android:name="org.smartregister.fhircore.quest.ui.usersetting.UserInsightScreenFragment"
+        android:label="fragment_user_insight_screen" />
 </navigation>

@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @AndroidEntryPoint
@@ -73,12 +74,17 @@ class AppSettingActivity : AppCompatActivity() {
         onApplicationIdChanged(existingAppId)
         loadConfigurations(appSettingActivity)
       }
+    } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
+      // this part simulates what the user would have done manually via the text field and button
+      appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
+      appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {
       setContent {
         AppTheme {
           val appId by appSettingViewModel.appId.observeAsState("")
           val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
           val error by appSettingViewModel.error.observeAsState("")
+
           AppSettingScreen(
             appId = appId,
             onAppIdChanged = appSettingViewModel::onApplicationIdChanged,

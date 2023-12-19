@@ -23,7 +23,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -36,7 +35,7 @@ data class QuestionnaireConfig(
   val title: String? = null,
   val saveButtonText: String? = null,
   val planDefinitions: List<String>? = null,
-  var type: QuestionnaireType = QuestionnaireType.DEFAULT,
+  var type: String = "DEFAULT",
   val resourceIdentifier: String? = null,
   val resourceType: ResourceType? = null,
   val removeResource: Boolean? = null,
@@ -57,6 +56,8 @@ data class QuestionnaireConfig(
   val generateCarePlanWithWorkflowApi: Boolean = false,
   val cqlInputResources: List<String>? = emptyList(),
   val showClearAll: Boolean = false,
+  val showRequiredTextAsterisk: Boolean = true,
+  val showRequiredText: Boolean = false,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -64,6 +65,7 @@ data class QuestionnaireConfig(
       id = id.interpolate(computedValuesMap).extractLogicalIdUuid(),
       taskId = taskId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
+      type = type.interpolate(computedValuesMap),
       resourceIdentifier =
         resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
       groupResource =

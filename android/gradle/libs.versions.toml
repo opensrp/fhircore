@@ -28,7 +28,7 @@ data-capture = "1.0.0-preview19-SNAPSHOT"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
-fhir-common-utils = "0.0.10-SNAPSHOT"
+fhir-common-utils = "1.0.0-SNAPSHOT"
 fhir-engine = "0.1.0-beta04-preview4.1-SNAPSHOT"
 foundation = "1.3.1"
 fragment-ktx = "1.6.1"
@@ -79,7 +79,7 @@ navigation-ui-ktx = "2.5.3"
 okhttp = "4.10.0"
 okhttp-logging-interceptor = "4.10.0"
 orchestrator = "1.4.2"
-p2p-lib = "0.6.8-SNAPSHOT"
+p2p-lib = "0.6.9-SNAPSHOT"
 paging-compose = "3.2.0"
 paging-runtime-ktx = "3.2.0"
 preference-ktx = "1.2.1"
@@ -102,6 +102,7 @@ work-runtime-ktx = "2.8.1"
 work-testing = "2.8.1"
 workflow = "0.1.0-alpha02-preview9.1-SNAPSHOT"
 xercesImpl = "2.12.2"
+org-jetbrains-kotlin-android = "1.8.10"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
@@ -215,3 +216,4 @@ workflow = { group = "org.smartregister", name = "workflow", version.ref = "work
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 
 [plugins]
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }

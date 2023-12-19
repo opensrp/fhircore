@@ -55,7 +55,10 @@ fun CardView(
   Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
     // Header section
     Row(
-      modifier = modifier.fillMaxWidth(),
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .conditional(viewProperties.header != null, { padding(top = 24.dp, bottom = 8.dp) }),
       verticalAlignment = Alignment.Top,
       horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -88,7 +91,6 @@ fun CardView(
           .padding(
             start = viewProperties.padding.dp,
             end = viewProperties.padding.dp,
-            bottom = viewProperties.padding.dp,
           )
           .fillMaxWidth()
           .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
@@ -167,8 +169,7 @@ private fun CardViewWithPaddingPreview() {
                   ),
               ),
             ),
-          header =
-            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16),
+          header = null,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),

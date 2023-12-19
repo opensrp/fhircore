@@ -31,7 +31,9 @@ import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -49,6 +51,8 @@ import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.Logout
+import androidx.compose.material.icons.rounded.Map
+import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Sync
 import androidx.compose.runtime.Composable
@@ -61,6 +65,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -76,13 +82,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -94,12 +100,19 @@ const val USER_SETTING_ROW_LOGOUT = "userSettingRowLogout"
 const val USER_SETTING_ROW_RESET_DATA = "userSettingRowResetData"
 const val USER_SETTING_ROW_P2P = "userSettingRowP2P"
 const val USER_SETTING_ROW_INSIGHTS = "userSettingRowInsights"
+const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
+const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
+const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
+const val OPENSRP_LOGO_TEST_TAG = "opensrpLogoTestTag"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun UserSettingScreen(
+  appTitle: String?,
   modifier: Modifier = Modifier,
   username: String?,
+  practitionerLocation: String?,
+  fullname: String?,
   allowSwitchingLanguages: Boolean,
   selectedLanguage: String,
   languages: List<Language>,
@@ -112,8 +125,6 @@ fun UserSettingScreen(
   allowP2PSync: Boolean,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
-  unsyncedResourcesFlow: MutableSharedFlow<List<Pair<String, Int>>>,
-  dismissInsightsView: () -> Unit,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -133,8 +144,13 @@ fun UserSettingScreen(
         backgroundColor = MaterialTheme.colors.primary,
       )
     },
+    backgroundColor = colorResource(id = R.color.backgroundGray),
   ) {
-    Column(modifier = modifier.background(Color.White)) {
+    Column(
+      modifier =
+        Modifier.background(color = colorResource(id = R.color.backgroundGray))
+          .verticalScroll(rememberScrollState()),
+    ) {
       if (!username.isNullOrEmpty()) {
         Column(
           modifier = modifier.background(Color.White).padding(vertical = 24.dp).fillMaxWidth(),
@@ -153,17 +169,33 @@ fun UserSettingScreen(
             )
           }
           Text(
-            text = username.capitalize(Locale.current),
+            text = appTitle ?: "",
             fontSize = 22.sp,
-            modifier = modifier.padding(vertical = 12.dp),
             fontWeight = FontWeight.Bold,
+          )
+          Text(
+            text = fullname?.capitalize(Locale.current) ?: "",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+          )
+          Text(
+            text = "@${username.capitalize(Locale.current)}",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
+          )
+          Text(
+            text = practitionerLocation?.capitalize(Locale.current) ?: "",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
           )
         }
       }
 
       Divider(color = DividerColor)
       Column(modifier = modifier.background(color = colorResource(id = R.color.backgroundGray))) {
-        Spacer(modifier = modifier.padding(top = 16.dp).padding(bottom = 16.dp))
+        Spacer(
+          modifier = modifier.padding(top = 16.dp).padding(bottom = 16.dp),
+        )
         Row {
           Text(
             modifier =
@@ -179,14 +211,20 @@ fun UserSettingScreen(
           )
         }
       }
-
       Divider(color = DividerColor)
-
       UserSettingRow(
         icon = Icons.Rounded.Sync,
         text = stringResource(id = R.string.sync),
         clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
-        modifier = modifier,
+        modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
+      )
+
+      UserSettingRow(
+        icon = Icons.Rounded.Map,
+        text = stringResource(id = R.string.offline_map),
+        clickListener = { onEvent(UserSettingsEvent.OnLaunchOfflineMap(true, context)) },
+        modifier = modifier.testTag(USER_SETTING_ROW_OFFLINE_MAP),
+        canSwitchToScreen = true,
       )
 
       // Language option
@@ -194,6 +232,7 @@ fun UserSettingScreen(
         Row(
           modifier =
             modifier
+              .background(Color.White)
               .fillMaxWidth()
               .clickable { expanded = true }
               .padding(vertical = 16.dp, horizontal = 20.dp),
@@ -203,7 +242,7 @@ fun UserSettingScreen(
             Icon(
               painterResource(R.drawable.ic_language),
               stringResource(R.string.language),
-              tint = BlueTextColor,
+              tint = GreyTextColor,
               modifier = Modifier.size(26.dp),
             )
             Spacer(modifier = modifier.width(20.dp))
@@ -225,7 +264,14 @@ fun UserSettingScreen(
             ) {
               for (language in languages) {
                 DropdownMenuItem(
-                  onClick = { onEvent(UserSettingsEvent.SwitchLanguage(language, context)) },
+                  onClick = {
+                    onEvent(
+                      UserSettingsEvent.SwitchLanguage(
+                        language,
+                        context,
+                      ),
+                    )
+                  },
                 ) {
                   Text(text = language.displayName, fontSize = 18.sp)
                 }
@@ -244,6 +290,16 @@ fun UserSettingScreen(
 
       if (showProgressBar) {
         LoaderDialog(modifier = modifier, stringResource(messageResource))
+      }
+
+      if (allowP2PSync) {
+        UserSettingRow(
+          icon = Icons.Rounded.Share,
+          text = stringResource(id = R.string.transfer_data),
+          clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_P2P),
+          canSwitchToScreen = true,
+        )
       }
 
       if (showDatabaseResetConfirmation) {
@@ -267,22 +323,22 @@ fun UserSettingScreen(
         )
       }
 
-      if (allowP2PSync) {
-        UserSettingRow(
-          icon = Icons.Rounded.Share,
-          text = stringResource(id = R.string.transfer_data),
-          clickListener = { onEvent(UserSettingsEvent.SwitchToP2PScreen(context)) },
-          modifier = modifier.testTag(USER_SETTING_ROW_P2P),
-          canSwitchToScreen = true,
-        )
-      }
-
       UserSettingRow(
         icon = Icons.Rounded.Insights,
         text = stringResource(id = R.string.insights),
-        clickListener = { onEvent(UserSettingsEvent.ShowInsightsView(true, context)) },
+        clickListener = {
+          onEvent(UserSettingsEvent.ShowInsightsScreen(navController = mainNavController))
+        },
         modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
         showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+        canSwitchToScreen = true,
+      )
+      UserSettingRow(
+        icon = Icons.Rounded.Phone,
+        text = stringResource(id = R.string.contact_help),
+        clickListener = { onEvent(UserSettingsEvent.ShowContactView(true, context)) },
+        modifier = modifier.testTag(USER_SETTING_ROW_CONTACT_HELP),
+        canSwitchToScreen = true,
       )
 
       UserSettingRow(
@@ -296,14 +352,24 @@ fun UserSettingScreen(
 
       Column(
         modifier =
-          modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth(),
+          modifier
+            .background(color = colorResource(id = R.color.backgroundGray))
+            .fillMaxWidth()
+            .padding(top = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-          painterResource(R.drawable.logo_fhir_core),
+          painterResource(R.drawable.ic_opensrplogo),
           "content description",
-          modifier = modifier.requiredHeight(40.dp).align(Alignment.CenterHorizontally),
+          colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
+          modifier =
+            modifier
+              .padding(top = 8.dp)
+              .requiredHeight(32.dp)
+              .align(Alignment.CenterHorizontally)
+              .testTag(OPENSRP_LOGO_TEST_TAG),
           contentScale = ContentScale.Fit,
         )
 
@@ -311,7 +377,7 @@ fun UserSettingScreen(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.padding(top = 12.dp).align(Alignment.CenterHorizontally),
+          modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
         Text(
@@ -321,12 +387,6 @@ fun UserSettingScreen(
           modifier =
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
         )
-      }
-
-      val unsyncedResources = unsyncedResourcesFlow.collectAsState(initial = listOf()).value
-
-      if (!unsyncedResources.isNullOrEmpty()) {
-        UserSettingInsightScreen(unsyncedResources, dismissInsightsView)
       }
     }
   }
@@ -339,7 +399,7 @@ fun UserSettingRow(
   clickListener: () -> Unit,
   modifier: Modifier = Modifier,
   canSwitchToScreen: Boolean = false,
-  iconTint: Color = BlueTextColor,
+  iconTint: Color = GreyTextColor,
   textColor: Color = LoginDarkColor,
   showProgressIndicator: Boolean = false,
 ) {
@@ -347,6 +407,7 @@ fun UserSettingRow(
     modifier =
       modifier
         .fillMaxWidth()
+        .background(color = colorResource(id = R.color.white))
         .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -419,7 +480,10 @@ fun ConfirmClearDatabaseDialog(
 @PreviewWithBackgroundExcludeGenerated
 fun UserSettingPreview() {
   UserSettingScreen(
+    appTitle = "Quest",
     username = "Jam",
+    fullname = "Jam Kenya",
+    practitionerLocation = "Gateway Remote Location",
     allowSwitchingLanguages = true,
     selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
@@ -432,7 +496,5 @@ fun UserSettingPreview() {
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
-    unsyncedResourcesFlow = MutableSharedFlow(),
-    dismissInsightsView = {},
   )
 }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -73,6 +74,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
 const val DIVIDER_TEST_TAG = "dividerTestTag"
+const val NUMBER_OF_ICONS_DISPLAYED = 2
 
 @Composable
 fun ServiceCard(
@@ -81,89 +83,174 @@ fun ServiceCard(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val serviceCardClickable = serviceCardProperties.clickable.toBoolean()
-  Row(
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.height(IntrinsicSize.Min),
-  ) {
-    // Show service card details in a column layout (occupies 75% of row width)
-    // Display optional service member icons
+  if (serviceCardProperties.showVerticalDivider) {
     Row(
-      verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
       modifier =
-        modifier
-          .padding(top = 12.dp, bottom = 12.dp)
-          .conditional(
-            serviceCardProperties.serviceButton == null &&
-              serviceCardProperties.services.isNullOrEmpty(),
-            { fillMaxWidth() },
-            { weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 0.5f) },
-          )
-          .conditional(
-            serviceCardClickable,
-            {
-              clickable {
-                serviceCardProperties.actions.handleClickEvent(
-                  navController = navController,
-                  resourceData = resourceData,
-                )
-              }
-            },
-          ),
+      modifier
+        .height(IntrinsicSize.Min)
+        .fillMaxWidth()
+        .conditional(
+          serviceCardProperties.clickable.toBoolean(),
+          {
+            clickable {
+              serviceCardProperties.actions.handleClickEvent(
+                navController = navController,
+                resourceData = resourceData,
+              )
+            }
+          },
+        ),
     ) {
-      Column(
-        modifier =
-          modifier
-            .wrapContentWidth(Alignment.Start)
-            .weight(if (serviceCardProperties.showVerticalDivider) 0.7f else 1f),
-        verticalArrangement = Arrangement.Center,
-      ) {
-        serviceCardProperties.details.forEach {
-          CompoundText(
-            compoundTextProperties = it,
-            resourceData = resourceData,
-            navController = navController,
-          )
-        }
-      }
-      if (serviceCardProperties.showVerticalDivider) {
-        ServiceMemberIcons(
-          modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
-          serviceMemberIcons = serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")?.replace("\\,+".toRegex(), ","),
-        )
-      }
-    }
-
-    // When divider is displayed member icons will not show
-    if (serviceCardProperties.showVerticalDivider) {
+      // Render details 70% of screen
+      RenderDetails(
+        weight = 0.7f,
+        details = serviceCardProperties.details,
+        serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+        navController = navController,
+        resourceData = resourceData,
+      )
       Divider(
         modifier = modifier.fillMaxHeight().width(1.dp).testTag(DIVIDER_TEST_TAG),
         thickness = 0.5.dp,
         color = DividerColor,
       )
-    } else {
-      ServiceMemberIcons(
-        serviceMemberIcons =
-          serviceCardProperties.serviceMemberIcons?.replace("\\s+".toRegex(), "")?.replace("\\,+".toRegex(), ","),
+      // Render action buttons 30% of screen
+      RenderActionButtons(
+        weight = 0.3f,
+        serviceCardProperties = serviceCardProperties,
+        navController = navController,
+        resourceData = resourceData,
       )
     }
+  } else {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(vertical = 16.dp)
+        .conditional(
+          serviceCardProperties.clickable.toBoolean(),
+          {
+            clickable {
+              serviceCardProperties.actions.handleClickEvent(
+                navController = navController,
+                resourceData = resourceData,
+              )
+            }
+          },
+        ),
+    ) {
+      // Render details 55% of screen
+      RenderDetails(
+        weight = 0.55f,
+        details = serviceCardProperties.details,
+        serviceMemberIcons = serviceCardProperties.serviceMemberIcons,
+        navController = navController,
+        resourceData = resourceData,
+      )
+      // Render action buttons 45% of screen
+      RenderActionButtons(
+        weight = 0.45f,
+        serviceCardProperties = serviceCardProperties,
+        navController = navController,
+        resourceData = resourceData,
+      )
+    }
+  }
+}
 
-    // Show action button (occupies 25% of the row width)
-    // Service card visibility can be determined dynamically e.g. only display when task is due
+@Composable
+private fun RowScope.RenderDetails(
+  weight: Float,
+  details: List<CompoundTextProperties>,
+  serviceMemberIcons: String?,
+  navController: NavController,
+  resourceData: ResourceData,
+) {
+  val iconsSplit = serviceMemberIcons?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
+  val memberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween,
+  ) {
+    Column(
+      verticalArrangement = Arrangement.Center,
+      modifier =
+      Modifier.padding(end = 8.dp).fillMaxWidth(if (iconsSplit.isNotEmpty()) 0.75f else 1f),
+    ) {
+      details.forEach {
+        CompoundText(
+          compoundTextProperties = it,
+          resourceData = resourceData,
+          navController = navController,
+        )
+      }
+    }
+    // Display N icons and counter if icons are more than N
+    if (memberIcons.isNotEmpty()) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.wrapContentWidth(),
+        horizontalArrangement = Arrangement.End,
+      ) {
+        memberIcons.forEach {
+          if (
+            it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)
+          ) {
+            Icon(
+              painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
+              contentDescription = null,
+              modifier = Modifier.size(18.dp).padding(0.dp),
+              tint = Color.Unspecified,
+            )
+          }
+        }
+        if (
+          memberIcons.size == NUMBER_OF_ICONS_DISPLAYED &&
+          iconsSplit.size > NUMBER_OF_ICONS_DISPLAYED
+        ) {
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.clip(CircleShape).size(22.dp).background(DefaultColor.copy(0.1f)),
+          ) {
+            Text(
+              text = "+${iconsSplit.size - NUMBER_OF_ICONS_DISPLAYED}",
+              fontSize = 10.sp,
+              color = Color.DarkGray,
+              softWrap = false,
+              maxLines = 1,
+              textAlign = TextAlign.Center,
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun RowScope.RenderActionButtons(
+  weight: Float,
+  serviceCardProperties: ServiceCardProperties,
+  navController: NavController,
+  resourceData: ResourceData,
+) {
+  Box(modifier = Modifier.weight(weight).padding(start = 6.dp)) {
     if (serviceCardProperties.serviceButton != null || serviceCardProperties.services != null) {
       if (
         serviceCardProperties.serviceButton != null &&
-          serviceCardProperties.serviceButton!!.visible.toBoolean()
+        serviceCardProperties.serviceButton!!.visible.toBoolean()
       ) {
         when (serviceCardProperties.serviceButton!!.buttonType) {
           ButtonType.TINY,
           ButtonType.MEDIUM, -> {
             Column(
               horizontalAlignment = Alignment.End,
-              modifier =
-                modifier.weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f),
             ) {
               ActionableButton(
                 buttonProperties = serviceCardProperties.serviceButton!!,
@@ -173,15 +260,9 @@ fun ServiceCard(
             }
           }
           else -> {
-            Box(
-              modifier =
-                modifier
-                  .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-                  .padding(top = 8.dp, bottom = 8.dp),
-              contentAlignment = Alignment.Center,
-            ) {
+            Box(contentAlignment = Alignment.Center) {
               BigServiceButton(
-                modifier = modifier,
+                modifier = Modifier,
                 buttonProperties = serviceCardProperties.serviceButton!!,
                 navController = navController,
                 resourceData = resourceData,
@@ -190,14 +271,8 @@ fun ServiceCard(
           }
         }
       } else if (serviceCardProperties.services?.isNotEmpty() == true) {
-        Box(
-          modifier =
-            modifier
-              .weight(if (serviceCardProperties.showVerticalDivider) 0.3f else 0.4f)
-              .padding(top = 8.dp, bottom = 8.dp),
-          contentAlignment = Alignment.Center,
-        ) {
-          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(contentAlignment = Alignment.Center) {
+          Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
@@ -206,43 +281,6 @@ fun ServiceCard(
               )
             }
           }
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun ServiceMemberIcons(modifier: Modifier = Modifier, serviceMemberIcons: String?) {
-  // Count member icons only show and display counter of the rest
-  val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
-  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
-  if (twoMemberIcons.isNotEmpty()) {
-    Row(modifier.padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-      twoMemberIcons.forEach {
-        if (it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)) {
-          Icon(
-            painter = painterResource(id = ServiceMemberIcon.valueOf(it).icon),
-            contentDescription = null,
-            modifier = modifier.size(20.dp).padding(0.dp),
-            tint = Color.Unspecified,
-          )
-        }
-      }
-      if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
-        Box(
-          contentAlignment = Alignment.Center,
-          modifier = Modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f)),
-        ) {
-          Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "+${iconsSplit.size - 2}",
-            fontSize = 12.sp,
-            color = Color.DarkGray,
-            softWrap = false,
-            maxLines = 1,
-            textAlign = TextAlign.Center,
-          )
         }
       }
     }
@@ -265,33 +303,33 @@ private fun BigServiceButton(
 
   Column(
     modifier =
-      modifier
-        .clickable {
-          if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
-            buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData,
-            )
-          }
+    modifier
+      .width(136.dp)
+      .height(80.dp)
+      .padding(top = 8.dp, end = 8.dp, bottom = 8.dp)
+      .clip(RoundedCornerShape(4.dp))
+      .border(
+        width = if (status == ServiceStatus.DUE.name) 1.dp else 0.dp,
+        color = if (status == ServiceStatus.DUE.name) contentColor else Color.Unspecified,
+        shape = RoundedCornerShape(4.dp),
+      )
+      .background(
+        if (status == ServiceStatus.OVERDUE.name) {
+          contentColor
+        } else if (backgroundColor != Color.Unspecified.toString()) {
+          backgroundColor.parseColor()
+        } else {
+          Color.Unspecified
+        },
+      )
+      .clickable {
+        if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
+          buttonProperties.actions.handleClickEvent(
+            navController = navController,
+            resourceData = resourceData,
+          )
         }
-        .width(140.dp)
-        .height(80.dp)
-        .padding(8.dp)
-        .clip(RoundedCornerShape(4.dp))
-        .border(
-          width = if (status == ServiceStatus.DUE.name) 1.dp else 0.dp,
-          color = if (status == ServiceStatus.DUE.name) contentColor else Color.Unspecified,
-          shape = RoundedCornerShape(4.dp),
-        )
-        .background(
-          if (status == ServiceStatus.OVERDUE.name) {
-            contentColor
-          } else if (backgroundColor != Color.Unspecified.toString()) {
-            backgroundColor.parseColor()
-          } else {
-            Color.Unspecified
-          },
-        ),
+      },
     verticalArrangement = Arrangement.Center,
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
@@ -301,17 +339,17 @@ private fun BigServiceButton(
         imageVector = Icons.Filled.Check,
         contentDescription = null,
         tint =
-          when (status) {
-            ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
-            else -> statusColor.copy(alpha = 0.9f)
-          },
+        when (status) {
+          ServiceStatus.COMPLETED.name -> SuccessColor.copy(alpha = 0.9f)
+          else -> statusColor.copy(alpha = 0.9f)
+        },
       )
     }
     Text(
       text = buttonProperties.text ?: "",
       color = if (status == ServiceStatus.OVERDUE.name) Color.White else contentColor,
       textAlign = TextAlign.Center,
-      fontSize = buttonProperties.fontSize.sp,
+      fontSize = (buttonProperties.fontSize - 2).sp,
       overflow = TextOverflow.Ellipsis,
     )
   }
@@ -325,40 +363,40 @@ private fun ServiceCardServiceOverduePreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Overdue household service",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD",
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = ServiceStatus.OVERDUE.name,
-                  text = "1",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Overdue household service",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            serviceMemberIcons = "CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = ServiceStatus.OVERDUE.name,
+              text = "1",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -379,41 +417,41 @@ private fun ServiceCardServiceOverdueWithBackgroundColorPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Overdue household service",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD",
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = "",
-                  backgroundColor = "#000000",
-                  text = "1",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Overdue household service",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            serviceMemberIcons = "CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = "",
+              backgroundColor = "#000000",
+              text = "1",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -434,41 +472,41 @@ private fun ServiceCardServiceOverdueWithNoBackgroundColorAndStatusPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Overdue household service",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD",
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = "",
-                  backgroundColor = "",
-                  text = "1",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Overdue household service",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            serviceMemberIcons = "CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = "",
+              backgroundColor = "",
+              text = "1",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -489,41 +527,41 @@ private fun ServiceCardServiceDuePreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Due household services",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              serviceMemberIcons =
-                "CHILD,PREGNANT_WOMAN,CHILD,CHILD,PREGNANT_WOMAN,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD",
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = ServiceStatus.DUE.name,
-                  text = "Issue Bed net",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Important Due household service from Past",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            serviceMemberIcons =
+            "CHILD,PREGNANT_WOMAN,CHILD,CHILD,PREGNANT_WOMAN,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD,CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = ServiceStatus.DUE.name,
+              text = "Issue Bed net",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -544,40 +582,40 @@ private fun ServiceCardServiceUpcomingPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Upcoming household service",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = ServiceStatus.UPCOMING.name,
-                  text = "Next visit 09-10-2022",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Upcoming household service",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            serviceMemberIcons = "CHILD,CHILD,CHILD,CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = ServiceStatus.UPCOMING.name,
+              text = "Next visit 09-10-2022",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -598,21 +636,21 @@ private fun ServiceCardServiceFamilyMemberPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "John Njoroge Mwangi, M",
-                    primaryTextColor = "#000000",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD",
-              showVerticalDivider = false,
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "John Njoroge Mwangi, M",
+                primaryTextColor = "#000000",
+              ),
             ),
+            serviceMemberIcons = "CHILD",
+            showVerticalDivider = false,
           ),
+        ),
       ),
     )
 
@@ -633,31 +671,31 @@ private fun ServiceCardServiceWithTinyServiceButtonPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Nelson Mandela, M",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              showVerticalDivider = false,
-              serviceButton =
-                ButtonProperties(
-                  status = ServiceStatus.DUE.name,
-                  text = "ANC Visit",
-                  buttonType = ButtonType.TINY,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Nelson Mandela, M",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            showVerticalDivider = false,
+            serviceButton =
+            ButtonProperties(
+              status = ServiceStatus.DUE.name,
+              text = "ANC Visit",
+              buttonType = ButtonType.TINY,
             ),
           ),
+        ),
       ),
     )
 
@@ -678,39 +716,39 @@ private fun ServiceCardServiceCompletedPreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Fully vaccinated household",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Town/Village",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "HH No.",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "Last visited yesterday",
-                    primaryTextColor = "#5A5A5A",
-                  ),
-                ),
-              showVerticalDivider = true,
-              serviceButton =
-                ButtonProperties(
-                  visible = "true",
-                  status = ServiceStatus.COMPLETED.name,
-                  text = "Fully Vaccinated against COVID 19 virus",
-                  buttonType = ButtonType.BIG,
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Fully vaccinated household",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Town/Village",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "HH No.",
+                secondaryTextColor = "#555AAA",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "Last visited yesterday",
+                primaryTextColor = "#5A5A5A",
+              ),
+            ),
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              visible = "true",
+              status = ServiceStatus.COMPLETED.name,
+              text = "Fully Vaccinated against COVID 19 virus",
+              buttonType = ButtonType.BIG,
             ),
           ),
+        ),
       ),
     )
 
@@ -731,33 +769,33 @@ private fun ServiceCardANCServiceDuePreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "ANC service due",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "EDD",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "29-10-2022",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                ),
-              serviceMemberIcons = "CHILD",
-              showVerticalDivider = false,
-              serviceButton =
-                ButtonProperties(
-                  status = ServiceStatus.DUE.name,
-                  text = "ANC Visit",
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "ANC service due",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "EDD",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "29-10-2022",
+                secondaryTextColor = "#555AAA",
+              ),
+            ),
+            serviceMemberIcons = "CHILD",
+            showVerticalDivider = true,
+            serviceButton =
+            ButtonProperties(
+              status = ServiceStatus.DUE.name,
+              text = "ANC Visit",
             ),
           ),
+        ),
       ),
     )
 
@@ -778,42 +816,43 @@ private fun ServiceCardANCServiceOverduePreview() {
       ColumnProperties(
         viewType = ViewType.COLUMN,
         children =
-          listOf(
-            ServiceCardProperties(
-              viewType = ViewType.SERVICE_CARD,
-              details =
-                listOf(
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "ANC service overdue",
-                    primaryTextColor = "#000000",
-                  ),
-                  CompoundTextProperties(
-                    viewType = ViewType.COMPOUND_TEXT,
-                    primaryText = "EDD",
-                    primaryTextColor = "#5A5A5A",
-                    secondaryText = "29-10-2022",
-                    secondaryTextColor = "#555AAA",
-                  ),
-                ),
-              showVerticalDivider = false,
-              services =
-                listOf(
-                  ButtonProperties(
-                    visible = "true",
-                    status = ServiceStatus.COMPLETED.name,
-                    text = "Pregnancy Outcome 1",
-                    buttonType = ButtonType.MEDIUM,
-                  ),
-                  ButtonProperties(
-                    visible = "true",
-                    status = ServiceStatus.OVERDUE.name,
-                    text = "ANC Visit 2",
-                    buttonType = ButtonType.MEDIUM,
-                  ),
-                ),
+        listOf(
+          ServiceCardProperties(
+            viewType = ViewType.SERVICE_CARD,
+            details =
+            listOf(
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "A very long name. Lorem Ipsum Blah blah!",
+                primaryTextColor = "#000000",
+              ),
+              CompoundTextProperties(
+                viewType = ViewType.COMPOUND_TEXT,
+                primaryText = "EDD",
+                primaryTextColor = "#5A5A5A",
+                secondaryText = "29-10-2022",
+                secondaryTextColor = "#555AAA",
+              ),
+            ),
+            showVerticalDivider = false,
+            serviceMemberIcons = "PREGNANT_WOMAN",
+            services =
+            listOf(
+              ButtonProperties(
+                visible = "true",
+                status = ServiceStatus.COMPLETED.name,
+                text = "Pregnancy Outcome",
+                buttonType = ButtonType.MEDIUM,
+              ),
+              ButtonProperties(
+                visible = "true",
+                status = ServiceStatus.OVERDUE.name,
+                text = "ANC Visit 2",
+                buttonType = ButtonType.MEDIUM,
+              ),
             ),
           ),
+        ),
       ),
     )
 

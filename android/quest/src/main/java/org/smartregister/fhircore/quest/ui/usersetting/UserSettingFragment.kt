@@ -24,16 +24,19 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment() {
 
   val userSettingViewModel by viewModels<UserSettingViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -45,7 +48,10 @@ class UserSettingFragment : Fragment() {
       setContent {
         AppTheme {
           UserSettingScreen(
+            appTitle = appMainViewModel.appMainUiState.value.appTitle,
             username = userSettingViewModel.retrieveUsername(),
+            practitionerLocation = userSettingViewModel.practitionerLocation(),
+            fullname = userSettingViewModel.retrieveUserInfo()?.name,
             allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
             selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
             allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
@@ -59,8 +65,6 @@ class UserSettingFragment : Fragment() {
             mainNavController = findNavController(),
             lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
             showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
-            unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,
-            dismissInsightsView = userSettingViewModel::dismissInsightsView,
           )
         }
       }
