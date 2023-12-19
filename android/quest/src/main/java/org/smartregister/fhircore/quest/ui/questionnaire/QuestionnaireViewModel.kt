@@ -45,7 +45,6 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -77,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
@@ -214,6 +214,8 @@ constructor(
       )
 
       updateResourcesLastUpdatedProperty(actionParameters)
+
+      updateUsedUniqueId(questionnaireConfig, currentQuestionnaireResponse, actionParameters)
 
       // Important to load subject resource to retrieve ID (as reference) correctly
       val subjectIdType: IdType? =
@@ -370,6 +372,49 @@ constructor(
     ) {
       defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
     }
+  }
+
+  private suspend fun updateUsedUniqueId(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+    actionParameters: List<ActionParameter>,
+  ) {
+    questionnaireConfig.extraParams
+      ?.find { it.paramType == ActionParameterType.PREPOPULATE_UNIQUE_ID }
+      .let { actionParameter ->
+        val uniqueIdentifierGroupId = actionParameter?.value?.extractLogicalIdUuid()
+        val identifierLinkId = actionParameter?.linkId
+        val uniqueIdentifierValue = actionParameters.find { it.key == UNIQUE_ID_KEY }?.value
+
+        val questionnaireIdentifierValue =
+          identifierLinkId?.let { linkId ->
+            questionnaireResponse.find(linkId)?.answer?.first()?.value.toString()
+          }
+        // Only update the unique identifier Group resource when the value was consumed
+        if (
+          !uniqueIdentifierGroupId.isNullOrEmpty() &&
+            !uniqueIdentifierValue.isNullOrEmpty() &&
+          uniqueIdentifierValue == questionnaireIdentifierValue
+        ) {
+          val uniqueIdentifierGroup =
+            defaultRepository.loadResource<Group>(uniqueIdentifierGroupId)?.apply {
+              this.characteristic
+                ?.find { it.valueCodeableConcept.valueToString() == uniqueIdentifierValue }
+                ?.let { identifierCharacteristic ->
+                  identifierCharacteristic.exclude = true
+                  if (
+                    this.characteristic?.indexOf(identifierCharacteristic) ==
+                      this.characteristic.size - 1
+                  ) {
+                    this.active = false
+                  }
+                }
+            }
+          uniqueIdentifierGroup?.let {
+            defaultRepository.addOrUpdate(addMandatoryTags = true, resource = it)
+          }
+        }
+      }
   }
 
   private suspend fun retrievePreviouslyExtractedResources(
@@ -804,5 +849,6 @@ constructor(
 
   companion object {
     const val CONTAINED_LIST_TITLE = "GeneratedResourcesList"
+    const val UNIQUE_ID_KEY = "uniqueId"
   }
 }
