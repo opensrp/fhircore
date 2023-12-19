@@ -24,6 +24,7 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
@@ -66,18 +67,16 @@ constructor(
   private var conf: Configuration =
     Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
-  suspend fun migrate() {
+  fun migrate() {
     val migrations =
       configurationRegistry
         .retrieveConfiguration<DataMigrationConfiguration>(configType = ConfigType.DataMigration)
         .migrations
 
-    val latestMigrationVersion =
-      sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0)
-
-    migrations
-      ?.filter { it.version >= latestMigrationVersion }
-      ?.forEach { migrate(it, latestMigrationVersion) }
+    val previousVersion =
+      sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0).toInt()
+    val newMigrations = migrations?.filter { it.version > previousVersion }
+    runBlocking { migrate(newMigrations, previousVersion) }
   }
 
   /**
@@ -123,33 +122,34 @@ constructor(
    * "$.birthDate", "1996-12-32" -> Update the birth date from "1974-12-25" to "1996-12-32"
    * ```
    */
-  suspend fun migrate(migrationConfig: MigrationConfig, latestMigrationVersion: Long) {
-    try {
-      val search: Search =
-        Search(type = migrationConfig.resourceType).apply {
-          migrationConfig.dataQueries?.forEach { dataQuery ->
-            filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
+  suspend fun migrate(migrationConfigs: List<MigrationConfig>?, previousVersion: Int) {
+    val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
+    migrationConfigs?.forEach { migrationConfig ->
+      try {
+        val search: Search =
+          Search(type = migrationConfig.resourceType).apply {
+            migrationConfig.dataQueries?.forEach { dataQuery ->
+              filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
+            }
           }
-        }
-      val resources =
-        withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
-      resources.forEach { resource ->
-        val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
+        val resources =
+          withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
+        resources.forEach { resource ->
+          val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
-        val updatedResourceJson: String =
-          jsonParse
-            .apply {
+          val updatedResourceDocument =
+            jsonParse.apply {
               migrationConfig.updateValues.forEach { updateExpression ->
                 // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
                 val value = computeValueRule(updateExpression.valueRule, resource)
-                if (updateExpression.jsonPathExpression.startsWith("\$")) {
+                if (updateExpression.jsonPathExpression.startsWith("\$") && value != null) {
                   set(updateExpression.jsonPathExpression, value)
                 }
                 if (
                   updateExpression.jsonPathExpression.startsWith(
                     resource.resourceType.name,
                     ignoreCase = true,
-                  )
+                  ) && value != null
                 ) {
                   set(
                     updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
@@ -158,22 +158,22 @@ constructor(
                 }
               }
             }
-            .jsonString()
 
-        val resourceDefinition: Class<out IBaseResource>? =
-          FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
+          val resourceDefinition: Class<out IBaseResource>? =
+            FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
 
-        val updatedResource =
-          parser.parseResource(resourceDefinition, updatedResourceJson) as Resource
-        defaultRepository.addOrUpdate(resource = updatedResource)
+          val updatedResource =
+            parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+          defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+        }
+      } catch (throwable: Throwable) {
+        Timber.e(throwable)
       }
-      sharedPreferencesHelper.write(
-        SharedPreferenceKey.MIGRATION_VERSION.name,
-        latestMigrationVersion.plus(1),
-      )
-    } catch (throwable: Throwable) {
-      Timber.e(throwable)
     }
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.MIGRATION_VERSION.name,
+      maxVersion.plus(1),
+    )
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {

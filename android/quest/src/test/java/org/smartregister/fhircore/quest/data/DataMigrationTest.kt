@@ -16,15 +16,22 @@
 
 package org.smartregister.fhircore.quest.data
 
-import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -33,7 +40,11 @@ import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.configuration.migration.UpdateValueConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.plusDays
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -48,37 +59,117 @@ class DataMigrationTest : RobolectricTest() {
 
   @Inject lateinit var dataMigration: DataMigration
 
-  private val patient = Faker.buildPatient()
+  private val patient =
+    Faker.buildPatient().apply { gender = Enumerations.AdministrativeGender.MALE }
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    sharedPreferencesHelper.write(SharedPreferenceKey.MIGRATION_VERSION.name, 0L)
   }
 
   @Test
-  fun testMigrateShouldUpdateResources() = runTest {
-    // Create patient to be updated
-    defaultRepository.create(addResourceTags = true, patient)
-    dataMigration.migrate(
-      migrationConfig =
-        MigrationConfig(
-          resourceType = ResourceType.Patient,
-          dataQueries = emptyList(),
-          version = 1,
-          updateValues =
-            listOf(
-              UpdateValueConfig(
-                jsonPathExpression = "\$.gender",
-                valueRule =
-                  RuleConfig(name = "value", actions = listOf("data.put('value', 'female')")),
-              ),
+  fun testMigrateShouldUpdateResources() =
+    runTest(timeout = 45.seconds) {
+      // Create patient to be updated
+      defaultRepository.create(addResourceTags = true, patient)
+      dataMigration.migrate(
+        migrationConfigs =
+          listOf(
+            MigrationConfig(
+              resourceType = ResourceType.Patient,
+              dataQueries = emptyList(),
+              version = 1,
+              updateValues =
+                listOf(
+                  UpdateValueConfig(
+                    jsonPathExpression = "\$.gender",
+                    valueRule =
+                      RuleConfig(name = "value", actions = listOf("data.put('value', 'female')")),
+                  ),
+                ),
             ),
-        ),
-      latestMigrationVersion = 1,
-    )
-    // Patient gender should be updated
-    val updatedPatient = defaultRepository.loadResource<Patient>(patient.logicalId)
-    Assert.assertTrue(updatedPatient?.gender != patient.gender)
-    Assert.assertEquals(Enumerations.AdministrativeGender.FEMALE, updatedPatient?.gender)
-  }
+          ),
+        previousVersion = 0,
+      )
+      // Patient gender should be updated from 'male' to 'female'
+      val updatedPatient = defaultRepository.loadResource<Patient>(patient.logicalId)
+      Assert.assertTrue(updatedPatient?.gender != patient.gender)
+      Assert.assertEquals(Enumerations.AdministrativeGender.FEMALE, updatedPatient?.gender)
+
+      // Version updated to 2
+      Assert.assertEquals(
+        2,
+        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0),
+      )
+    }
+
+  @Test
+  fun testTaskBasedOnReferenceIsUpdated() =
+    runTest(timeout = 60.seconds) {
+      val carePlan: CarePlan =
+        CarePlan().apply {
+          id = "careplan-1"
+          identifier =
+            mutableListOf(
+              Identifier().apply {
+                use = Identifier.IdentifierUse.OFFICIAL
+                value = "value-1"
+              },
+            )
+          subject = patient.asReference()
+        }
+
+      val taskId = UUID.randomUUID().toString()
+      val task =
+        Task().apply {
+          id = taskId
+          status = Task.TaskStatus.READY
+          executionPeriod =
+            Period().apply {
+              start = Date().plusMonths(-1)
+              end = Date().plusDays(-1)
+            }
+          addBasedOn(Reference(carePlan.logicalId)) // Wrong Reference missing ResourceType CarePlan
+        }
+
+      defaultRepository.create(addResourceTags = true, patient, carePlan, task)
+
+      // Fix reference via DataMigration to be "Patient/sampleId" instead of just "sampleId"
+      dataMigration.migrate(
+        migrationConfigs =
+          listOf(
+            MigrationConfig(
+              resourceType = ResourceType.Task,
+              dataQueries = listOf(),
+              version = 1,
+              updateValues =
+                listOf(
+                  UpdateValueConfig(
+                    jsonPathExpression = "\$.basedOn[0]",
+                    valueRule =
+                      RuleConfig(
+                        name = "value",
+                        actions =
+                          listOf(
+                            "data.put('value', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn.first().reference'))",
+                          ),
+                      ),
+                  ),
+                ),
+            ),
+          ),
+        previousVersion = 0,
+      )
+
+      val updatedTask = defaultRepository.loadResource<Task>(taskId)
+      Assert.assertNotNull(updatedTask?.basedOn)
+      Assert.assertEquals("CarePlan/${carePlan.logicalId}", updatedTask?.basedOnFirstRep?.reference)
+
+      // Version updated to 2
+      Assert.assertEquals(
+        2,
+        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0),
+      )
+    }
 }
