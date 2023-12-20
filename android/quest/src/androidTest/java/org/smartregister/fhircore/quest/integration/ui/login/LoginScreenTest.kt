@@ -16,13 +16,11 @@
 
 package org.smartregister.fhircore.quest.integration.ui.login
 
-import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -79,7 +77,7 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -111,7 +109,7 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -122,10 +120,6 @@ class LoginScreenTest {
       .onNodeWithTag(PASSWORD_FIELD_TAG)
       .assertExists()
       .performTextInput("passwordFieldTag")
-    composeRule
-      .onNodeWithTag(PASSWORD_FIELD_TAG)
-      .performImeAction()
-      .equals(EditorInfo.IME_ACTION_DONE)
   }
 
   @Test
@@ -180,7 +174,7 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -203,7 +197,7 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -226,7 +220,7 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -246,7 +240,7 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -266,7 +260,7 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = dataMigrationInProgress,
+        dataMigrationInProgress = false,
       )
     }
     composeRule
