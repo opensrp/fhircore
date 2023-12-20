@@ -129,7 +129,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
     appVersionPair = appVersionPair,
-    dataMigrationInProgress = dataMigrationInProgress
+    dataMigrationInProgress = dataMigrationInProgress,
   )
 }
 

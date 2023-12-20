@@ -64,7 +64,7 @@ constructor(
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  val eventBus: EventBus
+  val eventBus: EventBus,
 ) {
 
   private var conf: Configuration =

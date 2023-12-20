@@ -34,7 +34,7 @@ class LoaderViewTest {
     composeRule.setContent {
       LoaderDialog(
         dialogMessage =
-          ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_up)
+          ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing_up),
       )
     }
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertExists()

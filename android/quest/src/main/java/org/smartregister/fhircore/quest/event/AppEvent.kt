@@ -22,5 +22,5 @@ sealed class AppEvent {
   data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
     AppEvent()
 
-  data class OnMigrateData(val inProgress: Boolean): AppEvent()
+  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
 }
