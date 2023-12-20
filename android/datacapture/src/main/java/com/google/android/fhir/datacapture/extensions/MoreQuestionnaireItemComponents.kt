@@ -342,6 +342,30 @@ val Questionnaire.QuestionnaireItemComponent.localizedTextSpanned: Spanned?
 val Questionnaire.QuestionnaireItemComponent.localizedPrefixSpanned: Spanned?
   get() = prefixElement?.getLocalizedText()?.toSpanned()
 
+val Questionnaire.QuestionnaireItemComponent.textSizeHtml: Float?
+  get() {
+    if (text == null) return null
+    if (!text.contains("style=\"", true)) return null
+    val styleTrimmed = text.substringAfter("style=\"").substringBefore("\"")
+    if (!styleTrimmed.contains("font-size:", true)) return null
+    val fontSizeStyleTrimmed = styleTrimmed.substringAfter("font-size:").substringBefore(";").trim()
+    val onlyTextSize = fontSizeStyleTrimmed.replace(Regex("[^0-9]"), "")
+
+    return onlyTextSize.toFloat()
+  }
+
+val Questionnaire.QuestionnaireItemComponent.prefixSizeHtml: Float?
+  get() {
+    if (prefix == null) return null
+    if (!prefix.contains("style=\"", true)) return null
+    val styleTrimmed = prefix.substringAfter("style=\"").substringBefore("\"")
+    if (!styleTrimmed.contains("font-size:", true)) return null
+    val fontSizeStyleTrimmed = styleTrimmed.substringAfter("font-size:").substringBefore(";").trim()
+    val onlyTextSize = fontSizeStyleTrimmed.replace(Regex("[^0-9]"), "")
+
+    return onlyTextSize.toFloat()
+  }
+
 /**
  * A nested questionnaire item of type display with displayCategory extension with
  * [EXTENSION_DISPLAY_CATEGORY_INSTRUCTIONS] code is used as the instructions of the parent

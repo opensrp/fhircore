@@ -26,8 +26,12 @@ import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.extensions.getHeaderViewVisibility
 import com.google.android.fhir.datacapture.extensions.getLocalizedInstructionsSpanned
 import com.google.android.fhir.datacapture.extensions.initHelpViews
+import com.google.android.fhir.datacapture.extensions.isInstructionsCode
 import com.google.android.fhir.datacapture.extensions.localizedPrefixSpanned
+import com.google.android.fhir.datacapture.extensions.prefixSizeHtml
+import com.google.android.fhir.datacapture.extensions.textSizeHtml
 import com.google.android.fhir.datacapture.extensions.updateTextAndVisibility
+import org.hl7.fhir.r4.model.Questionnaire
 
 /**
  * Generic view for the prefix, question, and hint as the header of a group using a view holder of
@@ -43,6 +47,10 @@ class GroupHeaderView(context: Context, attrs: AttributeSet?) : LinearLayout(con
   private val question = findViewById<TextView>(R.id.question)
   private val hint = findViewById<TextView>(R.id.hint)
 
+  private val defaultTextSizeInSp: Float = question.textSize.div(context.resources.displayMetrics.scaledDensity)
+  private val defaultPrefixSizeInSp: Float = prefix.textSize.div(context.resources.displayMetrics.scaledDensity)
+  private val defaultHintSizeInSp: Float = hint.textSize.div(context.resources.displayMetrics.scaledDensity)
+
   fun bind(questionnaireViewItem: QuestionnaireViewItem) {
     initHelpViews(
       helpButton = findViewById(R.id.helpButton),
@@ -52,11 +60,22 @@ class GroupHeaderView(context: Context, attrs: AttributeSet?) : LinearLayout(con
       isHelpCardInitiallyVisible = questionnaireViewItem.isHelpCardOpen,
       helpCardStateChangedCallback = questionnaireViewItem.helpCardStateChangedCallback,
     )
-    prefix.updateTextAndVisibility(questionnaireViewItem.questionnaireItem.localizedPrefixSpanned)
+    prefix.updateTextAndVisibility(
+      questionnaireViewItem.questionnaireItem.localizedPrefixSpanned,
+      questionnaireViewItem.questionnaireItem.prefixSizeHtml ?: defaultPrefixSizeInSp,
+    )
     // CQF expression takes precedence over static question text
-    question.updateTextAndVisibility(questionnaireViewItem.questionText)
+    question.updateTextAndVisibility(
+      questionnaireViewItem.questionText,
+      questionnaireViewItem.questionnaireItem.textSizeHtml ?: defaultTextSizeInSp,
+    )
+    val hintItem = questionnaireViewItem.enabledDisplayItems.firstOrNull { questionnaireItem ->
+      questionnaireItem.type == Questionnaire.QuestionnaireItemType.DISPLAY &&
+              questionnaireItem.isInstructionsCode
+    }
     hint.updateTextAndVisibility(
       questionnaireViewItem.enabledDisplayItems.getLocalizedInstructionsSpanned(),
+      hintItem?.textSizeHtml ?: defaultHintSizeInSp,
     )
     visibility = getHeaderViewVisibility(prefix, question, hint)
   }

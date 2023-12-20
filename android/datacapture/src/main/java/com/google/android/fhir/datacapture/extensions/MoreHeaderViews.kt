@@ -29,7 +29,10 @@ import com.google.android.material.card.MaterialCardView
 import org.hl7.fhir.r4.model.Questionnaire
 
 /** Displays `localizedText` if it is not null or empty, or hides the [TextView]. */
-fun TextView.updateTextAndVisibility(localizedText: Spanned? = null) {
+fun TextView.updateTextAndVisibility(
+  localizedText: Spanned? = null,
+  size: Float? = null
+) {
   text = localizedText
   visibility =
     if (localizedText.isNullOrEmpty()) {
@@ -37,6 +40,7 @@ fun TextView.updateTextAndVisibility(localizedText: Spanned? = null) {
     } else {
       VISIBLE
     }
+  if (size != null) textSize = size
 }
 
 /** Returns [VISIBLE] if any of the [view] is visible, [GONE] otherwise. */
