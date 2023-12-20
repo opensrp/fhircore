@@ -13,6 +13,7 @@ converter-gson = "2.9.0"
 core-ktx = "1.10.1"
 core-ktx-test= "1.5.0"
 core-testing = "2.2.0"
+cqfFhirCr = "3.0.0-PRE9"
 dagger-hilt-compiler = "2.45"
 data-capture = "1.0.0-preview22-SNAPSHOT"
 desugar-jdk-libs = "2.0.3"
@@ -109,6 +110,7 @@ core-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 core-ktx-test = { group = "androidx.test", name = "core-ktx", version.ref = "core-ktx-test" }
 core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "core-testing" }
+cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cqfFhirCr" }
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }

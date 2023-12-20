@@ -142,10 +142,6 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
-    exclude(group = "org.codelibs", module = "xpp3")
-    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
-  }
 
   // Shared dependencies
   api(libs.glide)
@@ -197,7 +193,11 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
-  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9-SNAPSHOT")
+  api(libs.cqf.fhir.cr) {
+    isTransitive = true
+    exclude(group = "org.codelibs", module = "xpp3")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
+  }
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")
