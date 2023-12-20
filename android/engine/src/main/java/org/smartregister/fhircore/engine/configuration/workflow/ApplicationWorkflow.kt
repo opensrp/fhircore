@@ -50,4 +50,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches the dialer with the phone number ready to place a call */
   LAUNCH_DIALLER,
+
+  /** A workflow that launches user insight screen */
+  LAUNCH_INSIGHT_SCREEN,
 }

@@ -21,6 +21,8 @@ cql-evaluator = "2.4.0"
 cql-to-elm = "2.4.0"
 dagger-hilt-compiler = "2.45"
 data-capture = "1.0.0-preview19-SNAPSHOT"
+datastore = "1.0.0"
+datastore-preferences = "1.0.0"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
@@ -98,6 +100,7 @@ work-runtime-ktx = "2.8.1"
 work-testing = "2.8.1"
 workflow = "0.1.0-alpha02-preview9.1-SNAPSHOT"
 xercesImpl = "2.12.2"
+org-jetbrains-kotlin-android = "1.8.10"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
@@ -129,6 +132,8 @@ cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "c
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }
+datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore-preferences"}
 easy-rules-jexl = { group = "org.jeasy", name = "easy-rules-jexl", version.ref = "easy-rules-jexl" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
@@ -207,3 +212,4 @@ workflow = { group = "org.smartregister", name = "workflow", version.ref = "work
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 
 [plugins]
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
