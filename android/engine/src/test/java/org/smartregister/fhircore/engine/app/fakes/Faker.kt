@@ -22,8 +22,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import java.util.Calendar
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
@@ -38,8 +36,10 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import java.util.Calendar
+import java.util.Date
 
 object Faker {
 
@@ -66,7 +66,7 @@ object Faker {
     }
 
   fun buildTestConfigurationRegistry(
-    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
+    preferencesDataStore: PreferencesDataStore = mockk(),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -74,7 +74,7 @@ object Faker {
     return buildTestConfigurationRegistry(
       fhirResourceService,
       fhirResourceDataSource,
-      sharedPreferencesHelper,
+      preferencesDataStore,
       dispatcherProvider,
     )
   }
@@ -82,7 +82,7 @@ object Faker {
   fun buildTestConfigurationRegistry(
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+    preferencesDataStore: PreferencesDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -92,7 +92,7 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json,

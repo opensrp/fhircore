@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.engine.datastore.serializers
 
 import androidx.datastore.core.Serializer
-import java.io.InputStream
-import java.io.OutputStream
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
 import timber.log.Timber
+import java.io.InputStream
+import java.io.OutputStream
 
 object PractitionerDetailsDataStoreSerializer : Serializer<PractitionerDetails> {
   override val defaultValue: PractitionerDetails

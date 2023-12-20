@@ -17,9 +17,17 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.asLiveData
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -37,6 +45,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -307,30 +316,20 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
+    private fun getStringFlowValue(flow: Flow<String>): String {
+      var flowValue = ""
+      runBlocking { flow.collectLatest { flowValue = it } }
+      return flowValue
+    }
     fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
-      val key = SharedPreferenceKey.valueOf(practitionerKey)
+      val preferences = configurationRegistry.preferencesDataStore
+
       try {
-        return when (key) {
-          SharedPreferenceKey.PRACTITIONER_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_ID.name,
-              "",
-            )
-          SharedPreferenceKey.CARE_TEAM ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.CARE_TEAM.name,
-              "",
-            )
-          SharedPreferenceKey.ORGANIZATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.ORGANIZATION.name,
-              "",
-            )
-          SharedPreferenceKey.PRACTITIONER_LOCATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-              "",
-            )
+        return when (practitionerKey) {
+          PreferencesDataStore.APP_ID.name -> getStringFlowValue(preferences.appId)
+          PreferencesDataStore.CARE_TEAM.name -> getStringFlowValue(preferences.careTeam)
+          PreferencesDataStore.ORGANIZATION.name -> getStringFlowValue(preferences.organization)
+          PreferencesDataStore.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
           else -> ""
         }
       } catch (exception: Exception) {

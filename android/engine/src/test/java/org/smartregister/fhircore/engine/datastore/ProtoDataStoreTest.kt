@@ -26,8 +26,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
+import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -58,7 +58,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testWritePractitionerDetails() {
-    val valueToWrite = PractitionerDetails(name = "Kelvin", id = 1)
+    val valueToWrite = PractitionerDetails()
     runTest {
       protoDataStore.writePractitioner(valueToWrite)
       protoDataStore.practitioner.map { assert(it == (valueToWrite)) }
@@ -77,7 +77,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testWriteUserInfo() {
-    val valueToWrite = UserInfo(name = "Kelvin")
+    val valueToWrite = UserInfo()
     runTest {
       protoDataStore.writeUserInfo(valueToWrite)
       protoDataStore.userInfo.map { assert(it == valueToWrite) }

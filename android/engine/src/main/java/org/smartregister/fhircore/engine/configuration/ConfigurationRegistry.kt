@@ -22,14 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import java.io.FileNotFoundException
-import java.net.UnknownHostException
-import java.util.LinkedList
-import java.util.Locale
-import java.util.PropertyResourceBundle
-import java.util.ResourceBundle
-import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -45,10 +38,9 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -65,17 +57,25 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.net.UnknownHostException
+import java.util.LinkedList
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConfigurationRegistry
 @Inject
 constructor(
-  val fhirEngine: FhirEngine,
-  val fhirResourceDataSource: FhirResourceDataSource,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider,
-  val configService: ConfigService,
-  val json: Json,
+        val fhirEngine: FhirEngine,
+        val fhirResourceDataSource: FhirResourceDataSource,
+        val preferencesDataStore: PreferencesDataStore,
+        val dispatcherProvider: DispatcherProvider,
+        val configService: ConfigService,
+        val json: Json,
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -365,7 +365,7 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferencesDataStore.appId.map { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { composition ->
         composition

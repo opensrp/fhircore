@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -88,13 +89,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    val sharedPreferencesHelper =
-      SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
+    val preferencesDataStore = PreferencesDataStore(context)
+
     configRegistry =
       ConfigurationRegistry(
         fhirEngine,
         fhirResourceDataSource,
-        sharedPreferencesHelper,
+        preferencesDataStore,
         coroutineRule.testDispatcherProvider,
         AppConfigService(context),
         Faker.json,
@@ -216,9 +217,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testFetchNonWorkflowConfigResourcesAppIdExists() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     val appId = "theAppId"
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
 
     coVerify(inverse = true) { fhirEngine.create(any()) }
   }
@@ -230,9 +232,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val composition = Composition().apply { identifier = Identifier().apply { value = appId } }
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(SearchResult(resource = composition, null, null))
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+      configRegistry.fetchNonWorkflowConfigResources()
+    }
 
     coVerify(inverse = true) { fhirEngine.create(any()) }
   }
@@ -247,7 +251,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
@@ -273,7 +280,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
     fhirEngine.create(composition) // Add composition to database instead of mocking
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
@@ -318,7 +327,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
           )
       }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
     fhirEngine.create(composition)
 
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
@@ -619,7 +630,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
 
     // Add composition to database
     fhirEngine.create(composition)
@@ -666,7 +679,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
 
     fhirEngine.create(composition)
 
@@ -715,7 +730,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
           identifier = Identifier().apply { value = appId }
           section = compositionSections
         }
-      configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+      runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
+    }
 
       fhirEngine.create(composition)
 

@@ -30,29 +30,28 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-internal class PreferenceDataStoreTest : RobolectricTest() {
+internal class PreferencesDataStoreTest : RobolectricTest() {
   private val testContext: Context = ApplicationProvider.getApplicationContext()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var preferenceDataStore: PreferenceDataStore
+  private lateinit var preferencesDataStore: PreferencesDataStore
 
-  private val keys = PreferenceDataStore.Keys
+  private val keys = PreferencesDataStore.Keys
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferenceDataStore = PreferenceDataStore(testContext)
+    preferencesDataStore = PreferencesDataStore(testContext)
   }
 
   @Test
   fun testReadAppId() {
     val expectedValue = ""
     runTest {
-      val valueFlow = preferenceDataStore.read(keys.APP_ID)
-      valueFlow.map { value -> assert(value == expectedValue) }
+      preferencesDataStore.appId.map { value -> assert(value == expectedValue) }
     }
   }
 
@@ -62,8 +61,8 @@ internal class PreferenceDataStoreTest : RobolectricTest() {
     val key = keys.APP_ID
 
     runTest {
-      preferenceDataStore.write(key, newAppId)
-      assert(preferenceDataStore.read(keys.APP_ID).first() == newAppId)
+      preferencesDataStore.write(key, newAppId)
+      assert(preferencesDataStore.appId.first() == newAppId)
     }
   }
 }

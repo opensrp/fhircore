@@ -22,9 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -44,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
@@ -59,6 +57,9 @@ import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import javax.inject.Inject
 
 @HiltViewModel
 class AppSettingViewModel
@@ -67,6 +68,7 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
@@ -218,7 +220,7 @@ constructor(
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+            this.launch {  preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))

@@ -20,15 +20,15 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.catch
-import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
+import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
 import timber.log.Timber
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
 private const val USER_INFO_DATASTORE_JSON = "user_info.json"
@@ -36,14 +36,14 @@ private const val TAG = "Proto DataStore"
 
 val Context.practitionerProtoStore: DataStore<PractitionerDetails> by
   dataStore(
-    fileName = PRACTITIONER_DETAILS_DATASTORE_JSON,
-    serializer = PractitionerDetailsDataStoreSerializer,
+          fileName = PRACTITIONER_DETAILS_DATASTORE_JSON,
+          serializer = PractitionerDetailsDataStoreSerializer,
   )
 
 val Context.userInfoProtoStore: DataStore<UserInfo> by
   dataStore(
-    fileName = USER_INFO_DATASTORE_JSON,
-    serializer = UserInfoDataStoreSerializer,
+          fileName = USER_INFO_DATASTORE_JSON,
+          serializer = UserInfoDataStoreSerializer,
   )
 
 @Singleton
