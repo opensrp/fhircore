@@ -42,6 +42,8 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
 
 /**
@@ -62,6 +64,7 @@ constructor(
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val eventBus: EventBus
 ) {
 
   private var conf: Configuration =
@@ -123,6 +126,7 @@ constructor(
    * ```
    */
   suspend fun migrate(migrationConfigs: List<MigrationConfig>?, previousVersion: Int) {
+    eventBus.triggerEvent(AppEvent.OnMigrateData(true))
     val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
     migrationConfigs?.forEach { migrationConfig ->
       try {
@@ -164,8 +168,11 @@ constructor(
 
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
-          defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+          }
         }
+        eventBus.triggerEvent(AppEvent.OnMigrateData(false))
       } catch (throwable: Throwable) {
         Timber.e(throwable)
       }
