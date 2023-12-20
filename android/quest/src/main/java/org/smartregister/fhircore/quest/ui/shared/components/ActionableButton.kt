@@ -99,7 +99,7 @@ fun ActionableButton(
               statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = statusColor.copy(alpha = 0.6f),
+          disabledBackgroundColor = statusColor.copy(alpha = 0.02f),
           disabledContentColor = DefaultColor,
         ),
       modifier =
@@ -140,7 +140,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          statusColor.copy(alpha = 0.6f)
+          statusColor.copy(alpha = 0.7f)
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -168,7 +168,7 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            statusColor.copy(alpha = 0.6f)
+            statusColor.copy(alpha = 0.7f)
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
@@ -223,7 +223,7 @@ fun DisabledActionableButtonPreview() {
           status = ServiceStatus.UPCOMING.name,
           text = "Issue household bed-nets",
           contentColor = "#700f2b",
-          enabled = "true",
+          enabled = "false",
           buttonType = ButtonType.MEDIUM,
           startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
