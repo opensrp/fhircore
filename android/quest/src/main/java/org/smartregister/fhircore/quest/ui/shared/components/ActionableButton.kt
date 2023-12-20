@@ -78,6 +78,7 @@ fun ActionableButton(
     val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
+    val opacity = buttonProperties.opacity
     OutlinedButton(
       onClick = {
         if (
@@ -99,8 +100,12 @@ fun ActionableButton(
               statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = statusColor.copy(alpha = 0.02f),
-          disabledContentColor = DefaultColor,
+          disabledBackgroundColor = if (opacity == 0) {
+            DefaultColor.copy(alpha = 0.08f)
+          } else {
+            backgroundColor.copy(alpha = opacity.toFloat())
+          },
+          disabledContentColor = if(opacity == 0) DefaultColor else statusColor.copy(alpha = opacity.toFloat()),
         ),
       modifier =
         modifier
@@ -140,7 +145,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          statusColor.copy(alpha = 0.7f)
+          if(opacity == 0) DefaultColor else statusColor.copy(alpha = opacity.toFloat())
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -168,7 +173,7 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            statusColor.copy(alpha = 0.7f)
+            if(opacity == 0) DefaultColor.copy(alpha = 0.9f) else statusColor.copy(alpha = opacity.toFloat())
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
