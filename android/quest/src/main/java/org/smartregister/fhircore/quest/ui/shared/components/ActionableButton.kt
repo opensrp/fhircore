@@ -99,7 +99,7 @@ fun ActionableButton(
               statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = DefaultColor.copy(alpha = 0.08f),
+          disabledBackgroundColor = statusColor.copy(alpha = 0.6f),
           disabledContentColor = DefaultColor,
         ),
       modifier =
@@ -140,7 +140,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          DefaultColor
+          statusColor.copy(alpha = 0.6f)
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -168,7 +168,7 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            DefaultColor.copy(0.9f)
+            statusColor.copy(alpha = 0.6f)
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
