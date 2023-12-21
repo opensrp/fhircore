@@ -45,6 +45,8 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -67,6 +69,8 @@ class LoginViewModel
 constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
+  val preferencesDataStore: PreferencesDataStore,
+  val protoDataStore: ProtoDataStore,
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
@@ -335,20 +339,20 @@ constructor(
             }
           }
 
-        val location =
+        val locationNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *locations.toTypedArray()).run {
               locations.map { it.name }
             }
           }
 
-        val careTeam =
+        val careTeamNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
               careTeams.map { it.name }
             }
           }
-        val organization =
+        val organizationNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
               organizations.map { it.name }
@@ -368,14 +372,14 @@ constructor(
 
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
-            careTeam = careTeam,
-            organization = organization,
-            location = location,
+            careTeamNames = careTeamNames,
+            organizationNames = organizationNames,
+            locationNames = locationNames,
             fhirPractitionerDetails = practitionerDetails,
-            careTeams = careTeamIds,
-            organizations = organizationIds,
-            locations = locationIds,
-            locationHierarchies = locationHierarchies,
+            careTeamIds = careTeamIds,
+            organizationIds = organizationIds,
+            locationIds = locationIds,
+            locationHierarchies = locationHierarchies
           )
         } else {
           // The assumption here is that only 1 practitioner is returned from the server in the
@@ -388,14 +392,14 @@ constructor(
                 identifier.value == userInfo!!.keycloakUuid
             ) {
               writePractitionerDetailsToShredPref(
-                careTeam = careTeam,
-                organization = organization,
-                location = location,
+                careTeamNames = careTeamNames,
+                organizationNames = organizationNames,
+                locationNames = locationNames,
                 fhirPractitionerDetails = practitionerDetails,
-                careTeams = careTeamIds,
-                organizations = organizationIds,
-                locations = locationIds,
-                locationHierarchies = locationHierarchies,
+                careTeamIds = careTeamIds,
+                organizationIds = organizationIds,
+                locationIds = locationIds,
+                locationHierarchies = locationHierarchies
               )
             }
           }
@@ -408,49 +412,41 @@ constructor(
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.USER_INFO.name,
-      value = userInfo,
-    )
+    viewModelScope.launch {
+      if (userInfo != null) {
+        protoDataStore.writeUserInfo(userInfo)
+      }
+    }
   }
 
   private fun writePractitionerDetailsToShredPref(
-    careTeam: List<String>,
-    organization: List<String>,
-    location: List<String>,
     fhirPractitionerDetails: PractitionerDetails,
-    careTeams: List<String>,
-    organizations: List<String>,
-    locations: List<String>,
+    careTeamIds: List<String>,
+    careTeamNames: List<String>,
+    locationIds: List<String>,
+    locationNames: List<String>,
     locationHierarchies: List<LocationHierarchy>,
+    organizationIds: List<String>,
+    organizationNames: List<String>
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
-    )
+
+    // TODO: Store the whole object in proto datastore instead of sharedPreferences
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       fhirPractitionerDetails,
     )
-    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
-    sharedPreferences.write(ResourceType.Organization.name, organizations)
-    sharedPreferences.write(ResourceType.Location.name, locations)
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-      value = location.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.CARE_TEAM.name,
-      value = careTeam.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.ORGANIZATION.name,
-      value = organization.joinToString(separator = ""),
-    )
+
+    // Store the practitioner details components in the preferences datastore
+    viewModelScope.launch {
+      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, fhirPractitionerDetails.fhirPractitionerDetails?.id as String)
+      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_IDS, careTeamIds as List<String>)
+      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_NAMES, careTeamNames)
+      preferencesDataStore.write(PreferencesDataStore.LOCATION_IDS, locationIds)
+      preferencesDataStore.write(PreferencesDataStore.LOCATION_NAMES, locationNames)
+      preferencesDataStore.write(PreferencesDataStore.ORGANIZATION_IDS, organizationIds)
+      preferencesDataStore.write(PreferencesDataStore.ORGANIZATION_NAMES, organizationNames)
+      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES, locationHierarchies)
+    }
   }
 
   fun downloadNowWorkflowConfigs() {
