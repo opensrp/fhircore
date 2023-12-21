@@ -100,12 +100,14 @@ fun ActionableButton(
               statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = if (opacity == 0) {
-            DefaultColor.copy(alpha = 0.08f)
-          } else {
-            backgroundColor.copy(alpha = opacity.toFloat())
-          },
-          disabledContentColor = if(opacity == 0) DefaultColor else statusColor.copy(alpha = opacity.toFloat()),
+          disabledBackgroundColor =
+            if (opacity == 0f) {
+              DefaultColor.copy(alpha = 0.08f)
+            } else {
+              backgroundColor.copy(alpha = opacity)
+            },
+          disabledContentColor =
+            if (opacity == 0f) DefaultColor else statusColor.copy(alpha = opacity),
         ),
       modifier =
         modifier
@@ -145,7 +147,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          if(opacity == 0) DefaultColor else statusColor.copy(alpha = opacity.toFloat())
+          if (opacity == 0.0f) DefaultColor else statusColor.copy(alpha = opacity)
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -173,7 +175,8 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            if(opacity == 0) DefaultColor.copy(alpha = 0.9f) else statusColor.copy(alpha = opacity.toFloat())
+            if (opacity == 0.0f) DefaultColor.copy(alpha = 0.9f)
+            else statusColor.copy(alpha = opacity)
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
