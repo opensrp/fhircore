@@ -78,7 +78,8 @@ fun ActionableButton(
     val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
-    val opacity = buttonProperties.opacity
+    val backgroundOpacity = buttonProperties.backgroundOpacity
+    val colorOpacity = buttonProperties.colorOpacity
     OutlinedButton(
       onClick = {
         if (
@@ -101,13 +102,13 @@ fun ActionableButton(
             },
           contentColor = statusColor,
           disabledBackgroundColor =
-            if (opacity == 0f) {
+            if (backgroundOpacity == 0f) {
               DefaultColor.copy(alpha = 0.08f)
             } else {
-              backgroundColor.copy(alpha = opacity)
+              backgroundColor.copy(alpha = backgroundOpacity)
             },
           disabledContentColor =
-            if (opacity == 0f) DefaultColor else statusColor.copy(alpha = opacity),
+            if (colorOpacity == 0f) DefaultColor else statusColor.copy(alpha = colorOpacity),
         ),
       modifier =
         modifier
@@ -147,7 +148,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          if (opacity == 0.0f) DefaultColor else statusColor.copy(alpha = opacity)
+          if (colorOpacity == 0f) DefaultColor else statusColor.copy(alpha = colorOpacity)
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -175,8 +176,9 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            if (opacity == 0.0f) DefaultColor.copy(alpha = 0.9f)
-            else statusColor.copy(alpha = opacity)
+            if (colorOpacity == 0.0f) {
+              DefaultColor.copy(alpha = 0.9f)
+            } else statusColor.copy(alpha = colorOpacity)
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
@@ -232,6 +234,8 @@ fun DisabledActionableButtonPreview() {
           text = "Issue household bed-nets",
           contentColor = "#700f2b",
           enabled = "false",
+          backgroundOpacity = 0.06f,
+          colorOpacity = 0.6f,
           buttonType = ButtonType.MEDIUM,
           startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
