@@ -4,16 +4,7 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-  repositories {
-    google()
-    maven(url = "https://plugins.gradle.org/m2/")
-    maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
-  }
-
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10")
-    classpath("org.jetbrains.kotlin:kotlin-serialization:1.8.10")
-    classpath("com.google.dagger:hilt-android-gradle-plugin:2.45")
     classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
     classpath("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
     classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
@@ -25,6 +16,9 @@ buildscript {
 }
 
 plugins {
+  id("org.jetbrains.kotlin.jvm") version "1.8.10"
+  id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
+  id( "com.google.dagger.hilt.android") version "2.45" apply false
   id("org.jetbrains.dokka") version "1.8.20"
   id("org.owasp.dependencycheck") version "8.2.1"
 }

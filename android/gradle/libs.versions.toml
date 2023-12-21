@@ -101,6 +101,8 @@ work-testing = "2.8.1"
 workflow = "0.1.0-alpha02-preview9.1-SNAPSHOT"
 xercesImpl = "2.12.2"
 org-jetbrains-kotlin-android = "1.8.10"
+jetbrains = "1.8.20"
+owasp = "8.2.1"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist-flowlayout" }
@@ -213,3 +215,5 @@ xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl"
 
 [plugins]
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
+org-jetbrains-dokka = { id = "org.jetbrains.dokka", version.ref = "jetbrains" }
+org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
