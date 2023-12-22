@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.datastore
 import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
@@ -41,18 +43,18 @@ internal class PreferencesDataStoreTest : RobolectricTest() {
 
   private val keys = PreferencesDataStore.Keys
 
+  @Inject lateinit var gson: Gson
+
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferencesDataStore = PreferencesDataStore(testContext)
+    preferencesDataStore = PreferencesDataStore(testContext, gson)
   }
 
   @Test
   fun testReadAppId() {
     val expectedValue = ""
-    runTest {
-      preferencesDataStore.appId.map { value -> assert(value == expectedValue) }
-    }
+    runTest { preferencesDataStore.appId.map { value -> assert(value == expectedValue) } }
   }
 
   @Test

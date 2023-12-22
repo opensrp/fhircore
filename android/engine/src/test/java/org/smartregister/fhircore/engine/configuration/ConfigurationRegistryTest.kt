@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -65,8 +64,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -252,9 +249,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
 
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
@@ -280,9 +275,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
     fhirEngine.create(composition) // Add composition to database instead of mocking
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
@@ -327,9 +320,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
           )
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
     fhirEngine.create(composition)
 
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
@@ -630,9 +621,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
 
     // Add composition to database
     fhirEngine.create(composition)
@@ -679,9 +668,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
 
     fhirEngine.create(composition)
 
@@ -730,9 +717,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           identifier = Identifier().apply { value = appId }
           section = compositionSections
         }
-      runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)
-    }
+      runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
 
       fhirEngine.create(composition)
 

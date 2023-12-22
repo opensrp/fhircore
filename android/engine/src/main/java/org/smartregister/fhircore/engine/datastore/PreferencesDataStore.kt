@@ -26,14 +26,14 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 const val DATASTORE_NAME = "preferences_datastore"
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
@@ -95,7 +95,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   suspend inline fun <reified T> write(
     key: Preferences.Key<String>,
     data: T,
-    encodeWithGson: Boolean
+    encodeWithGson: Boolean,
   ) {
     val dataToStore = if (encodeWithGson) gson.toJson(data) else data.encodeJson()
     context.dataStore.edit { preferences -> preferences[key] = dataToStore }
@@ -114,6 +114,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
+
     // TODO: Move to protoStore
     val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }
   }

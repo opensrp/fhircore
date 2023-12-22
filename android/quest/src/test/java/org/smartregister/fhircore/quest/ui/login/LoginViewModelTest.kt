@@ -64,8 +64,6 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -85,6 +83,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
@@ -199,7 +198,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         keys.PRACTITIONER_DETAILS,
-        PractitionerDetails().toString() // TODO: Cater for protoStore Replacement
+        PractitionerDetails().toString(), // TODO: Cater for protoStore Replacement
       )
     }
 
@@ -523,9 +522,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo(),
     ) {}
 
-    preferencesDataStore.practitionerDetails.map {
-      assert(it.isNotEmpty())
-    }
+    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
   }
 
   @Test
@@ -559,9 +556,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         keycloakUuid = "cha",
       ),
     ) {}
-    preferencesDataStore.practitionerDetails.map {
-      assert(it.isNotEmpty())
-    }
+    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
   }
 
   @Test
@@ -604,9 +599,7 @@ internal class LoginViewModelTest : RobolectricTest() {
         ),
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
-    preferencesDataStore.practitionerDetails.map {
-      assert(it.isNotEmpty())
-    }
+    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
   }
 
   @Test

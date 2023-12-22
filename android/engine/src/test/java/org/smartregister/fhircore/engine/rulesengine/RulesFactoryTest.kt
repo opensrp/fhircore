@@ -27,9 +27,9 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.map
 import java.util.Date
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -871,35 +871,35 @@ class RulesFactoryTest : RobolectricTest() {
     val expectedValue = "1234"
 
     val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
-    // TODO: research how to test that a "by lazy" function ended up being called. We probably shouldn't use "verify{}" against a flow
-    verify { configurationRegistry.preferencesDataStore.practitionerId.map {
-      assert(result == expectedValue)
-    }}
+    // TODO: research how to test that a "by lazy" function ended up being called. We probably
+    // shouldn't use "verify{}" against a flow
+    verify {
+      configurationRegistry.preferencesDataStore.practitionerId.map {
+        assert(result == expectedValue)
+      }
+    }
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsCareTeam() {
-    val sharedPreferenceKey = "CARE_TEAM"
+    val sharedPreferenceKey = "CARE_TEAM_IDS"
     val expectedValue = "1234"
-    // TODO: understand this test and replicate what it is supposed to achieve
-/*    every {
-      configurationRegistry.sharedPreferencesHelper.read(
-        sharedPreferenceKey,
-        "",
-      )
-    } returns expectedValue
-    */
+    // TODO: KELVIN understand this test and replicate what it is supposed to achieve
+    /**
+     * every { configurationRegistry.sharedPreferencesHelper.read( sharedPreferenceKey, "", ) }
+     * returns expectedValue
+     */
     val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
 
-    verify { configurationRegistry.preferencesDataStore.careTeam.map {
-      assert(result == expectedValue)
-    }}
+    verify {
+      configurationRegistry.preferencesDataStore.careTeamIds.map { assert(result == expectedValue) }
+    }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsOrganization() {
-    val sharedPreferenceKey = "ORGANIZATION"
+    val sharedPreferenceKey = "ORGANIZATION_IDS"
     val expectedValue = "1234"
     /*every {
       configurationRegistry.sharedPreferencesHelper.read(
@@ -909,26 +909,30 @@ class RulesFactoryTest : RobolectricTest() {
     } returns expectedValue*/
     val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
 
-    verify { configurationRegistry.preferencesDataStore.organization.map {
-      assert(result == expectedValue)
-    }}
+    verify {
+      configurationRegistry.preferencesDataStore.organizationIds.map {
+        assert(result == expectedValue)
+      }
+    }
   }
 
   @Test
   fun testExtractSharedPrefValuesReturnsPractitionerLocation() {
     val sharedPreferenceKey = "PRACTITIONER_LOCATION"
     val expectedValue = "1234"
-//    every {
-//      configurationRegistry.sharedPreferencesHelper.read(
-//        sharedPreferenceKey,
-//        "",
-//      )
-//    } returns expectedValue
+    //    every {
+    //      configurationRegistry.sharedPreferencesHelper.read(
+    //        sharedPreferenceKey,
+    //        "",
+    //      )
+    //    } returns expectedValue
     val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
 
-    verify { configurationRegistry.preferencesDataStore.practitionerLocation.map {
-      assert(result == expectedValue)
-    }}
+    verify {
+      configurationRegistry.preferencesDataStore.practitionerLocation.map {
+        assert(result == expectedValue)
+      }
+    }
     Assert.assertEquals(expectedValue, result)
   }
 

@@ -381,7 +381,7 @@ constructor(
             careTeamIds = careTeamIds,
             organizationIds = organizationIds,
             locationIds = locationIds,
-            locationHierarchies = locationHierarchies
+            locationHierarchies = locationHierarchies,
           )
         } else {
           // The assumption here is that only 1 practitioner is returned from the server in the
@@ -401,7 +401,7 @@ constructor(
                 careTeamIds = careTeamIds,
                 organizationIds = organizationIds,
                 locationIds = locationIds,
-                locationHierarchies = locationHierarchies
+                locationHierarchies = locationHierarchies,
               )
             }
           }
@@ -429,9 +429,8 @@ constructor(
     locationNames: List<String>,
     locationHierarchies: List<LocationHierarchy>,
     organizationIds: List<String>,
-    organizationNames: List<String>
+    organizationNames: List<String>,
   ) {
-
     // TODO: Store the whole object in proto datastore instead of sharedPreferences
     /*
       sharedPreferences.write(
@@ -444,7 +443,7 @@ constructor(
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_DETAILS,
-        fhirPractitionerDetails.toString()
+        fhirPractitionerDetails.toString(),
       )
     }
 
@@ -452,7 +451,7 @@ constructor(
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_ID,
-        fhirPractitionerDetails.fhirPractitionerDetails?.id as String
+        fhirPractitionerDetails.fhirPractitionerDetails?.id as String,
       )
       preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_IDS, careTeamIds.joinToString())
       preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_NAMES, careTeamNames.joinToString())
@@ -460,15 +459,15 @@ constructor(
       preferencesDataStore.write(PreferencesDataStore.LOCATION_NAMES, locationNames.joinToString())
       preferencesDataStore.write(
         PreferencesDataStore.ORGANIZATION_IDS,
-        organizationIds.joinToString()
+        organizationIds.joinToString(),
       )
       preferencesDataStore.write(
         PreferencesDataStore.ORGANIZATION_NAMES,
-        organizationNames.joinToString()
+        organizationNames.joinToString(),
       )
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES,
-        locationHierarchies.joinToString()
+        locationHierarchies.joinToString(),
       )
     }
   }

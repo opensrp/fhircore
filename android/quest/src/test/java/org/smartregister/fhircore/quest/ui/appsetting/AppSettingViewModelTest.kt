@@ -33,6 +33,11 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -69,11 +74,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @HiltAndroidTest
 @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -128,10 +128,9 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
-    //Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
-    preferencesDataStore.appId.map {
-      assert(it == appId)
-    }
+    // Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name,
+    // null))
+    preferencesDataStore.appId.map { assert(it == appId) }
   }
 
   @Test

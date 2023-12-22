@@ -22,6 +22,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -46,7 +49,6 @@ import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -56,9 +58,6 @@ import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import javax.inject.Inject
 
 @HiltViewModel
 class AppSettingViewModel
@@ -218,7 +217,7 @@ constructor(
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            this.launch {  preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
+            this.launch { preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
@@ -228,14 +227,17 @@ constructor(
     }
   }
 
-
   fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) {
     viewModelScope.launch {
-      preferencesDataStore.write(PreferencesDataStore.REMOTE_SYNC_RESOURCES, resourceTypes.distinctBy { it.name }, encodeWithGson = true) // TODO: KELVIN May/not be toString. check previous encoding
+      preferencesDataStore.write(
+        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+        resourceTypes.distinctBy { it.name },
+        encodeWithGson = true,
+      ) // TODO: KELVIN May/not be toString. check previous encoding
     }
   }
-    // TODO: KELVIN check how this was possible to directly write an enum list. is encoding in the write function?
-
+  // TODO: KELVIN check how this was possible to directly write an enum list. is encoding in the
+  // write function?
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
