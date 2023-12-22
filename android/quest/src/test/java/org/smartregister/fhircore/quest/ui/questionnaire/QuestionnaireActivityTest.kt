@@ -134,7 +134,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
       Toast.makeText(
         any(),
         eq(context.getString(R.string.questionnaire_not_found)),
-        Toast.LENGTH_LONG,
+        Toast.LENGTH_LONG
       )
     }
     unmockkStatic(Toast::class)
