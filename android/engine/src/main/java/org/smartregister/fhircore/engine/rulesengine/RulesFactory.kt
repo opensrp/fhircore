@@ -77,6 +77,9 @@ constructor(
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
 
+  val preferences = configurationRegistry.preferencesDataStore
+  val keys = PreferencesDataStore.Keys
+
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
    * [RuleConfig] against the [Facts] populated by the provided FHIR [Resource] s available in the
@@ -321,22 +324,20 @@ constructor(
       runBlocking { flow.collectLatest { flowValue = it } }
       return flowValue
     }
-    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
-      val preferences = configurationRegistry.preferencesDataStore
-
+    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String {
       try {
         return when (practitionerKey) {
-          PreferencesDataStore.APP_ID.name -> getStringFlowValue(preferences.appId)
-          PreferencesDataStore.CARE_TEAM.name -> getStringFlowValue(preferences.careTeam)
-          PreferencesDataStore.ORGANIZATION.name -> getStringFlowValue(preferences.organization)
-          PreferencesDataStore.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
+          keys.APP_ID.name -> getStringFlowValue(preferences.appId)
+          keys.CARE_TEAM_NAMES.name -> getStringFlowValue(preferences.careTeamNames)
+          keys.ORGANIZATION_NAMES.name -> getStringFlowValue(preferences.organizationNames)
+          keys.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
           else -> ""
         }
       } catch (exception: Exception) {
         if (exception is IllegalArgumentException) {
           Timber.e("key is not a member of practitioner keys: ", exception)
         } else {
-          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+          Timber.e("An exception occurred while fetching your key : ", exception)
         }
       }
       return ""

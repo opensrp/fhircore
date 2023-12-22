@@ -30,6 +30,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -57,7 +59,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferencesDataStore: PreferencesDataStore
   private val secureSharedPreference = mockk<SecureSharedPreference>()
   private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
@@ -69,7 +71,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = mockk()
+    preferencesDataStore = mockk()
     fhirEngine = mockk()
 
     configurationRegistry =
@@ -77,7 +79,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         ConfigurationRegistry(
           fhirEngine = fhirEngine,
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
           configService = configService,
           json = Faker.json,
@@ -116,7 +118,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    //every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -147,7 +150,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    //every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -184,7 +188,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "List/123456",
       )
     } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    //every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
 

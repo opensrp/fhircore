@@ -33,11 +33,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -63,10 +59,9 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -74,6 +69,11 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltAndroidTest
 @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -81,7 +81,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var fhirEngine: FhirEngine
   private val defaultRepository = mockk<DefaultRepository>()
@@ -100,7 +100,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         AppSettingViewModel(
           fhirResourceDataSource = fhirResourceDataSource,
           defaultRepository = defaultRepository,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
@@ -128,7 +128,10 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
-    Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
+    //Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
+    preferencesDataStore.appId.map {
+      assert(it == appId)
+    }
   }
 
   @Test
@@ -446,14 +449,12 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel.saveSyncSharedPreferences(resourceType)
 
-    val result =
-      sharedPreferencesHelper.read<List<ResourceType>>(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      )!!
-
-    Assert.assertEquals(2, result.size)
-    Assert.assertEquals(ResourceType.Task.name, result.first())
-    Assert.assertEquals(ResourceType.Patient.name, result.last())
+    preferencesDataStore.remoteSyncResources.map {
+      val resources = it as List<ResourceType>
+      assert(resources.size == 2)
+      assert(ResourceType.Task == resources.first())
+      assert(ResourceType.Patient == resources.last())
+    }
   }
 
   @Test

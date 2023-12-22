@@ -32,10 +32,10 @@ import io.sentry.protocol.User
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -49,8 +49,6 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -71,7 +69,6 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val preferencesDataStore: PreferencesDataStore,
   val protoDataStore: ProtoDataStore,
-  val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -206,45 +203,50 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails =
-      sharedPreferences.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true,
-      )
-    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
-      _showProgressBar.postValue(false)
-      updateNavigateHome(true)
-    } else {
-      // Prevent user from logging in with different credentials
-      val existingCredentials = secureSharedPreference.retrieveCredentials()
-      if (
-        existingCredentials != null &&
-          !username.equals(
-            existingCredentials.username,
-            true,
-          )
-      ) {
+    /*    val practitionerDetails =
+    sharedPreferences.read<PractitionerDetails>(
+      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      decodeWithGson = true,
+    )*/
+
+    // TODO: Inspect what this data structure looks like o device since I did .string() without gson
+    // encoding and decoding
+    preferencesDataStore.practitionerDetails.map { practitionerDetails ->
+      if (tokenAuthenticator.sessionActive() && practitionerDetails != "") {
         _showProgressBar.postValue(false)
-        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+        updateNavigateHome(true)
       } else {
-        tokenAuthenticator
-          .fetchAccessToken(username, password)
-          .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-          .onFailure {
-            _showProgressBar.postValue(false)
-            var errorState = LoginErrorState.ERROR_FETCHING_USER
+        // Prevent user from logging in with different credentials
+        val existingCredentials = secureSharedPreference.retrieveCredentials()
+        if (
+          existingCredentials != null &&
+            !username.equals(
+              existingCredentials.username,
+              true,
+            )
+        ) {
+          _showProgressBar.postValue(false)
+          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+        } else {
+          tokenAuthenticator
+            .fetchAccessToken(username, password)
+            .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+            .onFailure {
+              _showProgressBar.postValue(false)
+              var errorState = LoginErrorState.ERROR_FETCHING_USER
 
-            if (it is HttpException) {
-              when (it.code()) {
-                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+              if (it is HttpException) {
+                when (it.code()) {
+                  401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
+                }
+              } else if (it is UnknownHostException) {
+                errorState = LoginErrorState.UNKNOWN_HOST
               }
-            } else if (it is UnknownHostException) {
-              errorState = LoginErrorState.UNKNOWN_HOST
-            }
 
-            _loginErrorState.postValue(errorState)
-            Timber.e(it)
-          }
+              _loginErrorState.postValue(errorState)
+              Timber.e(it)
+            }
+        }
       }
     }
   }
@@ -431,21 +433,43 @@ constructor(
   ) {
 
     // TODO: Store the whole object in proto datastore instead of sharedPreferences
-    sharedPreferences.write(
+    /*
+      sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       fhirPractitionerDetails,
-    )
+    )*/
+
+    // Likely incorrect: verify how sharedPreferences is able to accept the object, where does the
+    // serialization happen?
+    viewModelScope.launch {
+      preferencesDataStore.write(
+        PreferencesDataStore.PRACTITIONER_DETAILS,
+        fhirPractitionerDetails.toString()
+      )
+    }
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
-      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, fhirPractitionerDetails.fhirPractitionerDetails?.id as String)
-      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_IDS, careTeamIds as List<String>)
-      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_NAMES, careTeamNames)
-      preferencesDataStore.write(PreferencesDataStore.LOCATION_IDS, locationIds)
-      preferencesDataStore.write(PreferencesDataStore.LOCATION_NAMES, locationNames)
-      preferencesDataStore.write(PreferencesDataStore.ORGANIZATION_IDS, organizationIds)
-      preferencesDataStore.write(PreferencesDataStore.ORGANIZATION_NAMES, organizationNames)
-      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES, locationHierarchies)
+      preferencesDataStore.write(
+        PreferencesDataStore.PRACTITIONER_ID,
+        fhirPractitionerDetails.fhirPractitionerDetails?.id as String
+      )
+      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_IDS, careTeamIds.joinToString())
+      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_NAMES, careTeamNames.joinToString())
+      preferencesDataStore.write(PreferencesDataStore.LOCATION_IDS, locationIds.joinToString())
+      preferencesDataStore.write(PreferencesDataStore.LOCATION_NAMES, locationNames.joinToString())
+      preferencesDataStore.write(
+        PreferencesDataStore.ORGANIZATION_IDS,
+        organizationIds.joinToString()
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.ORGANIZATION_NAMES,
+        organizationNames.joinToString()
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES,
+        locationHierarchies.joinToString()
+      )
     }
   }
 

@@ -46,7 +46,6 @@ import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -67,7 +66,6 @@ class AppSettingViewModel
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   val preferencesDataStore: PreferencesDataStore,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
@@ -230,11 +228,14 @@ constructor(
     }
   }
 
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name },
-    )
+
+  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) {
+    viewModelScope.launch {
+      preferencesDataStore.write(PreferencesDataStore.REMOTE_SYNC_RESOURCES, resourceTypes.distinctBy { it.name }, encodeWithGson = true) // TODO: KELVIN May/not be toString. check previous encoding
+    }
+  }
+    // TODO: KELVIN check how this was possible to directly write an enum list. is encoding in the write function?
+
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
