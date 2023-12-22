@@ -21,6 +21,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -51,9 +52,8 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
   }
 
   companion object Keys {
-    val appIdKeyName = "appId"
-    val langKeyName = "lang"
-    val APP_ID by lazy { stringPreferencesKey(appIdKeyName) }
-    val LANG by lazy { stringPreferencesKey(langKeyName) }
+    val APP_ID by lazy { stringPreferencesKey("appId") }
+    val LANG by lazy { stringPreferencesKey("lang") }
+    val MIGRATION_VERSION by lazy { intPreferencesKey("migrationVersion") }
   }
 }
