@@ -144,6 +144,9 @@ constructor(
       else -> listOf()
     }
 
+  suspend inline fun <reified R : Resource> search(search: Search) =
+    fhirEngine.search<R>(search).map { it }
+
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       preProcessResources(addResourceTags, *resource)

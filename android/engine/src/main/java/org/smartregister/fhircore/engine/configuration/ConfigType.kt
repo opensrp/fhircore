@@ -36,4 +36,5 @@ sealed class ConfigType(
   object MeasureReport : ConfigType("measureReport", multiConfig = true)
   object Profile : ConfigType("profile", multiConfig = true)
   object GeoWidget : ConfigType("geoWidget", multiConfig = true)
+  object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
 }

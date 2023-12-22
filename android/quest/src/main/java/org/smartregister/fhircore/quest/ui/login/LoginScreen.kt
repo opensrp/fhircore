@@ -89,6 +89,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -111,6 +112,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
   val password by loginViewModel.password.observeAsState("")
   val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
+  val dataMigrationInProgress by loginViewModel.dataMigrationInProgress.observeAsState(false)
   val context = LocalContext.current
 
   LoginPage(
@@ -123,7 +125,8 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     onLoginButtonClicked = { loginViewModel.login(context) },
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
-    appVersionPair = appVersionPair
+    appVersionPair = appVersionPair,
+    dataMigrationInProgress = dataMigrationInProgress
   )
 }
 
@@ -139,7 +142,8 @@ fun LoginPage(
   modifier: Modifier = Modifier,
   loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
-  appVersionPair: Pair<Int, String>? = null
+  appVersionPair: Pair<Int, String>? = null,
+  dataMigrationInProgress: Boolean,
 ) {
   var showPassword by remember { mutableStateOf(false) }
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
@@ -165,6 +169,9 @@ fun LoginPage(
     color = Color.White,
     contentColor = contentColorFor(backgroundColor = Color.DarkGray)
   ) {
+    if (dataMigrationInProgress) {
+      LoaderDialog(dialogMessage = stringResource(id = R.string.migrating_data))
+    }
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
         forgotPassword = forgotPassword,
@@ -439,7 +446,8 @@ fun LoginScreenPreview() {
     onPasswordChanged = {},
     forgotPassword = {},
     onLoginButtonClicked = {},
-    appVersionPair = Pair(1, "0.0.1")
+    appVersionPair = Pair(1, "0.0.1"),
+    dataMigrationInProgress = true
   )
 }
 
@@ -459,6 +467,7 @@ fun LoginScreenPreviewDarkMode() {
     onPasswordChanged = {},
     forgotPassword = {},
     onLoginButtonClicked = {},
-    appVersionPair = Pair(1, "0.0.1")
+    appVersionPair = Pair(1, "0.0.1"),
+    dataMigrationInProgress = false
   )
 }
