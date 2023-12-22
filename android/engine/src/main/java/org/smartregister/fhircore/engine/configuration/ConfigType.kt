@@ -32,15 +32,17 @@ sealed class ConfigType(
 ) {
   object Application : ConfigType("application")
 
-  object Sync : ConfigType("sync", true)
+  object Sync : ConfigType(name = "sync", parseAsResource = true)
 
   object Navigation : ConfigType("navigation")
 
-  object Register : ConfigType("register", multiConfig = true)
+  object Register : ConfigType(name = "register", multiConfig = true)
 
-  object MeasureReport : ConfigType("measureReport", multiConfig = true)
+  object MeasureReport : ConfigType(name = "measureReport", multiConfig = true)
 
-  object Profile : ConfigType("profile", multiConfig = true)
+  object Profile : ConfigType(name = "profile", multiConfig = true)
 
-  object GeoWidget : ConfigType("geoWidget", multiConfig = true)
+  object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
+
+  object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
 }

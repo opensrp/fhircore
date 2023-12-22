@@ -289,7 +289,7 @@ fun UserSettingScreen(
       }
 
       if (showProgressBar) {
-        LoaderDialog(modifier = modifier, stringResource(messageResource))
+        LoaderDialog(modifier = modifier, dialogMessage = stringResource(messageResource))
       }
 
       if (allowP2PSync) {
