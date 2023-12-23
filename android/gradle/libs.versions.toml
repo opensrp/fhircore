@@ -42,6 +42,7 @@ hilt-work = "1.0.0"
 jjwt = "0.9.1"
 joda-time = "2.10.14"
 json = "20230618"
+jsonPath = "2.8.0"
 junit = "1.1.5"
 junit-jupiter-api = "5.8.2"
 junit-jupiter-engine = "5.8.2"
@@ -161,6 +162,7 @@ hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hilt-w
 jjwt = { group = "io.jsonwebtoken", name = "jjwt", version.ref = "jjwt" }
 joda-time = { group = "joda-time", name = "joda-time", version.ref = "joda-time" }
 json = { group = "org.json", name = "json", version.ref = "json" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPath" }
 junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter-api" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter-engine" }

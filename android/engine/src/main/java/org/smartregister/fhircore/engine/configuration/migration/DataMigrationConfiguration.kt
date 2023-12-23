@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.configuration.migration
 
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.Configuration
 
-sealed class AppEvent {
-  data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
-    AppEvent()
-
-  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
-}
+@Serializable
+data class DataMigrationConfiguration(
+  override var appId: String,
+  override var configType: String = ConfigType.DataMigration.name,
+  val migrations: List<MigrationConfig>? = null,
+) : Configuration()
