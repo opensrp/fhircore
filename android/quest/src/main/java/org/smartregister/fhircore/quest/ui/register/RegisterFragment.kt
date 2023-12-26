@@ -272,9 +272,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         eventBus.events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             }
           }
           .launchIn(lifecycleScope)

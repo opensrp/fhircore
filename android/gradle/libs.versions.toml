@@ -16,10 +16,11 @@ core-testing = "2.2.0"
 cqfFhirCr = "3.0.0-PRE9"
 dagger-hilt-compiler = "2.45"
 data-capture = "1.0.0-preview22-SNAPSHOT"
+datastore = "1.0.0"
 desugar-jdk-libs = "2.0.3"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
-fhir-common-utils = "0.0.10-SNAPSHOT"
+fhir-common-utils = "1.0.0-SNAPSHOT"
 fhir-engine = "0.1.0-beta05-preview3-SNAPSHOT"
 foundation = "1.4.6"
 fragment-ktx = "1.6.1"
@@ -35,6 +36,7 @@ hilt-work = "1.0.0"
 jjwt = "0.9.1"
 joda-time = "2.10.14"
 json = "20230618"
+jsonPath = "2.8.0"
 junit = "1.1.5"
 junit-jupiter-api = "5.8.2"
 junit-jupiter-engine = "5.8.2"
@@ -93,6 +95,7 @@ work-runtime-ktx = "2.8.1"
 work-testing = "2.8.1"
 workflow = "0.1.0-alpha04-preview-SNAPSHOT"
 xercesImpl = "2.12.2"
+org-jetbrains-kotlin-android = "1.8.10"
 
 [libraries]
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
@@ -114,6 +117,8 @@ cqf-fhir-cr = { module = "org.opencds.cqf.fhir:cqf-fhir-cr", version.ref = "cqfF
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }
+datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore-preferences"}
 easy-rules-jexl = { group = "org.jeasy", name = "easy-rules-jexl", version.ref = "easy-rules-jexl" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
@@ -131,6 +136,7 @@ hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hilt-w
 jjwt = { group = "io.jsonwebtoken", name = "jjwt", version.ref = "jjwt" }
 joda-time = { group = "joda-time", name = "joda-time", version.ref = "joda-time" }
 json = { group = "org.json", name = "json", version.ref = "json" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPath" }
 junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter-api" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
@@ -192,3 +198,4 @@ workflow = { group = "org.smartregister", name = "workflow", version.ref = "work
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 
 [plugins]
+org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }

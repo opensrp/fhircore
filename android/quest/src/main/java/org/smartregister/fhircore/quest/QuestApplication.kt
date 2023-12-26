@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest
 
-import android.app.Application
 import android.database.CursorWindow
 import android.util.Log
 import androidx.annotation.VisibleForTesting
@@ -29,6 +28,7 @@ import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
@@ -36,7 +36,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHo
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
+class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Configuration.Provider {
   @Inject lateinit var workerFactory: HiltWorkerFactory
 
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
@@ -45,16 +45,17 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
 
   private var configuration: DataCaptureConfig? = null
 
+  private var fhirServerHost: String? = null
+
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+    } else {
+      Timber.plant(ReleaseTree())
     }
 
     if (BuildConfig.DEBUG.not()) {
-      // TODO, strip out global exception handling - potential for ANR in prod
-      // Tracked under https://github.com/opensrp/fhircore/issues/2488
-      // Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
       initSentryMonitoring()
     }
 
@@ -87,7 +88,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           ),
         )
         try {
-          options.environment = URL(BuildConfig.FHIR_BASE_URL)?.getSubDomain()?.replace('-', '.')
+          options.environment = URL(BuildConfig.FHIR_BASE_URL).getSubDomain().replace('-', '.')
         } catch (e: Exception) {
           Timber.e(e)
         }
@@ -114,4 +115,9 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(workerFactory)
       .build()
+
+  override fun getFhirServerHost(): String {
+    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL).host
+    return fhirServerHost ?: ""
+  }
 }

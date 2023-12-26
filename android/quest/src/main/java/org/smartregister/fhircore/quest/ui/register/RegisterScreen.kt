@@ -31,16 +31,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -120,10 +123,15 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
+        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
           modifier = modifier,
           percentageProgressFlow = registerUiState.progressPercentage,
-          isSyncUploadFlow = registerUiState.isSyncUpload,
+          dialogMessage =
+            stringResource(
+              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+            ),
+          showPercentageProgress = true,
         )
       }
       if (
