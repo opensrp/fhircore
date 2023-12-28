@@ -51,6 +51,67 @@
       }
     ]
   },
+  "topAppBar": {
+    "title": {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "লেনদেনের সারসংক্ষেপ",
+      "primaryTextColor": "#FFFFFF",
+      "fontSize": 16.0,
+      "maxLines": 1,
+      "primaryTextFontWeight": "BOLD"
+    },
+    "content": [
+      {
+        "viewType": "COLUMN",
+        "padding": "16",
+        "backgroundColor": "primaryColor",
+        "children": [
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Stock Name: ",
+            "primaryTextColor": "#FFFFFF",
+            "primaryTextFontWeight": "BOLD",
+            "secondaryText": "@{commodityName}",
+            "secondaryTextColor": "#FFFFFF"
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Last Used: ",
+            "primaryTextColor": "#FFFFFF",
+            "primaryTextFontWeight": "BOLD",
+            "secondaryText": "#@{lastUpdatedDate}",
+            "secondaryTextColor": "#FFFFFF"
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Stock Status: ",
+            "primaryTextColor": "#FFFFFF",
+            "primaryTextFontWeight": "BOLD",
+            "secondaryText": "@{stockStatus}",
+            "secondaryTextColor": "@{stockStatusColour}",
+            "secondaryTextBackgroundColor" : "#FFFFFF"
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Available: ",
+            "primaryTextColor": "#FFFFFF",
+            "primaryTextFontWeight": "BOLD",
+            "secondaryText": "@{runningBalance}",
+            "secondaryTextColor": "#FFFFFF"
+          },
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "Units: ",
+            "primaryTextColor": "#FFFFFF",
+            "primaryTextFontWeight": "BOLD",
+            "secondaryText": "@{unitsOfMeasure}",
+            "secondaryTextColor": "#FFFFFF"
+          }
+        ]
+      }
+    ],
+    "collapsible": false
+  },
   "rules": [
     {
       "name": "commodityName",
@@ -82,11 +143,115 @@
       ]
     },
     {
+      "name": "consumeObservations",
+      "priority": 1,
+      "condition": "true",
+      "actions": [
+        "data.put('consumeObservations', service.filterResources(Observation, 'Observation.code.coding.code = \"consume-stock-balance\"'))"
+      ]
+    },
+    {
+      "name": "consumedBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('consumedBalance', size(data.get('consumeObservations')) > 0 ? service.computeTotalValue(data.get('consumeObservations'), 'Observation.value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "addedObservations",
+      "priority": 1,
+      "condition": "true",
+      "actions": [
+        "data.put('addedObservations', service.filterResources(Observation, 'Observation.code.coding.code = \"added-stock-balance\"'))"
+      ]
+    },
+    {
+      "name": "addedBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('addedBalance', size(data.get('addedObservations')) > 0 ? service.computeTotalValue(data.get('addedObservations'), 'Observation.value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "monthlyObservation",
+      "priority": 1,
+      "condition": "true",
+      "actions": [
+        "data.put('monthlyObservation', service.filterResources(Observation, 'Observation.code.coding.code = \"monthly-stock-balance\" and Observation.status = \"final\"').get(0))"
+      ]
+    },
+    {
+      "name": "initialStockBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('initialStockBalance', data.get('monthlyObservation') != null ? fhirPath.extractValue(data.get('monthlyObservation'), 'Observation.component.where(code.coding.code = \"initial-stock-balance\").value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "addedStockBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('addedStockBalance', data.get('monthlyObservation') != null ? fhirPath.extractValue(data.get('monthlyObservation'), 'Observation.component.where(code.coding.code = \"added-stock-balance\").value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "consumeStockBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('consumeStockBalance', data.get('monthlyObservation') != null ? fhirPath.extractValue(data.get('monthlyObservation'), 'Observation.component.where(code.coding.code = \"consume-stock-balance\").value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "finalStockBalance",
+      "priority": 2,
+      "condition": "true",
+      "actions": [
+        "data.put('finalStockBalance', data.get('monthlyObservation') != null ? fhirPath.extractValue(data.get('monthlyObservation'), 'Observation.component.where(code.coding.code = \"final-stock-balance\").value.value') : '0' )"
+      ]
+    },
+    {
       "name": "runningBalance",
       "priority": 2,
       "condition": "true",
       "actions": [
         "data.put('runningBalance', data.get('latestObservation') != null ? fhirPath.extractValue(data.get('latestObservation'), 'Observation.component.value.value') : '0' )"
+      ]
+    },
+    {
+      "name": "monthStartBalance",
+      "priority": 3,
+      "condition": "true",
+      "actions": [
+        "data.put('monthStartBalance', data.get('initialStockBalance') != null ? data.get('initialStockBalance') : '0' )"
+      ]
+    },
+    {
+      "name": "monthEndBalance",
+      "priority": 3,
+      "condition": "true",
+      "actions": [
+        "data.put('monthEndBalance', data.get('finalStockBalance') != null and data.get('finalStockBalance') > 0 ? data.get('finalStockBalance') : data.get('runningBalance') )"
+      ]
+    },
+    {
+      "name": "monthConsumeBalance",
+      "priority": 3,
+      "condition": "true",
+      "actions": [
+        "data.put('monthConsumeBalance', data.get('consumeStockBalance') != null and data.get('consumeStockBalance') > 0 ? data.get('consumeStockBalance') : data.get('consumedBalance') )"
+      ]
+    },
+    {
+      "name": "monthAddedBalance",
+      "priority": 3,
+      "condition": "true",
+      "actions": [
+        "data.put('monthAddedBalance', data.get('addedStockBalance') != null and data.get('addedStockBalance') > 0 ? data.get('addedStockBalance') : data.get('addedBalance') )"
       ]
     },
     {
@@ -102,7 +267,7 @@
       "priority": 3,
       "condition": "true",
       "actions": [
-        "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? 'Last count ' + service.prettifyDate(data.get('lastUpdated')) : '')"
+        "data.put('lastUpdatedDate', data.get('lastUpdated') != '' ? service.prettifyDate(data.get('lastUpdated')) : '')"
       ]
     },
     {
@@ -180,147 +345,124 @@
   ],
   "views": [
     {
-      "viewType": "CARD",
-      "padding": 0,
-      "content": [
+      "viewType": "COLUMN",
+      "backgroundColor": "#FFFFFF",
+      "fillMaxWidth": true,
+      "fillMaxHeight": true,
+      "children": [
         {
-          "viewType": "COLUMN",
-          "children": [
+          "viewType": "SPACER",
+          "height": 15
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "cardColor": "#FF69B4",
+          "content": [
             {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "@{commodityName}",
-              "primaryTextColor": "#000000"
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "@{lastUpdatedDate}",
-              "fontSize": 14.0,
-              "primaryTextColor": "#5A5A5A"
-            },
-            {
-              "viewType": "COMPOUND_TEXT",
-              "primaryText": "Stock Status:",
-              "primaryTextColor": "#5A5A5A",
-              "secondaryText": "@{stockStatus}",
-              "secondaryTextColor" : "#FFFFFF",
-              "secondaryTextBackgroundColor" : "@{stockStatusColour}",
-              "secondaryTextFontWeight" :  "SEMI_BOLD"
-            },
-            {
-              "viewType": "SPACER",
-              "height": 10
-            },
-            {
-              "viewType": "COLUMN",
+              "viewType": "ROW",
+              "fillMaxWidth": true,
+              "arrangement": "SPACE_BETWEEN",
               "children": [
                 {
-                  "viewType": "ROW",
-                  "children": [
-                    {
-                      "viewType": "PERSONAL_DATA",
-                      "weight": 1.0,
-                      "personalDataItems": [
-                        {
-                          "label": {
-                            "viewType": "COMPOUND_TEXT",
-                            "primaryText": "@{runningBalance}",
-                            "primaryTextColor": "#000000",
-                            "primaryTextFontWeight": "SEMI_BOLD"
-                          },
-                          "displayValue": {
-                            "viewType": "COMPOUND_TEXT",
-                            "primaryText": "Available",
-                            "fontSize": 14,
-                            "primaryTextColor": "#000000"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "viewType": "PERSONAL_DATA",
-                      "weight": 1.0,
-                      "personalDataItems": [
-                        {
-                          "label": {
-                            "viewType": "COMPOUND_TEXT",
-                            "primaryText": "@{unitsOfMeasure}",
-                            "primaryTextColor": "#000000",
-                            "primaryTextFontWeight": "SEMI_BOLD"
-                          },
-                          "displayValue": {
-                            "viewType": "COMPOUND_TEXT",
-                            "primaryText": "Units",
-                            "fontSize": 14,
-                            "primaryTextColor": "#000000"
-                          }
-                        }
-                      ]
-                    }
-                  ]
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "weight": 1,
+                  "primaryText": "মাস শুরুর ব্যালেন্স"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "primaryText": "@{monthStartBalance}"
                 }
               ]
             }
           ]
-        }
-      ]
-    }
-  ],
-  "fabActions": [
-    {
-      "id": "ActionButton",
-      "visible": true,
-      "display": "Adjust/Restock",
-      "menuIconConfig": {
-        "type": "local",
-        "reference": "ic_add"
-      },
-      "actions": [
+        },
         {
-          "trigger": "ON_CLICK",
-          "workflow": "LAUNCH_QUESTIONNAIRE",
-          "questionnaire": {
-            "id": "a3b8260b-d474-42ef-9ab2-a7794a0a27bc",
-            "title": "@{commodityName}",
-            "saveButtonText": "ADJUST STOCK LEVELS",
-            "setPractitionerDetails": true,
-            "setOrganizationDetails": true,
-            "resourceIdentifier": "@{commodityId}"
-          },
-          "params": [
+          "viewType": "SPACER",
+          "height": 10
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "cardColor": "#FF69B4",
+          "content": [
             {
-              "paramType": "PREPOPULATE",
-              "linkId": "650dd00d-c60b-4a3d-838a-128aad04827f",
-              "dataType": "STRING",
-              "key": "commodityName",
-              "value": "@{commodityName}"
-            },
+              "viewType": "ROW",
+              "fillMaxWidth": true,
+              "arrangement": "SPACE_BETWEEN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "weight": 1,
+                  "primaryText": "নতুন প্যাকেজ"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "primaryText": "@{monthAddedBalance}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 10
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "cardColor": "#FF69B4",
+          "content": [
             {
-              "paramType": "PREPOPULATE",
-              "linkId": "d2cda03f-dc14-4f15-85ab-d5c33027aa31",
-              "dataType": "INTEGER",
-              "key": "currentBalance",
-              "value": "@{runningBalance}"
-            },
+              "viewType": "ROW",
+              "fillMaxWidth": true,
+              "arrangement": "SPACE_BETWEEN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "weight": 1,
+                  "primaryText": "বিক্রয়"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "primaryText": "@{monthConsumeBalance}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "viewType": "SPACER",
+          "height": 10
+        },
+        {
+          "viewType": "CARD",
+          "padding": 16,
+          "cardColor": "#FF69B4",
+          "content": [
             {
-              "paramType": "PREPOPULATE",
-              "linkId": "d6c39388-fb56-4e1f-8cfc-f199f2c89919",
-              "dataType": "STRING",
-              "key": "latestObservationId",
-              "value": "@{latestObservationId}"
-            },
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "513d5111-449e-49e0-d43a-8953fb53ba7d",
-              "dataType": "STRING",
-              "key": "stockoutFlagId",
-              "value": "@{stockoutFlagId}"
-            },
-            {
-              "paramType": "PREPOPULATE",
-              "linkId": "6c5c6fd7-749c-402b-990b-df96a92bf6c8",
-              "dataType": "STRING",
-              "key": "stockoutStartDate",
-              "value": "@{stockoutStartDate}"
+              "viewType": "ROW",
+              "fillMaxWidth": true,
+              "arrangement": "SPACE_BETWEEN",
+              "children": [
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "weight": 1,
+                  "primaryText": "শেষ ব্যালেন্স"
+                },
+                {
+                  "viewType": "COMPOUND_TEXT",
+                  "primaryTextColor": "#FFFFFF",
+                  "primaryText": "@{monthEndBalance}"
+                }
+              ]
             }
           ]
         }

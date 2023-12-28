@@ -453,6 +453,15 @@ constructor(
     fun computeTotalCount(relatedResourceCounts: List<RelatedResourceCount>?): Long =
       relatedResourceCounts?.sumOf { it.count } ?: 0
 
+    fun computeTotalValue(resources: List<Resource>?, fhirPathExpression: String): Long {
+      if (fhirPathExpression.isEmpty()) {
+        return 0
+      }
+      return resources?.sumOf {
+        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toLongOrNull() ?: 0
+      } ?: 0
+    }
+
     fun retrieveCount(
       parentResourceId: String,
       relatedResourceCounts: List<RelatedResourceCount>?,

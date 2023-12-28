@@ -193,7 +193,6 @@
         "children": [
           {
             "viewType": "SERVICE_CARD",
-            "clickable": false,
             "details": [
               {
                 "viewType": "COMPOUND_TEXT",
@@ -224,7 +223,20 @@
               "status": "DUE",
               "fontSize": 14.0,
               "smallSized": false
-            }
+            },
+            "actions": [
+              {
+                "trigger": "ON_CLICK",
+                "workflow": "LAUNCH_PROFILE",
+                "id": "inventoryProfile",
+                "params": [
+                  {
+                    "key": "commodityId",
+                    "value": "@{commodityId}"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
