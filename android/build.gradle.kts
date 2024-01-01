@@ -18,10 +18,11 @@ plugins {
   id("org.jetbrains.kotlin.jvm") version "1.8.10"
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.dagger.hilt.android) apply false
+  alias(libs.plugins.androidx.navigation.safeargs) apply false
   alias(libs.plugins.org.jetbrains.dokka)
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless)
-  alias(libs.plugins.androidx.navigation.safeargs) apply false
+
 }
 
 tasks.dokkaHtmlMultiModule {
