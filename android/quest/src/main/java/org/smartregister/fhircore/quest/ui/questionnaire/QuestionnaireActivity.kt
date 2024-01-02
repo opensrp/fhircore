@@ -161,7 +161,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       finish()
     }
     val questionnaireFragmentBuilder =
-      QuestionnaireFragment.builder().setQuestionnaire(questionnaire.json())
+      QuestionnaireFragment.builder().apply {
+        setQuestionnaire(questionnaire.json())
+        setShowDisabledPreviousButton(false)
+        setShowDisabledNextButton(false)
+      }
 
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =

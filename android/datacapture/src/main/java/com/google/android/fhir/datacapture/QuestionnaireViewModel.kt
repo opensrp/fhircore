@@ -235,6 +235,14 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
   private var shouldShowCancelButton =
     state[QuestionnaireFragment.EXTRA_SHOW_CANCEL_BUTTON] ?: false
 
+  /** Flag to show/hide disabled previous button. Default is true */
+  private var shouldShowDisabledPreviousButton =
+    state[QuestionnaireFragment.EXTRA_SHOW_DISABLED_PREVIOUS_BUTTON] ?: true
+
+  /** Flag to show/hide disabled previous button. Default is true */
+  private var shouldShowDisabledNextButton =
+    state[QuestionnaireFragment.EXTRA_SHOW_DISABLED_NEXT_BUTTON] ?: true
+
   /** Flag to control whether asterisk text is shown for required questions. */
   private val showAsterisk = state[QuestionnaireFragment.EXTRA_SHOW_ASTERISK_TEXT] ?: false
 
@@ -751,12 +759,18 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           showReviewButton,
         )
       } else {
+        val hasPreviousPage =
+          QuestionnairePagination(pages = pages!!, currentPageIndex = currentPageIndexFlow.value!!)
+            .hasPreviousPage
         val hasNextPage =
           QuestionnairePagination(pages = pages!!, currentPageIndex = currentPageIndexFlow.value!!)
             .hasNextPage
         val showReviewButton = shouldEnableReviewPage && !hasNextPage
         val showSubmitButton = shouldShowSubmitButton && !showReviewButton && !hasNextPage
         val showCancelButton = shouldShowCancelButton
+        val showDisabledPreviousButton =
+          if (shouldShowDisabledPreviousButton) true else hasPreviousPage
+        val showDisabledNextButton = if (shouldShowDisabledNextButton) true else hasNextPage
         QuestionnairePagination(
           true,
           pages!!,
@@ -764,6 +778,8 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           showSubmitButton,
           showCancelButton,
           showReviewButton,
+          showDisabledPreviousButton,
+          showDisabledNextButton,
           isLoadingNextPage.value
         )
       }
@@ -1054,6 +1070,8 @@ internal data class QuestionnairePagination(
   val showSubmitButton: Boolean = false,
   val showCancelButton: Boolean = false,
   val showReviewButton: Boolean = false,
+  val showDisabledPreviousButton: Boolean = true,
+  val showDisabledNextButton: Boolean = true,
   val isLoadingNextPage: Boolean = false,
 )
 

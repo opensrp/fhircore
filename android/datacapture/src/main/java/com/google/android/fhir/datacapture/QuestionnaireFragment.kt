@@ -195,9 +195,11 @@ class QuestionnaireFragment : Fragment() {
             reviewModeEditButton.visibility = View.GONE
 
             if (displayMode.pagination.isPaginated) {
-              paginationPreviousButton.visibility = View.VISIBLE
+              paginationPreviousButton.visibility =
+                if (displayMode.pagination.showDisabledPreviousButton) View.VISIBLE else View.GONE
               paginationPreviousButton.isEnabled = displayMode.pagination.hasPreviousPage
-              paginationNextButton.visibility = View.VISIBLE
+              paginationNextButton.visibility =
+                if (displayMode.pagination.showDisabledNextButton) View.VISIBLE else View.GONE
               paginationNextButton.isEnabled = displayMode.pagination.hasNextPage
               circularProgressIndicator.visibility = if (displayMode.pagination.isLoadingNextPage) View.VISIBLE else View.GONE
               paginationNextButton.text = if (displayMode.pagination.isLoadingNextPage) "" else "Next"
@@ -419,6 +421,22 @@ class QuestionnaireFragment : Fragment() {
      */
     fun setShowCancelButton(value: Boolean) = apply { args.add(EXTRA_SHOW_CANCEL_BUTTON to value) }
 
+    /**
+     * A [Boolean] extra to show or hide the Previous button when it's disabled in the
+     * questionnaire. Default is true.
+     */
+    fun setShowDisabledPreviousButton(value: Boolean) = apply {
+      args.add(EXTRA_SHOW_DISABLED_PREVIOUS_BUTTON to value)
+    }
+
+    /**
+     * A [Boolean] extra to show or hide the Next button when it's disabled in the questionnaire.
+     * Default is true.
+     */
+    fun setShowDisabledNextButton(value: Boolean) = apply {
+      args.add(EXTRA_SHOW_DISABLED_NEXT_BUTTON to value)
+    }
+
     @VisibleForTesting fun buildArgs() = bundleOf(*args.toTypedArray())
 
     /** @return A [QuestionnaireFragment] with provided [Bundle] arguments. */
@@ -509,6 +527,10 @@ class QuestionnaireFragment : Fragment() {
      * A [Boolean] extra to show or hide the Cancel button in the questionnaire. Default is false.
      */
     internal const val EXTRA_SHOW_CANCEL_BUTTON = "show-cancel-button"
+
+    internal const val EXTRA_SHOW_DISABLED_PREVIOUS_BUTTON = "show-disabled-previous-button"
+
+    internal const val EXTRA_SHOW_DISABLED_NEXT_BUTTON = "show-disabled-next-button"
 
     internal const val EXTRA_SHOW_OPTIONAL_TEXT = "show-optional-text"
 
