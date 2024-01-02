@@ -4,17 +4,8 @@
   "name": "mPower Family Registration",
   "title": "mPower Family Registration",
   "description": "mPower Family Registration",
-  "status": "draft",
+  "status": "active",
   "publisher": "mPower-mcGovern",
-  "meta": {
-    "security": [
-      {
-        "code": "3",
-        "display": "Helsehjelp (Full)",
-        "system": "urn:oid:2.16.578.1.12.4.1.1.7618"
-      }
-    ]
-  },
   "useContext": [
     {
       "code": {
@@ -43,78 +34,65 @@
     {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
       "valueCanonical": "http://fhir.mpower-social.com:7070/fhir/StructureMap/2869"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "current-location",
+        "language": "text/fhirpath",
+        "expression": "%resource.descendants().where(linkId='a8e0a3fb-f4d5-4b24-86e2-f2f4bd3dce80').answer.value"
+      }
     }
   ],
   "purpose": "mPower Family Registration",
   "date": "2023-07-20T00:00:00.000Z",
-  "contained": [
-    {
-      "resourceType": "ValueSet",
-      "id": "villageList",
-      "url": "http://example.org/ValueSet/LL2821-8",
-      "name": "গ্রামের নাম",
-      "title": "গ্রামের নাম",
-      "status": "active",
-      "description": "গ্রামের নাম",
-      "expansion": {
-        "identifier": "urn:uuid:961a2a6a-f880-4e58-80ea-59aad724ba1c",
-        "timestamp": "2023-10-29T10:00:00Z",
-        "contains": [
-          {
-            "code": "4057600020907020",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "GOURINAGAR"
-          },
-          {
-            "code": "4057600020904000",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "DARIAPUR"
-          },
-          {
-            "code": "4057600020916000",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "PURANDARPUR"
-          },
-          {
-            "code": "4057600020916001",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "PURANDARPUR - 01"
-          },
-          {
-            "code": "4057600020904002",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "DARIAPUR - 02"
-          },
-          {
-            "code": "4057600020902000",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "BIDYADHARPUR"
-          },
-          {
-            "code": "4057600020904001",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "DARIAPUR - 01"
-          },
-          {
-            "code": "4057600020904004",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "DARIAPUR - 04"
-          },
-          {
-            "code": "4057600020904003",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "DARIAPUR - 03"
-          },
-          {
-            "code": "4057600020911000",
-            "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-            "display": "KHANPUR"
-          }
-        ]
-      }
-    }
-  ],
   "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "a8e0a3fb-f4d5-4b24-86e2-f2f4bd3dce80",
+      "text": "Practitioner Location Id",
+      "type": "string",
+      "readOnly": true,
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'official').value.toString().substring(17)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 99999
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Enter the correct number between 10000 and 99999"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 10000
+        }
+      ],
+      "linkId": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+      "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
+      "text": "Random HH Id *",
+      "type": "integer",
+      "required": true,
+      "readOnly": true
+    },
     {
       "extension": [
         {
@@ -148,6 +126,33 @@
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
           "valueExpression": {
             "language": "text/fhirpath",
+            "expression": "Group.identifier.where(use = 'usual').value.toString()"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='b00bda77-6df2-4660-8134-c424fb1dbf4f').answer.value.reference.substring(9)"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "b3c85de6-90a4-4e55-b13f-32e94abd29b2",
+      "type": "string",
+      "text": "গ্রামের আইডি *",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
             "expression": "Group.identifier.where(use = 'official').value.toInteger()"
           }
         },
@@ -155,7 +160,7 @@
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
           "valueExpression": {
             "language": "text/fhirpath",
-            "expression": "%resource.descendants().where(linkId='d8ec7c8a-a097-4c61-941e-6b0555cd85c9').answer.value.code.toString() + %resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code.toString()"
+            "expression": "%resource.descendants().where(linkId='b00bda77-6df2-4660-8134-c424fb1dbf4f').answer.value.display.substring(0, 16) + %resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.toString()"
           }
         },
         {
@@ -173,367 +178,47 @@
     {
       "extension": [
         {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
-          }
-        },
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "%resource.descendants().where(linkId='d8ec7c8a-a097-4c61-941e-6b0555cd85c9').answer.value.code.toString()"
-          }
-        }
-      ],
-      "linkId": "b3c85de6-90a4-4e55-b13f-32e94abd29b2",
-      "type": "string",
-      "text": "গ্রামের আইডি *",
-      "required": true,
-      "readOnly": true
-    },
-    {
-      "linkId": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-      "type": "choice",
-      "text": "স্বাস্থ্য সেবিকার নাম *",
-      "required": true,
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Group.identifier.where(use = 'usual').value.toInteger()"
-          }
-        },
-        {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
           "valueCodeableConcept": {
             "coding": [
               {
-                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                "code": "drop-down"
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "drop-down",
+                "display": "Drop down"
               }
-            ]
+            ],
+            "text": "Drop down"
           }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "expression": "Location?partof=Location/{{%current-location}}",
+            "language": "application/x-fhir-query"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+          "extension": [
+            {
+              "url": "path",
+              "valueString": "Location.alias.first() + '-' + Location.name"
+            },
+            {
+              "url": "label",
+              "valueString": "name"
+            },
+            {
+              "url": "forDisplay",
+              "valueBoolean": true
+            }
+          ]
         }
       ],
-      "answerOption": [
-        {
-          "valueCoding": {
-            "id": "f1f767bf-bbe3-4b86-80d3-315a98314280",
-            "code": "12345",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Tahara(SS-1)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "24a4cb76-43ee-46e9-df3b-8d4109e17fe7",
-            "code": "23456",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Arbi(SS-2)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "c18f3c30-5701-4c09-db62-d88781c917eb",
-            "code": "34567",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Shakhina(SS-3)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "ec384d34-4ddc-42ae-8b95-055d74abc44e",
-            "code": "45678",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Msi. Fatama(SS-4)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "63ecf3d7-7b96-41b5-9ba4-c3c2e8d6b769",
-            "code": "56789",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Mohima.(SS-5)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "581f2e73-00b6-493a-80cb-b0b7d051e155",
-            "code": "67891",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Momona(SS-6)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "9d6279a5-ba69-49fb-9ea6-ef5215230355",
-            "code": "78912",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Jahora(SS-7)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "55cfaed5-31e6-4961-81cf-c44f018bf151",
-            "code": "89123",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Umme(SS-8)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "02e6703c-36e1-4232-d477-8091e1d5a1c5",
-            "code": "91234",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Hadisa(SS-9)"
-          }
-        },
-        {
-          "valueCoding": {
-            "id": "eb2d0610-61ac-4a3c-92ad-1d569749dfdd",
-            "code": "98765",
-            "system": "urn:uuid:71f589b4-cfd4-46dd-8ed1-5ca3aae6aa6d",
-            "display": "Mst. Sabana(SS-10)"
-          }
-        }
-      ]
-    },
-    {
-      "linkId": "d8ec7c8a-a097-4c61-941e-6b0555cd85c9",
-      "type": "choice",
+      "linkId": "b00bda77-6df2-4660-8134-c424fb1dbf4f",
       "text": "গ্রামের নাম *",
-      "required": true,
-      "answerValueSet": "#villageList",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-          "valueExpression": {
-            "language": "text/fhirpath",
-            "expression": "Group.identifier.where(use = 'official').value.toString().substring(0, 16)"
-          }
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                "code": "radio-button"
-              }
-            ]
-          }
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020907020",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "GOURINAGAR"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '12345'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020904000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '23456'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020916000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "PURANDARPUR"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '34567'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020916001",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "PURANDARPUR - 01"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '45678'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020904002",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 02"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '56789'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020902000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "BIDYADHARPUR"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '67891'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020904001",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 01"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '78912'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020904004",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 04"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '89123'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020904003",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "DARIAPUR - 03"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '91234'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        },
-        {
-          "extension": [
-            {
-              "url": "option",
-              "valueCoding": {
-                "code": "4057600020911000",
-                "system": "urn:uuid:00aaf1bf-e98d-4560-a010-7f6fb27b3628",
-                "display": "KHANPUR"
-              }
-            },
-            {
-              "url": "expression",
-              "valueExpression": {
-                "language": "text/fhirpath",
-                "expression": "%resource.descendants().where(linkId='0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code = '98765'"
-              }
-            }
-          ],
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
-        }
-      ],
-      "enableWhen": [
-        {
-          "question": "0eb238ad-e009-434b-c56f-88e7dc860daa",
-          "operator": "exists",
-          "answerBoolean": true
-        }
-      ]
+      "type": "reference",
+      "required": true
     },
     {
       "linkId": "b742852c-8774-47d1-81f2-9bbe0f2fd511",

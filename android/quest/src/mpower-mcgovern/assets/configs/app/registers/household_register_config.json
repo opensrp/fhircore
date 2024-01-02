@@ -9,6 +9,13 @@
       "actions": [
         "data.put('practitionerLocationId', service.retrievePractitionerLocationId())"
       ]
+    },
+    {
+      "name": "humanReadableId",
+      "condition": "true",
+      "actions": [
+        "data.put('humanReadableId', service.generateRandomVariableDigitInt(10000, 99999))"
+      ]
     }
   ],
   "fhirResource": {
@@ -296,6 +303,13 @@
             }
           },
           "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "0eb238ad-e009-434b-c56f-88e7dc860daa",
+              "dataType": "INTEGER",
+              "key": "humanReadableId",
+              "value": "@{humanReadableId}"
+            },
             {
               "paramType": "PREPOPULATE",
               "linkId": "a8e0a3fb-f4d5-4b24-86e2-f2f4bd3dce80",

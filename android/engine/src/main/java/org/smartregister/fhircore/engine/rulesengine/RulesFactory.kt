@@ -29,6 +29,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.jeasy.rules.api.Facts
 import org.jeasy.rules.api.Rule
@@ -538,6 +539,10 @@ constructor(
           }
       }
       return serviceStatus
+    }
+
+    fun retrievePractitionerLocationId(): String {
+      return configurationRegistry.sharedPreferencesHelper.read<List<String>>(ResourceType.Location.name)?.first() ?: ""
     }
   }
 

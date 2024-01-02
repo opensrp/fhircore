@@ -23,18 +23,6 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
          src -> groupIdentifierHouseholdId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
        } "rule_group_identifier_hh_id";
 
-       src -> group.identifier = create('Identifier') as groupIdentifierSSId then {
-         src -> groupIdentifierSSId.value = evaluate(src, $this.item.where(linkId = '0eb238ad-e009-434b-c56f-88e7dc860daa').answer.value.code)
-         "rule_group_identifier_ss_id_value";
-         src -> groupIdentifierSSId.type = create('CodeableConcept') as concept then {
-                src -> concept.coding = c("http://www.mpower-social.com/", "ss_id") as coding then {
-                src -> coding.display = 'SS ID' "rule_patient_identifier_ss_id_type_cod_display";
-                } "rule_patient_identifier_ss_id_type_cod";
-            } "rule_patient_identifier_ss_id_type";
-         src -> groupIdentifierSSId.use = "usual" "rule_group_identifier_ss_id_use";
-         src -> groupIdentifierSSId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-       } "rule_group_identifier_ss_id";
-
        src -> group.identifier = create('Identifier') as groupIdentifierVillageId then {
          src -> groupIdentifierVillageId.value = evaluate(src, $this.item.where(linkId = 'b3c85de6-90a4-4e55-b13f-32e94abd29b2').answer.value)
          "rule_group_identifier_village_id_value";
@@ -43,7 +31,7 @@ group ExtractGroup(source src : QuestionnaireResponse, target group : Group, tar
                 src -> coding.display = 'Village Id' "rule_patient_identifier_village_id_cod_display";
                 } "rule_patient_identifier_village_id_type_cod";
             } "rule_patient_identifier_village_id_type";
-         src -> groupIdentifierVillageId.use = "temp" "rule_group_identifier_village_id_use";
+         src -> groupIdentifierVillageId.use = "usual" "rule_group_identifier_village_id_use";
          src -> groupIdentifierVillageId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
        } "rule_group_identifier_village_id";
 
