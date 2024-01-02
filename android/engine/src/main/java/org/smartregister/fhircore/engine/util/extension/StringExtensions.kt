@@ -108,7 +108,7 @@ fun String.practitionerEndpointUrl(): String = "PractitionerDetail?keycloak-uuid
 
 /** Remove double white spaces from text and also remove space before comma */
 fun String.removeExtraWhiteSpaces(): String =
-  this.replace("\\s+".toRegex(), " ").replace(" ,", ",").trim()
+  this.replace("\\s+".toRegex(), " ").replace(" ,", ",")
 
 /** Return an abbreviation for the provided string */
 fun String?.abbreviate() = this?.firstOrNull() ?: ""

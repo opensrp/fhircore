@@ -59,6 +59,8 @@ interface Repository {
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig? = null,
     paramsList: Array<ActionParameter>?,
+    startDateFormatted: String? = null,
+    endDateFormatted: String? = null,
   ): RepositoryResourceData?
 
   suspend fun loadReportData(

@@ -182,6 +182,5 @@ constructor(
 
   companion object {
     const val WORK_ID = "FhirMonthlyStockBalanceGeneratorWorker"
-    const val BATCH_SIZE_FACTOR = 10
   }
 }

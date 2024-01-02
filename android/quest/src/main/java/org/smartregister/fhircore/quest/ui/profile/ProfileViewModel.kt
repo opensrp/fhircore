@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.core.util.Pair
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,17 +50,28 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_MMMM
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
+import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.getActivity
+import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
+import org.smartregister.fhircore.engine.util.extension.parseDate
+import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
+import java.util.Calendar
+import java.util.Date
 
 @HiltViewModel
 class ProfileViewModel
@@ -70,7 +83,7 @@ constructor(
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
-
+  val dateRange: MutableState<Pair<Long?, Long?>> = mutableStateOf(defaultDateRangeState())
   val refreshProfileDataLiveData = MutableLiveData<Boolean?>(null)
   val profileUiState = mutableStateOf(ProfileUiState())
   val applicationConfiguration: ApplicationConfiguration by lazy {
@@ -82,6 +95,8 @@ constructor(
 
   private val listResourceDataStateMap =
     mutableStateMapOf<String, SnapshotStateList<ResourceData>>()
+
+  private fun defaultDateRangeState() = Pair<Long?, Long?>(null, null)
 
   /**
    * This function retrieves an image that was synced from the backend as a [Binary] resource, the
@@ -114,10 +129,26 @@ constructor(
     paramsList: Array<ActionParameter>? = emptyArray(),
   ) {
     if (resourceId.isNotEmpty()) {
-      val repositoryResourceData =
-        registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+      val monthDateRange = profileConfigs.monthWiseFilterStartDate?.let {
+        Pair(dateRange.value.first ?: Date().firstDayOfMonth().time, dateRange.value.second ?: Date().lastDayOfMonth().time)
+      } ?: defaultDateRangeState()
+
+      val repositoryResourceData =
+        registerRepository.loadProfileData(
+          profileId,
+          resourceId,
+          fhirResourceConfig,
+          paramsList,
+          startDateFormatted = monthDateRange.first?.let { Date(monthDateRange.first!!).formatDate(
+            SDF_YYYY_MM_DD
+          ) },
+          endDateFormatted = monthDateRange.second?.let { Date(monthDateRange.second!!).formatDate(
+            SDF_YYYY_MM_DD
+          ) },
+        )
+
       val resourceData =
         resourceDataRulesExecutor
           .processResourceData(
@@ -153,6 +184,30 @@ constructor(
         )
       }
     }
+  }
+
+  fun getMonthFilterRange(): Map<String, List<ReportRangeSelectionData>> {
+    val startDate = profileUiState.value.profileConfiguration?.monthWiseFilterStartDate?.parseDate(SDF_YYYY_MM_DD) ?: "2023-01-01".parseDate(SDF_YYYY_MM_DD)
+
+    val yearMonths = mutableListOf<ReportRangeSelectionData>()
+    val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
+    var lastDate = endDate?.firstDayOfMonth()
+
+    while (
+      lastDate!!.after(startDate)
+    ) {
+      yearMonths.add(
+        ReportRangeSelectionData(
+          lastDate.formatDate(SDF_MMMM),
+          lastDate.formatDate(SDF_YYYY),
+          lastDate,
+        ),
+      )
+
+      lastDate = lastDate.plusMonths(-1)
+    }
+
+    return yearMonths.toList().groupBy { it.year }
   }
 
   private fun retrieveProfileConfiguration(
@@ -216,6 +271,10 @@ constructor(
             refreshProfileDataLiveData.value = true
           }
         }
+      }
+      is ProfileEvent.OnDateRangeSelected -> {
+        dateRange.value = event.newDateRange
+        refreshProfileDataLiveData.value = true
       }
     }
   }

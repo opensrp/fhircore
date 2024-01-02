@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.profile
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,34 +33,48 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.util.Pair
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
@@ -67,7 +83,13 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
+import org.smartregister.fhircore.engine.util.extension.SDF_MMMM_YYYY
+import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
+import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.parseColor
+import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSelectionData
+import org.smartregister.fhircore.quest.ui.report.measure.screens.FixedMonthYearListing
 import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.ui.shared.components.Image
@@ -76,6 +98,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.TabView
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
+import java.util.Date
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -84,6 +107,7 @@ const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
 const val PADDING_BOTTOM_WITH_FAB = 80
 const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
   modifier: Modifier = Modifier,
@@ -91,7 +115,12 @@ fun ProfileScreen(
   profileUiState: ProfileUiState,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
   onEvent: (ProfileEvent) -> Unit,
+  monthFilterRange: Map<String, List<ReportRangeSelectionData>>,
 ) {
+  val currentSelectedDateState = remember { mutableStateOf(Pair(Date().firstDayOfMonth().time, Date().lastDayOfMonth().time)) }
+  val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+  val coroutineScope = rememberCoroutineScope()
+
   val scaffoldState = rememberScaffoldState()
   val lazyListState = rememberLazyListState()
 
@@ -99,91 +128,157 @@ fun ProfileScreen(
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
   val fabActions = profileUiState.profileConfiguration?.fabActions
-  Scaffold(
-    scaffoldState = scaffoldState,
-    topBar = {
-      if (profileUiState.profileConfiguration?.topAppBar == null) {
-        SimpleTopAppBar(
-          modifier = modifier,
-          navController = navController,
-          elevation = 4,
-          profileUiState = profileUiState,
-          lazyListState = lazyListState,
-          onEvent = onEvent,
-          collapsible = false,
-        )
-      } else {
-        CustomProfileTopAppBar(
-          navController = navController,
-          profileUiState = profileUiState,
-          onEvent = onEvent,
-          lazyListState = lazyListState,
-        )
-      }
-    },
-    floatingActionButton = {
-      if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-        ExtendedFab(
-          modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
-          fabActions = fabActions,
-          resourceData = profileUiState.resourceData,
-          navController = navController,
-          lazyListState = lazyListState,
+
+  ModalBottomSheetLayout(
+    sheetState = bottomSheetState,
+    sheetContent = {
+      Box(
+        modifier = Modifier
+          .fillMaxWidth()
+          .background(Color.White)
+      ) {
+        FixedMonthYearListing(
+          onMonthSelected = {
+            coroutineScope.launch {
+              bottomSheetState.hide()
+            }
+
+            if(currentSelectedDateState.value.first != it?.firstDayOfMonth()?.time ||
+              currentSelectedDateState.value.second != it?.lastDayOfMonth()?.time) {
+              currentSelectedDateState.value =
+                Pair(it?.firstDayOfMonth()?.time, it?.lastDayOfMonth()?.time)
+
+              onEvent(
+                ProfileEvent.OnDateRangeSelected(currentSelectedDateState.value)
+              )
+            }
+          },
+          showProgressIndicator = false,
+          reportGenerationRange = monthFilterRange,
+          innerPadding = PaddingValues(16.dp),
         )
       }
     },
-    isFloatingActionButtonDocked = true,
-    snackbarHost = { snackBarHostState ->
-      SnackBarMessage(
-        snackBarHostState = snackBarHostState,
-        backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
-        actionColorHex = profileUiState.snackBarTheme.actionTextColor,
-        contentColorHex = profileUiState.snackBarTheme.messageTextColor,
-      )
-    },
-  ) { innerPadding ->
-    Box(
-      modifier =
+  ) {
+    Scaffold(
+      scaffoldState = scaffoldState,
+      topBar = {
+        if (profileUiState.profileConfiguration?.topAppBar == null) {
+          SimpleTopAppBar(
+            modifier = modifier,
+            navController = navController,
+            elevation = 4,
+            profileUiState = profileUiState,
+            lazyListState = lazyListState,
+            onEvent = onEvent,
+            collapsible = false,
+          )
+        } else {
+          CustomProfileTopAppBar(
+            navController = navController,
+            profileUiState = profileUiState,
+            onEvent = onEvent,
+            lazyListState = lazyListState,
+          )
+        }
+      },
+      floatingActionButton = {
+        if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+          ExtendedFab(
+            modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
+            fabActions = fabActions,
+            resourceData = profileUiState.resourceData,
+            navController = navController,
+            lazyListState = lazyListState,
+          )
+        }
+      },
+      isFloatingActionButtonDocked = true,
+      snackbarHost = { snackBarHostState ->
+        SnackBarMessage(
+          snackBarHostState = snackBarHostState,
+          backgroundColorHex = profileUiState.snackBarTheme.backgroundColor,
+          actionColorHex = profileUiState.snackBarTheme.actionTextColor,
+          contentColorHex = profileUiState.snackBarTheme.messageTextColor,
+        )
+      },
+    ) { innerPadding ->
+      Box(
+        modifier =
         modifier
           .background(profileUiState.profileConfiguration?.contentBackgroundColor.parseColor())
           .fillMaxSize()
           .padding(innerPadding),
-    ) {
-      if (profileUiState.showDataLoadProgressIndicator) {
-        CircularProgressIndicator(
-          modifier = modifier.align(Alignment.Center).size(24.dp),
-          strokeWidth = 1.8.dp,
-          color = MaterialTheme.colors.primary,
-        )
-      }
-      
-      if(profileUiState.profileConfiguration?.tabBar != null) {
-        TabView(
-          modifier = modifier,
-          viewProperties = profileUiState.profileConfiguration.tabBar as TabViewProperties,
-          resourceData = profileUiState.resourceData
-            ?: ResourceData("", ResourceType.Patient, emptyMap()),
-          navController = navController
-        )
-      }
-      
-      LazyColumn(
-        state = lazyListState,
-        modifier =
+      ) {
+        if (profileUiState.showDataLoadProgressIndicator) {
+          CircularProgressIndicator(
+            modifier = modifier
+              .align(Alignment.Center)
+              .size(24.dp),
+            strokeWidth = 1.8.dp,
+            color = MaterialTheme.colors.primary,
+          )
+        }
+
+        if (profileUiState.profileConfiguration?.tabBar != null) {
+          TabView(
+            modifier = modifier,
+            viewProperties = profileUiState.profileConfiguration.tabBar as TabViewProperties,
+            resourceData = profileUiState.resourceData
+              ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            navController = navController
+          )
+        }
+
+        LazyColumn(
+          state = lazyListState,
+          modifier =
           Modifier.padding(
             bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-                PADDING_BOTTOM_WITH_FAB.dp
-              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+            if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+              PADDING_BOTTOM_WITH_FAB.dp
+            } else PADDING_BOTTOM_WITHOUT_FAB.dp,
           ),
-      ) {
-        item(key = profileUiState.resourceData?.baseResourceId) {
-          ViewRenderer(
-            viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
+        ) {
+          if(profileUiState.profileConfiguration?.monthWiseFilterStartDate != null) {
+            item {
+              Card(
+                elevation = 5.dp,
+                backgroundColor = "#FF69B4".parseColor(),
+                modifier =
+                modifier
+                  .padding(16.dp)
+                  .fillMaxWidth()
+                  .align(Alignment.Center)
+                  .clip(RoundedCornerShape(6.dp)),
+              ) {
+                Row(
+                  modifier = modifier.padding(16.dp),
+                  horizontalArrangement = Arrangement.SpaceAround,
+                ) {
+                  Text(text = Date(currentSelectedDateState.value.first).formatDate(SDF_MMMM_YYYY))
+                  Icon(
+                    painterResource(id = R.drawable.ic_chevron_right),
+                    contentDescription = stringResource(R.string.select_month),
+                    modifier = Modifier.clickable {
+                      coroutineScope.launch {
+                        bottomSheetState.show()
+                      }
+                    }
+                  )
+                }
+              }
+            }
+          }
+
+          item(key = profileUiState.resourceData?.baseResourceId) {
+            ViewRenderer(
+              viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
+              resourceData = profileUiState.resourceData
                 ?: ResourceData("", ResourceType.Patient, emptyMap()),
-            navController = navController,
-          )
+              navController = navController,
+            )
+          }
         }
       }
     }
@@ -200,7 +295,9 @@ fun CustomProfileTopAppBar(
 ) {
   val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+  Column(modifier = modifier
+    .fillMaxWidth()
+    .background(MaterialTheme.colors.primary)) {
     SimpleTopAppBar(
       modifier = modifier,
       navController = navController,
@@ -353,16 +450,18 @@ private fun ProfileTopAppBarMenuAction(
           },
           contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
           modifier =
-            modifier
-              .fillMaxWidth()
-              .background(
-                color =
-                  if (overflowMenuItemConfig.confirmAction) {
-                    overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
-                  } else {
-                    Color.Transparent
-                  },
-              ),
+          modifier
+            .fillMaxWidth()
+            .background(
+              color =
+              if (overflowMenuItemConfig.confirmAction) {
+                overflowMenuItemConfig.backgroundColor
+                  .parseColor()
+                  .copy(alpha = 0.1f)
+              } else {
+                Color.Transparent
+              },
+            ),
         ) {
           Row {
             Image(

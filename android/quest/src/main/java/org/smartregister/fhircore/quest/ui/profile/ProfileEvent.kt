@@ -36,4 +36,6 @@ sealed class ProfileEvent {
     val eligibleManagingEntity: EligibleManagingEntity,
     val managingEntityConfig: ManagingEntityConfig?,
   ) : ProfileEvent()
+
+  data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long?, Long?>) : ProfileEvent()
 }

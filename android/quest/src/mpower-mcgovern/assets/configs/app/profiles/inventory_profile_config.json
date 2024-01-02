@@ -24,26 +24,20 @@
       {
         "resource": "Observation",
         "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "paramName": "date",
+            "filterCriteria": [
+              {
+                "dataType": "DATE",
+                "prefix": "GREATERTHAN_OR_EQUALS"
+              }
+            ]
+          }
+        ],
         "sortConfigs": [
           {
             "paramName": "date",
-            "dataType": "DATE",
-            "order": "DESCENDING"
-          }
-        ]
-      },
-      {
-        "id": "stockOutFlags",
-        "resource": "Flag",
-        "searchParameter": "subject"
-      },
-      {
-        "id": "measureReports",
-        "resource": "MeasureReport",
-        "searchParameter": "subject",
-        "sortConfigs": [
-          {
-            "paramName": "_lastUpdated",
             "dataType": "DATE",
             "order": "DESCENDING"
           }
@@ -76,14 +70,6 @@
           },
           {
             "viewType": "COMPOUND_TEXT",
-            "primaryText": "Last Used: ",
-            "primaryTextColor": "#FFFFFF",
-            "primaryTextFontWeight": "BOLD",
-            "secondaryText": "#@{lastUpdatedDate}",
-            "secondaryTextColor": "#FFFFFF"
-          },
-          {
-            "viewType": "COMPOUND_TEXT",
             "primaryText": "Stock Status: ",
             "primaryTextColor": "#FFFFFF",
             "primaryTextFontWeight": "BOLD",
@@ -96,15 +82,7 @@
             "primaryText": "Available: ",
             "primaryTextColor": "#FFFFFF",
             "primaryTextFontWeight": "BOLD",
-            "secondaryText": "@{runningBalance}",
-            "secondaryTextColor": "#FFFFFF"
-          },
-          {
-            "viewType": "COMPOUND_TEXT",
-            "primaryText": "Units: ",
-            "primaryTextColor": "#FFFFFF",
-            "primaryTextFontWeight": "BOLD",
-            "secondaryText": "@{unitsOfMeasure}",
+            "secondaryText": "@{runningBalance} @{unitsOfMeasure}",
             "secondaryTextColor": "#FFFFFF"
           }
         ]
@@ -179,7 +157,7 @@
       "priority": 1,
       "condition": "true",
       "actions": [
-        "data.put('monthlyObservation', service.filterResources(Observation, 'Observation.code.coding.code = \"monthly-stock-balance\" and Observation.status = \"final\"').get(0))"
+        "data.put('monthlyObservation', service.filterResources(Observation, 'Observation.code.coding.code = \"monthly-stock-balance\"').get(0))"
       ]
     },
     {
@@ -468,5 +446,6 @@
         }
       ]
     }
-  ]
+  ],
+  "monthWiseFilterStartDate": "2023-01-01"
 }

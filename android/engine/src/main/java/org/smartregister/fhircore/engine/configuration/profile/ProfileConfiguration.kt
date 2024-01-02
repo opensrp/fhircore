@@ -49,6 +49,7 @@ data class ProfileConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true),
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
+  val monthWiseFilterStartDate: String? = null,
   val configRules: List<RuleConfig>? = null,
   val contentBackgroundColor: String? = "#F2F4F7",
 ) : Configuration()

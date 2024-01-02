@@ -22,10 +22,12 @@ import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -43,6 +45,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
+import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
@@ -451,6 +454,8 @@ constructor(
     relatedResourcesConfigs: List<ResourceConfig>?,
     relatedResourceWrapper: RelatedResourceWrapper,
     configComputedRuleValues: Map<String, Any>,
+    startDateFormatted: String? = null,
+    endDateFormatted: String? = null,
   ): RelatedResourceWrapper {
     val countResourceConfigs = relatedResourcesConfigs?.filter { it.resultAsCount }
     countResourceConfigs?.forEach { resourceConfig ->
@@ -509,6 +514,8 @@ constructor(
       resources = resources,
       relatedResourceWrapper = relatedResourceWrapper,
       configComputedRuleValues = configComputedRuleValues,
+      startDateFormatted,
+      endDateFormatted
     )
 
     return relatedResourceWrapper
@@ -578,6 +585,8 @@ constructor(
     resources: List<Resource>,
     relatedResourceWrapper: RelatedResourceWrapper,
     configComputedRuleValues: Map<String, Any>,
+    startDateFormatted: String?,
+    endDateFormatted: String?,
   ) {
     val relatedResourcesConfigsMap = relatedResourcesConfigs?.groupBy { it.resource }
 
@@ -609,11 +618,16 @@ constructor(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            (this as Search).applyConfiguredSortAndFilters(
-              resourceConfig = resourceConfig,
-              sortData = true,
-              configComputedRuleValues = configComputedRuleValues,
-            )
+            if(!startDateFormatted.isNullOrEmpty() && !endDateFormatted.isNullOrEmpty() && resourceConfig.dataQueries?.isNotEmpty() == true) {
+              (this as Search).applyMonthWiseFilters(startDateFormatted, endDateFormatted, resourceConfig.dataQueries.first().paramName)
+              (this as Search).sort(resourceConfig.sortConfigs)
+            } else {
+              (this as Search).applyConfiguredSortAndFilters(
+                resourceConfig = resourceConfig,
+                sortData = true,
+                configComputedRuleValues = configComputedRuleValues,
+              )
+            }
           }
         }
 
@@ -622,11 +636,16 @@ constructor(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            (this as Search).applyConfiguredSortAndFilters(
-              resourceConfig = resourceConfig,
-              sortData = true,
-              configComputedRuleValues = configComputedRuleValues,
-            )
+            if(!startDateFormatted.isNullOrEmpty() && !endDateFormatted.isNullOrEmpty() && resourceConfig.dataQueries?.isNotEmpty() == true) {
+              (this as Search).applyMonthWiseFilters(startDateFormatted, endDateFormatted, resourceConfig.dataQueries.first().paramName)
+              (this as Search).sort(resourceConfig.sortConfigs)
+            } else {
+              (this as Search).applyConfiguredSortAndFilters(
+                resourceConfig = resourceConfig,
+                sortData = true,
+                configComputedRuleValues = configComputedRuleValues,
+              )
+            }
           }
         }
       }
@@ -755,6 +774,21 @@ constructor(
         }
       }
     }
+  }
+
+  private fun Search.applyMonthWiseFilters(startDateFormatted: String, endDateFormatted: String, paramName: String) {
+    this.filter(
+      DateClientParam(paramName),
+      {
+        value = of(DateTimeType(startDateFormatted))
+        prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+      },
+      {
+        value = of(DateTimeType(endDateFormatted))
+        prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+      },
+      operation = Operation.AND
+    )
   }
 
   @VisibleForTesting

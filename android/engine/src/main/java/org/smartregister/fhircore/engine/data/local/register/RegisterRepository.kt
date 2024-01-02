@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
@@ -28,11 +27,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.MessageDefinition
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -201,6 +197,8 @@ constructor(
     resourceId: String,
     fhirResourceConfig: FhirResourceConfig?,
     paramsList: Array<ActionParameter>?,
+    startDateFormatted: String?,
+    endDateFormatted: String?,
   ): RepositoryResourceData {
     val paramsMap: Map<String, String> =
       paramsList
@@ -230,6 +228,8 @@ constructor(
           relatedResourcesConfigs = resourceConfig.relatedResources,
           relatedResourceWrapper = RelatedResourceWrapper(),
           configComputedRuleValues = configComputedRuleValues,
+          startDateFormatted = startDateFormatted,
+          endDateFormatted = endDateFormatted,
         )
       }
     return RepositoryResourceData(
