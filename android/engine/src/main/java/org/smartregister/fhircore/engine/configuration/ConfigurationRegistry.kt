@@ -366,79 +366,86 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources() {
     preferencesDataStore.appId.map { appId ->
-      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { composition ->
-        composition
-          .retrieveCompositionSections()
-          .groupBy { section ->
-            section.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: ""
-          }
-          .filter { entry ->
-            entry.key in
-              listOf(
-                ResourceType.Questionnaire.name,
-                ResourceType.StructureMap.name,
-                ResourceType.List.name,
-                ResourceType.PlanDefinition.name,
-                ResourceType.Library.name,
-                ResourceType.Measure.name,
-                ResourceType.Basic.name,
-              )
-          }
-          .forEach { resourceGroup ->
-            if (resourceGroup.key == ResourceType.List.name) {
-              if (isNonProxy()) {
-                val chunkedResourceIdList =
-                  resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-                chunkedResourceIdList.forEach {
-                  processCompositionManifestResources(
-                      resourceGroup.key,
-                      it.map { sectionComponent -> sectionComponent.focus.extractId() },
-                    )
-                    .entry
-                    .forEach { bundleEntryComponent ->
-                      when (bundleEntryComponent.resource) {
-                        is ListResource -> {
-                          addOrUpdate(bundleEntryComponent.resource)
-                          val list = bundleEntryComponent.resource as ListResource
-                          list.entry.forEach { listEntryComponent ->
-                            val resourceKey =
-                              listEntryComponent.item.reference.substringBefore(
-                                TYPE_REFERENCE_DELIMITER,
-                              )
-                            val resourceId =
-                              listEntryComponent.item.reference.extractLogicalIdUuid()
-                            val listResourceUrlPath =
-                              "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
-                            fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-                              listEntryResourceBundle ->
-                              addOrUpdate(listEntryResourceBundle.resource)
-                              Timber.d("Fetched and processed List reference $listResourceUrlPath")
+      val parsedAppId = appId?.substringBefore(TYPE_REFERENCE_DELIMITER)?.trim()
+      parsedAppId?.let {
+        fhirEngine.searchCompositionByIdentifier(it)?.let { composition ->
+          composition
+            .retrieveCompositionSections()
+            .groupBy { section ->
+              section.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: ""
+            }
+            .filter { entry ->
+              entry.key in
+                listOf(
+                  ResourceType.Questionnaire.name,
+                  ResourceType.StructureMap.name,
+                  ResourceType.List.name,
+                  ResourceType.PlanDefinition.name,
+                  ResourceType.Library.name,
+                  ResourceType.Measure.name,
+                  ResourceType.Basic.name,
+                )
+            }
+            .forEach { resourceGroup ->
+              if (resourceGroup.key == ResourceType.List.name) {
+                if (isNonProxy()) {
+                  val chunkedResourceIdList =
+                    resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+                  chunkedResourceIdList.forEach {
+                    processCompositionManifestResources(
+                        resourceGroup.key,
+                        it.map { sectionComponent -> sectionComponent.focus.extractId() },
+                      )
+                      .entry
+                      .forEach { bundleEntryComponent ->
+                        when (bundleEntryComponent.resource) {
+                          is ListResource -> {
+                            addOrUpdate(bundleEntryComponent.resource)
+                            val list = bundleEntryComponent.resource as ListResource
+                            list.entry.forEach { listEntryComponent ->
+                              val resourceKey =
+                                listEntryComponent.item.reference.substringBefore(
+                                  TYPE_REFERENCE_DELIMITER,
+                                )
+                              val resourceId =
+                                listEntryComponent.item.reference.extractLogicalIdUuid()
+                              val listResourceUrlPath =
+                                "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
+                              fhirResourceDataSource
+                                .getResource(listResourceUrlPath)
+                                .entry
+                                .forEach { listEntryResourceBundle ->
+                                  addOrUpdate(listEntryResourceBundle.resource)
+                                  Timber.d(
+                                    "Fetched and processed List reference $listResourceUrlPath",
+                                  )
+                                }
                             }
                           }
                         }
                       }
-                    }
+                  }
+                } else {
+                  resourceGroup.value.forEach {
+                    processCompositionManifestResources(
+                      FHIR_GATEWAY_MODE_HEADER_VALUE,
+                      "${resourceGroup.key}/${it.focus.extractId()}",
+                    )
+                  }
                 }
               } else {
-                resourceGroup.value.forEach {
+                val chunkedResourceIdList =
+                  resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+                chunkedResourceIdList.forEach {
                   processCompositionManifestResources(
-                    FHIR_GATEWAY_MODE_HEADER_VALUE,
-                    "${resourceGroup.key}/${it.focus.extractId()}",
+                    resourceGroup.key,
+                    it.map { sectionComponent -> sectionComponent.focus.extractId() },
                   )
                 }
               }
-            } else {
-              val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-
-              chunkedResourceIdList.forEach {
-                processCompositionManifestResources(
-                  resourceGroup.key,
-                  it.map { sectionComponent -> sectionComponent.focus.extractId() },
-                )
-              }
             }
-          }
+        }
       }
     }
   }

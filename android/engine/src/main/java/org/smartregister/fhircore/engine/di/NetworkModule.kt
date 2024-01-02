@@ -29,6 +29,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
@@ -46,7 +47,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -77,7 +78,7 @@ class NetworkModule {
   @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+    preferencesDataStore: PreferencesDataStore,
     openSrpApplication: OpenSrpApplication?,
   ) =
     OkHttpClient.Builder()
@@ -120,8 +121,10 @@ class NetworkModule {
             val request = chain.request().newBuilder()
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
-              sharedPreferencesHelper.retrieveApplicationId()?.let {
-                request.addHeader(APPLICATION_ID, it)
+              preferencesDataStore.appId.let {
+                it.map { appId ->
+                  if (!appId.isNullOrBlank()) request.addHeader(APPLICATION_ID, appId)
+                }
               }
             }
             chain.proceed(request.build())
@@ -224,7 +227,7 @@ class NetworkModule {
     if (context is OpenSrpApplication) context else null
 
   companion object {
-    const val TIMEOUT_DURATION = 120L
+    const val TIMEOUT_DURATION = 240L
     const val AUTHORIZATION = "Authorization"
     const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"

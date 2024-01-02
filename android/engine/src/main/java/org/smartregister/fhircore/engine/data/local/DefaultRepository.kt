@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
@@ -66,7 +67,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -84,7 +84,7 @@ open class DefaultRepository
 constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
-  open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val preferencesDataStore: PreferencesDataStore,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
@@ -171,7 +171,7 @@ constructor(
         generateMissingId()
       }
       if (addResourceTags) {
-        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        val tags = configService.provideResourceTags(preferencesDataStore)
         tags.forEach {
           val existingTag = currentResource.meta.getTag(it.system, it.code)
           if (existingTag == null) {

@@ -17,21 +17,24 @@
 package org.smartregister.fhircore.engine
 
 import android.app.Application
+import android.util.Log
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
@@ -42,25 +45,27 @@ class ConfigServiceTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferencesDataStore: PreferencesDataStore
 
   private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    preferencesDataStore = PreferencesDataStore(application, gson)
   }
 
   @Test
   fun testProvideSyncTagsShouldHaveOrganizationId() {
     val practitionerId = "practitioner-id"
-    sharedPreferencesHelper.write(SharedPreferenceKey.PRACTITIONER_ID.name, practitionerId)
 
-    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId) }
+
+    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    println("KELVIN resource tags ${resourceTags}")
     val practitionerTag =
       resourceTags.firstOrNull { it.system == AppConfigService.PRACTITIONER_SYSTEM }
-
+    println("KELVIN locationTags ${practitionerTag}")
     Assert.assertEquals(practitionerId, practitionerTag?.code)
   }
 
@@ -68,11 +73,19 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHaveLocationIds() {
     val locationId1 = "location-id1"
     val locationId2 = "location-id2"
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId1, locationId2))
 
-    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    runTest {
+      preferencesDataStore.write(
+        stringPreferencesKey( ResourceType.Location.name ),
+        listOf(locationId1, locationId2),
+        encodeWithGson = true,
+      )
+    }
+
+    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    println("KELVIN resource tags ${resourceTags}")
     val locationTags = resourceTags.filter { it.system == AppConfigService.LOCATION_SYSTEM }
-
+    println("KELVIN locationTags ${locationTags}")
     Assert.assertTrue(locationTags.any { it.code == locationId1 })
     Assert.assertTrue(locationTags.any { it.code == locationId2 })
   }
@@ -81,12 +94,15 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHaveOrganizationIds() {
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
-    sharedPreferencesHelper.write(
-      ResourceType.Organization.name,
-      listOf(organizationId1, organizationId2),
-    )
+    runTest {
+      preferencesDataStore.write(
+        PreferencesDataStore.LOCATION_IDS,
+        listOf(organizationId1, organizationId2),
+        encodeWithGson = true,
+      )
+    }
 
-    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val resourceTags = configService.provideResourceTags(preferencesDataStore)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.ORGANIZATION_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == organizationId1 })
@@ -97,9 +113,16 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHaveCareTeamIds() {
     val careTeamId1 = "careteam-id1"
     val careTeamId2 = "careteam-id2"
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId1, careTeamId2))
 
-    val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)
+    runTest {
+      preferencesDataStore.write(
+        PreferencesDataStore.CARE_TEAM_IDS,
+        listOf(careTeamId1, careTeamId2),
+        encodeWithGson = true,
+      )
+    }
+
+    val resourceTags = configService.provideResourceTags(preferencesDataStore)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.CARETEAM_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == careTeamId1 })

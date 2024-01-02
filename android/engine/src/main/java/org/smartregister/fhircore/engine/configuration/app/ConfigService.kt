@@ -16,13 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.map
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
@@ -38,11 +39,14 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+  fun provideResourceTags(preferencesDataStore: PreferencesDataStore): List<Coding> {
     val tags = mutableListOf<Coding>()
-    defineResourceTags().forEach { strategy ->
+    val resourceTags = defineResourceTags()
+
+    resourceTags.forEach { strategy ->
       if (strategy.type == ResourceType.Practitioner.name) {
-        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+        val id = preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")
+
         if (id.isNullOrBlank()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {
@@ -51,13 +55,28 @@ interface ConfigService {
           }
         }
       } else {
-        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
-        if (ids.isNullOrEmpty()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-        } else {
-          ids.forEach { id ->
-            strategy.tag.let { tag ->
-              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+        // TODO: KELVIN Discuss with Elly and show my solution
+        // The below cant be replicated in datastore read since T has to match the key and the
+        // output yet for the key is is string and for output it is List<String>
+
+        // val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        val key = stringPreferencesKey(strategy.type)
+        val ids =
+          preferencesDataStore.readOnce<List<String>>(
+            key,
+            decodeWithGson = true
+          )
+
+        println("KELVIN ids config ${ids}")
+
+        ids?.map {
+          if (it.isNullOrEmpty()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            it.forEach { id ->
+              strategy.tag.let { tag ->
+                tags.add(tag.copy().apply { code = it.extractLogicalIdUuid() })
+              }
             }
           }
         }

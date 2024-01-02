@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,8 +27,6 @@ import javax.inject.Inject
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
@@ -316,29 +313,21 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    private fun getStringFlowValue(flow: Flow<String>): String {
+    private fun getStringFlowValue(flow: Flow<String?>): String {
       var flowValue = ""
-      runBlocking { flow.collectLatest { flowValue = it } }
+      runBlocking { flow.collectLatest { flowValue = it ?: "" } }
       return flowValue
     }
 
-    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String {
-      try {
-        return when (practitionerKey) {
-          keys.APP_ID.name -> getStringFlowValue(preferences.appId)
-          keys.CARE_TEAM_NAMES.name -> getStringFlowValue(preferences.careTeamNames)
-          keys.ORGANIZATION_NAMES.name -> getStringFlowValue(preferences.organizationNames)
-          keys.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
-          else -> ""
-        }
-      } catch (exception: Exception) {
-        if (exception is IllegalArgumentException) {
-          Timber.e("key is not a member of practitioner keys: ", exception)
-        } else {
-          Timber.e("An exception occurred while fetching your key : ", exception)
-        }
+    fun extractPractitionerInfoFromDataStore(practitionerKey: String): String {
+      return when (practitionerKey) {
+        keys.APP_ID.name -> getStringFlowValue(preferences.appId)
+        keys.CARE_TEAM_NAMES.name -> getStringFlowValue(preferences.careTeamNames)
+        keys.ORGANIZATION_NAMES.name -> getStringFlowValue(preferences.organizationNames)
+        keys.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
+        else ->
+          throw IllegalArgumentException("The key queried does not store any Practitioner Details")
       }
-      return ""
     }
 
     /**

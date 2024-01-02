@@ -27,11 +27,14 @@ import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
@@ -42,7 +45,37 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = DAT
 class PreferencesDataStore
 @Inject
 constructor(@ApplicationContext val context: Context, val gson: Gson) {
-  fun <T> read(key: Preferences.Key<T>) =
+
+  /**
+   * This blocking read function was made to prevent making functions all over the codebase suspend
+   * functions when they only needed as single value from the datastore and had no need to keep
+   * observing the flow. A lot of the SharedPreferences reads had this need
+   *
+   * For instance the ConfigService.provideResourceTags() function just needed one preferences
+   * value.
+   */
+
+  // In situations where you provide a non-null defaultValue, you can use !! to extract
+  fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
+    context.dataStore.data.first()[key] ?: defaultValue
+  }
+
+  inline fun <reified T> readOnce(key: Preferences.Key<String>, decodeWithGson: Boolean = true): T? {
+    var out: T? = null
+    runBlocking {
+      context.dataStore.data.first()[key].also {
+        try {
+          out = gson.fromJson(it, T::class.java)
+        } catch (jsonIoException: JsonIOException) {
+          Timber.e(jsonIoException)
+        }
+      }
+    }
+    println("KELVIN datastore ${out}")
+    return out
+  }
+
+  fun <T> observe(key: Preferences.Key<T>, defaultValue: T? = null) =
     context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
@@ -51,11 +84,14 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
           throw exception
         }
       }
-      .map { preferences -> preferences[key] as T }
+      .map { preferences -> preferences[key] ?: defaultValue }
 
   // TODO: KELVIN. Remove this. It is temporary for storing objects as json strings in preferences
   // data store. will be move to proto data store later
-  inline fun <reified T> read(key: Preferences.Key<T>, decodeWithGson: Boolean): Flow<T?> =
+
+  // Specified the key type separately for when return type is different from key e.g in
+  // LOCATION_IDS.. key is String, return type is List<String>
+  inline fun <reified T, M> observe(key: Preferences.Key<M>, decodeWithGson: Boolean): Flow<T?> =
     context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
@@ -73,21 +109,6 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
         }
       }
 
-  // expose flows to be used all over the engine and view models
-  val appId by lazy { read(APP_ID) }
-  val lang by lazy { read(LANG) }
-  val careTeamIds by lazy { read(CARE_TEAM_IDS) }
-  val careTeamNames by lazy { read(CARE_TEAM_NAMES) }
-  val locationIds by lazy { read(LOCATION_IDS) }
-  val locationNames by lazy { read(LOCATION_NAMES) }
-  val organizationIds by lazy { read(ORGANIZATION_IDS) }
-  val organizationNames by lazy { read(ORGANIZATION_NAMES) }
-  val practitionerId by lazy { read(PRACTITIONER_ID) }
-  val practitionerLocation by lazy { read(PRACTITIONER_LOCATION) }
-  val practitionerLocationHierarchies by lazy { read(PRACTITIONER_LOCATION_HIERARCHIES) }
-  val practitionerDetails by lazy { read(PRACTITIONER_DETAILS) } // TODO: Move to proto store
-  val remoteSyncResources by lazy { read(REMOTE_SYNC_RESOURCES, decodeWithGson = true) }
-
   suspend fun <T> write(key: Preferences.Key<T>, data: T) {
     context.dataStore.edit { preferences -> preferences[key] = data }
   }
@@ -101,11 +122,35 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
+  // expose flows to be used all over the engine and view models
+  val appId by lazy { observe(APP_ID, null) }
+  val lang by lazy { observe(LANG, defaultValue = Locale.ENGLISH.toLanguageTag()) }
+  val careTeamIds by lazy { observe(CARE_TEAM_IDS) }
+  val careTeamNames by lazy { observe(CARE_TEAM_NAMES) }
+  val lastSyncTimeStamp by lazy { observe(LAST_SYNC_TIMESTAMP, defaultValue = null) }
+  val locationIds by lazy { observe(LOCATION_IDS) }
+  val locationNames by lazy { observe(LOCATION_NAMES) }
+  val organizationIds by lazy { observe(ORGANIZATION_IDS) }
+  val organizationNames by lazy { observe(ORGANIZATION_NAMES) }
+  val practitionerId by lazy { observe(PRACTITIONER_ID, defaultValue = "") }
+  val practitionerLocation by lazy { observe(PRACTITIONER_LOCATION) }
+  val practitionerLocationHierarchies by lazy { observe(PRACTITIONER_LOCATION_HIERARCHIES) }
+
+  // TODO: Kelvin Move all below to proto store?
+  val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS) }
+  val remoteSyncResources by lazy {
+    observe<List<String>, String>(REMOTE_SYNC_RESOURCES, decodeWithGson = true)
+  }
+
   companion object Keys {
+    const val PREFS_SYNC_PROGRESS_TOTAL = "sync_progress_total"
+
+    // Keys
     val APP_ID by lazy { stringPreferencesKey("APP_ID") }
     val LANG by lazy { stringPreferencesKey("LANG") }
     val CARE_TEAM_IDS by lazy { stringPreferencesKey("CARE_TEAM_IDS") }
     val CARE_TEAM_NAMES by lazy { stringPreferencesKey("CARE_TEAM_NAMES") }
+    val LAST_SYNC_TIMESTAMP by lazy { stringPreferencesKey("LAST_SYNC_TIMESTAMP") }
     val LOCATION_IDS by lazy { stringPreferencesKey("LOCATION_IDS") }
     val LOCATION_NAMES by lazy { stringPreferencesKey("LOCATION_NAMES") }
     val ORGANIZATION_IDS by lazy { stringPreferencesKey("ORGANIZATION_IDS") }
@@ -113,9 +158,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     val PRACTITIONER_ID by lazy { stringPreferencesKey("PRACTITIONER_ID") }
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
-    val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
 
-    // TODO: Move to protoStore
+    // TODO: Kelvin Move all below to protoStore
     val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }
+    val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
   }
 }
