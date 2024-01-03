@@ -100,7 +100,7 @@ class RegisterRepositoryTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),

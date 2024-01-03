@@ -25,6 +25,7 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -81,12 +82,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var configRegistry: ConfigurationRegistry
 
+  @Inject lateinit var gson: Gson
+
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    val preferencesDataStore = PreferencesDataStore(context)
+    val preferencesDataStore = PreferencesDataStore(context, gson)
 
     configRegistry =
       ConfigurationRegistry(

@@ -23,7 +23,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -74,13 +73,13 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -103,10 +102,10 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var fhirEngine: FhirEngine
-  private val application = ApplicationProvider.getApplicationContext<Application>()
+  private val context = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
@@ -114,13 +113,13 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
-    sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    preferencesDataStore = PreferencesDataStore(context, gson)
     spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferenceHelper,
+        preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
@@ -312,7 +311,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+    every { spiedConfigService.provideResourceTags(preferencesDataStore) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
@@ -557,7 +556,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
@@ -633,7 +632,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
