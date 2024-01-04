@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.configuration.migration
 
+import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 
+@Serializable
 data class DataMigrationConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.DataMigration.name,
