@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -136,12 +139,21 @@ fun List<ActionConfig>.handleClickEvent(
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
+      ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
+        navController.navigate(MainNavigationScreen.Insight.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
           MainNavigationScreen.GeoWidget.route,
           bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
+      ApplicationWorkflow.LAUNCH_DIALLER -> {
+        val actionParameter = interpolatedParams.first()
+        val patientPhoneNumber = actionParameter.value
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:$patientPhoneNumber")
+        ContextCompat.startActivity(navController.context, intent, null)
+      }
       else -> return
     }
   }

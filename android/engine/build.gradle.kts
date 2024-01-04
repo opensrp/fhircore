@@ -158,6 +158,8 @@ dependencies {
   }
 
   // Shared dependencies
+  api(libs.datastore)
+  api(libs.datastore.preferences)
   api(libs.glide)
   api(libs.knowledger)
   api(libs.p2p.lib)
@@ -198,6 +200,7 @@ dependencies {
   api(libs.retrofit2.kotlinx.serialization.converter)
   api(libs.okhttp)
   api(libs.okhttp.logging.interceptor)
+  api(libs.json.path)
   api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
   api(libs.easy.rules.jexl) {
     exclude(group = "commons-logging", module = "commons-logging")

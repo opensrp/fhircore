@@ -96,7 +96,7 @@ constructor(
    */
   fun fetchConfigurations(context: Context) {
     showProgressBar.postValue(true)
-    val appId = appId.value
+    val appId = appId.value?.trim()
     if (!appId.isNullOrEmpty()) {
       when {
         hasDebugSuffix() -> loadConfigurations(context)
@@ -108,6 +108,7 @@ constructor(
   private fun fetchRemoteConfigurations(appId: String?, context: Context) {
     viewModelScope.launch {
       try {
+        showProgressBar.postValue(true)
         Timber.i("Fetching configs for app $appId")
         val urlPath =
           "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
@@ -203,7 +204,7 @@ constructor(
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
         showProgressBar.postValue(false)
-        _error.postValue(context.getString(R.string.application_not_supported, appId.value))
+        _error.postValue(context.getString(R.string.application_not_supported, appId.value?.trim()))
         return null
       }
 
@@ -212,7 +213,7 @@ constructor(
   }
 
   fun loadConfigurations(context: Context) {
-    appId.value?.let { thisAppId ->
+    appId.value?.trim()?.let { thisAppId ->
       viewModelScope.launch(dispatcherProvider.io()) {
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
@@ -244,7 +245,7 @@ constructor(
   }
 
   fun hasDebugSuffix(): Boolean =
-    appId.value?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+    appId.value?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
 
   @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
 

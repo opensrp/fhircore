@@ -707,7 +707,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsTrue() {
     val fhirPathExpression = "Patient.active"
     val patients =
-      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+      mutableListOf(
+        Patient().setActive(true),
+        Patient().setActive(true),
+        Patient().setActive(true),
+      )
 
     Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, true))
 
@@ -728,7 +732,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun evaluateToBooleanReturnsCorrectValueWhenMatchAllIsFalse() {
     val fhirPathExpression = "Patient.active"
     val patients =
-      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+      mutableListOf(
+        Patient().setActive(true),
+        Patient().setActive(true),
+        Patient().setActive(true),
+      )
 
     Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
 
@@ -847,7 +855,87 @@ class RulesFactoryTest : RobolectricTest() {
       )
     Assert.assertEquals(
       period.years.toString() + "y",
-      rulesEngineService.extractAge(Patient().setBirthDate(LocalDate.parse("2005-01-01").toDate())),
+      rulesEngineService.extractAge(
+        Patient()
+          .setBirthDate(
+            LocalDate.parse("2005-01-01").toDate(),
+          ),
+      ),
     )
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsPractitionerId() {
+    val sharedPreferenceKey = "PRACTITIONER_ID"
+    val expectedValue = "1234"
+    every {
+      configurationRegistry.sharedPreferencesHelper.read(
+        sharedPreferenceKey,
+        "",
+      )
+    } returns expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsCareTeam() {
+    val sharedPreferenceKey = "CARE_TEAM"
+    val expectedValue = "1234"
+    every {
+      configurationRegistry.sharedPreferencesHelper.read(
+        sharedPreferenceKey,
+        "",
+      )
+    } returns expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsOrganization() {
+    val sharedPreferenceKey = "ORGANIZATION"
+    val expectedValue = "1234"
+    every {
+      configurationRegistry.sharedPreferencesHelper.read(
+        sharedPreferenceKey,
+        "",
+      )
+    } returns expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesReturnsPractitionerLocation() {
+    val sharedPreferenceKey = "PRACTITIONER_LOCATION"
+    val expectedValue = "1234"
+    every {
+      configurationRegistry.sharedPreferencesHelper.read(
+        sharedPreferenceKey,
+        "",
+      )
+    } returns expectedValue
+    val result = rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+
+    verify { configurationRegistry.sharedPreferencesHelper.read(sharedPreferenceKey, "") }
+    Assert.assertEquals(expectedValue, result)
+  }
+
+  @Test
+  fun testExtractSharedPrefValuesThrowsAnExceptionWhenKeyIsInvalid() {
+    val sharedPreferenceKey = "INVALID_KEY"
+    Assert.assertThrows(
+      "key is not a member of practitioner keys: ",
+      IllegalArgumentException::class.java,
+    ) {
+      rulesEngineService.extractPractitionerInfoFromSharedPrefs(sharedPreferenceKey)
+    }
   }
 }

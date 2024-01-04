@@ -27,12 +27,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -40,6 +37,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @AndroidEntryPoint
@@ -51,7 +49,6 @@ class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var libraryEvaluator: LibraryEvaluator
   val appSettingViewModel: AppSettingViewModel by viewModels()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +65,6 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     }
-    lifecycleScope.launch(dispatcherProvider.io()) { libraryEvaluator.initialize() }
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
@@ -78,12 +74,17 @@ class AppSettingActivity : AppCompatActivity() {
         onApplicationIdChanged(existingAppId)
         loadConfigurations(appSettingActivity)
       }
+    } else if (!BuildConfig.OPENSRP_APP_ID.isNullOrEmpty()) {
+      // this part simulates what the user would have done manually via the text field and button
+      appSettingViewModel.onApplicationIdChanged(BuildConfig.OPENSRP_APP_ID)
+      appSettingViewModel.fetchConfigurations(appSettingActivity)
     } else {
       setContent {
         AppTheme {
           val appId by appSettingViewModel.appId.observeAsState("")
           val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
           val error by appSettingViewModel.error.observeAsState("")
+
           AppSettingScreen(
             appId = appId,
             onAppIdChanged = appSettingViewModel::onApplicationIdChanged,

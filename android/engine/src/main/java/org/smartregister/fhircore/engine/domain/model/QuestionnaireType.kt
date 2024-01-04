@@ -16,15 +16,19 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+
 enum class QuestionnaireType {
   DEFAULT,
   EDIT,
   READ_ONLY,
-  ;
-
-  fun isDefault() = this == DEFAULT
-
-  fun isEditable() = this == EDIT
-
-  fun isReadOnly() = this == READ_ONLY
 }
+
+fun QuestionnaireConfig.isDefault() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.DEFAULT
+
+fun QuestionnaireConfig.isEditable() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.EDIT
+
+fun QuestionnaireConfig.isReadOnly() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.READ_ONLY

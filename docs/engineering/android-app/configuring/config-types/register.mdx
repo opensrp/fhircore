@@ -1,0 +1,277 @@
+---
+title: Registers and lists
+---
+
+# Register configuration
+
+Registers are the entry point to FHIRCore application. Typically this is a list used to displayed the configured [FHIR resources](https://www.hl7.org/FHIR/resourcelist.html). Clicking on a register item directs the user to the configured profile.
+
+:::info
+For every register in the application there should at least be one profile configuration. Similar registers can re-use the same profile configuration.
+:::
+
+### Working with dynamic data queries
+Assume you would like to filter resource data based on a criteria that needs computation before application. e.g show patients who are under 5 years or over 18 below, then this is the config to use.
+Before you use this rule on a dataQuery, you need  to execute it first. The rules are executed within a `configRules` block which follows rules engine standard and default priority of 1 which can be change based on requirement.
+Below is a JSON config that shows how to execute rules.Refer to working with rules section.
+``` json
+{
+ "appId": "appId",
+  "configType": "register",
+  "id": "childRegister",
+  "configRules": [
+    {
+      "name": "under5",
+      "condition": "true",
+      "actions": [
+        "data.put('under5', dateService.addOrSubtractTimeUnitFromCurrentDate(5,'-','YEAR'))"
+      ]
+    }
+  ]
+}
+```
+
+Below is a sample dataQuery config to filter register data by configRules
+
+``` json
+"fhirResource": {
+    "baseResource": {
+      "resource": "Patient",
+      "dataQueries": [
+        {
+          "paramName": "birthdate",
+          "filterCriteria": [
+            {
+              "dataType": "DATE",
+              "computedRule": "under5",
+              "prefix": "GREATERTHAN_OR_EQUALS"
+            }
+          ]
+        }
+      ]
+    }
+    }
+```
+
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|--|
+`appId` | `String` - unique identifier for the application | Yes | |
+`configType` | `String` - type of configuration | Yes |  `ConfigType.Register.name` |
+`id` | `String` - register's unique identifier | Yes | |
+`registerTitle` | `String` | No | `null` |
+`fhirResource` | `FhirResourceConfig` | Yes | |
+`secondaryResources` | List of `FhirResourceConfig`s | No | `null` |
+`searchBar` | `RegisterContentConfig` | No | `null` |
+`registerCard` | `RegisterCardConfig` | Yes | `RegisterCardConfig()` |
+`fabActions` | List of `NavigationMenuConfig`s  | Yes | `emptyList()` |
+`noResults` | `NoResultsConfig` | No | `null` |
+`pageSize` | `Int` | Yes | `10` |
+`activeResourceFilters` | List of `ActiveResourceFilterConfig`s | Yes | `listOf(ActiveResourceFilterConfig(resourceType = ResourceType.Patient, active = true), ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true))` |
+`configRules` | List of `RuleConfig`s | No | `null` |
+`registerFilter` | `RegisterFilterConfig` | No | `null` |
+
+
+
+## Dynamic data pass between Registers and Profiles
+For you to pass data between registers you can make use of **action config params** which are executed when **LAUNCH_REGISTER** is invoked.registers
+Data extraction happens during rules execution and is persisted in computedValuesMap which is later using to interpolated values annotated with @value.registers
+For example, assume the LAUNCH_REGISTER onClick function of practition_register_config takes you to household_profile screen and you would like pass send practitionerId from practition_register_config to household_profile, define it as described below
+
+### Practitioner LAUNCH_REGISTER
+#### Sample JSON
+1. Write rules to extract the data you need.
+``` json
+"rules":[
+     {
+      "name": "practitionerId",
+      "condition": "true",
+      "actions": [
+        "data.put('practitionerId', fhirPath.extractValue(Practitioner, 'Practitioner.id.replace(\"Practitioner/\",\"\")').split(\"/\").get(0))"
+      ]
+    }
+  ]
+```
+
+2. add your params at **LAUNCH_REGISTER** section of practition_register_config.json
+#### Sample JSON
+``` json
+     {
+                          "trigger": "ON_CLICK",
+                          "workflow": "LAUNCH_REGISTER",
+                          "id": "householdRegister",
+                          "display": "@{practitionerName} - Household Register",
+                          "params": [
+                            {
+                              "paramType": "PARAMDATA",
+                              "key": "practitionerId",
+                              "value": "@{practitionerId}"
+                            }
+                          ]
+                        }
+```
+
+### Household_config.json
+A dataquery config to filter by practitionerId. For more info refer to dataquery section
+
+#### Sample JSON
+
+``` json
+      {
+          "id": "householdQueryPractitionerId",
+          "filterType": "TOKEN",
+          "key": "_tag",
+          "valueType": "CODING",
+          "valueCoding": {
+            "system": "https://smartregister.org/",
+            "code": "@{practitionerId}"
+          }
+        }
+```
+
+### Practitioner LAUNCH_PROFILE (Register and Profile use same type of Resource)
+#### Sample JSON
+Add your params at **SERVICE_CARD actions** section of practitioner_register_config.json
+Set the value of the `trigger` to `ON_CLICK`.
+Set the value of `workflow` to `LAUNCH_PROFILE`
+Set the value of `id` to the id of the profile configuration to be launched e.g `practitionerProfile`
+The default implementation opens the profile using the `id` of the base resource used to load the register row
+#### Sample JSON
+``` json
+             {
+               "trigger": "ON_CLICK",
+               "workflow": "LAUNCH_PROFILE",
+               "id": "practitionerProfile"
+             }
+```
+
+### Task Register launch Patient Profile (Register and Profile use different Resource types)
+#### Sample JSON
+1. Write rules to extract the data you need.
+``` json
+"rules":[
+            {
+                "name": "patientId",
+                "condition": "true",
+                "actions": [
+                    "data.put('patientId', fhirPath.extractValue(Patient.get(0), \"Patient.id\"))"
+                ]
+             }
+  ]
+```
+
+2. Add your params at **SERVICE_CARD actions** section of task_register_config.json
+   Set the value of the `trigger` to `ON_CLICK`.
+   Set the value of `workflow` to `LAUNCH_PROFILE`
+   Set the value of `id` to the id of the profile configuration to be launched e.g `practitionerProfile`
+   Add an action parameter with the following values
+      - `paramType` set to `RESOURCE_ID`. This allows the user to specify the id of the resource used to open the profile
+      - `key` user defined value for the key e.g `patientId`
+      - `value` Set the value of the resource id to be used to open the profile
+#### Sample JSON
+``` json
+        {
+            "trigger": "ON_CLICK",
+            "workflow": "LAUNCH_PROFILE",
+            "id": "patientProfile",
+            "params": [
+                {
+                    "paramType": "RESOURCE_ID",
+                    "key": "patientId",
+                    "value": "@{patientId}"
+                }
+            ]
+        }
+```
+
+
+## Dynamic data pass between registers config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+rules name | Unique identifier for the rules                       | Yes | empty string |
+condition  | specification of execution                            | Yes |  false |
+actions    | an array of the rule logic with a fhirPathExpression  | Yes |  null |
+trigger    | application workflow action                           | Yes |  no default |
+workflow   | An application event that can trigger a workflow      | Yes |  null |
+params     | An array of actionParameters to pass to another register | no  |  emptyArray |
+paramType  | Action ParameterType to use e.g PREPOPULATE OR PARAMDATA   | no  |  null |
+key        | Action ParameterType unique key if defined but not tag is given   | yes  |  application throws exception |
+value      | Action ParameterType corresponding key's value                     | yes  |  application throws exception |
+
+
+## Filter register data
+
+Data rendered in a register can be filter based on `RegisterConfiguration.registerFilter` configuration. The process for filtering records in a register involves: launching a questionnaire that
+contains the fields for filtering data, converting the answers from the QuestionanireResponse into relevant values for data filter queries and finally applying the new queries in load register data function.
+
+`RegisterConfiguration.registerFilter` contains two required properties: `dataFilterActions` and `dataFilterFields`. The `dataFilterActions` is used to declare the action to launch the questionnaire used to capture the Data
+filter fields. `dataFilterFields` is used to map the filter queries to the configured resources used in the register. The filter queries MUST be used against the register resources, this relationship is achieved by setting the `filterId`
+on any of the configured register (base or related) resource.
+
+```json
+"registerFilter": {
+    "dataFilterActions": [
+      {
+        "trigger": "ON_CLICK",
+        "workflow": "LAUNCH_QUESTIONNAIRE",
+        "questionnaire": {
+          "id": "questionnaireId",
+          "title": "Filter register",
+          "saveButtonText": "Apply Filters",
+          "saveQuestionnaireResponse": false,
+          "showClearAll": true
+        }
+      }
+    ],
+    "dataFilterFields": [
+      {
+        "filterId": "task",
+        "dataQueries": [
+          {
+            "paramName": "status",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataFilterLinkId": "43e41fdb-7b84-420c-9210-c10dbae5f77b",
+                "dataType": "CODE"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+```
+
+> NOTE: The questionanire MUST be launched with the property `saveQuestionnaireResponse` set to false for data filtering to work. The response should not be saved. `showClearAll` will display an action button that will execute and action to resetting of all the answered fields for the `Questionnaire`.
+
+The `filterId` is a unique identifier applied to the configured `baseResource` or  `relatedResources` in the `RegisterConfiguration.fhirResource` to indicate the resource to which the filter data queries are to be applied. The `QuestionanireResponse` answer value is mapped to a `DataQuery` filterCriteria value using the unique property `dataFilterLinkId`. This is the linkId for the
+QuestionanireResponse item.
+
+Example if the base resource is `Task` the configuration below will be used in the resource config:
+
+```json
+{
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Task",
+      "filterId": "task",
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "operation": "OR",
+          "filterCriteria": [
+            {
+              "dataFilterLinkId": "43e41fdb-7b84-420c-9210-c10dbae5f77b",
+              "dataType": "CODE"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+```

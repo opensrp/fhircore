@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
 
@@ -52,12 +55,14 @@ sonar {
 android {
   compileSdk = 34
 
+  val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
     targetSdk = 34
-    versionCode = 4
-    versionName = "1.0.0"
+    versionCode = 7
+    versionName = "1.0.1"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -65,13 +70,10 @@ android {
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
-    buildConfigField(
-      "String",
-      "OAUTH_CLIENT_SECRET",
-      """"${project.extra["OAUTH_CLIENT_SECRET"]}"""",
-    )
+    buildConfigField("String", "OPENSRP_APP_ID", """${project.extra["OPENSRP_APP_ID"]}""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
+    buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"

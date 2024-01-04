@@ -79,6 +79,8 @@ const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
 const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun ProfileScreen(
@@ -94,7 +96,7 @@ fun ProfileScreen(
   LaunchedEffect(Unit) {
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
-
+  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
@@ -118,8 +120,6 @@ fun ProfileScreen(
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.profileConfiguration?.fabActions
-
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
@@ -154,7 +154,16 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary,
         )
       }
-      LazyColumn(state = lazyListState) {
+      LazyColumn(
+        state = lazyListState,
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+          ),
+      ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
