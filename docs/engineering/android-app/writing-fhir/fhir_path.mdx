@@ -329,6 +329,108 @@ Facts about Cqf-expression:
 }
 ```
 
+## Answer Options Toggle Expression
+
+[Answer Options Toggle Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-answerOptionsToggleExpression.html) extension is used to show/hide an option of choice type (Radio Button, Checkboxes, etc) questionnaire item based on a defined predicate.
+
+```
+{
+  "extension": [
+    {
+      "url": "option",
+      "valueCoding": {
+        "code": "option-A"
+      }
+    },
+    {
+      "url": "expression",
+      "valueExpression": {
+        "language": "text/fhirpath",
+        "expression": "true"
+      }
+    }
+  ],
+  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
+}
+```
+
+### Consist of 2 required nested extensions: option and expression
+
+#### Option extension defines which option to show/hide
+
+```
+{
+  "url": "option",
+  "valueCoding": {
+    "code": "option-A"
+  }
+}
+```
+
+#### Expression extension decides whether to show/hide the option
+- Accepts a FHIRPath expression, which means you can also pass a [variable](https://docs.opensrp.io/engineering/android-app/writing-fhir/fhir_path#variable) to it, to make the expression short
+- If the evaluated result is true, the option will be shown. If the evaluated result is false, the option will be hidden
+
+```
+{
+  "url": "expression",
+  "valueExpression": {
+    "language": "text/fhirpath",
+    "expression": "%should-show-option-a"
+  }
+}
+```
+
+### Full example:
+
+```
+{
+  "extension": [
+    {
+      "extension": [
+        {
+          "url": "option",
+          "valueCoding": {
+            "code": "option-A"
+          }
+        },
+        {
+          "url": "expression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%should-show-option-a"
+          }
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
+    }
+  ],
+  "linkId": "1",
+  "text": "question",
+  "type": "choice",
+  "answerOption": [
+    {
+      "valueCoding": {
+        "code": "option-a",
+        "display": "A"
+      }
+    },
+    {
+      "valueCoding": {
+        "code": "option-b",
+        "display": "B"
+      }
+    },
+    {
+      "valueCoding": {
+        "code": "option-c",
+        "display": "C"
+      }
+    }
+  ]
+}
+```
+
 ## Gotchas
 When working with dates, please note that according to the FHIR spec, if the duration value is specified as a whole number _(e.g. 1 month)_ such as when you write `today + '1 month'`, then when the duration is added or subtracted to a given date(time), the outcome is rounded to the nearest natural calendar division - e.g. Feb. 1 + 1 mo = March 1, not March 2 or 3 (since 1 month is defined in UCUM as 30 days).
 
