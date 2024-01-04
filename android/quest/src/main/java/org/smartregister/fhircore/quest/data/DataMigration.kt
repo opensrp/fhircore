@@ -78,7 +78,7 @@ constructor(
         .migrations
     runBlocking {
       val previousVersion =
-        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, 0).toInt()
+        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
       val newMigrations = migrations?.filter { it.version > previousVersion }
       migrate(newMigrations, previousVersion)
     }
@@ -170,7 +170,8 @@ constructor(
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
           withContext(dispatcherProvider.io()) {
-            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            val updatedtask = updatedResource as Resource
+            //defaultRepository.addOrUpdate(resource = updatedResource as Resource)
           }
         }
         eventBus.triggerEvent(AppEvent.OnMigrateData(false))
