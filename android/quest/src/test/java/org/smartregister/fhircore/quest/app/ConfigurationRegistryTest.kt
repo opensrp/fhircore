@@ -116,7 +116,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
-    // every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    // every { preferencesDataStore.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
@@ -148,7 +148,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
-    // every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    // every { preferencesDataStore.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()
@@ -186,7 +186,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "List/123456",
       )
     } returns bundle
-    // every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    // every { preferencesDataStore.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     preferencesDataStore.appId.map { assert(it == "demo") }
 
     configurationRegistry.fetchNonWorkflowConfigResources()

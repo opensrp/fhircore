@@ -204,7 +204,7 @@ constructor(
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
     /*    val practitionerDetails =
-    sharedPreferences.read<PractitionerDetails>(
+    preferencesDataStore.read<PractitionerDetails>(
       key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       decodeWithGson = true,
     )*/
@@ -431,14 +431,15 @@ constructor(
     organizationIds: List<String>,
     organizationNames: List<String>,
   ) {
-    // TODO: Store the whole object in proto datastore instead of sharedPreferences
+    // TODO: Store the whole object in proto datastore instead of preferencesDataStore
     /*
-      sharedPreferences.write(
+      preferencesDataStore.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       fhirPractitionerDetails,
     )*/
 
-    // Likely incorrect: verify how sharedPreferences is able to accept the object, where does the
+    // Likely incorrect: verify how preferencesDataStore is able to accept the object, where does
+    // the
     // serialization happen?
     viewModelScope.launch {
       preferencesDataStore.write(

@@ -178,7 +178,7 @@ constructor(
             }
           }
 
-        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+        saveSyncPreferences(patientRelatedResourceTypes.toList())
 
         // Save composition after fetching all the referenced section resources
         defaultRepository.createRemote(false, compositionResource)
@@ -227,17 +227,15 @@ constructor(
     }
   }
 
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) {
+  fun saveSyncPreferences(resourceTypes: List<ResourceType>) {
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.REMOTE_SYNC_RESOURCES,
         resourceTypes.distinctBy { it.name },
         encodeWithGson = true,
-      ) // TODO: KELVIN May/not be toString. check previous encoding
+      )
     }
   }
-  // TODO: KELVIN check how this was possible to directly write an enum list. is encoding in the
-  // write function?
 
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)

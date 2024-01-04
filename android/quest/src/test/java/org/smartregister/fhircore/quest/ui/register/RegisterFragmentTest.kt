@@ -88,7 +88,7 @@ class RegisterFragmentTest : RobolectricTest() {
       RegisterViewModel(
         registerRepository = mockk(relaxed = true),
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
+        preferencesDataStore = Faker.buildPreferencesDataStore(),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
         resourceDataRulesExecutor = mockk(),
       ),
