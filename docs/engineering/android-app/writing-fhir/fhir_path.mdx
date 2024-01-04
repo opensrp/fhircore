@@ -188,6 +188,36 @@ Both of the approaches are mutually exclusive and only one of these can specifie
 
 ```
 
+- If there are more than one enableWhen, enableBehavior must be specified. 
+- enableBehavior controls how multiple enableWhen values are interpreted - whether all or any must be true.
+
+| Code | Display | Definition |
+| --------- | ----- | ------- |
+| all | All | Enable the question when all the enableWhen criteria are satisfied. |
+| any | Any | Enable the question when any of the enableWhen criteria are satisfied. |
+
+```json
+
+    "enableWhen": [
+        {
+          "question": "age",
+          "operator": ">=",
+          "answerInteger": 17
+        },
+        {
+          "question": "calculated-year",
+          "operator": ">=",
+          "answerInteger": 17
+        }
+      ],
+      "enableBehavior": "any",
+
+```
+
+- In this case if either the age OR the calculated-year is true then the question will be enabled.
+- But if we used , "enableBehavior": "and" , then both age AND calculated-year will have to be true for the question to be enabled.
+
+
 ## Calculated expression
 
 [Calculated Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html) is an extension which allows to set answers to [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) (generally but not limited to [readOnly](https://build.fhir.org/ig/HL7/sdc/behavior.html#readOnly) or [hidden](https://build.fhir.org/ig/HL7/sdc/rendering.html#hidden)). The calculation is dynamic via a [fhirpath](http://hl7.org/fhirpath) expression which can be based on answers of other Questionnaire.items.
