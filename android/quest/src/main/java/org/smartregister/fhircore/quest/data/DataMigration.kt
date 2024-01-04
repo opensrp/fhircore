@@ -170,8 +170,7 @@ constructor(
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
           withContext(dispatcherProvider.io()) {
-            val updatedtask = updatedResource as Resource
-            //defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
           }
         }
         eventBus.triggerEvent(AppEvent.OnMigrateData(false))
