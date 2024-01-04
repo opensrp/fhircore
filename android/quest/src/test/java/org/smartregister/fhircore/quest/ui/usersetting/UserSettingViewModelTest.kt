@@ -49,11 +49,11 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -73,7 +73,7 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
   lateinit var fhirEngine: FhirEngine
-  private var sharedPreferencesHelper: SharedPreferencesHelper
+  private var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
@@ -87,7 +87,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    preferencesDataStore = PreferencesDataStore(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -98,7 +98,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
+    preferencesDataStore = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(
@@ -118,7 +118,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           syncBroadcaster = syncBroadcaster,
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
@@ -198,24 +198,24 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
+    every { preferencesDataStore.observe(SharedPreferenceKey.LANG.name, "en") } returns "fr"
     Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
+    verify { preferencesDataStore.observe(SharedPreferenceKey.LANG.name, "en") }
   }
 
   @Test
-  fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
+  fun setLanguageShouldCallPreferencesDataStoreWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
     val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
-    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+    every { preferencesDataStore.write(any(), any<String>()) } just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
+    verify { preferencesDataStore.write(SharedPreferenceKey.LANG.name, "es") }
 
     Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }

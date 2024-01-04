@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -64,7 +65,6 @@ import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragm
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -90,7 +90,7 @@ class AppMainViewModel
 constructor(
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
@@ -103,7 +103,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
+            preferencesDataStore.observe(SharedPreferenceKey.APP_ID.name, "")!!,
           ),
       ),
     )
@@ -167,7 +167,7 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        preferencesDataStore.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
@@ -183,7 +183,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is SyncJobStatus.Finished) {
-          sharedPreferencesHelper.write(
+          preferencesDataStore.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
           )
@@ -261,7 +261,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        preferencesDataStore.observe(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
@@ -276,7 +276,7 @@ constructor(
   }
 
   fun retrieveLastSyncTimestamp(): String? =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    preferencesDataStore.observe(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun launchProfileFromGeoWidget(
     navController: NavController,

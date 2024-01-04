@@ -31,8 +31,8 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 @HiltAndroidTest
@@ -44,7 +44,7 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -60,7 +60,7 @@ class SyncListenerManagerTest : RobolectricTest() {
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
       )
   }

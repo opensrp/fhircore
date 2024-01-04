@@ -36,9 +36,9 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
@@ -54,7 +54,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
-  private var sharedPreferencesHelper: SharedPreferencesHelper
+  private var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -63,7 +63,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private lateinit var secureSharedPreference: SecureSharedPreference
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    preferencesDataStore = PreferencesDataStore(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -74,7 +74,7 @@ class UserSettingFragmentTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
+    preferencesDataStore = mockk()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -90,7 +90,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         syncBroadcaster = syncBroadcaster,
         accountAuthenticator = accountAuthenticator,
         secureSharedPreference = secureSharedPreference,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
         dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
