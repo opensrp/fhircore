@@ -128,11 +128,11 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val toast = mockk<Toast>(relaxed = true)
     every { toast.show() } just runs
     mockkStatic(Toast::class)
-    every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
+    every { Toast.makeText(any<Context>(), any<String>(), Toast.LENGTH_LONG) } returns toast
     setupActivity()
     verify {
       Toast.makeText(
-        any(),
+        any<Context>(),
         eq(context.getString(R.string.questionnaire_not_found)),
         Toast.LENGTH_LONG,
       )
