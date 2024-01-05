@@ -1,0 +1,35 @@
+{
+  "appId":"app",
+  "migrations": [
+    {
+      "resourceType" : "Task",
+      "updateValues": [
+        {
+          "jsonPathExpression" : "Task.basedOn[0].reference",
+          "valueRule" : {
+            "name": "taskBasedOn",
+            "condition": "true",
+            "actions": [
+              "data.put('taskBasedOn', fhirPath.extractValue(Task, 'Task.basedOn[0].reference').startsWith('CarePlan/') ? fhirPath.extractValue(Task, 'Task.basedOn[0].reference') : 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn[0].reference') )"
+            ]
+          }
+        }
+      ],
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "entered-in-error"
+              }
+            }
+          ]
+        }
+      ],
+      "version" : 1
+    }
+  ]
+}
