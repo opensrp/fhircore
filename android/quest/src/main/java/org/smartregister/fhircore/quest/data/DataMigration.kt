@@ -80,7 +80,9 @@ constructor(
       val previousVersion =
         sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
       val newMigrations = migrations?.filter { it.version > previousVersion }
-      migrate(newMigrations, previousVersion)
+      if (!newMigrations.isNullOrEmpty()) {
+          migrate(newMigrations, previousVersion)
+        }
     }
   }
 
@@ -178,7 +180,7 @@ constructor(
         Timber.e(throwable)
       }
     }
-    sharedPreferencesHelper.write(SharedPreferenceKey.MIGRATION_VERSION.name, maxVersion.plus(1))
+    sharedPreferencesHelper.write(SharedPreferenceKey.MIGRATION_VERSION.name, maxVersion)
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {
