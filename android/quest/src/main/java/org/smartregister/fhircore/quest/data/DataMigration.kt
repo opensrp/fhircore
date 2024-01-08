@@ -72,17 +72,22 @@ constructor(
 
   fun migrate() {
     val migrations =
-      configurationRegistry.retrieveConfiguration<DataMigrationConfiguration>(
-          configType = ConfigType.DataMigration
-        )
-        .migrations
+      try {
+        configurationRegistry.retrieveConfiguration<DataMigrationConfiguration>(
+            configType = ConfigType.DataMigration
+          )
+          .migrations
+      } catch (exception: NoSuchElementException) {
+        emptyList()
+      }
+
     runBlocking {
       val previousVersion =
         sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
       val newMigrations = migrations?.filter { it.version > previousVersion }
       if (!newMigrations.isNullOrEmpty()) {
-          migrate(newMigrations, previousVersion)
-        }
+        migrate(newMigrations, previousVersion)
+      }
     }
   }
 
