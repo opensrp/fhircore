@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.datastore.serializers
 
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
-
-sealed class AppEvent {
-  data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
-    AppEvent()
-
-  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
+object SerializerConstants {
+  const val PROTOSTORE_SERIALIZER_TAG = "Proto DataStore"
 }

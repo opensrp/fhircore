@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.datastore.mockdata
 
-import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import kotlinx.serialization.Serializable
 
-sealed class AppEvent {
-  data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
-    AppEvent()
-
-  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
-}
+@Serializable
+data class PractitionerDetails(
+  val name: String = "sample_name",
+  val id: Int = 1,
+)

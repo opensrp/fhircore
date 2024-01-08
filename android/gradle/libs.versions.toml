@@ -21,6 +21,8 @@ cql-evaluator = "2.4.0"
 cql-to-elm = "2.4.0"
 dagger-hilt-compiler = "2.45"
 data-capture = "1.0.0-preview19-SNAPSHOT"
+datastore = "1.0.0"
+datastore-preferences = "1.0.0"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
@@ -40,6 +42,7 @@ hilt-work = "1.0.0"
 jjwt = "0.9.1"
 joda-time = "2.10.14"
 json = "20230618"
+jsonPath = "2.8.0"
 junit = "1.1.5"
 junit-jupiter-api = "5.8.2"
 junit-jupiter-engine = "5.8.2"
@@ -130,6 +133,8 @@ cql-to-elm = { group = "info.cqframework", name = "cql-to-elm", version.ref = "c
 dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt-android" }
 dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt-compiler" }
 data-capture = { group = "org.smartregister", name = "data-capture", version.ref = "data-capture" }
+datastore = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore-preferences"}
 easy-rules-jexl = { group = "org.jeasy", name = "easy-rules-jexl", version.ref = "easy-rules-jexl" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }
 fhir-common-utils = { group = "org.smartregister", name = "fhir-common-utils", version.ref = "fhir-common-utils" }
@@ -147,6 +152,7 @@ hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hilt-w
 jjwt = { group = "io.jsonwebtoken", name = "jjwt", version.ref = "jjwt" }
 joda-time = { group = "joda-time", name = "joda-time", version.ref = "joda-time" }
 json = { group = "org.json", name = "json", version.ref = "json" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonPath" }
 junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter-api" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter-engine" }
