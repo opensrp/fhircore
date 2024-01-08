@@ -126,7 +126,6 @@ dependencies {
   implementation(libs.appcompat)
   implementation(libs.material)
   implementation(libs.constraintlayout)
-  //implementation(libs.constraintlayout.compose)
   implementation(libs.fragment.ktx)
   implementation(libs.security.crypto)
   implementation(libs.cardview)
@@ -164,22 +163,10 @@ dependencies {
   api(libs.p2p.lib)
   api(libs.jjwt)
   api(libs.fhir.common.utils)
-
-  //api(libs.ui)
-  //api(libs.ui.tooling)
   api(libs.runtime.livedata)
   api(libs.bundles.navigation)
-  /*
-  api(libs.navigation.fragment.ktx)
-  api(libs.navigation.ui.ktx)
-  api(libs.navigation.compose)
-  api(libs.navigation.testing)
-
-   */
   api(libs.bundles.materialicons)
-  //api(libs.material3)
   api(libs.bundles.compose)
-  //api(libs.foundation)
   api(libs.hilt.navigation.compose)
   api(libs.bundles.lifecycle)
   api(libs.paging.compose)
