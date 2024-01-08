@@ -215,3 +215,16 @@ xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl"
 
 [plugins]
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
+
+[bundles]
+retrofit2 = ["retrofit", "retrofit-mock"]
+paging = ["paging-compose", "paging-runtime-ktx"]
+materialicons = ["material-icons-extended", "material-icons-core"]
+datastore-kt = ["datastore-preferences", "datastore"]
+lifecycle = ["lifecycle-viewmodel-ktx", "lifecycle-viewmodel-compose", "lifecycle-livedata-ktx"]
+okhttp3 = ["okhttp-logging-interceptor", "okhttp"]
+accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
+klint = ["ktlint-cli-ruleset", "ktlint-rule-engine-core"]
+compose = ["activity-compose", "material3", "ui", "ui-tooling", "constraintlayout-compose", "foundation"]
+navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-testing", "navigation-ui-ktx"]
+
