@@ -33,6 +33,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.lastOffset
@@ -55,6 +57,8 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
@@ -365,7 +369,7 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         appContext = appContext,
         workerParams = workerParameters,
         fhirResourceUtil = fhirResourceUtil,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
       )
     }
   }

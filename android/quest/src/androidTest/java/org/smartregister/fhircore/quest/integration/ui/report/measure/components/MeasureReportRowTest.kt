@@ -21,9 +21,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.Before
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -33,7 +31,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.components.MEASURE_ROW
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 class MeasureReportRowTest {
-  private val mockListener: () -> Unit = spyk({})
 
   @get:Rule val composeTestRule = createComposeRule()
   private val reportConfiguration =
@@ -44,21 +41,22 @@ class MeasureReportRowTest {
       module = "Module 1- ANC Contacts",
     )
 
-  @Before
-  fun setup() {
-    composeTestRule.setContent {
-      MeasureReportRow(title = reportConfiguration.module, onRowClick = mockListener)
-    }
-  }
-
   @Test
   fun testMeasureRowRendersTitleCorrectly() {
+    composeTestRule.setContent {
+      MeasureReportRow(title = reportConfiguration.module, onRowClick = {})
+    }
+
     composeTestRule.onNodeWithTag(MEASURE_ROW_TITLE_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText(reportConfiguration.module).assertExists().assertIsDisplayed()
   }
 
   @Test
   fun testMeasureRowRendersForwardIconCorrectly() {
+    composeTestRule.setContent {
+      MeasureReportRow(title = reportConfiguration.module, onRowClick = {})
+    }
+
     composeTestRule
       .onNodeWithTag(MEASURE_ROW_FORWARD_ARROW_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -67,9 +65,15 @@ class MeasureReportRowTest {
 
   @Test
   fun testThatRowClickCallsTheListener() {
+    var clicked = false
+
+    composeTestRule.setContent {
+      MeasureReportRow(title = reportConfiguration.module, onRowClick = { clicked = true })
+    }
+
     val measureRow = composeTestRule.onNodeWithTag(MEASURE_ROW_TEST_TAG)
     measureRow.assertExists()
     measureRow.performClick()
-    verify { mockListener() }
+    Assert.assertTrue(clicked)
   }
 }

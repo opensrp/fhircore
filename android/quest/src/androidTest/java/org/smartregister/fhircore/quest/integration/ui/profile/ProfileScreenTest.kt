@@ -26,7 +26,6 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.spyk
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.runBlocking
@@ -76,7 +75,7 @@ class ProfileScreenTest {
         ProfileScreen(
           navController = rememberNavController(),
           profileUiState = profileUiState,
-          onEvent = spyk({}),
+          onEvent = {},
           snackStateFlow = snackBarStateFlow,
         )
       }

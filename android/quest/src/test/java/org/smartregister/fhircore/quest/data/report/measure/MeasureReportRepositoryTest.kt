@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -60,6 +61,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val fhirEngine: FhirEngine = mockk()
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
@@ -80,7 +83,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
