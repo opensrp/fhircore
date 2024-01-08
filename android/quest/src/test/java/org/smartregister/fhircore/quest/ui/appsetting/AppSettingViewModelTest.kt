@@ -39,6 +39,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -321,8 +322,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = HttpException::class)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() = runTest {
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
     val context = mockk<Context>(relaxed = true)
@@ -334,7 +334,8 @@ class AppSettingViewModelTest : RobolectricTest() {
           "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
         ),
       )
-    fhirResourceDataSource.getResource(anyString())
+
+    runBlocking { fhirResourceDataSource.getResource(anyString()) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { fhirResourceDataSource.getResource(anyString()) }
     coVerify { appSettingViewModel.fetchConfigurations(context) }
