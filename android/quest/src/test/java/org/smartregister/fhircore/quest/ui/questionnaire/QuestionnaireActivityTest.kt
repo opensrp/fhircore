@@ -52,7 +52,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -131,7 +130,13 @@ class QuestionnaireActivityTest : RobolectricTest() {
     mockkStatic(Toast::class)
     every { Toast.makeText(any<Context>(), any<String>(), Toast.LENGTH_LONG) } returns toast
     setupActivity()
-    verify { context.getActivity()?.finish() }
+    verify {
+      Toast.makeText(
+        any(),
+        eq(context.getString(R.string.questionnaire_not_found)),
+        Toast.LENGTH_LONG,
+      )
+    }
     unmockkStatic(Toast::class)
   }
 
