@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.integration.ui.report.measure.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -23,11 +24,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.testing.TestNavHostController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.test.core.app.ApplicationProvider
-import io.mockk.mockk
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.quest.data.report.measure.MeasureReportPagingSource
+import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportListScreen
 import org.smartregister.fhircore.quest.ui.report.measure.screens.PLEASE_WAIT_TEST_TAG
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_INDICATOR_TAG
@@ -35,15 +36,15 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.SHOW_PROGRESS_
 class MeasureReportListScreenTest {
 
   @get:Rule(order = 0) val composeTestRule = createComposeRule()
-  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val dataList =
     Pager(PagingConfig(10)) {
-        MeasureReportPagingSource(
-          measureReportConfiguration = mockk(),
-          registerConfiguration = mockk(),
-          registerRepository = mockk(),
-          resourceDataRulesExecutor = mockk(),
-        )
+        object : PagingSource<Int, ReportConfiguration>() {
+          override fun getRefreshKey(state: PagingState<Int, ReportConfiguration>): Int? =
+            state.anchorPosition
+
+          override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ReportConfiguration> =
+            LoadResult.Page(data = emptyList(), prevKey = null, nextKey = null)
+        }
       }
       .flow
 
@@ -51,7 +52,7 @@ class MeasureReportListScreenTest {
   fun testMeasureReportListScreenShowsCorrectTitle() {
     composeTestRule.setContent {
       MeasureReportListScreen(
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         dataList = dataList,
         onReportMeasureClicked = {},
       )
@@ -64,7 +65,7 @@ class MeasureReportListScreenTest {
   fun testMeasureReportListScreenDisplaysProgressIndicatorWhenShowProgressIndicatorIsTrue() {
     composeTestRule.setContent {
       MeasureReportListScreen(
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         dataList = dataList,
         onReportMeasureClicked = {},
         showProgressIndicator = true,
