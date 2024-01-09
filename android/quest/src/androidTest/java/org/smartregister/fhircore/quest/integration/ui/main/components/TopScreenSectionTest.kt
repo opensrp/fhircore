@@ -21,10 +21,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.Before
-import org.junit.Ignore
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.main.components.LEADING_ICON_TEST_TAG
@@ -37,25 +34,21 @@ import org.smartregister.fhircore.quest.ui.main.components.TRAILING_ICON_TEST_TA
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 
 class TopScreenSectionTest {
-  private val mockListener: (String) -> Unit = spyk({})
+  private val listener: (String) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
 
-  @Before
-  fun setup() {
+  @Test
+  fun testTopScreenSectionRendersTitleRowCorrectly() {
     composeTestRule.setContent {
       TopScreenSection(
         title = "All Clients",
         searchText = "search text",
-        onSearchTextChanged = mockListener,
+        onSearchTextChanged = listener,
         onClick = {},
       )
     }
-  }
 
-  @Ignore("Flaky test to be fixed")
-  @Test
-  fun testTopScreenSectionRendersTitleRowCorrectly() {
     composeTestRule
       .onNodeWithTag(TITLE_ROW_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -75,8 +68,16 @@ class TopScreenSectionTest {
   }
 
   @Test
-  @Ignore("Flaky test to be fixed")
   fun testTopScreenSectionRendersSearchRowCorrectly() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchText = "search text",
+        onSearchTextChanged = listener,
+        onClick = {},
+      )
+    }
+
     composeTestRule
       .onNodeWithTag(OUTLINED_BOX_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -95,12 +96,22 @@ class TopScreenSectionTest {
       .assertIsDisplayed()
   }
 
-  @Ignore("Flaky test to be fixed")
   @Test
   fun testThatTrailingIconClickCallsTheListener() {
+    var clicked = false
+
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchText = "search text",
+        onSearchTextChanged = { clicked = true },
+        onClick = {},
+      )
+    }
+
     val trailingIcon = composeTestRule.onNodeWithTag(TRAILING_ICON_BUTTON_TEST_TAG)
     trailingIcon.assertExists()
     trailingIcon.performClick()
-    verify { mockListener("") }
+    Assert.assertTrue(clicked)
   }
 }

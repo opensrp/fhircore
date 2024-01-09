@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.integration.ui.shared.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -123,7 +124,7 @@ class ActionableButtonTest {
               startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
-          navController = navController,
+          navController = TestNavHostController(LocalContext.current),
         )
       }
     }

@@ -35,7 +35,7 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class, WorkManagerModule::class])
+@Module
 class CoreModule {
 
   @Singleton

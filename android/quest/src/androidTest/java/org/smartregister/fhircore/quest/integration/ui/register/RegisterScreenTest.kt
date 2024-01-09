@@ -24,7 +24,6 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -43,7 +42,7 @@ class RegisterScreenTest {
   @Before
   fun setUp() {
     composeTestRule.setContent {
-      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = mockk())
+      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
     }
   }
 

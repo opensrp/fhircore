@@ -39,7 +39,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -61,6 +60,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
@@ -79,20 +79,12 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Inject lateinit var eventBus: EventBus
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue
-  val registerViewModel =
-    spyk(
-      RegisterViewModel(
-        registerRepository = mockk(relaxed = true),
-        configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
-        resourceDataRulesExecutor = mockk(),
-      ),
-    )
+  @BindValue lateinit var registerViewModel: RegisterViewModel
 
   private lateinit var navController: TestNavHostController
   private lateinit var registerFragment: RegisterFragment
@@ -103,6 +95,16 @@ class RegisterFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    registerViewModel =
+      spyk(
+        RegisterViewModel(
+          registerRepository = mockk(relaxed = true),
+          configurationRegistry = configurationRegistry,
+          sharedPreferencesHelper = Faker.buildSharedPreferencesHelper(),
+          dispatcherProvider = dispatcherProvider,
+          resourceDataRulesExecutor = mockk(),
+        ),
+      )
     registerFragmentMock = mockk()
     registerFragment =
       RegisterFragment().apply {
@@ -154,7 +156,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun `test On changed emits a snack bar message`() {
+  fun `test On changed emits a snack bar message`() = runTest {
     val snackBarMessageConfig =
       SnackBarMessageConfig(
         message = "Household member has been added",
@@ -162,10 +164,8 @@ class RegisterFragmentTest : RobolectricTest() {
         duration = SnackbarDuration.Short,
         snackBarActions = emptyList(),
       )
-    val registerViewModel = mockk<RegisterViewModel>()
-    this.coroutineTestRule.launch {
-      registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
-    }
+    val registerViewModel = mockk<RegisterViewModel>(relaxUnitFun = true)
+    registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     coEvery {
       registerViewModel.emitSnackBarState(snackBarMessageConfig = snackBarMessageConfig)
     } just runs
