@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingViewModel
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
@@ -57,6 +58,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var dataMigration: DataMigration
   @Inject lateinit var eventBus: EventBus
   val loginViewModel by viewModels<LoginViewModel>()
+  val appSettingViewModel by viewModels<AppSettingViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -100,6 +102,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
+          appSettingViewModel.fetchConfigurations(this@LoginActivity)
           downloadNowWorkflowConfigs()
           if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
           else loginActivity.navigateToHome()
