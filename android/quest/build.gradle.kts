@@ -79,6 +79,11 @@ android {
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
       "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   signingConfigs {
@@ -159,6 +164,7 @@ android {
   composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
 
     unitTests {

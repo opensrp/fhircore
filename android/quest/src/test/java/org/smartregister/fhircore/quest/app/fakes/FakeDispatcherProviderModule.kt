@@ -16,25 +16,31 @@
 
 package org.smartregister.fhircore.quest.app.fakes
 
-import android.content.Context
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
-import io.mockk.spyk
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.FhirEngineModule
+import kotlinx.coroutines.CoroutineDispatcher
+import org.smartregister.fhircore.engine.di.DispatcherModule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.app.testDispatcher
 
 @Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
-class FakeFhirEngineModule {
+@TestInstallIn(components = [SingletonComponent::class], replaces = [DispatcherModule::class])
+class FakeDispatcherProviderModule {
 
   @Provides
   @Singleton
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return spyk(FhirEngineProvider.getInstance(context))
-  }
+  fun provideDispatcherProvider(): DispatcherProvider =
+    object : DispatcherProvider {
+
+      override fun main(): CoroutineDispatcher = testDispatcher
+
+      override fun default(): CoroutineDispatcher = testDispatcher
+
+      override fun io(): CoroutineDispatcher = testDispatcher
+
+      override fun unconfined(): CoroutineDispatcher = testDispatcher
+    }
 }
