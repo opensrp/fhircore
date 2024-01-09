@@ -53,9 +53,11 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
    *
    * For instance the ConfigService.provideResourceTags() function just needed one preferences
    * value.
+   *
+   * In situations where you provide a non-null defaultValue, you can use !! to extract
    */
 
-  // In situations where you provide a non-null defaultValue, you can use !! to extract
+
   fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
     context.dataStore.data.first()[key] ?: defaultValue
   }
@@ -71,7 +73,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
         }
       }
     }
-    println("KELVIN datastore ${out}")
+
     return out
   }
 

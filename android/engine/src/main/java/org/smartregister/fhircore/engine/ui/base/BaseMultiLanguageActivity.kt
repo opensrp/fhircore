@@ -20,12 +20,10 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import java.lang.UnsupportedOperationException
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import java.util.Locale
 import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 /**
  * Base class for all activities used in the app. Every activity should extend this class for
@@ -33,7 +31,7 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
  */
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
@@ -43,12 +41,8 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-    val lang =
-      baseContext
-        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
-    baseContext.setAppLocale(lang).run {
+    val lang = preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
+    baseContext.setAppLocale(lang!!).run {
       super.attachBaseContext(baseContext)
       applyOverrideConfiguration(this)
     }
@@ -60,7 +54,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
    */
   protected open fun inject() {
     throw UnsupportedOperationException(
-      "Annotate $this with @AndroidEntryPoint annotation. The inject method should be overridden by the Hilt generated class.",
+        "Annotate $this with @AndroidEntryPoint annotation. The inject method should be overridden by the Hilt generated class.",
     )
   }
 }
