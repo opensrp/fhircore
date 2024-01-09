@@ -129,12 +129,10 @@ dependencies {
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.coroutine.test)
   testImplementation(libs.hilt.android.testing)
   testImplementation(libs.navigation.testing)
 
@@ -147,8 +145,7 @@ dependencies {
   kaptAndroidTest(libs.hilt.android.compiler)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)

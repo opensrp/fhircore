@@ -3,9 +3,7 @@ plugins {
   id("org.jetbrains.kotlin.jvm")
 }
 
-dependencies {
-  implementation(libs.bundles.klint)
-}
+dependencies { implementation(libs.bundles.klint) }
 
 java {
   sourceCompatibility = JavaVersion.VERSION_11
