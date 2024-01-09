@@ -250,7 +250,6 @@ android {
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
     }
 
-
     create("diabetesCompassTz") {
       dimension = "apps"
       applicationIdSuffix = ".diabetesCompassTz"

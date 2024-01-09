@@ -394,7 +394,7 @@ constructor(
         if (
           !uniqueIdentifierGroupId.isNullOrEmpty() &&
             !uniqueIdentifierValue.isNullOrEmpty() &&
-          uniqueIdentifierValue == questionnaireIdentifierValue
+            uniqueIdentifierValue == questionnaireIdentifierValue
         ) {
           val uniqueIdentifierGroup =
             defaultRepository.loadResource<Group>(uniqueIdentifierGroupId)?.apply {
