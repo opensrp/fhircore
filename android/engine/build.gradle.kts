@@ -169,7 +169,6 @@ dependencies {
   api(libs.hilt.navigation.compose)
   api(libs.bundles.lifecycle)
   api(libs.paging.compose)
-  // api(libs.activity.compose)
   api(libs.kotlinx.serialization.json)
   api(libs.bundles.accompanist)
   api(libs.work.runtime.ktx)
