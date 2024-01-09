@@ -150,7 +150,8 @@ class QuestionnaireActivityTest : RobolectricTest() {
         throw ResourceNotFoundException(firstArg<ResourceType>().name, secondArg())
       }
     mockkStatic(Toast::class)
-    every { Toast.makeText(any<Context>(), any<String>(), Toast.LENGTH_LONG) } returns toast
+    every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns
+      mockk<Toast>() { every { show() } just runs }
     setupActivity()
     advanceUntilIdle()
     verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
