@@ -77,7 +77,7 @@ constructor(
       if (!refreshToken.isNullOrEmpty()) {
         authToken =
           try {
-            tokenAuthenticator.refreshToken(refreshToken)
+            tokenAuthenticator.refreshToken(account, refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
             // any form of exception will unset token to empty, thereby forcing re-login
