@@ -23,8 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,8 +41,6 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 @HiltAndroidTest
 class RegisterScreenNoResultViewTest {
 
-  private val mockListener: () -> Unit = spyk({})
-
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
   @get:Rule val composeTestRule = createAndroidComposeRule<HiltActivityForTest>()
@@ -55,6 +52,8 @@ class RegisterScreenNoResultViewTest {
 
   @Test
   fun registerScreenRendersNoRegistersViewCorrectly() {
+    var clicked = false
+
     composeTestRule.setContent {
       NoRegisterDataView(
         noResults =
@@ -63,7 +62,7 @@ class RegisterScreenNoResultViewTest {
             message = "This is message",
             actionButton = NavigationMenuConfig(display = "Button Text", id = "1"),
           ),
-        onClick = mockListener,
+        onClick = { clicked = true },
       )
     }
     composeTestRule
@@ -90,7 +89,7 @@ class RegisterScreenNoResultViewTest {
       composeTestRule.onNodeWithTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG, useUnmergedTree = true)
     changeRow.assertExists()
     changeRow.performClick()
-    verify { mockListener() }
+    Assert.assertTrue(clicked)
 
     composeTestRule
       .onNodeWithTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG, useUnmergedTree = true)
