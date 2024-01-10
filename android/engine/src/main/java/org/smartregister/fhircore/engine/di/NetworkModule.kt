@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.di
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
@@ -24,6 +25,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -36,6 +38,7 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -61,7 +64,7 @@ class NetworkModule {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -72,9 +75,40 @@ class NetworkModule {
   @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
-    sharedPreferencesHelper: SharedPreferencesHelper
+    sharedPreferencesHelper: SharedPreferencesHelper,
+    openSrpApplication: OpenSrpApplication?,
   ) =
     OkHttpClient.Builder()
+      .addInterceptor(
+        Interceptor { chain: Interceptor.Chain ->
+          try {
+            var request = chain.request()
+            val requestPath = request.url.encodedPath.substring(1)
+            val resourcePath = requestPath.replace("fhir/", "")
+
+            openSrpApplication?.let {
+              if (
+                (request.url.host == it.getFhirServerHost()) &&
+                  CUSTOM_ENDPOINTS.contains(resourcePath)
+              ) {
+                val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()
+                request = request.newBuilder().url(newUrl).build()
+              }
+            }
+
+            chain.proceed(request)
+          } catch (e: Exception) {
+            Timber.e(e)
+            Response.Builder()
+              .request(chain.request())
+              .protocol(Protocol.HTTP_1_1)
+              .code(901)
+              .message(e.message ?: "Failed to overwrite URL request successfully")
+              .body("{$e}".toResponseBody(null))
+              .build()
+          }
+        },
+      )
       .addInterceptor(
         Interceptor { chain: Interceptor.Chain ->
           try {
@@ -99,14 +133,14 @@ class NetworkModule {
               .body("{$e}".toResponseBody(null))
               .build()
           }
-        }
+        },
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -132,7 +166,7 @@ class NetworkModule {
   fun provideAuthRetrofit(
     @NoAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -146,7 +180,7 @@ class NetworkModule {
   fun provideKeycloakRetrofit(
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    json: Json
+    json: Json,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -160,7 +194,7 @@ class NetworkModule {
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
-    parser: IParser
+    parser: IParser,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)
@@ -182,11 +216,17 @@ class NetworkModule {
   fun provideFhirResourceService(@RegularRetrofit retrofit: Retrofit): FhirResourceService =
     retrofit.create(FhirResourceService::class.java)
 
+  @Provides
+  @Singleton
+  fun provideFHIRBaseURL(@ApplicationContext context: Context): OpenSrpApplication? =
+    if (context is OpenSrpApplication) context else null
+
   companion object {
     const val TIMEOUT_DURATION = 120L
     const val AUTHORIZATION = "Authorization"
     const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"
     val JSON_MEDIA_TYPE = "application/json".toMediaType()
+    val CUSTOM_ENDPOINTS = listOf("PractitionerDetail", "LocationHierarchy")
   }
 }
