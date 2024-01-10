@@ -32,6 +32,7 @@ import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CarePlan.CarePlanStatus
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Dosage
@@ -99,6 +100,13 @@ constructor(
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
+          filter(
+            CarePlan.STATUS,
+            { value = of(CarePlanStatus.DRAFT.toCode()) },
+            { value = of(CarePlanStatus.ACTIVE.toCode()) },
+            { value = of(CarePlanStatus.ONHOLD.toCode()) },
+            { value = of(CarePlanStatus.UNKNOWN.toCode()) }
+          )
         }
         .firstOrNull()
         ?: CarePlan().apply {
