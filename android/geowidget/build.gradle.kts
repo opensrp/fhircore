@@ -25,6 +25,11 @@ android {
     buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   buildTypes {
@@ -86,6 +91,7 @@ android {
   }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
     unitTests {
       isIncludeAndroidResources = true
@@ -145,6 +151,8 @@ dependencies {
   // Annotation processors for test
   kaptTest(libs.hilt.android.compiler)
   kaptAndroidTest(libs.hilt.android.compiler)
+
+  androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
   androidTestImplementation(libs.junit)

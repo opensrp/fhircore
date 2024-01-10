@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -39,9 +39,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.FAB_BUTTON_ROW_TEXT
 import org.smartregister.fhircore.quest.ui.shared.components.FAB_BUTTON_TEST_TAG
 
 class ExtendedFabTest {
-
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-
   @get:Rule val composeRule = createComposeRule()
 
   private fun init() {
@@ -64,7 +61,7 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }
@@ -120,7 +117,7 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }
@@ -158,7 +155,7 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }
