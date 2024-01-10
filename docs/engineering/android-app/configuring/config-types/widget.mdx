@@ -160,6 +160,36 @@ primaryTextActions | The list of actions associated with the primary text. If th
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
 
+##How to use ACTIONABLE BUTTON
+Defines the configuration properties for a Actionable Button view, which is a view that displays button with text strings, it's status ,visibility mode, and if it is enabled. This view can also have actions associated with it.
+
+ ``` json
+ [
+   {
+     "viewType": "BUTTON",
+     "smallSized": true,
+     "text": "@{taskDescriptionWithStartDate}",
+     "status": "@{taskStatusColorCode}",
+     "visible": "true",
+     "enabled": "true",
+     "actions": []
+   }
+ ]
+```
+
+### Config properties of ACTIONABLE BUTTON
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+|viewType|The view type should be `BUTTON` it helps in knowing the kind of view at hand|Yes| |
+|text|The text represents the button name that is what the button action name is e.g Add Patient|Yes| |
+|status| status is the current mode of the button it can be a pure text like `Started` or even the color code of different modes|Yes| |
+|visible| This is the state of the button that is if it should be shown or not|No| |
+|enabled| enabled is used to set if the button is active |Yes| "true"|
+|clickable| clickable is used to set if the button is allowed to perform its action on click or not |No| |
+|smallSized| smallSized determines if the button needs to be shown small size  |No| |
+|actions| This is a list of operation that the button does when it is clicked |Yes| |
+
+
 ## SERVICE_CARD widgets
 Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
 
