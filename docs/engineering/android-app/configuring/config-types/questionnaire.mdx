@@ -122,10 +122,25 @@ For example, in the `underlying_conditions` questionnaire you would like to show
 
 Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed. 
 
+### Cancer LAUNCH_QUESTIONAIRE
+#### Sample JSON
+1. Write rules to extract the data you need.
+``` json
+"rules":[
+      {
+      "name": "hasCancer",
+      "condition": "true",
+      "priority": 1,
+      "actions": [
+        "data.put('hasCancer', service.evaluateToBoolean(availableConditions, \"Condition.code.coding.code = '363346000' and Condition.clinicalStatus.coding.code = 'active'\", false))"]
+    },
+  ]
+```
 
- "actions": [
-        {
-          "trigger": "ON_CLICK",
+2. add your params at **LAUNCH_QUESTIONNAIRE** section of adult_profile_config.json
+#### Sample JSON
+``` json
+    { "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "questionnaire": {
             "id": "54497",
@@ -146,10 +161,12 @@ Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_con
               "dataType": "BOOLEAN",
               "key": "hasCancer",
               "value": "@{hasCancer}"
-            },]}
-]
+            }],
+}
+```
 
-On the questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
+On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
+```json
 {
     "extension": [ {
       "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
@@ -184,8 +201,7 @@ On the questionnaire side, we will then call the `has-cancer` linkId that was de
         "display": "Yes"
       }
     },
-
-
+```
 ## Sample questionnaire with an event workflow
 
 Suppose you wanted to close above mentioned generated resources. For example, when moving a patient from ANC to PNC you would like to close exsiting Tasks and Careplans generated for ANC, the below configs shows how to do this.
