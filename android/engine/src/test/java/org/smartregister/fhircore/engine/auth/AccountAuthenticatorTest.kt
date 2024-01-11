@@ -253,8 +253,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(account, authTokenType) } returns ""
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
+    every { accountManager.setPassword(account, any()) } just runs
 
-    every { tokenAuthenticator.refreshToken(refreshToken) } returns ""
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } returns ""
 
     val authToken = accountAuthenticator.getAuthToken(mockk(), account, authTokenType, bundleOf())
     val parcelable = authToken.get(AccountManager.KEY_INTENT) as Intent
@@ -273,7 +274,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } returns "newAccessToken"
+    every { accountManager.setPassword(account, any()) } just runs
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } returns "newAccessToken"
 
     val authTokenBundle: Bundle =
       accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
@@ -291,7 +293,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws
       HttpException(
         mockk {
           every { code() } returns 0
@@ -314,7 +316,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws UnknownHostException()
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws UnknownHostException()
 
     val authTokenBundle: Bundle =
       accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
@@ -330,7 +332,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws RuntimeException()
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws RuntimeException()
 
     val authTokenBundle =
       accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())

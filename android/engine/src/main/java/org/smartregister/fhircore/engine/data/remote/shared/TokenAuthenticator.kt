@@ -223,12 +223,15 @@ constructor(
    * [HttpException] or [UnknownHostException] exceptions
    */
   @Throws(HttpException::class, UnknownHostException::class)
-  fun refreshToken(currentRefreshToken: String): String {
+  fun refreshToken(account: Account, currentRefreshToken: String): String {
     return runBlocking {
       val oAuthResponse =
         oAuthService.fetchToken(
           buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) }
         )
+
+      // Updates with new refresh-token
+      accountManager.setPassword(account, oAuthResponse.refreshToken!!)
 
       // Returns valid token or throws exception, NullPointerException not expected
       oAuthResponse.accessToken!!
