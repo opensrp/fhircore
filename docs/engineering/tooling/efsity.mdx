@@ -11,7 +11,7 @@ If you are using a linux environment e.g. bash you can choose to create an _alia
 
 `alias fct='java -jar ~/Downloads/efsity-<version>.jar'`
 
-To make sure that the alias persists on reload, add the alias to the `.bashrc` file in your `home` directory (you may not see it but you can check if it exists by running the below command). <br>
+To make sure that the alias persists on reload, add the alias to the `.bashrc` file in your `home` directory (you may not see it but you can check if it exists by running the below command).
 `vim .bashrc`
 
 Add the alias shown above in the file then run `source .bashrc` to update the alias globally. Run `alias fct` to confirm that the alias was updated.
@@ -126,8 +126,8 @@ The above will output a list of errors and warnings based on any configuration r
 **Note:** To include _Questionnaire_ and _Structure Map_ validation add the `-sm` and `-q` flags
 
 **Sample screenshot output**
-<br/>
-<img width="715" alt="Screenshot 2023-03-27 at 21 43 09" src="https://user-images.githubusercontent.com/10017086/228037581-209f9bab-d1b9-45eb-a920-aa12c70c5b98.png">
+
+<img width="715" alt="Screenshot 2023-03-27 at 21 43 09" src="https://user-images.githubusercontent.com/10017086/228037581-209f9bab-d1b9-45eb-a920-aa12c70c5b98.png"/>
 
 ### Validating FHIR resources
 The tool supports validating FHIR resources using FHIR's own conformance resources. It will use terminology services to validate codes, StructureDefinitions to validate semantics, and uses a customized XML/JSON parser in order to provide descriptive error messages. To do this run the command:
@@ -152,7 +152,7 @@ $ fct validateFileStructure -i ~/Workspace/fhir-resources/<project> -s ~/path/to
 -i or --input - path to project folder which needs to be validated
 -s or --schema - JSON schema that should be used to validate the file structure
 ```
-If the file structure matches the schema then a positive result is printed to the terminal, otherwise an error 
+If the file structure matches the schema then a positive result is printed to the terminal, otherwise an error
 is thrown showing the issue.
 
 ### Localization
@@ -178,28 +178,28 @@ The above extract all [text and display](https://github.com/onaio/fhir-tooling/b
 ```agsl
 // extract content
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content
-or 
+or
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content -et fhirContent
 or
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content/questionnaires/content.json -et fhirContent -tf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content/translation/strings_default.properties
 
 // extract configs
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/configs
-or 
+or
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/configs -et configs
 or
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/configs/profile/config.json -et configs -tf ~/Workspace/fhir-resources/<project>/<environment>/<app>/configs/translation/strings_config.properties
 
 // extract configs and content from entire project
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>
-or 
+or
 $ fct translate -m extract -rf ~/Workspace/fhir-resources/<project>/<environment>/<app> -et all
 
 ```
 Extracts content from specified directory or file and populates the specified translation file or default translation files location consistent with this [format](https://docs.google.com/document/d/1Seoo9YYDBI87lmkA5siNqWsdYIgiwE_EYZ6relz8V14/edit#heading=h.qqxoq1r6u4zf)
 
 #### 2. Merging
-It merges specific fields from the specific translation file provided to a resource or resources in the directory provided. 
+It merges specific fields from the specific translation file provided to a resource or resources in the directory provided.
 Performs best if project is consistent with this [structure](https://docs.google.com/document/d/1Seoo9YYDBI87lmkA5siNqWsdYIgiwE_EYZ6relz8V14/edit#heading=h.qqxoq1r6u4zf)
 ```console
 $ fct translate -m merge -rf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content -tf ~/Workspace/fhir-resources/<project>/<environment>/<app>/fhir_content/translation/strings_fr.properties -l fr
@@ -237,7 +237,7 @@ To build and create a new jar file run the gradle **assemble** command
 The jar will be created in the path `build/libs/fhircore-tooling-<version>-SNAPSHOT-release.jar`
 
 ### Publishing
-To publish a snapshot of the jar file to _Sonatype_ , run the following gradle command. 
+To publish a snapshot of the jar file to _Sonatype_ , run the following gradle command.
 
 ```console
 ./gradlew clean publishMavenPublicationToSonatypeRepository
