@@ -90,6 +90,9 @@ constructor(
    * you are passing data across screens, then later using it in DataQueries and to retrieve
    * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
    * params used in the DataQuery are passed when retrieving the configurations.
+   *
+   * @throws NoSuchElementException when the [configsJsonMap] doesn't contain a value for the
+   *   specified key.
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
@@ -471,7 +474,10 @@ constructor(
       if (gatewayModeHeaderValue.isNullOrEmpty()) {
         fhirResourceDataSource.getResource(searchPath)
       } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          gatewayModeHeaderValue,
+          searchPath,
+        )
 
     processResultBundleEntries(resultBundle)
   }
