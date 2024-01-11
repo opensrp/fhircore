@@ -707,21 +707,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Attempting to add Group as member of itself should fail
     questionnaireViewModel.addMemberToGroup(
-      group,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+      resource = group,
+      group = group,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
 
-    // Should add member to a group if not exits
+    // Should add member to existing group
     questionnaireViewModel.addMemberToGroup(
-      patient,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+      resource = patient,
+      group = group,
     )
 
     Assert.assertFalse(group.member.isNullOrEmpty())
@@ -737,11 +731,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         .apply { addMember(Group.GroupMemberComponent(patient.asReference())) }
     coEvery { fhirEngine.get(ResourceType.Group, anotherGroup.logicalId) } returns anotherGroup
     questionnaireViewModel.addMemberToGroup(
-      patient,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+      resource = patient,
+      group = group,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = anotherGroup) }
   }
