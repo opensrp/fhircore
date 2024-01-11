@@ -167,7 +167,8 @@ Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_con
 
 On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
 ``` json
-{    "extension": [ {
+{
+    "extension": [ {
       "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
       "valueBoolean": true
     } ],
@@ -199,7 +200,15 @@ On the `underlying_conditions` questionnaire side, we will then call the `has-ca
         "code": "yes",
         "display": "Yes"
       }
-    },
+    }, {
+      "valueCoding": {
+        "id": "944752c4-b116-4bca-8bc0-7e2889219565",
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "no",
+        "display": "No"
+      }
+    } ]
+  }
 ```
 
 
