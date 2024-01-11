@@ -27,6 +27,7 @@ data class MigrationConfig(
   val updateValues: List<UpdateValueConfig>,
   val dataQueries: List<DataQuery>?,
   val version: Int,
+  val purgeAffectedResources: Boolean = false,
 ) : java.io.Serializable
 
 @Serializable

@@ -176,6 +176,9 @@ constructor(
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
           withContext(dispatcherProvider.io()) {
+            if (migrationConfig.purgeAffectedResources) {
+              defaultRepository.purge(resource = updatedResource as Resource, forcePurge = true)
+            }
             defaultRepository.addOrUpdate(resource = updatedResource as Resource)
           }
         }
