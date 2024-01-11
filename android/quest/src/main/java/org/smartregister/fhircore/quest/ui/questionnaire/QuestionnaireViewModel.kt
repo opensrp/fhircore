@@ -45,7 +45,6 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -348,9 +347,16 @@ constructor(
           }
         }
 
+        val configuredGroup =
+          questionnaireConfig.groupResource?.groupIdentifier?.let {
+            loadResource(ResourceType.Group, it)
+          } as Group?
+
+        // Save resource first before referencing as Group#member
         defaultRepository.addOrUpdate(true, resource = this)
 
-        addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
+        updateGroupManagingEntity(this, configuredGroup)
+        addMemberToGroup(this, configuredGroup)
 
         // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
         val listEntryComponent =
@@ -632,14 +638,18 @@ constructor(
     }
   }
 
+  /** Update the [Group.managingEntity] */
+  suspend fun updateGroupManagingEntity(resource: Resource, group: Group?) {
+    if (group == null) return
+  }
+
   /**
    * Adds [Resource] to [Group.member] if the member does not exist and if [Resource.logicalId] is
    * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
    * member of itself.
    */
-  suspend fun addMemberToConfiguredGroup(resource: Resource, groupConfig: GroupResourceConfig?) {
-    val group: Group =
-      groupConfig?.groupIdentifier?.let { loadResource(ResourceType.Group, it) } as Group? ?: return
+  suspend fun addMemberToGroup(resource: Resource, group: Group?) {
+    if (group == null) return
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
 

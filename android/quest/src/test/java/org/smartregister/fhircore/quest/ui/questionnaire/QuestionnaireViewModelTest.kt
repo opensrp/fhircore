@@ -706,7 +706,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     // Attempting to add Group as member of itself should fail
-    questionnaireViewModel.addMemberToConfiguredGroup(
+    questionnaireViewModel.addMemberToGroup(
       group,
       GroupResourceConfig(
         groupIdentifier = group.logicalId,
@@ -716,7 +716,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
 
     // Should add member to a group if not exits
-    questionnaireViewModel.addMemberToConfiguredGroup(
+    questionnaireViewModel.addMemberToGroup(
       patient,
       GroupResourceConfig(
         groupIdentifier = group.logicalId,
@@ -736,7 +736,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
         .apply { addMember(Group.GroupMemberComponent(patient.asReference())) }
     coEvery { fhirEngine.get(ResourceType.Group, anotherGroup.logicalId) } returns anotherGroup
-    questionnaireViewModel.addMemberToConfiguredGroup(
+    questionnaireViewModel.addMemberToGroup(
       patient,
       GroupResourceConfig(
         groupIdentifier = group.logicalId,

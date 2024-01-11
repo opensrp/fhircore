@@ -83,7 +83,9 @@ constructor(
     runBlocking {
       val previousVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first()
       val newMigrations = migrations?.filter { it.version > previousVersion }
-      migrate(newMigrations, previousVersion)
+      if (!newMigrations.isNullOrEmpty()) {
+        migrate(newMigrations, previousVersion)
+      }
     }
   }
 
@@ -182,7 +184,7 @@ constructor(
         Timber.e(throwable)
       }
     }
-    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion.plus(1))
+    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion)
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {
