@@ -32,10 +32,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -71,9 +75,11 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  registerViewModel: RegisterViewModel
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
+  val dataMigrationInProgress by registerViewModel.dataMigrationInProgress.observeAsState(false)
 
   Scaffold(
     topBar = {
@@ -109,6 +115,9 @@ fun RegisterScreen(
     }
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      if (dataMigrationInProgress) {
+        LoaderDialog(dialogMessage = stringResource(id = R.string.migrating_data))
+      }
       if (registerUiState.isFirstTimeSync &&
           !registerUiState.dismissLoaderView.collectAsState(initial = false).value
       )

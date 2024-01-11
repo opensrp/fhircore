@@ -410,6 +410,6 @@ constructor(
   }
 
   fun setOnMigrateDataInProgress(inProgress: Boolean) {
-    TODO("Not yet implemented")
+    _dataMigrationInProgress.postValue(inProgress)
   }
 }
