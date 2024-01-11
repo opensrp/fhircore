@@ -102,8 +102,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
-          appSettingViewModel.fetchConfigurations(this@LoginActivity)
-          downloadNowWorkflowConfigs()
+          downloadNowWorkflowConfigs(isInitialLogin = false)
           if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
           else loginActivity.navigateToHome()
         }

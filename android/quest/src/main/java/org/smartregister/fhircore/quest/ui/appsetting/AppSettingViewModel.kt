@@ -92,7 +92,7 @@ constructor(
    */
   fun fetchConfigurations(context: Context) {
     showProgressBar.postValue(true)
-    val appId = if (appId.value.isNullOrEmpty()) sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) else appId.value
+    val appId = appId.value
     if (!appId.isNullOrEmpty()) {
       when {
         hasDebugSuffix() -> loadConfigurations(context)
