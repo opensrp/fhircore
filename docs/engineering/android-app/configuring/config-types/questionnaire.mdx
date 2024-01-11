@@ -112,6 +112,78 @@ These are used when generating other tasks, CarePlans and related resources.See 
 | onSubmitActions                            | Configurations for actions invoked post Questionnaire submission                                   |    no    |  null   |
 | extractedResourceUniquePropertyExpressions | Configurations for unique properties used to identify resources during Questionnaire edit          |    no    |  null   |
 
+## Dynamic data pass between Profiles and Questionnaires
+
+For you to pass data between profiles and questionnaires you can make use of **action config params** which are executed when **LAUNCH_QUESTIONNAIRE** is invoked.
+
+Data extraction happens during rules execution and is persisted in `computedValuesMap` which is later used to interpolate values annotated with `@value`. Check working with rules.
+
+For example, in the `underlying_conditions` questionnaire you would like to show or hide the Cancer option based on whether the patient has cancer or not. The solution would be to pass `has-cancer` BOOLEAN from `adult_profile_config` to `underlying_conditions`.
+
+Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed. 
+
+
+ "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "54497",
+            "title": "Record Comorbidity",
+            "resourceIdentifier": "@{patientId}",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ]
+          },
+          "params": [
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "has-cancer",
+              "dataType": "BOOLEAN",
+              "key": "hasCancer",
+              "value": "@{hasCancer}"
+            },]}
+]
+
+On the questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
+{
+    "extension": [ {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+      "valueBoolean": true
+    } ],
+    "linkId": "has-cancer",
+    "definition": "http://hl7.org/fhir/StructureDefinition/Resource#Resource.id",
+    "type": "boolean"
+  }, {
+    "linkId": "e4b02bd1-faa3-415e-84e7-378b8cc84d92",
+    "text": "Cancer",
+    "type": "choice",
+    "enableWhen": [ {
+      "question": "9f320854-7677-4ecb-9886-d323b7161a2e",
+      "operator": "=",
+      "answerCoding": {
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "yes"
+      }
+    }, {
+      "question": "has-cancer",
+      "operator": "=",
+      "answerBoolean": false
+    } ],
+    "enableBehavior": "all",
+    "required": false,
+    "answerOption": [ {
+      "valueCoding": {
+        "id": "727795dd-2870-4bc2-e057-4aa8518405dd",
+        "system": "urn:uuid:5fddcabd-9ae1-412a-e591-8fb6089a4f26",
+        "code": "yes",
+        "display": "Yes"
+      }
+    },
 
 
 ## Sample questionnaire with an event workflow
@@ -215,3 +287,4 @@ eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOU
 triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
+
