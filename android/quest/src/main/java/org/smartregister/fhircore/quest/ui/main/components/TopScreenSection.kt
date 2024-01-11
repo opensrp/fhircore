@@ -84,7 +84,13 @@ fun TopScreenSection(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {
     Row(
-      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(
+            TITLE_ROW_TEST_TAG,
+          ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(

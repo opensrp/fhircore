@@ -105,6 +105,13 @@ constructor(
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
+          filter(
+            CarePlan.STATUS,
+            { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
+          )
         }
         .map { it.resource }
         .firstOrNull()
