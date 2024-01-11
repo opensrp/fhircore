@@ -27,7 +27,14 @@ data class MigrationConfig(
   val updateValues: List<UpdateValueConfig>,
   val dataQueries: List<DataQuery>?,
   val version: Int,
-  val purgeAffectedResources: Boolean = false
+  val purgeAffectedResources: Boolean = false,
+  val resourceFilterExpression: ResourceFilterExpression? = null,
+) : java.io.Serializable
+
+@Serializable
+data class ResourceFilterExpression(
+  val conditionalFhirPathExpressions: List<String>,
+  val matchAll: Boolean = true,
 ) : java.io.Serializable
 
 @Serializable

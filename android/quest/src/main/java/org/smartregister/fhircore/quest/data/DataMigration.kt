@@ -42,6 +42,8 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
@@ -64,6 +66,7 @@ constructor(
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
   val eventBus: EventBus,
 ) {
 
@@ -145,8 +148,22 @@ constructor(
               filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
             }
           }
-        val resources =
+
+        val searchResources =
           withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
+
+        val resources =
+          with(migrationConfig.resourceFilterExpression) {
+            if (this == null) {
+              searchResources
+            } else {
+              searchResources.filterByFhirPathExpression(
+                fhirPathDataExtractor = fhirPathDataExtractor,
+                conditionalFhirPathExpressions = conditionalFhirPathExpressions,
+                matchAll = matchAll,
+              )
+            }
+          }
         resources.forEach { resource ->
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
