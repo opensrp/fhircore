@@ -196,6 +196,16 @@ constructor(
     }
   }
 
+  suspend fun purge(resource: Resource, forcePurge: Boolean) {
+    return withContext(dispatcherProvider.io()) {
+      try {
+        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
+      } catch (resourceNotFoundException: ResourceNotFoundException) {
+        Timber.e(resourceNotFoundException)
+      }
+    }
+  }
+
   suspend fun <R : Resource> update(resource: R) {
     return withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
