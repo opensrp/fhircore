@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.DataMigration
 import retrofit2.HttpException
 
 @HiltWorker
@@ -37,7 +38,9 @@ constructor(
   @Assisted val workerParams: WorkerParameters,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
+  val dataMigration: DataMigration
+
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
@@ -48,6 +51,7 @@ constructor(
         configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)?.run {
           defaultRepository.createRemote(false, this)
         }
+        dataMigration.migrate()
         Result.success()
       } catch (httpException: HttpException) {
         Result.failure()

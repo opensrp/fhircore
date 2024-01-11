@@ -18,6 +18,8 @@ package org.smartregister.fhircore.quest.ui.register
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -49,6 +51,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
+import timber.log.Timber
 
 @HiltViewModel
 class RegisterViewModel
@@ -75,6 +78,9 @@ constructor(
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
   val dismissLoaderView: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+  private val _dataMigrationInProgress = MutableLiveData(false)
+  val dataMigrationInProgress: LiveData<Boolean>
+    get() = _dataMigrationInProgress
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -226,5 +232,10 @@ constructor(
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)
+  }
+
+  fun setOnMigrateDataInProgress(inProgress: Boolean) {
+    Timber.i("+++++++++++ on migrate data called from register with inProgress as $inProgress")
+    _dataMigrationInProgress.postValue(inProgress)
   }
 }

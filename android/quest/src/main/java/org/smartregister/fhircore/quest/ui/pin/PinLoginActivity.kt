@@ -22,10 +22,8 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
@@ -75,8 +73,6 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   @OptIn(ExperimentalMaterialApi::class)
   private fun navigateToHome() {
     startActivity(Intent(this, AppMainActivity::class.java))
-    // launch migration
-    pinViewModel.viewModelScope.launch { dataMigration.migrate() }
     // Initialize P2P only when username is provided then launch main activity
     val username = secureSharedPreference.retrieveSessionUsername()
     if (!username.isNullOrEmpty()) {
