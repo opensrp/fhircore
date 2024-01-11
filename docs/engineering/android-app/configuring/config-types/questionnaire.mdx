@@ -116,7 +116,7 @@ These are used when generating other tasks, CarePlans and related resources.See 
 
 For you to pass data between profiles and questionnaires you can make use of **action config params** which are executed when **LAUNCH_QUESTIONNAIRE** is invoked.
 
-Data extraction happens during rules execution and is persisted in `computedValuesMap` which is later used to interpolate values annotated with `@value`. Check working with rules.
+Data extraction happens during rules execution and is persisted in `computedValuesMap` which is later used to interpolate values annotated with `@value`. See [working with rules] (https://docs.opensrp.io/engineering/android-app/configuring/working-with-rules).
 
 For example, in the `underlying_conditions` questionnaire you would like to show or hide the Cancer option based on whether the patient has cancer or not. The solution would be to pass `has-cancer` BOOLEAN from `adult_profile_config` to `underlying_conditions`.
 
