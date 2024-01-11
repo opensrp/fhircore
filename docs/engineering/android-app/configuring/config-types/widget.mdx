@@ -160,9 +160,8 @@ primaryTextActions | The list of actions associated with the primary text. If th
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
 
-##How to use ACTIONABLE BUTTON
-Defines the configuration properties for a Actionable Button view, which is a view that displays button with text strings, it's status ,visibility mode, and if it is enabled. This view can also have actions associated with it.
-
+##How to use BUTTON
+Defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
  ``` json
  [
    {
@@ -177,17 +176,29 @@ Defines the configuration properties for a Actionable Button view, which is a vi
  ]
 ```
 
-### Config properties of ACTIONABLE BUTTON
+### Config properties of BUTTON
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
-|viewType|The view type should be `BUTTON` it helps in knowing the kind of view at hand|Yes| |
-|text|The text represents the button name that is what the button action name is e.g Add Patient|Yes| |
-|status| status is the current mode of the button it can be a pure text like `Started` or even the color code of different modes|Yes| |
-|visible| This is the state of the button that is if it should be shown or not|No| |
-|enabled| enabled is used to set if the button is active |Yes| "true"|
-|clickable| clickable is used to set if the button is allowed to perform its action on click or not |No| |
-|smallSized| smallSized determines if the button needs to be shown small size  |No| |
-|actions| This is a list of operation that the button does when it is clicked |Yes| |
+viewType | The view type should be `BUTTON` it helps in knowing the kind of view at hand | Yes | |
+text | The text represents the button name that is what the button action name is e.g Add Patient | Yes | |
+status | status indicate the service Status of the action that the button is supposed to perform this service status can be `DUE`, `OVERDUE`, `UPCOMING`,`COMPLETED`, `IN_PROGRESS`, `EXPIRED` | Yes | |
+visible | The state whether a button should be shown or hidden | No | |
+enabled | enabled is used to set if the button is active that is if a button is set to perform the required action by the user | Yes | "true" |
+clickable | clickable is used to set if the button is allowed to perform its action on click or not | No | |
+smallSized | smallSized determines if the button needs to be shown small size  | No | |
+actions | This is a list of operation that the button does when it is clicked | Yes | |
+backgroundColor |The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+alignment | The alignment of the view within's its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | true |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+fontSize | The font size of the primary and secondary button, in float |  | 14.0f |
+startIcon | startIcon is used to specify an icon within the button if it is needed by default it is always null |  | null |
+letterSpacing | letterSpacing is used to specify the amount of spacing that should be between the button text |  | 0 |
+buttonType | the buttonType specifies the size of the button it can me `MEDIUM`,`TINY`,`BIG` |  | ButtonType.MEDIUM |
+contentColor |The content color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's content color. | No |  Null |
+
+
 
 
 ## SERVICE_CARD widgets
