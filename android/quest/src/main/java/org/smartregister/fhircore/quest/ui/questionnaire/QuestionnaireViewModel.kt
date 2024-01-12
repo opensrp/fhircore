@@ -34,6 +34,7 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -86,7 +87,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
-import java.io.File
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -610,9 +610,10 @@ constructor(
     questionnaire.cqfLibraryUrls().forEach { url ->
       if (subject.resourceType == ResourceType.Patient) {
         val library =
-          defaultRepository.fhirEngine.search<Library> {
-            filter(Library.URL, { value = url})
-          }.first().resource
+          defaultRepository.fhirEngine
+            .search<Library> { filter(Library.URL, { value = url }) }
+            .first()
+            .resource
 
         // Use method to call without expressions
         val expressionsParam =
@@ -632,7 +633,7 @@ constructor(
           library.url,
           subject.asReference().reference,
           null,
-          expressionsParam
+          expressionsParam,
         )
       }
     }

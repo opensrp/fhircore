@@ -177,7 +177,7 @@ class CqlContentTest : RobolectricTest() {
     printResult(result)
 
     Assert.assertTrue(
-      result.getParameterValues("OUTPUT").first().valueToString() == "Correct Result"
+      result.getParameterValues("OUTPUT").first().valueToString() == "Correct Result",
     )
     Assert.assertEquals(
       result.getParameterValues("OUTPUT").elementAt(1).valueToString(),

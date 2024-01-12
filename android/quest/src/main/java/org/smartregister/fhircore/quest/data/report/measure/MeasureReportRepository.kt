@@ -21,10 +21,10 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Measure
@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
-import java.io.File
 
 class MeasureReportRepository
 @Inject
@@ -91,9 +90,10 @@ constructor(
     try {
       withContext(dispatcherProvider.io()) {
         val measure =
-          fhirEngine.search<Measure> {
-            filter(Measure.URL, { value = measureUrl})
-          }.first().resource
+          fhirEngine
+            .search<Measure> { filter(Measure.URL, { value = measureUrl }) }
+            .first()
+            .resource
 
         // TODO move to Sync
         knowledgeManager.install(
@@ -104,9 +104,7 @@ constructor(
 
         measure.relatedArtifact.forEach {
           val library =
-            fhirEngine.search<Library> {
-              filter(Library.URL, { value = it.url})
-            }.first().resource
+            fhirEngine.search<Library> { filter(Library.URL, { value = it.url }) }.first().resource
           knowledgeManager.install(
             File.createTempFile(library.name, ".json").apply {
               this.writeText(library.encodeResourceToString())
