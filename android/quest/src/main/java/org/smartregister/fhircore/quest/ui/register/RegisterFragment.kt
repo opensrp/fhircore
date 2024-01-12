@@ -301,21 +301,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         // Each register should have unique eventId
         eventBus.events
-<<<<<<< Updated upstream
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-=======
-            .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
-            .onEach { appEvent ->
-              if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-              }
->>>>>>> Stashed changes
+            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             }
-            .launchIn(lifecycleScope)
+          }
+          .launchIn(lifecycleScope)
       }
     }
   }
@@ -361,37 +353,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
     val keyName =
       PreferencesDataStore.PREFS_SYNC_PROGRESS_TOTAL + progressSyncJobStatus.syncOperation.name
     val key = longPreferencesKey(keyName)
-
     val totalRecordsOverall =
-<<<<<<< Updated upstream
-        registerViewModel.sharedPreferencesHelper.read(
-            SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-                progressSyncJobStatus.syncOperation.name,
-            1L,
-        )
-    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    val currentProgress: Int
-    val currentTotalRecords =
-        if (isProgressTotalLess) {
-          currentProgress =
-              totalRecordsOverall.toInt() - progressSyncJobStatus.total +
-                  progressSyncJobStatus.completed
-          totalRecordsOverall.toInt()
-        } else {
-          registerViewModel.sharedPreferencesHelper.write(
-              SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-                  progressSyncJobStatus.syncOperation.name,
-              progressSyncJobStatus.total.toLong(),
-          )
-          currentProgress = progressSyncJobStatus.completed
-          progressSyncJobStatus.total
-        }
-=======
       registerViewModel.preferencesDataStore.readOnce(
         key,
         1L,
       )!!
-
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
     val currentProgress: Int
     val currentTotalRecords =
@@ -401,14 +367,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
             progressSyncJobStatus.completed
         totalRecordsOverall.toInt()
       } else {
-        registerViewModel.writePreference(
-          key,
-          progressSyncJobStatus.total.toLong(),
-        )
+        registerViewModel.writePreference(key, data = progressSyncJobStatus.total.toLong())
+
         currentProgress = progressSyncJobStatus.completed
         progressSyncJobStatus.total
       }
->>>>>>> Stashed changes
 
     return getSyncProgress(currentProgress, currentTotalRecords)
   }

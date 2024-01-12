@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -198,10 +197,10 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { preferencesDataStore.observe(SharedPreferenceKey.LANG.name, "en") } returns "fr"
+    every { preferencesDataStore.readOnce(PreferencesDataStore.LANG, "en") } returns "fr"
     Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    verify { preferencesDataStore.observe(SharedPreferenceKey.LANG.name, "en") }
+    verify { preferencesDataStore.readOnce(PreferencesDataStore.LANG, "en") }
   }
 
   @Test
@@ -209,13 +208,13 @@ class UserSettingViewModelTest : RobolectricTest() {
     val language = Language("es", "Spanish")
     val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
-    every { preferencesDataStore.write(any(), any<String>()) } just runs
+    coEvery {   preferencesDataStore.write(any(), dataToStore = any<String>()) }  just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { preferencesDataStore.write(SharedPreferenceKey.LANG.name, "es") }
+    coVerify { preferencesDataStore.write(PreferencesDataStore.LANG, dataToStore = "es") }
 
     Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }

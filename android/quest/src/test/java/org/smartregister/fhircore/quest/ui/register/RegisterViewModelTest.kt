@@ -28,7 +28,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateType
@@ -56,9 +55,9 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import javax.inject.Inject
 
 @HiltAndroidTest
 class RegisterViewModelTest : RobolectricTest() {
@@ -90,7 +89,7 @@ class RegisterViewModelTest : RobolectricTest() {
       )
 
     every {
-      preferencesDataStore.observe(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+      preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
     } returns "Mar 20, 03:01PM"
   }
 
