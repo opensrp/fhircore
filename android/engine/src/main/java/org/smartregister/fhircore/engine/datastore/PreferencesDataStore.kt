@@ -93,7 +93,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   // Specified the key type separately for when return type is different from key e.g in
   // LOCATION_IDS.. key is String, return type is List<String>
-  inline fun <reified T, M> observe(key: Preferences.Key<M>, decodeWithGson: Boolean): Flow<T?> =
+  inline fun <reified T, M> observe(key: Preferences.Key<M>, decodeWithGson: Boolean = true): Flow<T?> =
     context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
@@ -111,14 +111,14 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
         }
       }
 
-  suspend fun <T> write(key: Preferences.Key<T>, data: T) {
-    context.dataStore.edit { preferences -> preferences[key] = data }
+  suspend fun <T> write(key: Preferences.Key<T>, dataToStore: T) { // named dataToStore instead of data to prevent overload ambiguity
+    context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
   suspend inline fun <reified T> write(
     key: Preferences.Key<String>,
     data: T,
-    encodeWithGson: Boolean,
+    encodeWithGson: Boolean = true,
   ) {
     val dataToStore = if (encodeWithGson) gson.toJson(data) else data.encodeJson()
     context.dataStore.edit { preferences -> preferences[key] = dataToStore }
@@ -127,19 +127,19 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   // expose flows to be used all over the engine and view models
   val appId by lazy { observe(APP_ID, null) }
   val lang by lazy { observe(LANG, defaultValue = Locale.ENGLISH.toLanguageTag()) }
-  val careTeamIds by lazy { observe(CARE_TEAM_IDS) }
-  val careTeamNames by lazy { observe(CARE_TEAM_NAMES) }
+  val careTeamIds by lazy { observe(CARE_TEAM_IDS, defaultValue = "") }
+  val careTeamNames by lazy { observe(CARE_TEAM_NAMES, defaultValue = "") }
   val lastSyncTimeStamp by lazy { observe(LAST_SYNC_TIMESTAMP, defaultValue = null) }
-  val locationIds by lazy { observe(LOCATION_IDS) }
-  val locationNames by lazy { observe(LOCATION_NAMES) }
-  val organizationIds by lazy { observe(ORGANIZATION_IDS) }
-  val organizationNames by lazy { observe(ORGANIZATION_NAMES) }
+  val locationIds by lazy { observe(LOCATION_IDS, defaultValue = "") }
+  val locationNames by lazy { observe(LOCATION_NAMES, defaultValue = "") }
+  val organizationIds by lazy { observe(ORGANIZATION_IDS, defaultValue = "") }
+  val organizationNames by lazy { observe(ORGANIZATION_NAMES, defaultValue = "") }
   val practitionerId by lazy { observe(PRACTITIONER_ID, defaultValue = "") }
-  val practitionerLocation by lazy { observe(PRACTITIONER_LOCATION) }
-  val practitionerLocationHierarchies by lazy { observe(PRACTITIONER_LOCATION_HIERARCHIES) }
+  val practitionerLocation by lazy { observe(PRACTITIONER_LOCATION, defaultValue = "") }
+  val practitionerLocationHierarchies by lazy { observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "") }
 
   // TODO: Kelvin Move all below to proto store?
-  val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS) }
+  val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
   val remoteSyncResources by lazy {
     observe<List<String>, String>(REMOTE_SYNC_RESOURCES, decodeWithGson = true)
   }

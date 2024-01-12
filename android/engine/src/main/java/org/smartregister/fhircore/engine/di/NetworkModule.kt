@@ -121,10 +121,9 @@ class NetworkModule {
             val request = chain.request().newBuilder()
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
-              preferencesDataStore.appId.let {
-                it.map { appId ->
-                  if (!appId.isNullOrBlank()) request.addHeader(APPLICATION_ID, appId)
-                }
+              val appId = preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null)
+              appId?.let {
+                request.addHeader(APPLICATION_ID, it)
               }
             }
             chain.proceed(request.build())
@@ -227,7 +226,7 @@ class NetworkModule {
     if (context is OpenSrpApplication) context else null
 
   companion object {
-    const val TIMEOUT_DURATION = 240L
+    const val TIMEOUT_DURATION = 120L
     const val AUTHORIZATION = "Authorization"
     const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"

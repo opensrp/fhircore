@@ -104,24 +104,18 @@ constructor(
       .flatMapConcat { it.asFlow() }
       .mapNotNull { it }
       .onEach { workInfo ->
-        val jobType = if (uniqueWorkName.contains("periodic")) "periodicSync" else "oneTimeSync"
         // PeriodSync doesn't return state. It's enqueued instead. Finish the sync as workaround.
         if (workInfo.state == WorkInfo.State.ENQUEUED) {
-
-          Timber.e("KELVIN SyncBroadCaster: a $jobType has been ENQUEUED")
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
             onSyncListener.onSync(SyncJobStatus.Finished())
           }
         } else {
           val data =
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-              Timber.e("KELVIN SyncBroadCaster: a $jobType has SUCCEEDED")
               workInfo.outputData
             } else {
-              Timber.e("KELVIN SyncBroadCaster: a $jobType in progress")
               workInfo.progress
             }
-          Timber.e("KELVIN SyncBroadCaster: data is $data")
           data
             .takeIf { it.keyValueMap.isNotEmpty() && it.hasKeyWithValueOfType<String>("StateType") }
             ?.let {
@@ -129,7 +123,6 @@ constructor(
               val stateData = it.getString("State")
               val syncJobStatus =
                 Sync.gson.fromJson(stateData, Class.forName(state)) as SyncJobStatus
-              Timber.e("KELVIN SyncBroadCaster: data chooses SynJobStatus of $syncJobStatus")
               syncListenerManager.onSyncListeners.forEach { onSyncListener ->
                 onSyncListener.onSync(syncJobStatus)
               }

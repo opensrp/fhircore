@@ -313,21 +313,25 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    private fun getStringFlowValue(flow: Flow<String?>): String {
-      var flowValue = ""
-      runBlocking { flow.collectLatest { flowValue = it ?: "" } }
-      return flowValue
-    }
 
     fun extractPractitionerInfoFromDataStore(practitionerKey: String): String {
-      return when (practitionerKey) {
-        keys.APP_ID.name -> getStringFlowValue(preferences.appId)
-        keys.CARE_TEAM_NAMES.name -> getStringFlowValue(preferences.careTeamNames)
-        keys.ORGANIZATION_NAMES.name -> getStringFlowValue(preferences.organizationNames)
-        keys.PRACTITIONER_LOCATION.name -> getStringFlowValue(preferences.practitionerLocation)
-        else ->
-          throw IllegalArgumentException("The key queried does not store any Practitioner Details")
+      try {
+        return when (practitionerKey) {
+          keys.PRACTITIONER_ID.name -> preferences.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")!!
+          keys.CARE_TEAM_NAMES.name -> preferences.readOnce(PreferencesDataStore.CARE_TEAM_NAMES,"")!!
+          keys.ORGANIZATION_NAMES.name -> preferences.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, "")!!
+          keys.PRACTITIONER_LOCATION.name -> preferences.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, "")!!
+          else ->
+            throw IllegalArgumentException("The key queried does not store any Practitioner Details")
+        }
+      } catch (e: Exception) {
+        if (e is IllegalArgumentException) {
+          Timber.e(e.message)
+        } else {
+          Timber.e("An exception occurred while fetching your data from Datastore: ${e.message ?: ""}", e)
+        }
       }
+      return ""
     }
 
     /**

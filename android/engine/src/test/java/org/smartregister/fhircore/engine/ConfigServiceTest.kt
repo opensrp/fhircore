@@ -59,13 +59,11 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHaveOrganizationId() {
     val practitionerId = "practitioner-id"
 
-    runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId) }
+    runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, dataToStore = practitionerId) }
 
     val resourceTags = configService.provideResourceTags(preferencesDataStore)
-    println("KELVIN resource tags ${resourceTags}")
     val practitionerTag =
       resourceTags.firstOrNull { it.system == AppConfigService.PRACTITIONER_SYSTEM }
-    println("KELVIN locationTags ${practitionerTag}")
     Assert.assertEquals(practitionerId, practitionerTag?.code)
   }
 
@@ -83,9 +81,7 @@ class ConfigServiceTest : RobolectricTest() {
     }
 
     val resourceTags = configService.provideResourceTags(preferencesDataStore)
-    println("KELVIN resource tags ${resourceTags}")
     val locationTags = resourceTags.filter { it.system == AppConfigService.LOCATION_SYSTEM }
-    println("KELVIN locationTags ${locationTags}")
     Assert.assertTrue(locationTags.any { it.code == locationId1 })
     Assert.assertTrue(locationTags.any { it.code == locationId2 })
   }

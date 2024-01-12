@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import androidx.datastore.preferences.core.stringPreferencesKey
-import kotlinx.coroutines.flow.map
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
@@ -55,28 +54,15 @@ interface ConfigService {
           }
         }
       } else {
-        // TODO: KELVIN Discuss with Elly and show my solution
-        // The below cant be replicated in datastore read since T has to match the key and the
-        // output yet for the key is is string and for output it is List<String>
-
-        // val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        // TODO: KELVIN ask Elly: what is being read here, where was it written
         val key = stringPreferencesKey(strategy.type)
-        val ids =
-          preferencesDataStore.readOnce<List<String>>(
-            key,
-            decodeWithGson = true
-          )
-
-        println("KELVIN ids config ${ids}")
-
-        ids?.map {
-          if (it.isNullOrEmpty()) {
-            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-          } else {
-            it.forEach { id ->
-              strategy.tag.let { tag ->
-                tags.add(tag.copy().apply { code = it.extractLogicalIdUuid() })
-              }
+        val ids = preferencesDataStore.readOnce<List<String>>(key, decodeWithGson = true)
+        if (ids.isNullOrEmpty()) {
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+        } else {
+          ids.forEach { id ->
+            strategy.tag.let { tag ->
+              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
             }
           }
         }
@@ -95,15 +81,15 @@ interface ConfigService {
    */
   fun provideCustomSearchParameters(): List<SearchParameter> {
     val activeGroupSearchParameter =
-      SearchParameter().apply {
-        url = "http://smartregister.org/SearchParameter/group-active"
-        addBase("Group")
-        name = ACTIVE_SEARCH_PARAM
-        code = ACTIVE_SEARCH_PARAM
-        type = Enumerations.SearchParamType.TOKEN
-        expression = "Group.active"
-        description = "Search the active field"
-      }
+        SearchParameter().apply {
+          url = "http://smartregister.org/SearchParameter/group-active"
+          addBase("Group")
+          name = ACTIVE_SEARCH_PARAM
+          code = ACTIVE_SEARCH_PARAM
+          type = Enumerations.SearchParamType.TOKEN
+          expression = "Group.active"
+          description = "Search the active field"
+        }
 
     return listOf(activeGroupSearchParameter)
   }
