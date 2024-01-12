@@ -224,6 +224,7 @@ constructor(
     context: Context,
     configsLoadedCallback: (Boolean) -> Unit = {}
   ) {
+    configCacheMap.clear()
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
@@ -357,6 +358,7 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true): Composition? {
+    configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
       if (isInitialLogin) return null
       val compositionResource = fetchRemoteComposition(appId)
