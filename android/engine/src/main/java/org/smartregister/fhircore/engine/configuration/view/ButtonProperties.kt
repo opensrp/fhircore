@@ -52,6 +52,8 @@ data class ButtonProperties(
   val buttonType: ButtonType = ButtonType.MEDIUM,
   val startIcon: ImageConfig? = null,
   val letterSpacing: Int = 0,
+  val backgroundOpacity: Float = 0f,
+  val colorOpacity: Float = 0f,
 ) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service
