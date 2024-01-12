@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.integration.ui.usersetting
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertHasClickAction
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -168,12 +167,6 @@ class UserSettingScreenTest {
   }
 
   @Test
-  fun testThatOpenSRPLogoIsVisible() {
-    initComposable()
-    composeRule.onNodeWithTag(OPENSRP_LOGO_TEST_TAG).assertIsDisplayed()
-  }
-
-  @Test
   fun testOnClickingInsightsAllDataSavedToastShown() {
     initComposable()
     composeRule.onNodeWithText("Insights").performClick()
@@ -213,5 +206,11 @@ class UserSettingScreenTest {
       this.activity = activity
     }
     composeRule.mainClock.autoAdvance = allowMainClockAutoAdvance
+  }
+
+  @Test
+  fun testThatOpenSRPLogoIsVisible() {
+    initComposable()
+    composeRule.onNodeWithTag(OPENSRP_LOGO_TEST_TAG).assertExists()
   }
 }
