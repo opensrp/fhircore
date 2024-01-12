@@ -608,12 +608,24 @@ constructor(
     }
     questionnaire.cqfLibraryUrls().forEach { url ->
       if (subject.resourceType == ResourceType.Patient) {
-        val library = knowledgeManager.loadResources(
-          resourceType = ResourceType.Library.name,
-          url = url
-        ).first() as Library
-        val expressionsParam = library.parameter.filter { it.type == Enumerations.FHIRAllTypes.PARAMETERDEFINITION.toCode() }.map { it.name }.toSet()
-        fhirOperator.evaluateLibrary(library.url, subject.asReference().reference, null, expressionsParam)
+        val library =
+          knowledgeManager
+            .loadResources(
+              resourceType = ResourceType.Library.name,
+              url = url,
+            )
+            .first() as Library
+        val expressionsParam =
+          library.parameter
+            .filter { it.type == Enumerations.FHIRAllTypes.PARAMETERDEFINITION.toCode() }
+            .map { it.name }
+            .toSet()
+        fhirOperator.evaluateLibrary(
+          library.url,
+          subject.asReference().reference,
+          null,
+          expressionsParam
+        )
       }
     }
   }
