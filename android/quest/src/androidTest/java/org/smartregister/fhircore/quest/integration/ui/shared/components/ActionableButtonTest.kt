@@ -26,6 +26,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.navigation.testing.TestNavHostController
+import androidx.test.core.app.ApplicationProvider
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -42,6 +43,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
 class ActionableButtonTest {
   @get:Rule val composeRule = createComposeRule()
+  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
 
   @Test
   fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusDue() {
