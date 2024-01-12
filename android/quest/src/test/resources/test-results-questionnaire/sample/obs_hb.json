@@ -1,6 +1,5 @@
 {
   "resourceType": "Observation",
-  "id": "#UID",
   "status": "final",
   "category": [
     {
@@ -18,9 +17,9 @@
     "coding": [ {
       "system": "http://snomed.info/sct",
       "code": "259695003",
-      "display": "Hemoglobin [Mass/volume] in Blood"
+      "display": "Hemoglobin"
     } ],
-    "text": "Haemoglobin"
+    "text": "Hemoglobin"
   },
   "subject": {
     "reference": "Patient/TEST_PATIENT"
