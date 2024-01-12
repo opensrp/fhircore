@@ -17,13 +17,17 @@
 package org.smartregister.fhircore.quest.data.report.measure
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -34,9 +38,11 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
+import java.io.File
 
 class MeasureReportRepository
 @Inject
@@ -49,6 +55,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
+  private val knowledgeManager: KnowledgeManager,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
 ) :
   DefaultRepository(
@@ -83,6 +90,30 @@ constructor(
     val measureReport = mutableListOf<MeasureReport>()
     try {
       withContext(dispatcherProvider.io()) {
+        val measure =
+          fhirEngine.search<Measure> {
+            filter(Measure.URL, { value = measureUrl})
+          }.first().resource
+
+        // TODO move to Sync
+        knowledgeManager.install(
+          File.createTempFile(measure.name, ".json").apply {
+            this.writeText(measure.encodeResourceToString())
+          },
+        )
+
+        measure.relatedArtifact.forEach {
+          val library =
+            fhirEngine.search<Library> {
+              filter(Library.URL, { value = it.url})
+            }.first().resource
+          knowledgeManager.install(
+            File.createTempFile(library.name, ".json").apply {
+              this.writeText(library.encodeResourceToString())
+            },
+          )
+        }
+
         if (subjects.isNotEmpty()) {
           subjects
             .map {
