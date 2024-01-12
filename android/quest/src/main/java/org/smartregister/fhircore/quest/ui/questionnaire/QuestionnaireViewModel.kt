@@ -28,6 +28,7 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
@@ -41,8 +42,10 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Patient
@@ -95,6 +98,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
+  val knowledgeManager: KnowledgeManager,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
 
@@ -602,9 +606,14 @@ constructor(
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
-    questionnaire.cqfLibraryUrls().forEach { library ->
+    questionnaire.cqfLibraryUrls().forEach { url ->
       if (subject.resourceType == ResourceType.Patient) {
-        fhirOperator.evaluateLibrary(library, subject.asReference().reference, null, setOf())
+        val library = knowledgeManager.loadResources(
+          resourceType = ResourceType.Library.name,
+          url = url
+        ).first() as Library
+        val expressionsParam = library.parameter.filter { it.type == Enumerations.FHIRAllTypes.PARAMETERDEFINITION.toCode() }.map { it.name }.toSet()
+        fhirOperator.evaluateLibrary(library.url, subject.asReference().reference, null, expressionsParam)
       }
     }
   }
