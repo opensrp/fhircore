@@ -31,6 +31,7 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
@@ -72,6 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -86,6 +88,7 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import java.io.File
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -609,17 +612,24 @@ constructor(
     questionnaire.cqfLibraryUrls().forEach { url ->
       if (subject.resourceType == ResourceType.Patient) {
         val library =
-          knowledgeManager
-            .loadResources(
-              resourceType = ResourceType.Library.name,
-              url = url,
-            )
-            .first() as Library
+          defaultRepository.fhirEngine.search<Library> {
+            filter(Library.URL, { value = url})
+          }.first().resource
+
+        // Use method to call without expressions
         val expressionsParam =
           library.parameter
             .filter { it.type == Enumerations.FHIRAllTypes.PARAMETERDEFINITION.toCode() }
             .map { it.name }
             .toSet()
+
+        // TODO move to Sync
+        knowledgeManager.install(
+          File.createTempFile(library.name, ".json").apply {
+            this.writeText(library.encodeResourceToString())
+          },
+        )
+
         fhirOperator.evaluateLibrary(
           library.url,
           subject.asReference().reference,
