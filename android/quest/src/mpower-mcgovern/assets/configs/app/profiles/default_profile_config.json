@@ -309,11 +309,42 @@
       ]
     },
     {
+      "name": "patientMobile",
+      "condition": "true",
+      "actions": [
+        "data.put('patientMobile', fhirPath.extractValue(Patient, 'Patient.telecom.value'))"
+      ]
+    },
+    {
       "name": "patientHeight",
       "condition": "true",
       "priority": 3,
       "actions": [
         "data.put('patientHeight', fhirPath.extractValue(service.filterResources(totalObservations, \"Observation.code.coding.code = '1153637007' \").get(0), \"Observation.value\"))"
+      ]
+    },
+    {
+      "name": "patientWeightObservations",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('patientWeightObservations', service.filterResources(totalObservations, \"Observation.code.coding.code = '27113001' \"))"
+      ]
+    },
+    {
+      "name": "patientWeight",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value\") : 0)"
+      ]
+    },
+    {
+      "name": "patientWeightDate",
+      "condition": "true",
+      "priority": 3,
+      "actions": [
+        "data.put('patientWeightDate', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.effective\") : null)"
       ]
     },
     {
@@ -345,6 +376,13 @@
       "priority": 3,
       "actions": [
         "data.put('isLastPncVisitPast24Hours', data.get('noOfBracPncVisit') > 0 ? fhirPath.extractValue(service.filterResources(totalEncounters, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \").get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
+      ]
+    },
+    {
+      "name": "patientBirthDate",
+      "condition": "true",
+      "actions": [
+        "data.put('patientBirthDate', fhirPath.extractValue(Patient, 'Patient.birthDate'))"
       ]
     },
     {
@@ -2057,6 +2095,69 @@
               "dataType": "STRING",
               "key": "fpConditionId",
               "value": "@{fpConditionId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "4e7336a4-4dd1-4efc-89a1-0eb0748a828c",
+              "dataType": "INTEGER",
+              "key": "patientWeight",
+              "value": "@{patientWeight}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "a6bfc68e-54f6-4094-df41-02c2685c4c41",
+              "dataType": "STRING",
+              "key": "patientAge",
+              "value": "@{patientAge}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "b441b988-2d56-408e-8564-c8702579058d",
+              "dataType": "STRING",
+              "key": "patientMobile",
+              "value": "@{patientMobile}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "0f8c84c7-b2f6-462a-8488-4254af32849b",
+              "dataType": "DATE",
+              "key": "patientBirthDate",
+              "value": "@{patientBirthDate}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "2fd89181-2d0f-405b-8d15-f312427dd7c6",
+              "dataType": "DATE",
+              "key": "patientWeightDate",
+              "value": "@{patientWeightDate}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "93ff6669-bbee-47fd-e54d-8c9e9cda1f94",
+              "dataType": "INTEGER",
+              "key": "noOfBracAncVisit",
+              "value": "@{noOfBracAncVisit}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "d91c5e51-ac81-41f6-8f09-87805b87a98d",
+              "dataType": "INTEGER",
+              "key": "ancPreviousBalance",
+              "value": "@{ancPreviousBalance}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "77001671-c07b-4afb-81ae-2220d4f38157",
+              "dataType": "STRING",
+              "key": "ancObservationId",
+              "value": "@{ancObservationId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "e6b390ca-699d-4f4f-b388-d3abfb097e26",
+              "dataType": "STRING",
+              "key": "ancStockOutFlagId",
+              "value": "@{ancStockOutFlagId}"
             }
           ]
         }

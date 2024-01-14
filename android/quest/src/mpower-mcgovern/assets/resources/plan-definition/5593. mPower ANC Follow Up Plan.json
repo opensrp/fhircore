@@ -180,6 +180,108 @@
       },
       {
         "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-30week-2nd",
+        "title": "2nd ANC Follow Up Visit",
+        "description": "This action will performed till 34th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 3,
+            "durationUnit": "wk",
+            "period": 30,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-30week-3rd",
+        "title": "3rd ANC Follow Up Visit",
+        "description": "This action will performed till 37th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 3,
+            "durationUnit": "wk",
+            "period": 33,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-30week-4th",
+        "title": "4th ANC Follow Up Visit",
+        "description": "This action will performed till 40th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 3,
+            "durationUnit": "wk",
+            "period": 37,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-35week-2nd",
+        "title": "2nd ANC Follow Up Visit",
+        "description": "This action will performed till 36th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 2,
+            "durationUnit": "wk",
+            "period": 35,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-35week-3rd",
+        "title": "3rd ANC Follow Up Visit",
+        "description": "This action will performed till 38th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 2,
+            "durationUnit": "wk",
+            "period": 36,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
+        "id": "careplan-task-activity-35week-4th",
+        "title": "4th ANC Follow Up Visit",
+        "description": "This action will performed till 40th week for a pregnant woman",
+        "status": "active",
+        "kind": "Task",
+        "timingTiming": {
+          "repeat": {
+            "count": 1,
+            "duration": 2,
+            "durationUnit": "wk",
+            "period": 38,
+            "periodUnit": "wk"
+          }
+        }
+      },
+      {
+        "resourceType": "ActivityDefinition",
         "id": "careplan-followup-activity",
         "title": "ANC Follow Up Handler Activity",
         "status": "active",
@@ -246,43 +348,7 @@
         ],
         "definitionCanonical": "#careplan-init-activity"
       },
-      {
-        "prefix": "1",
-        "priority": "routine",
-        "condition": [
-          {
-            "kind": "applicability",
-            "expression": {
-              "language": "text/fhirpath",
-              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value >= today() - 12 'weeks'"
-            }
-          }
-        ],
-        "participant": [
-          {
-            "type": "practitioner",
-            "role": {
-              "coding": [
-                {
-                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
-                  "code": "nurse",
-                  "display": "Nurse"
-                }
-              ]
-            }
-          }
-        ],
-        "type": {
-          "coding": [
-            {
-              "code": "clinical-protocol",
-              "display": "Clinical Protocol"
-            }
-          ]
-        },
-        "definitionCanonical": "#careplan-task-activity-1st",
-        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
-      },
+
       {
         "prefix": "1",
         "priority": "routine",
@@ -328,7 +394,7 @@
             "kind": "applicability",
             "expression": {
               "language": "text/fhirpath",
-              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value >= today() - 34 'weeks'"
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value >= today() - 26 'weeks'"
             }
           }
         ],
@@ -365,7 +431,7 @@
             "kind": "applicability",
             "expression": {
               "language": "text/fhirpath",
-              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value >= today() - 38 'weeks'"
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value >= today() - 26 'weeks'"
             }
           }
         ],
@@ -394,6 +460,231 @@
         "definitionCanonical": "#careplan-task-activity-4th",
         "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
       },
+
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 30 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-30week-2nd",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 30 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-30week-3rd",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 30 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-30week-4th",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 35 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-35week-2nd",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 35 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-35week-3rd",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+      {
+        "prefix": "1",
+        "priority": "routine",
+        "condition": [
+          {
+            "kind": "applicability",
+            "expression": {
+              "language": "text/fhirpath",
+              "expression": "$this is Patient and %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/5589').exists() and %resource.entry.where(resource is QuestionnaireResponse).resource.descendants().where(linkId='245679f2-6172-456e-8ff3-425f5cea3243').answer.value <= today() - 35 'weeks'"
+            }
+          }
+        ],
+        "participant": [
+          {
+            "type": "practitioner",
+            "role": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/practitioner-role",
+                  "code": "nurse",
+                  "display": "Nurse"
+                }
+              ]
+            }
+          }
+        ],
+        "type": {
+          "coding": [
+            {
+              "code": "clinical-protocol",
+              "display": "Clinical Protocol"
+            }
+          ]
+        },
+        "definitionCanonical": "#careplan-task-activity-35week-4th",
+        "transform": "http://fhir.mpower-social.com:7070/fhir/StructureMap/5592"
+      },
+
       {
         "prefix": "1",
         "priority": "routine",
