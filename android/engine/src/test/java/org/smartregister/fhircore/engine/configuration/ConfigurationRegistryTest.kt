@@ -252,7 +252,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
 
-    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+    }
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
@@ -278,7 +280,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
-    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+    }
     fhirEngine.create(composition) // Add composition to database instead of mocking
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
@@ -323,7 +327,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
           )
       }
-    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+    }
     fhirEngine.create(composition)
 
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
@@ -624,7 +630,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+    }
 
     // Add composition to database
     fhirEngine.create(composition)
@@ -671,7 +679,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+    runTest {
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+    }
 
     fhirEngine.create(composition)
 
@@ -720,7 +730,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
           identifier = Identifier().apply { value = appId }
           section = compositionSections
         }
-      runTest { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId) }
+      runTest {
+        configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
+      }
 
       fhirEngine.create(composition)
 

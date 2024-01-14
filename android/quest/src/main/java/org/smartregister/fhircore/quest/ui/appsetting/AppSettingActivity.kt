@@ -34,7 +34,6 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.BuildConfig
@@ -65,8 +64,7 @@ class AppSettingActivity : AppCompatActivity() {
         }
       }
     }
-    val existingAppId =
-      preferencesDataStore.observe(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    val existingAppId = preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, "")?.trimEnd()
 
     // If app exists load the configs otherwise fetch from the server
     if (!existingAppId.isNullOrEmpty()) {

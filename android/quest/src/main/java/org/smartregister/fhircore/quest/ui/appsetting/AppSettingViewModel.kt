@@ -217,7 +217,9 @@ constructor(
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            this.launch { preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
+            this.launch {
+              preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = thisAppId)
+            }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))

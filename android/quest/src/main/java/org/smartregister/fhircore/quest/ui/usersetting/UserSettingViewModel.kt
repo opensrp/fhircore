@@ -39,7 +39,6 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -85,26 +84,26 @@ constructor(
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
-    preferencesDataStore.observe<UserInfo>(
-      key = SharedPreferenceKey.USER_INFO.name,
+    preferencesDataStore.readOnce<UserInfo>(
+      PreferencesDataStore.USER_INFO,
     )
 
   fun practitionerLocation() =
-    preferencesDataStore.observe(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, null)
 
   fun retrieveOrganization() =
-    preferencesDataStore.observe(SharedPreferenceKey.ORGANIZATION.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, null)
 
-  fun retrieveCareTeam() = preferencesDataStore.observe(SharedPreferenceKey.CARE_TEAM.name, null)
+  fun retrieveCareTeam() = preferencesDataStore.readOnce(PreferencesDataStore.CARE_TEAM_NAMES, null)
 
   fun retrieveLastSyncTimestamp(): String? =
-    preferencesDataStore.observe(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        preferencesDataStore.observe(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
@@ -136,7 +135,9 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
-        preferencesDataStore.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        viewModelScope.launch {
+          preferencesDataStore.write(PreferencesDataStore.LANG, dataToStore = event.language.tag)
+        }
         event.context.run {
           configurationRegistry.clearConfigsCache()
           setAppLocale(event.language.tag)
@@ -178,7 +179,7 @@ constructor(
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
       accountAuthenticator.invalidateSession {
-        preferencesDataStore.resetSharedPrefs()
+        // TODO: KELVIN talk to Elly about this -> preferencesDataStore.resetSharedPrefs()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }

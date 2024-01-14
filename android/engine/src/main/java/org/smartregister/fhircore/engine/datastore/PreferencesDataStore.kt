@@ -56,13 +56,14 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
    *
    * In situations where you provide a non-null defaultValue, you can use !! to extract
    */
-
-
   fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
     context.dataStore.data.first()[key] ?: defaultValue
   }
 
-  inline fun <reified T> readOnce(key: Preferences.Key<String>, decodeWithGson: Boolean = true): T? {
+  inline fun <reified T> readOnce(
+    key: Preferences.Key<String>,
+    decodeWithGson: Boolean = true,
+  ): T? {
     var out: T? = null
     runBlocking {
       context.dataStore.data.first()[key].also {
@@ -93,7 +94,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   // Specified the key type separately for when return type is different from key e.g in
   // LOCATION_IDS.. key is String, return type is List<String>
-  inline fun <reified T, M> observe(key: Preferences.Key<M>, decodeWithGson: Boolean = true): Flow<T?> =
+  inline fun <reified T, M> observe(
+    key: Preferences.Key<M>,
+    decodeWithGson: Boolean = true,
+  ): Flow<T?> =
     context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
@@ -111,7 +115,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
         }
       }
 
-  suspend fun <T> write(key: Preferences.Key<T>, dataToStore: T) { // named dataToStore instead of data to prevent overload ambiguity
+  suspend fun <T> write(
+    key: Preferences.Key<T>,
+    dataToStore: T,
+  ) { // named dataToStore instead of data to prevent overload ambiguity
     context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
@@ -136,7 +143,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   val organizationNames by lazy { observe(ORGANIZATION_NAMES, defaultValue = "") }
   val practitionerId by lazy { observe(PRACTITIONER_ID, defaultValue = "") }
   val practitionerLocation by lazy { observe(PRACTITIONER_LOCATION, defaultValue = "") }
-  val practitionerLocationHierarchies by lazy { observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "") }
+  val practitionerLocationHierarchies by lazy {
+    observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "")
+  }
 
   // TODO: Kelvin Move all below to proto store?
   val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
@@ -160,6 +169,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     val PRACTITIONER_ID by lazy { stringPreferencesKey("PRACTITIONER_ID") }
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
+    val USER_INFO by lazy { stringPreferencesKey("USER_INFO") }
 
     // TODO: Kelvin Move all below to protoStore
     val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }

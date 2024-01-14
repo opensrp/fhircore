@@ -64,7 +64,6 @@ import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -103,7 +102,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            preferencesDataStore.observe(SharedPreferenceKey.APP_ID.name, "")!!,
+            preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, "")!!,
           ),
       ),
     )
@@ -167,7 +166,9 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
-        preferencesDataStore.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        viewModelScope.launch {
+          preferencesDataStore.write(PreferencesDataStore.LANG, dataToStore = event.language.tag)
+        }
         event.context.run {
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
@@ -183,11 +184,14 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is SyncJobStatus.Finished) {
-          preferencesDataStore.write(
-            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            formatLastSyncTimestamp(event.state.timestamp),
-          )
-          viewModelScope.launch { retrieveAppMainUiState() }
+          viewModelScope.launch {
+            preferencesDataStore.write(
+              PreferencesDataStore.LAST_SYNC_TIMESTAMP,
+              dataToStore = formatLastSyncTimestamp(event.state.timestamp),
+            )
+
+            retrieveAppMainUiState()
+          }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
@@ -261,7 +265,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        preferencesDataStore.observe(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
@@ -276,7 +280,7 @@ constructor(
   }
 
   fun retrieveLastSyncTimestamp(): String? =
-    preferencesDataStore.observe(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
 
   fun launchProfileFromGeoWidget(
     navController: NavController,

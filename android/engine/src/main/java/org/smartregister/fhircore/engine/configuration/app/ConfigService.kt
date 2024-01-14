@@ -81,15 +81,15 @@ interface ConfigService {
    */
   fun provideCustomSearchParameters(): List<SearchParameter> {
     val activeGroupSearchParameter =
-        SearchParameter().apply {
-          url = "http://smartregister.org/SearchParameter/group-active"
-          addBase("Group")
-          name = ACTIVE_SEARCH_PARAM
-          code = ACTIVE_SEARCH_PARAM
-          type = Enumerations.SearchParamType.TOKEN
-          expression = "Group.active"
-          description = "Search the active field"
-        }
+      SearchParameter().apply {
+        url = "http://smartregister.org/SearchParameter/group-active"
+        addBase("Group")
+        name = ACTIVE_SEARCH_PARAM
+        code = ACTIVE_SEARCH_PARAM
+        type = Enumerations.SearchParamType.TOKEN
+        expression = "Group.active"
+        description = "Search the active field"
+      }
 
     return listOf(activeGroupSearchParameter)
   }

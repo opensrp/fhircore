@@ -29,7 +29,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.map
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
@@ -122,9 +121,7 @@ class NetworkModule {
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
               val appId = preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null)
-              appId?.let {
-                request.addHeader(APPLICATION_ID, it)
-              }
+              appId?.let { request.addHeader(APPLICATION_ID, it) }
             }
             chain.proceed(request.build())
           } catch (e: Exception) {

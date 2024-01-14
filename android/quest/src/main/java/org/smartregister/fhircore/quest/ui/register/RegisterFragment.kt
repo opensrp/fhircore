@@ -85,19 +85,19 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val registerViewModel by viewModels<RegisterViewModel>()
 
   override fun onCreateView(
-      inflater: LayoutInflater,
-      container: ViewGroup?,
-      savedInstanceState: Bundle?,
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?,
   ): View {
     appMainViewModel.retrieveIconsAsBitmap()
 
     with(registerFragmentArgs) {
       lifecycleScope.launchWhenCreated {
         registerViewModel.retrieveRegisterUiState(
-            registerId = registerId,
-            screenTitle = screenTitle,
-            params = params,
-            clearCache = false,
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params,
+          clearCache = false,
         )
       }
     }
@@ -122,57 +122,57 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
         LaunchedEffect(Unit) {
           registerViewModel.snackBarStateFlow.hookSnackBar(
-              scaffoldState = scaffoldState,
-              resourceData = null,
-              navController = findNavController(),
+            scaffoldState = scaffoldState,
+            resourceData = null,
+            navController = findNavController(),
           )
         }
 
         AppTheme {
           val pagingItems =
-              registerViewModel.paginatedRegisterData
-                  .collectAsState(emptyFlow())
-                  .value
-                  .collectAsLazyPagingItems()
+            registerViewModel.paginatedRegisterData
+              .collectAsState(emptyFlow())
+              .value
+              .collectAsLazyPagingItems()
 
           // Register screen provides access to the side navigation
           Scaffold(
-              drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
-              scaffoldState = scaffoldState,
-              drawerContent = {
-                AppDrawer(
-                    appUiState = uiState,
-                    openDrawer = openDrawer,
-                    onSideMenuClick = appMainViewModel::onEvent,
-                    navController = findNavController(),
-                )
-              },
-              bottomBar = {
-                // TODO Activate bottom nav via view configuration
-                /* BottomScreenSection(
-                  navController = navController,
-                  mainNavigationScreens = MainNavigationScreen.appScreens
-                )*/
-              },
-              snackbarHost = { snackBarHostState ->
-                SnackBarMessage(
-                    snackBarHostState = snackBarHostState,
-                    backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
-                    actionColorHex = appConfig.snackBarTheme.actionTextColor,
-                    contentColorHex = appConfig.snackBarTheme.messageTextColor,
-                )
-              },
+            drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
+            scaffoldState = scaffoldState,
+            drawerContent = {
+              AppDrawer(
+                appUiState = uiState,
+                openDrawer = openDrawer,
+                onSideMenuClick = appMainViewModel::onEvent,
+                navController = findNavController(),
+              )
+            },
+            bottomBar = {
+              // TODO Activate bottom nav via view configuration
+              /* BottomScreenSection(
+                navController = navController,
+                mainNavigationScreens = MainNavigationScreen.appScreens
+              )*/
+            },
+            snackbarHost = { snackBarHostState ->
+              SnackBarMessage(
+                snackBarHostState = snackBarHostState,
+                backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
+                actionColorHex = appConfig.snackBarTheme.actionTextColor,
+                contentColorHex = appConfig.snackBarTheme.messageTextColor,
+              )
+            },
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
-                  openDrawer = openDrawer,
-                  onEvent = registerViewModel::onEvent,
-                  registerUiState = registerViewModel.registerUiState.value,
-                  searchText = registerViewModel.searchText,
-                  currentPage = registerViewModel.currentPage,
-                  pagingItems = pagingItems,
-                  navController = findNavController(),
-                  toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                openDrawer = openDrawer,
+                onEvent = registerViewModel::onEvent,
+                registerUiState = registerViewModel.registerUiState.value,
+                searchText = registerViewModel.searchText,
+                currentPage = registerViewModel.currentPage,
+                pagingItems = pagingItems,
+                navController = findNavController(),
+                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
           }
@@ -197,22 +197,22 @@ class RegisterFragment : Fragment(), OnSyncListener {
         Timber.d("KELVIN STARTED")
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            SnackBarMessageConfig(message = getString(R.string.syncing)),
           )
         }
       }
       is SyncJobStatus.InProgress ->
-          emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
+        emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
       is SyncJobStatus.Finished -> {
         Timber.d("KELVIN FINISHED")
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(
-                  message = getString(R.string.sync_completed),
-                  actionLabel = getString(R.string.ok).uppercase(),
-                  duration = SnackbarDuration.Long,
-              ),
+            SnackBarMessageConfig(
+              message = getString(R.string.sync_completed),
+              actionLabel = getString(R.string.ok).uppercase(),
+              duration = SnackbarDuration.Long,
+            ),
           )
         }
       }
@@ -221,53 +221,53 @@ class RegisterFragment : Fragment(), OnSyncListener {
         refreshRegisterData()
         // Show error message in snackBar message
         val hasAuthError =
-            try {
-              Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-              syncJobStatus.exceptions.any {
-                it.exception is HttpException && (it.exception as HttpException).code() == 401
-              }
-            } catch (nullPointerException: NullPointerException) {
-              false
+          try {
+            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
+            syncJobStatus.exceptions.any {
+              it.exception is HttpException && (it.exception as HttpException).code() == 401
             }
+          } catch (nullPointerException: NullPointerException) {
+            false
+          }
 
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(
-                  message =
-                      getString(
-                          if (hasAuthError) {
-                            R.string.sync_unauthorised
-                          } else R.string.sync_completed_with_errors,
-                      ),
-                  duration = SnackbarDuration.Long,
-                  actionLabel = getString(R.string.ok).uppercase(),
-              ),
+            SnackBarMessageConfig(
+              message =
+                getString(
+                  if (hasAuthError) {
+                    R.string.sync_unauthorised
+                  } else R.string.sync_completed_with_errors,
+                ),
+              duration = SnackbarDuration.Long,
+              actionLabel = getString(R.string.ok).uppercase(),
+            ),
           )
         }
       }
       is SyncJobStatus.Glitch -> {
-        // Show error message in snackBar message
-        Timber.d("KELVIN GLITCH")
         val hasAuthError =
-            try {
-              Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-              syncJobStatus.exceptions.any {
-                it.exception is HttpException && (it.exception as HttpException).code() == 401
-              }
-            } catch (nullPointerException: NullPointerException) {
-              false
+          try {
+            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
+            syncJobStatus.exceptions.any {
+              it.exception is HttpException && (it.exception as HttpException).code() == 403
             }
+          } catch (nullPointerException: NullPointerException) {
+            false
+          }
 
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(
-                  message =
-                      if (hasAuthError) {
-                        "glitch due to auth error"
-                      } else "glitch other reason",
-                  duration = SnackbarDuration.Long,
-                  actionLabel = getString(R.string.ok).uppercase(),
-              ),
+            SnackBarMessageConfig(
+              message =
+                getString(
+                  if (hasAuthError) {
+                    R.string.syncing_glitched_auth
+                  } else R.string.syncing_glitched_unspecified,
+                ),
+              duration = SnackbarDuration.Long,
+              actionLabel = getString(R.string.ok).uppercase(),
+            ),
           )
         }
       }
@@ -287,10 +287,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
         pagesDataCache.clear()
 
         retrieveRegisterUiState(
-            registerId = registerId,
-            screenTitle = screenTitle,
-            params = params,
-            clearCache = false,
+          registerId = registerId,
+          screenTitle = screenTitle,
+          params = params,
+          clearCache = false,
         )
       }
     }
@@ -334,8 +334,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   fun emitPercentageProgress(
-      progressSyncJobStatus: SyncJobStatus.InProgress,
-      isUploadSync: Boolean,
+    progressSyncJobStatus: SyncJobStatus.InProgress,
+    isUploadSync: Boolean,
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
@@ -344,12 +344,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
   }
 
   private fun getSyncProgress(completed: Int, total: Int) =
-      completed * 100 / if (total > 0) total else 1
+    completed * 100 / if (total > 0) total else 1
 
   private fun calculateActualPercentageProgress(
-      progressSyncJobStatus: SyncJobStatus.InProgress,
+    progressSyncJobStatus: SyncJobStatus.InProgress,
   ): Int {
-
     val keyName =
       PreferencesDataStore.PREFS_SYNC_PROGRESS_TOTAL + progressSyncJobStatus.syncOperation.name
     val key = longPreferencesKey(keyName)

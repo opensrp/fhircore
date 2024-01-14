@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine
 
 import android.app.Application
-import android.util.Log
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
@@ -25,7 +24,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -59,7 +57,9 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHaveOrganizationId() {
     val practitionerId = "practitioner-id"
 
-    runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, dataToStore = practitionerId) }
+    runTest {
+      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, dataToStore = practitionerId)
+    }
 
     val resourceTags = configService.provideResourceTags(preferencesDataStore)
     val practitionerTag =
@@ -74,7 +74,7 @@ class ConfigServiceTest : RobolectricTest() {
 
     runTest {
       preferencesDataStore.write(
-        stringPreferencesKey( ResourceType.Location.name ),
+        stringPreferencesKey(ResourceType.Location.name),
         listOf(locationId1, locationId2),
         encodeWithGson = true,
       )

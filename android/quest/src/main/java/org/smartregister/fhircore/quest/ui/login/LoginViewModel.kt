@@ -157,7 +157,10 @@ constructor(
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
           } else if (
-            accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)
+            accountAuthenticator.validateLoginCredentials(
+              trimmedUsername,
+              passwordAsCharArray,
+            )
           ) {
             try {
               // Configure Sentry scope
@@ -262,7 +265,9 @@ constructor(
         onFetchUserInfo(Result.success(userInfo))
         try {
           val bundle =
-            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
+            fhirResourceService.getResource(
+              url = userInfo.keycloakUuid!!.practitionerEndpointUrl(),
+            )
           onFetchPractitioner(Result.success(bundle), userInfo)
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException), userInfo)
@@ -442,33 +447,42 @@ constructor(
     // the
     // serialization happen?
     viewModelScope.launch {
-      preferencesDataStore.write(
-        PreferencesDataStore.PRACTITIONER_DETAILS,
-        fhirPractitionerDetails.toString(),
-      )
+      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_DETAILS, fhirPractitionerDetails)
     }
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_ID,
-        fhirPractitionerDetails.fhirPractitionerDetails?.id as String,
+        fhirPractitionerDetails.fhirPractitionerDetails,
       )
-      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_IDS, careTeamIds.joinToString())
-      preferencesDataStore.write(PreferencesDataStore.CARE_TEAM_NAMES, careTeamNames.joinToString())
-      preferencesDataStore.write(PreferencesDataStore.LOCATION_IDS, locationIds.joinToString())
-      preferencesDataStore.write(PreferencesDataStore.LOCATION_NAMES, locationNames.joinToString())
+      preferencesDataStore.write(
+        PreferencesDataStore.CARE_TEAM_IDS,
+        dataToStore = careTeamIds.joinToString(),
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.CARE_TEAM_NAMES,
+        dataToStore = careTeamNames.joinToString(),
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.LOCATION_IDS,
+        dataToStore = locationIds.joinToString(),
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.LOCATION_NAMES,
+        dataToStore = locationNames.joinToString(),
+      )
       preferencesDataStore.write(
         PreferencesDataStore.ORGANIZATION_IDS,
-        organizationIds.joinToString(),
+        dataToStore = organizationIds.joinToString(),
       )
       preferencesDataStore.write(
         PreferencesDataStore.ORGANIZATION_NAMES,
-        organizationNames.joinToString(),
+        dataToStore = organizationNames.joinToString(),
       )
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES,
-        locationHierarchies.joinToString(),
+        dataToStore = locationHierarchies.joinToString(),
       )
     }
   }

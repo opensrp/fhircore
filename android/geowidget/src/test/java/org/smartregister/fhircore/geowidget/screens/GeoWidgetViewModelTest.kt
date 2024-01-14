@@ -44,8 +44,8 @@ import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
@@ -65,7 +65,7 @@ class GeoWidgetViewModelTest {
 
   private lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferencesDataStore: PreferencesDataStore
 
   private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
@@ -82,14 +82,14 @@ class GeoWidgetViewModelTest {
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = mockk()
+    preferencesDataStore = mockk()
     configurationRegistry = mockk()
     defaultRepository =
       spyk(
         DefaultRepository(
           fhirEngine,
           coroutinesTestRule.testDispatcherProvider,
-          sharedPreferencesHelper,
+          preferencesDataStore,
           configurationRegistry,
           configService,
           configRulesExecutor,

@@ -208,7 +208,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     val language = Language("es", "Spanish")
     val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
-    coEvery {   preferencesDataStore.write(any(), dataToStore = any<String>()) }  just runs
+    coEvery { preferencesDataStore.write(any(), dataToStore = any<String>()) } just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 

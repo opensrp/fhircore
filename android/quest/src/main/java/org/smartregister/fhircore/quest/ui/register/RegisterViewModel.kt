@@ -29,6 +29,8 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,14 +57,11 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
-import javax.inject.Inject
-import kotlin.math.ceil
 
 @HiltViewModel
 class RegisterViewModel
@@ -460,8 +459,6 @@ constructor(
   }
 
   fun <T> writePreference(key: Preferences.Key<T>, data: T) {
-    viewModelScope.launch {
-      preferencesDataStore.write(key, data)
-    }
+    viewModelScope.launch { preferencesDataStore.write(key, data) }
   }
 }
