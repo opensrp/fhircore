@@ -34,6 +34,7 @@ data class NavigationMenuConfig(
   val display: String,
   val showCount: Boolean = false,
   val animate: Boolean = true,
+  val subRegisters: List<NavigationMenuConfig> = emptyList(),
   val actions: List<ActionConfig>? = null,
 ) : Parcelable, java.io.Serializable
 

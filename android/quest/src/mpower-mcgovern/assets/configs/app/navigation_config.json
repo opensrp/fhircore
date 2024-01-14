@@ -100,6 +100,24 @@
           "trigger": "ON_COUNT",
           "id": "ancRegister"
         }
+      ],
+      "subRegisters": [
+        {
+          "id": "riskyAncRegister",
+          "display": "{{nav.menu.anc.risky}}",
+          "showCount": true,
+          "actions": [
+            {
+              "trigger": "ON_CLICK",
+              "workflow": "LAUNCH_REGISTER",
+              "id": "riskyAncRegister"
+            },
+            {
+              "trigger": "ON_COUNT",
+              "id": "riskyAncRegister"
+            }
+          ]
+        }
       ]
     },
     {
