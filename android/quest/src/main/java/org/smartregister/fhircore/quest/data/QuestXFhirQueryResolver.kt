@@ -17,8 +17,10 @@
 package org.smartregister.fhircore.quest.data
 
 import android.util.Log
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.XFhirQueryResolver
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import javax.inject.Inject
@@ -26,6 +28,9 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 @Singleton
 class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : XFhirQueryResolver {
@@ -48,10 +53,17 @@ class QuestXFhirQueryResolver @Inject constructor(val fhirEngine: FhirEngine) : 
             if (paramType == QuestionnaireResponse.SP_QUESTIONNAIRE) {
               this.filter(QuestionnaireResponse.QUESTIONNAIRE, { value = paramValue })
             }
+//            if (paramType == "_sort") {
+            // sort by _lastUpdated AND descending, is not working, but works for ascending
+//              this.sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
+//            }
           }
         }
 
-      val lists = fhirEngine.search<QuestionnaireResponse>(search)
+      val lists = fhirEngine.search<QuestionnaireResponse>(search).sortedByDescending { it.resource.meta.lastUpdated }
+//      lists.forEach {
+//        Log.d("FIKRI123", "${it.resource.id}, ${it.resource.meta.lastUpdated.toString()}")
+//      }
       Log.d("FIKRI TOTAL RES", lists.size.toString())
       return lists.map { it.resource }
     } else {
