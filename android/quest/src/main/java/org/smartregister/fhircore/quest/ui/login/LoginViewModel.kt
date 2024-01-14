@@ -206,16 +206,13 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    /*    val practitionerDetails =
-    preferencesDataStore.read<PractitionerDetails>(
-      key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      decodeWithGson = true,
-    )*/
+        val practitionerDetails =
+    preferencesDataStore.readOnce<PractitionerDetails>(
+      key = PreferencesDataStore.PRACTITIONER_DETAILS
+    )
 
-    // TODO: Inspect what this data structure looks like o device since I did .string() without gson
     // encoding and decoding
-    preferencesDataStore.practitionerDetails.map { practitionerDetails ->
-      if (tokenAuthenticator.sessionActive() && practitionerDetails != "") {
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
         _showProgressBar.postValue(false)
         updateNavigateHome(true)
       } else {
@@ -251,7 +248,6 @@ constructor(
             }
         }
       }
-    }
   }
 
   suspend fun fetchPractitioner(

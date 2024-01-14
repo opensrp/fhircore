@@ -44,8 +44,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -102,7 +102,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testOnSyncWithSyncStateGlitch() {
     val viewModel = appMainActivity.appMainViewModel
     val timestamp = "2022-05-19"
-    viewModel.preferencesDataStore.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
+    runTest {
+      viewModel.preferencesDataStore.write(
+        PreferencesDataStore.LAST_SYNC_TIMESTAMP,
+        dataToStore = timestamp,
+      )
+    }
 
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
@@ -119,10 +124,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
-    viewModel.preferencesDataStore.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      "2022-05-19",
-    )
+    runTest {
+      viewModel.preferencesDataStore.write(
+        PreferencesDataStore.LAST_SYNC_TIMESTAMP,
+        dataToStore = "2022-05-19",
+      )
+    }
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Failed(listOf())
     appMainActivity.onSync(syncJobStatus)

@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
@@ -135,7 +134,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
     appMainViewModel.onEvent(appMainEvent)
 
-    Assert.assertEquals("en", preferencesDataStore.observe(SharedPreferenceKey.LANG.name, ""))
+    Assert.assertEquals("en", preferencesDataStore.readOnce(PreferencesDataStore.LANG, ""))
 
     unmockkStatic(Activity::class)
   }
@@ -178,7 +177,7 @@ class AppMainViewModelTest : RobolectricTest() {
     )
     Assert.assertEquals(
       appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
-      preferencesDataStore.observe(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
+      preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null),
     )
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }

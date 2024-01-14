@@ -80,7 +80,7 @@ class CqlContentTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,

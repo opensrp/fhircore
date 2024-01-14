@@ -33,7 +33,6 @@ import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
@@ -198,7 +197,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         keys.PRACTITIONER_DETAILS,
-        PractitionerDetails().toString(), // TODO: Cater for protoStore Replacement
+        PractitionerDetails(), // TODO: KELVIN Cater for protoStore Replacement
       )
     }
 
@@ -521,8 +520,9 @@ internal class LoginViewModelTest : RobolectricTest() {
         ),
       UserInfo(),
     ) {}
-
-    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
+    Assert.assertNotNull(
+      preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_DETAILS),
+    )
   }
 
   @Test
@@ -556,7 +556,9 @@ internal class LoginViewModelTest : RobolectricTest() {
         keycloakUuid = "cha",
       ),
     ) {}
-    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
+    Assert.assertNotNull(
+      preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_DETAILS),
+    )
   }
 
   @Test
@@ -585,10 +587,14 @@ internal class LoginViewModelTest : RobolectricTest() {
                     organizations = listOf(Organization().apply { id = "my-organization-id" })
                     locations = listOf(Location().apply { id = "my-organization-id" })
                     locationHierarchyList =
-                      listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
+                      listOf(
+                        LocationHierarchy().apply { id = "my-location-hierarchy-id" },
+                      )
                     groups = listOf(Group().apply { id = "my-group-id" })
                     practitionerRoles =
-                      listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
+                      listOf(
+                        PractitionerRole().apply { id = "my-practitioner-role-id" },
+                      )
                     organizationAffiliations =
                       listOf(
                         OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
@@ -599,7 +605,9 @@ internal class LoginViewModelTest : RobolectricTest() {
         ),
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
-    preferencesDataStore.practitionerDetails.map { assert(it.isNotEmpty()) }
+    Assert.assertNotNull(
+      preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_DETAILS),
+    )
   }
 
   @Test

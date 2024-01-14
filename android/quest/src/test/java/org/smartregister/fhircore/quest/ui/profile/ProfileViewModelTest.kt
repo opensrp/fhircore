@@ -87,7 +87,7 @@ class ProfileViewModelTest : RobolectricTest() {
         RegisterRepository(
           fhirEngine = mockk(),
           dispatcherProvider = DefaultDispatcherProvider(),
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
