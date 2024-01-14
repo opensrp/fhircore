@@ -29,9 +29,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.util.Date
 import javax.inject.Inject
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.jexl3.JexlException
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -309,7 +306,9 @@ class RulesFactoryTest : RobolectricTest() {
   fun extractGenderReturnsCorrectGender() {
     Assert.assertEquals(
       "Male",
-      rulesEngineService.extractGender(Patient().setGender(Enumerations.AdministrativeGender.MALE)),
+      rulesEngineService.extractGender(
+        Patient().setGender(Enumerations.AdministrativeGender.MALE),
+      ),
     )
     Assert.assertEquals(
       "Female",
@@ -728,7 +727,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun evaluateToBooleanDefaultMatchAllIsFalse() {
     val fhirPathExpression = "Patient.active"
     val patients =
-      mutableListOf(Patient().setActive(true), Patient().setActive(true), Patient().setActive(true))
+      mutableListOf(
+        Patient().setActive(true),
+        Patient().setActive(true),
+        Patient().setActive(true),
+      )
 
     Assert.assertTrue(rulesEngineService.evaluateToBoolean(patients, fhirPathExpression, false))
   }
@@ -872,53 +875,61 @@ class RulesFactoryTest : RobolectricTest() {
   @Test
   fun testExtractDataStoreValuesReturnsPractitionerId() {
     val dataStoreKey = keys.PRACTITIONER_ID
-    val expectedValue = flowOf("1234")
+    val expectedValue = "1234"
 
-    every { configurationRegistry.preferencesDataStore.practitionerId } returns expectedValue
+    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+      expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    expectedValue.map { assert(it == result) }
+    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractDataStoreValuesReturnsCareTeam() {
     val dataStoreKey = keys.CARE_TEAM_IDS
-    val expectedValue = flowOf("1234")
+    val expectedValue = "1234"
 
-    every { configurationRegistry.preferencesDataStore.careTeamIds } returns expectedValue
+    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+      expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    expectedValue.map { assert(it == result) }
+    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    Assert.assertEquals(expectedValue, result)
   }
 
   @Test
-  fun testExtractSharedPrefValuesReturnsOrganization() {
+  fun testExtractDataStoreValuesReturnsOrganization() {
     val dataStoreKey = keys.ORGANIZATION_IDS
-    val expectedValue = flowOf("1234")
+    val expectedValue = "1234"
 
-    every { configurationRegistry.preferencesDataStore.organizationIds } returns expectedValue
+    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+      expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    expectedValue.map { assert(it == result) }
+    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    Assert.assertEquals(expectedValue, result)
   }
 
   @Test
-  fun testExtractSharedPrefValuesReturnsPractitionerLocation() {
+  fun testExtractDataStoreValuesReturnsPractitionerLocation() {
     val dataStoreKey = keys.PRACTITIONER_LOCATION
-    val expectedValue = flowOf("1234")
+    val expectedValue = "1234"
 
-    every { configurationRegistry.preferencesDataStore.practitionerLocation } returns expectedValue
+    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+      expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    expectedValue.map { assert(it == result) }
+    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    Assert.assertEquals(expectedValue, result)
   }
 
   @Test
-  fun testExtractSharedPrefValuesThrowsAnExceptionWhenKeyIsInvalid() {
+  fun testExtractDataStoreValuesThrowsAnExceptionWhenKeyIsInvalid() {
     val dataStoreKey = "INVALID_KEY"
     Assert.assertThrows(
       IllegalArgumentException::class.java,

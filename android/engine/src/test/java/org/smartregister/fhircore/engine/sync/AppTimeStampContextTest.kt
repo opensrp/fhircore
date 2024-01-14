@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.time.OffsetDateTime
@@ -26,21 +27,21 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
 class AppTimeStampContextTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreference: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var appTimeStampContext: AppTimeStampContext
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    appTimeStampContext = AppTimeStampContext(sharedPreference)
+    appTimeStampContext = AppTimeStampContext(preferencesDataStore)
   }
 
   @Test
@@ -63,9 +64,10 @@ class AppTimeStampContextTest : RobolectricTest() {
     runTest {
       val currentTimestamp = OffsetDateTime.now().toString()
       appTimeStampContext.saveLastUpdatedTimestamp(ResourceType.CarePlan, currentTimestamp)
+      val key = stringPreferencesKey("CAREPLAN_LAST_SYNC_TIMESTAMP")
       Assert.assertEquals(
         currentTimestamp,
-        sharedPreference.read("CAREPLAN_LAST_SYNC_TIMESTAMP", null),
+        preferencesDataStore.readOnce(key, null),
       )
     }
   }

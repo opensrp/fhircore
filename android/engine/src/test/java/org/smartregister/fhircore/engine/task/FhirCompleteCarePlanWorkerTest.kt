@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.task
 
 import android.content.Context
 import android.util.Log
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.ListenableWorker
@@ -47,9 +48,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
@@ -59,7 +60,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+  private val preferencesDataStore: PreferencesDataStore = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
   private val fhirResourceUtil: FhirResourceUtil = mockk()
@@ -74,12 +75,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         )
         .setWorkerFactory(FhirCompleteCarePlanWorkerFactory())
         .build()
-    every {
-      sharedPreferencesHelper.read(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "0")
-    } returns "100"
-    every {
-      sharedPreferencesHelper.write(FhirCompleteCarePlanWorker.WORK_ID.lastOffset(), "101")
-    } just runs
+    val key = stringPreferencesKey(FhirCompleteCarePlanWorker.WORK_ID.lastOffset())
+    every { preferencesDataStore.readOnce(key, "0") } returns "100"
+    coEvery { preferencesDataStore.write(key, dataToStore = "101") } just runs
   }
 
   @Test
@@ -247,7 +245,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
         fhirCarePlanGenerator = fhirCarePlanGenerator,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = coroutineTestRule.testDispatcherProvider,
         fhirResourceUtil = fhirResourceUtil,

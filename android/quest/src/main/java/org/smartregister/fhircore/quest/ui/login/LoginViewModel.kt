@@ -206,48 +206,48 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-        val practitionerDetails =
-    preferencesDataStore.readOnce<PractitionerDetails>(
-      key = PreferencesDataStore.PRACTITIONER_DETAILS
-    )
+    val practitionerDetails =
+      preferencesDataStore.readOnce<PractitionerDetails>(
+        key = PreferencesDataStore.PRACTITIONER_DETAILS,
+      )
 
     // encoding and decoding
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
+      _showProgressBar.postValue(false)
+      updateNavigateHome(true)
+    } else {
+      // Prevent user from logging in with different credentials
+      val existingCredentials = secureSharedPreference.retrieveCredentials()
+      if (
+        existingCredentials != null &&
+          !username.equals(
+            existingCredentials.username,
+            true,
+          )
+      ) {
         _showProgressBar.postValue(false)
-        updateNavigateHome(true)
+        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
       } else {
-        // Prevent user from logging in with different credentials
-        val existingCredentials = secureSharedPreference.retrieveCredentials()
-        if (
-          existingCredentials != null &&
-            !username.equals(
-              existingCredentials.username,
-              true,
-            )
-        ) {
-          _showProgressBar.postValue(false)
-          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
-        } else {
-          tokenAuthenticator
-            .fetchAccessToken(username, password)
-            .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
-            .onFailure {
-              _showProgressBar.postValue(false)
-              var errorState = LoginErrorState.ERROR_FETCHING_USER
+        tokenAuthenticator
+          .fetchAccessToken(username, password)
+          .onSuccess { fetchPractitioner(onFetchUserInfo, onFetchPractitioner) }
+          .onFailure {
+            _showProgressBar.postValue(false)
+            var errorState = LoginErrorState.ERROR_FETCHING_USER
 
-              if (it is HttpException) {
-                when (it.code()) {
-                  401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
-                }
-              } else if (it is UnknownHostException) {
-                errorState = LoginErrorState.UNKNOWN_HOST
+            if (it is HttpException) {
+              when (it.code()) {
+                401 -> errorState = LoginErrorState.INVALID_CREDENTIALS
               }
-
-              _loginErrorState.postValue(errorState)
-              Timber.e(it)
+            } else if (it is UnknownHostException) {
+              errorState = LoginErrorState.UNKNOWN_HOST
             }
-        }
+
+            _loginErrorState.postValue(errorState)
+            Timber.e(it)
+          }
       }
+    }
   }
 
   suspend fun fetchPractitioner(

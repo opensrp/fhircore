@@ -21,7 +21,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.google.gson.Gson
-import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
@@ -35,13 +34,11 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   // TODO: KELVIN discuss with Elly. Lateninit and getSharedPreferences()
   lateinit var preferencesDataStore: PreferencesDataStore
 
-
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
     // Disable dark theme on All Activities.
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
   }
 
   override fun attachBaseContext(baseContext: Context) {
