@@ -356,9 +356,9 @@ constructor(
         defaultRepository.addOrUpdate(true, resource = this)
 
         updateGroupManagingEntity(
-          this,
-          configuredGroup,
-          questionnaireConfig.managingEntityRelationshipCode,
+          resource = this,
+          group = configuredGroup,
+          managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
         )
         addMemberToGroup(this, configuredGroup)
 
@@ -649,7 +649,7 @@ constructor(
     managingEntityRelationshipCode: String?,
   ) {
     if (
-      group == null && resource !is RelatedPerson && !managingEntityRelationshipCode.isNullOrEmpty()
+      group == null && resource !is RelatedPerson && managingEntityRelationshipCode.isNullOrEmpty()
     ) {
       return
     }
