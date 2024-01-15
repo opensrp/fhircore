@@ -175,8 +175,8 @@ constructor(
 
   /**
    * Populate application's configurations from the composition resource. Only Binary and Parameter
-   * Resources are used to represent application configurations. The [configCacheMap] is reset
-   * on every configs load.
+   * Resources are used to represent application configurations. The [configCacheMap] is reset on
+   * every configs load.
    *
    * Sections in Composition with Binary or Parameter represents a valid application configuration.
    * Example below is represents an application configuration uniquely identified by the
@@ -226,7 +226,7 @@ constructor(
     context: Context,
     configsLoadedCallback: (Boolean) -> Unit = {},
   ) {
-    //Reset configurations before loading new ones
+    // Reset configurations before loading new ones
     configCacheMap.clear()
 
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets

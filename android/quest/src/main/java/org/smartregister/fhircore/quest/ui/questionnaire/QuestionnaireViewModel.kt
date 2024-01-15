@@ -355,7 +355,11 @@ constructor(
         // Save resource first before referencing as Group#member
         defaultRepository.addOrUpdate(true, resource = this)
 
-        updateGroupManagingEntity(this, configuredGroup)
+        updateGroupManagingEntity(
+          this,
+          configuredGroup,
+          questionnaireConfig.managingEntityRelationshipCode,
+        )
         addMemberToGroup(this, configuredGroup)
 
         // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
@@ -639,8 +643,25 @@ constructor(
   }
 
   /** Update the [Group.managingEntity] */
-  suspend fun updateGroupManagingEntity(resource: Resource, group: Group?) {
-    if (group == null) return
+  suspend fun updateGroupManagingEntity(
+    resource: Resource,
+    group: Group?,
+    managingEntityRelationshipCode: String?,
+  ) {
+    if (
+      group == null && resource !is RelatedPerson && !managingEntityRelationshipCode.isNullOrEmpty()
+    ) {
+      return
+    }
+
+    if (
+      (resource as RelatedPerson).relationshipFirstRep.codingFirstRep.code ==
+        managingEntityRelationshipCode
+    ) {
+      defaultRepository.addOrUpdate(
+        resource = group!!.apply { managingEntity = resource.asReference() },
+      )
+    }
   }
 
   /**

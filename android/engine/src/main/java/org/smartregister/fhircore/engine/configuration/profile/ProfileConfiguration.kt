@@ -35,7 +35,6 @@ data class ProfileConfiguration(
   val id: String,
   val fhirResource: FhirResourceConfig,
   val secondaryResources: List<FhirResourceConfig>? = null,
-  val managingEntity: ManagingEntityConfig? = null,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
   val topAppBar: TopBarConfig? = null,
