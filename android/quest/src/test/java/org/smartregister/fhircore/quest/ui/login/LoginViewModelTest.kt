@@ -60,6 +60,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -88,6 +89,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private lateinit var loginViewModel: LoginViewModel
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val accountAuthenticator: AccountAuthenticator = mockk()
@@ -122,7 +125,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           workManager = workManager,
         ),
       )

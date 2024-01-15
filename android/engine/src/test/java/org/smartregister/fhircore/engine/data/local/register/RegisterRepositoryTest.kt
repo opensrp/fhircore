@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -87,6 +88,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var fhirEngine: FhirEngine
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient(PATIENT_ID)
@@ -99,7 +102,7 @@ class RegisterRepositoryTest : RobolectricTest() {
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           preferencesDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),

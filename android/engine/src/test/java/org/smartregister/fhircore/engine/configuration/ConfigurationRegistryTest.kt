@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -77,6 +78,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -96,7 +99,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine,
         fhirResourceDataSource,
         preferencesDataStore,
-        coroutineRule.testDispatcherProvider,
+        dispatcherProvider,
         AppConfigService(context),
         Faker.json,
       )

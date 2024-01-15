@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 
 class RegisterBottomSheetFragmentViewTest {
 
-  private val mockListener: (NavigationMenuConfig) -> Unit = {}
+  private val listener: (NavigationMenuConfig) -> Unit = {}
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -60,7 +60,7 @@ class RegisterBottomSheetFragmentViewTest {
   private fun setContent(title: String) {
     composeRule.setContent {
       RegisterBottomSheetView(
-        menuClickListener = mockListener,
+        menuClickListener = listener,
         navigationMenuConfigs = navigationMenuConfigs,
         onDismiss = {},
         title = title,

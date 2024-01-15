@@ -37,6 +37,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Reference
@@ -51,6 +52,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
 @HiltAndroidTest
@@ -58,6 +60,9 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
   private val preferencesDataStore: PreferencesDataStore = mockk()
@@ -247,7 +252,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         fhirResourceUtil = fhirResourceUtil,
       )
     }

@@ -68,6 +68,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -86,6 +87,8 @@ class AppMainViewModelTest : RobolectricTest() {
   @Inject lateinit var gson: Gson
 
   @Inject lateinit var workManager: WorkManager
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -117,7 +120,7 @@ class AppMainViewModelTest : RobolectricTest() {
           preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         ),

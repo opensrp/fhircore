@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -64,6 +65,8 @@ class RegisterViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
@@ -83,7 +86,7 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           preferencesDataStore = preferencesDataStore,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
         ),
       )

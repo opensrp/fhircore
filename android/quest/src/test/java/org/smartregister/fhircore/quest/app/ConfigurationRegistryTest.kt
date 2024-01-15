@@ -30,6 +30,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
@@ -45,6 +46,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -64,6 +66,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     mockk<FhirResourceService> { coEvery { post(any(), any()) } returns Bundle() }
   private val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
@@ -77,7 +81,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           fhirResourceDataSource = fhirResourceDataSource,
           preferencesDataStore = preferencesDataStore,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           configService = configService,
           json = Faker.json,
         ),

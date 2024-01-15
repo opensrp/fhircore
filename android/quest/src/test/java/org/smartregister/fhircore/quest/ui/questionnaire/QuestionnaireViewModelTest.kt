@@ -82,6 +82,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -113,6 +114,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -154,7 +157,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -275,7 +278,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Verify that the questionnaire response and extracted resources were saved
     val bundleSlot = slot<Bundle>()
-    coVerify {
+    // https://github.com/mockk/mockk/issues/352#issuecomment-592426549
+    coVerifyOrder {
       questionnaireViewModel.saveExtractedResources(
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,

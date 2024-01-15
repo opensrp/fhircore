@@ -29,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
 import io.mockk.spyk
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -39,6 +40,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -52,6 +54,8 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var testDispatcherProvider: DispatcherProvider
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
@@ -81,7 +85,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
       SyncBroadcaster(
         configurationRegistry,
         fhirEngine = mockk(),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
         context = application,
       )
@@ -95,7 +99,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
         preferencesDataStore = preferencesDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = testDispatcherProvider,
       )
   }
 

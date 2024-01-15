@@ -47,6 +47,7 @@ import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -59,6 +60,8 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
@@ -73,7 +76,7 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)

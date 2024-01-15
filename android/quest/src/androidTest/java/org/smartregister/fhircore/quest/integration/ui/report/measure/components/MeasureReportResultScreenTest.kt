@@ -16,14 +16,17 @@
 
 package org.smartregister.fhircore.quest.integration.ui.report.measure.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.navigation.NavController
+import androidx.navigation.testing.TestNavHostController
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
-import io.mockk.mockk
-import io.mockk.spyk
+import dagger.hilt.android.testing.BindValue
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
 import org.junit.Rule
@@ -45,39 +48,48 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.MeasureReportR
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 import org.smartregister.fhircore.quest.util.mappers.MeasureReportSubjectViewDataMapper
 
+@HiltAndroidTest
 class MeasureReportResultScreenTest {
 
-  @get:Rule(order = 0) val composeTestRule = createComposeRule()
+  @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
+
+  @get:Rule(order = 2) val composeTestRule = createComposeRule()
+
   private lateinit var measureReportViewModel: MeasureReportViewModel
-  private val fhirEngine: FhirEngine = mockk()
-  private val fhirOperator: FhirOperator = mockk()
-  private val preferencesDataStore: PreferencesDataStore = mockk(relaxed = true)
-  private val dispatcherProvider: DefaultDispatcherProvider = mockk()
-  private var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper =
-    mockk(relaxed = true)
-  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  private var registerRepository: RegisterRepository = mockk(relaxed = true)
-  private var defaultRepository: DefaultRepository = mockk(relaxed = true)
-  private var resourceDataRulesExecutor: ResourceDataRulesExecutor = mockk(relaxed = true)
-  private var measureReportRepository: MeasureReportRepository = mockk(relaxed = true)
-  private val navController: NavController = mockk(relaxUnitFun = true)
+
+  @Inject lateinit var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper
+
+  @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var fhirOperator: FhirOperator
+
+  @Inject lateinit var registerRepository: RegisterRepository
+
+  @BindValue val preferencesDataStore = configurationRegistry.preferencesDataStore
+
+  @Inject lateinit var defaultRepository: DefaultRepository
+
+  @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var measureReportRepository: MeasureReportRepository
 
   @Before
   fun setup() {
+    hiltRule.inject()
     measureReportViewModel =
-      spyk(
-        MeasureReportViewModel(
-          fhirEngine = fhirEngine,
-          fhirOperator = fhirOperator,
-          preferencesDataStore = preferencesDataStore,
-          dispatcherProvider = dispatcherProvider,
-          measureReportSubjectViewDataMapper = measureReportSubjectViewDataMapper,
-          configurationRegistry = configurationRegistry,
-          registerRepository = registerRepository,
-          defaultRepository = defaultRepository,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
-          measureReportRepository = measureReportRepository,
-        ),
+      MeasureReportViewModel(
+        fhirEngine,
+        fhirOperator,
+        preferencesDataStore,
+        DefaultDispatcherProvider(),
+        configurationRegistry,
+        registerRepository,
+        measureReportSubjectViewDataMapper,
+        defaultRepository,
+        resourceDataRulesExecutor,
+        measureReportRepository,
       )
   }
 
@@ -98,7 +110,7 @@ class MeasureReportResultScreenTest {
       MeasureReportIndividualResult(isMatchedIndicator = true)
     composeTestRule.setContent {
       MeasureReportResultScreen(
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         measureReportViewModel = measureReportViewModel,
       )
     }
@@ -114,7 +126,7 @@ class MeasureReportResultScreenTest {
     measureReportViewModel.measureReportPopulationResults.value = listOf(populationResult)
     composeTestRule.setContent {
       MeasureReportResultScreen(
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         measureReportViewModel = measureReportViewModel,
       )
     }

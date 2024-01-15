@@ -38,6 +38,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
@@ -71,6 +73,9 @@ class UserSettingViewModelTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   lateinit var fhirEngine: FhirEngine
   private var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
@@ -104,7 +109,7 @@ class UserSettingViewModelTest : RobolectricTest() {
         SyncBroadcaster(
           configurationRegistry,
           fhirEngine = mockk(),
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
           context = context,
         ),
@@ -120,7 +125,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
   }

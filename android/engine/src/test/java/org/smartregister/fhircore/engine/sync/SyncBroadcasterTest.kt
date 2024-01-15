@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @ExperimentalCoroutinesApi
@@ -51,6 +52,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
@@ -73,7 +76,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         SyncBroadcaster(
           configurationRegistry = configurationRegistry,
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           syncListenerManager = syncListenerManager,
           context = context,
         ),
