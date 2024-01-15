@@ -1,16 +1,17 @@
 {
-  "appId":"app",
+  "appId": "echis",
+  "configType": "dataMigration",
   "migrations": [
     {
-      "resourceType" : "Task",
+      "resourceType": "Task",
       "updateValues": [
         {
-          "jsonPathExpression" : "Task.basedOn[0].reference",
-          "valueRule" : {
+          "jsonPathExpression": "Task.basedOn[0].reference",
+          "valueRule": {
             "name": "taskBasedOn",
             "condition": "true",
             "actions": [
-              "data.put('taskBasedOn', fhirPath.extractValue(Task, 'Task.basedOn[0].reference').startsWith('CarePlan/') ? fhirPath.extractValue(Task, 'Task.basedOn[0].reference') : 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn[0].reference') )"
+              "data.put('taskBasedOn', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn[0].reference') )"
             ]
           }
         }
@@ -18,18 +19,40 @@
       "dataQueries": [
         {
           "paramName": "status",
+          "operation": "OR",
           "filterCriteria": [
             {
               "dataType": "CODE",
               "value": {
                 "system": "http://hl7.org/fhir/task-status",
-                "code": "entered-in-error"
+                "code": "ready"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "requested"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "in-progress"
               }
             }
           ]
         }
       ],
-      "version" : 1
+      "purgeAffectedResources": true,
+      "resourceFilterExpression" : {
+        "conditionalFhirPathExpressions": [
+          "Task.basedOn[0].reference.startsWith('CarePlan').not() and Task.basedOn[0].reference.startsWith('PlanDefinition').not()"
+        ],
+        "matchAll": true
+      },
+      "version": 1
     }
   ]
 }
