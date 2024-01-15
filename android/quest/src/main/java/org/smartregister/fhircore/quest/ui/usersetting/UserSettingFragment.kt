@@ -57,6 +57,7 @@ class UserSettingFragment : Fragment() {
               userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
             isDebugVariant = BuildConfig.DEBUG,
             mainNavController = findNavController(),
+            dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion(),
             lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
             showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
             unsyncedResourcesFlow = userSettingViewModel.unsyncedResourcesMutableSharedFlow,

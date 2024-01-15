@@ -60,7 +60,8 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
+        dataMigrationInProgress = false
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -91,7 +92,8 @@ class LoginScreenTest {
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
-        appVersionPair = Pair(1, "1.0.1")
+        appVersionPair = Pair(1, "1.0.1"),
+        dataMigrationInProgress = false
       )
     }
     composeRule
