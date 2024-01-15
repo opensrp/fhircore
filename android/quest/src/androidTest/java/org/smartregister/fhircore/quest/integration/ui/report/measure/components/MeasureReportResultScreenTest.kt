@@ -30,9 +30,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.integration.Faker
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
@@ -51,7 +51,7 @@ class MeasureReportResultScreenTest {
   private lateinit var measureReportViewModel: MeasureReportViewModel
   private val fhirEngine: FhirEngine = mockk()
   private val fhirOperator: FhirOperator = mockk()
-  private val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+  private val preferencesDataStore: PreferencesDataStore = mockk(relaxed = true)
   private val dispatcherProvider: DefaultDispatcherProvider = mockk()
   private var measureReportSubjectViewDataMapper: MeasureReportSubjectViewDataMapper =
     mockk(relaxed = true)
@@ -69,7 +69,7 @@ class MeasureReportResultScreenTest {
         MeasureReportViewModel(
           fhirEngine = fhirEngine,
           fhirOperator = fhirOperator,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           dispatcherProvider = dispatcherProvider,
           measureReportSubjectViewDataMapper = measureReportSubjectViewDataMapper,
           configurationRegistry = configurationRegistry,

@@ -50,7 +50,7 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
           dispatcherProvider = mockk(),
           configService = mockk(),
           json = json,

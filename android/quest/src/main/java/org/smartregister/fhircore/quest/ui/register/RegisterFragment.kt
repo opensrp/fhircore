@@ -194,7 +194,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Started -> {
-        Timber.d("KELVIN STARTED")
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(message = getString(R.string.syncing)),
@@ -204,7 +203,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
       is SyncJobStatus.Finished -> {
-        Timber.d("KELVIN FINISHED")
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -217,7 +215,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       }
       is SyncJobStatus.Failed -> {
-        Timber.d("KELVIN FAILED")
         refreshRegisterData()
         // Show error message in snackBar message
         val hasAuthError =

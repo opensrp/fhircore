@@ -197,7 +197,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         keys.PRACTITIONER_DETAILS,
-        PractitionerDetails(), // TODO: KELVIN Cater for protoStore Replacement
+        PractitionerDetails(),
       )
     }
 

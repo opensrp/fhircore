@@ -62,7 +62,6 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
 
   inline fun <reified T> readOnce(
     key: Preferences.Key<String>,
-    decodeWithGson: Boolean = true,
   ): T? {
     var out: T? = null
     runBlocking {
@@ -89,14 +88,8 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
       }
       .map { preferences -> preferences[key] ?: defaultValue }
 
-  // TODO: KELVIN. Remove this. It is temporary for storing objects as json strings in preferences
-  // data store. will be move to proto data store later
-
-  // Specified the key type separately for when return type is different from key e.g in
-  // LOCATION_IDS.. key is String, return type is List<String>
   inline fun <reified T, M> observe(
-    key: Preferences.Key<M>,
-    decodeWithGson: Boolean = true,
+    key: Preferences.Key<M>
   ): Flow<T?> =
     context.dataStore.data
       .catch { exception ->
@@ -131,6 +124,14 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
+  suspend fun <T> remove(key: Preferences.Key<T>) {
+    context.dataStore.edit { it.remove(key) }
+  }
+
+  suspend fun clear() {
+    context.dataStore.edit { it.clear() }
+  }
+
   // expose flows to be used all over the engine and view models
   val appId by lazy { observe(APP_ID, null) }
   val lang by lazy { observe(LANG, defaultValue = Locale.ENGLISH.toLanguageTag()) }
@@ -146,11 +147,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   val practitionerLocationHierarchies by lazy {
     observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "")
   }
-
-  // TODO: Kelvin Move all below to proto store?
   val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
   val remoteSyncResources by lazy {
-    observe<List<String>, String>(REMOTE_SYNC_RESOURCES, decodeWithGson = true)
+    observe<List<String>, String>(REMOTE_SYNC_RESOURCES)
   }
 
   companion object Keys {
@@ -170,8 +169,6 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
     val USER_INFO by lazy { stringPreferencesKey("USER_INFO") }
-
-    // TODO: Kelvin Move all below to protoStore
     val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
   }

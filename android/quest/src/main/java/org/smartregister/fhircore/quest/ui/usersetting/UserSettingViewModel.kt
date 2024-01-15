@@ -179,7 +179,8 @@ constructor(
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
       accountAuthenticator.invalidateSession {
-        // TODO: KELVIN talk to Elly about this -> preferencesDataStore.resetSharedPrefs()
+        // TODO: KELVIN ask Elly about these resets()
+        viewModelScope.launch { preferencesDataStore.clear() }
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }

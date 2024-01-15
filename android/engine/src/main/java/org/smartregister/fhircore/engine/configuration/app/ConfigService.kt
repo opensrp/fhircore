@@ -56,7 +56,7 @@ interface ConfigService {
       } else {
         // TODO: KELVIN ask Elly: what is being read here, where was it written
         val key = stringPreferencesKey(strategy.type)
-        val ids = preferencesDataStore.readOnce<List<String>>(key, decodeWithGson = true)
+        val ids = preferencesDataStore.readOnce<List<String>>(key)
         if (ids.isNullOrEmpty()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {

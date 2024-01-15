@@ -79,8 +79,8 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
     }
 
   suspend fun writeUserInfo(userInfo: UserInfo) {
-    context.userInfoProtoStore.updateData { userInfo ->
-      userInfo.copy(
+    context.userInfoProtoStore.updateData {
+      it.copy(
         name = userInfo.name,
       )
     }

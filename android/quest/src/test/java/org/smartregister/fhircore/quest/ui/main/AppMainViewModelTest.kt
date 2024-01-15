@@ -42,6 +42,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -175,10 +176,14 @@ class AppMainViewModelTest : RobolectricTest() {
         appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
       ),
     )
-    Assert.assertEquals(
-      appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
-      preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null),
-    )
+
+    preferencesDataStore.observe(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null).map { data ->
+      Assert.assertEquals(
+        appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
+        data,
+      )
+    }
+
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
 

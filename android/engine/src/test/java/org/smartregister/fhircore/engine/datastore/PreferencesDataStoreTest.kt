@@ -63,7 +63,7 @@ internal class PreferencesDataStoreTest : RobolectricTest() {
     val key = keys.APP_ID
 
     runTest {
-      preferencesDataStore.write(key, newAppId)
+      preferencesDataStore.write(key, dataToStore = newAppId)
       assert(preferencesDataStore.appId.first() == newAppId)
     }
   }
