@@ -21,6 +21,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
@@ -151,6 +152,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   val remoteSyncResources by lazy {
     observe<List<String>, String>(REMOTE_SYNC_RESOURCES)
   }
+  val migrationVersion by lazy {observe(MIGRATION_VERSION, defaultValue = null)}
 
   companion object Keys {
     const val PREFS_SYNC_PROGRESS_TOTAL = "sync_progress_total"
@@ -171,5 +173,6 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     val USER_INFO by lazy { stringPreferencesKey("USER_INFO") }
     val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
+    val MIGRATION_VERSION by lazy { intPreferencesKey("migrationVersion") }
   }
 }
