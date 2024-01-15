@@ -649,17 +649,13 @@ constructor(
     managingEntityRelationshipCode: String?,
   ) {
     if (
-      group == null && resource !is RelatedPerson && managingEntityRelationshipCode.isNullOrEmpty()
-    ) {
-      return
-    }
-
-    if (
-      (resource as RelatedPerson).relationshipFirstRep.codingFirstRep.code ==
-        managingEntityRelationshipCode
+      group != null &&
+        resource is RelatedPerson &&
+        !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
+        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
     ) {
       defaultRepository.addOrUpdate(
-        resource = group!!.apply { managingEntity = resource.asReference() },
+        resource = group.apply { managingEntity = resource.asReference() },
       )
     }
   }
