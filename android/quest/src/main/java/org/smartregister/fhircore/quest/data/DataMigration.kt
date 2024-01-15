@@ -24,7 +24,6 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
@@ -35,7 +34,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.migration.DataMigrationConfiguration
 import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -60,7 +59,7 @@ class DataMigration
 constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val preferenceDataStore: PreferenceDataStore,
+  val preferencesDataStore: PreferencesDataStore,
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
@@ -81,7 +80,7 @@ constructor(
       }
 
     runBlocking {
-      val previousVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first()
+      val previousVersion = preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION)
       val newMigrations = migrations?.filter { it.version > previousVersion }
       migrate(newMigrations, previousVersion)
     }
@@ -182,7 +181,7 @@ constructor(
         Timber.e(throwable)
       }
     }
-    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion.plus(1))
+    preferencesDataStore.write(PreferencesDataStore.MIGRATION_VERSION, maxVersion.plus(1))
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {

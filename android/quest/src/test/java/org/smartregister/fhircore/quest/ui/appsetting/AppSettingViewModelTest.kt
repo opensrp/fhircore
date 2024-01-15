@@ -39,7 +39,6 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull

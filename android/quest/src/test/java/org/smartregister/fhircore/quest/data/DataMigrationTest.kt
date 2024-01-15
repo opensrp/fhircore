@@ -23,7 +23,6 @@ import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
@@ -40,7 +39,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.configuration.migration.UpdateValueConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -55,7 +54,7 @@ class DataMigrationTest : RobolectricTest() {
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
-  @Inject lateinit var preferenceDataStore: PreferenceDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var dataMigration: DataMigration
 
@@ -99,7 +98,7 @@ class DataMigrationTest : RobolectricTest() {
       // Version updated to 2
       Assert.assertEquals(
         2,
-        preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
+        preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION),
       )
     }
 
@@ -170,7 +169,7 @@ class DataMigrationTest : RobolectricTest() {
       // Version updated to 2
       Assert.assertEquals(
         2,
-        preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first(),
+        preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION),
       )
     }
 }

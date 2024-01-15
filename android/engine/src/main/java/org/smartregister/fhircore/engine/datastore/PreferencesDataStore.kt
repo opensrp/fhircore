@@ -90,7 +90,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
       .map { preferences -> preferences[key] ?: defaultValue }
 
   inline fun <reified T, M> observe(
-    key: Preferences.Key<M>
+    key: Preferences.Key<M>,
   ): Flow<T?> =
     context.dataStore.data
       .catch { exception ->
@@ -149,10 +149,8 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "")
   }
   val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
-  val remoteSyncResources by lazy {
-    observe<List<String>, String>(REMOTE_SYNC_RESOURCES)
-  }
-  val migrationVersion by lazy {observe(MIGRATION_VERSION, defaultValue = null)}
+  val remoteSyncResources by lazy { observe<List<String>, String>(REMOTE_SYNC_RESOURCES) }
+  val migrationVersion by lazy { observe(MIGRATION_VERSION, defaultValue = null) }
 
   companion object Keys {
     const val PREFS_SYNC_PROGRESS_TOTAL = "sync_progress_total"
