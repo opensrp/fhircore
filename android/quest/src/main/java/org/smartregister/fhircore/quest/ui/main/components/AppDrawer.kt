@@ -422,7 +422,7 @@ private fun SideMenuItem(
     }
 
     AnimatedVisibility(visible = subItemsVisible) {
-      Column(modifier = Modifier.padding(start = 35.dp)) {
+      Column(modifier = Modifier.padding(start = 30.dp)) {
         subRegisters?.invoke()
       }
     }

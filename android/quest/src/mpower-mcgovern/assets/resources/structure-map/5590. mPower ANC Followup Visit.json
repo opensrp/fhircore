@@ -74,10 +74,588 @@
           ],
           "dependent": [
             {
+              "name": "ExtractConditionAndObservations",
+              "variable": [
+                "src",
+                "bundle",
+                "refPatient"
+              ]
+            },
+            {
               "name": "ExtractEncounter",
               "variable": [
                 "src",
                 "bundle"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExtractConditionAndObservations",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "refPatient",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_extract_anc",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "pageItem",
+              "condition": "(linkId = '6f7dad25-dad4-4191-9161-d26614398c30')"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_patient_condition",
+              "source": [
+                {
+                  "context": "pageItem",
+                  "element": "item",
+                  "condition": "((linkId = 'ad1a6ac5-4ccb-41e3-9ba3-de4516c65fce') and (answer.value = true))"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cnd",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "cnd",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Condition"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cnd_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_onset_date_val",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "onset",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_clinical_st",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "clinicalStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                            },
+                            {
+                              "valueString": "active"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_verif_st",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "verificationStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                            },
+                            {
+                              "valueString": "confirmed"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_category",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                            },
+                            {
+                              "valueString": "problem-list-item"
+                            },
+                            {
+                              "valueString": "Problem List Item"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_sub",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "refPatient"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_recorded",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "recordedDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "ccRisky",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cnd_code_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccRisky",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://snomed.info/sct"
+                                },
+                                {
+                                  "valueString": "47200007"
+                                },
+                                {
+                                  "valueString": "High Risk Pregnancy"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "High Risk Pregnancy"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_cnd_code_text",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccRisky",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "High Risk Pregnancy"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "o_patient_weight",
+              "source": [
+                {
+                  "context": "pageItem",
+                  "element": "item",
+                  "variable": "item_weight",
+                  "condition": "((linkId = 'ffacec65-8551-47c5-dee5-28b2c1698146') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_obs",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "obs",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Observation"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_obs_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "status",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueString": "final"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_category_1",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/observation-category"
+                            },
+                            {
+                              "valueString": "vital-signs"
+                            },
+                            {
+                              "valueString": "Vital Signs"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "concept",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cp_cc_cod",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "concept",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://snomed.info/sct"
+                                },
+                                {
+                                  "valueString": "27113001"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_cp_cod_disp",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "Body Weight"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_sub",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "refPatient"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_effective_current_date_time",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "effective",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_obs_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "obs",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "item_weight"
+                            },
+                            {
+                              "valueString": "answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
               ]
             }
           ]
@@ -101,49 +679,62 @@
       ],
       "rule": [
         {
-          "name": "referred_check_and_extract_due_task",
+          "name": "r_referred_check_and_extract_due_task",
           "source": [
             {
               "context": "src",
               "element": "item",
-              "variable": "has_referred",
-              "condition": "((linkId = '0418baa2-f7d4-4b8d-cba0-5718460ffb7a') and (answer.value.code = 'yes'))"
+              "variable": "pageItem",
+              "condition": "(linkId = '020b1d55-cb7d-4487-dead-c8cd39e644ba')"
             }
           ],
           "rule": [
             {
-              "name": "r_extract_due_task",
+              "name": "referred_check_and_extract_due_task",
               "source": [
                 {
-                  "context": "src"
+                  "context": "pageItem",
+                  "element": "item",
+                  "variable": "has_referred",
+                  "condition": "((linkId = '0418baa2-f7d4-4b8d-cba0-5718460ffb7a') and (answer.value.code = 'yes'))"
                 }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "bundle",
-                  "contextType": "variable",
-                  "element": "entry",
-                  "variable": "entry"
-                },
-                {
-                  "context": "entry",
-                  "contextType": "variable",
-                  "element": "resource",
-                  "variable": "dueTask",
-                  "transform": "create",
-                  "parameter": [
+                  "name": "r_extract_due_task",
+                  "source": [
                     {
-                      "valueString": "Task"
+                      "context": "src"
                     }
-                  ]
-                }
-              ],
-              "dependent": [
-                {
-                  "name": "ExtractDueTask",
-                  "variable": [
-                    "src",
-                    "dueTask"
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "dueTask",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Task"
+                        }
+                      ]
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractDueTask",
+                      "variable": [
+                        "src",
+                        "dueTask"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -672,7 +1263,7 @@
                   ],
                   "dependent": [
                     {
-                      "name": "extractObservation",
+                      "name": "extractStockObservation",
                       "variable": [
                         "src",
                         "bundle",
@@ -694,7 +1285,7 @@
       "typeMode": "none",
       "input": [
         {
-          "name": "questionnaireResponse",
+          "name": "src",
           "type": "QuestionnaireResponse",
           "mode": "source"
         },
@@ -709,7 +1300,7 @@
           "name": "r_per",
           "source": [
             {
-              "context": "questionnaireResponse"
+              "context": "src"
             }
           ],
           "target": [
@@ -728,7 +1319,7 @@
               "name": "r_task_period_extra",
               "source": [
                 {
-                  "context": "questionnaireResponse"
+                  "context": "src"
                 }
               ],
               "target": [
@@ -737,7 +1328,7 @@
                   "transform": "evaluate",
                   "parameter": [
                     {
-                      "valueId": "questionnaireResponse"
+                      "valueId": "src"
                     },
                     {
                       "valueString": "now()"
@@ -749,7 +1340,7 @@
                   "transform": "evaluate",
                   "parameter": [
                     {
-                      "valueId": "questionnaireResponse"
+                      "valueId": "src"
                     },
                     {
                       "valueString": "now() + '7 \\'days\\''.toQuantity()"
@@ -772,7 +1363,7 @@
               "name": "r_task_per",
               "source": [
                 {
-                  "context": "questionnaireResponse"
+                  "context": "src"
                 }
               ],
               "target": [
@@ -795,7 +1386,7 @@
           "name": "r_task_data",
           "source": [
             {
-              "context": "questionnaireResponse"
+              "context": "src"
             }
           ],
           "target": [
@@ -919,7 +1510,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
+                  "valueId": "src"
                 },
                 {
                   "valueString": "$this.subject"
@@ -933,7 +1524,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
+                  "valueId": "src"
                 },
                 {
                   "valueString": "now()"
@@ -947,7 +1538,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
+                  "valueId": "src"
                 },
                 {
                   "valueString": "$this.generalPractitioner.first()"
@@ -961,7 +1552,7 @@
               "transform": "evaluate",
               "parameter": [
                 {
-                  "valueId": "questionnaireResponse"
+                  "valueId": "src"
                 },
                 {
                   "valueString": "$this.generalPractitioner.first()"
@@ -994,172 +1585,185 @@
           ]
         },
         {
-          "name": "check_refer_reason",
+          "name": "r_check_refer_reason",
           "source": [
             {
-              "context": "questionnaireResponse",
+              "context": "src",
               "element": "item",
-              "variable": "refer_reason",
-              "condition": "((linkId = '3d005338-3602-408d-fbca-d429cfda7ea8') and answer.value.exists())"
+              "variable": "pageItem",
+              "condition": "(linkId = '020b1d55-cb7d-4487-dead-c8cd39e644ba')"
             }
           ],
           "rule": [
             {
-              "name": "r_task_input",
+              "name": "check_refer_reason",
               "source": [
                 {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "input",
-                  "variable": "input",
-                  "transform": "create",
-                  "parameter": [
-                    {
-                      "valueString": "Task_Input"
-                    }
-                  ]
+                  "context": "pageItem",
+                  "element": "item",
+                  "variable": "refer_reason",
+                  "condition": "((linkId = '3d005338-3602-408d-fbca-d429cfda7ea8') and answer.value.exists())"
                 }
               ],
               "rule": [
                 {
-                  "name": "r_task_input_cod",
+                  "name": "r_task_input",
                   "source": [
                     {
-                      "context": "questionnaireResponse"
+                      "context": "src"
                     }
                   ],
                   "target": [
                     {
-                      "context": "input",
+                      "context": "task",
                       "contextType": "variable",
-                      "element": "value",
-                      "variable": "taskCode",
+                      "element": "input",
+                      "variable": "input",
                       "transform": "create",
                       "parameter": [
                         {
-                          "valueString": "CodeableConcept"
+                          "valueString": "Task_Input"
                         }
                       ]
                     }
                   ],
                   "rule": [
                     {
-                      "name": "r_en_cc_cod",
+                      "name": "r_task_input_cod",
                       "source": [
                         {
-                          "context": "questionnaireResponse"
+                          "context": "src"
                         }
                       ],
                       "target": [
                         {
-                          "context": "taskCode",
+                          "context": "input",
                           "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
+                          "element": "value",
+                          "variable": "taskCode",
                           "transform": "create",
                           "parameter": [
                             {
-                              "valueString": "Coding"
+                              "valueString": "CodeableConcept"
                             }
                           ]
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_en_cod_system",
+                          "name": "r_en_cc_cod",
                           "source": [
                             {
-                              "context": "questionnaireResponse"
+                              "context": "src"
                             }
                           ],
                           "target": [
                             {
-                              "context": "coding",
+                              "context": "taskCode",
                               "contextType": "variable",
-                              "element": "system",
-                              "transform": "copy",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "create",
                               "parameter": [
                                 {
-                                  "valueString": "https://www.mpower-social.com/"
+                                  "valueString": "Coding"
                                 }
                               ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_en_cod_cod",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
                             }
                           ],
-                          "target": [
+                          "rule": [
                             {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "code",
-                              "transform": "evaluate",
-                              "parameter": [
+                              "name": "r_en_cod_system",
+                              "source": [
                                 {
-                                  "valueId": "refer_reason"
-                                },
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
                                 {
-                                  "valueString": "$this.answer.value.code"
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "system",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "https://www.mpower-social.com/"
+                                    }
+                                  ]
                                 }
                               ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_en_cod_disp",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "display",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "refer_reason"
-                                },
-                                {
-                                  "valueString": "$this.answer.value.display"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_en_text",
-                      "source": [
-                        {
-                          "context": "questionnaireResponse"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "taskCode",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "refer_reason"
                             },
                             {
-                              "valueString": "answer.value.display"
+                              "name": "r_en_cod_cod",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "code",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "refer_reason"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.code"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_en_cod_disp",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "coding",
+                                  "contextType": "variable",
+                                  "element": "display",
+                                  "transform": "evaluate",
+                                  "parameter": [
+                                    {
+                                      "valueId": "refer_reason"
+                                    },
+                                    {
+                                      "valueString": "$this.answer.value.display"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_en_text",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "taskCode",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "refer_reason"
+                                },
+                                {
+                                  "valueString": "answer.value.display"
+                                }
+                              ]
                             }
                           ]
                         }
@@ -1269,7 +1873,7 @@
       ]
     },
     {
-      "name": "extractObservation",
+      "name": "extractStockObservation",
       "typeMode": "none",
       "input": [
         {
@@ -1498,7 +2102,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "consumption"
+                              "valueString": "consume-stock-balance"
                             }
                           ]
                         }
@@ -1519,7 +2123,7 @@
                           "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "consumption"
+                              "valueString": "consume-stock-balance"
                             }
                           ]
                         }
@@ -1542,7 +2146,7 @@
                       "transform": "copy",
                       "parameter": [
                         {
-                          "valueString": "consumption"
+                          "valueString": "consume-stock-balance"
                         }
                       ]
                     }
@@ -1782,26 +2386,39 @@
                         {
                           "context": "src",
                           "element": "item",
-                          "variable": "noAncVisitFlag",
-                          "condition": "((linkId = 'e6b390ca-699d-4f4f-b388-d3abfb097e26') and answer.value.empty())"
+                          "variable": "pageItem",
+                          "condition": "(linkId = '020b1d55-cb7d-4487-dead-c8cd39e644ba')"
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_create_anc_visit_stockout_flag",
+                          "name": "no_anc_visit_flag",
                           "source": [
                             {
-                              "context": "src"
+                              "context": "pageItem",
+                              "element": "item",
+                              "variable": "noAncVisitFlag",
+                              "condition": "((linkId = 'e6b390ca-699d-4f4f-b388-d3abfb097e26') and answer.value.empty())"
                             }
                           ],
-                          "dependent": [
+                          "rule": [
                             {
-                              "name": "createStockOutFlag",
-                              "variable": [
-                                "src",
-                                "bundle",
-                                "encounter",
-                                "refCommodity"
+                              "name": "r_create_anc_visit_stockout_flag",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "dependent": [
+                                {
+                                  "name": "createStockOutFlag",
+                                  "variable": [
+                                    "src",
+                                    "bundle",
+                                    "encounter",
+                                    "refCommodity"
+                                  ]
+                                }
                               ]
                             }
                           ]
@@ -1818,39 +2435,52 @@
                 {
                   "context": "src",
                   "element": "item",
-                  "variable": "latestObservation",
-                  "condition": "((linkId = '77001671-c07b-4afb-81ae-2220d4f38157') and answer.value.exists())"
+                  "variable": "pageItem",
+                  "condition": "(linkId = '020b1d55-cb7d-4487-dead-c8cd39e644ba')"
                 }
               ],
               "rule": [
                 {
-                  "name": "r_update_current_latest_obs",
+                  "name": "check_latest_obs",
                   "source": [
                     {
-                      "context": "src"
+                      "context": "pageItem",
+                      "element": "item",
+                      "variable": "latestObservation",
+                      "condition": "((linkId = '77001671-c07b-4afb-81ae-2220d4f38157') and answer.value.exists())"
                     }
                   ],
-                  "target": [
+                  "rule": [
                     {
-                      "variable": "latestObservationId",
-                      "transform": "evaluate",
-                      "parameter": [
+                      "name": "r_update_current_latest_obs",
+                      "source": [
                         {
-                          "valueId": "latestObservation"
-                        },
-                        {
-                          "valueString": "$this.answer.value"
+                          "context": "src"
                         }
-                      ]
-                    }
-                  ],
-                  "dependent": [
-                    {
-                      "name": "updateLatestObservation",
-                      "variable": [
-                        "src",
-                        "bundle",
-                        "latestObservationId"
+                      ],
+                      "target": [
+                        {
+                          "variable": "latestObservationId",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "latestObservation"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ],
+                      "dependent": [
+                        {
+                          "name": "updateLatestObservation",
+                          "variable": [
+                            "src",
+                            "bundle",
+                            "latestObservationId"
+                          ]
+                        }
                       ]
                     }
                   ]
@@ -1930,30 +2560,43 @@
             {
               "context": "src",
               "element": "item",
-              "variable": "ancBalance",
-              "condition": "((linkId = 'd91c5e51-ac81-41f6-8f09-87805b87a98d') and answer.value.exists())"
+              "variable": "pageItem",
+              "condition": "(linkId = '020b1d55-cb7d-4487-dead-c8cd39e644ba')"
             }
           ],
           "rule": [
             {
-              "name": "r_anc_visit_previous_bal",
+              "name": "check_anc_visit_prev_bal",
               "source": [
                 {
-                  "context": "src"
+                  "context": "pageItem",
+                  "element": "item",
+                  "variable": "ancBalance",
+                  "condition": "((linkId = 'd91c5e51-ac81-41f6-8f09-87805b87a98d') and answer.value.exists())"
                 }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "previousBal",
-                  "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
-                  "parameter": [
+                  "name": "r_anc_visit_previous_bal",
+                  "source": [
                     {
-                      "valueId": "ancBalance"
-                    },
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
                     {
-                      "valueString": "$this.answer.value.toString()"
+                      "context": "previousBal",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "ancBalance"
+                        },
+                        {
+                          "valueString": "$this.answer.value.toString()"
+                        }
+                      ]
                     }
                   ]
                 }

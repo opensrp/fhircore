@@ -34,7 +34,14 @@
       {
         "id": "totalObservations",
         "resource": "Observation",
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "sortConfigs": [
+          {
+            "paramName": "date",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
+        ]
       }
     ]
   },
@@ -62,7 +69,14 @@
         {
           "id": "stockObservations",
           "resource": "Observation",
-          "searchParameter": "subject"
+          "searchParameter": "subject",
+          "sortConfigs": [
+            {
+              "paramName": "date",
+              "dataType": "DATE",
+              "order": "DESCENDING"
+            }
+          ]
         },
         {
           "id": "stockOutFlags",
@@ -344,7 +358,7 @@
       "condition": "true",
       "priority": 3,
       "actions": [
-        "data.put('patientWeightDate', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.effective\") : null)"
+        "data.put('patientWeightDate', size(data.get('patientWeightObservations')) > 0 ? service.formatDate(fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.effective\"), \"yyyy-MM-dd'T'HH:mm:ssZ\", \"yyyy-MM-dd\") : null)"
       ]
     },
     {
@@ -563,6 +577,13 @@
       "condition": "true",
       "actions": [
         "data.put('ancConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = '77386006'\")).get(0).idElement.idPart)"
+      ]
+    },
+    {
+      "name": "riskyAncConditionId",
+      "condition": "true",
+      "actions": [
+        "data.put('riskyAncConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = '47200007'\")).get(0).idElement.idPart)"
       ]
     },
     {
@@ -1407,6 +1428,20 @@
                             },
                             {
                               "paramType": "PREPOPULATE",
+                              "linkId": "4e7336a4-4dd1-4efc-89a1-0eb0748a828c",
+                              "dataType": "INTEGER",
+                              "key": "patientWeight",
+                              "value": "@{patientWeight}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "2fd89181-2d0f-405b-8d15-f312427dd7c6",
+                              "dataType": "DATE",
+                              "key": "patientWeightDate",
+                              "value": "@{patientWeightDate}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
                               "linkId": "d91c5e51-ac81-41f6-8f09-87805b87a98d",
                               "dataType": "INTEGER",
                               "key": "ancPreviousBalance",
@@ -1418,6 +1453,13 @@
                               "dataType": "STRING",
                               "key": "ancObservationId",
                               "value": "@{ancObservationId}"
+                            },
+                            {
+                              "paramType": "PREPOPULATE",
+                              "linkId": "351ca898-582a-4585-8bd9-30aafc7a6174",
+                              "dataType": "STRING",
+                              "key": "riskyAncConditionId",
+                              "value": "@{riskyAncConditionId}"
                             },
                             {
                               "paramType": "PREPOPULATE",

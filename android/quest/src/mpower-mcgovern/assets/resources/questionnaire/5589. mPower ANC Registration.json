@@ -1207,7 +1207,7 @@
             },
             {
               "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueDecimal": 199
+              "valueInteger": 199
             }
           ]
         },
@@ -1264,36 +1264,8 @@
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
               "valueExpression": {
-                "expression": "iif(%resource.item.where(linkId='4e7336a4-4dd1-4efc-89a1-0eb0748a828c').answer.value > 0, ((%resource.item.where(linkId='ffacec65-8551-47c5-dee5-28b2c1698146').answer.value - %resource.item.where(linkId='4e7336a4-4dd1-4efc-89a1-0eb0748a828c').answer.value) / %resource.item.where(linkId='calculated-month').answer.value), 1)"
+                "expression": "iif(%resource.descendants().where(linkId='4e7336a4-4dd1-4efc-89a1-0eb0748a828c').answer.value > 0, ((%resource.descendants().where(linkId='ffacec65-8551-47c5-dee5-28b2c1698146').answer.value - %resource.descendants().where(linkId='4e7336a4-4dd1-4efc-89a1-0eb0748a828c').answer.value) / %resource.descendants().where(linkId='calculated-month').answer.value), 1)"
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "c67d21a5-3d1f-4732-e1b3-be19e8292029",
-              "type": "display",
-              "text": "<span style=\"color:#cf0800;\">প্রতিদিন তিনবেলা প্রধান খাবারের সাথে বাড়তি দুইবেলা খাওয়া এবং ৬ ধরনের খাবার খাওয়ার পরামর্শ দিন । এছাড়াও প্রতি মাসে ওজন চেক করার পরামর্শ প্রদান করুন। ভারী কাপড় কাঁচা, ধান ভানা, পানি তোলা ইত্যাদি ভারী কাজ করবেন না। দিনে কম করে আট ঘন্টা ঘুমাতে হবে এবং দুপুরে দুই ঘন্টা শুয়ে বিশ্রাম নিতে হবে। </span>",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                        "code": "highlight"
-                      }
-                    ]
-                  }
-                }
-              ],
-              "required": false,
-              "enableWhen": [
-                {
-                  "question": "6fc0b919-e779-4567-f611-315a6f8156d9",
-                  "operator": "<",
-                  "answerDecimal": 1
-                }
-              ]
             }
           ],
           "enableWhen": [
@@ -1301,6 +1273,32 @@
               "question": "4e7336a4-4dd1-4efc-89a1-0eb0748a828c",
               "operator": ">",
               "answerInteger": 0
+            }
+          ]
+        },
+        {
+          "linkId": "c67d21a5-3d1f-4732-e1b3-be19e8292029",
+          "type": "display",
+          "text": "<span style=\"color:#cf0800;\">প্রতিদিন তিনবেলা প্রধান খাবারের সাথে বাড়তি দুইবেলা খাওয়া এবং ৬ ধরনের খাবার খাওয়ার পরামর্শ দিন । এছাড়াও প্রতি মাসে ওজন চেক করার পরামর্শ প্রদান করুন। ভারী কাপড় কাঁচা, ধান ভানা, পানি তোলা ইত্যাদি ভারী কাজ করবেন না। দিনে কম করে আট ঘন্টা ঘুমাতে হবে এবং দুপুরে দুই ঘন্টা শুয়ে বিশ্রাম নিতে হবে। </span>",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "6fc0b919-e779-4567-f611-315a6f8156d9",
+              "operator": "<",
+              "answerDecimal": 1
             }
           ]
         },
@@ -2661,6 +2659,7 @@
             }
           ],
           "required": true,
+          "readOnly": true,
           "extension": [
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
