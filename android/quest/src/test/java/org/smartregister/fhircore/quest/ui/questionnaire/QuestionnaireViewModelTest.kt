@@ -77,11 +77,11 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
@@ -115,6 +115,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -154,7 +156,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,
@@ -167,7 +169,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT,
+        type = "DEFAULT",
       )
 
     questionnaireViewModel =
@@ -275,7 +277,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Verify that the questionnaire response and extracted resources were saved
     val bundleSlot = slot<Bundle>()
-    coVerify {
+    // https://github.com/mockk/mockk/issues/352#issuecomment-592426549
+    coVerifyOrder {
       questionnaireViewModel.saveExtractedResources(
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
@@ -958,7 +961,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig.copy(
         resourceIdentifier = patient.logicalId,
         saveQuestionnaireResponse = false,
-        type = QuestionnaireType.EDIT,
+        type = "EDIT",
         extractedResourceUniquePropertyExpressions =
           listOf(
             ExtractedResourceUniquePropertyExpression(

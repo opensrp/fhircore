@@ -1,5 +1,8 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONObject
 
@@ -52,6 +55,8 @@ sonar {
 android {
   compileSdk = 34
 
+  val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
@@ -68,11 +73,17 @@ android {
     buildConfigField("String", "OPENSRP_APP_ID", """${project.extra["OPENSRP_APP_ID"]}""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
+    buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
       "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   signingConfigs {
@@ -153,6 +164,7 @@ android {
   composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
 
     unitTests {
@@ -388,12 +400,10 @@ dependencies {
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.coroutine.test)
   testImplementation(libs.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
@@ -411,8 +421,7 @@ dependencies {
   androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)

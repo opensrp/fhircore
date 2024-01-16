@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -32,7 +32,6 @@ import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.quest.ui.shared.components.CardView
 
 class CardViewTest {
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
   private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap())
 
   @get:Rule val composeTestRule = createComposeRule()
@@ -44,7 +43,7 @@ class CardViewTest {
       CardView(
         viewProperties = viewProperties,
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeTestRule.onNodeWithText("IMMUNIZATIONS").assertIsDisplayed()

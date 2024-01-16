@@ -98,6 +98,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -132,6 +133,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var testDispatcher: DispatcherProvider
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
@@ -147,7 +150,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   fun setup() {
     hiltRule.inject()
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-    every { defaultRepository.dispatcherProvider } returns coroutineTestRule.testDispatcherProvider
+    every { defaultRepository.dispatcherProvider } returns testDispatcher
     every { defaultRepository.fhirEngine } returns fhirEngine
 
     fhirResourceUtil =

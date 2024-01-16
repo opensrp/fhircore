@@ -56,6 +56,8 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.isEditable
+import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -135,9 +137,9 @@ constructor(
 
     val questionnaire =
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditable()) {
+        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.type.isReadOnly(),
+            readOnly = questionnaireConfig.isReadOnly(),
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
           )
         }
@@ -229,7 +231,7 @@ constructor(
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
-        if (subject != null && !questionnaireConfig.type.isReadOnly()) {
+        if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
           generateCarePlan(
@@ -308,7 +310,7 @@ constructor(
         ) {
           currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
-        if (questionnaireConfig.type.isEditable()) {
+        if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
             this.id = currentQuestionnaireResponse.subject.extractId()
           } else if (
@@ -424,7 +426,7 @@ constructor(
   ): MutableMap<ResourceType, MutableList<Resource>> {
     val referencedResources = mutableMapOf<ResourceType, MutableList<Resource>>()
     if (
-      questionnaireConfig.type.isEditable() &&
+      questionnaireConfig.isEditable() &&
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
         subjectType != null
     ) {

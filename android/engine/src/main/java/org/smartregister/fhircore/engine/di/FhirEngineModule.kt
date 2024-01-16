@@ -42,7 +42,7 @@ import timber.log.Timber
  * Provide [FhirEngine] dependency in isolation so we can replace it with a fake dependency in test
  */
 @InstallIn(SingletonComponent::class)
-@Module(includes = [CoreModule::class])
+@Module
 class FhirEngineModule {
 
   @Singleton
@@ -69,7 +69,7 @@ class FhirEngineModule {
           httpLogger =
             HttpLogger(
               HttpLogger.Configuration(
-                level = HttpLogger.Level.BASIC,
+                level = if (BuildConfig.DEBUG) HttpLogger.Level.BODY else HttpLogger.Level.BASIC,
                 headersToIgnore = listOf(AUTHORIZATION, COOKIE),
               ),
             ) {

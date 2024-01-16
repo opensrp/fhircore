@@ -484,6 +484,34 @@
                 "actions": [
                   "data.put('statuses', service.joinToString([data.get('getChildStatus'), data.get('getSickChildStatus'), data.get('getPregnancyStatus'), data.get('getFPStatus'), data.get('getPNCStatus'), data.get('getMentalHeathStatus'), data.get('getHIVStatus'),data.get('getCMNTDStatus'), data.get('getTBStatus'), data.get('removalReasonPatient'), data.get('getFamilyHeadStatus'), ...]))"
                 ]
+              },
+              {
+                "name": "practitionerId",
+                "condition": "true",
+                "actions": [
+                  "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
+                ]
+              },
+              {
+                "name": "careTeam",
+                "condition": "true",
+                "actions": [
+                  "data.put('careTeam',service.extractPractitionerInfoFromSharedPrefs('CARE_TEAM'))"
+                ]
+              },
+              {
+                "name": "organization",
+                "condition": "true",
+                "actions": [
+                  "data.put('organization',service.extractPractitionerInfoFromSharedPrefs('ORGANIZATION'))"
+                ]
+              },
+              {
+                "name": "practitionerLocation",
+                "condition": "true",
+                "actions": [
+                  "data.put('practitionerLocation',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_LOCATION'))"
+                ]
               }
             ],
             "views": [
