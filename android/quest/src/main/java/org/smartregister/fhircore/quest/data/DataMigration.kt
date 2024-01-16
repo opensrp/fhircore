@@ -80,7 +80,7 @@ constructor(
       }
 
     runBlocking {
-      val previousVersion = preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION)
+      val previousVersion = preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION)!!
       val newMigrations = migrations?.filter { it.version > previousVersion }
       migrate(newMigrations, previousVersion)
     }

@@ -34,13 +34,18 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -120,17 +125,25 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadConfigurations() = runTest {
+  fun testLoadConfigurations() = runTest(UnconfinedTestDispatcher()) {
+    val testDispatcher = UnconfinedTestDispatcher(testScheduler)
+    Dispatchers.setMain(testDispatcher)
+
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
 
     val appId = "app/debug"
     appSettingViewModel.appId.value = appId
+
+    try {
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
     Assert.assertEquals(appId, preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null))
+      } finally {
+        Dispatchers.resetMain()
+      }
   }
 
   @Test
@@ -156,7 +169,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
+  fun `fetchConfigurations() should save preferences for patient related resource types`() =
     runTest {
       coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
         Composition().apply {
@@ -431,7 +444,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
+  fun testSaveSyncPreferencesDataStoreShouldVerifyDataSave() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
 
@@ -444,7 +457,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       )
     val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
     val savedSyncResourceTypes: List<ResourceType> =
-      sharedPreferencesHelper.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
+      preferencesDataStore.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
 
     Assert.assertEquals(2, savedSyncResourceTypes.size)
     Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())

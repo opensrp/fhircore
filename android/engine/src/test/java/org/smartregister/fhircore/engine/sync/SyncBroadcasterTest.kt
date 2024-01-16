@@ -201,7 +201,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         encodeWithGson = true,
       )
     }
-    // preferencesDataStore.resetSharedPrefs() // TODO: Kelvin. Revisit functionality necessity
+    runTest { preferencesDataStore.clear() }
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
