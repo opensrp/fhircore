@@ -21,6 +21,8 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.text.SimpleDateFormat
+import java.time.DateTimeException
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -45,7 +47,9 @@ import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.extractAge
+import org.smartregister.fhircore.engine.util.extension.extractAgeAtDate
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -277,6 +281,25 @@ constructor(
 
     /** This function extracts the patient's age from the patient resource */
     fun extractAge(patient: Patient): String = patient.extractAge(context)
+
+    /**
+     * This function extracts a patient's age from the patient resource at a given date
+     *
+     * Returns a String of the age formatted in Years, Months, Weeks and Days
+     */
+    fun extractAgeAtDate(patient: Patient, endDate: String,
+                         dateFormat: String = SDF_YYYY_MM_DD): String {
+      return try {
+        val date: Date =
+          endDate.parseDate(dateFormat) ?: throw IllegalArgumentException("Invalid date format")
+        val dateTo = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+
+        patient.extractAgeAtDate(context, dateTo)
+      } catch (e: DateTimeException) {
+        Timber.e(e, "Invalid date")
+        ""
+      }
+    }
 
     /**
      * This function extracts and returns a translated string for the gender in Patient resource.
