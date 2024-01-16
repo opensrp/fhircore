@@ -270,15 +270,16 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
     val practitionerRef = it.asReference(ResourceType.Practitioner)
 
     when (this) {
-      is Patient -> generalPractitioner = arrayListOf(practitionerRef)
-      is Observation -> performer = arrayListOf(practitionerRef)
-      is QuestionnaireResponse -> author = practitionerRef
-      is Flag -> author = practitionerRef
+      is Patient -> generalPractitioner = generalPractitioner ?: arrayListOf(practitionerRef)
+      is Observation -> performer = performer ?: arrayListOf(practitionerRef)
+      is QuestionnaireResponse -> author = author ?: practitionerRef
+      is Flag -> author = author ?: practitionerRef
       is Encounter ->
         participant =
-          arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
-          )
+          participant
+            ?: arrayListOf(
+              Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
+            )
     }
   }
 }
