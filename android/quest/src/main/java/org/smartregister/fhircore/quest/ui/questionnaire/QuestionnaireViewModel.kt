@@ -347,20 +347,17 @@ constructor(
           }
         }
 
-        val configuredGroup =
-          questionnaireConfig.groupResource?.groupIdentifier?.let {
-            loadResource(ResourceType.Group, it)
-          } as Group?
-
-        // Save resource first before referencing as Group#member
         defaultRepository.addOrUpdate(true, resource = this)
 
         updateGroupManagingEntity(
           resource = this,
-          group = configuredGroup,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
           managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
         )
-        addMemberToGroup(this, configuredGroup)
+        addMemberToGroup(
+          resource = this,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+        )
 
         // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
         val listEntryComponent =
@@ -645,9 +642,14 @@ constructor(
   /** Update the [Group.managingEntity] */
   suspend fun updateGroupManagingEntity(
     resource: Resource,
-    group: Group?,
+    groupIdentifier: String?,
     managingEntityRelationshipCode: String?,
   ) {
+    // Load the group from the database to get the updated Resource always.
+    val group =
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group?
+
     if (
       group != null &&
         resource is RelatedPerson &&
@@ -665,8 +667,13 @@ constructor(
    * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
    * member of itself.
    */
-  suspend fun addMemberToGroup(resource: Resource, group: Group?) {
-    if (group == null) return
+  suspend fun addMemberToGroup(resource: Resource, groupIdentifier: String?) {
+    // Load the Group resource from the database to get the updated one
+    val group =
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group?
+        ?: return
+
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
 
@@ -688,17 +695,8 @@ constructor(
       )
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
+      defaultRepository.addOrUpdate(resource = group)
     }
-    // here Group is coming with groupIdentifier thus it make sense that
-    // there is an interaction inside group rather addingMemberItems only for above check
-    // so for every cases group is to be updated
-
-    /**
-     * The Group Resource is fetched by the `groupIdentifier`. We trigger the group update every
-     * time anything linked to it in order to change the `_lastUpdated` timestamp. This helps us
-     * with order the last updated group (household) on the top of the register.
-     */
-    defaultRepository.addOrUpdate(resource = group)
   }
 
   /**

@@ -250,15 +250,16 @@ fun Resource.generateMissingId() {
 
 fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?) {
   // Organization reference in shared pref as "Organization/some-gibberish-uuid"
+  // Only set organization only if the desired Resource property is null
   authenticatedOrganizationIds?.let { ids ->
     val organizationRef =
       ids.firstOrNull()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
 
     when (this) {
-      is Patient -> managingOrganization = organizationRef
-      is Group -> managingEntity = organizationRef
-      is Encounter -> serviceProvider = organizationRef
-      is Location -> managingOrganization = organizationRef
+      is Patient -> managingOrganization = managingOrganization ?: organizationRef
+      is Group -> managingEntity = managingEntity ?: organizationRef
+      is Encounter -> serviceProvider = serviceProvider ?: organizationRef
+      is Location -> managingOrganization = managingOrganization ?: organizationRef
     }
   }
 }
