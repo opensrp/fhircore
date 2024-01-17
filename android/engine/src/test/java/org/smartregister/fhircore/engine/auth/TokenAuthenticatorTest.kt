@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.IOException
 import java.net.UnknownHostException
@@ -339,6 +340,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testRefreshTokenShouldReturnToken() {
+    val account = Account(sampleUsername, PROVIDER)
     val accessToken = "soRefreshingNewToken"
     val oAuthResponse =
       OAuthResponse(
@@ -349,11 +351,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
         scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
+    every { accountManager.setPassword(account, any()) } just runs
 
     val currentRefreshToken = "oldRefreshToken"
-    val newAccessToken = tokenAuthenticator.refreshToken(currentRefreshToken)
+    val newAccessToken = tokenAuthenticator.refreshToken(account, currentRefreshToken)
     Assert.assertNotNull(newAccessToken)
     Assert.assertEquals(accessToken, newAccessToken)
+    verify { accountManager.setPassword(eq(account), oAuthResponse.refreshToken) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
