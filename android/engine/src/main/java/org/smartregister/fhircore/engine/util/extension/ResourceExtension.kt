@@ -255,11 +255,14 @@ fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?)
     val organizationRef =
       ids.firstOrNull()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
 
-    when (this) {
-      is Patient -> managingOrganization = managingOrganization ?: organizationRef
-      is Group -> managingEntity = managingEntity ?: organizationRef
-      is Encounter -> serviceProvider = serviceProvider ?: organizationRef
-      is Location -> managingOrganization = managingOrganization ?: organizationRef
+    if (organizationRef != null) {
+      when (this) {
+        is Patient -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        is Group -> managingEntity = updateReference(managingEntity, organizationRef)
+        is Encounter -> serviceProvider = updateReference(serviceProvider, organizationRef)
+        is Location -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        else -> {}
+      }
     }
   }
 }
@@ -270,19 +273,37 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
     val practitionerRef = it.asReference(ResourceType.Practitioner)
 
     when (this) {
-      is Patient -> generalPractitioner = generalPractitioner ?: arrayListOf(practitionerRef)
-      is Observation -> performer = performer ?: arrayListOf(practitionerRef)
-      is QuestionnaireResponse -> author = author ?: practitionerRef
-      is Flag -> author = author ?: practitionerRef
+      is Patient ->
+        generalPractitioner =
+          if (generalPractitioner.isNullOrEmpty()) {
+            arrayListOf(practitionerRef)
+          } else {
+            generalPractitioner
+          }
+      is Observation ->
+        performer = if (performer.isNullOrEmpty()) arrayListOf(practitionerRef) else performer
+      is QuestionnaireResponse -> author = updateReference(author, practitionerRef)
+      is Flag -> author = updateReference(author, practitionerRef)
       is Encounter ->
         participant =
-          participant
-            ?: arrayListOf(
+          if (participant.isNullOrEmpty()) {
+            arrayListOf(
               Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
             )
+          } else {
+            participant
+          }
+      else -> {}
     }
   }
 }
+
+private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
+  if (oldReference == null || oldReference.reference.isNullOrEmpty()) {
+    newReference
+  } else {
+    Reference(oldReference.reference)
+  }
 
 fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
