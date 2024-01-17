@@ -280,7 +280,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
     }
   }
 
-  private val isLoadingNextPage = MutableStateFlow(false)
+  private val isLoadingNextPage = MutableStateFlow(true)
 
   /**
    * Contains [QuestionnaireResponseItemComponent]s that have been modified by the user.
@@ -617,20 +617,25 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       .withIndex()
       .onEach {
         if (it.index == 0) {
-          expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
-          val questionnaireItems = if (!questionnaire.isPaginated) {
-            questionnaire.item
-          } else {
-            questionnaire.item[currentPageIndexFlow.value!!].item
+          viewModelScope.launch(Dispatchers.IO) {
+            isLoadingNextPage.value = true
+            modificationCount.update { count -> count + 1 }
           }
-          questionnaireItems.flattened().filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
-            updateDependentQuestionnaireResponseItems(
-              qItem,
-              questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-              -1,
-            )
+        }
+        if (it.index == 1) {
+          viewModelScope.launch(Dispatchers.IO) {
+            expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
+            questionnaire.item.flattened().filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
+              updateDependentQuestionnaireResponseItems(
+                qItem,
+                questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
+                -1,
+              )
+            }
+            pages = getQuestionnairePages()
+            isLoadingNextPage.value = false
+            modificationCount.update { count -> count + 1 }
           }
-          modificationCount.update { count -> count + 1 }
         }
       }
       .map { it.value }
