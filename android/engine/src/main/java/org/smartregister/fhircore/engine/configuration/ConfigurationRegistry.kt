@@ -371,10 +371,12 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources() {
+  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true): Composition? {
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { composition ->
+      if (isInitialLogin) return null
+      val compositionResource = fetchRemoteComposition(parsedAppId)
+      compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
           .groupBy { section ->
@@ -390,6 +392,8 @@ constructor(
                 ResourceType.Library.name,
                 ResourceType.Measure.name,
                 ResourceType.Basic.name,
+                ResourceType.Binary.name,
+                ResourceType.Parameters,
               )
           }
           .forEach { resourceGroup ->
@@ -447,6 +451,23 @@ constructor(
             }
           }
       }
+      return compositionResource
+    }
+    return null
+  }
+
+  suspend fun fetchRemoteComposition(appId: String): Composition? {
+    Timber.i("Fetching configs for app $appId")
+    val urlPath =
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
+
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
     }
   }
 

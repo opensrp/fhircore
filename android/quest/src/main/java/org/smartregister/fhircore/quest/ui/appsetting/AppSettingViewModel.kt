@@ -113,8 +113,15 @@ constructor(
         val urlPath =
           "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
         val compositionResource =
-          withContext(dispatcherProvider.io()) { fetchComposition(urlPath, context) }
-            ?: return@launch
+          withContext(dispatcherProvider.io()) {
+            configurationRegistry.fetchRemoteComposition(urlPath)
+          }
+
+        if (compositionResource == null) {
+          showProgressBar.postValue(false)
+          _error.postValue(context.getString(R.string.application_not_supported, appId?.trim()))
+          return@launch
+        }
 
         val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         compositionResource
