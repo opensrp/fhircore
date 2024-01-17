@@ -18,27 +18,28 @@ package org.smartregister.fhircore.engine.domain.model
 
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
 class QuestionnaireTypeTest {
 
   @Test
   fun testDefault() {
-    Assert.assertTrue(QuestionnaireType.DEFAULT.isDefault())
-    Assert.assertFalse(QuestionnaireType.EDIT.isDefault())
-    Assert.assertFalse(QuestionnaireType.READ_ONLY.isDefault())
+    Assert.assertTrue(QuestionnaireConfig("id", type = "DEFAULT").isDefault())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "EDIT").isDefault())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "READ_ONLY").isDefault())
   }
 
   @Test
   fun testEdit() {
-    Assert.assertFalse(QuestionnaireType.DEFAULT.isEditable())
-    Assert.assertTrue(QuestionnaireType.EDIT.isEditable())
-    Assert.assertFalse(QuestionnaireType.READ_ONLY.isEditable())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "DEFAULT").isEditable())
+    Assert.assertTrue(QuestionnaireConfig("id", type = "EDIT").isEditable())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "READ_ONLY").isEditable())
   }
 
   @Test
   fun testReadOnly() {
-    Assert.assertFalse(QuestionnaireType.DEFAULT.isReadOnly())
-    Assert.assertFalse(QuestionnaireType.EDIT.isReadOnly())
-    Assert.assertTrue(QuestionnaireType.READ_ONLY.isReadOnly())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "DEFAULT").isReadOnly())
+    Assert.assertFalse(QuestionnaireConfig("id", type = "EDIT").isReadOnly())
+    Assert.assertTrue(QuestionnaireConfig("id", type = "READ_ONLY").isReadOnly())
   }
 }

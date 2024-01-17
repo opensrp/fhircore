@@ -256,7 +256,7 @@ constructor(
         "QuestionnaireResponse" -> carePlan.addActivity().setReference(Reference(resource))
         "OperationOutcome" -> carePlan.addActivity().setReference(Reference(resource))
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
+        "MedicationRequest" -> carePlan.addActivity().reference = Reference(resource)
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")
@@ -282,12 +282,12 @@ constructor(
         "Task",
         "QuestionnaireResponse",
         "OperationOutcome",
+        "MedicationRequest",
         "CarePlan", -> {
           defaultRepository.create(true, resource)
           createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")

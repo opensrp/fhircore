@@ -141,7 +141,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var transformSupportServices: TransformSupportServices
 
-  @Inject lateinit var workflowCarePlanGenerator: WorkflowCarePlanGenerator
+  // @Inject lateinit var workflowCarePlanGenerator: WorkflowCarePlanGenerator
 
   @Inject lateinit var fhirPathEngine: FHIRPathEngine
 
@@ -179,6 +179,20 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
           defaultRepository = defaultRepository,
           configurationRegistry = configurationRegistry,
         ),
+      )
+
+    val workflowCarePlanGenerator =
+      WorkflowCarePlanGenerator(
+        knowledgeManager = knowledgeManager,
+        defaultRepository = defaultRepository,
+        fhirPathEngine = fhirPathEngine,
+        context = context,
+        fhirOperator =
+          FhirOperator.Builder(context)
+            .fhirEngine(fhirEngine)
+            .fhirContext(fhirContext)
+            .knowledgeManager(knowledgeManager)
+            .build(),
       )
 
     fhirCarePlanGenerator =
@@ -795,6 +809,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val resourcesSlot = planDefinitionResources.resourcesSlot
 
     installToIgManager(planDefinition)
+
+    coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.Library)) } returns listOf()
+    coEvery { fhirEngine.search<PlanDefinition>(Search(ResourceType.PlanDefinition)) } returns
+      listOf(
+        SearchResult(
+          resource = planDefinition,
+          included = null,
+          revIncluded = null,
+        ),
+      )
 
     fhirCarePlanGenerator
       .generateOrUpdateCarePlan(
@@ -2233,7 +2257,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       ::importToFhirEngine,
     )
 
-    val fhirOperator =
+    /*val fhirOperator =
       FhirOperator.Builder(context)
         .fhirEngine(fhirEngine)
         .fhirContext(fhirContext)
@@ -2247,11 +2271,39 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             "http://smart.who.int/smart-immunizations-measles/PlanDefinition/IMMZD2DTMeasles",
           ),
         subject = "Patient/IMMZ-Patient-NoVaxeninfant-f",
+      )*/
+
+    val planDefinition =
+      "/plans/measles-immunizations/PlanDefinition-IMMZD2DTMeasles.json"
+        .readFile()
+        .decodeResourceFromString<PlanDefinition>()
+
+    val patient =
+      "/plans/measles-immunizations/IMMZ-Patient-NoVaxeninfant-f.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+
+    val resourcesSlot = mutableListOf<Resource>()
+    val booleanSlot = slot<Boolean>()
+    coEvery { defaultRepository.create(capture(booleanSlot), capture(resourcesSlot)) } returns
+      emptyList()
+
+    fhirCarePlanGenerator
+      .generateOrUpdateCarePlan(
+        planDefinition = planDefinition,
+        subject = patient,
+        generateCarePlanWithWorkflowApi = true,
       )
+      .also { careplan ->
+        assertTrue(resourcesSlot.any { it.resourceType == ResourceType.MedicationRequest })
+        assertTrue(resourcesSlot.size > 0)
+        println(jsonParser.encodeResourceToString(careplan))
+        assertNotNull(careplan)
+      }
 
-    println(jsonParser.encodeResourceToString(carePlan))
+    // println(jsonParser.encodeResourceToString(carePlan))
 
-    assertNotNull(carePlan)
+    // assertNotNull(carePlan)
   }
 
   private suspend fun loadFile(path: String, importFunction: KSuspendFunction1<Resource, Unit>) {
