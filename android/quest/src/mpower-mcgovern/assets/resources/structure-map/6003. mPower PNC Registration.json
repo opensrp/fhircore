@@ -2985,7 +2985,7 @@
             {
               "context": "src",
               "element": "item",
-              "variable": "item",
+              "variable": "ancCondition",
               "condition": "((linkId = '650dd00d-c60b-4a3d-838a-128aad048277') and answer.value.exists())"
             }
           ],
@@ -3055,7 +3055,122 @@
                           "transform": "evaluate",
                           "parameter": [
                             {
-                              "valueId": "item"
+                              "valueId": "ancCondition"
+                            },
+                            {
+                              "valueString": "$this.answer.value"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "r_cnd_clinical_status",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "cnd",
+                      "contextType": "variable",
+                      "element": "clinicalStatus",
+                      "transform": "cc",
+                      "parameter": [
+                        {
+                          "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                        },
+                        {
+                          "valueString": "inactive"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_item",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "variable": "riskyCondition",
+              "condition": "((linkId = '351ca898-582a-4585-8bd9-30aafc7a6174') and answer.value.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "r_cnd",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "cnd",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Condition"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_item_cnd_id",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "cnd",
+                      "contextType": "variable",
+                      "element": "id",
+                      "variable": "cnd_id",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "id"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_cnd_id_value",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd_id",
+                          "contextType": "variable",
+                          "element": "value",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "riskyCondition"
                             },
                             {
                               "valueString": "$this.answer.value"

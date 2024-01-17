@@ -29,6 +29,39 @@
           "valueBoolean": true
         }
       ],
+      "linkId": "a1f75d6a-7be8-42c6-9dbf-7ef293b49227",
+      "type": "string",
+      "text": "Risky PNC Condition ID",
+      "required": false,
+      "readOnly": true
+    },
+    {
+      "linkId": "ad1a6ac5-4ccb-41e3-9ba3-de4516c65fce",
+      "type": "boolean",
+      "text": "Is the Patient Mark as Risky?",
+      "required": false,
+      "readOnly": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "(%resource.descendants().where(linkId='910e88a1-d61d-420e-8821-a729fe0977c0').answer.value.code='yes') or (%resource.descendants().where(linkId='cbbe786b-ebe4-4d0c-e96f-53b7511cc30c').answer.value.code='yes')"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
       "linkId": "bd4dba60-545c-4946-88c2-29c85f9bdf7e",
       "type": "dateTime",
       "required": true,

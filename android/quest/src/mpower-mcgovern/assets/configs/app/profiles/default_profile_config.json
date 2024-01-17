@@ -583,7 +583,14 @@
       "name": "riskyAncConditionId",
       "condition": "true",
       "actions": [
-        "data.put('riskyAncConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = '47200007'\")).get(0).idElement.idPart)"
+        "data.put('riskyAncConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = 'high-risk-anc'\")).get(0).idElement.idPart)"
+      ]
+    },
+    {
+      "name": "riskyPncConditionId",
+      "condition": "true",
+      "actions": [
+        "data.put('riskyPncConditionId', (service.filterResources(data.get('activeConditions'), \"Condition.code.coding.code = 'high-risk-pnc'\")).get(0).idElement.idPart)"
       ]
     },
     {
@@ -1235,6 +1242,13 @@
                         "dataType": "STRING",
                         "key": "pncStockOutFlagId",
                         "value": "@{pncStockOutFlagId}"
+                      },
+                      {
+                        "paramType": "PREPOPULATE",
+                        "linkId": "a1f75d6a-7be8-42c6-9dbf-7ef293b49227",
+                        "dataType": "STRING",
+                        "key": "riskyPncConditionId",
+                        "value": "@{riskyPncConditionId}"
                       }
                     ]
                   }
@@ -2334,6 +2348,13 @@
               "dataType": "STRING",
               "key": "ancConditionId",
               "value": "@{ancConditionId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "351ca898-582a-4585-8bd9-30aafc7a6174",
+              "dataType": "STRING",
+              "key": "riskyAncConditionId",
+              "value": "@{riskyAncConditionId}"
             }
           ]
         }

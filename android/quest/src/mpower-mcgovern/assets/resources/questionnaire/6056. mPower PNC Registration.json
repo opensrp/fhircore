@@ -1196,7 +1196,19 @@
     {
       "linkId": "650dd00d-c60b-4a3d-838a-128aad048277",
       "type": "string",
-      "text": "Active condition id",
+      "text": "Active ANC condition id",
+      "required": false,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "351ca898-582a-4585-8bd9-30aafc7a6174",
+      "type": "string",
+      "text": "Active Risky ANC condition id",
       "required": false,
       "extension": [
         {

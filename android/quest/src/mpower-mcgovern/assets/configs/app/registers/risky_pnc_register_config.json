@@ -1,7 +1,7 @@
 {
   "appId": "app",
   "configType": "register",
-  "id": "riskyAncRegister",
+  "id": "riskyPncRegister",
   "fhirResource": {
     "baseResource": {
       "resource": "Patient",
@@ -17,7 +17,7 @@
                   "dataType": "CODEABLECONCEPT",
                   "value": {
                     "system": "http://snomed.info/sct",
-                    "code": "77386006"
+                    "code": "234234234"
                   }
                 }
               ]
@@ -47,7 +47,7 @@
                   "dataType": "CODEABLECONCEPT",
                   "value": {
                     "system": "http://snomed.info/sct",
-                    "code": "high-risk-anc"
+                    "code": "high-risk-pnc"
                   }
                 }
               ]
@@ -183,7 +183,6 @@
       {
         "name": "taskScheduleDate",
         "condition": "true",
-        "priority": 2,
         "actions": [
           "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
         ]

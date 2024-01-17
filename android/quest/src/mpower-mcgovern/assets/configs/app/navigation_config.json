@@ -104,7 +104,7 @@
       "subRegisters": [
         {
           "id": "riskyAncRegister",
-          "display": "{{nav.menu.anc.risky}}",
+          "display": "{{nav.menu.risky}}",
           "showCount": true,
           "actions": [
             {
@@ -137,6 +137,24 @@
         {
           "trigger": "ON_COUNT",
           "id": "pncRegister"
+        }
+      ],
+      "subRegisters": [
+        {
+          "id": "riskyPncRegister",
+          "display": "{{nav.menu.risky}}",
+          "showCount": true,
+          "actions": [
+            {
+              "trigger": "ON_CLICK",
+              "workflow": "LAUNCH_REGISTER",
+              "id": "riskyPncRegister"
+            },
+            {
+              "trigger": "ON_COUNT",
+              "id": "riskyPncRegister"
+            }
+          ]
         }
       ]
     },

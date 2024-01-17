@@ -74,11 +74,467 @@
           ],
           "dependent": [
             {
+              "name": "UpdateRiskyCondition",
+              "variable": [
+                "src",
+                "bundle",
+                "refPatient"
+              ]
+            },
+            {
               "name": "ExtractEncounter",
               "variable": [
                 "src",
                 "bundle",
                 "refPatient"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UpdateRiskyCondition",
+      "typeMode": "none",
+      "input": [
+        {
+          "name": "src",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
+          "name": "bundle",
+          "type": "Bundle",
+          "mode": "target"
+        },
+        {
+          "name": "refPatient",
+          "type": "Reference",
+          "mode": "source"
+        }
+      ],
+      "rule": [
+        {
+          "name": "r_patient_add_risk_condition",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'ad1a6ac5-4ccb-41e3-9ba3-de4516c65fce') and (answer.value = true))"
+            }
+          ],
+          "rule": [
+            {
+              "name": "chk_no_prev_risky_cnd",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "condition": "((linkId = 'a1f75d6a-7be8-42c6-9dbf-7ef293b49227') and answer.value.exists().not())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cnd",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "cnd",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Condition"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_cnd_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "id",
+                          "transform": "uuid"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_onset_date_val",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "onset",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_clinical_st",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "clinicalStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                            },
+                            {
+                              "valueString": "active"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_verif_st",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "verificationStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+                            },
+                            {
+                              "valueString": "confirmed"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_category",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "category",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-category"
+                            },
+                            {
+                              "valueString": "problem-list-item"
+                            },
+                            {
+                              "valueString": "Problem List Item"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_sub",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "subject",
+                          "transform": "copy",
+                          "parameter": [
+                            {
+                              "valueId": "refPatient"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_recorded",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "recordedDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "src"
+                            },
+                            {
+                              "valueString": "now()"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_code",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "code",
+                          "variable": "ccRisky",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "CodeableConcept"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_cnd_code_coding",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccRisky",
+                              "contextType": "variable",
+                              "element": "coding",
+                              "variable": "coding",
+                              "transform": "c",
+                              "parameter": [
+                                {
+                                  "valueString": "http://snomed.info/sct"
+                                },
+                                {
+                                  "valueString": "high-risk-pnc"
+                                },
+                                {
+                                  "valueString": "High Risk PNC"
+                                }
+                              ]
+                            },
+                            {
+                              "context": "coding",
+                              "contextType": "variable",
+                              "element": "display",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "High Risk PNC"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "name": "r_cnd_code_text",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "ccRisky",
+                              "contextType": "variable",
+                              "element": "text",
+                              "transform": "copy",
+                              "parameter": [
+                                {
+                                  "valueString": "High Risk PNC"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "r_patient_update_risk_condition",
+          "source": [
+            {
+              "context": "src",
+              "element": "item",
+              "condition": "((linkId = 'ad1a6ac5-4ccb-41e3-9ba3-de4516c65fce') and answer.value.exists().not())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "chk_prev_risky_cnd",
+              "source": [
+                {
+                  "context": "src",
+                  "element": "item",
+                  "variable": "riskyCondition",
+                  "condition": "((linkId = 'a1f75d6a-7be8-42c6-9dbf-7ef293b49227') and answer.value.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "r_cnd",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "bundle",
+                      "contextType": "variable",
+                      "element": "entry",
+                      "variable": "entry"
+                    },
+                    {
+                      "context": "entry",
+                      "contextType": "variable",
+                      "element": "resource",
+                      "variable": "cnd",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Condition"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "r_item_cnd_id",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "id",
+                          "variable": "cnd_id",
+                          "transform": "create",
+                          "parameter": [
+                            {
+                              "valueString": "id"
+                            }
+                          ]
+                        }
+                      ],
+                      "rule": [
+                        {
+                          "name": "r_item_cnd_id_value",
+                          "source": [
+                            {
+                              "context": "src"
+                            }
+                          ],
+                          "target": [
+                            {
+                              "context": "cnd_id",
+                              "contextType": "variable",
+                              "element": "value",
+                              "transform": "evaluate",
+                              "parameter": [
+                                {
+                                  "valueId": "riskyCondition"
+                                },
+                                {
+                                  "valueString": "$this.answer.value"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "r_cnd_clinical_status",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "cnd",
+                          "contextType": "variable",
+                          "element": "clinicalStatus",
+                          "transform": "cc",
+                          "parameter": [
+                            {
+                              "valueString": "http://terminology.hl7.org/CodeSystem/condition-clinical"
+                            },
+                            {
+                              "valueString": "inactive"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
               ]
             }
           ]

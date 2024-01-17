@@ -47,10 +47,6 @@
       "item": [
         {
           "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
-              "valueBoolean": true
-            }
           ],
           "linkId": "351ca898-582a-4585-8bd9-30aafc7a6174",
           "type": "string",
@@ -71,13 +67,6 @@
                 "language": "text/fhirpath",
                 "expression": "(%resource.descendants().where(linkId='5d8ac884-da47-4ec3-f077-1dd9812d0d43').answer.value < 145) or ((%resource.descendants().where(linkId='df0bde3d-6fa8-4d75-ccd5-0834b9323440').answer.value >= 140 or %resource.descendants().where(linkId='e6e8dd78-09f5-422b-8a3f-2211f5889a23').answer.value >= 90) and (%resource.descendants().where(linkId='e37db999-ea58-44de-c4b7-6e49d36a337c').answer.value.code='yes' or %resource.descendants().where(linkId='35d80d98-3850-4dba-85d1-0beb44837473').answer.value.code='yes')) or (%resource.descendants().where(linkId='1bb2c861-9007-43bf-8ebf-366c23055cc1').answer.value >= 7.8) or (%resource.descendants().where(linkId='25db94df-f8d7-4ca1-edb7-45773e5b49b4').answer.value <= 7) or (%resource.descendants().where(linkId='25db94df-f8d7-4ca1-edb7-45773e5b49b4').answer.value > 7 and %resource.descendants().where(linkId='25db94df-f8d7-4ca1-edb7-45773e5b49b4').answer.value <= 11 and %resource.descendants().where(linkId='6fc0b919-e779-4567-f611-315a6f8156d9').answer.value < 1)"
               }
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "351ca898-582a-4585-8bd9-30aafc7a6174",
-              "operator": "exists",
-              "answerBoolean": false
             }
           ]
         },
