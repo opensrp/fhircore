@@ -108,8 +108,6 @@ class AppMainViewModelTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
 
-    preferencesDataStore = PreferencesDataStore(application, gson)
-
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
     appMainViewModel =
@@ -117,7 +115,7 @@ class AppMainViewModelTest : RobolectricTest() {
         AppMainViewModel(
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
-          preferencesDataStore = preferencesDataStore,
+          preferencesDataStore = Faker.buildPreferencesDataStore(),
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           dispatcherProvider = dispatcherProvider,

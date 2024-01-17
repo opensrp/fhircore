@@ -18,11 +18,13 @@ package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
 import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -35,6 +37,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import java.net.UnknownHostException
@@ -103,28 +106,17 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var appSettingViewModel: AppSettingViewModel
 
-  private val testCoroutineScope = testDispatcher + Job()
-  private val testDataStoreName = "test_datastore"
-
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
     every { defaultRepository.fhirEngine } returns fhirEngine
-
-
-
-    preferencesDataStore = PreferenceDataStoreFactory.create(
-      scope = testCoroutineScope,
-      produceFile =
-      { context.preferencesDataStoreFile(testDataStoreName) }
-    )
 
     appSettingViewModel =
       spyk(
         AppSettingViewModel(
           fhirResourceDataSource = fhirResourceDataSource,
           defaultRepository = defaultRepository,
-          preferencesDataStore = preferencesDataStore,
+          preferencesDataStore = Faker.buildPreferencesDataStore(),
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
@@ -140,10 +132,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testLoadConfigurations() = runTest(UnconfinedTestDispatcher()) {
-    val testDispatcher = UnconfinedTestDispatcher(testScheduler)
-    Dispatchers.setMain(testDispatcher)
-
+  fun testLoadConfigurations() = runTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
     coEvery { appSettingViewModel.defaultRepository.create(any()) } returns emptyList()
@@ -151,14 +140,10 @@ class AppSettingViewModelTest : RobolectricTest() {
     val appId = "app/debug"
     appSettingViewModel.appId.value = appId
 
-    try {
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
     Assert.assertEquals(appId, preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null))
-      } finally {
-        Dispatchers.resetMain()
-      }
   }
 
   @Test

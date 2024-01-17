@@ -79,10 +79,10 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun providePreferencesDataStore(@ApplicationContext appContext: Context, dispatcher: CoroutineDispatcher): DataStore<Preferences> {
+  fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
     val userPreferences = "preferences_datastore"
     return PreferenceDataStoreFactory.create(
-      scope = CoroutineScope(dispatcher + SupervisorJob()),
+      scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
       produceFile = { appContext.preferencesDataStoreFile(userPreferences) }
     )
   }

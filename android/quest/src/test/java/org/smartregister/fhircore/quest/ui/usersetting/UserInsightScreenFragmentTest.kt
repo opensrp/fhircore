@@ -60,7 +60,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
-  private var preferencesDataStore: PreferencesDataStore
+  private lateinit var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -69,7 +69,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private lateinit var secureSharedPreference: SecureSharedPreference
 
   init {
-    preferencesDataStore = PreferencesDataStore(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -80,7 +79,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
-    preferencesDataStore = mockk()
+    preferencesDataStore = Faker.buildPreferencesDataStore()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,

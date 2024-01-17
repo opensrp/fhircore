@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.quest.app.fakes
 
 import android.app.Application
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import com.google.gson.Gson
 import io.mockk.coEvery
@@ -24,6 +26,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -39,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.quest.app.testDispatcher
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 object Faker {
@@ -84,10 +89,17 @@ object Faker {
     return configurationRegistry
   }
 
+  private val testCoroutineScope = CoroutineScope(testDispatcher + Job())
+  private val testDataStoreName = "test_datastore"
+  val testDataStore = PreferenceDataStoreFactory.create(
+    scope = testCoroutineScope,
+    produceFile = { getApplicationContext<Application>().preferencesDataStoreFile(testDataStoreName) }
+  )
   fun buildPreferencesDataStore() =
     PreferencesDataStore(
       getApplicationContext<Application>(),
       Gson(),
+      testDataStore
     )
 
   fun buildPatient(
