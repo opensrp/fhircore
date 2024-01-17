@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
@@ -35,12 +36,14 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -78,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.app.testDispatcher
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
@@ -99,10 +103,21 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var appSettingViewModel: AppSettingViewModel
 
+  private val testCoroutineScope = testDispatcher + Job()
+  private val testDataStoreName = "test_datastore"
+
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
     every { defaultRepository.fhirEngine } returns fhirEngine
+
+
+
+    preferencesDataStore = PreferenceDataStoreFactory.create(
+      scope = testCoroutineScope,
+      produceFile =
+      { context.preferencesDataStoreFile(testDataStoreName) }
+    )
 
     appSettingViewModel =
       spyk(

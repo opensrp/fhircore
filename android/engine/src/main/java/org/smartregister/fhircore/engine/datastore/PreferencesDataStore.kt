@@ -27,6 +27,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
@@ -39,13 +42,12 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
-const val DATASTORE_NAME = "preferences_datastore"
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
+
 
 @Singleton
 class PreferencesDataStore
 @Inject
-constructor(@ApplicationContext val context: Context, val gson: Gson) {
+constructor(@ApplicationContext val context: Context, val gson: Gson, val dataStore: DataStore<Preferences>) {
 
   /**
    * This blocking read function was made to prevent making functions all over the codebase suspend
@@ -58,7 +60,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
    * In situations where you provide a non-null defaultValue, you can use !! to extract
    */
   fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
-    context.dataStore.data.first()[key] ?: defaultValue
+    dataStore.data.first()[key] ?: defaultValue
   }
 
   inline fun <reified T> readOnce(
@@ -66,7 +68,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   ): T? {
     var out: T? = null
     runBlocking {
-      context.dataStore.data.first()[key].also {
+      dataStore.data.first()[key].also {
         try {
           out = gson.fromJson(it, T::class.java)
         } catch (jsonIoException: JsonIOException) {
@@ -79,7 +81,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   }
 
   fun <T> observe(key: Preferences.Key<T>, defaultValue: T? = null) =
-    context.dataStore.data
+    dataStore.data
       .catch { exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
@@ -92,7 +94,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   inline fun <reified T, M> observe(
     key: Preferences.Key<M>,
   ): Flow<T?> =
-    context.dataStore.data
+    dataStore.data
       .catch { exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
@@ -113,7 +115,7 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     key: Preferences.Key<T>,
     dataToStore: T,
   ) { // named dataToStore instead of data to prevent overload ambiguity
-    context.dataStore.edit { preferences -> preferences[key] = dataToStore }
+    dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
   suspend inline fun <reified T> write(
@@ -122,15 +124,15 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
     encodeWithGson: Boolean = true,
   ) {
     val dataToStore = if (encodeWithGson) gson.toJson(data) else data.encodeJson()
-    context.dataStore.edit { preferences -> preferences[key] = dataToStore }
+    dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
   suspend fun <T> remove(key: Preferences.Key<T>) {
-    context.dataStore.edit { it.remove(key) }
+    dataStore.edit { it.remove(key) }
   }
 
   suspend fun clear() {
-    context.dataStore.edit { it.clear() }
+    dataStore.edit { it.clear() }
   }
 
   // expose flows to be used all over the engine and view models
