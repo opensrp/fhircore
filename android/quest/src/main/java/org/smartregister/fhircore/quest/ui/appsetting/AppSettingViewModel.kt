@@ -110,11 +110,9 @@ constructor(
       try {
         showProgressBar.postValue(true)
         Timber.i("Fetching configs for app $appId")
-        val urlPath =
-          "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
         val compositionResource =
           withContext(dispatcherProvider.io()) {
-            configurationRegistry.fetchRemoteComposition(urlPath)
+            configurationRegistry.fetchRemoteComposition(appId)
           }
 
         if (compositionResource == null) {
