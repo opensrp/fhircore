@@ -32,6 +32,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -75,8 +77,10 @@ fun RegisterScreen(
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  registerViewModel: RegisterViewModel,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
+  val dataMigrationInProgress by registerViewModel.dataMigrationInProgress.observeAsState(false)
 
   Scaffold(
     topBar = {
@@ -122,6 +126,9 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
+      if (dataMigrationInProgress) {
+        LoaderDialog(dialogMessage = stringResource(id = R.string.migrating_data))
+      }
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(

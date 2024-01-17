@@ -20,6 +20,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -89,6 +91,9 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+  private val _dataMigrationInProgress = MutableLiveData(false)
+  val dataMigrationInProgress: LiveData<Boolean>
+    get() = _dataMigrationInProgress
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -456,5 +461,10 @@ constructor(
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)
+  }
+
+  fun setOnMigrateDataInProgress(inProgress: Boolean) {
+    Timber.i("+++++++++++ on migrate data called from register with inProgress as $inProgress")
+    _dataMigrationInProgress.postValue(inProgress)
   }
 }
