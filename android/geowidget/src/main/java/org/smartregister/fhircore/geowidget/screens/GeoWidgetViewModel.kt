@@ -78,7 +78,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
         .asSequence()
         .map { it.resource }
         .filter {
-          // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
+           //it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
           it.characteristic.firstOrNull { characteristic ->
             characteristic.value is Reference &&
               characteristic.valueReference.reference.contains(ResourceType.Location.name)

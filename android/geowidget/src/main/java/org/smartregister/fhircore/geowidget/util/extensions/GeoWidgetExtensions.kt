@@ -91,7 +91,7 @@ fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Lo
 
   return Location().apply {
     id = UUID.randomUUID().toString()
-    status = Location.LocationStatus.INACTIVE
+    status = Location.LocationStatus.ACTIVE
     position =
       Location.LocationPositionComponent().apply {
         this.longitude = BigDecimal(longitude)

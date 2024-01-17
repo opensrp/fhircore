@@ -64,6 +64,8 @@ lifecycle-livedata-ktx = "2.6.1"
 lifecycle-viewmodel-compose = "2.6.1"
 lifecycle-viewmodel-ktx = "2.6.1"
 mapbox-sdk-turf = "4.8.0"
+mapbox-android-core = "5.+"
+mapbox-android-telemetry = "8.+"
 material = "1.9.0"
 material-icons-core = "1.5.0"
 material-icons-extended = "1.5.0"
@@ -185,6 +187,8 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle-viewmodel-compose" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
 mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", version.ref = "mapbox-sdk-turf" }
+mapbox-android-core= { group = "com.mapbox.mapboxsdk", name = "mapbox-android-core", version.ref = "mapbox-android-core" }
+mapbox-android-telemetry= { group = "com.mapbox.mapboxsdk", name = "mapbox-android-telemetry", version.ref = "mapbox-android-telemetry" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "material-icons-core" }
 material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
