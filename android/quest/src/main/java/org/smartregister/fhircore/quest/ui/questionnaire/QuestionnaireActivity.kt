@@ -246,7 +246,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.run {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          val currentLocation = getCurrentLocation()
+          val currentLocation = getLocation()
 
           val loc = org.hl7.fhir.r4.model.Location()
           loc.position.altitude=currentLocation?.altitude?.toBigDecimal()
