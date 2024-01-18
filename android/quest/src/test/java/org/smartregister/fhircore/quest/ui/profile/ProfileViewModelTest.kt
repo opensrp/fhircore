@@ -83,41 +83,41 @@ class ProfileViewModelTest : RobolectricTest() {
     hiltRule.inject()
     expectedBaseResource = Faker.buildPatient()
     resourceData =
-        ResourceData(
-            baseResourceId = expectedBaseResource.logicalId,
-            baseResourceType = expectedBaseResource.resourceType,
-            computedValuesMap = emptyMap(),
-        )
+      ResourceData(
+        baseResourceId = expectedBaseResource.logicalId,
+        baseResourceType = expectedBaseResource.resourceType,
+        computedValuesMap = emptyMap(),
+      )
     registerRepository =
-        spyk(
-            RegisterRepository(
-                fhirEngine = mockk(),
-                dispatcherProvider = DefaultDispatcherProvider(),
-                sharedPreferencesHelper = mockk(),
-                configurationRegistry = configurationRegistry,
-                configService = mockk(),
-                configRulesExecutor = mockk(),
-                fhirPathDataExtractor = mockk(),
-            ),
-        )
+      spyk(
+        RegisterRepository(
+          fhirEngine = mockk(),
+          dispatcherProvider = DefaultDispatcherProvider(),
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = configurationRegistry,
+          configService = mockk(),
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
+        ),
+      )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-        RepositoryResourceData(resource = Faker.buildPatient())
+      RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
-          context = InstrumentationRegistry.getInstrumentation().targetContext,
-          appId = APP_DEBUG,
+        context = InstrumentationRegistry.getInstrumentation().targetContext,
+        appId = APP_DEBUG,
       ) {}
     }
 
     profileViewModel =
-        ProfileViewModel(
-            registerRepository = registerRepository,
-            configurationRegistry = configurationRegistry,
-            dispatcherProvider = dispatcherProvider,
-            fhirPathDataExtractor = fhirPathDataExtractor,
-            resourceDataRulesExecutor = resourceDataRulesExecutor,
-        )
+      ProfileViewModel(
+        registerRepository = registerRepository,
+        configurationRegistry = configurationRegistry,
+        dispatcherProvider = dispatcherProvider,
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        resourceDataRulesExecutor = resourceDataRulesExecutor,
+      )
   }
 
   @Test
@@ -125,9 +125,9 @@ class ProfileViewModelTest : RobolectricTest() {
   fun testRetrieveProfileUiState() {
     runBlocking {
       profileViewModel.retrieveProfileUiState(
-          "householdProfile",
-          "sampleId",
-          paramsList = emptyArray(),
+        "householdProfile",
+        "sampleId",
+        paramsList = emptyArray(),
       )
     }
 
@@ -146,17 +146,17 @@ class ProfileViewModelTest : RobolectricTest() {
   @Test
   fun testProfileEventOnChangeManagingEntity() {
     profileViewModel.onEvent(
-        ProfileEvent.OnChangeManagingEntity(
-            ApplicationProvider.getApplicationContext(),
-            eligibleManagingEntity =
-                EligibleManagingEntity("groupId", "newId", memberInfo = "James Doe"),
-            managingEntityConfig =
-                ManagingEntityConfig(
-                    eligibilityCriteriaFhirPathExpression = "Patient.active",
-                    resourceType = ResourceType.Patient,
-                    nameFhirPathExpression = "Patient.name.given",
-                ),
-        ),
+      ProfileEvent.OnChangeManagingEntity(
+        ApplicationProvider.getApplicationContext(),
+        eligibleManagingEntity =
+          EligibleManagingEntity("groupId", "newId", memberInfo = "James Doe"),
+        managingEntityConfig =
+          ManagingEntityConfig(
+            eligibilityCriteriaFhirPathExpression = "Patient.active",
+            resourceType = ResourceType.Patient,
+            nameFhirPathExpression = "Patient.name.given",
+          ),
+      ),
     )
     coVerify { registerRepository.changeManagingEntity(any(), any(), any()) }
   }
@@ -175,28 +175,28 @@ class ProfileViewModelTest : RobolectricTest() {
     every { mockActionConfig.workflow } returns mockWorkflow.name
 
     val resourceData =
-        ResourceData("baseResourceId", ResourceType.MeasureReport, emptyMap(), emptyMap())
+      ResourceData("baseResourceId", ResourceType.MeasureReport, emptyMap(), emptyMap())
     val overflowMenuItemConfig =
-        OverflowMenuItemConfig(
-            id = 1,
-            title = "myFlowMenu",
-            confirmAction = false,
-            icon = null,
-            titleColor = BLACK_COLOR_HEX_CODE,
-            backgroundColor = null,
-            visible = "true",
-            showSeparator = false,
-            enabled = "true",
-            actions = emptyList(),
-        )
+      OverflowMenuItemConfig(
+        id = 1,
+        title = "myFlowMenu",
+        confirmAction = false,
+        icon = null,
+        titleColor = BLACK_COLOR_HEX_CODE,
+        backgroundColor = null,
+        visible = "true",
+        showSeparator = false,
+        enabled = "true",
+        actions = emptyList(),
+      )
     val navController = mockk<NavController>()
     val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
     val managingEntity =
-        ManagingEntityConfig(
-            eligibilityCriteriaFhirPathExpression = "Patient.active",
-            resourceType = ResourceType.Patient,
-            nameFhirPathExpression = "Patient.name.given",
-        )
+      ManagingEntityConfig(
+        eligibilityCriteriaFhirPathExpression = "Patient.active",
+        resourceType = ResourceType.Patient,
+        nameFhirPathExpression = "Patient.name.given",
+      )
     every { mockProfileViewModel.changeManagingEntity(event, managingEntity) } just runs
     every { mockActionConfig.interpolate(any()) } returns mockActionConfig
     mockActionConfig.interpolate(emptyMap())
@@ -211,25 +211,25 @@ class ProfileViewModelTest : RobolectricTest() {
 
   @Test
   fun testThatChangeManagingEntityLogsWarningWhenItIsNull() {
-      mockkObject(Timber.Forest)
-      every { Timber.w(any<String>()) } just runs
-      val overflowMenuItemConfig =
-          OverflowMenuItemConfig(
-              id = 1,
-              title = "myFlowMenu",
-              confirmAction = false,
-              icon = null,
-              titleColor = BLACK_COLOR_HEX_CODE,
-              backgroundColor = null,
-              visible = "true",
-              showSeparator = false,
-              enabled = "true",
-              actions = emptyList(),
-          )
-      val navController = mockk<NavController>()
-      val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
-      val mockManagingEntity: ManagingEntityConfig? = null
-      profileViewModel.changeManagingEntity(event, mockManagingEntity)
-      verify { Timber.w("ManagingEntityConfig required. Base resource should be Group") }
-    }
+    mockkObject(Timber.Forest)
+    every { Timber.w(any<String>()) } just runs
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(
+        id = 1,
+        title = "myFlowMenu",
+        confirmAction = false,
+        icon = null,
+        titleColor = BLACK_COLOR_HEX_CODE,
+        backgroundColor = null,
+        visible = "true",
+        showSeparator = false,
+        enabled = "true",
+        actions = emptyList(),
+      )
+    val navController = mockk<NavController>()
+    val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
+    val mockManagingEntity: ManagingEntityConfig? = null
+    profileViewModel.changeManagingEntity(event, mockManagingEntity)
+    verify { Timber.w("ManagingEntityConfig required. Base resource should be Group") }
+  }
 }
