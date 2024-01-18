@@ -58,6 +58,7 @@ data class QuestionnaireConfig(
   val showClearAll: Boolean = false,
   val showRequiredTextAsterisk: Boolean = true,
   val showRequiredText: Boolean = false,
+  val managingEntityRelationshipCode: String? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -66,6 +67,8 @@ data class QuestionnaireConfig(
       taskId = taskId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
       type = type.interpolate(computedValuesMap),
+      managingEntityRelationshipCode =
+        managingEntityRelationshipCode?.interpolate(computedValuesMap),
       resourceIdentifier =
         resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
       groupResource =
