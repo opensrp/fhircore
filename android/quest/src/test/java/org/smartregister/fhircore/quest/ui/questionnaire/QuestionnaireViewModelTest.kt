@@ -930,7 +930,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnPatientResource() {
-    val patient = Patient().apply { Patient@ this.id = "123456" }
+    val patient = Patient().apply { this.id = "123456" }
     patient.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }
