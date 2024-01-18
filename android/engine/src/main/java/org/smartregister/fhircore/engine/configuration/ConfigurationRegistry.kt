@@ -376,28 +376,34 @@ constructor(
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      if (isInitialLogin) return null
+      // if (isInitialLogin) return null
+      val filterResourceList =
+        listOf(
+          ResourceType.Questionnaire.name,
+          ResourceType.StructureMap.name,
+          ResourceType.List.name,
+          ResourceType.PlanDefinition.name,
+          ResourceType.Library.name,
+          ResourceType.Measure.name,
+          ResourceType.Basic.name,
+          ResourceType.Binary.name,
+          ResourceType.Parameters,
+        )
       val compositionResource = fetchRemoteComposition(parsedAppId)
       compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
+          .asSequence()
+          .filter {
+            it.hasFocus() && it.focus.hasReferenceElement()
+          } // is focus.identifier a necessary check
           .groupBy { section ->
-            section.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: ""
+            section.focus.reference.substringBefore(
+              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
           }
-          .filter { entry ->
-            entry.key in
-              listOf(
-                ResourceType.Questionnaire.name,
-                ResourceType.StructureMap.name,
-                ResourceType.List.name,
-                ResourceType.PlanDefinition.name,
-                ResourceType.Library.name,
-                ResourceType.Measure.name,
-                ResourceType.Basic.name,
-                ResourceType.Binary.name,
-                ResourceType.Parameters,
-              )
-          }
+          .filter { entry -> entry.key in filterResourceList }
           .forEach { resourceGroup ->
             if (resourceGroup.key == ResourceType.List.name) {
               if (isNonProxy()) {

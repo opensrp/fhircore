@@ -125,9 +125,12 @@ constructor(
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
           .groupBy {
-            it.focus.reference.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
+            it.focus.reference.substringBefore(
+              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
           }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->

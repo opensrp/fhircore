@@ -159,7 +159,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
     runTest {
-      coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) } returns
         Composition().apply {
           addSection().apply {
             this.focus =
@@ -214,7 +214,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
       val slot = slot<List<ResourceType>>()
 
-      coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
       coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }

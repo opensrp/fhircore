@@ -220,6 +220,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = Composition() }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
@@ -234,6 +237,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(SearchResult(resource = composition, null, null))
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
@@ -255,6 +261,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     runTest {
       configRegistry.fhirEngine.create(composition)
@@ -333,6 +342,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fhirEngine.create(composition)
     configRegistry.setNonProxy(true)
@@ -674,6 +686,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     fhirEngine.create(composition)
 
     coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
+
+    coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
     } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
@@ -721,6 +737,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
       fhirEngine.create(composition)
+
+      coEvery {
+        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
         fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
