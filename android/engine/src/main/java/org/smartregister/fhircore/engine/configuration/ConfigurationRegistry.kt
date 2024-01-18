@@ -90,6 +90,9 @@ constructor(
    * you are passing data across screens, then later using it in DataQueries and to retrieve
    * registerConfiguration. It is necessary to check that [paramsMap] is empty to confirm that the
    * params used in the DataQuery are passed when retrieving the configurations.
+   *
+   * @throws NoSuchElementException when the [configsJsonMap] doesn't contain a value for the
+   *   specified key.
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configType: ConfigType,
@@ -172,7 +175,8 @@ constructor(
 
   /**
    * Populate application's configurations from the composition resource. Only Binary and Parameter
-   * Resources are used to represent application configurations.
+   * Resources are used to represent application configurations. The [configCacheMap] is reset on
+   * every configs load.
    *
    * Sections in Composition with Binary or Parameter represents a valid application configuration.
    * Example below is represents an application configuration uniquely identified by the
@@ -222,6 +226,9 @@ constructor(
     context: Context,
     configsLoadedCallback: (Boolean) -> Unit = {},
   ) {
+    // Reset configurations before loading new ones
+    configCacheMap.clear()
+
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
@@ -471,7 +478,10 @@ constructor(
       if (gatewayModeHeaderValue.isNullOrEmpty()) {
         fhirResourceDataSource.getResource(searchPath)
       } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          gatewayModeHeaderValue,
+          searchPath,
+        )
 
     processResultBundleEntries(resultBundle)
   }
