@@ -91,7 +91,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
-    preferencesDataStore = PreferencesDataStore(context = context, gson = mockk())
+    preferencesDataStore = Faker.buildPreferencesDataStore()
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }

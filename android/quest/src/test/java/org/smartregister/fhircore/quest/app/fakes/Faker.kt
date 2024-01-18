@@ -26,10 +26,10 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Basic
@@ -91,15 +91,19 @@ object Faker {
 
   private val testCoroutineScope = CoroutineScope(testDispatcher + Job())
   private val testDataStoreName = "test_datastore"
-  val testDataStore = PreferenceDataStoreFactory.create(
-    scope = testCoroutineScope,
-    produceFile = { getApplicationContext<Application>().preferencesDataStoreFile(testDataStoreName) }
-  )
+  val testDataStore =
+    PreferenceDataStoreFactory.create(
+      scope = testCoroutineScope,
+      produceFile = {
+        getApplicationContext<Application>().preferencesDataStoreFile(testDataStoreName)
+      },
+    )
+
   fun buildPreferencesDataStore() =
     PreferencesDataStore(
       getApplicationContext<Application>(),
       Gson(),
-      testDataStore
+      testDataStore,
     )
 
   fun buildPatient(

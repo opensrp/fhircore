@@ -23,13 +23,9 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
@@ -42,12 +38,14 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
-
-
 @Singleton
 class PreferencesDataStore
 @Inject
-constructor(@ApplicationContext val context: Context, val gson: Gson, val dataStore: DataStore<Preferences>) {
+constructor(
+  @ApplicationContext val context: Context,
+  val gson: Gson,
+  val dataStore: DataStore<Preferences>,
+) {
 
   /**
    * This blocking read function was made to prevent making functions all over the codebase suspend

@@ -32,15 +32,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -83,8 +81,7 @@ class CoreModule {
     val userPreferences = "preferences_datastore"
     return PreferenceDataStoreFactory.create(
       scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-      produceFile = { appContext.preferencesDataStoreFile(userPreferences) }
+      produceFile = { appContext.preferencesDataStoreFile(userPreferences) },
     )
   }
-
 }

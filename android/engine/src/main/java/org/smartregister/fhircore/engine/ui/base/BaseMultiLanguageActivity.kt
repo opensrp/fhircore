@@ -25,34 +25,39 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.util.Locale
+import javax.inject.Inject
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
-import javax.inject.Inject
 
 /**
  * Base class for all activities used in the app. Every activity should extend this class for
  * multi-language support.
  */
+@AndroidEntryPoint
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
   // TODO: KELVIN discuss with Elly. Lateninit and getSharedPreferences()
-  @Inject
-  lateinit var dataStore: DataStore<Preferences>
+  @Inject lateinit var dataStore: DataStore<Preferences>
 
   lateinit var preferencesDataStore: PreferencesDataStore
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
+    preferencesDataStore = PreferencesDataStore(baseContext, Gson(), dataStore)
 
     // Disable dark theme on All Activities.
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
   }
 
   override fun attachBaseContext(baseContext: Context) {
-    preferencesDataStore = PreferencesDataStore(baseContext, Gson(), dataStore)
+
     val lang =
       preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
     baseContext.setAppLocale(lang!!).run {

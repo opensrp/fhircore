@@ -38,7 +38,6 @@ import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Location
@@ -185,13 +184,14 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is SyncJobStatus.Finished) {
-          runBlocking {
+          viewModelScope.launch {
             preferencesDataStore.write(
               PreferencesDataStore.LAST_SYNC_TIMESTAMP,
               dataToStore = formatLastSyncTimestamp(event.state.timestamp),
             )
+
+            retrieveAppMainUiState()
           }
-          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
