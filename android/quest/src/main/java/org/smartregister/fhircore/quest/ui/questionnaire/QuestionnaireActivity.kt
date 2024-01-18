@@ -16,19 +16,28 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import java.util.LinkedList
@@ -37,6 +46,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -62,8 +72,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
 
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)
@@ -230,6 +245,16 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       if (questionnaireResponse != null && questionnaire != null) {
         viewModel.run {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+
+          val currentLocation = getCurrentLocation()
+
+          val loc = org.hl7.fhir.r4.model.Location()
+          loc.position.altitude=currentLocation?.altitude?.toBigDecimal()
+          loc.position.latitude=currentLocation?.latitude?.toBigDecimal()
+          loc.position.longitude=currentLocation?.longitude?.toBigDecimal()
+
+          questionnaireResponse.contained.add(loc)
+
           handleQuestionnaireSubmission(
             questionnaire = questionnaire!!,
             currentQuestionnaireResponse = questionnaireResponse,
@@ -250,9 +275,62 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             )
             finish()
           }
+
+          // our background processing
         }
       }
     }
+  }
+
+  private fun getLocation(): Location? {
+    var currentLocation: Location ?= null
+
+    if (ActivityCompat.checkSelfPermission(
+        this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+      ) {
+      val locationPermissionRequest = this.registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions())
+      { permissions ->
+        when{
+          permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) ->
+          {
+            currentLocation = getCurrentLocation()
+          }
+          permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) ->
+          {
+            // request approx permissions
+          }
+          else -> {
+            // No location access granted. Notify and fail
+          }
+        }
+      }
+
+      locationPermissionRequest.launch(
+        arrayOf(
+          Manifest.permission.ACCESS_FINE_LOCATION,
+          Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+      )
+    } else {
+      currentLocation = getCurrentLocation()
+    }
+    return currentLocation
+  }
+
+  @SuppressLint("MissingPermission")
+  private fun getCurrentLocation(): Location? {
+    var currentLocation: Location? = null
+
+    fusedLocationClient
+      .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+      .addOnSuccessListener { location: Location? ->
+        currentLocation = location
+      }
+
+    return currentLocation
   }
 
   private fun handleBackPress() {
