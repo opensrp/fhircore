@@ -78,6 +78,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val context: Context = ApplicationProvider.getApplicationContext()
@@ -92,7 +93,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    val preferencesDataStore = PreferencesDataStore(context, gson)
 
     configRegistry =
       ConfigurationRegistry(

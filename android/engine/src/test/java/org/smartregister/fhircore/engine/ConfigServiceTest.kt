@@ -43,18 +43,17 @@ class ConfigServiceTest : RobolectricTest() {
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
-  private lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferencesDataStore = PreferencesDataStore(application, gson)
   }
 
   @Test
-  fun testProvideSyncTagsShouldHaveOrganizationId() {
+  fun testProvideSyncTagsShouldHavePractitionerId() {
     val practitionerId = "practitioner-id"
 
     runTest {
@@ -74,7 +73,7 @@ class ConfigServiceTest : RobolectricTest() {
 
     runTest {
       preferencesDataStore.write(
-        stringPreferencesKey(ResourceType.Location.name),
+        stringPreferencesKey(ResourceType.Location.name), // TODO: KELVIN we need a mapping from ResourceType to Key
         listOf(locationId1, locationId2),
         encodeWithGson = true,
       )
@@ -92,7 +91,7 @@ class ConfigServiceTest : RobolectricTest() {
     val organizationId2 = "organization-id2"
     runTest {
       preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_IDS,
+        stringPreferencesKey(ResourceType.Organization.name),
         listOf(organizationId1, organizationId2),
         encodeWithGson = true,
       )
@@ -112,7 +111,7 @@ class ConfigServiceTest : RobolectricTest() {
 
     runTest {
       preferencesDataStore.write(
-        PreferencesDataStore.CARE_TEAM_IDS,
+        stringPreferencesKey(ResourceType.CareTeam.name),
         listOf(careTeamId1, careTeamId2),
         encodeWithGson = true,
       )

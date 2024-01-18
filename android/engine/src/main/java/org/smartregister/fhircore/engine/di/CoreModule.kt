@@ -27,6 +27,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,6 +40,7 @@ import kotlinx.coroutines.SupervisorJob
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -75,13 +77,4 @@ class CoreModule {
   fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
     FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
 
-  @Singleton
-  @Provides
-  fun providePreferencesDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
-    val userPreferences = "preferences_datastore"
-    return PreferenceDataStoreFactory.create(
-      scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-      produceFile = { appContext.preferencesDataStoreFile(userPreferences) },
-    )
-  }
 }

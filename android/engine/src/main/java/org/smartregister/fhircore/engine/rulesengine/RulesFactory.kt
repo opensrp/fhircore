@@ -67,8 +67,6 @@ constructor(
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
-
-  val preferences = configurationRegistry.preferencesDataStore
   val keys = PreferencesDataStore.Keys
 
   /**
@@ -314,13 +312,13 @@ constructor(
       try {
         return when (practitionerKey) {
           keys.PRACTITIONER_ID.name ->
-            preferences.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")!!
           keys.CARE_TEAM_NAMES.name ->
-            preferences.readOnce(PreferencesDataStore.CARE_TEAM_NAMES, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.CARE_TEAM_NAMES, "")!!
           keys.ORGANIZATION_NAMES.name ->
-            preferences.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, "")!!
           keys.PRACTITIONER_LOCATION.name ->
-            preferences.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, "")!!
           else ->
             throw IllegalArgumentException(
               "The key queried does not store any Practitioner Details",
@@ -329,6 +327,7 @@ constructor(
       } catch (e: Exception) {
         if (e is IllegalArgumentException) {
           Timber.e(e.message)
+          throw e
         } else {
           Timber.e(
             "An exception occurred while fetching your data from Datastore: ${e.message ?: ""}",

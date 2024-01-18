@@ -105,7 +105,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
@@ -113,7 +113,6 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
-    preferencesDataStore = PreferencesDataStore(context, gson)
     spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(

@@ -43,14 +43,11 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
   // TODO: KELVIN discuss with Elly. Lateninit and getSharedPreferences()
-  @Inject lateinit var dataStore: DataStore<Preferences>
-
-  lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
-    preferencesDataStore = PreferencesDataStore(baseContext, Gson(), dataStore)
 
     // Disable dark theme on All Activities.
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)

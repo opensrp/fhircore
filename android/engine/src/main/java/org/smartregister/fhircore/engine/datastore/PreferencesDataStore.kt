@@ -38,7 +38,6 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
-@Singleton
 class PreferencesDataStore
 @Inject
 constructor(

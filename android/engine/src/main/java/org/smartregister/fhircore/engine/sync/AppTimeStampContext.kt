@@ -34,7 +34,7 @@ constructor(private val preferencesDataStore: PreferencesDataStore) :
   }
 
   override suspend fun saveLastUpdatedTimestamp(resourceType: ResourceType, timestamp: String?) {
-    preferencesDataStore.write(timestampKey(resourceType), timestamp)
+    preferencesDataStore.write(timestampKey(resourceType), dataToStore = timestamp ?: "")
   }
 
   private fun timestampKey(resourceType: ResourceType) =

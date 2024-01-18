@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -233,9 +234,8 @@ class SyncBroadcasterTest : RobolectricTest() {
     val organizationId = "organization-id"
     runTest {
       preferencesDataStore.write(
-        PreferencesDataStore.ORGANIZATION_IDS,
-        listOf(organizationId),
-        encodeWithGson = true,
+        stringPreferencesKey(ResourceType.Organization.name),
+        listOf(organizationId)
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()

@@ -22,7 +22,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
@@ -30,6 +29,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import javax.inject.Inject
 
 @HiltAndroidTest
 internal class PreferencesDataStoreTest : RobolectricTest() {
@@ -39,7 +39,7 @@ internal class PreferencesDataStoreTest : RobolectricTest() {
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   private val keys = PreferencesDataStore.Keys
 
@@ -48,7 +48,6 @@ internal class PreferencesDataStoreTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferencesDataStore = PreferencesDataStore(testContext, gson)
   }
 
   @Test

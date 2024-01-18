@@ -891,7 +891,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testExtractDataStoreValuesReturnsCareTeam() {
-    val dataStoreKey = keys.CARE_TEAM_IDS
+    val dataStoreKey = keys.CARE_TEAM_NAMES
     val expectedValue = "1234"
 
     every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
@@ -905,7 +905,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testExtractDataStoreValuesReturnsOrganization() {
-    val dataStoreKey = keys.ORGANIZATION_IDS
+    val dataStoreKey = keys.ORGANIZATION_NAMES
     val expectedValue = "1234"
 
     every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns

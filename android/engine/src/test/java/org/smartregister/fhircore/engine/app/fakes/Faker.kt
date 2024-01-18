@@ -16,12 +16,21 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import android.app.Application
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.gson.Gson
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -65,8 +74,22 @@ object Faker {
       override fun unconfined() = testDispatcher
     }
 
+  private val testCoroutineScope = CoroutineScope(testDispatcher + Job())
+  private val testDataStoreName = "test_datastore"
+  val testDataStore =
+    PreferenceDataStoreFactory.create(
+      scope = testCoroutineScope,
+      produceFile = {
+        ApplicationProvider.getApplicationContext<Application>().preferencesDataStoreFile(testDataStoreName)
+      },
+    )
+
   fun buildTestConfigurationRegistry(
-    preferencesDataStore: PreferencesDataStore = mockk(),
+    preferencesDataStore: PreferencesDataStore = PreferencesDataStore(
+      ApplicationProvider.getApplicationContext<Application>(),
+      Gson(),
+      testDataStore,
+    ),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
