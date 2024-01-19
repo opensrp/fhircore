@@ -299,8 +299,8 @@ constructor(
      * This function takes [inputDate] and returns a difference (for examples 15, 30 etc) between
      * inputDate and the currentDate
      */
-    fun daysPassed(inputDate: String): String =
-      inputDate.parseDate(SDF_DD_MMM_YYYY)?.daysPassed().toString()
+    fun daysPassed(inputDate: String, pattern: String = SDF_DD_MMM_YYYY): String =
+      inputDate.parseDate(pattern)?.daysPassed().toString()
 
     /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
