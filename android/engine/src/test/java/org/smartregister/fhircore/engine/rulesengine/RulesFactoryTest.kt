@@ -851,8 +851,8 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testDaysPassed() {
-    val weeksAgo = 2
-    val inputDateString = LocalDate.now().minusWeeks(weeksAgo).toString()
+    val daysAgo = 14
+    val inputDateString = LocalDate.now().minusDays(daysAgo).toString()
     val daysPassedResult =
       rulesFactory.RulesEngineService().daysPassed(inputDateString, SDF_YYYY_MM_DD)
     Assert.assertEquals("14", daysPassedResult)
