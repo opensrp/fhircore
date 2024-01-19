@@ -402,7 +402,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.createRemote(patient) } just runs
 
     runTest {
-      configRegistry.create(patient)
+      configRegistry.createRemote(patient)
       coVerify { fhirEngine.createRemote(patient) }
     }
   }

@@ -46,9 +46,7 @@ constructor(
     val isInitialLogin = inputData.getBoolean(IS_INITIAL_LOGIN, true)
     return withContext(dispatcherProvider.io()) {
       try {
-        configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)?.run {
-          defaultRepository.createRemote(false, this)
-        }
+        configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)
         dataMigration.migrate()
         Result.success()
       } catch (httpException: HttpException) {
