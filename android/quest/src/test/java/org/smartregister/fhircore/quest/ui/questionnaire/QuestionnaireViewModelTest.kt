@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -706,22 +706,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.update(any()) } just runs
 
     // Attempting to add Group as member of itself should fail
-    questionnaireViewModel.addMemberToConfiguredGroup(
-      group,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+    questionnaireViewModel.addMemberToGroup(
+      resource = group,
+      groupIdentifier = group.logicalId,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
 
-    // Should add member to a group if not exits
-    questionnaireViewModel.addMemberToConfiguredGroup(
-      patient,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+    // Should add member to existing group
+    questionnaireViewModel.addMemberToGroup(
+      resource = patient,
+      groupIdentifier = group.logicalId,
     )
 
     Assert.assertFalse(group.member.isNullOrEmpty())
@@ -736,12 +730,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         }
         .apply { addMember(Group.GroupMemberComponent(patient.asReference())) }
     coEvery { fhirEngine.get(ResourceType.Group, anotherGroup.logicalId) } returns anotherGroup
-    questionnaireViewModel.addMemberToConfiguredGroup(
-      patient,
-      GroupResourceConfig(
-        groupIdentifier = group.logicalId,
-        memberResourceType = ResourceType.Patient,
-      ),
+    questionnaireViewModel.addMemberToGroup(
+      resource = patient,
+      groupIdentifier = group.logicalId,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = anotherGroup) }
   }
@@ -939,7 +930,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testAddPractitionerInfoAppendedCorrectlyOnPatientResource() {
-    val patient = Patient().apply { Patient@ this.id = "123456" }
+    val patient = Patient().apply { this.id = "123456" }
     patient.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", patient.generalPractitioner.first().reference)
   }

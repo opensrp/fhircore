@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ data class ButtonProperties(
   val buttonType: ButtonType = ButtonType.MEDIUM,
   val startIcon: ImageConfig? = null,
   val letterSpacing: Int = 0,
+  val backgroundOpacity: Float = 0f,
+  val colorOpacity: Float = 0f,
 ) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service
