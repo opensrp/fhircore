@@ -26,10 +26,12 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import org.smartregister.fhircore.engine.datastore.DataStoreEntryPoint
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
@@ -42,9 +44,6 @@ import org.smartregister.fhircore.engine.util.extension.setAppLocale
 @AndroidEntryPoint
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
 
-  // TODO: KELVIN discuss with Elly. Lateninit and getSharedPreferences()
-  @Inject lateinit var preferencesDataStore: PreferencesDataStore
-
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
@@ -54,7 +53,7 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-
+    val preferencesDataStore = EntryPointAccessors.fromApplication(baseContext, DataStoreEntryPoint::class.java).dataStore
     val lang =
       preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
     baseContext.setAppLocale(lang!!).run {
