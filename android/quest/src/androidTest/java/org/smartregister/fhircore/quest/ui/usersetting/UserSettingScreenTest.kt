@@ -21,6 +21,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ActivityScenario
 import java.util.Locale
@@ -178,8 +179,9 @@ class UserSettingScreenTest {
           allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
-          progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
+          showDatabaseResetConfirmationLiveData = MutableLiveData(isShowDatabaseResetConfirmation),
+          progressBarStateLiveData =
+            MutableLiveData(Pair(isShowProgressBar, R.string.resetting_app)),
           isDebugVariant = isDebugVariant,
           onEvent = {},
           mainNavController = rememberNavController(),
