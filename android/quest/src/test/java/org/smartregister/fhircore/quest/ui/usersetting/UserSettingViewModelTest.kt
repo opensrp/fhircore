@@ -38,7 +38,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -66,6 +65,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
+import javax.inject.Inject
 
 @HiltAndroidTest
 class UserSettingViewModelTest : RobolectricTest() {
@@ -77,7 +77,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var fhirEngine: FhirEngine
-  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  private var preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
@@ -91,6 +91,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
+    preferencesDataStore = Faker.buildPreferencesDataStore()
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -101,7 +102,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
-    preferencesDataStore = preferencesDataStore
+    preferencesDataStore = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(

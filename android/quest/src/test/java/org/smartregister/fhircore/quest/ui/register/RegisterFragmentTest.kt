@@ -84,7 +84,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()

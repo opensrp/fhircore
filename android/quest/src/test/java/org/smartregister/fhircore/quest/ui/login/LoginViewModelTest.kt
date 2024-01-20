@@ -82,7 +82,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
 
   @Inject lateinit var protoDataStore: ProtoDataStore
 

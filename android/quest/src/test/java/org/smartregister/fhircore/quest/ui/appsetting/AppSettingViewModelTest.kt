@@ -95,21 +95,11 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  private val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val configService = mockk<ConfigService>()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-
-//  val preferencesDataStore: PreferencesDataStore = PreferencesDataStore(
-//    context = context,
-//    dataStore = PreferenceDataStoreFactory.create(
-//      scope = CoroutineScope(testDispatcher+ SupervisorJob()),
-//      produceFile = {
-//        context.preferencesDataStoreFile("testDataStoreName")
-//      },
-//    )
-//  )
   private lateinit var appSettingViewModel: AppSettingViewModel
 
   @Before
