@@ -73,7 +73,9 @@ class ConfigServiceTest : RobolectricTest() {
 
     runTest {
       preferencesDataStore.write(
-        stringPreferencesKey(ResourceType.Location.name), // TODO: KELVIN we need a mapping from ResourceType to Key
+        stringPreferencesKey(
+          ResourceType.Location.name,
+        ), // TODO: KELVIN we need a mapping from ResourceType to Key
         listOf(locationId1, locationId2),
         encodeWithGson = true,
       )

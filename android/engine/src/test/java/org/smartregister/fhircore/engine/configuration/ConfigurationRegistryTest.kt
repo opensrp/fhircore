@@ -78,6 +78,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
+
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider

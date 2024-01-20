@@ -44,7 +44,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
@@ -322,13 +321,25 @@ constructor(
       try {
         return when (practitionerKey) {
           keys.PRACTITIONER_ID.name ->
-            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.PRACTITIONER_ID,
+              "",
+            )!!
           keys.CARE_TEAM_NAMES.name ->
-            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.CARE_TEAM_NAMES, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.CARE_TEAM_NAMES,
+              "",
+            )!!
           keys.ORGANIZATION_NAMES.name ->
-            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.ORGANIZATION_NAMES,
+              "",
+            )!!
           keys.PRACTITIONER_LOCATION.name ->
-            configurationRegistry.preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, "")!!
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.PRACTITIONER_LOCATION,
+              "",
+            )!!
           else ->
             throw IllegalArgumentException(
               "The key queried does not store any Practitioner Details",

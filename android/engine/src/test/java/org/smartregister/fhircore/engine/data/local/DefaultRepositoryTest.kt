@@ -105,6 +105,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService

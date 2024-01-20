@@ -68,10 +68,9 @@ class LoginActivityTest : RobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     every { secureSharedPreference.retrieveSessionPin() } returns null
     every { secureSharedPreference.retrieveSessionUsername() } returns
-            Faker.authCredentials.username
+      Faker.authCredentials.username
     loginActivityController = Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
     loginActivity = loginActivityController.create().resume().get()
-
   }
 
   override fun tearDown() {

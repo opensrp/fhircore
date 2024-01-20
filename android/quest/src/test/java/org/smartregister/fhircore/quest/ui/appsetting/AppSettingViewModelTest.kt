@@ -17,15 +17,12 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
 import com.google.common.reflect.TypeToken
-import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -38,15 +35,12 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -80,7 +74,6 @@ import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.app.testDispatcher
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
@@ -109,14 +102,14 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel =
       spyk(
-      AppSettingViewModel(
-        fhirResourceDataSource = fhirResourceDataSource,
-        defaultRepository = defaultRepository,
-        preferencesDataStore = preferencesDataStore,
-        configService = configService,
-        configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = dispatcherProvider,
-      )
+        AppSettingViewModel(
+          fhirResourceDataSource = fhirResourceDataSource,
+          defaultRepository = defaultRepository,
+          preferencesDataStore = preferencesDataStore,
+          configService = configService,
+          configurationRegistry = Faker.buildTestConfigurationRegistry(),
+          dispatcherProvider = dispatcherProvider,
+        ),
       )
   }
 

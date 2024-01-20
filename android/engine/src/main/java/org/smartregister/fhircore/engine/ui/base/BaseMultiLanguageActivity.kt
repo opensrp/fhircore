@@ -20,20 +20,10 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.preferencesDataStoreFile
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.HiltAndroidApp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import org.smartregister.fhircore.engine.datastore.DataStoreEntryPoint
 import java.util.Locale
-import javax.inject.Inject
+import org.smartregister.fhircore.engine.datastore.DataStoreEntryPoint
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
@@ -53,7 +43,8 @@ abstract class BaseMultiLanguageActivity : AppCompatActivity() {
   }
 
   override fun attachBaseContext(baseContext: Context) {
-    val preferencesDataStore = EntryPointAccessors.fromApplication(baseContext, DataStoreEntryPoint::class.java).dataStore
+    val preferencesDataStore =
+      EntryPointAccessors.fromApplication(baseContext, DataStoreEntryPoint::class.java).dataStore
     val lang =
       preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
     baseContext.setAppLocale(lang!!).run {

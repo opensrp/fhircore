@@ -20,7 +20,6 @@ import android.app.Application
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
-import com.google.gson.Gson
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk

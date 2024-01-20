@@ -96,6 +96,7 @@ class RegisterFragmentTest : RobolectricTest() {
   private lateinit var mainActivity: AppMainActivity
   private lateinit var registerFragmentMock: RegisterFragment
   private lateinit var activityController: ActivityController<AppMainActivity>
+
   @Before
   fun setUp() {
     hiltRule.inject()

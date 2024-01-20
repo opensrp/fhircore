@@ -22,17 +22,15 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.Gson
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
@@ -80,15 +78,17 @@ object Faker {
     PreferenceDataStoreFactory.create(
       scope = testCoroutineScope,
       produceFile = {
-        ApplicationProvider.getApplicationContext<Application>().preferencesDataStoreFile(testDataStoreName)
+        ApplicationProvider.getApplicationContext<Application>()
+          .preferencesDataStoreFile(testDataStoreName)
       },
     )
 
   fun buildTestConfigurationRegistry(
-    preferencesDataStore: PreferencesDataStore = PreferencesDataStore(
-      ApplicationProvider.getApplicationContext<Application>(),
-      testDataStore,
-    ),
+    preferencesDataStore: PreferencesDataStore =
+      PreferencesDataStore(
+        ApplicationProvider.getApplicationContext<Application>(),
+        testDataStore,
+      ),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()

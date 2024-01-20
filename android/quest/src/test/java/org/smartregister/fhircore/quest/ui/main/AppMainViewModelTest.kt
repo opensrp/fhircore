@@ -100,6 +100,7 @@ class AppMainViewModelTest : RobolectricTest() {
   private val registerRepository: RegisterRepository = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
+
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var appMainViewModel: AppMainViewModel
 

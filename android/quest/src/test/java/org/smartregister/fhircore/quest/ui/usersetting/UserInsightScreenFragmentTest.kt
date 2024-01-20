@@ -60,6 +60,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
+
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource

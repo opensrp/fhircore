@@ -235,7 +235,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         stringPreferencesKey(ResourceType.Organization.name),
-        listOf(organizationId)
+        listOf(organizationId),
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
