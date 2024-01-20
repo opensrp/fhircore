@@ -83,7 +83,7 @@ constructor(
       if (!refreshToken.isNullOrEmpty()) {
         authToken =
           try {
-            tokenAuthenticator.refreshToken(refreshToken)
+            tokenAuthenticator.refreshToken(account, refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
             "" // Set to EMPTY, so as to redirect to log in screen, and try again
