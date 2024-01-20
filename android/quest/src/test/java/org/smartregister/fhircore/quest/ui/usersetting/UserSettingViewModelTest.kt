@@ -77,7 +77,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var fhirEngine: FhirEngine
-  private var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private var configService: ConfigService
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
@@ -91,7 +91,6 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
-    preferencesDataStore = Faker.buildPreferencesDataStore()
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -102,7 +101,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
-    preferencesDataStore = mockk()
+    preferencesDataStore = preferencesDataStore
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(

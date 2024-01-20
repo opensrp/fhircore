@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -47,12 +48,14 @@ class PinLoginActivityTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @BindValue val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val pinLoginActivityController = Robolectric.buildActivity(PinLoginActivity::class.java)
+  private lateinit var pinLoginActivityController: ActivityController<PinLoginActivity>
   private lateinit var pinLoginActivity: PinLoginActivity
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+
+    pinLoginActivityController = Robolectric.buildActivity(PinLoginActivity::class.java)
     pinLoginActivity = spyk(pinLoginActivityController.create().resume().get())
   }
 

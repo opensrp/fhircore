@@ -38,14 +38,14 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
+@Singleton
 class PreferencesDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val gson: Gson,
   val dataStore: DataStore<Preferences>,
 ) {
-
+  val gson = Gson()
   /**
    * This blocking read function was made to prevent making functions all over the codebase suspend
    * functions when they only needed as single value from the datastore and had no need to keep

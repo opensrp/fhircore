@@ -41,6 +41,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
@@ -74,7 +75,7 @@ class ProfileFragmentTest : RobolectricTest() {
 
   @BindValue lateinit var profileViewModel: ProfileViewModel
 
-  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
+  lateinit var activityController: ActivityController<AppMainActivity>
 
   private lateinit var navController: TestNavHostController
 
@@ -89,6 +90,7 @@ class ProfileFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    activityController = Robolectric.buildActivity(AppMainActivity::class.java)
     profileViewModel =
       spyk(
         ProfileViewModel(

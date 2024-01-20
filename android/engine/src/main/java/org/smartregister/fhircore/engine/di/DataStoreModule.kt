@@ -22,20 +22,19 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideDataStore(@ApplicationContext appContext: Context): DataStore<Preferences> {
+  fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
     val userPreferences = "preferences_datastore"
     return PreferenceDataStoreFactory.create(
       scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-      produceFile = { appContext.preferencesDataStoreFile(userPreferences) },
+      produceFile = { context.preferencesDataStoreFile(userPreferences) },
     )
   }
 
   @Singleton
   @Provides
-  fun providePreferencesDataStore(@ApplicationContext appContext: Context, dataStore: DataStore<Preferences>): PreferencesDataStore {
+  fun providePreferencesDataStore(@ApplicationContext context: Context, dataStore: DataStore<Preferences>): PreferencesDataStore {
     return PreferencesDataStore(
-      appContext,
-      Gson(),
+      context,
       dataStore
     )
   }

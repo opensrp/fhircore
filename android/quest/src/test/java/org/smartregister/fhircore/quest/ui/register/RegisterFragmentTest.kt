@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.register
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SnackbarDuration
 import androidx.core.os.bundleOf
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
@@ -53,9 +54,11 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
+import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -81,6 +84,8 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -90,17 +95,17 @@ class RegisterFragmentTest : RobolectricTest() {
   private lateinit var registerFragment: RegisterFragment
   private lateinit var mainActivity: AppMainActivity
   private lateinit var registerFragmentMock: RegisterFragment
-  private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
-
+  private lateinit var activityController: ActivityController<AppMainActivity>
   @Before
   fun setUp() {
     hiltRule.inject()
+    activityController = Robolectric.buildActivity(AppMainActivity::class.java)
     registerViewModel =
       spyk(
         RegisterViewModel(
           registerRepository = mockk(relaxed = true),
           configurationRegistry = configurationRegistry,
-          preferencesDataStore = Faker.buildPreferencesDataStore(),
+          preferencesDataStore = preferencesDataStore,
           dispatcherProvider = dispatcherProvider,
           resourceDataRulesExecutor = mockk(),
         ),

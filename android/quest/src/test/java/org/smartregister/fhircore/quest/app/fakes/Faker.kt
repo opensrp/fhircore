@@ -102,7 +102,6 @@ object Faker {
   fun buildPreferencesDataStore() =
     PreferencesDataStore(
       getApplicationContext<Application>(),
-      Gson(),
       testDataStore,
     )
 

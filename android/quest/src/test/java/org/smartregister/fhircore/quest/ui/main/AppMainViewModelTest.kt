@@ -100,7 +100,7 @@ class AppMainViewModelTest : RobolectricTest() {
   private val registerRepository: RegisterRepository = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
-  private lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
@@ -115,7 +115,7 @@ class AppMainViewModelTest : RobolectricTest() {
         AppMainViewModel(
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
-          preferencesDataStore = Faker.buildPreferencesDataStore(),
+          preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           dispatcherProvider = dispatcherProvider,

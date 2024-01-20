@@ -17,11 +17,15 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
 import com.google.common.reflect.TypeToken
+import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -32,7 +36,10 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -73,6 +80,7 @@ import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.app.testDispatcher
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
@@ -83,15 +91,25 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
-
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val configService = mockk<ConfigService>()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
+//  val preferencesDataStore: PreferencesDataStore = PreferencesDataStore(
+//    context = context,
+//    dataStore = PreferenceDataStoreFactory.create(
+//      scope = CoroutineScope(testDispatcher+ SupervisorJob()),
+//      produceFile = {
+//        context.preferencesDataStoreFile("testDataStoreName")
+//      },
+//    )
+//  )
   private lateinit var appSettingViewModel: AppSettingViewModel
 
   @Before
@@ -100,6 +118,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     every { defaultRepository.fhirEngine } returns fhirEngine
 
     appSettingViewModel =
+      spyk(
       AppSettingViewModel(
         fhirResourceDataSource = fhirResourceDataSource,
         defaultRepository = defaultRepository,
@@ -107,6 +126,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         configService = configService,
         configurationRegistry = Faker.buildTestConfigurationRegistry(),
         dispatcherProvider = dispatcherProvider,
+      )
       )
   }
 
@@ -127,7 +147,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     appSettingViewModel.appId.value = appId
 
     appSettingViewModel.loadConfigurations(context)
-    advanceUntilIdle()
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
     Assert.assertEquals(appId, preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null))

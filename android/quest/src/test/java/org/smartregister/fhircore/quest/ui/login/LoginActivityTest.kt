@@ -36,6 +36,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -58,8 +59,7 @@ class LoginActivityTest : RobolectricTest() {
   @BindValue
   val secureSharedPreference =
     spyk(SecureSharedPreference(ApplicationProvider.getApplicationContext()))
-  private val loginActivityController =
-    Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
+  private lateinit var loginActivityController: ActivityController<Faker.TestLoginActivity>
   private lateinit var loginActivity: LoginActivity
 
   @Before
@@ -68,8 +68,10 @@ class LoginActivityTest : RobolectricTest() {
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     every { secureSharedPreference.retrieveSessionPin() } returns null
     every { secureSharedPreference.retrieveSessionUsername() } returns
-      Faker.authCredentials.username
+            Faker.authCredentials.username
+    loginActivityController = Robolectric.buildActivity(Faker.TestLoginActivity::class.java)
     loginActivity = loginActivityController.create().resume().get()
+
   }
 
   override fun tearDown() {
