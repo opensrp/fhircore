@@ -87,7 +87,6 @@ object Faker {
   fun buildTestConfigurationRegistry(
     preferencesDataStore: PreferencesDataStore = PreferencesDataStore(
       ApplicationProvider.getApplicationContext<Application>(),
-      Gson(),
       testDataStore,
     ),
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
