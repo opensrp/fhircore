@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -854,6 +855,15 @@ class RulesFactoryTest : RobolectricTest() {
     val inputDate = Date()
     val expected = rulesFactory.RulesEngineService().prettifyDate(inputDate)
     Assert.assertEquals("", expected)
+  }
+
+  @Test
+  fun testDaysPassed() {
+    val daysAgo = 14
+    val inputDateString = LocalDate.now().minusDays(daysAgo).toString()
+    val daysPassedResult =
+      rulesFactory.RulesEngineService().daysPassed(inputDateString, SDF_YYYY_MM_DD)
+    Assert.assertEquals("14", daysPassedResult)
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
@@ -63,6 +65,7 @@ constructor(
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
   val eventBus: EventBus,
 ) {
 
@@ -82,7 +85,9 @@ constructor(
     runBlocking {
       val previousVersion = preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION)!!
       val newMigrations = migrations?.filter { it.version > previousVersion }
-      migrate(newMigrations, previousVersion)
+      if (!newMigrations.isNullOrEmpty()) {
+        migrate(newMigrations, previousVersion)
+      }
     }
   }
 
@@ -140,8 +145,22 @@ constructor(
               filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
             }
           }
-        val resources =
+        val searchResources =
           withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
+
+        val resources =
+          with(migrationConfig.resourceFilterExpression) {
+            if (this == null) {
+              searchResources
+            } else {
+              searchResources.filterByFhirPathExpression(
+                fhirPathDataExtractor = fhirPathDataExtractor,
+                conditionalFhirPathExpressions = conditionalFhirPathExpressions,
+                matchAll = matchAll,
+              )
+            }
+          }
+
         resources.forEach { resource ->
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
@@ -173,6 +192,9 @@ constructor(
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
           withContext(dispatcherProvider.io()) {
+            if (migrationConfig.purgeAffectedResources) {
+              defaultRepository.purge(resource = updatedResource as Resource, forcePurge = true)
+            }
             defaultRepository.addOrUpdate(resource = updatedResource as Resource)
           }
         }
@@ -181,7 +203,7 @@ constructor(
         Timber.e(throwable)
       }
     }
-    preferencesDataStore.write(PreferencesDataStore.MIGRATION_VERSION, maxVersion.plus(1))
+    preferencesDataStore.write(PreferencesDataStore.MIGRATION_VERSION, maxVersion)
   }
 
   private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {

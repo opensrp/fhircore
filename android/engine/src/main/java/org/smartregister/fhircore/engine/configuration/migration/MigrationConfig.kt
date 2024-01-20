@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,14 @@ data class MigrationConfig(
   val updateValues: List<UpdateValueConfig>,
   val dataQueries: List<DataQuery>?,
   val version: Int,
+  val purgeAffectedResources: Boolean = false,
+  val resourceFilterExpression: ResourceFilterExpression? = null,
+) : java.io.Serializable
+
+@Serializable
+data class ResourceFilterExpression(
+  val conditionalFhirPathExpressions: List<String>,
+  val matchAll: Boolean = true,
 ) : java.io.Serializable
 
 @Serializable
