@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,4 +21,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 sealed class AppEvent {
   data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
     AppEvent()
+
+  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
 }

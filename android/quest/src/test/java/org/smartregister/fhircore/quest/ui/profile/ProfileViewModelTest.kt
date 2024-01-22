@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -64,6 +65,8 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -108,7 +111,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ProfileViewModel(
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
       )

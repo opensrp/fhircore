@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -439,7 +439,13 @@ constructor(
             sort(StringClientParam(sortConfig.paramName), sortConfig.order)
           else ->
             Timber.e(
-              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting.",
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${
+                                listOf(
+                                    Enumerations.DataType.INTEGER,
+                                    Enumerations.DataType.DATE,
+                                    Enumerations.DataType.STRING,
+                                )
+                            } types are supported for DB level sorting.",
             )
         }
       }
@@ -715,7 +721,9 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${
+                    entry.value.toString().extractLogicalIdUuid()
+                }"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -802,6 +810,19 @@ constructor(
         fhirPathDataExtractor.extractValue(resource, filterFhirPathExpression.key) ==
           filterFhirPathExpression.value
       } == true
+    }
+  }
+
+  suspend fun purge(resource: Resource, forcePurge: Boolean) {
+    try {
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
+      }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      Timber.e(
+        "Purge failed -> Resource with ID ${resource.logicalId} does not exist",
+        resourceNotFoundException,
+      )
     }
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.integration.ui.register.components
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -26,10 +27,10 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.navigation.testing.TestNavHostController
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
@@ -52,9 +53,9 @@ class RegisterCardListTest {
       val pagingItems = flowOf(PagingData.from(listOf<ResourceData>())).collectAsLazyPagingItems()
 
       RegisterCardList(
-        registerCardConfig = mockk(),
+        registerCardConfig = RegisterCardConfig(),
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
@@ -71,14 +72,14 @@ class RegisterCardListTest {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
 
-      val data = listOf(ResourceData("1", ResourceType.Patient, mockk()))
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
 
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 
       RegisterCardList(
         registerCardConfig = config,
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
@@ -102,14 +103,14 @@ class RegisterCardListTest {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
 
-      val data = listOf(ResourceData("1", ResourceType.Patient, mockk()))
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
 
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 
       RegisterCardList(
         registerCardConfig = config,
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
@@ -133,9 +134,9 @@ class RegisterCardListTest {
       val pagingItems = flowOf(PagingData.empty<ResourceData>()).collectAsLazyPagingItems()
 
       RegisterCardList(
-        registerCardConfig = mockk(),
+        registerCardConfig = RegisterCardConfig(),
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),

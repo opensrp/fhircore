@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,6 +96,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (!::questionnaireConfig.isInitialized) {
       showToast(getString(R.string.missing_questionnaire_config))
       finish()
+      return
     }
 
     viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
@@ -109,7 +110,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
             is QuestionnaireProgressState.QuestionnaireLaunch ->
               AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
-            null -> null
+            else -> null
           }
         }
     }

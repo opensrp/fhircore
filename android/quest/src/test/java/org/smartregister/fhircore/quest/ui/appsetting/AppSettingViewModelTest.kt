@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
+import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -38,6 +39,7 @@ import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -65,6 +67,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
@@ -84,6 +87,8 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val configService = mockk<ConfigService>()
@@ -103,13 +108,12 @@ class AppSettingViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testOnApplicationIdChanged() {
     appSettingViewModel.onApplicationIdChanged("appId")
     Assert.assertNotNull(appSettingViewModel.appId.value)
@@ -117,7 +121,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testLoadConfigurations() = runTest {
     coEvery { appSettingViewModel.fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply { addEntry().resource = Composition() }
@@ -132,7 +135,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurations() =
     runTest(timeout = 90.seconds) {
       fhirEngine.create(Composition().apply { id = "sampleComposition" })
@@ -155,7 +157,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
     runTest {
       coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
@@ -225,7 +226,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchConfigurations() should decode profile configuration`() =
     runTest(timeout = 90.seconds) {
       fhirEngine.create(
@@ -296,7 +296,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test(expected = HttpException::class)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeBetween400And503() = runTest {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
@@ -323,8 +322,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = HttpException::class)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() = runTest {
+  fun testFetchConfigurationsThrowsHttpExceptionWithStatusCodeOutside400And503() {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
     val context = mockk<Context>(relaxed = true)
@@ -336,7 +334,8 @@ class AppSettingViewModelTest : RobolectricTest() {
           "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
         ),
       )
-    fhirResourceDataSource.getResource(anyString())
+
+    runBlocking { fhirResourceDataSource.getResource(anyString()) }
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     coVerify { fhirResourceDataSource.getResource(anyString()) }
     coVerify { appSettingViewModel.fetchConfigurations(context) }
@@ -350,7 +349,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = UnknownHostException::class)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsUnknownHostException() = runTest {
     val appId = "app_id"
     appSettingViewModel.onApplicationIdChanged(appId)
@@ -369,7 +367,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test(expected = Exception::class)
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsThrowsException() = runTest {
     val context = mockk<Context>(relaxed = true)
     val appId = "app_id"
@@ -389,7 +386,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchComposition() should return composition resource`() = runTest {
     coEvery { fhirResourceDataSource.getResource(any()) } returns
       Bundle().apply {
@@ -417,7 +413,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
     coEvery { appSettingViewModel.isDebugVariant() } returns true
     appSettingViewModel.appId.value = "app/debug"
@@ -425,39 +420,39 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_noSuffix_shouldReturn_false() {
     appSettingViewModel.appId.value = "app"
     Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testHasDebugSuffix_emptyAppId_shouldReturn_null() {
     appSettingViewModel.appId.value = null
     Assert.assertFalse(appSettingViewModel.hasDebugSuffix())
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
 
     appSettingViewModel.saveSyncSharedPreferences(resourceType)
 
-    val result =
-      sharedPreferencesHelper.read<List<ResourceType>>(
+    val savedSyncResourcesResult =
+      sharedPreferencesHelper.read(
         SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+        null,
       )!!
+    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
+    val savedSyncResourceTypes: List<ResourceType> =
+      sharedPreferencesHelper.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
 
-    Assert.assertEquals(2, result.size)
-    Assert.assertEquals(ResourceType.Task.name, result.first())
-    Assert.assertEquals(ResourceType.Patient.name, result.last())
+    Assert.assertEquals(2, savedSyncResourceTypes.size)
+    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
+    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchConfigurationsChunking() = runTest {
     val appId = "test_app_id"
     val compositionSections = mutableListOf<Composition.SectionComponent>()
@@ -550,7 +545,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun `fetchConfigurations() should decode profile configuration Non Proxy`() =
     runTest(timeout = 90.seconds) {
       fhirEngine.create(Composition().apply { id = "sampleComposition" })
