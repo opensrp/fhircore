@@ -42,6 +42,13 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
@@ -711,7 +718,7 @@ constructor(
   suspend fun updateResourcesRecursively(
     resourceConfig: ResourceConfig,
     subject: Resource,
-    eventWorkflow: EventWorkflow
+    eventWorkflow: EventWorkflow,
   ) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
     val initialComputedValuesMap =
@@ -780,11 +787,15 @@ constructor(
     val updatedResourceDocument =
       jsonParse.apply {
         eventWorkflow.updateValues.forEach { updateExpression ->
+          val updateValue =
+            getJsonContent(
+              updateExpression.value
+            )
           // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
           if (
             updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
           ) {
-            set(updateExpression.jsonPathExpression, updateExpression.value)
+            set(updateExpression.jsonPathExpression, updateValue)
           }
           if (
             updateExpression.jsonPathExpression.startsWith(
@@ -794,7 +805,7 @@ constructor(
           ) {
             set(
               updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
-              updateExpression.value,
+              updateValue,
             )
           }
         }
@@ -805,7 +816,19 @@ constructor(
 
     val updatedResource =
       parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+    updatedResource.setId(updatedResource.idElement.idPart)
     withContext(dispatcherProvider.io()) { fhirEngine.update(updatedResource as Resource) }
+  }
+
+  fun getJsonContent(jsonElement: JsonElement): Any? {
+    return when (jsonElement) {
+      is JsonPrimitive -> jsonElement.jsonPrimitive.content
+      is JsonObject -> jsonElement.jsonObject
+      is JsonArray -> jsonElement.jsonArray
+      else -> {
+        null
+      }
+    }
   }
 
   /**
