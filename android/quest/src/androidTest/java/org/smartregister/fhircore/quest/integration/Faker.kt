@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.integration
 
+import android.app.Application
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
@@ -24,10 +27,13 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.LocalChangesFetchMode
-import com.google.gson.Gson
 import java.time.OffsetDateTime
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -42,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
@@ -49,6 +56,7 @@ object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirEngine =
       object : FhirEngine {
@@ -167,12 +175,28 @@ object Faker {
       useAlternativeNames = true
     }
 
+    val testCoroutineScope = CoroutineScope(UnconfinedTestDispatcher() + Job())
+    val testDataStoreName = "test_datastore"
+    val testDataStore =
+      PreferenceDataStoreFactory.create(
+        scope = testCoroutineScope,
+        produceFile = {
+          ApplicationProvider.getApplicationContext<Application>()
+            .preferencesDataStoreFile(testDataStoreName)
+        },
+      )
+
+    fun buildPreferencesDataStore() =
+      PreferencesDataStore(
+        ApplicationProvider.getApplicationContext<Application>(),
+        testDataStore,
+      )
+
     val configurationRegistry =
       ConfigurationRegistry(
         fhirEngine = fhirEngine,
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
-        preferencesDataStore =
-          PreferencesDataStore(ApplicationProvider.getApplicationContext(), gson = Gson()),
+        preferencesDataStore = buildPreferencesDataStore(),
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,
