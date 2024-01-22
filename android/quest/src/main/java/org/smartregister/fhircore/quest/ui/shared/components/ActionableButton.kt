@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,8 @@ fun ActionableButton(
     val backgroundColor = buttonProperties.backgroundColor.parseColor()
     val isButtonEnabled = buttonProperties.enabled.toBoolean()
     val clickable = buttonProperties.clickable.toBoolean()
+    val backgroundOpacity = buttonProperties.backgroundOpacity
+    val colorOpacity = buttonProperties.colorOpacity
     OutlinedButton(
       onClick = {
         if (
@@ -99,8 +101,14 @@ fun ActionableButton(
               statusColor.copy(alpha = 0.08f)
             },
           contentColor = statusColor,
-          disabledBackgroundColor = DefaultColor.copy(alpha = 0.08f),
-          disabledContentColor = DefaultColor,
+          disabledBackgroundColor =
+            if (backgroundOpacity == 0f) {
+              DefaultColor.copy(alpha = 0.08f)
+            } else {
+              backgroundColor.copy(alpha = backgroundOpacity)
+            },
+          disabledContentColor =
+            if (colorOpacity == 0f) DefaultColor else statusColor.copy(alpha = colorOpacity),
         ),
       modifier =
         modifier
@@ -140,7 +148,7 @@ fun ActionableButton(
             else -> statusColor
           }
         } else {
-          DefaultColor
+          if (colorOpacity == 0f) DefaultColor else statusColor.copy(alpha = colorOpacity)
         }
       if (buttonProperties.startIcon != null) {
         Image(
@@ -168,7 +176,9 @@ fun ActionableButton(
               else -> statusColor
             }
           } else {
-            DefaultColor.copy(0.9f)
+            if (colorOpacity == 0.0f) {
+              DefaultColor.copy(alpha = 0.9f)
+            } else statusColor.copy(alpha = colorOpacity)
           },
         textAlign = TextAlign.Start,
         overflow = TextOverflow.Ellipsis,
@@ -223,7 +233,9 @@ fun DisabledActionableButtonPreview() {
           status = ServiceStatus.UPCOMING.name,
           text = "Issue household bed-nets",
           contentColor = "#700f2b",
-          enabled = "true",
+          enabled = "false",
+          backgroundOpacity = 0.06f,
+          colorOpacity = 0.6f,
           buttonType = ButtonType.MEDIUM,
           startIcon = ImageConfig(reference = "ic_walk", type = ICON_TYPE_LOCAL),
         ),
