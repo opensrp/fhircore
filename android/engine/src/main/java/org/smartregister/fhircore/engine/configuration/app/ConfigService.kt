@@ -44,7 +44,7 @@ interface ConfigService {
 
     resourceTags.forEach { strategy ->
       if (strategy.type == ResourceType.Practitioner.name) {
-        val id = preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, "")
+        val id = preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, null)
 
         if (id.isNullOrBlank()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }

@@ -1,0 +1,92 @@
+**PreferencesDataStore**
+
+***Overview***
+
+The PreferencesDataStore is a Kotlin class responsible for managing the application preferences using the Android DataStore library. It provides convenient methods for reading, observing, writing, and removing preference values. The class is designed as a singleton (in line with Android's datastore single instance enforcement) and uses Kotlin coroutines and flows for asynchronous operations- (it also provides a blocking read for some scenarios)
+
+The class contains public methods for use, lazily instantiated flows for observation, and keys of type Preferences.Key
+
+***Constructor***
+```
+constructor(
+  @ApplicationContext val context: Context,
+  val dataStore: DataStore<Preferences>,
+)
+```
+
+The @ApplicationContext is injected through Hilt.<br/>
+The class receives a ```dataStore``` to allow for flexibility when testing. In the normal app, the app uses a dataStore provided by Hilt through the DataStore module in the di package of the project.
+
+When testing, a module is available but it is currently not being used because of issues with the injected coroutine scope being ignored.
+
+Nevertheless, the current working alternative is to provide a test scoped datastore through the ```Faker.buildPreferencesDataStore()``` function. In this function, we use a test file for the datastore and replace ```Dispatchers.IO``` with the ```testDispatcher```.
+
+The ```testDispatcher``` is useful because, given that it is unconfined, it eagerly fires scheduled coroutines, allowing us to read only after a write has a completed.
+
+***Public Methods***
+1. readOnce: A blocking read  <br/>
+```fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null): T?``` <br/>
+defaultValue: The default value to return if the preference is not found. <br/>
+Returns: The preference value or the specified default value.
+
+2. readOnce: A blocking read for JSON data <br/>
+```inline fun <reified T> readOnce(key: Preferences.Key<String>): T?``` <br/>
+Returns: The parsed preference value or null if parsing fails.<br/>
+
+3. observe: For working with observable Flows <br/>
+```fun <T> observe(key: Preferences.Key<T>, defaultValue: T? = null): Flow<T?>```<br/>
+Parameters:key: The key of the preference.<br/>
+defaultValue: The default value to emit if the preference is not found.<br/>
+Returns: A Flow emitting the preference value changes.<br/>
+
+4. observe: For observable JSON data Flows <br/>
+```inline fun <reified T, M> observe(key: Preferences.Key<M>): Flow<T?>```<br/>
+Parameters:key: The key of the preference. <br/>
+Returns: A Flow emitting the parsed preference value changes. <br/>
+
+5. write: For writing primitives <br/>
+```suspend fun <T> write(key: Preferences.Key<T>, dataToStore: T)``` <br/>
+Parameters:key: The key of the preference.<br/>
+dataToStore: The value to store in the preference. <br/>
+
+6. write: For writing JSON data
+```suspend inline fun <reified T> write(key: Preferences.Key<String>, data: T, encodeWithGson: Boolean = true)```<br/>
+Parameters:key: The key of the preference. <br/>
+data: The value to store in the preference. <br/>
+encodeWithGson: If true, encodes the data using Gson; otherwise, uses custom encoding. <br/>
+7. remove: Removes a preference entry <br/>
+```suspend fun <T> remove(key: Preferences.Key<T>)``` <br/>
+Parameters:key: The key of the preference to remove <br/>
+
+8. clear: Clears all preferences. <br/>
+```suspend fun clear()```<br/>
+
+***Companion Object - Keys***
+
+The Keys companion object contains predefined Preferences.Key objects for commonly used preferences. These keys are used throughout the class to access preferences consistently.
+
+The keys typically map directly to all storable datastore value (some haven't been mapped yet e.g sync strategies). Keys also map directly observable exposed by the class. The class exposes these observables to allow for a single source of truth for preferences data throughout the app.
+
+PREFS_SYNC_PROGRESS_TOTAL: A constant string for the "sync_progress_total" preference.
+
+***Example Usage***
+```
+// Read a preference value once
+val lang = preferencesDataStore.readOnce(PreferencesDataStore.Keys.LANG)
+
+// Observe changes to a preference
+preferencesDataStore.observe<String>(PreferencesDataStore.Keys.LANG)
+.collect { newValue ->
+// Handle the updated preference value
+}
+
+// Write a preference value
+preferencesDataStore.write(PreferencesDataStore.Keys.LANG, "en_US")
+
+// Remove a preference entry
+preferencesDataStore.remove(PreferencesDataStore.Keys.LANG)
+
+// Clear all preferences
+preferencesDataStore.clear()
+```
+
