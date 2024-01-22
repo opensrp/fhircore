@@ -66,7 +66,7 @@ class MeasureReportResultScreenTest {
 
   @Inject lateinit var registerRepository: RegisterRepository
 
-  @BindValue val preferencesDataStore = configurationRegistry.preferencesDataStore
+  val preferencesDataStore = configurationRegistry.preferencesDataStore
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
