@@ -98,7 +98,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
 
   private val authenticatedOrganizationIds by lazy {
