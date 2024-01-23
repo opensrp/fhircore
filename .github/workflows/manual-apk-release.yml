@@ -13,6 +13,7 @@ jobs:
             url: https://vault.onalabs.org
             token: ${{ secrets.VAULT_TOKEN }}
             caCertificate: ${{ secrets.VAULT_CA_CERT }}
+            tlsSkipVerify: true
             secrets: |
                     kv-v2-fhircore/data/opensrp-security-focus MY_LITTLE_SECRET | SECRET_TEST ;
             script: echo "${{ steps.import-secrets.outputs.SECRET_TEST }}" && echo "${{ env.SECRET_TEST }} && echo "${{ env.SECRET_TEST }}" | awk '{print length}'
