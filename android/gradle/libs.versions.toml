@@ -235,3 +235,20 @@ org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "o
 dagger-hilt-android= { id = "com.google.dagger.hilt.android", version.ref = "dagger-hilt" }
 com-diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "diffplug-spotless" }
 androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation-safeargs" }
+
+[bundles]
+retrofit2 = ["retrofit", "retrofit-mock", "retrofit2-kotlinx-serialization-converter"]
+paging = ["paging-compose", "paging-runtime-ktx"]
+materialicons = ["material-icons-extended", "material-icons-core"]
+datastore-kt = ["datastore-preferences", "datastore"]
+lifecycle = ["lifecycle-viewmodel-ktx", "lifecycle-viewmodel-compose", "lifecycle-livedata-ktx"]
+okhttp3 = ["okhttp-logging-interceptor", "okhttp"]
+accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
+klint = ["ktlint-cli-ruleset", "ktlint-rule-engine-core"]
+compose = ["activity-compose", "material3", "ui", "ui-tooling", "constraintlayout-compose", "foundation","runtime-livedata"]
+navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-testing", "navigation-ui-ktx"]
+junit-test = ["junit-ktx", "junit"]
+coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
+coroutine-test = ["kotlinx-coroutines-test", "kotlinx-coroutines-debug"]
+
+
