@@ -1,0 +1,30 @@
+# Testing
+
+The OpenSRP Android app includes automated style, coverage, unit, user inteface / integartion, and performance testing. All tests are run through github actions on pull request and must be passed for a pull request to be merged without an admin override.
+
+## Style and coverage tests
+
+We use [ktlint](https://github.com/pinterest/ktlint) via [spotless](https://github.com/diffplug/spotless) to run style checks against the entire codebase. We target to make these style checks as strict as possible in order to reduce bikeshedding in code reviews.
+
+We use [Jacoco](https://www.jacoco.org/jacoco/) for code coverage report generation and then [codecov](https://app.codecov.io/gh/opensrp/fhircore) to track changes in coverage over time. We enforce a minimum coverage percent on the new code added in a pull request and a minimum reduction in overall coverage percentage change when consider the changes introduced through a pull request.
+
+## Unit tests
+
+Unit tests are divided among the [engine](https://github.com/opensrp/fhircore/tree/main/android/engine/src/test), [geowidget](https://github.com/opensrp/fhircore/tree/main/android/geowidget/src/test/java/org/smartregister/fhircore/geowidget), and [quest](https://github.com/opensrp/fhircore/tree/main/android/quest/src/test) modules. These can be run locally and are run automatically through github actions when you submit a pull request. All tests must pass for a pull request to be merged.
+
+## User interface and integration tests
+
+We run tests against screen renderings that function as user interface and integations tests. These are defined in the [quest](https://github.com/opensrp/fhircore/tree/main/android/quest/src/test) module. These can be run locally and are run automatically through github actions when you submit a pull request. All tests must pass for a pull request to be merged.
+In addition, we conduct manual tests to accommodate all functionalities and E2E user journeys to include all he steps a user interacts with.
+
+## Performance tests
+
+We include a set of [performance tests](https://github.com/opensrp/fhircore/tree/main/android/quest/src/androidTest/java/org/smartregister/fhircore/performance) to verify that the time taken to perform operations is not changing significantly as the code changes. These measure relative performance when running on the hosted continuous integration testing system and are not meant to reflect the amount of time an operation takes in a real world on-device scenario.
+
+## Device compatibility tests
+
+We run the applications in different devices with different Android versions, RAM and ROM in order to determine the least specifications the application can run on. This key in guiding users.
+
+## Volume testing
+
+We usually insert massive volume of loads of data in order to check the application behavior.

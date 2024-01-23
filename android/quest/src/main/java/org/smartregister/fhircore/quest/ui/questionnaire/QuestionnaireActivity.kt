@@ -40,6 +40,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.isEditable
+import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -193,7 +195,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       }
 
       // Populate questionnaire with latest QuestionnaireResponse
-      if (questionnaireConfig.type.isEditable()) {
+      if (questionnaireConfig.isEditable()) {
         val latestQuestionnaireResponse =
           viewModel.searchLatestQuestionnaireResponse(
             resourceId = resourceIdentifier,
@@ -224,7 +226,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       val questionnaireResponse = retrieveQuestionnaireResponse()
 
       // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.type.isReadOnly() || questionnaire?.experimental == true) {
+      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
         finish()
       }
       if (questionnaireResponse != null && questionnaire != null) {
@@ -256,7 +258,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun handleBackPress() {
-    if (questionnaireConfig.type.isReadOnly()) {
+    if (questionnaireConfig.isReadOnly()) {
       finish()
     } else if (questionnaireConfig.saveDraft) {
       AlertDialogue.showCancelAlert(

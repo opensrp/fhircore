@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.usersetting
 import android.content.Context
 import android.os.Looper
 import android.widget.Toast
+import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
@@ -56,9 +57,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -81,6 +84,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
   private var fhirResourceDataSource: FhirResourceDataSource
   private val sync = mockk<Sync>(relaxed = true)
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -274,14 +278,23 @@ class UserSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testShowInsightsView() {
+  fun testShowInsightScreen() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
-    every { userSettingViewModelSpy.resetAppData(any()) } just runs
+    val showInsightScreenEvent = UserSettingsEvent.ShowInsightsScreen(navController)
+    userSettingViewModelSpy.onEvent(showInsightScreenEvent)
+    verify { navController.navigate(MainNavigationScreen.Insight.route) }
+  }
 
-    val userSettingsEvent = UserSettingsEvent.ShowInsightsView(true, context)
-
-    userSettingViewModelSpy.onEvent(userSettingsEvent)
-
-    verify { userSettingViewModelSpy.renderInsightsView(context) }
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchUnsyncedResources() = runTest {
+    coEvery {
+      fhirEngine
+        .getUnsyncedLocalChanges()
+        .distinctBy { it.resourceId }
+        .groupingBy { it.resourceType.spaceByUppercase() }
+        .eachCount()
+        .map { it.key to it.value }
+    } returns listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
   }
 }

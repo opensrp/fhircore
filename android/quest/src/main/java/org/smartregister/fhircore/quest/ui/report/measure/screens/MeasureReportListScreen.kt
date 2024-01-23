@@ -58,7 +58,6 @@ fun MeasureReportListScreen(
   showProgressIndicator: Boolean = false,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -92,7 +91,9 @@ fun MeasureReportListScreen(
           }
         }
       } else {
-        LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
+        LazyColumn(
+          modifier = modifier.background(Color.White).fillMaxSize().padding(bottom = 32.dp),
+        ) {
           lazyReportItems.keys.forEach { key ->
             item {
               key?.let { it1 ->

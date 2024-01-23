@@ -187,7 +187,9 @@ constructor(
       if (softDelete) {
         val resource = fhirEngine.get(resourceType, resourceId)
         softDelete(resource)
-      } else fhirEngine.delete(resourceType, resourceId)
+      } else {
+        fhirEngine.delete(resourceType, resourceId)
+      }
     }
   }
 
@@ -195,7 +197,9 @@ constructor(
     withContext(dispatcherProvider.io()) {
       if (softDelete) {
         softDelete(resource)
-      } else fhirEngine.delete(resource.resourceType, resource.logicalId)
+      } else {
+        fhirEngine.delete(resource.resourceType, resource.logicalId)
+      }
     }
   }
 
@@ -661,7 +665,9 @@ constructor(
             val key = // Use configured id as key otherwise default to ResourceType
               if (relatedResourcesConfigsMap.containsKey(entry.key)) {
                 currentResourceConfigs?.firstOrNull()?.id ?: entry.key.name
-              } else entry.key.name
+              } else {
+                entry.key.name
+              }
 
             // All nested resources flattened to one map by adding to existing list
             relatedResourceWrapper.relatedResourceMap[key] =
@@ -690,7 +696,9 @@ constructor(
   private fun List<ResourceConfig>.revIncludeRelatedResourceConfigs(isRevInclude: Boolean) =
     if (isRevInclude) {
       this.filter { it.isRevInclude && !it.resultAsCount }
-    } else this.filter { !it.isRevInclude && !it.resultAsCount }
+    } else {
+      this.filter { !it.isRevInclude && !it.resultAsCount }
+    }
 
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())

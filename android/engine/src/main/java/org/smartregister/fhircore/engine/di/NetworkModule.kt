@@ -65,7 +65,10 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
@@ -141,7 +144,10 @@ class NetworkModule {
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
