@@ -22,12 +22,12 @@ For instance, if on the `master` branch under the `object DataCapture : LibraryA
 
 This approach allows for multiple variations of local artifacts with your development changes and also helps avoid clashes with any remote artifact versions with a similar identifier.
 
-Using the above example you then need to include the new version as a dependency in your `build.gradle` file and reference it like this: <br/> `api('com.google.android.fhir:data-capture:0.1.0-beta02-dev') {`
+Using the above example you then need to include the new version as a dependency in your `build.gradle` file and reference it like this: <br/> `api('org.smartregister.android.fhir:data-capture:0.1.0-beta02-dev') {`
 
 Once all the above is in place you just need to run the command: <br/>
 `./gradlew :datacapture:publishReleasePublicationToMavenLocal`. <br/>
 
-Your artifact should now be available under your maven local repo. location `~/.m2/repository/com/google/android/fhir/data-capture/0.1.0-beta02git p-dev/`
+Your artifact should now be available under your maven local repo. location `~/.m2/repository/org/smartregister/android/fhir/data-capture/0.1.0-beta02-dev/`
 
 Building FHIR Core should now import the new artifact version. MavenLocal is already configured as an artifact source.
 
@@ -40,7 +40,7 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
 
 
   #### Credentials
-  In order to publish artifacts in OpenSRP's `org.smartregisters` _Sonatype_ group on maven, you need to be authenticated (and authorized). With the current configuration you need to set up your client credentials in the _global_ `gradle.properties` file as show below
+  In order to publish artifacts in OpenSRP's `org.smartregister` _Sonatype_ group on maven, you need to be authenticated (and authorized). With the current configuration you need to set up your client credentials in the _global_ `gradle.properties` file as show below
   
   ```properties
   ~/.gradle/gradle.properties
@@ -57,12 +57,13 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   2. _Check out_ to `master` branch locally and _pull_ the latest changes
   3. _Checkout_ to `master-release` branch and _merge_ in `master` changes
   4. _Update the versions_ of the various modules you want to publish in the `buildSrc/src/main/kotlin/Releases.kt` file
-  5. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
-  6. Push the commit to the `master-release` branch for tracking
-  7. Now that the `master-release` branch has all the latest updates from parent `master`, _Check out_ to a new branch on your local with today's date in the dot separated double digit format **DD-MM-YY** and prefixe with `release-` e.g. `release-20.10.23`
-  8. Merge in any other unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet
-  9. _Publish_ the specific modules that you wanted. See the [Publishing section below](#publishing)
-  10. After a successful publish to Maven push your release branch above for versioning.
+  5. Update the [versions of the dependencies here](https://github.com/google/android-fhir/blob/master/buildSrc/src/main/kotlin/Dependencies.kt#L250-L252) used internally by the SDK
+  6. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
+  7. Push the commit to the `master-release` branch for tracking
+  8. Now that the `master-release` branch has all the latest updates from parent `master`, _Check out_ to a new branch on your local with today's date in the dot separated double digit format **DD-MM-YYYY** and prefixe with `release-` e.g. `release-20.10.2023`
+  9. Merge in any other unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet
+  10. _Publish_ the specific modules that you wanted. See the [Publishing section below](#publishing)
+  11. After a successful publish to Maven push your release branch above for versioning.
 
 **Note:** Always remember to check out the _commits diff_ to tell which modules were affected by the latest changes. You can confirm that your module artifact was uploaded as it is available at https://oss.sonatype.org/content/repositories/snapshots/org/smartregister/
 
