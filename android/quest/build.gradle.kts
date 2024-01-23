@@ -357,6 +357,17 @@ dependencies {
   debugImplementation(libs.fragment.testing)
   //    debugImplementation(libs.leakcanary.android)
 
+  val room = "2.5.2"
+  kapt("androidx.room:room-compiler:$room")
+  implementation("androidx.room:room-ktx:$room")
+  implementation("androidx.room:room-runtime:$room")
+  implementation("androidx.room:room-testing:$room")
+
+  val sqlcipher = "4.5.4"
+  implementation("net.zetetic:android-database-sqlcipher:$sqlcipher")
+
+  implementation("net.lingala.zip4j:zip4j:2.11.5")
+
   // Annotation processors for test
   kaptTest(libs.hilt.android.compiler)
   kaptAndroidTest(libs.hilt.android.compiler)
