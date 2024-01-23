@@ -381,7 +381,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.cql.measure.evaluator)
-//  implementation("com.google.android.gms:play-services-location:{version}")
+  //  implementation("com.google.android.gms:play-services-location:{version}")
   implementation("com.google.android.gms:play-services-location:21.0.1")
 
   // Annotation processors
