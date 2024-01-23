@@ -70,6 +70,7 @@ import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -79,6 +80,7 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
+import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -750,7 +752,12 @@ constructor(
         )
       }
     val resources = fhirEngine.search<Resource>(search).map { it.resource }
-    resources.forEach {
+    val filteredResources =
+      filterResourcesByFhirPathExpression(
+        resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+        resources = resources,
+      )
+    filteredResources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
       closeResource(resource = it, eventWorkflow = eventWorkflow)
     }
@@ -767,13 +774,36 @@ constructor(
       }
 
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
-      resourcesMap.value.forEach { resource ->
+      val filteredRelatedResources =
+        filterResourcesByFhirPathExpression(
+          resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+          resources = resourcesMap.value,
+        )
+
+      filteredRelatedResources.forEach { resource ->
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
         if (filterRelatedResource(resource, resourceConfig)) {
           closeResource(resource = resource, eventWorkflow = eventWorkflow)
         }
+      }
+    }
+  }
+
+  fun filterResourcesByFhirPathExpression(
+    resourceFilterExpression: ResourceFilterExpression?,
+    resources: List<Resource>,
+  ): List<Resource> {
+    return with(resourceFilterExpression) {
+      if (this == null) {
+        resources
+      } else {
+        resources.filterByFhirPathExpression(
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          conditionalFhirPathExpressions = conditionalFhirPathExpressions,
+          matchAll = matchAll,
+        )
       }
     }
   }
@@ -789,7 +819,7 @@ constructor(
         eventWorkflow.updateValues.forEach { updateExpression ->
           val updateValue =
             getJsonContent(
-              updateExpression.value
+              updateExpression.value,
             )
           // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
           if (

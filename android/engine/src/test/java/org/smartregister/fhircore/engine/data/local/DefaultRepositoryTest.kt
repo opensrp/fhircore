@@ -24,7 +24,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -84,6 +83,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -800,6 +800,101 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
+  fun testUpdateResourcesRecursivelyClosesFilteredResource() = runTest {
+    val patient =
+      Patient().apply {
+        id = "123345677"
+        active = true
+      }
+
+    val serviceRequest =
+      ServiceRequest().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = ServiceRequest.ServiceRequestStatus.DRAFT
+        subject = patient.asReference()
+      }
+
+    val resourceConfig =
+      ResourceConfig(id = "serviceRequest-id", resource = serviceRequest.resourceType)
+
+    fhirEngine.create(patient, serviceRequest)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "ServiceRequest.status",
+        value = JsonPrimitive("revoked"),
+      )
+    val resourceFilterExpression =
+      ResourceFilterExpression(
+        conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+      )
+    val eventWorkflow =
+      EventWorkflow(
+        updateValues = listOf(updatedValues),
+        resourceFilterExpression = resourceFilterExpression,
+      )
+
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    val serviceRequestSlot = slot<ServiceRequest>()
+    coVerify { fhirEngine.update(capture(serviceRequestSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", serviceRequestSlot.captured.id)
+    Assert.assertEquals(
+      ServiceRequest.ServiceRequestStatus.REVOKED,
+      serviceRequestSlot.captured.status,
+    )
+  }
+
+  @Test
+  fun testUpdateResourcesRecursivelyDoesNotCloseFilteredOutResource() = runTest {
+    val patient =
+      Patient().apply {
+        id = "123345677"
+        active = true
+      }
+
+    val serviceRequest =
+      ServiceRequest().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = ServiceRequest.ServiceRequestStatus.COMPLETED
+        subject = patient.asReference()
+      }
+
+    val resourceConfig =
+      ResourceConfig(id = "serviceRequest-id", resource = serviceRequest.resourceType)
+
+    fhirEngine.create(patient, serviceRequest)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "ServiceRequest.status",
+        value = JsonPrimitive("revoked"),
+      )
+
+    val resourceFilterExpression =
+      ResourceFilterExpression(
+        conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+      )
+    val eventWorkflow =
+      EventWorkflow(
+        updateValues = listOf(updatedValues),
+        resourceFilterExpression = resourceFilterExpression,
+      )
+
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    coVerify(exactly = 0) { fhirEngine.update(any()) }
+  }
+
+  @Test
   fun testUpdateResourcesRecursivelyClosesResource() = runTest {
     val patient =
       Patient().apply {
@@ -954,22 +1049,22 @@ class DefaultRepositoryTest : RobolectricTest() {
     val updatedValueCode =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
-        JsonPrimitive(SNOMED_SYSTEM)
+        JsonPrimitive(SNOMED_SYSTEM),
       )
 
     val eventWorkflow =
       EventWorkflow(
-        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem)
+        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem),
       )
     runBlocking { defaultRepository.closeResource(condition, eventWorkflow) }
     coVerify { fhirEngine.update(capture(conditionSlot)) }
@@ -1012,22 +1107,22 @@ class DefaultRepositoryTest : RobolectricTest() {
     val updatedValueCode =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
-        JsonPrimitive(SNOMED_SYSTEM)
+        JsonPrimitive(SNOMED_SYSTEM),
       )
 
     val eventWorkflow =
       EventWorkflow(
-        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem)
+        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem),
       )
 
     runBlocking {
@@ -1076,22 +1171,22 @@ class DefaultRepositoryTest : RobolectricTest() {
     val updatedValueCode =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
-        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY)
+        JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
-        JsonPrimitive(SNOMED_SYSTEM)
+        JsonPrimitive(SNOMED_SYSTEM),
       )
 
     val eventWorkflow =
       EventWorkflow(
-        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem)
+        updateValues = listOf(updatedValueCode, updatedValueDisplay, updatedValueSystem),
       )
 
     runBlocking {
