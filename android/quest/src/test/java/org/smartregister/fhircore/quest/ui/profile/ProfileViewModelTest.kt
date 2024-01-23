@@ -27,15 +27,14 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import io.mockk.verifyAll
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
@@ -58,7 +57,6 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import timber.log.Timber
 
 @HiltAndroidTest
 class ProfileViewModelTest : RobolectricTest() {
@@ -210,26 +208,18 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatChangeManagingEntityLogsWarningWhenItIsNull() {
-    mockkObject(Timber.Forest)
-    every { Timber.w(any<String>()) } just runs
-    val overflowMenuItemConfig =
-      OverflowMenuItemConfig(
-        id = 1,
-        title = "myFlowMenu",
-        confirmAction = false,
-        icon = null,
-        titleColor = BLACK_COLOR_HEX_CODE,
-        backgroundColor = null,
-        visible = "true",
-        showSeparator = false,
-        enabled = "true",
-        actions = emptyList(),
-      )
-    val navController = mockk<NavController>()
-    val event = ProfileEvent.OverflowMenuClick(navController, resourceData, overflowMenuItemConfig)
-    val mockManagingEntity: ManagingEntityConfig? = null
-    profileViewModel.changeManagingEntity(event, mockManagingEntity)
-    verify { Timber.w("ManagingEntityConfig required. Base resource should be Group") }
+  fun testThatChangeManagingEntityDisplaysBottomSheetWhenEligibleEntitiesExist() {
+    val event = mockk<ProfileEvent.OverflowMenuClick>(relaxed = true)
+    val managingEntity: ManagingEntityConfig = mockk(relaxed = true)
+
+    every { event.resourceData?.baseResourceType } returns ResourceType.Group
+    coEvery { registerRepository.loadResource<Group>(any()) } returns mockk(relaxed = true)
+    every { fhirPathDataExtractor.extractValue(any(), any()) } returns "true"
+
+    profileViewModel.changeManagingEntity(event, managingEntity)
+
+    coVerify { registerRepository.loadResource<Group>(any()) }
+    coVerify { fhirPathDataExtractor.extractValue(any(), any()) }
+    coVerify(exactly = 0) { profileViewModel.emitSnackBarState(any()) }
   }
 }
