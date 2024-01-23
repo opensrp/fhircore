@@ -17,15 +17,14 @@
 package org.smartregister.fhircore.engine.configuration.migration
 
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class MigrationConfig(
-  val resourceType: ResourceType,
   val updateValues: List<UpdateValueConfig>,
-  val dataQueries: List<DataQuery>?,
+  val resourceConfig: FhirResourceConfig,
+  val rules: List<RuleConfig>,
   val version: Int,
   val purgeAffectedResources: Boolean = false,
   val resourceFilterExpression: ResourceFilterExpression? = null,
@@ -40,5 +39,5 @@ data class ResourceFilterExpression(
 @Serializable
 data class UpdateValueConfig(
   val jsonPathExpression: String,
-  val valueRule: RuleConfig,
+  val computedValueKey: String,
 ) : java.io.Serializable
