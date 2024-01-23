@@ -165,7 +165,13 @@ constructor(
           ResourceType.Specimen
         )
       ) {
-        this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
+        val eList =
+          this.member.filter {
+            it.entity.reference.extractLogicalIdUuid() == resource.id.extractLogicalIdUuid()
+          }
+        if (eList.isEmpty()) {
+          this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
+        }
       }
 
       // set managing entity for extracted related resource
