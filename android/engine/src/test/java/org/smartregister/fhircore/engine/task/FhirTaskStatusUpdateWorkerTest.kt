@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
@@ -35,6 +34,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
@@ -50,8 +50,8 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.lastOffset
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
 
@@ -60,21 +60,20 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
   private val defaultRepository: DefaultRepository = mockk()
-  private val preferencesDataStore: PreferencesDataStore = mockk()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val key = stringPreferencesKey(FhirTaskStatusUpdateWorker.WORK_ID.lastOffset())
+  private lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     context = ApplicationProvider.getApplicationContext()
-
-    every { preferencesDataStore.readOnce(key, "0") } returns "100"
-    coEvery { preferencesDataStore.write(key, dataToStore = "101") } just runs
     every { defaultRepository.fhirEngine } returns fhirEngine
 
     fhirResourceUtil =
@@ -129,7 +128,6 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
         ),
         SearchResult(resource = Task().apply { status = Task.TaskStatus.RECEIVED }, null, null),
       )
-    coEvery { preferencesDataStore.write(key, dataToStore = "104") } just runs
     val worker =
       TestListenableWorkerBuilder<FhirTaskStatusUpdateWorker>(context)
         .setWorkerFactory(

@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.task
 
 import android.content.Context
 import android.util.Log
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.Configuration
 import androidx.work.ListenableWorker
@@ -31,13 +30,13 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Reference
@@ -53,8 +52,8 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.lastOffset
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -63,16 +62,19 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
-  private val preferencesDataStore: PreferencesDataStore = mockk()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
   private val fhirResourceUtil: FhirResourceUtil = mockk()
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     initializeWorkManager()
     fhirCompleteCarePlanWorker =
       TestListenableWorkerBuilder<FhirCompleteCarePlanWorker>(
@@ -80,9 +82,6 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         )
         .setWorkerFactory(FhirCompleteCarePlanWorkerFactory())
         .build()
-    val key = stringPreferencesKey(FhirCompleteCarePlanWorker.WORK_ID.lastOffset())
-    every { preferencesDataStore.readOnce(key, "0") } returns "100"
-    coEvery { preferencesDataStore.write(key, dataToStore = "101") } just runs
   }
 
   @Test

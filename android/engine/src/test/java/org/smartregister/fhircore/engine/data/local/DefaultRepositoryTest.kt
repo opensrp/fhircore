@@ -79,7 +79,7 @@ import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -103,8 +103,9 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
   private val context = ApplicationProvider.getApplicationContext<Application>()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
+  private lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var defaultRepository: DefaultRepository
@@ -113,7 +114,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    dispatcherProvider = DefaultDispatcherProvider()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(

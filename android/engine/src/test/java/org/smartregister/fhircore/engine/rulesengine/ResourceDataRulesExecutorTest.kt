@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -62,7 +63,9 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
 
@@ -70,6 +73,8 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     rulesFactory =
       spyk(
         RulesFactory(

@@ -16,11 +16,7 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
-import android.app.Application
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStore
-import androidx.datastore.preferences.preferencesDataStoreFile
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.coEvery
 import io.mockk.just
@@ -29,10 +25,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -59,37 +52,9 @@ object Faker {
     useAlternativeNames = true
   }
 
-  private val testDispatcher = UnconfinedTestDispatcher()
-
-  val testDispatcherProvider =
-    object : DispatcherProvider {
-      override fun default() = testDispatcher
-
-      override fun io() = testDispatcher
-
-      override fun main() = testDispatcher
-
-      override fun unconfined() = testDispatcher
-    }
-
-  private val testCoroutineScope = CoroutineScope(testDispatcher + Job())
-  private val testDataStoreName = "test_datastore"
-  val testDataStore =
-    PreferenceDataStoreFactory.create(
-      scope = testCoroutineScope,
-      produceFile = {
-        ApplicationProvider.getApplicationContext<Application>()
-          .preferencesDataStoreFile(testDataStoreName)
-      },
-    )
-
   fun buildTestConfigurationRegistry(
-    preferencesDataStore: PreferencesDataStore =
-      PreferencesDataStore(
-        ApplicationProvider.getApplicationContext<Application>(),
-        testDataStore,
-      ),
-    dispatcherProvider: DispatcherProvider = testDispatcherProvider,
+    preferencesDataStore: PreferencesDataStore,
+    dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))

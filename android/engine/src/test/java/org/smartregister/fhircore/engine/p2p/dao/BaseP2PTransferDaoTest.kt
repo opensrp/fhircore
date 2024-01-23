@@ -18,12 +18,15 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.SearchQuery
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.TreeSet
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Encounter
@@ -38,22 +41,35 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.sync.DataType
 
+@HiltAndroidTest
 class BaseP2PTransferDaoTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     baseP2PTransferDao =
       spyk(
         P2PReceiverTransferDao(

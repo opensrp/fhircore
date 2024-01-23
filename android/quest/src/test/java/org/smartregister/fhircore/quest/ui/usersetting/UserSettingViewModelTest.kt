@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -47,9 +46,6 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -60,7 +56,6 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
-import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -77,24 +72,16 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var fhirEngine: FhirEngine
-  private var preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
-  private var configService: ConfigService
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
   private lateinit var accountAuthenticator: AccountAuthenticator
   private lateinit var secureSharedPreference: SecureSharedPreference
-  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private val resourceService: FhirResourceService = mockk()
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
-  private var fhirResourceDataSource: FhirResourceDataSource
-  private val sync = mockk<Sync>(relaxed = true)
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
-  init {
-    preferencesDataStore = Faker.buildPreferencesDataStore()
-    configService = AppConfigService(context = context)
-    fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
-  }
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi

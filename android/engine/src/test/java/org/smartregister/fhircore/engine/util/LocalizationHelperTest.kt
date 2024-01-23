@@ -19,12 +19,14 @@ package org.smartregister.fhircore.engine.util
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.Locale
+import javax.inject.Inject
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.messageFormat
 import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
@@ -34,11 +36,16 @@ import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 class LocalizationHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  private val configRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  private lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    configRegistry = Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
   }
 
   @Test

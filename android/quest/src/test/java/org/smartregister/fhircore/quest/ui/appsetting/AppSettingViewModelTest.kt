@@ -88,7 +88,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  private val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val configService = mockk<ConfigService>()

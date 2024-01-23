@@ -40,6 +40,7 @@ import io.mockk.spyk
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
@@ -56,6 +57,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -65,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.plusMonths
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-11-2022. */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class FhirResourceExpireWorkerTest : RobolectricTest() {
 
@@ -75,7 +78,9 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var defaultRepository: DefaultRepository
 
   val task =
@@ -104,7 +109,8 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   @Before
   fun setup() {
     hiltRule.inject()
-
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     defaultRepository =
       spyk(
         DefaultRepository(

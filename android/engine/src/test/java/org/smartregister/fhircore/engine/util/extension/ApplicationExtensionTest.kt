@@ -18,20 +18,38 @@ package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.net.URL
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
+@HiltAndroidTest
 class ApplicationExtensionTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
 
   @Test
   fun `FhirEngine#loadResource() should call load and return resources`() {
@@ -65,7 +83,9 @@ class ApplicationExtensionTest : RobolectricTest() {
 
   @Test
   fun `fetchLanguage should return default language when no language is set`() {
-    val languages = Faker.buildTestConfigurationRegistry().fetchLanguages()
+    val languages =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+        .fetchLanguages()
 
     Assert.assertEquals(
       arrayListOf(Language("en", "English"), Language("sw", "Swahili")),

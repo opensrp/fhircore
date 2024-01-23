@@ -21,6 +21,8 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
@@ -29,6 +31,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.util.Date
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.Enumerations
@@ -42,23 +45,31 @@ import org.joda.time.LocalDate
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.p2p.sync.DataType
 
+@HiltAndroidTest
 class P2PReceiverTransferDaoTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private lateinit var p2PReceiverTransferDao: P2PReceiverTransferDao
 
   private val defaultRepository: DefaultRepository = mockk()
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
 
   private val fhirEngine: FhirEngine = mockk()
 
@@ -66,6 +77,9 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     p2PReceiverTransferDao =
       spyk(
         P2PReceiverTransferDao(

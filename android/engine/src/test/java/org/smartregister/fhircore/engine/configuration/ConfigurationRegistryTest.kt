@@ -247,7 +247,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesEmptyBundle() {
+  fun testFetchNonWorkflowConfigResourcesEmptyBundle() = runTest {
     val appId = "theAppId"
     val composition =
       Composition().apply {
@@ -256,18 +256,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
 
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-    }
+    configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
-    runTest {
-      configRegistry.fhirEngine.create(composition)
-      configRegistry.fetchNonWorkflowConfigResources()
-    }
+    configRegistry.fhirEngine.create(composition)
+    configRegistry.fetchNonWorkflowConfigResources()
 
     coVerify(inverse = true) { fhirEngine.get(any(), any()) }
     coVerify(inverse = true) { fhirEngine.update(any()) }
@@ -284,19 +280,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-    }
+    configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
     fhirEngine.create(composition) // Add composition to database instead of mocking
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = patient }) }
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
     coEvery { fhirEngine.update(any()) } returns Unit
 
-    runTest {
-      configRegistry.fhirEngine.create(composition)
-      configRegistry.fetchNonWorkflowConfigResources()
-    }
+    configRegistry.fhirEngine.create(composition)
+    configRegistry.fetchNonWorkflowConfigResources()
 
     coVerify { fhirEngine.get(patient.resourceType, patient.logicalId) }
   }
@@ -331,9 +323,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
           )
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-    }
+    configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
     fhirEngine.create(composition)
 
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
@@ -357,24 +347,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testAddOrUpdate() {
+  fun testAddOrUpdate() = runTest {
     // when does not exist
     val patient = Faker.buildPatient()
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } returns patient
     coEvery { fhirEngine.update(any()) } returns Unit
 
-    runTest {
-      val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
-      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
-    }
-
     // when exists
-    runTest {
-      val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
-      Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
-    }
+    val previousLastUpdate = patient.meta.lastUpdated
+    configRegistry.addOrUpdate(patient)
+    Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
   }
 
   @Test
@@ -634,16 +616,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-    }
+    configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
 
     // Add composition to database
     fhirEngine.create(composition)
 
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
 
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+    configRegistry.fetchNonWorkflowConfigResources()
 
     val urlArgumentSlot = mutableListOf<String>()
     val requestPathArgumentSlot = mutableListOf<RequestBody>()
@@ -683,9 +663,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runTest {
-      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-    }
+    configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
 
     fhirEngine.create(composition)
 
@@ -734,9 +712,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
           identifier = Identifier().apply { value = appId }
           section = compositionSections
         }
-      runTest {
-        configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
-      }
+
+      configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = appId)
 
       fhirEngine.create(composition)
 

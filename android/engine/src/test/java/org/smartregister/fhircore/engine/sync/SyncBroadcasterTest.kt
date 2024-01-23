@@ -55,7 +55,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -64,6 +64,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Before
   fun setup() {
     hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     MockKAnnotations.init(this)
     syncListenerManager =
       SyncListenerManager(
