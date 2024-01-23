@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -51,10 +50,9 @@ class UserSettingFragment : Fragment() {
             allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
             languages = userSettingViewModel.languages,
             onEvent = userSettingViewModel::onEvent,
-            showDatabaseResetConfirmation =
-              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            progressBarState =
-              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
+            showDatabaseResetConfirmationLiveData =
+              userSettingViewModel.showDBResetConfirmationDialog,
+            progressBarStateLiveData = userSettingViewModel.progressBarState,
             isDebugVariant = BuildConfig.DEBUG,
             mainNavController = findNavController(),
             dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion(),
