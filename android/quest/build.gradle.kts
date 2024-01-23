@@ -288,6 +288,12 @@ android {
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
+    create("eusm") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusm"
+      versionNameSuffix = "-eusm"
+      manifestPlaceholders["appLabel"] = "EUSM"
+    }
   }
 
   applicationVariants.all {
