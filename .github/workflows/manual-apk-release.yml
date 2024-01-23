@@ -16,7 +16,7 @@ jobs:
             tlsSkipVerify: true
             secrets: |
                     kv-v2-fhircore/data/opensrp-security-focus MY_LITTLE_SECRET | SECRET_TEST ;
-            script: echo "${{ steps.import-secrets.outputs.SECRET_TEST }}" && echo "${{ env.SECRET_TEST }} && echo "${{ env.SECRET_TEST }}" | awk '{print length}'
+            run: echo "${{ steps.import-secrets.outputs.SECRET_TEST }}" && echo "${{ env.SECRET_TEST }} && echo "${{ env.SECRET_TEST }}" | awk '{print length}'
             
         - name: Import Secrets
           id: import-secrets-2
