@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.annotation.VisibleForTesting
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -27,6 +28,7 @@ import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ActivityDefinition
 import org.hl7.fhir.r4.model.Base
@@ -60,7 +62,9 @@ import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.errorMessages
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathPeriod
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -79,6 +83,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val defaultRepository: DefaultRepository,
   val fhirResourceUtil: FhirResourceUtil,
+  val fhirValidatorProvider: Provider<FhirValidator>,
   val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
   @ApplicationContext val context: Context,
 ) {
@@ -155,7 +160,21 @@ constructor(
 
     val carePlanTasks = output.contained.filterIsInstance<Task>()
 
-    if (carePlanModified) saveCarePlan(output, relatedEntityLocationTags)
+    if (carePlanModified) {
+      fhirValidatorProvider
+        .get()
+        .checkResourceValid(output)
+        .filterNot { it.errorMessages.isBlank() }
+        .takeIf { it.isNotEmpty() }
+        ?.let {
+          val errors = buildString {
+            it.forEach { validationResult -> appendLine(validationResult.errorMessages) }
+          }
+
+          throw IllegalStateException(errors)
+        }
+      saveCarePlan(output, relatedEntityLocationTags)
+    }
 
     if (carePlanTasks.isNotEmpty()) {
       fhirResourceUtil.updateUpcomingTasksToDue(
