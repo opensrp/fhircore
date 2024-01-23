@@ -41,6 +41,8 @@ import org.smartregister.fhircore.engine.configuration.migration.MigrationConfig
 import org.smartregister.fhircore.engine.configuration.migration.UpdateValueConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusDays
@@ -76,15 +78,20 @@ class DataMigrationTest : RobolectricTest() {
         migrationConfigs =
           listOf(
             MigrationConfig(
-              resourceType = ResourceType.Patient,
-              dataQueries = emptyList(),
+              resourceConfig =
+                FhirResourceConfig(
+                  baseResource = ResourceConfig(resource = ResourceType.Patient),
+                ),
               version = 1,
+              rules =
+                listOf(
+                  RuleConfig(name = "value", actions = listOf("data.put('value', 'female')")),
+                ),
               updateValues =
                 listOf(
                   UpdateValueConfig(
                     jsonPathExpression = "\$.gender",
-                    valueRule =
-                      RuleConfig(name = "value", actions = listOf("data.put('value', 'female')")),
+                    computedValueKey = "value",
                   ),
                 ),
             ),
@@ -139,22 +146,27 @@ class DataMigrationTest : RobolectricTest() {
         migrationConfigs =
           listOf(
             MigrationConfig(
-              resourceType = ResourceType.Task,
-              dataQueries = listOf(),
               version = 1,
+              resourceConfig =
+                FhirResourceConfig(
+                  baseResource = ResourceConfig(resource = ResourceType.Task),
+                ),
               updateValues =
                 listOf(
                   UpdateValueConfig(
                     // Expression should be exact; '$.basedOn[0].reference' is also valid
                     // JsonPath allows replacing JSON elements on provided path. FHIRPath doesn't.
                     jsonPathExpression = "Task.basedOn[0].reference",
-                    valueRule =
-                      RuleConfig(
-                        name = "value",
-                        actions =
-                          listOf(
-                            "data.put('value', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn.first().reference'))",
-                          ),
+                    computedValueKey = "value",
+                  ),
+                ),
+              rules =
+                listOf(
+                  RuleConfig(
+                    name = "value",
+                    actions =
+                      listOf(
+                        "data.put('value', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn.first().reference'))",
                       ),
                   ),
                 ),
