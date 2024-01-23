@@ -239,20 +239,20 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
       versionNameSuffix = "-sidBunda"
-      manifestPlaceholders["appLabel"] = "Bunda ANC"
+      manifestPlaceholders["appLabel"] = "BidanKu"
     }
 
     create("sidCadre") {
       dimension = "apps"
       applicationIdSuffix = ".sidCadre"
       versionNameSuffix = "-sidCadre"
-      manifestPlaceholders["appLabel"] = "Cadre App"
+      manifestPlaceholders["appLabel"] = "KaderKu"
     }
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
       versionNameSuffix = "-sidEir"
-      manifestPlaceholders["appLabel"] = "SID EIR"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
     create("wdf") {
