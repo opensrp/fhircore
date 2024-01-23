@@ -44,7 +44,9 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -292,6 +294,13 @@ constructor(
      * months, 3 years etc)
      */
     fun prettifyDate(inputDate: Date): String = inputDate.prettifyDate()
+
+    /**
+     * This function takes [inputDate] and returns a difference (for examples 15, 30 etc) between
+     * inputDate and the currentDate
+     */
+    fun daysPassed(inputDate: String, pattern: String = SDF_DD_MMM_YYYY): String =
+      inputDate.parseDate(pattern)?.daysPassed().toString()
 
     /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
