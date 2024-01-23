@@ -23,15 +23,14 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationRequest
 import android.os.Bundle
 import android.os.Parcelable
+import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
@@ -79,13 +78,17 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private val loc = org.hl7.fhir.r4.model.Location()
-  val applicationConfiguration = viewModel.applicationConfiguration
+//  val applicationConfiguration = viewModel.applicationConfiguration
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-    getLocation()
+    val applicationConfiguration = viewModel.applicationConfiguration
+
+    if (applicationConfiguration.logQuestionnaireLocation) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+      getLocation()
+    }
 
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -338,7 +341,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           loc.position.longitude=location.longitude.toBigDecimal()
         }
       }
-
+      .addOnFailureListener {
+        // Location services are not enabled, prompt the user to enable them
+        val settingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        this.startActivity(settingsIntent)
+      }
   }
 
   @SuppressLint("MissingPermission")
@@ -357,6 +364,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           loc.position.latitude=approxLocation.latitude.toBigDecimal()
           loc.position.longitude=approxLocation.longitude.toBigDecimal()
         }
+      }
+      .addOnFailureListener {
+        // Location services are not enabled, prompt the user to enable them
+        val settingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        this.startActivity(settingsIntent)
       }
 
   }
