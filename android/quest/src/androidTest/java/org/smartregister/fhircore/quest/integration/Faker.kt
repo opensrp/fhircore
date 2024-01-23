@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.integration
 
 import android.app.Application
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
@@ -28,12 +26,8 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.LocalChangesFetchMode
 import java.time.OffsetDateTime
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -56,7 +50,6 @@ object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirEngine =
       object : FhirEngine {
@@ -174,22 +167,12 @@ object Faker {
       isLenient = true
       useAlternativeNames = true
     }
-
-    val testCoroutineScope = CoroutineScope(UnconfinedTestDispatcher() + Job())
-    val testDataStoreName = "test_datastore"
-    val testDataStore =
-      PreferenceDataStoreFactory.create(
-        scope = testCoroutineScope,
-        produceFile = {
-          ApplicationProvider.getApplicationContext<Application>()
-            .preferencesDataStoreFile(testDataStoreName)
-        },
-      )
+    val dispatcherProvider = DefaultDispatcherProvider()
 
     fun buildPreferencesDataStore() =
       PreferencesDataStore(
         ApplicationProvider.getApplicationContext<Application>(),
-        testDataStore,
+        dispatcherProvider,
       )
 
     val configurationRegistry =
@@ -198,7 +181,7 @@ object Faker {
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
         preferencesDataStore = buildPreferencesDataStore(),
         configService = configService,
-        dispatcherProvider = DefaultDispatcherProvider(),
+        dispatcherProvider = dispatcherProvider,
         json = json,
       )
 

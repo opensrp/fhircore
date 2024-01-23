@@ -17,12 +17,12 @@
 package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
-import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -30,11 +30,14 @@ import java.io.IOException
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
 
@@ -43,8 +46,14 @@ class PreferencesDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val dataStore: DataStore<Preferences>,
+  val dispatcherProvider: DispatcherProvider,
 ) {
+  val Context.dataStore by
+    preferencesDataStore(
+      name = PREFERENCES_STORE_NAME,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+    )
+
   val gson = Gson()
 
   /**
@@ -58,7 +67,7 @@ constructor(
    * In situations where you provide a non-null defaultValue, you can use !! to extract
    */
   fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
-    dataStore.data.first()[key] ?: defaultValue
+    context.dataStore.data.first()[key] ?: defaultValue
   }
 
   inline fun <reified T> readOnce(
@@ -66,7 +75,7 @@ constructor(
   ): T? {
     var out: T? = null
     runBlocking {
-      dataStore.data.first()[key].also {
+      context.dataStore.data.first()[key].also {
         try {
           out = gson.fromJson(it, T::class.java)
         } catch (jsonIoException: JsonIOException) {
@@ -79,7 +88,7 @@ constructor(
   }
 
   fun <T> observe(key: Preferences.Key<T>, defaultValue: T? = null) =
-    dataStore.data
+    context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
@@ -92,7 +101,7 @@ constructor(
   inline fun <reified T, M> observe(
     key: Preferences.Key<M>,
   ): Flow<T?> =
-    dataStore.data
+    context.dataStore.data
       .catch { exception ->
         if (exception is IOException) {
           emit(emptyPreferences())
@@ -113,7 +122,7 @@ constructor(
     key: Preferences.Key<T>,
     dataToStore: T,
   ) { // named dataToStore instead of data to prevent overload ambiguity
-    dataStore.edit { preferences -> preferences[key] = dataToStore }
+    context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
   suspend inline fun <reified T> write(
@@ -122,15 +131,15 @@ constructor(
     encodeWithGson: Boolean = true,
   ) {
     val dataToStore = if (encodeWithGson) gson.toJson(data) else data.encodeJson()
-    dataStore.edit { preferences -> preferences[key] = dataToStore }
+    context.dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
   suspend fun <T> remove(key: Preferences.Key<T>) {
-    dataStore.edit { it.remove(key) }
+    context.dataStore.edit { it.remove(key) }
   }
 
   suspend fun clear() {
-    dataStore.edit { it.clear() }
+    context.dataStore.edit { it.clear() }
   }
 
   // expose flows to be used all over the engine and view models
@@ -153,6 +162,7 @@ constructor(
   val migrationVersion by lazy { observe(MIGRATION_VERSION, defaultValue = null) }
 
   companion object Keys {
+    const val PREFERENCES_STORE_NAME = "preferences_datastore"
     const val PREFS_SYNC_PROGRESS_TOTAL = "sync_progress_total"
 
     // Keys
