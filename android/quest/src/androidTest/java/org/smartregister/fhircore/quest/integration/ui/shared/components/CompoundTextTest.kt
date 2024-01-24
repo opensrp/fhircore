@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -32,9 +32,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.CompoundText
 import org.smartregister.fhircore.quest.ui.shared.components.GenerateView
 
 class CompoundTextTest {
-
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-  private val resourceData = mockk<ResourceData>(relaxed = true, relaxUnitFun = true)
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -50,7 +47,7 @@ class CompoundTextTest {
             padding = 16,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeTestRule.onNodeWithText("Full Name, Age").assertExists().assertIsDisplayed()
@@ -71,7 +68,7 @@ class CompoundTextTest {
             fontSize = 18.0f,
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeTestRule.onNodeWithText("Yesterday").assertExists().assertIsDisplayed()
@@ -95,8 +92,8 @@ class CompoundTextTest {
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
-        resourceData = resourceData,
-        navController = navController,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = TestNavHostController(LocalContext.current),
       )
     }
 
@@ -119,8 +116,8 @@ class CompoundTextTest {
     composeTestRule.setContent {
       CompoundText(
         compoundTextProperties = compoundTextProperties,
-        resourceData = resourceData,
-        navController = navController,
+        resourceData = ResourceData("id", ResourceType.Patient, emptyMap(), emptyMap()),
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeTestRule.onNodeWithText(shortText, useUnmergedTree = true).assertExists()

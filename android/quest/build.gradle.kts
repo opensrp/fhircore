@@ -81,6 +81,11 @@ android {
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
       "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   signingConfigs {
@@ -159,9 +164,10 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
 
     unitTests {
@@ -236,20 +242,20 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
       versionNameSuffix = "-sidBunda"
-      manifestPlaceholders["appLabel"] = "Bunda ANC"
+      manifestPlaceholders["appLabel"] = "BidanKu"
     }
 
     create("sidCadre") {
       dimension = "apps"
       applicationIdSuffix = ".sidCadre"
       versionNameSuffix = "-sidCadre"
-      manifestPlaceholders["appLabel"] = "Cadre App"
+      manifestPlaceholders["appLabel"] = "KaderKu"
     }
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
       versionNameSuffix = "-sidEir"
-      manifestPlaceholders["appLabel"] = "SID EIR"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
     create("wdf") {
@@ -284,6 +290,12 @@ android {
       applicationIdSuffix = ".psi_eswatini"
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
+    }
+    create("eusm") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusm"
+      versionNameSuffix = "-eusm"
+      manifestPlaceholders["appLabel"] = "EUSM"
     }
   }
 
@@ -382,13 +394,11 @@ dependencies {
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.bundles.coroutine.test)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
@@ -399,17 +409,16 @@ dependencies {
   //    debugImplementation(libs.leakcanary.android)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
   androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)

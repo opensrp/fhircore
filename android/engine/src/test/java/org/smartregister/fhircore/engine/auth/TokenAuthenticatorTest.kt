@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.IOException
 import java.net.UnknownHostException
@@ -55,6 +56,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -68,6 +70,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
@@ -86,7 +90,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -189,7 +193,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -336,6 +340,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testRefreshTokenShouldReturnToken() {
+    val account = Account(sampleUsername, PROVIDER)
     val accessToken = "soRefreshingNewToken"
     val oAuthResponse =
       OAuthResponse(
@@ -346,11 +351,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
         scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
+    every { accountManager.setPassword(account, any()) } just runs
 
     val currentRefreshToken = "oldRefreshToken"
-    val newAccessToken = tokenAuthenticator.refreshToken(currentRefreshToken)
+    val newAccessToken = tokenAuthenticator.refreshToken(account, currentRefreshToken)
     Assert.assertNotNull(newAccessToken)
     Assert.assertEquals(accessToken, newAccessToken)
+    verify { accountManager.setPassword(eq(account), oAuthResponse.refreshToken) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -368,7 +375,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),

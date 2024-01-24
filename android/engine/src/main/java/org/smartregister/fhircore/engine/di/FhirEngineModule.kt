@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import timber.log.Timber
  * Provide [FhirEngine] dependency in isolation so we can replace it with a fake dependency in test
  */
 @InstallIn(SingletonComponent::class)
-@Module(includes = [CoreModule::class])
+@Module
 class FhirEngineModule {
 
   @Singleton
