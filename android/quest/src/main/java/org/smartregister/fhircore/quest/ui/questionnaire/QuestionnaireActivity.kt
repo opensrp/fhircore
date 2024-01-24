@@ -206,8 +206,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         val questionnaireResponse =
           QuestionnaireResponse().apply {
             item = latestQuestionnaireResponse?.item
-            clearText() // Clearing the text prompts the SDK to re-process the content, which
-            // include HTMLs
+            // Clearing the text prompts the SDK to re-process the content, which includes HTML
+            clearText()
           }
 
         if (viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)) {
