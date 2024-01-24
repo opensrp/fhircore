@@ -122,7 +122,7 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
     Configuration.Builder()
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(
-        EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory()
+        EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory(),
       )
       .build()
 
