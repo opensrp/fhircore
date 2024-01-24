@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
@@ -205,7 +206,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           )
 
         val questionnaireResponse =
-          QuestionnaireResponse().apply { item = latestQuestionnaireResponse?.item }
+          QuestionnaireResponse().apply {
+            item = latestQuestionnaireResponse?.item
+            // Clearing the text prompts the SDK to re-process the content, which includes HTML
+            clearText()
+          }
 
         if (viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)) {
           questionnaireFragmentBuilder.setQuestionnaireResponse(questionnaireResponse.json())
