@@ -20,10 +20,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -36,96 +43,141 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
+import org.smartregister.fhircore.quest.ui.register.RegisterFragment
+import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import retrofit2.HttpException
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment(), OnSyncListener {
+  @Inject
+  lateinit var syncListenerManager: SyncListenerManager
 
   val userSettingViewModel by viewModels<UserSettingViewModel>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
+  @OptIn(ExperimentalMaterialApi::class)
   override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?,
+      inflater: LayoutInflater,
+      container: ViewGroup?,
+      savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
-        AppTheme {
-          UserSettingScreen(
-            appTitle = appMainViewModel.appMainUiState.value.appTitle,
-            username = userSettingViewModel.retrieveUsername(),
-            practitionerLocation = userSettingViewModel.practitionerLocation(),
-            fullname = userSettingViewModel.retrieveUserInfo()?.name,
-            allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
-            selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
-            allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
-            languages = userSettingViewModel.languages,
-            onEvent = userSettingViewModel::onEvent,
-            showDatabaseResetConfirmation =
-              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
-            progressBarState =
-              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
-            isDebugVariant = BuildConfig.DEBUG,
-            mainNavController = findNavController(),
-            lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
-            showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+        val appConfig = appMainViewModel.applicationConfiguration
+        val scaffoldState = rememberScaffoldState()
+
+        LaunchedEffect(Unit) {
+          userSettingViewModel.snackBarStateFlow.hookSnackBar(
+            scaffoldState = scaffoldState,
+            resourceData = null,
+            navController = findNavController(),
           )
+        }
+
+        AppTheme {
+          Scaffold(
+            snackbarHost = { snackBarHostState ->
+              SnackBarMessage(
+                snackBarHostState = snackBarHostState,
+                backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
+                actionColorHex = appConfig.snackBarTheme.actionTextColor,
+                contentColorHex = appConfig.snackBarTheme.messageTextColor,
+              )
+            },
+          ) {
+            Box(modifier = androidx.compose.ui.Modifier.padding(it).testTag(RegisterFragment.REGISTER_SCREEN_BOX_TAG)) {
+            UserSettingScreen(
+              appTitle = appMainViewModel.appMainUiState.value.appTitle,
+              username = userSettingViewModel.retrieveUsername(),
+              practitionerLocation = userSettingViewModel.practitionerLocation(),
+              fullname = userSettingViewModel.retrieveUserInfo()?.name,
+              allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+              selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
+              allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
+              languages = userSettingViewModel.languages,
+              onEvent = userSettingViewModel::onEvent,
+              showDatabaseResetConfirmation =
+              userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+              progressBarState =
+              userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
+              isDebugVariant = BuildConfig.DEBUG,
+              mainNavController = findNavController(),
+              lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
+              showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+            )
+            }
+          }
+
         }
       }
     }
   }
 
+  override fun onResume() {
+    super.onResume()
+    syncListenerManager.registerSyncListener(this, lifecycle)
+  }
+
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Started ->
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing)),
-          )
-        }
-      is SyncJobStatus.InProgress ->
+          lifecycleScope.launch {
+            Timber.d("KELVIN Sync started on usersetting")
+            userSettingViewModel.emitSnackBarState(
+                SnackBarMessageConfig(message = getString(R.string.syncing)),
+            )
+          }
+      is SyncJobStatus.InProgress -> {
+        Timber.d("KELVIN Sync in progress on usersetting")
+
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
+      }
       is SyncJobStatus.Finished -> {
+        Timber.d("KELVIN Sync finished on usersetting")
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
+              SnackBarMessageConfig(
+                  message = getString(R.string.sync_completed),
+                  actionLabel = getString(R.string.ok).uppercase(),
+                  duration = SnackbarDuration.Long,
+              ),
           )
         }
       }
       is SyncJobStatus.Failed -> {
+        Timber.d("KELVIN Sync failed on usersetting")
         val hasAuthError =
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-            syncJobStatus.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 401
+            try {
+              Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
+              syncJobStatus.exceptions.any {
+                it.exception is HttpException && (it.exception as HttpException).code() == 401
+              }
+            } catch (nullPointerException: NullPointerException) {
+              false
             }
-          } catch (nullPointerException: NullPointerException) {
-            false
-          }
 
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message =
-              getString(
-                if (hasAuthError) {
-                  R.string.sync_unauthorised
-                } else R.string.sync_completed_with_errors,
+              SnackBarMessageConfig(
+                  message =
+                      getString(
+                          if (hasAuthError) {
+                            R.string.sync_unauthorised
+                          } else R.string.sync_completed_with_errors,
+                      ),
+                  duration = SnackbarDuration.Long,
+                  actionLabel = getString(R.string.ok).uppercase(),
               ),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
           )
         }
       }
@@ -136,8 +188,8 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   }
 
   fun emitPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-    isUploadSync: Boolean,
+      progressSyncJobStatus: SyncJobStatus.InProgress,
+      isUploadSync: Boolean,
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
@@ -146,35 +198,39 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   }
 
   private fun getSyncProgress(completed: Int, total: Int) =
-    completed * 100 / if (total > 0) total else 1
+      completed * 100 / if (total > 0) total else 1
 
   private fun calculateActualPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
+      progressSyncJobStatus: SyncJobStatus.InProgress,
   ): Int {
     val totalRecordsOverall =
-      userSettingViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
-        1L,
-      )
+        userSettingViewModel.sharedPreferencesHelper.read(
+            SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+                progressSyncJobStatus.syncOperation.name,
+            1L,
+        )
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
     val currentProgress: Int
     val currentTotalRecords =
-      if (isProgressTotalLess) {
-        currentProgress =
-          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
-            progressSyncJobStatus.completed
-        totalRecordsOverall.toInt()
-      } else {
-        userSettingViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
-        currentProgress = progressSyncJobStatus.completed
-        progressSyncJobStatus.total
-      }
+        if (isProgressTotalLess) {
+          currentProgress =
+              totalRecordsOverall.toInt() - progressSyncJobStatus.total +
+                  progressSyncJobStatus.completed
+          totalRecordsOverall.toInt()
+        } else {
+          userSettingViewModel.sharedPreferencesHelper.write(
+              SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
+                  progressSyncJobStatus.syncOperation.name,
+              progressSyncJobStatus.total.toLong(),
+          )
+          currentProgress = progressSyncJobStatus.completed
+          progressSyncJobStatus.total
+        }
 
     return getSyncProgress(currentProgress, currentTotalRecords)
+  }
+
+  companion object {
+    const val USER_SETTING_SCREEN_BOX_TAG = "fragmentUserSettingScreenTestTag"
   }
 }
