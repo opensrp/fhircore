@@ -40,7 +40,7 @@ class DataStoreModule {
   @Provides
   fun provideDataStore(
     @ApplicationContext context: Context,
-    dispatcherProvider: DispatcherProvider
+    dispatcherProvider: DispatcherProvider,
   ): DataStore<Preferences> {
     val userPreferences = "preferences_datastore"
     return PreferenceDataStoreFactory.create(
