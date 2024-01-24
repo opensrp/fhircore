@@ -270,7 +270,7 @@ dependencies {
    *
    * To be included in the engine/build.gradle.kts file via apply {}
    */
-  api(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
+  implementation(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
   implementation(Dependencies.HapiFhir.guavaCaching)
   implementation(Dependencies.HapiFhir.validationR4)
   implementation(Dependencies.HapiFhir.validation) {
@@ -280,7 +280,7 @@ dependencies {
 
   constraints {
     Dependencies.hapiFhirConstraints().forEach { (libName, constraints) ->
-      implementation(libName, constraints)
+      api(libName, constraints)
     }
   }
 
