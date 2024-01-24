@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.rememberScaffoldState
@@ -49,13 +48,11 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
-import org.smartregister.fhircore.quest.ui.register.RegisterFragment
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import retrofit2.HttpException
 import timber.log.Timber
 
-@ExperimentalMaterialApi
 @AndroidEntryPoint
 class UserSettingFragment : Fragment(), OnSyncListener {
   @Inject lateinit var syncListenerManager: SyncListenerManager
@@ -96,8 +93,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
           ) {
             Box(
               modifier =
-                androidx.compose.ui.Modifier.padding(it)
-                  .testTag(RegisterFragment.REGISTER_SCREEN_BOX_TAG),
+                androidx.compose.ui.Modifier.padding(it).testTag(USER_SETTING_SCREEN_BOX_TAG),
             ) {
               UserSettingScreen(
                 appTitle = appMainViewModel.appMainUiState.value.appTitle,
