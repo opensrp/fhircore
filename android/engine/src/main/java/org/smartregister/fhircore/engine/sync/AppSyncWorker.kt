@@ -24,6 +24,7 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
+import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -34,8 +35,8 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val openSrpFhirEngine: FhirEngine,
-  val appTimeStampContext: AppTimeStampContext,
+  private val openSrpFhirEngine: FhirEngine,
+  private val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
@@ -47,4 +48,6 @@ constructor(
     )
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
+
+  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 }

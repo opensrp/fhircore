@@ -16,34 +16,24 @@
 
 package org.smartregister.fhircore.quest
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import java.io.File
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Enumerations.FHIRAllTypes
 import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.ParameterDefinition
 import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.valueToString
-import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.sdk.CqlBuilder
 import org.smartregister.fhircore.quest.sdk.runBlockingOnWorkerThread
@@ -53,19 +43,11 @@ class CqlContentTest : RobolectricTest() {
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
-  private var context: Context = ApplicationProvider.getApplicationContext()
-
-  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
-  private val parser = fhirContext.newJsonParser()!!
-
-  // private val evaluator = LibraryEvaluator().apply { initialize() }
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
   @Inject lateinit var fhirOperator: FhirOperator
 
   @Inject lateinit var fhirEngine: FhirEngine
-  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
-  private val configService: ConfigService = mockk()
 
   @Before
   fun setUp() {
@@ -94,10 +76,7 @@ class CqlContentTest : RobolectricTest() {
       fhirOperator.evaluateLibrary(
         cqlLibrary.url,
         dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        cqlLibrary.parameter
-          .filter { it.type == FHIRAllTypes.PARAMETERDEFINITION.toCode() }
-          .map { it.name }
-          .toSet(),
+        null,
       ) as Parameters
 
     printResult(result)
@@ -124,10 +103,7 @@ class CqlContentTest : RobolectricTest() {
       fhirOperator.evaluateLibrary(
         cqlLibrary.url,
         dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        cqlLibrary.parameter
-          .filter { it.type == FHIRAllTypes.PARAMETERDEFINITION.toCode() }
-          .map { it.name }
-          .toSet(),
+        null,
       ) as Parameters
 
     printResult(result)
@@ -168,10 +144,7 @@ class CqlContentTest : RobolectricTest() {
       fhirOperator.evaluateLibrary(
         cqlLibrary.url,
         dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        cqlLibrary.parameter
-          .filter { it.type == FHIRAllTypes.PARAMETERDEFINITION.toCode() }
-          .map { it.name }
-          .toSet(),
+        null,
       ) as Parameters
 
     printResult(result)
@@ -197,18 +170,6 @@ class CqlContentTest : RobolectricTest() {
         libName = libraryIdentifier.id,
         libVersion = libraryIdentifier.version,
       )
-      .also { lib ->
-        // add list of statements as Parameters so that the blocker of empty expression can be
-        // sorted
-        cqlCompiler.translatedLibrary.library.statements.def.forEach {
-          lib.addParameter(
-            ParameterDefinition().apply {
-              type = FHIRAllTypes.PARAMETERDEFINITION.toCode()
-              name = it.name
-            },
-          )
-        }
-      }
       .also { println(it.encodeResourceToString()) }
   }
 

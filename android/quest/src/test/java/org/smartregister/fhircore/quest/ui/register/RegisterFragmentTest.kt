@@ -147,7 +147,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncState() {
-    val syncJobStatus = SyncJobStatus.Finished
+    val syncJobStatus = SyncJobStatus.Succeeded()
     coEvery { registerFragmentMock.onSync(syncJobStatus) } just runs
     registerFragmentMock.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentMock.onSync(syncJobStatus) }

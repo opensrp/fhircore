@@ -185,7 +185,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Finished,
+      is SyncJobStatus.Succeeded,
       is SyncJobStatus.Failed, -> {
         appMainViewModel.run {
           onEvent(

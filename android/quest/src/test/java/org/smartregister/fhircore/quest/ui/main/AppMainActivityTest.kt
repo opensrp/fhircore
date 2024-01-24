@@ -121,13 +121,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFinished() {
+  fun testOnSyncWithSyncStateSucceded() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = SyncJobStatus.Finished
-    appMainActivity.onSync(stateFinished)
+    val stateSucceded = SyncJobStatus.Succeeded()
+    appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
       viewModel.retrieveLastSyncTimestamp(),
     )
   }
