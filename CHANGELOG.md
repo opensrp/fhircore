@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.0.2] - 2024-01-24
+
+### Changed
+- Upgrade to latest Android FHIR SDK version includes an upgrade to the HAPI FHIR libraries used to process StructureMaps. In the previous libraries `$this.id` returned `[ResourceType]/[ID #]`, the new libraries return `[ID #]`. Therefore, any existing StructureMaps that call `$this.id` will need to replace that with `$this.type().name + $this.id` to have the equivalent output.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
