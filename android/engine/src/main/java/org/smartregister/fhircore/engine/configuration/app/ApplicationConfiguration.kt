@@ -30,7 +30,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
-  val syncStrategies: List<String> = listOf(),
+  val syncStrategy: String = "",
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),

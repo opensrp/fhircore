@@ -10,12 +10,7 @@
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": [
-    "Organization",
-    "Location",
-    "CareTeam",
-    "Practitioner"
-  ],
+  "syncStrategy": "Organization",
   "loginConfig": {
     "showLogo": true,
     "enablePin": true
