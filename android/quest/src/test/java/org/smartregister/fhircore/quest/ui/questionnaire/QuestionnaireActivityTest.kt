@@ -52,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -134,7 +135,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     verify {
       Toast.makeText(
         any(),
-        eq(context.getString(org.smartregister.fhircore.quest.R.string.questionnaire_not_found)),
+        eq(context.getString(R.string.questionnaire_not_found)),
         Toast.LENGTH_LONG,
       )
     }

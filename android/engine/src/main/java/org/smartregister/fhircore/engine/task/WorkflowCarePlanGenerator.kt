@@ -26,20 +26,19 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
-import java.util.Objects
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
-import org.hl7.fhir.exceptions.FHIRException
-import org.hl7.fhir.r4.model.ActivityDefinition
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.ParameterDefinition
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.Reference
@@ -47,8 +46,11 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
+import org.opencds.cqf.fhir.cql.LibraryEngine
+import org.opencds.cqf.fhir.cr.plandefinition.r4.PlanDefinitionProcessor
+import org.opencds.cqf.fhir.utility.r4.Parameters.part
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.extension.referenceValue
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import timber.log.Timber
 
 @Singleton
@@ -100,38 +102,7 @@ constructor(
 
       bundleCollection += resource
     }
-
-    for (action in planDefinition.action) {
-      val definition = action.definitionCanonicalType
-      val referenceToContained = definition.value.startsWith("#")
-      if (!referenceToContained) {
-        val resourceName = resolveResourceName(definition, planDefinition)
-        if (
-          Enumerations.FHIRAllTypes.fromCode(Objects.requireNonNull<String?>(resourceName)) ==
-            Enumerations.FHIRAllTypes.ACTIVITYDEFINITION
-        ) {
-          val availableDefinition =
-            defaultRepository.loadResource<ActivityDefinition>(
-              definition.value.substringAfterLast("/"),
-            )
-          knowledgeManager.install(writeToFile(availableDefinition!!))
-        }
-      }
-    }
-
     return bundleCollection
-  }
-
-  fun resolveResourceName(canonical: CanonicalType, resource: MetadataResource?): String? {
-    if (canonical.hasValue()) {
-      var id = canonical.value
-      if (id.contains("/")) {
-        id = id.replace(id.substring(id.lastIndexOf("/")), "")
-        return if (id.contains("/")) id.substring(id.lastIndexOf("/") + 1) else id
-      }
-      return null
-    }
-    throw FHIRException("CanonicalType must have a value for resource name extraction")
   }
 
   /**
@@ -149,7 +120,6 @@ constructor(
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
     for (planDefinition in availablePlanDefinitions) {
-      knowledgeManager.install(writeToFile(planDefinition))
       getPlanDefinitionDependentResources(planDefinition)
     }
   }
@@ -168,59 +138,83 @@ constructor(
     patient: Patient,
     data: Bundle = Bundle(),
     output: CarePlan,
-  ): CarePlan {
-    val patientId = IdType(patient.id).idPart
-
+  ) {
     if (cqlLibraryIdList.isEmpty()) {
       loadPlanDefinitionResourcesFromDb()
     }
 
-    val carePlan =
+    val carePlanProposal =
       fhirOperator.generateCarePlan(
-        planDefinition = CanonicalType(planDefinition.url),
-        subject = patient.referenceValue(),
+        planDefinition,
+        patient,
+        data,
       ) as CarePlan
-    val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
-    // TODO Fix after resolving dependency issues
-    /*val carePlanProposal = CarePlan()
-    r4PlanDefinitionProcessor.
-     apply(
-       id =  null,
-       canonical =  planDefinition.idElement,
-       planDefinition =  null,
-       subject =  patientId,
-       encounterId =  null,
-       practitionerId =  null,
-       organizationId =  null,
-       userType =  null,
-       userLanguage =  null,
-       userTaskContext =  null,
-       setting =  null,
-       settingContext =  null
-    ) as CarePlan*/
 
-    // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
-    //    acceptCarePlan(carePlanProposal, output)
+    acceptCarePlan(carePlanProposal, output)
 
     resolveDynamicValues(
       planDefinition = planDefinition,
       input = data,
       subject = patient,
-      carePlan,
+      output,
     )
-
-    return carePlan
   }
 
-  private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
-    // val repository = getPrivateProperty("repository", fhirOperator) as ProxyRepository
-    // val evaluationSettings = getPrivateProperty("evaluationSettings", fhirOperator) as
-    // EvaluationSettings
+  private fun FhirOperator.generateCarePlan(
+    planDefinition: PlanDefinition,
+    subject: Patient,
+    data: Bundle,
+  ): IBaseResource {
+    // TODO: Open this method on the Android SDK
+    val planDefProcessor =
+      javaClass.getDeclaredField("planDefinitionProcessor").let {
+        it.isAccessible = true
+        return@let it.get(this) as PlanDefinitionProcessor
+      }
 
-    return R4PlanDefinitionProcessor(
-      // repository = repository,
-      // evaluationSettings = evaluationSettings
-      )
+    val libraryProcessor =
+      javaClass.getDeclaredField("libraryProcessor").let {
+        it.isAccessible = true
+        return@let it.get(this) as LibraryEngine
+      }
+
+    val params = Parameters()
+    params.addParameter(
+      part("%resource", data).apply {
+        extension.add(
+          Extension(
+            "http://hl7.org/fhir/uv/cpg/StructureDefinition/cpg-parameterDefinition",
+            ParameterDefinition().apply {
+              type = data.fhirType()
+              min = 0
+              max = data.entry.size.toString()
+            },
+          ),
+        )
+      },
+    )
+    params.addParameter(part("%rootResource", planDefinition))
+    params.addParameter(part("%subject", subject))
+
+    return planDefProcessor.apply(
+      null,
+      null,
+      planDefinition,
+      "Patient/${subject.id}",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      params,
+      null,
+      data,
+      null,
+      libraryProcessor,
+    ) as IBaseResource
   }
 
   private fun resolveDynamicValues(
@@ -259,14 +253,16 @@ constructor(
         "Task" ->
           carePlan.addActivity().setReference(Reference(resource)).detail.status =
             mapRequestResourceStatusToCarePlanStatus(resource as Task)
+        "QuestionnaireResponse" -> carePlan.addActivity().setReference(Reference(resource))
+        "OperationOutcome" -> carePlan.addActivity().setReference(Reference(resource))
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
+        "MedicationRequest" -> carePlan.addActivity().reference = Reference(resource)
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
-        else -> TODO("Not a valid request resource")
+        else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
   }
@@ -283,19 +279,22 @@ constructor(
     val createdRequestResources = ArrayList<Resource>()
     for (resource in resourceList) {
       when (resource.fhirType()) {
-        "Task" -> {
+        "Task",
+        "QuestionnaireResponse",
+        "OperationOutcome",
+        "MedicationRequest",
+        "CarePlan", -> {
           defaultRepository.create(true, resource)
           createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
         "RequestGroup" -> {}
-        else -> TODO("Not a valid request resource")
+        else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
     return createdRequestResources
@@ -350,25 +349,4 @@ constructor(
       .apply { isAccessible = true }
       .get(obj)
   }
-
-  inner class R4PlanDefinitionProcessor
-  /*inner class R4PlanDefinitionProcessor
-    constructor(
-      repository: ProxyRepository,
-      evaluationSettings: EvaluationSettings,
-    ) :
-      PlanDefinitionProcessor(
-        repository,
-        evaluationSettings
-      )
-  {
-      fun resolveDynamicValue(
-        result: MutableList<IBase>?,
-        path: String?,
-        requestAction: IElement?,
-        resource: IBase?
-      ) {
-        // no need to add dynamic value in RequestGroup resource
-      }
-    }*/
 }

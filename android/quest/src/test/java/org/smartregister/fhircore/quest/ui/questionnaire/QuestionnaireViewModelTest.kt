@@ -22,6 +22,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -121,6 +122,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
+  private val knowledgeManager: KnowledgeManager = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private val patient =
     Faker.buildPatient().apply {
@@ -179,6 +181,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           fhirOperator = fhirOperator,
+          knowledgeManager = knowledgeManager,
         ),
       )
 

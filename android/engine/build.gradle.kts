@@ -1,3 +1,4 @@
+import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 buildscript {
@@ -100,6 +101,8 @@ android {
     }
   }
 
+  lint { baseline = file("lint-baseline.xml") }
+
   testCoverage { jacocoVersion = "0.8.11" }
 }
 
@@ -116,6 +119,7 @@ configurations {
     exclude(group = "javax", module = "javaee-api")
     exclude(group = "xml-apis")
     exclude(group = "xpp3")
+    removeIncompatibleDependencies()
   }
 }
 
@@ -140,10 +144,6 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  api("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
-    exclude(group = "org.codelibs", module = "xpp3")
-    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
-  }
 
   // Shared dependencies
   api(libs.datastore)
@@ -196,6 +196,11 @@ dependencies {
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
+  }
+  api(libs.cqf.fhir.cr) {
+    isTransitive = true
+    exclude(group = "org.codelibs", module = "xpp3")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   api(libs.workflow) {
@@ -259,6 +264,27 @@ dependencies {
   androidTestImplementation(libs.hilt.android.testing)
   androidTestImplementation(libs.benchmark.junit)
 
+  /**
+   * This is an SDK Dependency graph bug workaround file HAPI FHIR Dependencies missing at runtime
+   * after building FHIRCore application module
+   *
+   * To be included in the engine/build.gradle.kts file via apply {}
+   */
+  api(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
+  implementation(Dependencies.HapiFhir.guavaCaching)
+  implementation(Dependencies.HapiFhir.validationR4)
+  implementation(Dependencies.HapiFhir.validation) {
+    exclude(module = "commons-logging")
+    exclude(module = "httpclient")
+  }
+
+  constraints {
+    Dependencies.hapiFhirConstraints().forEach { (libName, constraints) ->
+      implementation(libName, constraints)
+    }
+  }
+
+  /** End SDK Dependency Graph workaround * */
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }

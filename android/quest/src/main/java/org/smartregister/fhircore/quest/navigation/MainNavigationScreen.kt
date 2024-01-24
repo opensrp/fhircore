@@ -57,7 +57,8 @@ sealed class MainNavigationScreen(
   object GeoWidget :
     MainNavigationScreen(route = org.smartregister.fhircore.geowidget.R.id.geoWidgetFragment)
 
-  object Insight : MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
+  object Insight :
+    MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
 
   fun eventId(id: String) = route.toString() + "_" + id
 }

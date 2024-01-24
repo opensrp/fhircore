@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.data.report.measure
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -62,6 +63,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var fhirOperator: FhirOperator
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
@@ -114,6 +117,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         mockk(),
         registerRepository,
         fhirOperator,
+        knowledgeManager,
         mockk(),
       )
   }
