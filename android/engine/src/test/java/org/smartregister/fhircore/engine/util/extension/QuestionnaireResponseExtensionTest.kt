@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,17 @@ class QuestionnaireResponseExtensionTest {
 
   @Before
   fun setup() {
-    questionnaireResponse = QuestionnaireResponse().apply {
-      addItem().apply {
-        linkId = "1"
-        text = "Text 1"
+    questionnaireResponse =
+      QuestionnaireResponse().apply {
         addItem().apply {
-          linkId = "2"
-          text = "Text 2"
+          linkId = "1"
+          text = "Text 1"
+          addItem().apply {
+            linkId = "2"
+            text = "Text 2"
+          }
         }
       }
-    }
   }
 
   @Test
