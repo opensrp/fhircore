@@ -36,7 +36,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.fhir.sync.SyncJobStatus
-import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
@@ -134,9 +132,6 @@ class UserSettingFragment : Fragment(), OnSyncListener {
             SnackBarMessageConfig(message = getString(R.string.syncing)),
           )
         }
-      is SyncJobStatus.InProgress -> {
-        emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
-      }
       is SyncJobStatus.Finished -> {
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
@@ -178,49 +173,6 @@ class UserSettingFragment : Fragment(), OnSyncListener {
         // Do nothing
       }
     }
-  }
-
-  fun emitPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-    isUploadSync: Boolean,
-  ) {
-    lifecycleScope.launch {
-      val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
-      userSettingViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
-    }
-  }
-
-  private fun getSyncProgress(completed: Int, total: Int) =
-    completed * 100 / if (total > 0) total else 1
-
-  private fun calculateActualPercentageProgress(
-    progressSyncJobStatus: SyncJobStatus.InProgress,
-  ): Int {
-    val totalRecordsOverall =
-      userSettingViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
-        1L,
-      )
-    val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
-    val currentProgress: Int
-    val currentTotalRecords =
-      if (isProgressTotalLess) {
-        currentProgress =
-          totalRecordsOverall.toInt() - progressSyncJobStatus.total +
-            progressSyncJobStatus.completed
-        totalRecordsOverall.toInt()
-      } else {
-        userSettingViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
-        currentProgress = progressSyncJobStatus.completed
-        progressSyncJobStatus.total
-      }
-
-    return getSyncProgress(currentProgress, currentTotalRecords)
   }
 
   companion object {

@@ -81,8 +81,6 @@ constructor(
   }
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
-  private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
-  private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
 
   val appVersionCode = BuildConfig.VERSION_CODE
   val appVersionName = BuildConfig.VERSION_NAME
@@ -213,10 +211,5 @@ constructor(
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
     _snackBarStateFlow.emit(snackBarMessageConfig)
-  }
-
-  suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
-    _percentageProgress.emit(progress)
-    _isUploadSync.emit(isUploadSync)
   }
 }
