@@ -167,7 +167,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventUpdateSyncStates() {
     // Simulate sync state Finished
     val syncFinishedTimestamp = OffsetDateTime.now()
-    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Finished>()
+    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Succeeded>()
     every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
     appMainViewModel.onEvent(
