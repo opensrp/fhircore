@@ -61,23 +61,6 @@ constructor(
     dataStore.data.first()[key] ?: defaultValue
   }
 
-  inline fun <reified T> readOnce(
-    key: Preferences.Key<String>,
-  ): T? {
-    var out: T? = null
-    runBlocking {
-      dataStore.data.first()[key].also {
-        try {
-          out = gson.fromJson(it, T::class.java)
-        } catch (jsonIoException: JsonIOException) {
-          Timber.e(jsonIoException)
-        }
-      }
-    }
-
-    return out
-  }
-
   fun <T> observe(key: Preferences.Key<T>, defaultValue: T? = null) =
     dataStore.data
       .catch { exception ->
@@ -89,39 +72,10 @@ constructor(
       }
       .map { preferences -> preferences[key] ?: defaultValue }
 
-  inline fun <reified T, M> observe(
-    key: Preferences.Key<M>,
-  ): Flow<T?> =
-    dataStore.data
-      .catch { exception ->
-        if (exception is IOException) {
-          emit(emptyPreferences())
-        } else {
-          throw exception
-        }
-      }
-      .map { preferences ->
-        try {
-          gson.fromJson(preferences[key] as String, T::class.java)
-        } catch (jsonIoException: JsonIOException) {
-          Timber.e(jsonIoException)
-          null
-        }
-      }
-
   suspend fun <T> write(
     key: Preferences.Key<T>,
     dataToStore: T,
-  ) { // named dataToStore instead of data to prevent overload ambiguity
-    dataStore.edit { preferences -> preferences[key] = dataToStore }
-  }
-
-  suspend inline fun <reified T> write(
-    key: Preferences.Key<String>,
-    data: T,
-    encodeWithGson: Boolean = true,
   ) {
-    val dataToStore = if (encodeWithGson) gson.toJson(data) else data.encodeJson()
     dataStore.edit { preferences -> preferences[key] = dataToStore }
   }
 
@@ -136,13 +90,7 @@ constructor(
   // expose flows to be used all over the engine and view models
   val appId by lazy { observe(APP_ID, null) }
   val lang by lazy { observe(LANG, defaultValue = Locale.ENGLISH.toLanguageTag()) }
-  val careTeamIds by lazy { observe(CARE_TEAM_IDS, defaultValue = "") }
-  val careTeamNames by lazy { observe(CARE_TEAM_NAMES, defaultValue = "") }
   val lastSyncTimeStamp by lazy { observe(LAST_SYNC_TIMESTAMP, defaultValue = null) }
-  val locationIds by lazy { observe(LOCATION_IDS, defaultValue = "") }
-  val locationNames by lazy { observe(LOCATION_NAMES, defaultValue = "") }
-  val organizationIds by lazy { observe(ORGANIZATION_IDS, defaultValue = "") }
-  val organizationNames by lazy { observe(ORGANIZATION_NAMES, defaultValue = "") }
   val practitionerId by lazy { observe(PRACTITIONER_ID, defaultValue = "") }
   val practitionerLocation by lazy { observe(PRACTITIONER_LOCATION, defaultValue = "") }
   val practitionerLocationHierarchies by lazy {
@@ -158,13 +106,7 @@ constructor(
     // Keys
     val APP_ID by lazy { stringPreferencesKey("APP_ID") }
     val LANG by lazy { stringPreferencesKey("LANG") }
-    val CARE_TEAM_IDS by lazy { stringPreferencesKey("CARE_TEAM_IDS") }
-    val CARE_TEAM_NAMES by lazy { stringPreferencesKey("CARE_TEAM_NAMES") }
     val LAST_SYNC_TIMESTAMP by lazy { stringPreferencesKey("LAST_SYNC_TIMESTAMP") }
-    val LOCATION_IDS by lazy { stringPreferencesKey("LOCATION_IDS") }
-    val LOCATION_NAMES by lazy { stringPreferencesKey("LOCATION_NAMES") }
-    val ORGANIZATION_IDS by lazy { stringPreferencesKey("ORGANIZATION_IDS") }
-    val ORGANIZATION_NAMES by lazy { stringPreferencesKey("ORGANIZATION_NAMES") }
     val PRACTITIONER_ID by lazy { stringPreferencesKey("PRACTITIONER_ID") }
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
