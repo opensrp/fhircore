@@ -407,6 +407,9 @@ constructor(
      * value is cast to the [DataType] to facilitate comparison using the [compareTo] function which
      * returns zero if this object is equal to the specified other object, a negative number if it's
      * less than other, or a positive number if it's greater than other.
+     *
+     * Please NOTE the order of comparison. The value extracted from FHIRPath is compared against
+     * the provided [value]
      */
     fun filterResources(
       resources: List<Resource>?,
@@ -416,7 +419,6 @@ constructor(
       vararg compareToResult: Any,
     ) =
       runCatching {
-          //      val compareToResult = listOf(1,-1,0)
           resources?.filter {
             fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               when (DataType.valueOf(dataType)) {
