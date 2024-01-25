@@ -89,9 +89,6 @@ constructor(
       patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) } &&
       patient.belongsTo(code)
 
-  init {
-    Timber.e(code)
-  }
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier() ?: ResourceValue.BLANK
