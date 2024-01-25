@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2024-01-24
+
+### Changed
+- Upgrade to latest Android FHIR SDK version includes an upgrade to the HAPI FHIR libraries used to process StructureMaps. In the previous libraries `$this.id` returned `[ResourceType]/[ID #]`, the new libraries return `[ID #]`. Therefore, any existing StructureMaps that call `$this.id` will need to replace that with `$this.type().name + $this.id` to have the equivalent output.
+- Upgrade to the latest Android FHIR SDK version includes change to Measure evaluation that requires all Measure JSON files to be rebuilt.
+
 ## [0.2.4] - 2023-06-24
 ### Added
 - Insights feature to show stats on any _Unsynced_ Resources on the device
