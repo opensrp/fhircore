@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -396,6 +397,46 @@ constructor(
       }
         ?: emptyList()
     }
+
+    /**
+     * Filters [Resource] s by comparing the given [value] against the value obtained after
+     * extracting data on each [Resource] using FHIRPath with the provided [fhirPathExpression]. The
+     * value is cast to the [DataType] to facilitate comparison using the [compareTo] function which
+     * returns zero if this object is equal to the specified other object, a negative number if it's
+     * less than other, or a positive number if it's greater than other.
+     */
+    fun filterResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ) =
+      runCatching {
+          //      val compareToResult = listOf(1,-1,0)
+          resources?.filter {
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+              when (DataType.valueOf(dataType)) {
+                DataType.BOOLEAN ->
+                  base.castToBoolean(base).value.compareTo(value as Boolean) in compareToResult
+                DataType.DATE ->
+                  base.castToDate(base).value.compareTo(value as Date) in compareToResult
+                DataType.DATETIME ->
+                  base.castToDateTime(base).value.compareTo(value as Date) in compareToResult
+                DataType.DECIMAL ->
+                  base.castToDecimal(base).value.compareTo(value as BigDecimal) in compareToResult
+                DataType.INTEGER ->
+                  base.castToInteger(base).value.compareTo(value as Int) in compareToResult
+                DataType.STRING ->
+                  base.castToString(base).value.compareTo(value as String) in compareToResult
+                else -> {
+                  false
+                }
+              }
+            }
+          }
+        }
+        .getOrNull()
 
     /**
      * This function combines all string indexes to a list separated by the separator and regex
