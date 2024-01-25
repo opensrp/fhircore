@@ -27,7 +27,7 @@ package org.smartregister.fhircore.engine.configuration
  * RegisterViewConfigurations used in an application with two registers.
  * @property resourceType Optional FHIR resource type
  */
-abstract class Configuration {
+abstract class Configuration : java.io.Serializable {
   open lateinit var appId: String
   open lateinit var configType: String
   open val resourceType: String? = null

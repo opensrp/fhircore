@@ -1,0 +1,58 @@
+{
+  "appId": "echis",
+  "configType": "dataMigration",
+  "migrations": [
+    {
+      "resourceType": "Task",
+      "updateValues": [
+        {
+          "jsonPathExpression": "Task.basedOn[0].reference",
+          "valueRule": {
+            "name": "taskBasedOn",
+            "condition": "true",
+            "actions": [
+              "data.put('taskBasedOn', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn[0].reference') )"
+            ]
+          }
+        }
+      ],
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "operation": "OR",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "ready"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "requested"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "in-progress"
+              }
+            }
+          ]
+        }
+      ],
+      "purgeAffectedResources": true,
+      "resourceFilterExpression" : {
+        "conditionalFhirPathExpressions": [
+          "Task.basedOn[0].reference.startsWith('CarePlan').not() and Task.basedOn[0].reference.startsWith('PlanDefinition').not()"
+        ],
+        "matchAll": true
+      },
+      "version": 1
+    }
+  ]
+}

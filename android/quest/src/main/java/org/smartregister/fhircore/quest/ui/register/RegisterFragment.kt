@@ -169,7 +169,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 onEvent = registerViewModel::onEvent,
                 pagingItems = pagingItems,
                 registerUiState = registerViewModel.registerUiState.value,
-                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation
+                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                registerViewModel = registerViewModel
               )
             }
           }
@@ -266,9 +267,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            } else if (appEvent is AppEvent.OnMigrateData) {
+              registerViewModel.setOnMigrateDataInProgress(appEvent.inProgress)
             }
           }
           .launchIn(lifecycleScope)

@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.extension.applyWindowInsetListener
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
+import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
@@ -42,6 +43,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
   @Inject lateinit var p2pSenderTransferDao: P2PSenderTransferDao
   @Inject lateinit var p2pReceiverTransferDao: P2PReceiverTransferDao
+  @Inject lateinit var dataMigration: DataMigration
   val pinViewModel by viewModels<PinViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {

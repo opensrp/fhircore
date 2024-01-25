@@ -165,10 +165,10 @@ class ReportTypeSelectorScreenTest {
         dateRange = null,
         reportPeriodRange = mapOf(),
         onBackPressed = {},
-        onGenerateReport = {},
         onDateRangeSelected = {},
         onReportTypeSelected = {},
-        onSubjectRemoved = {}
+        onSubjectRemoved = {},
+        onSelectReportDate = {}
       )
     }
     composeTestRule.onNodeWithText("Measure Report").assertExists().assertIsDisplayed()
