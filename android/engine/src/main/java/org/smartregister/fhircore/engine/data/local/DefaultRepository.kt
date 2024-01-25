@@ -83,7 +83,6 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
-import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
@@ -799,14 +798,20 @@ constructor(
     resources: List<Resource>,
   ): List<Resource> {
     return with(resourceFilterExpression) {
-      if (this == null) {
+      if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
       } else {
-        resources.filterByFhirPathExpression(
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          conditionalFhirPathExpressions = conditionalFhirPathExpressions,
-          matchAll = matchAll,
-        )
+        resources.filter { resource ->
+          if (matchAll) {
+            conditionalFhirPathExpressions.all {
+              fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+            }
+          } else {
+            conditionalFhirPathExpressions.any {
+              fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+            }
+          }
+        }
       }
     }
   }
