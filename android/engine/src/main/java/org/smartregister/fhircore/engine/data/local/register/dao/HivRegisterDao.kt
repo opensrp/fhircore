@@ -165,13 +165,17 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
-      healthStatus = patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
+      healthStatus =
+        patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
       tasks =
         patient
           .activeTasks()
           .sortedWith(
             compareBy(
-              { it.clinicVisitOrder(configuration.taskOrderFilterTagViaMetaCodingSystem) ?: Double.MAX_VALUE },
+              {
+                it.clinicVisitOrder(configuration.taskOrderFilterTagViaMetaCodingSystem)
+                  ?: Double.MAX_VALUE
+              },
               // tasks with no clinicVisitOrder, would be sorted with Task#description
               { it.description }
             )

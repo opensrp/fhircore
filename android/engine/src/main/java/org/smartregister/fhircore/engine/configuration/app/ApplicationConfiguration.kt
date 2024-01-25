@@ -34,7 +34,8 @@ data class ApplicationConfiguration(
   var appLogoIconResourceFile: String = "ic_default_logo",
   var count: String = ConfigurationRegistry.DEFAULT_COUNT,
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
-  var taskOrderFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_ORDER_FILTER_TAG_META_CODING_SYSTEM,
+  var taskOrderFilterTagViaMetaCodingSystem: String =
+    DEFAULT_TASK_ORDER_FILTER_TAG_META_CODING_SYSTEM,
   var taskFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM
 ) : Configuration
 
