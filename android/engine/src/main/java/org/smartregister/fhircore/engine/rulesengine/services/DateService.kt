@@ -44,10 +44,10 @@ object DateService {
 
   @JvmOverloads
   fun compareDates(
-    firstDateString: String,
-    secondDateString: String,
     firstDateFormat: String = SDF_YYYY_MM_DD,
-    secondDateFormat: String = SDF_YYYY_MM_DD
+    firstDateString: String,
+    secondDateFormat: String = SDF_YYYY_MM_DD,
+    secondDateString: String,
   ): Int? {
     val firstDate: Date? = firstDateString.parseDate(firstDateFormat)
     val secondDate: Date? = secondDateString.parseDate(secondDateFormat)
