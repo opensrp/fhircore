@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package org.smartregister.fhircore.quest.data
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.search.Search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
@@ -41,7 +41,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.event.AppEvent
@@ -70,6 +69,7 @@ constructor(
   val eventBus: EventBus,
 ) {
 
+  private val coroutineScope = CoroutineScope(dispatcherProvider.io())
   private var conf: Configuration =
     Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
@@ -83,7 +83,7 @@ constructor(
         emptyList()
       }
 
-    runBlocking {
+    coroutineScope.launch {
       val previousVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first()
       val newMigrations = migrations?.filter { it.version > previousVersion }
       if (!newMigrations.isNullOrEmpty()) {
@@ -140,36 +140,36 @@ constructor(
     val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
     migrationConfigs?.forEach { migrationConfig ->
       try {
-        val search: Search =
-          Search(type = migrationConfig.resourceType).apply {
-            migrationConfig.dataQueries?.forEach { dataQuery ->
-              filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
-            }
-          }
-        val searchResources =
-          withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
+        val resourceFilterExpression = migrationConfig.resourceFilterExpression
+        val repositoryResourceDataList =
+          defaultRepository
+            .searchResourcesRecursively(
+              filterActiveResources = null,
+              fhirResourceConfig = migrationConfig.resourceConfig,
+              configRules = null,
+              secondaryResourceConfigs = null,
+            )
+            .filterByFhirPathExpression(
+              fhirPathDataExtractor = fhirPathDataExtractor,
+              conditionalFhirPathExpressions =
+                resourceFilterExpression?.conditionalFhirPathExpressions,
+              matchAll = resourceFilterExpression?.matchAll ?: true,
+            )
 
-        val resources =
-          with(migrationConfig.resourceFilterExpression) {
-            if (this == null) {
-              searchResources
-            } else {
-              searchResources.filterByFhirPathExpression(
-                fhirPathDataExtractor = fhirPathDataExtractor,
-                conditionalFhirPathExpressions = conditionalFhirPathExpressions,
-                matchAll = matchAll,
-              )
-            }
-          }
-
-        resources.forEach { resource ->
+        repositoryResourceDataList.forEach { repositoryResourceData ->
+          val resource = repositoryResourceData.resource
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
           val updatedResourceDocument =
             jsonParse.apply {
               migrationConfig.updateValues.forEach { updateExpression ->
                 // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-                val value = computeValueRule(updateExpression.valueRule, resource)
+                val value =
+                  computeValueRule(
+                    rules = migrationConfig.rules,
+                    repositoryResourceData = repositoryResourceData,
+                    computedValueKey = updateExpression.computedValueKey,
+                  )
                 if (updateExpression.jsonPathExpression.startsWith("\$") && value != null) {
                   set(updateExpression.jsonPathExpression, value)
                 }
@@ -207,12 +207,16 @@ constructor(
     preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion)
   }
 
-  private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {
+  private fun computeValueRule(
+    rules: List<RuleConfig>?,
+    repositoryResourceData: RepositoryResourceData,
+    computedValueKey: String,
+  ): Any? {
     return resourceDataRulesExecutor
       .computeResourceDataRules(
-        ruleConfigs = listOf(valueRule),
-        repositoryResourceData = RepositoryResourceData(resource = resource),
+        ruleConfigs = rules ?: emptyList(),
+        repositoryResourceData = repositoryResourceData,
         params = emptyMap(),
-      )[valueRule.name]
+      )[computedValueKey]
   }
 }

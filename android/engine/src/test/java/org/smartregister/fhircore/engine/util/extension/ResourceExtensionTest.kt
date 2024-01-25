@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
@@ -753,28 +754,34 @@ class ResourceExtensionTest : RobolectricTest() {
   fun testFilterByExpression() {
     val tasks =
       listOf(
-        Task().apply {
-          id = "Task/task1"
-          description = "New Task"
-          status = Task.TaskStatus.READY
-          executionPeriod =
-            Period().apply {
-              start = Date().plusMonths(-1)
-              end = Date().plusDays(-1)
-            }
-          addBasedOn(Reference("care1"))
-        },
-        Task().apply {
-          id = "Task/task2"
-          description = "Another task"
-          status = Task.TaskStatus.READY
-          executionPeriod =
-            Period().apply {
-              start = Date().plusMonths(-1)
-              end = Date().plusDays(-1)
-            }
-          addBasedOn(Reference("CarePlan/care2"))
-        },
+        RepositoryResourceData(
+          resource =
+            Task().apply {
+              id = "Task/task1"
+              description = "New Task"
+              status = Task.TaskStatus.READY
+              executionPeriod =
+                Period().apply {
+                  start = Date().plusMonths(-1)
+                  end = Date().plusDays(-1)
+                }
+              addBasedOn(Reference("care1"))
+            },
+        ),
+        RepositoryResourceData(
+          resource =
+            Task().apply {
+              id = "Task/task2"
+              description = "Another task"
+              status = Task.TaskStatus.READY
+              executionPeriod =
+                Period().apply {
+                  start = Date().plusMonths(-1)
+                  end = Date().plusDays(-1)
+                }
+              addBasedOn(Reference("CarePlan/care2"))
+            },
+        ),
       )
 
     // Task with malformed basedOn references
@@ -787,7 +794,7 @@ class ResourceExtensionTest : RobolectricTest() {
       )
 
     Assert.assertTrue(filteredTasks.isNotEmpty())
-    Assert.assertEquals(filteredTasks.first().logicalId, tasks.first().logicalId)
+    Assert.assertEquals(filteredTasks.first().resource.logicalId, tasks.first().resource.logicalId)
 
     // Task with correct basedOn references
     val filteredTasks2 =
@@ -798,6 +805,6 @@ class ResourceExtensionTest : RobolectricTest() {
       )
 
     Assert.assertTrue(filteredTasks2.isNotEmpty())
-    Assert.assertEquals(filteredTasks2.first().logicalId, tasks.last().logicalId)
+    Assert.assertEquals(filteredTasks2.first().resource.logicalId, tasks.last().resource.logicalId)
   }
 }

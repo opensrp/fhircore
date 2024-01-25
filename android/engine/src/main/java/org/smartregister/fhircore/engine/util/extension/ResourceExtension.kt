@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -472,20 +473,20 @@ suspend fun Task.updateDependentTaskDueDate(
  * to be a boolean otherwise the [toBoolean] function will evaluate to false and hence return an
  * empty list.
  */
-fun List<Resource>.filterByFhirPathExpression(
+fun List<RepositoryResourceData>.filterByFhirPathExpression(
   fhirPathDataExtractor: FhirPathDataExtractor,
   conditionalFhirPathExpressions: List<String>?,
   matchAll: Boolean,
-): List<Resource> {
+): List<RepositoryResourceData> {
   if (conditionalFhirPathExpressions.isNullOrEmpty()) return this
-  return this.filter { resource ->
+  return this.filter { repositoryResourceData ->
     if (matchAll) {
       conditionalFhirPathExpressions.all {
-        fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
       }
     } else {
       conditionalFhirPathExpressions.any {
-        fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
       }
     }
   }
