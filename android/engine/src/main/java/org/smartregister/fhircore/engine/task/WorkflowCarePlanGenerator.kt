@@ -25,6 +25,9 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -139,25 +142,39 @@ constructor(
     data: Bundle = Bundle(),
     output: CarePlan,
   ) {
-    if (cqlLibraryIdList.isEmpty()) {
+    /*if (cqlLibraryIdList.isEmpty()) {
       loadPlanDefinitionResourcesFromDb()
+    }*/
+
+    val packagePath = "who_eir/packages/package"
+    val resourceFiles = context.assets.list(packagePath);
+    resourceFiles?.forEach { fileName ->
+      val fileStream = context.assets.open("$packagePath/$fileName")
+      val file = File("${context.cacheDir}/$fileName").apply {
+        writeBytes(fileStream.readBytes())
+      }
+      knowledgeManager.install(file)
+      Timber.d("installing file ${file.absolutePath}")
     }
 
-    val carePlanProposal =
-      fhirOperator.generateCarePlan(
-        planDefinition,
-        patient,
-        data,
-      ) as CarePlan
+    runBlockingOnWorkerThread {
+      val carePlanProposal =
+        fhirOperator.generateCarePlan(
+          planDefinition,
+          patient,
+          data,
+        ) as CarePlan
 
-    acceptCarePlan(carePlanProposal, output)
+      acceptCarePlan(carePlanProposal, output)
 
-    resolveDynamicValues(
-      planDefinition = planDefinition,
-      input = data,
-      subject = patient,
-      output,
-    )
+      resolveDynamicValues(
+        planDefinition = planDefinition,
+        input = data,
+        subject = patient,
+        output,
+      )
+    }
+
   }
 
   private fun FhirOperator.generateCarePlan(
@@ -349,4 +366,7 @@ constructor(
       .apply { isAccessible = true }
       .get(obj)
   }
+
+  internal fun <T> runBlockingOnWorkerThread(block: suspend (CoroutineScope) -> T) =
+    runBlocking(Dispatchers.IO) { block(this) }
 }

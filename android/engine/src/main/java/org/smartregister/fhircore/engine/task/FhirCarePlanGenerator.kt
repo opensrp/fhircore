@@ -126,8 +126,7 @@ constructor(
     var carePlanModified = false
 
     if (generateCarePlanWithWorkflowApi) {
-      output =
-        workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
+      workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
           planDefinition = planDefinition,
           patient = subject as Patient,
           data = data,
