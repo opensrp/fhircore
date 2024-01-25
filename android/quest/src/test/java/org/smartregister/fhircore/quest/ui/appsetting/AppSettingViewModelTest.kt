@@ -203,7 +203,8 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
       coEvery { appSettingViewModel.isNonProxy() } returns false
 
@@ -217,7 +218,9 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+      }
 
       Assert.assertEquals(
         listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
@@ -274,7 +277,8 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.isNonProxy() } returns false
 
       appSettingViewModel.run {
@@ -287,7 +291,9 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.fetchComposition(any(), any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+      }
 
       Assert.assertEquals(
         listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
@@ -436,7 +442,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
 
-    appSettingViewModel.saveSyncSharedPreferences(resourceType)
+    appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(resourceType)
 
     val savedSyncResourcesResult =
       sharedPreferencesHelper.read(
@@ -591,7 +597,8 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.isNonProxy() } returns true
 
       appSettingViewModel.run {
@@ -604,7 +611,9 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.fetchComposition(any(), any()) }
       coVerify { fhirResourceDataSource.getResource(any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+      }
 
       Assert.assertEquals(
         listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),

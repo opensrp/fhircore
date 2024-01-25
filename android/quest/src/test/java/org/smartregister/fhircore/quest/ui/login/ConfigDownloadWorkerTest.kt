@@ -30,10 +30,11 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.Composition
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -80,7 +81,8 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testThatDoWorkCallsDownloadNonWorkflowConfigs() {
-    coEvery { configurationRegistry.fetchNonWorkflowConfigResources() } returns Composition()
+    coEvery { configurationRegistry.fetchNonWorkflowConfigResources() } just runs
+    coEvery { dataMigration.migrate() } just runs
     runTest {
       val result = configDownloadWorker.doWork()
       coVerify { configurationRegistry.fetchNonWorkflowConfigResources() }
