@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,17 +32,19 @@ sealed class ConfigType(
 ) {
   object Application : ConfigType("application")
 
-  object Sync : ConfigType("sync", true)
+  object Sync : ConfigType(name = "sync", parseAsResource = true)
 
   object Navigation : ConfigType("navigation")
 
-  object Register : ConfigType("register", multiConfig = true)
+  object Register : ConfigType(name = "register", multiConfig = true)
 
-  object MeasureReport : ConfigType("measureReport", multiConfig = true)
+  object MeasureReport : ConfigType(name = "measureReport", multiConfig = true)
 
-  object OtherReport : ConfigType("otherReport", multiConfig = true)
+  object OtherReport : ConfigType(name = "otherReport", multiConfig = true)
 
-  object Profile : ConfigType("profile", multiConfig = true)
+  object Profile : ConfigType(name = "profile", multiConfig = true)
 
-  object GeoWidget : ConfigType("geoWidget", multiConfig = true)
+  object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
+
+  object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
 }

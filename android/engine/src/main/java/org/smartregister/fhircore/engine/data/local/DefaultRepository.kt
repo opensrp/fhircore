@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,8 +64,11 @@ import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFi
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -442,7 +445,13 @@ constructor(
             sort(StringClientParam(sortConfig.paramName), sortConfig.order)
           else ->
             Timber.e(
-              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting.",
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${
+                                listOf(
+                                    Enumerations.DataType.INTEGER,
+                                    Enumerations.DataType.DATE,
+                                    Enumerations.DataType.STRING,
+                                )
+                            } types are supported for DB level sorting.",
             )
         }
       }
@@ -734,7 +743,9 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${
+                    entry.value.toString().extractLogicalIdUuid()
+                }"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -837,6 +848,101 @@ constructor(
           filterFhirPathExpression.value
       } == true
     }
+  }
+
+  suspend fun purge(resource: Resource, forcePurge: Boolean) {
+    try {
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
+      }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      Timber.e(
+        "Purge failed -> Resource with ID ${resource.logicalId} does not exist",
+        resourceNotFoundException,
+      )
+    }
+  }
+
+  suspend fun searchResourcesRecursively(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
+    fhirResourceConfig: FhirResourceConfig,
+    secondaryResourceConfigs: List<FhirResourceConfig>?,
+    currentPage: Int? = null,
+    pageSize: Int? = null,
+    configRules: List<RuleConfig>?,
+  ): List<RepositoryResourceData> {
+    val baseResourceConfig = fhirResourceConfig.baseResource
+    val relatedResourcesConfig = fhirResourceConfig.relatedResources
+    val configComputedRuleValues = configRules.configRulesComputedValues()
+    val search =
+      Search(type = baseResourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActiveResources = filterActiveResources,
+          sortData = true,
+          configComputedRuleValues = configComputedRuleValues,
+        )
+        if (currentPage != null && pageSize != null) {
+          count = pageSize
+          from = currentPage * pageSize
+        }
+      }
+
+    val baseFhirResources =
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
+        }
+        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .getOrDefault(emptyList())
+
+    return baseFhirResources.map { searchResult ->
+      val retrievedRelatedResources =
+        withContext(dispatcherProvider.io()) {
+          retrieveRelatedResources(
+            resources = listOf(searchResult.resource),
+            relatedResourcesConfigs = relatedResourcesConfig,
+            relatedResourceWrapper = RelatedResourceWrapper(),
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = searchResult.resource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData =
+          withContext(dispatcherProvider.io()) {
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
+              filterActiveResources,
+            )
+          },
+      )
+    }
+  }
+
+  protected fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
+    if (this == null) return emptyMap()
+    val configRules = configRulesExecutor.generateRules(this)
+    return configRulesExecutor.fireRules(configRules)
+  }
+
+  /** This function fetches other resources that are not linked to the base/primary resource. */
+  protected suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
+  ): LinkedList<RepositoryResourceData> {
+    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
+    this?.forEach {
+      secondaryRepositoryResourceDataLinkedList.addAll(
+        searchResourcesRecursively(
+          fhirResourceConfig = it,
+          filterActiveResources = filterActiveResources,
+          secondaryResourceConfigs = null,
+          configRules = null,
+        ),
+      )
+    }
+    return secondaryRepositoryResourceDataLinkedList
   }
 
   /**

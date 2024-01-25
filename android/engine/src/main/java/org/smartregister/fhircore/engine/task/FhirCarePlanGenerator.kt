@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,13 @@ constructor(
         .search<CarePlan> {
           filter(CarePlan.INSTANTIATES_CANONICAL, { value = planDefinition.referenceValue() })
           filter(CarePlan.SUBJECT, { value = subject.referenceValue() })
+          filter(
+            CarePlan.STATUS,
+            { value = of(CarePlan.CarePlanStatus.DRAFT.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.ONHOLD.toCode()) },
+            { value = of(CarePlan.CarePlanStatus.UNKNOWN.toCode()) },
+          )
         }
         .map { it.resource }
         .firstOrNull()

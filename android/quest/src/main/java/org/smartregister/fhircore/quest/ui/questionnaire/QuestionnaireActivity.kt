@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
@@ -75,6 +76,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (!::questionnaireConfig.isInitialized) {
       showToast(getString(R.string.missing_questionnaire_config))
       finish()
+      return
     }
 
     viewModel.questionnaireProgressStateLiveData.observe(this) { progressState ->
@@ -88,7 +90,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               AlertDialogue.showProgressAlert(this, R.string.extraction_in_progress)
             is QuestionnaireProgressState.QuestionnaireLaunch ->
               AlertDialogue.showProgressAlert(this, R.string.loading_questionnaire)
-            null -> null
+            else -> null
           }
         }
     }
@@ -202,7 +204,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           )
 
         val questionnaireResponse =
-          QuestionnaireResponse().apply { item = latestQuestionnaireResponse?.item }
+          QuestionnaireResponse().apply {
+            item = latestQuestionnaireResponse?.item
+            // Clearing the text prompts the SDK to re-process the content, which includes HTML
+            clearText()
+          }
 
         if (viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)) {
           questionnaireFragmentBuilder.setQuestionnaireResponse(questionnaireResponse.json())
