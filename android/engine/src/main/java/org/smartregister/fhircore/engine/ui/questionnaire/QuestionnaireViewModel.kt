@@ -733,6 +733,7 @@ constructor(
     val resources = getPopulationResources(intent, questionnaire.logicalId)
     val questResponse = ResourceMapper.populate(questionnaire, *resources)
     questResponse.contained = resources.toList()
+    questResponse.questionnaire = questionnaire.logicalId
     return questResponse
   }
 
