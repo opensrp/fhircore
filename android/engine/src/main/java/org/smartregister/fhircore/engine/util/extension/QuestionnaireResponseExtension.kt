@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package org.smartregister.lint
+package org.smartregister.fhircore.engine.util.extension
 
-import com.pinterest.ktlint.cli.ruleset.core.api.RuleSetProviderV3
-import com.pinterest.ktlint.rule.engine.core.api.RuleProvider
-import com.pinterest.ktlint.rule.engine.core.api.RuleSetId
+import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 
-internal val CUSTOM_RULE_SET_ID = "opensrp-lint"
+/** Clears the item text in the [QuestionnaireResponse]. */
+fun QuestionnaireResponse.clearText() {
+  this.item.clearText()
+}
 
-class CustomRuleSetProvider : RuleSetProviderV3(RuleSetId(CUSTOM_RULE_SET_ID)) {
-  override fun getRuleProviders(): Set<RuleProvider> {
-    return setOf(
-      RuleProvider { FhirEngineCreateUpdateMethodCallRule() },
-    )
+/** Clears the text of items in the current list. */
+private fun List<QuestionnaireResponseItemComponent>.clearText() {
+  this.forEach { itemToClear ->
+    itemToClear.text = null
+    if (itemToClear.hasItem()) {
+      itemToClear.item.clearText()
+    }
   }
 }
