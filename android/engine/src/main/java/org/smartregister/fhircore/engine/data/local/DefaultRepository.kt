@@ -59,8 +59,11 @@ import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFi
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -759,6 +762,86 @@ constructor(
           filterFhirPathExpression.value
       } == true
     }
+  }
+
+  suspend fun searchResourcesRecursively(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
+    fhirResourceConfig: FhirResourceConfig,
+    secondaryResourceConfigs: List<FhirResourceConfig>?,
+    currentPage: Int? = null,
+    pageSize: Int? = null,
+    configRules: List<RuleConfig>?
+  ): List<RepositoryResourceData> {
+    val baseResourceConfig = fhirResourceConfig.baseResource
+    val relatedResourcesConfig = fhirResourceConfig.relatedResources
+    val configComputedRuleValues = configRules.configRulesComputedValues()
+    val search =
+      Search(type = baseResourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActiveResources = filterActiveResources,
+          sortData = true,
+          configComputedRuleValues = configComputedRuleValues
+        )
+        if (currentPage != null && pageSize != null) {
+          count = pageSize
+          from = currentPage * pageSize
+        }
+      }
+
+    val baseFhirResources =
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
+        }
+        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .getOrDefault(emptyList())
+
+    return baseFhirResources.map { baseFhirResource ->
+      val retrievedRelatedResources =
+        withContext(dispatcherProvider.io()) {
+          retrieveRelatedResources(
+            resources = listOf(baseFhirResource),
+            relatedResourcesConfigs = relatedResourcesConfig,
+            relatedResourceWrapper = RelatedResourceWrapper(),
+            configComputedRuleValues = configComputedRuleValues
+          )
+        }
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = baseFhirResource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData =
+          withContext(dispatcherProvider.io()) {
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
+          }
+      )
+    }
+  }
+
+  protected fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
+    if (this == null) return emptyMap()
+    val configRules = configRulesExecutor.generateRules(this)
+    return configRulesExecutor.fireRules(configRules)
+  }
+
+  /** This function fetches other resources that are not linked to the base/primary resource. */
+  protected suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
+    filterActiveResources: List<ActiveResourceFilterConfig>?
+  ): LinkedList<RepositoryResourceData> {
+    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
+    this?.forEach {
+      secondaryRepositoryResourceDataLinkedList.addAll(
+        searchResourcesRecursively(
+          fhirResourceConfig = it,
+          filterActiveResources = filterActiveResources,
+          secondaryResourceConfigs = null,
+          configRules = null
+        )
+      )
+    }
+    return secondaryRepositoryResourceDataLinkedList
   }
 
   /**

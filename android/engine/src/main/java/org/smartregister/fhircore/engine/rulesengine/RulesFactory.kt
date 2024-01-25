@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -403,35 +404,38 @@ constructor(
       fhirPathExpression: String,
       dataType: String,
       order: String = Order.ASCENDING.name
-    ): List<Resource>? {
-      val mappedResources =
-        resources?.mapNotNull {
-          val extractedValue: Base? =
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
-          val sortingValue: Comparable<*>? =
-            when (DataType.valueOf(dataType)) {
-              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
-              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
-              else -> {
-                Timber.e(
-                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType."
-                )
-                null
-              }
+    ): List<Resource>? =
+      runCatching {
+          val mappedResources =
+            resources?.mapNotNull {
+              val extractedValue: Base? =
+                fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+              val sortingValue: Comparable<*>? =
+                when (DataType.valueOf(dataType)) {
+                  DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+                  DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+                  DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+                  DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+                  DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+                  DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+                  else -> {
+                    Timber.e(
+                      "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType."
+                    )
+                    null
+                  }
+                }
+              if (sortingValue != null) Pair(sortingValue, it) else null
             }
-          if (sortingValue != null) Pair(sortingValue, it) else null
-        }
 
-      return when (Order.valueOf(order)) {
-        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
-        Order.DESCENDING ->
-          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
-      }
-    }
+          return when (Order.valueOf(order)) {
+            Order.ASCENDING ->
+              mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+            Order.DESCENDING ->
+              mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+          }
+        }
+        .getOrNull()
 
     fun generateTaskServiceStatus(task: Task): String {
       val serviceStatus: String
@@ -480,6 +484,46 @@ constructor(
 
       return generateTaskServiceStatus(finalTaskForStatus)
     }
+
+    /**
+     * Filters [Resource] s by comparing the given [value] against the value obtained after
+     * extracting data on each [Resource] using FHIRPath with the provided [fhirPathExpression]. The
+     * value is cast to the [DataType] to facilitate comparison using the [compareTo] function which
+     * returns zero if this object is equal to the specified other object, a negative number if it's
+     * less than other, or a positive number if it's greater than other.
+     */
+    fun filterResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ) =
+      runCatching {
+          //      val compareToResult = listOf(1,-1,0)
+          resources?.filter {
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+              when (DataType.valueOf(dataType)) {
+                DataType.BOOLEAN ->
+                  base.castToBoolean(base).value.compareTo(value as Boolean) in compareToResult
+                DataType.DATE ->
+                  base.castToDate(base).value.compareTo(value as Date) in compareToResult
+                DataType.DATETIME ->
+                  base.castToDateTime(base).value.compareTo(value as Date) in compareToResult
+                DataType.DECIMAL ->
+                  base.castToDecimal(base).value.compareTo(value as BigDecimal) in compareToResult
+                DataType.INTEGER ->
+                  base.castToInteger(base).value.compareTo(value as Int) in compareToResult
+                DataType.STRING ->
+                  base.castToString(base).value.compareTo(value as String) in compareToResult
+                else -> {
+                  false
+                }
+              }
+            }
+          }
+        }
+        .getOrNull()
   }
 
   companion object {
