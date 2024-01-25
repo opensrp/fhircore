@@ -17,10 +17,12 @@
 package org.smartregister.fhircore.engine.rulesengine.services
 
 import android.icu.util.TimeUnit
+import java.util.Date
 import org.apache.commons.lang3.NotImplementedException
 import org.joda.time.LocalDate
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.parseDate
 
 object DateService {
   @JvmOverloads
@@ -30,7 +32,7 @@ object DateService {
     timeUnit: String = TimeUnit.YEAR.type,
     dateFormat: String = SDF_YYYY_MM_DD,
   ): String {
-    return when (timeUnit) {
+    when (timeUnit) {
       TimeUnit.DAY.subtype.uppercase() ->
         return when (operation) {
           "-" -> LocalDate.now().minusDays(timeUnitCount).toDate().formatDate(dateFormat)
@@ -72,6 +74,24 @@ object DateService {
           "Operation not supported. Operations supported operation are '+' or '-'",
         )
       }
+    }
+  }
+
+  fun compareDates(firstDate: Date, secondDate: Date): Int = firstDate.compareTo(secondDate)
+
+  @JvmOverloads
+  fun compareDates(
+    firstDateFormat: String = SDF_YYYY_MM_DD,
+    firstDateString: String,
+    secondDateFormat: String = SDF_YYYY_MM_DD,
+    secondDateString: String,
+  ): Int? {
+    val firstDate: Date? = firstDateString.parseDate(firstDateFormat)
+    val secondDate: Date? = secondDateString.parseDate(secondDateFormat)
+    return if (firstDate == null || secondDate == null) {
+      null
+    } else {
+      compareDates(firstDate, secondDate)
     }
   }
 }

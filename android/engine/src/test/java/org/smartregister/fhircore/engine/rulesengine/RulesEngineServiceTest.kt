@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.ResourceType
@@ -36,6 +37,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.extension.plusDays
 
 @HiltAndroidTest
 class RulesEngineServiceTest : RobolectricTest() {
@@ -275,5 +277,59 @@ class RulesEngineServiceTest : RobolectricTest() {
       ServiceStatus.UPCOMING.name,
       rulesEngineService.generateTaskServiceStatus(task),
     )
+  }
+
+  @Test
+  fun testFilterResourcesWithFhirPathExtraction() {
+    val task =
+      Task().apply {
+        executionPeriod =
+          Period().apply {
+            start = DateTime.now().minusMonths(2).toDate() // 2 months ago
+            end = DateTime.now().minusMonths(1).toDate() // Task to end after a month
+          }
+      }
+
+    val resources =
+      listOf(
+        CarePlan().apply {
+          period =
+            Period().apply {
+              start = DateTime.now().minusDays(1).toDate()
+              end = DateTime.now().plusDays(1).toDate() // Ends tomorrow
+            }
+        },
+        CarePlan().apply {
+          period =
+            Period().apply {
+              start = DateTime.now().minusMonths(12).toDate()
+              end = DateTime.now().minusMonths(6).toDate() // Ended 6 months ago
+            }
+        },
+        CarePlan().apply {
+          period =
+            Period().apply {
+              start = DateTime.now().minusMonths(3).toDate() // 3 months ago
+              end = DateTime.now().minusMonths(2).toDate() // Ended 2 months ago
+            }
+        },
+      )
+
+    // Comparison will be in the format -> CarePlan.period.end >= Task.executionPeriod.start
+    val filteredResources =
+      rulesEngineService.filterResources(
+        resources = resources,
+        fhirPathExpression = "CarePlan.period.end",
+        dataType = "DATETIME",
+        value = task.executionPeriod.start,
+        compareToResult = arrayOf(1, 0),
+      )
+    Assert.assertFalse(filteredResources.isNullOrEmpty())
+    Assert.assertEquals(2, filteredResources?.size)
+    Assert.assertEquals(
+      resources[0].period.end,
+      (filteredResources!!.first() as CarePlan).period.end,
+    )
+    Assert.assertEquals(resources[2].period.end, (filteredResources.last() as CarePlan).period.end)
   }
 }
