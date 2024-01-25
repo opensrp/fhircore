@@ -184,7 +184,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       ) {
         rulesFactory.rulesEngineService.filterResources(
           resources = newListRelatedResources,
-          fhirPathExpression = listResource.conditionalFhirPathExpression,
+          conditionalFhirPathExpression = listResource.conditionalFhirPathExpression,
         )
       } else newListRelatedResources ?: listOf()
 
