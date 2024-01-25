@@ -386,14 +386,17 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [fhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met
      */
-    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
-      if (fhirPathExpression.isEmpty()) {
+    fun filterResources(
+      resources: List<Resource>?,
+      conditionalFhirPathExpression: String,
+    ): List<Resource> {
+      if (conditionalFhirPathExpression.isEmpty()) {
         return emptyList()
       }
       return resources?.filter {
-        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
+        fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
       }
         ?: emptyList()
     }
@@ -495,35 +498,38 @@ constructor(
       fhirPathExpression: String,
       dataType: String,
       order: String = Order.ASCENDING.name,
-    ): List<Resource>? {
-      val mappedResources =
-        resources?.mapNotNull {
-          val extractedValue: Base? =
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
-          val sortingValue: Comparable<*>? =
-            when (DataType.valueOf(dataType)) {
-              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
-              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
-              else -> {
-                Timber.e(
-                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
-                )
-                null
-              }
+    ): List<Resource>? =
+      runCatching {
+          val mappedResources =
+            resources?.mapNotNull {
+              val extractedValue: Base? =
+                fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+              val sortingValue: Comparable<*>? =
+                when (DataType.valueOf(dataType)) {
+                  DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+                  DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+                  DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+                  DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+                  DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+                  DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+                  else -> {
+                    Timber.e(
+                      "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
+                    )
+                    null
+                  }
+                }
+              if (sortingValue != null) Pair(sortingValue, it) else null
             }
-          if (sortingValue != null) Pair(sortingValue, it) else null
-        }
 
-      return when (Order.valueOf(order)) {
-        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
-        Order.DESCENDING ->
-          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
-      }
-    }
+          return when (Order.valueOf(order)) {
+            Order.ASCENDING ->
+              mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+            Order.DESCENDING ->
+              mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+          }
+        }
+        .getOrNull()
 
     fun generateTaskServiceStatus(task: Task): String {
       val serviceStatus: String
@@ -555,7 +561,6 @@ constructor(
   }
 
   companion object {
-
     private const val SERVICE = "service"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
