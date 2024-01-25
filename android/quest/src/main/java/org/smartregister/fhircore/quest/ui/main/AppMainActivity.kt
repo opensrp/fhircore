@@ -163,8 +163,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       val extractedResourceIds =
         activityResult.data?.serializable(
           QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
-        ) as List<IdType>?
-          ?: emptyList()
+        ) as List<IdType>? ?: emptyList()
       val questionnaireConfig =
         activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?

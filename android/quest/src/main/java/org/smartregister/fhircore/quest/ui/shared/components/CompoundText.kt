@@ -163,7 +163,8 @@ private fun CompoundTextPart(
         TextCase.TITLE_CASE -> text.capitalize()
         null -> text
       }.removeExtraWhiteSpaces(),
-    color = textColor?.parseColor()?.copy(alpha = colorOpacity)
+    color =
+      textColor?.parseColor()?.copy(alpha = colorOpacity)
         ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier

@@ -388,8 +388,7 @@ dependencies {
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
@@ -397,7 +396,7 @@ dependencies {
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.bundles.coroutine.test)
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
