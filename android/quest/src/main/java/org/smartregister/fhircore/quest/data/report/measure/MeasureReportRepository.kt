@@ -95,7 +95,7 @@ constructor(
             .first()
             .resource
 
-        // TODO move to Sync
+        // TODO move to Sync : Issue tracker https://github.com/opensrp/fhircore/issues/3019
         knowledgeManager.install(
           File.createTempFile(measure.name, ".json").apply {
             this.writeText(measure.encodeResourceToString())

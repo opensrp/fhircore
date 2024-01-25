@@ -365,12 +365,7 @@ tasks.withType<Test> {
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
-configurations {
-  all {
-    // exclude(group = "commons-logging")
-    exclude(group = "xpp3")
-  }
-}
+configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
@@ -427,7 +422,6 @@ dependencies {
   ktlint(project(":linting"))
 }
 
-// TODO Resolve type mismatch errors
 /**
  * This task compares the performance benchmark results to the expected benchmark results and throws
  * an error if the result is past the expected result and margin. A message will also be printed if

@@ -394,8 +394,7 @@ constructor(
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
-      }
-        ?: emptyList()
+      } ?: emptyList()
     }
 
     /**
