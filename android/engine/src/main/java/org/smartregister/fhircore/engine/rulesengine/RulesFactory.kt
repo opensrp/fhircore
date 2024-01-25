@@ -491,8 +491,8 @@ constructor(
 
     /**
      * This function sorts [resources] by comparing the values extracted by FHIRPath using the
-     * [fhirPathExpression]. The [dataType] is required for ordering of the. You can optionally
-     * specify the [Order] of sorting.
+     * [fhirPathExpression]. The [dataType] is required for ordering of the items. You can
+     * optionally specify the [Order] of sorting.
      */
     @JvmOverloads
     fun sortResources(

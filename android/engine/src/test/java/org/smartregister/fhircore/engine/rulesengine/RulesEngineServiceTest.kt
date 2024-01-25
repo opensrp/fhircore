@@ -289,6 +289,7 @@ class RulesEngineServiceTest : RobolectricTest() {
             end = DateTime.now().minusMonths(1).toDate() // Task to end after a month
           }
       }
+
     val resources =
       listOf(
         CarePlan().apply {
@@ -314,6 +315,7 @@ class RulesEngineServiceTest : RobolectricTest() {
         },
       )
 
+    // Comparison will be in the format -> CarePlan.period.end >= Task.executionPeriod.start
     val filteredResources =
       rulesEngineService.filterResources(
         resources = resources,
@@ -324,5 +326,10 @@ class RulesEngineServiceTest : RobolectricTest() {
       )
     Assert.assertFalse(filteredResources.isNullOrEmpty())
     Assert.assertEquals(2, filteredResources?.size)
+    Assert.assertEquals(
+      resources[0].period.end,
+      (filteredResources!!.first() as CarePlan).period.end
+    )
+    Assert.assertEquals(resources[2].period.end, (filteredResources.last() as CarePlan).period.end)
   }
 }
