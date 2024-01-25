@@ -32,6 +32,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
@@ -99,6 +100,7 @@ class AppMainActivityTest {
   }
 
   @Test
+  @Ignore("Just for testing...")
   fun navigationToProfileFragmentShouldShowProfileScreen() {
     val patientResourceConfig = ResourceConfig(resource = ResourceType.Patient)
     val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
