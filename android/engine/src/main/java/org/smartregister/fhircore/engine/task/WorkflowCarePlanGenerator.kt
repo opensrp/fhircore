@@ -217,7 +217,7 @@ constructor(
       null,
       null,
       planDefinition,
-      "Patient/${subject.id}",
+      subject.id,
       null,
       null,
       null,
