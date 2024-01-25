@@ -53,7 +53,6 @@ dependencies {
 
 androidComponents { beforeVariants(selector().all()) { it.enabled = it.buildType == "benchmark" } }
 
-// TODO Resolve type mismatch errors
 /**
  * This task compares the performance benchmark results to the expected benchmark results and throws
  * an error if the result is past the expected result and margin. A message will also be printed if
