@@ -147,7 +147,7 @@ constructor(
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
-    val metaCodingSystemTag = getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+    val configuration = getApplicationConfiguration()
 
     return ProfileData.HivProfileData(
       logicalId = patient.logicalId,
@@ -165,13 +165,13 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
-      healthStatus = patient.extractHealthStatusFromMeta(metaCodingSystemTag),
+      healthStatus = patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
       tasks =
         patient
           .activeTasks()
           .sortedWith(
-            compareBy<Task>(
-              { it.clinicVisitOrder(metaCodingSystemTag) ?: Double.MAX_VALUE },
+            compareBy(
+              { it.clinicVisitOrder(configuration.taskOrderFilterTagViaMetaCodingSystem) ?: Double.MAX_VALUE },
               // tasks with no clinicVisitOrder, would be sorted with Task#description
               { it.description }
             )
