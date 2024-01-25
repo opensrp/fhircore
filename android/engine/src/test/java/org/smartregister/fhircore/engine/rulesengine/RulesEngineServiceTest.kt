@@ -328,7 +328,7 @@ class RulesEngineServiceTest : RobolectricTest() {
     Assert.assertEquals(2, filteredResources?.size)
     Assert.assertEquals(
       resources[0].period.end,
-      (filteredResources!!.first() as CarePlan).period.end
+      (filteredResources!!.first() as CarePlan).period.end,
     )
     Assert.assertEquals(resources[2].period.end, (filteredResources.last() as CarePlan).period.end)
   }
