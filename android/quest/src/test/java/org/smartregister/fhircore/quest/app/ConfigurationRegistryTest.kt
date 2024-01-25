@@ -89,7 +89,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     configurationRegistry.setNonProxy(false)
     coEvery { configurationRegistry.addOrUpdate(any()) } just runs
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 

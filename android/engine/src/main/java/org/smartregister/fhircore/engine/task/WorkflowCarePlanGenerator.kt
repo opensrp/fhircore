@@ -30,13 +30,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
-import org.hl7.fhir.instance.model.api.IBaseParameters
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.ParameterDefinition
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
@@ -45,13 +46,11 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.opencds.cqf.cql.evaluator.activitydefinition.r4.ActivityDefinitionProcessor
-import org.opencds.cqf.cql.evaluator.expression.ExpressionEvaluator
-import org.opencds.cqf.cql.evaluator.fhir.dal.FhirDal
-import org.opencds.cqf.cql.evaluator.library.LibraryProcessor
-import org.opencds.cqf.cql.evaluator.plandefinition.OperationParametersParser
-import org.opencds.cqf.cql.evaluator.plandefinition.r4.PlanDefinitionProcessor
+import org.opencds.cqf.fhir.cql.LibraryEngine
+import org.opencds.cqf.fhir.cr.plandefinition.r4.PlanDefinitionProcessor
+import org.opencds.cqf.fhir.utility.r4.Parameters.part
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import timber.log.Timber
 
 @Singleton
@@ -116,7 +115,7 @@ constructor(
     val availablePlanDefinitions =
       defaultRepository.search<PlanDefinition>(Search(ResourceType.PlanDefinition))
     for (cqlLibrary in availableCqlLibraries) {
-      fhirOperator.loadLib(cqlLibrary)
+      //      fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
@@ -140,37 +139,17 @@ constructor(
     data: Bundle = Bundle(),
     output: CarePlan,
   ) {
-    val patientId = IdType(patient.id).idPart
-    val planDefinitionId = IdType(planDefinition.id).idPart
-
     if (cqlLibraryIdList.isEmpty()) {
       loadPlanDefinitionResourcesFromDb()
     }
 
-    val r4PlanDefinitionProcessor = createPlanDefinitionProcessor()
     val carePlanProposal =
-      r4PlanDefinitionProcessor.apply(
-        IdType("PlanDefinition", planDefinitionId),
-        patientId,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        Parameters(),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+      fhirOperator.generateCarePlan(
+        planDefinition,
+        patient,
+        data,
       ) as CarePlan
 
-    // Accept the proposed (transient) CarePlan by default and add tasks to the CarePlan of record
     acceptCarePlan(carePlanProposal, output)
 
     resolveDynamicValues(
@@ -181,24 +160,61 @@ constructor(
     )
   }
 
-  private fun createPlanDefinitionProcessor(): R4PlanDefinitionProcessor {
-    val fhirDal = getPrivateProperty("fhirEngineDal", fhirOperator) as FhirDal
-    val libraryProcessor = getPrivateProperty("libraryProcessor", fhirOperator) as LibraryProcessor
-    val expressionEvaluator =
-      getPrivateProperty("expressionEvaluator", fhirOperator) as ExpressionEvaluator
-    val activityDefinitionProcessor =
-      getPrivateProperty("activityDefinitionProcessor", fhirOperator) as ActivityDefinitionProcessor
-    val operationParametersParser =
-      getPrivateProperty("operationParametersParser", fhirOperator) as OperationParametersParser
+  private fun FhirOperator.generateCarePlan(
+    planDefinition: PlanDefinition,
+    subject: Patient,
+    data: Bundle,
+  ): IBaseResource {
+    // TODO: Open this method on the Android SDK
+    val planDefProcessor =
+      javaClass.getDeclaredField("planDefinitionProcessor").let {
+        it.isAccessible = true
+        return@let it.get(this) as PlanDefinitionProcessor
+      }
 
-    return R4PlanDefinitionProcessor(
-      fhirContext = fhirContext,
-      fhirDal = fhirDal,
-      libraryProcessor = libraryProcessor,
-      expressionEvaluator = expressionEvaluator,
-      activityDefinitionProcessor = activityDefinitionProcessor,
-      operationParametersParser = operationParametersParser,
+    val libraryProcessor =
+      javaClass.getDeclaredField("libraryProcessor").let {
+        it.isAccessible = true
+        return@let it.get(this) as LibraryEngine
+      }
+
+    val params = Parameters()
+    params.addParameter(
+      part("%resource", data).apply {
+        extension.add(
+          Extension(
+            "http://hl7.org/fhir/uv/cpg/StructureDefinition/cpg-parameterDefinition",
+            ParameterDefinition().apply {
+              type = data.fhirType()
+              min = 0
+              max = data.entry.size.toString()
+            },
+          ),
+        )
+      },
     )
+    params.addParameter(part("%rootResource", planDefinition))
+    params.addParameter(part("%subject", subject))
+
+    return planDefProcessor.apply(
+      null,
+      null,
+      planDefinition,
+      "Patient/${subject.id}",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      params,
+      null,
+      data,
+      null,
+      libraryProcessor,
+    ) as IBaseResource
   }
 
   private fun resolveDynamicValues(
@@ -237,14 +253,16 @@ constructor(
         "Task" ->
           carePlan.addActivity().setReference(Reference(resource)).detail.status =
             mapRequestResourceStatusToCarePlanStatus(resource as Task)
+        "QuestionnaireResponse" -> carePlan.addActivity().setReference(Reference(resource))
+        "OperationOutcome" -> carePlan.addActivity().setReference(Reference(resource))
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
+        "MedicationRequest" -> carePlan.addActivity().reference = Reference(resource)
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
-        else -> TODO("Not a valid request resource")
+        else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
   }
@@ -261,19 +279,22 @@ constructor(
     val createdRequestResources = ArrayList<Resource>()
     for (resource in resourceList) {
       when (resource.fhirType()) {
-        "Task" -> {
+        "Task",
+        "QuestionnaireResponse",
+        "OperationOutcome",
+        "MedicationRequest",
+        "CarePlan", -> {
           defaultRepository.create(true, resource)
           createdRequestResources.add(resource)
         }
         "ServiceRequest" -> TODO("Not supported yet")
-        "MedicationRequest" -> TODO("Not supported yet")
         "SupplyRequest" -> TODO("Not supported yet")
         "Procedure" -> TODO("Not supported yet")
         "DiagnosticReport" -> TODO("Not supported yet")
         "Communication" -> TODO("Not supported yet")
         "CommunicationRequest" -> TODO("Not supported yet")
         "RequestGroup" -> {}
-        else -> TODO("Not a valid request resource")
+        else -> TODO("Not a valid request resource ${resource.fhirType()}")
       }
     }
     return createdRequestResources
@@ -327,37 +348,5 @@ constructor(
       .find { it.name == property }!!
       .apply { isAccessible = true }
       .get(obj)
-  }
-
-  inner class R4PlanDefinitionProcessor
-  constructor(
-    fhirContext: FhirContext,
-    fhirDal: FhirDal,
-    libraryProcessor: LibraryProcessor,
-    expressionEvaluator: ExpressionEvaluator,
-    activityDefinitionProcessor: ActivityDefinitionProcessor,
-    operationParametersParser: OperationParametersParser,
-  ) :
-    PlanDefinitionProcessor(
-      fhirContext,
-      fhirDal,
-      libraryProcessor,
-      expressionEvaluator,
-      activityDefinitionProcessor,
-      operationParametersParser,
-    ) {
-    override fun resolveDynamicValue(
-      language: String?,
-      expression: String?,
-      path: String?,
-      altLanguage: String?,
-      altExpression: String?,
-      altPath: String?,
-      libraryUrl: String?,
-      resource: IBaseResource?,
-      params: IBaseParameters?,
-    ) {
-      // no need to add dynamic value in RequestGroup resource
-    }
   }
 }

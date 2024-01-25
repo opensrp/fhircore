@@ -6,23 +6,29 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   dependencies {
-    classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
-    classpath("com.android.tools.build:gradle:7.1.3")
-    classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.kotlin.serialization)
+   // classpath(libs.hilt.dagger.android.gradle.plugin)
+    classpath(libs.navigation.safe.args.gradle.plugin)
+    classpath(libs.spotless.plugin.gradle)
+    classpath(libs.coveralls.gradle.plugin)
+    classpath(libs.gradle)
+    classpath(libs.dokka.base)
     classpath("com.google.gms:google-services:4.3.14")
   }
 }
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  id("com.github.kt3k.coveralls") version "2.12.0"
-  id("org.jetbrains.kotlin.jvm") version "1.8.10"
+  alias(libs.plugins.org.jetbrains.kotlin.jvm)
+  alias(libs.plugins.kt3k.coveralls)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.dagger.hilt.android) apply false
   alias(libs.plugins.androidx.navigation.safeargs) apply false
   alias(libs.plugins.org.jetbrains.dokka)
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless)
+  alias(libs.plugins.android.junit5) apply false
 
 }
 
@@ -90,16 +96,17 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.7")
+          "org.jacoco" -> useVersion("0.8.11")
         }
       }
+      force("com.google.guava:guava:32.1.2-android")
     }
   }
 
-  tasks.withType<Test> {
+ tasks.withType<Test> {
     configure<JacocoTaskExtension> {
       isIncludeNoLocationClasses = true
-      excludes = listOf("jdk.internal.*")
+      excludes = listOf("jdk.internal.*", "**org.hl7*")
     }
   }
 }

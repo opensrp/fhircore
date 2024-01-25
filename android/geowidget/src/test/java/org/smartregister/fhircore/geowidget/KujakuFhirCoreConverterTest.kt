@@ -141,7 +141,7 @@ class KujakuFhirCoreConverterTest {
 
     Assert.assertEquals("new family", featureCollection.features()!![1].getStringProperty("name"))
     Assert.assertEquals(
-      "Group/1122f50c-5499-4eaa-bd53-a5364371a2ba/_history/5",
+      "1122f50c-5499-4eaa-bd53-a5364371a2ba",
       featureCollection.features()!![1].getStringProperty("family-id"),
     )
     Assert.assertEquals(

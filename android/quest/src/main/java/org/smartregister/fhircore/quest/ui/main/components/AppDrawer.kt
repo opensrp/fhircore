@@ -226,7 +226,7 @@ private fun NavBottomSection(
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
       imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-      title = stringResource(R.string.sync),
+      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
       endTextColor = SubtitleTextColor,
@@ -249,7 +249,7 @@ private fun OtherPatientsItem(
     imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title =
       navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
-        stringResource(R.string.other_patients)
+        stringResource(org.smartregister.fhircore.engine.R.string.other_patients)
       },
     endText = "",
     showEndText = false,
@@ -263,7 +263,7 @@ private fun OtherPatientsItem(
         navController = navController,
         title =
           if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
-            context.getString(R.string.other_patients)
+            context.getString(org.smartregister.fhircore.engine.R.string.other_patients)
           } else {
             navigationConfiguration.bottomSheetRegisters?.display
           },
@@ -345,7 +345,7 @@ private fun MenuActionButton(
       Text(
         modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
         text = navigationConfiguration.menuActionButton?.display?.uppercase()
-            ?: stringResource(id = R.string.register_new_client),
+            ?: stringResource(id = org.smartregister.fhircore.engine.R.string.register_new_client),
         color = MenuActionButtonTextColor,
         fontSize = 18.sp,
       )

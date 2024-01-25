@@ -124,7 +124,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
-    loginViewModel.viewModelScope.launch { dataMigration.migrate() }
+    loginViewModel.viewModelScope.launch { /*dataMigration.migrate()*/ }
 
     startActivity(Intent(this, AppMainActivity::class.java))
     // Initialize P2P after login only when username is provided then finish activity

@@ -26,9 +26,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.LoginConfig
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.quest.ui.login.APP_NAME_TEXT_TAG
 import org.smartregister.fhircore.quest.ui.login.ForgotPasswordDialog
@@ -150,7 +150,7 @@ class LoginScreenTest {
   fun testLoginFailsWithErrorFetchingUserMessage() {
     verifyErrorFetchingUser(
       LoginErrorState.ERROR_FETCHING_USER,
-      R.string.error_fetching_user_details,
+      org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
     )
   }
 

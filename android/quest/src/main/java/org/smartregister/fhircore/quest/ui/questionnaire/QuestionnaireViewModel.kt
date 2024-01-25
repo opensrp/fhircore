@@ -28,10 +28,13 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.io.File
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -41,8 +44,10 @@ import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Questionnaire
@@ -68,6 +73,7 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -94,6 +100,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
+  val knowledgeManager: KnowledgeManager,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
 
@@ -609,9 +616,34 @@ constructor(
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
-    questionnaire.cqfLibraryUrls().forEach { library ->
+    questionnaire.cqfLibraryUrls().forEach { url ->
       if (subject.resourceType == ResourceType.Patient) {
-        fhirOperator.evaluateLibrary(library, subject.asReference().reference, null, setOf())
+        val library =
+          defaultRepository.fhirEngine
+            .search<Library> { filter(Library.URL, { value = url }) }
+            .first()
+            .resource
+
+        // Use method to call without expressions
+        val expressionsParam =
+          library.parameter
+            .filter { it.type == Enumerations.FHIRAllTypes.PARAMETERDEFINITION.toCode() }
+            .map { it.name }
+            .toSet()
+
+        // TODO move to Sync
+        knowledgeManager.install(
+          File.createTempFile(library.name, ".json").apply {
+            this.writeText(library.encodeResourceToString())
+          },
+        )
+
+        fhirOperator.evaluateLibrary(
+          library.url,
+          subject.asReference().reference,
+          null,
+          expressionsParam,
+        )
       }
     }
   }

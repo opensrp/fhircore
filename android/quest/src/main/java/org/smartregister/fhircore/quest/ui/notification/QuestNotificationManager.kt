@@ -45,7 +45,7 @@ class QuestNotificationManager @Inject constructor(
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
             .setContentTitle(notification.title)
             .setContentText(notification.description)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_launcher)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .setStyle(NotificationCompat.BigTextStyle()

@@ -91,13 +91,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.quest.R
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -311,7 +311,9 @@ fun LoginPage(
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
+                  ),
                 )
               LoginErrorState.INVALID_OFFLINE_STATE ->
                 stringResource(

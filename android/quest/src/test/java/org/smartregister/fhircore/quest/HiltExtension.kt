@@ -67,7 +67,7 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
       fragment.viewLifecycleOwnerLiveData.observeForever {
         if (it != null) {
           navHostController?.let { controller ->
-            controller.setGraph(R.navigation.nav_graph)
+            controller.setGraph(org.smartregister.p2p.R.navigation.nav_graph)
             Navigation.setViewNavController(fragment.requireView(), controller)
           }
         }

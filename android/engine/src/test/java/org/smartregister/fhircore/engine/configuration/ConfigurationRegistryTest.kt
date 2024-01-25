@@ -30,9 +30,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -371,7 +369,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val patient = Faker.buildPatient()
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
       ResourceNotFoundException("", "")
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
@@ -380,18 +378,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { fhirEngine.update(any()) }
-    coVerify { fhirEngine.createRemote(patient) }
+    coVerify { fhirEngine.create(patient, isLocalOnly = true) }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
-    coEvery { fhirEngine.createRemote(patient) } just runs
+    coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
       configRegistry.create(patient)
-      coVerify { fhirEngine.createRemote(patient) }
+      coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
 
@@ -680,13 +678,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
 
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
     configRegistry.fetchNonWorkflowConfigResources()
 
     val requestPathArgumentSlot = mutableListOf<Group>()
 
-    coVerify(exactly = 2) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 2) {
+      fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
+    }
 
     Assert.assertEquals(2, requestPathArgumentSlot.size)
 
@@ -740,13 +740,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       coEvery { fhirEngine.get(any(), any()) } throws
         ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
 
-      coEvery { fhirEngine.createRemote(any()) } just runs
+      coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
       configRegistry.fetchNonWorkflowConfigResources()
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
-      coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+      coVerify(exactly = 3) {
+        fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
+      }
 
       Assert.assertEquals(3, requestPathArgumentSlot.size)
 

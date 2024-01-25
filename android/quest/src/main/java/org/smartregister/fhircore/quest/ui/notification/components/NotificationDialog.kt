@@ -56,7 +56,7 @@ fun NotificationDialog(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     Text(
-                        text = stringResource(R.string.ok),
+                        text = stringResource(org.smartregister.fhircore.engine.R.string.ok),
                         modifier = modifier
                             .padding(horizontal = 10.dp)
                             .clickable { onDismissDialog() },
