@@ -97,7 +97,7 @@ constructor(
     observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "")
   }
   val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
-  val remoteSyncResources by lazy { observe<List<String>, String>(REMOTE_SYNC_RESOURCES) }
+  val remoteSyncResources by lazy { observe(REMOTE_SYNC_RESOURCES) }
   val migrationVersion by lazy { observe(MIGRATION_VERSION, defaultValue = null) }
 
   companion object Keys {

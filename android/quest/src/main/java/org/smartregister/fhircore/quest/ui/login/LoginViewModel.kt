@@ -32,7 +32,6 @@ import io.sentry.protocol.User
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
@@ -46,7 +45,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
@@ -68,7 +67,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val preferencesDataStore: PreferencesDataStore,
-  val protoDataStore: ProtoDataStore,
+  val genericProtoDataStore: GenericProtoDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -421,7 +420,7 @@ constructor(
   ) {
     viewModelScope.launch {
       if (userInfo != null) {
-        protoDataStore.writeUserInfo(userInfo)
+        genericProtoDataStore.writeUserInfo(userInfo)
       }
     }
   }

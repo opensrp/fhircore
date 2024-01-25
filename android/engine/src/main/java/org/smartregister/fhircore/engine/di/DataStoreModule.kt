@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
@@ -30,6 +31,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.datastore.serializers.GenericProtoStoreSerializer
+import org.smartregister.fhircore.engine.domain.model.GenericProtoStoreItems
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @InstallIn(SingletonComponent::class)
@@ -46,6 +49,21 @@ class DataStoreModule {
     return PreferenceDataStoreFactory.create(
       scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
       produceFile = { context.preferencesDataStoreFile(userPreferences) },
+    )
+  }
+
+  @Singleton
+  @Provides
+  fun provideGenericProtoStore(
+    @ApplicationContext context: Context,
+    dispatcherProvider: DispatcherProvider,
+  ): DataStore<GenericProtoStoreItems> {
+    val genericProtoStore = "generic_protostore.json"
+
+    return DataStoreFactory.create(
+      serializer = GenericProtoStoreSerializer,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+      produceFile = { context.preferencesDataStoreFile(genericProtoStore) },
     )
   }
 
