@@ -20,6 +20,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
@@ -42,8 +48,10 @@ import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
+import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
@@ -56,9 +64,9 @@ class ProfileFragment : Fragment() {
   val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?,
+      inflater: LayoutInflater,
+      container: ViewGroup?,
+      savedInstanceState: Bundle?,
   ): View {
     with(profileFragmentArgs) {
       lifecycleScope.launch {
@@ -83,13 +91,39 @@ class ProfileFragment : Fragment() {
     return ComposeView(requireContext()).apply {
       setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
       setContent {
-        AppTheme {
-          ProfileScreen(
-            navController = findNavController(),
-            profileUiState = profileViewModel.profileUiState.value,
-            onEvent = profileViewModel::onEvent,
-            snackStateFlow = profileViewModel.snackBarStateFlow,
+        val appConfig = appMainViewModel.applicationConfiguration
+        val scaffoldState = rememberScaffoldState()
+
+        LaunchedEffect(Unit) {
+          profileViewModel.snackBarStateFlow.hookSnackBar(
+              scaffoldState = scaffoldState,
+              resourceData = null,
+              navController = findNavController(),
           )
+        }
+
+        AppTheme {
+          Scaffold(
+              scaffoldState = scaffoldState,
+              snackbarHost = { snackBarHostState ->
+                SnackBarMessage(
+                    snackBarHostState = snackBarHostState,
+                    backgroundColorHex = appConfig.snackBarTheme.backgroundColor,
+                    actionColorHex = appConfig.snackBarTheme.actionTextColor,
+                    contentColorHex = appConfig.snackBarTheme.messageTextColor,
+                )
+              }) {
+                Box(
+                    modifier = Modifier.padding(it),
+                ) {
+                  ProfileScreen(
+                      navController = findNavController(),
+                      profileUiState = profileViewModel.profileUiState.value,
+                      onEvent = profileViewModel::onEvent,
+                      snackStateFlow = profileViewModel.snackBarStateFlow,
+                  )
+                }
+              }
         }
       }
     }
@@ -100,13 +134,13 @@ class ProfileFragment : Fragment() {
       viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
         // Each profile should have a unique eventId
         eventBus.events
-          .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
-          .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
+            .onEach { appEvent ->
+              if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              }
             }
-          }
-          .launchIn(viewLifecycleOwner.lifecycleScope)
+            .launchIn(viewLifecycleOwner.lifecycleScope)
       }
     }
   }
@@ -130,8 +164,8 @@ class ProfileFragment : Fragment() {
       if (onSubmitActions != null) {
         appMainViewModel.retrieveAppMainUiState(refreshAll = false)
         onSubmitActions.handleClickEvent(
-          navController = findNavController(),
-          resourceData = profileViewModel.profileUiState.value.resourceData,
+            navController = findNavController(),
+            resourceData = profileViewModel.profileUiState.value.resourceData,
         )
       }
     }
