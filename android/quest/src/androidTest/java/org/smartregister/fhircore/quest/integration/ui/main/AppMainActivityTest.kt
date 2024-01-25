@@ -29,6 +29,7 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -36,6 +37,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.di.DataStoreModule
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -49,6 +52,7 @@ import org.smartregister.fhircore.quest.ui.register.RegisterFragment.Companion.R
 import org.smartregister.fhircore.quest.ui.report.measure.screens.SCREEN_TITLE
 import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_LOGOUT
 
+@UninstallModules(DataStoreModule::class)
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
 class AppMainActivityTest {
@@ -68,6 +72,8 @@ class AppMainActivityTest {
   @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
+
+  @BindValue val preferencesDataStore: PreferencesDataStore = Faker.buildPreferencesDataStore()
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()

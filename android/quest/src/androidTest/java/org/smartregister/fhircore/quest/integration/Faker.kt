@@ -56,6 +56,23 @@ object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
+  val testCoroutineScope = CoroutineScope(UnconfinedTestDispatcher() + Job())
+  val testDataStoreName = "test_datastore"
+  val testDataStore =
+    PreferenceDataStoreFactory.create(
+      scope = testCoroutineScope,
+      produceFile = {
+        ApplicationProvider.getApplicationContext<Application>()
+          .preferencesDataStoreFile(testDataStoreName)
+      },
+    )
+
+  fun buildPreferencesDataStore() =
+    PreferencesDataStore(
+      ApplicationProvider.getApplicationContext<Application>(),
+      testDataStore,
+    )
+
   @OptIn(ExperimentalCoroutinesApi::class)
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirEngine =
@@ -174,23 +191,6 @@ object Faker {
       isLenient = true
       useAlternativeNames = true
     }
-
-    val testCoroutineScope = CoroutineScope(UnconfinedTestDispatcher() + Job())
-    val testDataStoreName = "test_datastore"
-    val testDataStore =
-      PreferenceDataStoreFactory.create(
-        scope = testCoroutineScope,
-        produceFile = {
-          ApplicationProvider.getApplicationContext<Application>()
-            .preferencesDataStoreFile(testDataStoreName)
-        },
-      )
-
-    fun buildPreferencesDataStore() =
-      PreferencesDataStore(
-        ApplicationProvider.getApplicationContext<Application>(),
-        testDataStore,
-      )
 
     val configurationRegistry =
       ConfigurationRegistry(
