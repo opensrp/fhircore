@@ -51,7 +51,7 @@ constructor(
       }
     }
 
-  fun readOnce(key: Keys): List<String>? {
+  fun readOnce(key: Keys, defaultValue: List<String>? = null): List<String>? {
     var data: GenericProtoStoreItems
     runBlocking { data = observe.first() }
     return when (key) {

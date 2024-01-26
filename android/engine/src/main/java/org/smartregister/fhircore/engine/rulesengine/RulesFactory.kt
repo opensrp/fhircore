@@ -38,6 +38,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -70,7 +71,6 @@ constructor(
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
-  val keys = PreferencesDataStore.Keys
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -321,22 +321,26 @@ constructor(
     fun extractPractitionerInfoFromDataStore(practitionerKey: String): String {
       try {
         return when (practitionerKey) {
-          keys.PRACTITIONER_ID.name ->
+          PreferencesDataStore.PRACTITIONER_ID.name ->
             configurationRegistry.preferencesDataStore.readOnce(
               PreferencesDataStore.PRACTITIONER_ID,
               "",
             )!!
-          keys.CARE_TEAM_NAMES.name ->
-            configurationRegistry.preferencesDataStore.readOnce(
-              PreferencesDataStore.CARE_TEAM_NAMES,
-              "",
-            )!!
-          keys.ORGANIZATION_NAMES.name ->
-            configurationRegistry.preferencesDataStore.readOnce(
-              PreferencesDataStore.ORGANIZATION_NAMES,
-              "",
-            )!!
-          keys.PRACTITIONER_LOCATION.name ->
+          GenericProtoDataStore.Keys.CARE_TEAM_NAMES.name ->
+            configurationRegistry.genericProtoDataStore
+              .readOnce(
+                GenericProtoDataStore.Keys.CARE_TEAM_NAMES,
+                listOf(""),
+              )!!
+              .joinToString()
+          GenericProtoDataStore.Keys.ORGANIZATION_NAMES.name ->
+            configurationRegistry.genericProtoDataStore
+              .readOnce(
+                GenericProtoDataStore.Keys.ORGANIZATION_NAMES,
+                listOf(""),
+              )!!
+              .joinToString()
+          PreferencesDataStore.PRACTITIONER_LOCATION.name ->
             configurationRegistry.preferencesDataStore.readOnce(
               PreferencesDataStore.PRACTITIONER_LOCATION,
               "",

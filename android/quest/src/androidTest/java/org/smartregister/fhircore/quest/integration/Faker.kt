@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.integration
 
 import android.app.Application
+import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.test.core.app.ApplicationProvider
@@ -31,6 +32,7 @@ import java.time.OffsetDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -48,7 +50,9 @@ import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.datastore.serializers.GenericProtoStoreSerializer
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
@@ -71,6 +75,23 @@ object Faker {
     PreferencesDataStore(
       ApplicationProvider.getApplicationContext<Application>(),
       testDataStore,
+    )
+
+  val genericProtoStore = "generic_protostore.json"
+  val test_protostore =
+    DataStoreFactory.create(
+      serializer = GenericProtoStoreSerializer,
+      scope = CoroutineScope(UnconfinedTestDispatcher() + SupervisorJob()),
+      produceFile = {
+        ApplicationProvider.getApplicationContext<Application>()
+          .preferencesDataStoreFile(genericProtoStore)
+      },
+    )
+
+  fun buildGenericProtoDataStore() =
+    GenericProtoDataStore(
+      ApplicationProvider.getApplicationContext<Application>(),
+      test_protostore,
     )
 
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -197,6 +218,7 @@ object Faker {
         fhirEngine = fhirEngine,
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
         preferencesDataStore = buildPreferencesDataStore(),
+        genericProtoDataStore = buildGenericProtoDataStore(),
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,

@@ -50,7 +50,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
-import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.CountResultConfig
@@ -93,7 +92,7 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var preferenceDataStore: PreferencesDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
   @Inject lateinit var fhirEngine: FhirEngine
 
@@ -106,7 +105,7 @@ class RegisterRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferenceDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
     registerRepository =
       spyk(
         RegisterRepository(
