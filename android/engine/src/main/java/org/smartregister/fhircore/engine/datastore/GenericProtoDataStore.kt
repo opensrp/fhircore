@@ -23,15 +23,15 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.catch
-import org.smartregister.fhircore.engine.data.remote.model.response.PractitionerDetails
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.GenericProtoStoreItems
 import timber.log.Timber
 
 @Singleton
-class GenericProtoDataStore @Inject constructor(
+class GenericProtoDataStore
+@Inject
+constructor(
   @ApplicationContext val context: Context,
-  val dataStore: DataStore<GenericProtoDataStore>
+  val dataStore: DataStore<GenericProtoStoreItems>,
 ) {
 
   val observe =
@@ -44,19 +44,30 @@ class GenericProtoDataStore @Inject constructor(
       }
     }
 
-  suspend fun writecareTeamIds(value: List<String>?) = write()
-  suspend fun writecareTeamNames(value: List<String>?) = write()
-  suspend fun writelocationIds(value: List<String>?) = write()
-  suspend fun writelocationNames(value: List<String>?) = write()
-  suspend fun writeorganizationIds(value: List<String>?) = write()
-  suspend fun writeorganizationNames(value: List<String>?) = write()
-
-  private suspend fun write(genericProtoStoreItems: GenericProtoStoreItems) {
-    dataStore.updateData { practitionerData ->
-      practitionerData.copy(
-        name = practitionerDetails.name,
-        id = practitionerDetails.id,
-      )
+  private suspend fun write(key: Keys, data: List<String>) {
+    dataStore.updateData {
+      when (key) {
+        Keys.CARE_TEAM_IDS -> it.copy(careTeamIds = data)
+        Keys.CARE_TEAM_NAMES -> it.copy(careTeamIds = data)
+        Keys.LOCATION_IDS -> it.copy(locationIds = data)
+        Keys.LOCATION_NAMES -> it.copy(locationNames = data)
+        Keys.ORGANIZATION_IDS -> it.copy(organizationIds = data)
+        Keys.ORGANIZATION_NAMES -> it.copy(organizationNames = data)
+        else -> {
+          val error = "The key provided is not valid"
+          Timber.e(error)
+          throw IllegalArgumentException(error)
+        }
+      }
     }
+  }
+
+  enum class Keys {
+    CARE_TEAM_IDS,
+    CARE_TEAM_NAMES,
+    LOCATION_IDS,
+    LOCATION_NAMES,
+    ORGANIZATION_IDS,
+    ORGANIZATION_NAMES,
   }
 }
