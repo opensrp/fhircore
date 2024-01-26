@@ -111,6 +111,8 @@ dagger-hilt = "2.45"
 jetbrains-dokka = "1.8.20"
 navigation-safeargs = "2.4.2"
 diffplug-spotless = "6.19.0"
+cucumber = "4.9.0"
+container = "4.8.0"
 
 
 [libraries]
@@ -222,6 +224,9 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work-testing" }
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
+cucumber-picocontainer = {group = "io.cucumber", name = "cucumber-picocontainer", version.ref = "container"}
+cucumber-android = {group = "io.cucumber", name = "cucumber-android", version.ref = "cucumber"}
+
 
 [plugins]
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
@@ -246,5 +251,6 @@ navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-testi
 junit-test = ["junit-ktx", "junit"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 coroutine-test = ["kotlinx-coroutines-test", "kotlinx-coroutines-debug"]
+io-cucumber = ["cucumber-android","cucumber-picocontainer"]
 
 

@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.quest.ui.appsetting.APP_ID_TEXT_INPUT_TAG
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
@@ -16,7 +17,7 @@ class Login {
 
     @Test
     fun enterApplicationIdField(applicationID: String) {
-        composeTestAppScreen.onNodeWithText("Enter Application ID").performTextInput(applicationID)
+        composeTestAppScreen.onNodeWithText(APP_ID_TEXT_INPUT_TAG).performTextInput(applicationID)
     }
     fun selectUsernameField() {
         composeTestAppScreen.onNodeWithText("Enter username")
