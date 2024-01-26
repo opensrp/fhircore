@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,6 @@ fun MeasureReportListScreen(
   showProgressIndicator: Boolean = false,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems().itemSnapshotList.groupBy { it?.module }
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -92,7 +91,9 @@ fun MeasureReportListScreen(
           }
         }
       } else {
-        LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
+        LazyColumn(
+          modifier = modifier.background(Color.White).fillMaxSize().padding(bottom = 32.dp),
+        ) {
           lazyReportItems.keys.forEach { key ->
             item {
               key?.let { it1 ->

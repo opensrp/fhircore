@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -43,7 +44,10 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -293,12 +297,60 @@ constructor(
     fun prettifyDate(inputDate: Date): String = inputDate.prettifyDate()
 
     /**
+     * This function takes [inputDate] and returns a difference (for examples 15, 30 etc) between
+     * inputDate and the currentDate
+     */
+    fun daysPassed(inputDate: String, pattern: String = SDF_DD_MMM_YYYY): String =
+      inputDate.parseDate(pattern)?.daysPassed().toString()
+
+    /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
      * hours ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDateString] can give given as
      * 2022-02 or 2022
      */
     fun prettifyDate(inputDateString: String): String {
       return PrettyTime().format(DateTime(inputDateString).toDate())
+    }
+
+    /**
+     * This function fetches assignment data separately that is; PractitionerId,
+     * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
+     * configs.
+     */
+    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
+      val key = SharedPreferenceKey.valueOf(practitionerKey)
+      try {
+        return when (key) {
+          SharedPreferenceKey.PRACTITIONER_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_ID.name,
+              "",
+            )
+          SharedPreferenceKey.CARE_TEAM ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.CARE_TEAM.name,
+              "",
+            )
+          SharedPreferenceKey.ORGANIZATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.ORGANIZATION.name,
+              "",
+            )
+          SharedPreferenceKey.PRACTITIONER_LOCATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+              "",
+            )
+          else -> ""
+        }
+      } catch (exception: Exception) {
+        if (exception is IllegalArgumentException) {
+          Timber.e("key is not a member of practitioner keys: ", exception)
+        } else {
+          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+        }
+      }
+      return ""
     }
 
     /**
@@ -334,17 +386,62 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [fhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met
      */
-    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
-      if (fhirPathExpression.isEmpty()) {
+    fun filterResources(
+      resources: List<Resource>?,
+      conditionalFhirPathExpression: String,
+    ): List<Resource> {
+      if (conditionalFhirPathExpression.isEmpty()) {
         return emptyList()
       }
       return resources?.filter {
-        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
+        fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
       }
         ?: emptyList()
     }
+
+    /**
+     * Filters [Resource] s by comparing the given [value] against the value obtained after
+     * extracting data on each [Resource] using FHIRPath with the provided [fhirPathExpression]. The
+     * value is cast to the [DataType] to facilitate comparison using the [compareTo] function which
+     * returns zero if this object is equal to the specified other object, a negative number if it's
+     * less than other, or a positive number if it's greater than other.
+     *
+     * Please NOTE the order of comparison. The value extracted from FHIRPath is compared against
+     * the provided [value]
+     */
+    fun filterResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ) =
+      runCatching {
+          resources?.filter {
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+              when (DataType.valueOf(dataType)) {
+                DataType.BOOLEAN ->
+                  base.castToBoolean(base).value.compareTo(value as Boolean) in compareToResult
+                DataType.DATE ->
+                  base.castToDate(base).value.compareTo(value as Date) in compareToResult
+                DataType.DATETIME ->
+                  base.castToDateTime(base).value.compareTo(value as Date) in compareToResult
+                DataType.DECIMAL ->
+                  base.castToDecimal(base).value.compareTo(value as BigDecimal) in compareToResult
+                DataType.INTEGER ->
+                  base.castToInteger(base).value.compareTo(value as Int) in compareToResult
+                DataType.STRING ->
+                  base.castToString(base).value.compareTo(value as String) in compareToResult
+                else -> {
+                  false
+                }
+              }
+            }
+          }
+        }
+        .getOrNull()
 
     /**
      * This function combines all string indexes to a list separated by the separator and regex
@@ -394,8 +491,8 @@ constructor(
 
     /**
      * This function sorts [resources] by comparing the values extracted by FHIRPath using the
-     * [fhirPathExpression]. The [dataType] is required for ordering of the. You can optionally
-     * specify the [Order] of sorting.
+     * [fhirPathExpression]. The [dataType] is required for ordering of the items. You can
+     * optionally specify the [Order] of sorting.
      */
     @JvmOverloads
     fun sortResources(
@@ -403,35 +500,38 @@ constructor(
       fhirPathExpression: String,
       dataType: String,
       order: String = Order.ASCENDING.name,
-    ): List<Resource>? {
-      val mappedResources =
-        resources?.mapNotNull {
-          val extractedValue: Base? =
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
-          val sortingValue: Comparable<*>? =
-            when (DataType.valueOf(dataType)) {
-              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
-              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
-              else -> {
-                Timber.e(
-                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
-                )
-                null
-              }
+    ): List<Resource>? =
+      runCatching {
+          val mappedResources =
+            resources?.mapNotNull {
+              val extractedValue: Base? =
+                fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+              val sortingValue: Comparable<*>? =
+                when (DataType.valueOf(dataType)) {
+                  DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+                  DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+                  DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+                  DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+                  DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+                  DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+                  else -> {
+                    Timber.e(
+                      "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
+                    )
+                    null
+                  }
+                }
+              if (sortingValue != null) Pair(sortingValue, it) else null
             }
-          if (sortingValue != null) Pair(sortingValue, it) else null
-        }
 
-      return when (Order.valueOf(order)) {
-        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
-        Order.DESCENDING ->
-          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
-      }
-    }
+          return when (Order.valueOf(order)) {
+            Order.ASCENDING ->
+              mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+            Order.DESCENDING ->
+              mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+          }
+        }
+        .getOrNull()
 
     fun generateTaskServiceStatus(task: Task): String {
       val serviceStatus: String
@@ -463,7 +563,6 @@ constructor(
   }
 
   companion object {
-
     private const val SERVICE = "service"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999

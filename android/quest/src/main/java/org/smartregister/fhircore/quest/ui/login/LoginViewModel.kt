@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,10 @@ constructor(
   private val _loginErrorState = MutableLiveData<LoginErrorState?>()
   val loginErrorState: LiveData<LoginErrorState?>
     get() = _loginErrorState
+
+  private val _dataMigrationInProgress = MutableLiveData(false)
+  val dataMigrationInProgress: LiveData<Boolean>
+    get() = _dataMigrationInProgress
 
   private val _showProgressBar = MutableLiveData(false)
   val showProgressBar
@@ -313,6 +317,7 @@ constructor(
     try {
       val userInfo = keycloakService.fetchUserInfo().body()
       if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
+        writeUserInfo(userInfo = userInfo)
         onFetchUserInfo(Result.success(userInfo))
         try {
           val bundle =
@@ -323,10 +328,16 @@ constructor(
           Timber.e(httpException.response()?.errorBody()?.charStream()?.readText())
         } catch (unknownHostException: UnknownHostException) {
           onFetchPractitioner(Result.failure(unknownHostException), userInfo)
-          Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+          Timber.e(
+            unknownHostException,
+            "An error occurred fetching the practitioner details",
+          )
         } catch (socketTimeoutException: SocketTimeoutException) {
           onFetchPractitioner(Result.failure(socketTimeoutException), userInfo)
-          Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+          Timber.e(
+            socketTimeoutException,
+            "An error occurred fetching the practitioner details",
+          )
         } catch (exception: Exception) {
           onFetchPractitioner(Result.failure(exception), userInfo)
           Timber.e(exception, "An error occurred fetching the practitioner details")
@@ -385,6 +396,26 @@ constructor(
           }
         }
 
+      val location =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+            locations.map { it.name }
+          }
+        }
+
+      val careTeam =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+            careTeams.map { it.name }
+          }
+        }
+      val organization =
+        withContext(dispatcherProvider.io()) {
+          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+            organizations.map { it.name }
+          }
+        }
+
       defaultRepository.createRemote(false, *practitioners.toTypedArray())
       practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
         defaultRepository.createRemote(false, *it)
@@ -398,11 +429,14 @@ constructor(
 
       if (practitionerId.isNotEmpty()) {
         writePractitionerDetailsToShredPref(
-          practitionerDetails,
-          careTeamIds,
-          organizationIds,
-          locationIds,
-          locationHierarchies,
+          careTeam = careTeam,
+          organization = organization,
+          location = location,
+          fhirPractitionerDetails = practitionerDetails,
+          careTeams = careTeamIds,
+          organizations = organizationIds,
+          locations = locationIds,
+          locationHierarchies = locationHierarchies,
         )
       } else {
         // The assumption here is that only 1 practitioner is returned from the server in the
@@ -415,11 +449,14 @@ constructor(
               identifier.value == userInfo!!.keycloakUuid
           ) {
             writePractitionerDetailsToShredPref(
-              practitionerDetails,
-              careTeamIds,
-              organizationIds,
-              locationIds,
-              locationHierarchies,
+              careTeam = careTeam,
+              organization = organization,
+              location = location,
+              fhirPractitionerDetails = practitionerDetails,
+              careTeams = careTeamIds,
+              organizations = organizationIds,
+              locations = locationIds,
+              locationHierarchies = locationHierarchies,
             )
           }
         }
@@ -428,7 +465,19 @@ constructor(
     }
   }
 
+  private fun writeUserInfo(
+    userInfo: UserInfo?,
+  ) {
+    sharedPreferences.write(
+      key = SharedPreferenceKey.USER_INFO.name,
+      value = userInfo,
+    )
+  }
+
   private fun writePractitionerDetailsToShredPref(
+    careTeam: List<String>,
+    organization: List<String>,
+    location: List<String>,
     fhirPractitionerDetails: PractitionerDetails,
     careTeams: List<String>,
     organizations: List<String>,
@@ -439,7 +488,10 @@ constructor(
       key = SharedPreferenceKey.PRACTITIONER_ID.name,
       value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
     )
-    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, fhirPractitionerDetails)
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      fhirPractitionerDetails,
+    )
     sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
     sharedPreferences.write(ResourceType.Organization.name, organizations)
     sharedPreferences.write(ResourceType.Location.name, locations)
@@ -447,13 +499,31 @@ constructor(
       SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
       locationHierarchies,
     )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+      value = location.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.CARE_TEAM.name,
+      value = careTeam.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.ORGANIZATION.name,
+      value = organization.joinToString(separator = ""),
+    )
   }
 
   fun downloadNowWorkflowConfigs() {
     val oneTimeWorkRequest: OneTimeWorkRequest =
       OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
-        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+        .setConstraints(
+          Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+        )
         .build()
     workManager.enqueue(oneTimeWorkRequest)
+  }
+
+  fun setOnMigrateDataInProgress(inProgress: Boolean) {
+    _dataMigrationInProgress.value = inProgress
   }
 }

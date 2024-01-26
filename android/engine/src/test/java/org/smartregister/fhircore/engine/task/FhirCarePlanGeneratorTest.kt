@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,6 +98,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -132,6 +133,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var testDispatcher: DispatcherProvider
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
@@ -147,7 +150,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
   fun setup() {
     hiltRule.inject()
     structureMapUtilities = StructureMapUtilities(transformSupportServices.simpleWorkerContext)
-    every { defaultRepository.dispatcherProvider } returns coroutineTestRule.testDispatcherProvider
+    every { defaultRepository.dispatcherProvider } returns testDispatcher
     every { defaultRepository.fhirEngine } returns fhirEngine
 
     fhirResourceUtil =
@@ -1745,7 +1748,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         active = true
       }
     val bundle = Bundle().apply { addEntry().resource = patient }
-    coEvery { defaultRepository.updateResourcesRecursively(any(), any()) } just runs
+    coEvery { defaultRepository.updateResourcesRecursively(any(), any(), any()) } just runs
 
     runBlocking {
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
@@ -1757,11 +1760,13 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val eventResourceConfigSlot = slot<ResourceConfig>()
     val resourceSLot = slot<Resource>()
+    val eventWorkflowSlot = slot<EventWorkflow>()
 
     coVerify {
       defaultRepository.updateResourcesRecursively(
         capture(eventResourceConfigSlot),
         capture(resourceSLot),
+        capture(eventWorkflowSlot),
       )
     }
     assertEquals(carePlanId, eventResourceConfigSlot.captured.id)

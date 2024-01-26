@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ sealed class MainNavigationScreen(
     MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
 
   object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
+
+  object Insight : MainNavigationScreen(route = R.id.userInsightScreenFragment)
 
   fun eventId(id: String) = route.toString() + "_" + id
 }

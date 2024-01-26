@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,8 +109,9 @@ class AccountAuthenticatorTest : RobolectricTest() {
     every { accountManager.peekAuthToken(account, authTokenType) } returns ""
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
+    every { accountManager.setPassword(account, any()) } just runs
 
-    every { tokenAuthenticator.refreshToken(refreshToken) } returns ""
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } returns ""
 
     val authToken = accountAuthenticator.getAuthToken(mockk(), account, authTokenType, bundleOf())
     val parcelable = authToken.get(AccountManager.KEY_INTENT) as Intent
@@ -129,7 +130,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } returns "newAccessToken"
+    every { accountManager.setPassword(account, any()) } just runs
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } returns "newAccessToken"
 
     val authTokenBundle: Bundle =
       accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
@@ -147,7 +149,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws
       HttpException(
         mockk {
           every { code() } returns 0
@@ -170,7 +172,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws UnknownHostException()
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws UnknownHostException()
 
     val authTokenBundle: Bundle =
       accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf())
@@ -187,7 +189,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
 
     val refreshToken = "refreshToken"
     every { accountManager.getPassword(account) } returns refreshToken
-    every { tokenAuthenticator.refreshToken(refreshToken) } throws RuntimeException()
+    every { tokenAuthenticator.refreshToken(account, refreshToken) } throws RuntimeException()
 
     accountAuthenticator.getAuthToken(null, account, authTokenType, bundleOf()).also {
       Assert.assertNotNull(it)

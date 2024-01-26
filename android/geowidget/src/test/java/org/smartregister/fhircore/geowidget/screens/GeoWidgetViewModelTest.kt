@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.geowidget.screens
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.mapbox.geojson.FeatureCollection
@@ -79,6 +80,8 @@ class GeoWidgetViewModelTest {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
+  @Inject lateinit var parser: IParser
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -94,6 +97,7 @@ class GeoWidgetViewModelTest {
           configService,
           configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = parser,
         ),
       )
     geoWidgetViewModel =

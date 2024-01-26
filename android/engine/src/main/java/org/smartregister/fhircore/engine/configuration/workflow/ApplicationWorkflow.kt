@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,4 +50,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches the dialer with the phone number ready to place a call */
   LAUNCH_DIALLER,
+
+  /** A workflow that launches user insight screen */
+  LAUNCH_INSIGHT_SCREEN,
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,28 @@ import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
+import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.fhir.get
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.runs
+import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -48,14 +56,16 @@ import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireActivityTest : RobolectricTest() {
 
@@ -69,15 +79,24 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
 
+  @Inject lateinit var testDispatcherProvider: DispatcherProvider
+
+  @BindValue lateinit var defaultRepository: DefaultRepository
+
   @Before
   fun setUp() {
     hiltRule.inject()
+    defaultRepository =
+      mockk(relaxUnitFun = true) {
+        every { dispatcherProvider } returns testDispatcherProvider
+        every { fhirEngine } returns spyk(this@QuestionnaireActivityTest.fhirEngine)
+      }
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     questionnaireConfig =
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
         title = "Patient registration",
-        type = QuestionnaireType.DEFAULT,
+        type = "DEFAULT",
         extraParams =
           listOf(
             ActionParameter(
@@ -115,7 +134,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing() {
+  fun testThatActivityIsFinishedIfQuestionnaireConfigIsMissing() = runTest {
     questionnaireActivityController = Robolectric.buildActivity(QuestionnaireActivity::class.java)
     questionnaireActivity = questionnaireActivityController.create().resume().get()
     Assert.assertEquals(
@@ -125,12 +144,16 @@ class QuestionnaireActivityTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatActivityFinishesWhenQuestionnaireIsNull() {
-    val toast = mockk<Toast>()
-    every { toast.show() } just runs
+  fun testThatActivityFinishesWhenQuestionnaireIsNull() = runTest {
+    coEvery { defaultRepository.fhirEngine.get(any<ResourceType>(), any<String>()) } answers
+      {
+        throw ResourceNotFoundException(firstArg<ResourceType>().name, secondArg())
+      }
     mockkStatic(Toast::class)
-    every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns toast
+    every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns
+      mockk<Toast>() { every { show() } just runs }
     setupActivity()
+    advanceUntilIdle()
     verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
     unmockkStatic(Toast::class)
   }
@@ -166,7 +189,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatOnBackPressShowsConfirmationAlertDialog() {
+  fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
