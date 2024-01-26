@@ -376,7 +376,7 @@ constructor(
             )
 
           if (resourceClosureConditionsMet) {
-            defaultRepository.updateResourcesRecursively(eventResource, subject)
+            defaultRepository.updateResourcesRecursively(eventResource, subject, eventWorkFlow)
           }
         }
       }

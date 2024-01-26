@@ -220,7 +220,7 @@ constructor(
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
-          defaultRepository.updateResourcesRecursively(eventResource, resource)
+          defaultRepository.updateResourcesRecursively(eventResource, resource, eventWorkFlow)
         }
       }
   }
