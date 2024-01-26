@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
@@ -75,6 +76,8 @@ class CqlContentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var iParser: IParser
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -88,6 +91,7 @@ class CqlContentTest : RobolectricTest() {
           configService = configService,
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = iParser,
         ),
       )
   }

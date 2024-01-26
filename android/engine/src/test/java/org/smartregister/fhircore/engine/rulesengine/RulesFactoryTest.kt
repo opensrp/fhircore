@@ -435,7 +435,7 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService
         .filterResources(
           resources = resources,
-          fhirPathExpression = fhirPathExpression,
+          conditionalFhirPathExpression = fhirPathExpression,
         )
         .size == 2,
     )
