@@ -19,7 +19,9 @@ package org.smartregister.fhircore.engine.configuration.event
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 
 @Serializable
 @Parcelize
@@ -27,4 +29,12 @@ data class EventWorkflow(
   val eventType: EventType = EventType.RESOURCE_CLOSURE,
   val triggerConditions: List<EventTriggerCondition> = emptyList(),
   val eventResources: List<ResourceConfig> = emptyList(),
+  val updateValues: List<UpdateWorkflowValueConfig> = emptyList(),
+  val resourceFilterExpression: ResourceFilterExpression? = null,
 ) : java.io.Serializable, Parcelable
+
+@Serializable
+data class UpdateWorkflowValueConfig(
+  val jsonPathExpression: String,
+  val value: JsonElement,
+) : java.io.Serializable
