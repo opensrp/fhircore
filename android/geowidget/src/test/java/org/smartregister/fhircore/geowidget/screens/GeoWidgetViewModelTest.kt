@@ -19,6 +19,7 @@ package org.smartregister.fhircore.geowidget.screens
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.mapbox.geojson.FeatureCollection
@@ -79,6 +80,8 @@ class GeoWidgetViewModelTest {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
+  @Inject lateinit var parser: IParser
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -94,6 +97,7 @@ class GeoWidgetViewModelTest {
           configService,
           configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = parser,
         ),
       )
     geoWidgetViewModel =

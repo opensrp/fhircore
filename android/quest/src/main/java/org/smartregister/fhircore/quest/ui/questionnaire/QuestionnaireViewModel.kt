@@ -356,6 +356,7 @@ constructor(
         )
         addMemberToGroup(
           resource = this,
+          memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
           groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
         )
 
@@ -667,7 +668,11 @@ constructor(
    * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
    * member of itself.
    */
-  suspend fun addMemberToGroup(resource: Resource, groupIdentifier: String?) {
+  suspend fun addMemberToGroup(
+    resource: Resource,
+    memberResourceType: ResourceType?,
+    groupIdentifier: String?,
+  ) {
     // Load the Group resource from the database to get the updated one
     val group =
       groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
@@ -692,7 +697,7 @@ constructor(
         ResourceType.Practitioner,
         ResourceType.PractitionerRole,
         ResourceType.Specimen,
-      )
+      ) && resource.resourceType == memberResourceType
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
       defaultRepository.addOrUpdate(resource = group)
