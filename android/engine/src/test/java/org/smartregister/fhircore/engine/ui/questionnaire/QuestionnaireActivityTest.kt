@@ -219,6 +219,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireViewModel2 = spyk(questionnaireViewModel)
     val questionnaire =
       Questionnaire().apply {
+        id = "test"
+        url = "Questionnaire/test"
         addItem().apply {
           linkId = "page-1"
           type = Questionnaire.QuestionnaireItemType.GROUP
@@ -276,6 +278,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
     val questionnaireResponse =
       questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     assertFailsWith<IllegalArgumentException>(
       message = "Multiple answers for non-repeat questionnaire item phone-value-1"
     ) { checkQuestionnaireResponse(questionnaire, questionnaireResponse) }
@@ -286,6 +289,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireViewModel2 = spyk(questionnaireViewModel)
     val questionnaire =
       Questionnaire().apply {
+        id = "test"
+        url = "Questionnaire/test"
         addItem().apply {
           linkId = "page-1"
           type = Questionnaire.QuestionnaireItemType.GROUP
