@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -36,6 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -51,6 +51,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -91,23 +93,20 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
     runTest {
-      preferencesDataStore.write<List<String>>(
-        PreferencesDataStore.CARE_TEAM_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf("1"),
-        encodeWithGson = true,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.ORGANIZATION_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf("2"),
-        encodeWithGson = true,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_IDS,
         listOf("2"),
-        encodeWithGson = true,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.REMOTE_SYNC_RESOURCES,
         arrayOf(
             ResourceType.CarePlan.name,
             ResourceType.Condition.name,
@@ -123,7 +122,6 @@ class SyncBroadcasterTest : RobolectricTest() {
             ResourceType.Task.name,
           )
           .sorted(),
-        encodeWithGson = true,
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
@@ -188,23 +186,20 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
     runTest {
-      preferencesDataStore.write(
-        PreferencesDataStore.CARE_TEAM_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf("1"),
-        encodeWithGson = true,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.ORGANIZATION_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf("2"),
-        encodeWithGson = true,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_IDS,
         listOf("3"),
-        encodeWithGson = true,
       )
     }
-    runTest { preferencesDataStore.clear() }
+    runTest { genericProtoDataStore.clear() }
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
@@ -235,8 +230,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveOrganizationId() {
     val organizationId = "organization-id"
     runTest {
-      preferencesDataStore.write(
-        stringPreferencesKey(ResourceType.Organization.name),
+      // stringPreferencesKey(ResourceType.Organization.name),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf(organizationId),
       )
     }
@@ -268,10 +264,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
     runTest {
-      preferencesDataStore.write(
-        PreferencesDataStore.CARE_TEAM_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf(careTeamId),
-        encodeWithGson = true,
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
@@ -285,10 +280,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
     runTest {
-      preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_IDS,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_IDS,
         listOf(locationId),
-        encodeWithGson = true,
       )
     }
 
@@ -305,8 +299,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_ID,
-        listOf(practitionerId),
-        encodeWithGson = true,
+        practitionerId,
       )
     }
 

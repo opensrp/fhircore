@@ -22,8 +22,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.GenericProtoStoreItems
+import org.smartregister.model.location.LocationHierarchy
+import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
 
 @Singleton
@@ -34,21 +41,39 @@ constructor(
   val dataStore: DataStore<GenericProtoStoreItems>,
 ) {
 
-  val observe =
+  val observe: Flow<GenericProtoStoreItems> =
     dataStore.data.catch { exception ->
       if (exception is IOException) {
-        Timber.e(exception, "Error reading practitioner details preferences.")
+        Timber.e(exception, "Error observing proto datastore: GenericProtoDataStore details")
         emit(GenericProtoStoreItems())
       } else {
         throw exception
       }
     }
 
-  private suspend fun write(key: Keys, data: List<String>) {
+  fun readOnce(key: Keys): List<String>? {
+    var data: GenericProtoStoreItems
+    runBlocking { data = observe.first() }
+    return when (key) {
+      Keys.CARE_TEAM_IDS -> data.careTeamIds
+      Keys.CARE_TEAM_NAMES -> data.careTeamNames
+      Keys.LOCATION_IDS -> data.locationIds
+      Keys.LOCATION_NAMES -> data.locationNames
+      Keys.ORGANIZATION_IDS -> data.organizationIds
+      Keys.ORGANIZATION_NAMES -> data.organizationNames
+      else -> {
+        val error = "The key provided is not valid"
+        Timber.e(error)
+        throw IllegalArgumentException(error)
+      }
+    }
+  }
+
+  suspend fun write(key: Keys, data: List<String>) {
     dataStore.updateData {
       when (key) {
         Keys.CARE_TEAM_IDS -> it.copy(careTeamIds = data)
-        Keys.CARE_TEAM_NAMES -> it.copy(careTeamIds = data)
+        Keys.CARE_TEAM_NAMES -> it.copy(careTeamNames = data)
         Keys.LOCATION_IDS -> it.copy(locationIds = data)
         Keys.LOCATION_NAMES -> it.copy(locationNames = data)
         Keys.ORGANIZATION_IDS -> it.copy(organizationIds = data)
@@ -59,6 +84,36 @@ constructor(
           throw IllegalArgumentException(error)
         }
       }
+    }
+  }
+
+  suspend fun writeRemoteSyncResources(data: List<ResourceType>) {
+    dataStore.updateData { it.copy(remoteSyncResources = data) }
+  }
+
+  suspend fun writeUserInfo(data: UserInfo) {
+    dataStore.updateData { it.copy(userInfo = data) }
+  }
+
+  suspend fun writePractitionerDetails(data: PractitionerDetails) {
+    dataStore.updateData { it.copy(practitionerDetails = data) }
+  }
+
+  suspend fun writeLocationHierarchies(data: List<LocationHierarchy>) {
+    dataStore.updateData { it.copy(practitionerLocationHierarchies = data) }
+  }
+
+  suspend fun clear() {
+    dataStore.updateData {
+      it.copy(
+        careTeamIds = null,
+        careTeamNames = null,
+        locationIds = null,
+        locationNames = null,
+        organizationIds = null,
+        organizationNames = null,
+        remoteSyncResources = null,
+      )
     }
   }
 

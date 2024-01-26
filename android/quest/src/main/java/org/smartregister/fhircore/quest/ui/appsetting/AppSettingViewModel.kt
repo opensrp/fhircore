@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -66,6 +67,7 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
   val preferencesDataStore: PreferencesDataStore,
+  val genericProtoDataStore: GenericProtoDataStore,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
@@ -231,10 +233,8 @@ constructor(
 
   fun saveSyncPreferences(resourceTypes: List<ResourceType>) {
     viewModelScope.launch {
-      preferencesDataStore.write(
-        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+      genericProtoDataStore.writeRemoteSyncResources(
         resourceTypes.distinctBy { it.name },
-        encodeWithGson = true,
       )
     }
   }

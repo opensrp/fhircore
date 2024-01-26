@@ -209,10 +209,7 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails =
-      preferencesDataStore.readOnce<PractitionerDetails>(
-        key = PreferencesDataStore.PRACTITIONER_DETAILS,
-      )
+    val practitionerDetails = genericProtoDataStore.observe()
 
     // encoding and decoding
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
@@ -446,42 +443,42 @@ constructor(
     // the
     // serialization happen?
     viewModelScope.launch {
-      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_DETAILS, fhirPractitionerDetails)
+      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
     }
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_ID,
-        fhirPractitionerDetails.fhirPractitionerDetails,
+        fhirPractitionerDetails.fhirPractitionerDetails?.id!!,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.CARE_TEAM_IDS,
-        dataToStore = careTeamIds.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+        careTeamIds,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.CARE_TEAM_NAMES,
-        dataToStore = careTeamNames.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_NAMES,
+        careTeamNames,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_IDS,
-        dataToStore = locationIds.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_IDS,
+        locationIds,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.LOCATION_NAMES,
-        dataToStore = locationNames.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_NAMES,
+        locationNames,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.ORGANIZATION_IDS,
-        dataToStore = organizationIds.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+        organizationIds,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.ORGANIZATION_NAMES,
-        dataToStore = organizationNames.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_NAMES,
+        organizationNames,
       )
-      preferencesDataStore.write(
-        PreferencesDataStore.PRACTITIONER_LOCATION_HIERARCHIES,
-        dataToStore = locationHierarchies.joinToString(),
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.PRACTITIONER_LOCATION_HIERARCHIES,
+        locationHierarchies,
       )
     }
   }

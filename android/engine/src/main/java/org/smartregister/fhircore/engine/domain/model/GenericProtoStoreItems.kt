@@ -17,6 +17,10 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
+import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.model.location.LocationHierarchy
+import org.smartregister.model.practitioner.PractitionerDetails
 
 @Serializable
 data class GenericProtoStoreItems(
@@ -26,4 +30,8 @@ data class GenericProtoStoreItems(
   val locationNames: List<String>? = null,
   val organizationIds: List<String>? = null,
   val organizationNames: List<String>? = null,
+  val remoteSyncResources: List<ResourceType>? = null,
+  val userInfo: UserInfo? = null,
+  val practitionerDetails: PractitionerDetails? = null,
+  val practitionerLocationHierarchies: List<LocationHierarchy>? = null,
 )
