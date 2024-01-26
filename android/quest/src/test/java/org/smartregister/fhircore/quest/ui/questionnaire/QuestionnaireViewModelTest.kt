@@ -708,8 +708,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         groupResource =
           GroupResourceConfig(
             groupIdentifier = group.logicalId,
-            memberResourceType = ResourceType.Patient
-          )
+            memberResourceType = ResourceType.Patient,
+          ),
       )
 
     coEvery { fhirEngine.get(ResourceType.Group, group.logicalId) } returns group
