@@ -106,6 +106,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
+          parser = parser,
         ),
       )
 
@@ -121,6 +122,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         fhirOperator,
         knowledgeManager,
         mockk(),
+        parser,
       )
   }
 

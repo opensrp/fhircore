@@ -52,6 +52,8 @@ class CqlContentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var iParser: IParser
+
   @Before
   fun setUp() {
     hiltRule.inject()
