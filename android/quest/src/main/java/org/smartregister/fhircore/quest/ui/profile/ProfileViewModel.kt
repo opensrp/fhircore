@@ -263,7 +263,8 @@ constructor(
             emitSnackBarState(
               snackBarMessageConfig =
                 SnackBarMessageConfig(
-                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                  message =
+                    event.managingEntityConfig?.managingEntityReassignedMessage
                       ?: event.context.getString(R.string.reassigned_managing_entity),
                   actionLabel =
                     event.context.getString(org.smartregister.fhircore.engine.R.string.ok),
@@ -325,8 +326,7 @@ constructor(
                   expression = managingEntity.nameFhirPathExpression!!,
                 ),
             )
-          }
-          ?: emptyList()
+          } ?: emptyList()
 
       // Show error message when no group members are found
       if (eligibleManagingEntities.isEmpty()) {

@@ -132,8 +132,7 @@ constructor(
     val questionnaireComputedValues =
       questionnaireConfig.configRules?.let {
         resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
-      }
-        ?: emptyMap()
+      } ?: emptyMap()
 
     val allActionParameters =
       actionParameters?.plus(
@@ -300,8 +299,7 @@ constructor(
     val extractedResourceUniquePropertyExpressionsMap =
       questionnaireConfig.extractedResourceUniquePropertyExpressions?.associateBy {
         it.resourceType
-      }
-        ?: emptyMap()
+      } ?: emptyMap()
 
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
@@ -632,7 +630,7 @@ constructor(
             .map { it.name }
             .toSet()
 
-        // TODO move to Sync
+        // TODO move to Sync : Issue tracker https://github.com/opensrp/fhircore/issues/3019
         knowledgeManager.install(
           File.createTempFile(library.name, ".json").apply {
             this.writeText(library.encodeResourceToString())
@@ -708,8 +706,7 @@ constructor(
     // Load the Group resource from the database to get the updated one
     val group =
       groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
-        as Group?
-        ?: return
+        as Group? ?: return
 
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }

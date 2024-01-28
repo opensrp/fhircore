@@ -344,7 +344,8 @@ private fun MenuActionButton(
       Spacer(modifier.width(16.dp))
       Text(
         modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
-        text = navigationConfiguration.menuActionButton?.display?.uppercase()
+        text =
+          navigationConfiguration.menuActionButton?.display?.uppercase()
             ?: stringResource(id = org.smartregister.fhircore.engine.R.string.register_new_client),
         color = MenuActionButtonTextColor,
         fontSize = 18.sp,

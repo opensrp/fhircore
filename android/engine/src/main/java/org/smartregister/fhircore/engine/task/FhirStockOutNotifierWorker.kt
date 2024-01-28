@@ -101,7 +101,7 @@ constructor(
           },
         )
       }
-      .map { it.resource }
+      .map { it.resource }.toHashSet().toList()
       .map { obs ->
         val inventory = defaultRepository.fhirEngine
           .get(ResourceType.Group, obs.subject.extractId()) as Group

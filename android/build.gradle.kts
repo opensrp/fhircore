@@ -7,10 +7,6 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 buildscript {
   dependencies {
     classpath(libs.kotlin.gradle.plugin)
-    classpath(libs.kotlin.serialization)
-   // classpath(libs.hilt.dagger.android.gradle.plugin)
-    classpath(libs.navigation.safe.args.gradle.plugin)
-    classpath(libs.spotless.plugin.gradle)
     classpath(libs.coveralls.gradle.plugin)
     classpath(libs.gradle)
     classpath(libs.dokka.base)
@@ -18,7 +14,6 @@ buildscript {
   }
 }
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
   alias(libs.plugins.org.jetbrains.kotlin.jvm)
   alias(libs.plugins.kt3k.coveralls)
@@ -27,7 +22,7 @@ plugins {
   alias(libs.plugins.androidx.navigation.safeargs) apply false
   alias(libs.plugins.org.jetbrains.dokka)
   alias(libs.plugins.org.owasp.dependencycheck)
-  alias(libs.plugins.com.diffplug.spotless)
+  alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
 
 }
@@ -43,6 +38,7 @@ tasks.dokkaHtmlMultiModule {
 
 allprojects {
   repositories {
+    gradlePluginPortal()
     mavenLocal()
     google()
     mavenCentral()

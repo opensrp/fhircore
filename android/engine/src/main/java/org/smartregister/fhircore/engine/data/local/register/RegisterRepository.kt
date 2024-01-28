@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.data.local.register
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Operation
@@ -130,8 +131,7 @@ constructor(
           (it.paramType == ActionParameterType.PARAMDATA ||
             it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
-        ?.associate { it.key to it.value }
-        ?: emptyMap()
+        ?.associate { it.key to it.value } ?: emptyMap()
 
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource

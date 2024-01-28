@@ -154,7 +154,7 @@ dependencies {
   api(libs.bundles.retrofit2)
   api(libs.bundles.okhttp3)
   api(libs.bundles.paging)
-  api(libs.bundles.compose.ui)
+  api(libs.ui)
 
   // Shared dependencies
   api(libs.glide)
@@ -222,8 +222,7 @@ dependencies {
   kaptTest(libs.dagger.hilt.android.compiler)
   kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Test dependencies
   testImplementation(libs.work.runtime.ktx)
@@ -231,7 +230,7 @@ dependencies {
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
   testImplementation(libs.bundles.junit.test)
-  testImplementation(libs.bundles.coroutine.test)
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
   testImplementation(libs.json)
@@ -241,6 +240,7 @@ dependencies {
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
+  debugImplementation(libs.ui.tooling)
 
   // Android test dependencies
   androidTestImplementation(libs.bundles.junit.test)

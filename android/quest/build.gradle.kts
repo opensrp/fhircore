@@ -385,12 +385,7 @@ tasks.withType<Test> {
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
-configurations {
-  all {
-    // exclude(group = "commons-logging")
-    exclude(group = "xpp3")
-  }
-}
+configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
@@ -412,8 +407,7 @@ dependencies {
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
@@ -421,7 +415,7 @@ dependencies {
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.bundles.coroutine.test)
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
@@ -452,7 +446,6 @@ dependencies {
   ktlint(project(":linting"))
 }
 
-// TODO Resolve type mismatch errors
 /**
  * This task compares the performance benchmark results to the expected benchmark results and throws
  * an error if the result is past the expected result and margin. A message will also be printed if

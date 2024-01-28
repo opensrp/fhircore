@@ -88,7 +88,7 @@ constructor(
    *
    * @param planDefinition PlanDefinition resource for which dependent resources are extracted
    */
-  suspend fun getPlanDefinitionDependentResources(
+  private suspend fun getPlanDefinitionDependentResources(
     planDefinition: PlanDefinition,
   ): Collection<Resource> {
     var bundleCollection: Collection<Resource> = mutableListOf()
@@ -115,7 +115,6 @@ constructor(
     val availablePlanDefinitions =
       defaultRepository.search<PlanDefinition>(Search(ResourceType.PlanDefinition))
     for (cqlLibrary in availableCqlLibraries) {
-      //      fhirOperator.loadLib(cqlLibrary)
       knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
@@ -319,7 +318,7 @@ constructor(
   }
 
   /** Map [Task] status to [CarePlan] status */
-  fun mapRequestResourceStatusToCarePlanStatus(
+  private fun mapRequestResourceStatusToCarePlanStatus(
     resource: Task,
   ): CarePlan.CarePlanActivityStatus {
     // Refer: http://hl7.org/fhir/R4/valueset-care-plan-activity-status.html for some mapping
