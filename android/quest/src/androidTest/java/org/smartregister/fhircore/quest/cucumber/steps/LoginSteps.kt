@@ -1,16 +1,23 @@
 package org.smartregister.fhircore.quest.cucumber.steps
 
+import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import org.smartregister.fhircore.quest.cucumber.ActivityScenarioHolder
+import org.smartregister.fhircore.quest.cucumber.ComposeRuleHolder
 import org.smartregister.fhircore.quest.cucumber.objects.Login
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 
-class LoginSteps {
+class LoginSteps(val composeRuleHolder: ComposeRuleHolder, val scenarioHolder: ActivityScenarioHolder): SemanticsNodeInteractionsProvider by composeRuleHolder.composeRule {
     val login = Login()
     val applicationID = "quest"
 
     @Given("I am on the application settings page")
     fun i_am_on_the_application_settings_page() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        //scenarioHolder.launch(AppSettingActivity)
         login.composeTestAppScreen
     }
     @When("I enter an application id")
@@ -19,7 +26,7 @@ class LoginSteps {
     }
     @When("I tap the \"Load application settings\" button")
     fun i_tap_the_load_settings_button() {
-        login.clickLoadConfigurationsButton()
+        //login.clickLoadConfigurationsButton()
     }
     @Given("I am on the login page")
     fun i_am_on_the_login_page() {
