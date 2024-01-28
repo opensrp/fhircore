@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
@@ -56,6 +57,7 @@ constructor(
   private val fhirOperator: FhirOperator,
   private val knowledgeManager: KnowledgeManager,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -65,6 +67,7 @@ constructor(
     configService = configService,
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
   ) {
 
   /**

@@ -17,9 +17,10 @@
 package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -58,18 +59,16 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
-  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
-
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var fhirOperator: FhirOperator
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var knowledgeManager: KnowledgeManager
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  @Inject lateinit var parser: IParser
   private val fhirEngine: FhirEngine = mockk()
+
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
   private val registerId = "register id"
@@ -106,6 +105,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
+          parser = parser,
         ),
       )
 
@@ -118,9 +118,9 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         mockk(),
         mockk(),
         registerRepository,
-        fhirOperator,
-        knowledgeManager,
+        FhirOperator(FhirContext.forR4(), fhirEngine),
         mockk(),
+        parser,
       )
   }
 

@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.data.local.register
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Operation
@@ -58,6 +58,7 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
 ) :
   Repository,
   DefaultRepository(
@@ -68,6 +69,7 @@ constructor(
     configService = configService,
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
   ) {
 
   override suspend fun loadRegisterData(

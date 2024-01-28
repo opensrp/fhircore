@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -58,6 +59,7 @@ import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.IntegerType
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
@@ -118,6 +120,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var parser: IParser
+
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -163,6 +167,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configService = configService,
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = parser,
         ),
       )
 
@@ -703,12 +708,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         active = true
       }
 
+    questionnaireConfig =
+      questionnaireConfig.copy(
+        groupResource =
+          GroupResourceConfig(
+            groupIdentifier = group.logicalId,
+            memberResourceType = ResourceType.Patient,
+          ),
+      )
+
     coEvery { fhirEngine.get(ResourceType.Group, group.logicalId) } returns group
     coEvery { fhirEngine.update(any()) } just runs
 
     // Attempting to add Group as member of itself should fail
     questionnaireViewModel.addMemberToGroup(
       resource = group,
+      memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
       groupIdentifier = group.logicalId,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
@@ -716,6 +731,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Should add member to existing group
     questionnaireViewModel.addMemberToGroup(
       resource = patient,
+      memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
       groupIdentifier = group.logicalId,
     )
 
@@ -733,6 +749,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Group, anotherGroup.logicalId) } returns anotherGroup
     questionnaireViewModel.addMemberToGroup(
       resource = patient,
+      memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
+      groupIdentifier = group.logicalId,
+    )
+    coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = anotherGroup) }
+
+    questionnaireViewModel.addMemberToGroup(
+      resource = Location().apply { id = "some-loc-id" },
+      memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
       groupIdentifier = group.logicalId,
     )
     coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = anotherGroup) }

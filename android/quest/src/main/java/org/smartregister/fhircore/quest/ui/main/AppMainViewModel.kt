@@ -41,8 +41,9 @@ import kotlin.time.Duration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
-import org.hl7.fhir.r4.model.Location
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -56,6 +57,8 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirAncFollowUpNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -71,7 +74,6 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -82,7 +84,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -241,19 +242,20 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ) {
     viewModelScope.launch {
-      val location = registerRepository.loadResource<Location>(locationId)?.encodeResourceToString()
+      val prePopulateLocationIdParameter =
+        ActionParameter(
+          key = "locationId",
+          paramType = ActionParameterType.PREPOPULATE,
+          dataType = Enumerations.DataType.STRING,
+          resourceType = ResourceType.Location,
+          value = locationId,
+          linkId = "household-location-reference",
+        )
       if (context is QuestionnaireHandler) {
         context.launchQuestionnaire(
           context = context,
-          extraIntentBundle =
-            bundleOf(
-              Pair(
-                QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-                arrayListOf(location),
-              ),
-            ),
           questionnaireConfig = questionnaireConfig,
-          actionParams = emptyList(),
+          actionParams = listOf(prePopulateLocationIdParameter),
         )
       }
     }

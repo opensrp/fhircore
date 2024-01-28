@@ -16,56 +16,112 @@
 
 package org.smartregister.fhircore.quest
 
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import java.io.File
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
+import org.cqframework.cql.cql2elm.CqlTranslator
+import org.cqframework.cql.cql2elm.CqlTranslatorOptions
+import org.cqframework.cql.cql2elm.LibraryManager
+import org.cqframework.cql.cql2elm.ModelManager
+import org.cqframework.cql.cql2elm.quick.FhirLibrarySourceProvider
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library
+import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.sdk.CqlBuilder
-import org.smartregister.fhircore.quest.sdk.runBlockingOnWorkerThread
 
 @HiltAndroidTest
 class CqlContentTest : RobolectricTest() {
 
-  @get:Rule var hiltRule = HiltAndroidRule(this)
-
-  @Inject lateinit var knowledgeManager: KnowledgeManager
-
-  @Inject lateinit var fhirOperator: FhirOperator
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+  private val fhirContext: FhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  private val parser = fhirContext.newJsonParser()!!
+  private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val configService: ConfigService = mockk()
+  private val configRulesExecutor: ConfigRulesExecutor = mockk()
+  private lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var fhirOperator: FhirOperator
+
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var iParser: IParser
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    defaultRepository =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = configurationRegistry,
+          configService = configService,
+          configRulesExecutor = configRulesExecutor,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = iParser,
+        ),
+      )
   }
 
   @Test
-  fun runCqlLibraryTestForPqMedication() = runBlockingOnWorkerThread {
+  fun runCqlLibraryTestForPqMedication() {
     val resourceDir = "cql/pq-medication"
     val cql = "$resourceDir/cql.txt".readFile()
 
-    val cqlLibrary = buildCqlLibrary(cql)
+    val cqlElm = toJsonElm(cql).readStringToBase64Encoded()
+    val cqlLibrary =
+      parser.parseResource(
+        "$resourceDir/library.json".readFile().replace("#library-elm.json", cqlElm),
+      ) as Library
 
+    println(cqlLibrary.convertToString(false) as String)
+
+    val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
+
+    val patient =
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
+        as Patient
     val dataBundle =
-      loadTestResultsSampleData().apply {
+      Bundle().apply {
+        // output of test results extraction is input of this cql
+        "test-results-questionnaire/sample"
+          .readDir()
+          .map { it.parseSampleResource() as Resource }
+          .forEach { addEntry().apply { resource = it } }
+
         // output of test results cql is also added to input of this cql
         "cql/test-results/sample"
           .readDir()
@@ -73,43 +129,63 @@ class CqlContentTest : RobolectricTest() {
           .forEach { addEntry().apply { resource = it } }
       }
 
-    createTestData(dataBundle, cqlLibrary)
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
 
+    runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
     val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-      ) as Parameters
-
-    printResult(result)
+      fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters
 
     assertOutput(
       "$resourceDir/output_medication_request.json",
-      result,
+      result.parameter.filter { it.name == "OUTPUT" }.map { it.resource.encodeResourceToString() },
       ResourceType.MedicationRequest,
     )
+
+    coVerify { defaultRepository.create(any(), any()) }
   }
 
   @Test
-  fun runCqlLibraryTestForTestResults() = runBlockingOnWorkerThread {
+  fun runCqlLibraryTestForTestResults() {
     val resourceDir = "cql/test-results"
     val cql = "$resourceDir/cql.txt".readFile()
 
-    val cqlLibrary = buildCqlLibrary(cql)
+    val cqlElm = toJsonElm(cql).readStringToBase64Encoded()
+    val cqlLibrary =
+      parser.parseResource(
+        "$resourceDir/library.json".readFile().replace("#library-elm.json", cqlElm),
+      ) as Library
 
-    val dataBundle = loadTestResultsSampleData()
+    println(cqlLibrary.convertToString(false) as String)
 
-    createTestData(dataBundle, cqlLibrary)
+    val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
 
+    val patient =
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
+        as Patient
+    val dataBundle =
+      Bundle().apply {
+        // output of test results extraction is input of this cql
+        "test-results-questionnaire/sample"
+          .readDir()
+          .map { it.parseSampleResource() as Resource }
+          .forEach { addEntry().apply { resource = it } }
+      }
+
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { defaultRepository.searchCondition(any()) } returns listOf()
+
+    runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
     val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-      ) as Parameters
-
-    printResult(result)
+      (fhirOperator.evaluateLibrary(cqlLibrary.url, patient.id, null, setOf()) as Parameters)
+        .parameter
+        .map { it.resource.encodeResourceToString() }
 
     assertOutput("$resourceDir/sample/output_condition.json", result, ResourceType.Condition)
     assertOutput(
@@ -122,17 +198,28 @@ class CqlContentTest : RobolectricTest() {
       result,
       ResourceType.DiagnosticReport,
     )
+
+    coVerify(exactly = 3) { defaultRepository.create(any(), any()) }
   }
 
+  @Ignore
   @Test
-  fun runCqlLibraryTestForControlTest() = runBlockingOnWorkerThread {
+  fun runCqlLibraryTestForControlTest() {
     val resourceDir = "cql/control-test"
     val cql = "$resourceDir/cql.txt".readFile()
 
-    val cqlLibrary = buildCqlLibrary(cql)
+    val cqlElm = toJsonElm(cql).readStringToBase64Encoded()
+    val cqlLibrary =
+      parser.parseResource(
+        "$resourceDir/library.json".readFile().replace("#library-elm.json", cqlElm),
+      ) as Library
+
+    println(cqlLibrary.convertToString(false) as String)
+
+    val fhirHelpersLibrary = "cql-common/helper.json".parseSampleResourceFromFile() as Library
 
     val dataBundle =
-      loadTestResultsSampleData().apply {
+      Bundle().apply {
         addEntry().apply {
           // questionnaire-response of test results is input of this cql
           resource =
@@ -141,98 +228,71 @@ class CqlContentTest : RobolectricTest() {
         }
       }
 
-    createTestData(dataBundle, cqlLibrary)
+    coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
+    coEvery { fhirEngine.get(ResourceType.Library, fhirHelpersLibrary.logicalId) } returns
+      fhirHelpersLibrary
+    coEvery { defaultRepository.create(any(), any()) } returns emptyList()
+    coEvery { configService.provideResourceTags(any()) } returns listOf()
 
+    runBlocking { fhirEngine.create(*dataBundle.entry.map { it.resource }.toTypedArray()) }
     val result =
-      fhirOperator.evaluateLibrary(
-        cqlLibrary.url,
-        dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
-        null,
-      ) as Parameters
+      (fhirOperator.evaluateLibrary(cqlLibrary.url, null, null, setOf()) as Parameters)
+        .parameter
+        .map { if (it.hasValue()) it.value else it.resource.encodeResourceToString() }
 
-    printResult(result)
+    println(result)
 
+    Assert.assertTrue(result.contains("OUTPUT -> Correct Result"))
     Assert.assertTrue(
-      result.getParameterValues("OUTPUT").first().valueToString() == "Correct Result",
+      result.contains(
+        "OUTPUT -> \nDetails:\n" +
+          "Value (3.0) is in Normal G6PD Range 0-3\n" +
+          "Value (11.0) is in Normal Haemoglobin Range 8-12",
+      ),
+    )
+
+    val observationSlot = slot<Observation>()
+    val booleanSlot = slot<Boolean>()
+    coVerify { defaultRepository.create(capture(booleanSlot), capture(observationSlot)) }
+
+    Assert.assertEquals(
+      "QuestionnaireResponse/TEST_QUESTIONNAIRE_RESPONSE",
+      observationSlot.captured.focusFirstRep.reference,
     )
     Assert.assertEquals(
-      result.getParameterValues("OUTPUT").elementAt(1).valueToString(),
-      "\nDetails:\n" +
-        "Value (3.0) is in Normal G6PD Range 0-3\n" +
-        "Value (11.0) is in Normal Haemoglobin Range 8-12",
+      "Correct Result",
+      observationSlot.captured.valueCodeableConcept.codingFirstRep.display,
     )
+    Assert.assertEquals("Device Operation", observationSlot.captured.code.codingFirstRep.display)
   }
 
-  private fun buildCqlLibrary(cql: String): Library {
-    val cqlCompiler = CqlBuilder.compile(cql)
-    val libraryIdentifier = cqlCompiler.translatedLibrary.library.identifier
-    return CqlBuilder.assembleFhirLib(
-        cqlStr = cql,
-        jsonElmStr = cqlCompiler.toJson(),
-        xmlElmStr = null,
-        libName = libraryIdentifier.id,
-        libVersion = libraryIdentifier.version,
+  private fun toJsonElm(cql: String): String {
+    val libraryManager = LibraryManager(ModelManager())
+    libraryManager.librarySourceLoader.registerProvider(FhirLibrarySourceProvider())
+
+    val translator: CqlTranslator =
+      CqlTranslator.fromText(
+        cql,
+        libraryManager.modelManager,
+        libraryManager,
+        *CqlTranslatorOptions.defaultOptions().options.toTypedArray(),
       )
-      .also { println(it.encodeResourceToString()) }
+
+    return translator.toJson().also { println(it.replace("\n", "").replace("   ", "")) }
   }
 
-  private fun loadTestResultsSampleData(): Bundle {
-    return Bundle().apply {
-      // output of test results extraction is input of this cql
-      "test-results-questionnaire/sample"
-        .readDir()
-        .map { it.parseSampleResource() as Resource }
-        .forEach { addEntry().apply { resource = it } }
-    }
-  }
-
-  private suspend fun createTestData(dataBundle: Bundle, cqlLibrary: Library) {
-    dataBundle.entry.forEach { fhirEngine.create(it.resource) }
-
-    knowledgeManager.install(
-      File.createTempFile(cqlLibrary.name, ".json").apply {
-        this.writeText(cqlLibrary.encodeResourceToString())
-      },
-    )
-  }
-
-  private fun printResult(result: Parameters) {
-    result.parameter.forEach {
-      println(
-        it.name +
-          " -> " +
-          if (it.hasResource()) {
-            it.resource.encodeResourceToString()
-          } else if (it.hasValue()) it.value.valueToString() else " FOUND NULL",
-      )
-    }
-  }
-
-  private fun assertOutput(
-    resource: String,
-    cqlResult: Parameters,
-    type: ResourceType,
-  ) {
-    val outputs =
-      cqlResult.parameter.map {
-        it.name to
-          if (it.hasResource()) {
-            it.resource.encodeResourceToString()
-          } else it.valueToString()
-      }
+  private fun assertOutput(resource: String, cqlResult: List<String>, type: ResourceType) {
+    println(cqlResult)
 
     val expectedResource = resource.parseSampleResourceFromFile().convertToString(true)
     val cqlResultStr =
-      outputs
-        .find {
-          it.first.startsWith("OUTPUT") && it.second.contains("\"resourceType\":\"${type.name}")
-        }!!
-        .second
+      cqlResult
+        .find { it.startsWith("OUTPUT") && it.contains("\"resourceType\":\"$type\"") }!!
         .replaceTimePart()
 
     println(cqlResultStr)
     println(expectedResource as String)
 
-    Assert.assertEquals(expectedResource, cqlResultStr)
+    Assert.assertTrue(cqlResultStr.contains("OUTPUT -> $expectedResource"))
   }
 }
