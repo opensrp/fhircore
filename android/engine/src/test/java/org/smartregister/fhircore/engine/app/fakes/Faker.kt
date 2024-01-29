@@ -35,7 +35,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import java.util.Calendar
@@ -54,7 +54,7 @@ object Faker {
 
   fun buildTestConfigurationRegistry(
     preferencesDataStore: PreferencesDataStore,
-    genericProtoDataStore: GenericProtoDataStore,
+    protoDataStore: ProtoDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -63,7 +63,7 @@ object Faker {
       fhirResourceService,
       fhirResourceDataSource,
       preferencesDataStore,
-      genericProtoDataStore,
+      protoDataStore,
       dispatcherProvider,
     )
   }
@@ -72,7 +72,7 @@ object Faker {
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
     preferencesDataStore: PreferencesDataStore,
-    genericProtoDataStore: GenericProtoDataStore,
+    protoDataStore: ProtoDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -83,7 +83,7 @@ object Faker {
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           preferencesDataStore = preferencesDataStore,
-          genericProtoDataStore = genericProtoDataStore,
+          protoDataStore = protoDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json,

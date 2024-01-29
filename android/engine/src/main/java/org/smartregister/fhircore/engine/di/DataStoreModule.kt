@@ -32,7 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.serializers.GenericProtoStoreSerializer
-import org.smartregister.fhircore.engine.domain.model.GenericProtoStoreItems
+import org.smartregister.fhircore.engine.domain.model.PractitionerDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @InstallIn(SingletonComponent::class)
@@ -57,7 +57,7 @@ class DataStoreModule {
   fun provideGenericProtoStore(
     @ApplicationContext context: Context,
     dispatcherProvider: DispatcherProvider,
-  ): DataStore<GenericProtoStoreItems> {
+  ): DataStore<PractitionerDataStore> {
     val genericProtoStore = "generic_protostore.json"
 
     return DataStoreFactory.create(

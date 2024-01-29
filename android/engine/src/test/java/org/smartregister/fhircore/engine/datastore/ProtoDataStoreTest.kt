@@ -30,26 +30,26 @@ import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-internal class GenericProtoDataStoreTest : RobolectricTest() {
+internal class ProtoDataStoreTest : RobolectricTest() {
   private val testContext: Context = ApplicationProvider.getApplicationContext()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var genericProtoDataStore: GenericProtoDataStore
+  private lateinit var protoDataStore: ProtoDataStore
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    genericProtoDataStore = GenericProtoDataStore(testContext)
+    protoDataStore = ProtoDataStore(testContext)
   }
 
   @Test
   fun testReadPractitionerDetails() {
     val expectedPreferencesValue = PractitionerDetails()
     runTest {
-      genericProtoDataStore.practitioner.map { dataStoreValue ->
+      protoDataStore.practitioner.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
       }
     }
@@ -59,8 +59,8 @@ internal class GenericProtoDataStoreTest : RobolectricTest() {
   fun testWritePractitionerDetails() {
     val valueToWrite = PractitionerDetails()
     runTest {
-      genericProtoDataStore.writePractitioner(valueToWrite)
-      genericProtoDataStore.practitioner.map { assert(it == (valueToWrite)) }
+      protoDataStore.writePractitioner(valueToWrite)
+      protoDataStore.practitioner.map { assert(it == (valueToWrite)) }
     }
   }
 
@@ -68,7 +68,7 @@ internal class GenericProtoDataStoreTest : RobolectricTest() {
   fun testReadUserInfo() {
     val expectedPreferencesValue = PractitionerDetails()
     runTest {
-      genericProtoDataStore.practitioner.map { dataStoreValue ->
+      protoDataStore.practitioner.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
       }
     }
@@ -78,8 +78,8 @@ internal class GenericProtoDataStoreTest : RobolectricTest() {
   fun testWriteUserInfo() {
     val valueToWrite = UserInfo()
     runTest {
-      genericProtoDataStore.writeUserInfo(valueToWrite)
-      genericProtoDataStore.userInfo.map { assert(it == valueToWrite) }
+      protoDataStore.writeUserInfo(valueToWrite)
+      protoDataStore.userInfo.map { assert(it == valueToWrite) }
     }
   }
 }

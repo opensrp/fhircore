@@ -35,7 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -52,7 +52,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+  @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -67,7 +67,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, genericProtoDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, protoDataStore, dispatcherProvider)
     MockKAnnotations.init(this)
     syncListenerManager =
       SyncListenerManager(
@@ -93,19 +93,19 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf("1"),
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf("2"),
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_IDS,
         listOf("2"),
       )
-      genericProtoDataStore.writeRemoteSyncResources(
+      protoDataStore.writeRemoteSyncResources(
         arrayOf(
             ResourceType.CarePlan,
             ResourceType.Condition,
@@ -185,20 +185,20 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf("1"),
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf("2"),
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_IDS,
         listOf("3"),
       )
     }
-    runTest { genericProtoDataStore.clear() }
+    runTest { protoDataStore.clear() }
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
@@ -230,8 +230,8 @@ class SyncBroadcasterTest : RobolectricTest() {
     val organizationId = "organization-id"
     runTest {
       // stringPreferencesKey(ResourceType.Organization.name),
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf(organizationId),
       )
     }
@@ -263,8 +263,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf(careTeamId),
       )
     }
@@ -279,8 +279,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_IDS,
         listOf(locationId),
       )
     }

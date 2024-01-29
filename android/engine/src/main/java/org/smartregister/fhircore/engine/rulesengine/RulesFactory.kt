@@ -38,7 +38,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -326,17 +326,17 @@ constructor(
               PreferencesDataStore.PRACTITIONER_ID,
               "",
             )!!
-          GenericProtoDataStore.Keys.CARE_TEAM_NAMES.name ->
-            configurationRegistry.genericProtoDataStore
+          ProtoDataStore.Keys.CARE_TEAM_NAMES.name ->
+            configurationRegistry.protoDataStore
               .readOnce(
-                GenericProtoDataStore.Keys.CARE_TEAM_NAMES,
+                ProtoDataStore.Keys.CARE_TEAM_NAMES,
                 listOf(""),
               )!!
               .joinToString()
-          GenericProtoDataStore.Keys.ORGANIZATION_NAMES.name ->
-            configurationRegistry.genericProtoDataStore
+          ProtoDataStore.Keys.ORGANIZATION_NAMES.name ->
+            configurationRegistry.protoDataStore
               .readOnce(
-                GenericProtoDataStore.Keys.ORGANIZATION_NAMES,
+                ProtoDataStore.Keys.ORGANIZATION_NAMES,
                 listOf(""),
               )!!
               .joinToString()

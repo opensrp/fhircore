@@ -18,20 +18,20 @@ package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.model.location.LocationHierarchy
-import org.smartregister.model.practitioner.PractitionerDetails
 
+
+// TODO: KELVIN rename to practitionerdatastore
 @Serializable
-data class GenericProtoStoreItems(
+data class PractitionerDataStore(
   val careTeamIds: List<String>? = null,
   val careTeamNames: List<String>? = null,
   val locationIds: List<String>? = null,
   val locationNames: List<String>? = null,
-  val locationHierarchies: List<LocationHierarchy>? = null,
+  val locationHierarchies: List<LocationHierarchyInfo>? = null,
   val organizationIds: List<String>? = null,
   val organizationNames: List<String>? = null,
   val remoteSyncResources: List<ResourceType>? = null,
   val userInfo: UserInfo? = null,
-  val practitionerDetails: PractitionerDetails? = null,
 )

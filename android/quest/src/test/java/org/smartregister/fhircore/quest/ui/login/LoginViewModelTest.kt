@@ -60,7 +60,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -84,7 +84,7 @@ internal class LoginViewModelTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+  @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
@@ -118,7 +118,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           accountAuthenticator = accountAuthenticator,
           preferencesDataStore = preferencesDataStore,
-          genericProtoDataStore = genericProtoDataStore,
+          protoDataStore = protoDataStore,
           defaultRepository = defaultRepository,
           configService = configService,
           keycloakService = keycloakService,

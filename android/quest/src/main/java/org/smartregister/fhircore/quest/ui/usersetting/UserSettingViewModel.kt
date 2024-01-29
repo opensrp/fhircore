@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -65,7 +65,7 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val preferencesDataStore: PreferencesDataStore,
-  val genericProtoDataStore: GenericProtoDataStore,
+  val protoDataStore: ProtoDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -89,15 +89,15 @@ constructor(
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
-    genericProtoDataStore.readOnceUserInfo()
+    protoDataStore.readOnceUserInfo()
 
   fun practitionerLocation() =
     preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, null)
 
   fun retrieveOrganizationNames() =
-    genericProtoDataStore.readOnce(GenericProtoDataStore.Keys.ORGANIZATION_NAMES, null)
+    protoDataStore.readOnce(ProtoDataStore.Keys.ORGANIZATION_NAMES, null)
 
-  fun retrieveCareTeamNames() = genericProtoDataStore.readOnce(GenericProtoDataStore.Keys.CARE_TEAM_NAMES, null)
+  fun retrieveCareTeamNames() = protoDataStore.readOnce(ProtoDataStore.Keys.CARE_TEAM_NAMES, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)

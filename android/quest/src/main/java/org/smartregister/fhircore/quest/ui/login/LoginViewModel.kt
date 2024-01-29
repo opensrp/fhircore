@@ -30,7 +30,6 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -42,7 +41,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -68,7 +67,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val preferencesDataStore: PreferencesDataStore,
-  val genericProtoDataStore: GenericProtoDataStore,
+  val protoDataStore: ProtoDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -210,10 +209,10 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails = genericProtoDataStore.observe.first().practitionerDetails
+    // val practitionerDetails = genericProtoDataStore.observe.first().practitionerDetails
 
     // encoding and decoding
-    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
+    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) { // TODO: KELVIN null check against existence of protostore INSTEAD OF THE CODE ABOVE
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -374,6 +373,7 @@ constructor(
           defaultRepository.createRemote(false, *it)
         }
 
+
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
             careTeamNames = careTeamNames,
@@ -418,13 +418,12 @@ constructor(
   ) {
     viewModelScope.launch {
       if (userInfo != null) {
-        genericProtoDataStore.writeUserInfo(userInfo)
+        protoDataStore.writeUserInfo(userInfo)
       }
     }
   }
 
   private fun writePractitionerDetailsToShredPref(
-    fhirPractitionerDetails: PractitionerDetails,
     careTeamIds: List<String>,
     careTeamNames: List<String>,
     locationIds: List<String>,
@@ -443,9 +442,9 @@ constructor(
     // Likely incorrect: verify how preferencesDataStore is able to accept the object, where does
     // the
     // serialization happen?
-    viewModelScope.launch {
-      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
-    }
+//    viewModelScope.launch {
+//      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
+//    }
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
@@ -453,31 +452,31 @@ constructor(
         PreferencesDataStore.PRACTITIONER_ID,
         fhirPractitionerDetails.fhirPractitionerDetails?.id!!,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_IDS,
         careTeamIds,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_NAMES,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_NAMES,
         careTeamNames,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_IDS,
         locationIds,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_NAMES,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_NAMES,
         locationNames,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_IDS,
         organizationIds,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_NAMES,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_NAMES,
         organizationNames,
       )
-      genericProtoDataStore.writeLocationHierarchies(
+      protoDataStore.writeLocationHierarchies(
         locationHierarchies
       )
     }

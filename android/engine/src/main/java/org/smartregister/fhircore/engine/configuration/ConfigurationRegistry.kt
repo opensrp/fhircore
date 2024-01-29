@@ -30,7 +30,6 @@ import java.util.PropertyResourceBundle
 import java.util.ResourceBundle
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -46,7 +45,7 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -74,7 +73,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val preferencesDataStore: PreferencesDataStore,
-  val genericProtoDataStore: GenericProtoDataStore,
+  val protoDataStore: ProtoDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,

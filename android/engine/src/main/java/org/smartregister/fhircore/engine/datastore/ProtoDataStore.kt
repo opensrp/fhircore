@@ -19,40 +19,39 @@ package org.smartregister.fhircore.engine.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.domain.model.GenericProtoStoreItems
-import org.smartregister.model.location.LocationHierarchy
-import org.smartregister.model.practitioner.PractitionerDetails
+import org.smartregister.fhircore.engine.domain.model.PractitionerDataStore
 import timber.log.Timber
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
-class GenericProtoDataStore
+class ProtoDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val dataStore: DataStore<GenericProtoStoreItems>,
+  val dataStore: DataStore<PractitionerDataStore>,
 ) {
 
-  val observe: Flow<GenericProtoStoreItems> =
+  val observe: Flow<PractitionerDataStore> =
     dataStore.data.catch { exception ->
       if (exception is IOException) {
         Timber.e(exception, "Error observing proto datastore: GenericProtoDataStore details")
-        emit(GenericProtoStoreItems())
+        emit(PractitionerDataStore())
       } else {
         throw exception
       }
     }
 
   fun readOnce(key: Keys, defaultValue: List<String>? = null): List<String>? {
-    var data: GenericProtoStoreItems
+    var data: PractitionerDataStore
     runBlocking { data = observe.first() }
     return when (key) {
       Keys.CARE_TEAM_IDS -> data.careTeamIds
@@ -87,25 +86,13 @@ constructor(
     }
   }
 
-  suspend fun writeRemoteSyncResources(data: List<ResourceType>) {
-    dataStore.updateData { it.copy(remoteSyncResources = data) }
-  }
-
-  fun readOnceRemoteSyncResources() = runBlocking {dataStore.data.first().remoteSyncResources }
-
   suspend fun writeUserInfo(data: UserInfo) {
     dataStore.updateData { it.copy(userInfo = data) }
   }
 
   fun readOnceUserInfo() = runBlocking {dataStore.data.first().userInfo }
 
-  suspend fun writePractitionerDetails(data: PractitionerDetails) {
-    dataStore.updateData { it.copy(practitionerDetails = data) }
-  }
-
-  fun readOncePractitionerDetails() = runBlocking {dataStore.data.first().practitionerDetails }
-
-  suspend fun writeLocationHierarchies(data: List<LocationHierarchy>) {
+  suspend fun writeLocationHierarchies(data: List<LocationHierarchyInfo>) {
     dataStore.updateData { it.copy(locationHierarchies = data) }
   }
 

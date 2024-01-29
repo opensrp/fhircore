@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine
 
 import android.app.Application
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -25,13 +24,12 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
-import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -46,7 +44,7 @@ class ConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+  @Inject lateinit var protoDataStore: ProtoDataStore
 
   private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
@@ -75,8 +73,8 @@ class ConfigServiceTest : RobolectricTest() {
     val locationId2 = "location-id2"
 
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.LOCATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.LOCATION_IDS,
         listOf(locationId1, locationId2)
       )
     }
@@ -92,8 +90,8 @@ class ConfigServiceTest : RobolectricTest() {
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.ORGANIZATION_IDS,
         listOf(organizationId1, organizationId2)
       )
     }
@@ -111,8 +109,8 @@ class ConfigServiceTest : RobolectricTest() {
     val careTeamId2 = "careteam-id2"
 
     runTest {
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+      protoDataStore.write(
+        ProtoDataStore.Keys.CARE_TEAM_IDS,
         listOf(careTeamId1, careTeamId2)
       )
     }

@@ -73,7 +73,7 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -110,7 +110,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+  @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -157,7 +157,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
       )
 
-      genericProtoDataStore.write(GenericProtoDataStore.Keys.ORGANIZATION_NAMES, listOf("orgName"))
+      protoDataStore.write(ProtoDataStore.Keys.ORGANIZATION_NAMES, listOf("orgName"))
     }
 
     defaultRepository =

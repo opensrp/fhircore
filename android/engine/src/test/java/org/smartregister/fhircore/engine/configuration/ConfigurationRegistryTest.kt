@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -60,7 +59,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -81,7 +80,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
-  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+  @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val context: Context = ApplicationProvider.getApplicationContext()
@@ -100,7 +99,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine,
         fhirResourceDataSource,
         preferencesDataStore,
-        genericProtoDataStore,
+        protoDataStore,
         dispatcherProvider,
         AppConfigService(context),
         Faker.json,
