@@ -37,6 +37,7 @@ import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -156,7 +157,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
+  fun `fetchConfigurations() should call configurationRegistry#processResultBundleBinaries with correct values`() =
     runTest {
       coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) } returns
         Composition().apply {
@@ -168,10 +169,12 @@ class AppSettingViewModelTest : RobolectricTest() {
               }
           }
         }
-      coEvery { fhirResourceDataSource.post(any(), any()) } returns
+
+      val expectedBundle =
         Bundle().apply {
           addEntry().resource =
             Binary().apply {
+              id = "binary-id-1"
               data =
                 Base64.getEncoder()
                   .encode(
@@ -201,30 +204,36 @@ class AppSettingViewModelTest : RobolectricTest() {
                   )
             }
         }
+      coEvery { fhirResourceDataSource.post(any(), any()) } returns expectedBundle
+
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
       coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
         runs
       coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
       coEvery { appSettingViewModel.isNonProxy() } returns false
+      coEvery {
+        appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
+      } just runs
 
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
       }
 
-      val slot = slot<List<ResourceType>>()
+      val binarySlot = slot<Binary>()
 
       coVerify { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
       coVerify {
-        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+        appSettingViewModel.configurationRegistry.processResultBundleBinaries(
+          capture(binarySlot),
+          any()
+        )
       }
 
-      Assert.assertEquals(
-        listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
-        slot.captured,
-      )
+      assertEquals(expectedBundle.entry[0].resource.id, binarySlot.captured.id)
+      assertEquals((expectedBundle.entry[0].resource as Binary).data, binarySlot.captured.data)
     }
 
   @Test
