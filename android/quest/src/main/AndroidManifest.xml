@@ -86,6 +86,7 @@
                 android:name="android.accounts.AccountAuthenticator"
                 android:resource="@xml/authenticator" />
         </service>
+        <service android:name=".location.LocationService" android:foregroundServiceType="location"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

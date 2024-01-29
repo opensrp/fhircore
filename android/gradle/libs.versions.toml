@@ -111,6 +111,7 @@ dagger-hilt = "2.45"
 jetbrains-dokka = "1.8.20"
 navigation-safeargs = "2.4.2"
 diffplug-spotless = "6.19.0"
+location = "21.1.0"
 
 
 [libraries]
@@ -222,6 +223,7 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work-testing" }
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
+play-services-location = {module = "com.google.android.gms:play-services-location",version.ref = "location"}
 
 [plugins]
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }

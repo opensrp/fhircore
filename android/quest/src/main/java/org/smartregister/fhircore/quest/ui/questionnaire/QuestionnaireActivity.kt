@@ -64,6 +64,7 @@ import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
+import org.smartregister.fhircore.quest.location.LocationService
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -78,15 +79,22 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private val loc = org.hl7.fhir.r4.model.Location()
+  var location:Location? = null
+  val service = LocationService()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val applicationConfiguration = viewModel.applicationConfiguration
 
+
     if (applicationConfiguration.logQuestionnaireLocation) {
-      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      getLocation()
+      //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+      //getLocation()
+      Intent(this,LocationService::class.java).apply {
+        action = LocationService.ACTION_START
+        startService(this)
+      }
     }
 
     setTheme(R.style.AppTheme_Questionnaire)
@@ -257,7 +265,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.run {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          questionnaireResponse.contained.add(loc)
+
 
           handleQuestionnaireSubmission(
             questionnaire = questionnaire!!,
@@ -269,6 +277,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            location = service.loc
+            loc.position.altitude = location?.altitude?.toBigDecimal()
+            loc.position.latitude = location?.latitude?.toBigDecimal()
+            loc.position.longitude = location?.longitude?.toBigDecimal()
+            questionnaireResponse.contained.add(loc)
             setResult(
               Activity.RESULT_OK,
               Intent().apply {
@@ -277,6 +290,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
               },
             )
+            Intent(this@QuestionnaireActivity,LocationService::class.java).apply {
+              action = LocationService.ACTION_STOP
+              startService(this)
+            }
             finish()
           }
           // do background location processing
@@ -286,7 +303,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun getLocation() {
+/*  private fun getLocation() {
     if (
       ActivityCompat.checkSelfPermission(
         this@QuestionnaireActivity,
@@ -383,7 +400,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         val settingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
         this.startActivity(settingsIntent)
       }
-  }
+  }*/
 
   private fun handleBackPress() {
     if (questionnaireConfig.isReadOnly()) {
