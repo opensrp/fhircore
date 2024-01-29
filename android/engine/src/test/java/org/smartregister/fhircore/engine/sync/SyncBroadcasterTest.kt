@@ -67,7 +67,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(preferencesDataStore, genericProtoDataStore, dispatcherProvider)
     MockKAnnotations.init(this)
     syncListenerManager =
       SyncListenerManager(
@@ -105,21 +105,20 @@ class SyncBroadcasterTest : RobolectricTest() {
         GenericProtoDataStore.Keys.LOCATION_IDS,
         listOf("2"),
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.REMOTE_SYNC_RESOURCES,
+      genericProtoDataStore.writeRemoteSyncResources(
         arrayOf(
-            ResourceType.CarePlan.name,
-            ResourceType.Condition.name,
-            ResourceType.Encounter.name,
-            ResourceType.Group.name,
-            ResourceType.Library.name,
-            ResourceType.Observation.name,
-            ResourceType.Patient.name,
-            ResourceType.PlanDefinition.name,
-            ResourceType.Questionnaire.name,
-            ResourceType.QuestionnaireResponse.name,
-            ResourceType.StructureMap.name,
-            ResourceType.Task.name,
+            ResourceType.CarePlan,
+            ResourceType.Condition,
+            ResourceType.Encounter,
+            ResourceType.Group,
+            ResourceType.Library,
+            ResourceType.Observation,
+            ResourceType.Patient,
+            ResourceType.PlanDefinition,
+            ResourceType.Questionnaire,
+            ResourceType.QuestionnaireResponse,
+            ResourceType.StructureMap,
+            ResourceType.Task,
           )
           .sorted(),
       )

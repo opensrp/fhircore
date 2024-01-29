@@ -220,7 +220,7 @@ constructor(
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
             this.launch {
-              preferencesDataStore.write(PreferencesDataStore.APP_ID, dataToStore = thisAppId)
+              preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId)
             }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {

@@ -24,8 +24,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Locale
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -35,7 +33,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -55,6 +53,8 @@ import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.p2p.utils.startP2PScreen
+import java.util.Locale
+import javax.inject.Inject
 
 @HiltViewModel
 class UserSettingViewModel
@@ -65,6 +65,7 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val preferencesDataStore: PreferencesDataStore,
+  val genericProtoDataStore: GenericProtoDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -88,17 +89,15 @@ constructor(
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
   fun retrieveUserInfo() =
-    preferencesDataStore.readOnce<UserInfo>(
-      PreferencesDataStore.USER_INFO,
-    )
+    genericProtoDataStore.readOnceUserInfo()
 
   fun practitionerLocation() =
     preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, null)
 
-  fun retrieveOrganization() =
-    preferencesDataStore.readOnce(PreferencesDataStore.ORGANIZATION_NAMES, null)
+  fun retrieveOrganizationNames() =
+    genericProtoDataStore.readOnce(GenericProtoDataStore.Keys.ORGANIZATION_NAMES, null)
 
-  fun retrieveCareTeam() = preferencesDataStore.readOnce(PreferencesDataStore.CARE_TEAM_NAMES, null)
+  fun retrieveCareTeamNames() = genericProtoDataStore.readOnce(GenericProtoDataStore.Keys.CARE_TEAM_NAMES, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
@@ -140,7 +139,7 @@ constructor(
       }
       is UserSettingsEvent.SwitchLanguage -> {
         viewModelScope.launch {
-          preferencesDataStore.write(PreferencesDataStore.LANG, dataToStore = event.language.tag)
+          preferencesDataStore.write(PreferencesDataStore.LANG, event.language.tag)
         }
         event.context.run {
           configurationRegistry.clearConfigsCache()

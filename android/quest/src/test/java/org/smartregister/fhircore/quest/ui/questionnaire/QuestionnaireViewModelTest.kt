@@ -38,10 +38,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -77,6 +73,7 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -100,6 +97,10 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -108,6 +109,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -151,10 +154,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     runTest {
       preferencesDataStore.write(
         PreferencesDataStore.PRACTITIONER_ID,
-        dataToStore = practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
+        practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
       )
 
-      preferencesDataStore.write(PreferencesDataStore.ORGANIZATION_NAMES, listOf("orgName"))
+      genericProtoDataStore.write(GenericProtoDataStore.Keys.ORGANIZATION_NAMES, listOf("orgName"))
     }
 
     defaultRepository =

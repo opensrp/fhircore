@@ -91,17 +91,25 @@ constructor(
     dataStore.updateData { it.copy(remoteSyncResources = data) }
   }
 
+  fun readOnceRemoteSyncResources() = runBlocking {dataStore.data.first().remoteSyncResources }
+
   suspend fun writeUserInfo(data: UserInfo) {
     dataStore.updateData { it.copy(userInfo = data) }
   }
+
+  fun readOnceUserInfo() = runBlocking {dataStore.data.first().userInfo }
 
   suspend fun writePractitionerDetails(data: PractitionerDetails) {
     dataStore.updateData { it.copy(practitionerDetails = data) }
   }
 
+  fun readOncePractitionerDetails() = runBlocking {dataStore.data.first().practitionerDetails }
+
   suspend fun writeLocationHierarchies(data: List<LocationHierarchy>) {
-    dataStore.updateData { it.copy(practitionerLocationHierarchies = data) }
+    dataStore.updateData { it.copy(locationHierarchies = data) }
   }
+
+  fun readOnceLocationHierarchies() = runBlocking {dataStore.data.first().locationHierarchies }
 
   suspend fun clear() {
     dataStore.updateData {
@@ -122,6 +130,7 @@ constructor(
     CARE_TEAM_NAMES,
     LOCATION_IDS,
     LOCATION_NAMES,
+    LOCATION_HIERARCHIES,
     ORGANIZATION_IDS,
     ORGANIZATION_NAMES,
   }

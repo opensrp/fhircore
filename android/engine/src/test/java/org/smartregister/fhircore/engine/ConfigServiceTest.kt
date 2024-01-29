@@ -31,6 +31,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -45,6 +46,8 @@ class ConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var genericProtoDataStore: GenericProtoDataStore
+
   private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
   @Before
@@ -57,7 +60,7 @@ class ConfigServiceTest : RobolectricTest() {
     val practitionerId = "practitioner-id"
 
     runTest {
-      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, dataToStore = practitionerId)
+      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId)
     }
 
     val resourceTags = configService.provideResourceTags(preferencesDataStore)
@@ -72,12 +75,9 @@ class ConfigServiceTest : RobolectricTest() {
     val locationId2 = "location-id2"
 
     runTest {
-      preferencesDataStore.write(
-        stringPreferencesKey(
-          ResourceType.Location.name,
-        ), // TODO: KELVIN we need a mapping from ResourceType to Key
-        listOf(locationId1, locationId2),
-        encodeWithGson = true,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.LOCATION_IDS,
+        listOf(locationId1, locationId2)
       )
     }
 
@@ -92,10 +92,9 @@ class ConfigServiceTest : RobolectricTest() {
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
     runTest {
-      preferencesDataStore.write(
-        stringPreferencesKey(ResourceType.Organization.name),
-        listOf(organizationId1, organizationId2),
-        encodeWithGson = true,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.ORGANIZATION_IDS,
+        listOf(organizationId1, organizationId2)
       )
     }
 
@@ -112,10 +111,9 @@ class ConfigServiceTest : RobolectricTest() {
     val careTeamId2 = "careteam-id2"
 
     runTest {
-      preferencesDataStore.write(
-        stringPreferencesKey(ResourceType.CareTeam.name),
-        listOf(careTeamId1, careTeamId2),
-        encodeWithGson = true,
+      genericProtoDataStore.write(
+        GenericProtoDataStore.Keys.CARE_TEAM_IDS,
+        listOf(careTeamId1, careTeamId2)
       )
     }
 

@@ -105,7 +105,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     runTest {
       viewModel.preferencesDataStore.write(
         PreferencesDataStore.LAST_SYNC_TIMESTAMP,
-        dataToStore = timestamp,
+        timestamp,
       )
     }
 
@@ -127,7 +127,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     runTest {
       viewModel.preferencesDataStore.write(
         PreferencesDataStore.LAST_SYNC_TIMESTAMP,
-        dataToStore = "2022-05-19",
+        "2022-05-19",
       )
     }
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime

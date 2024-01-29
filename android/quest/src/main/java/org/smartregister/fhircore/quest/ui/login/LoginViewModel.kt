@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -29,12 +30,9 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -59,6 +57,9 @@ import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel
@@ -209,7 +210,7 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails = genericProtoDataStore.observe()
+    val practitionerDetails = genericProtoDataStore.observe.first().practitionerDetails
 
     // encoding and decoding
     if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
@@ -476,9 +477,8 @@ constructor(
         GenericProtoDataStore.Keys.ORGANIZATION_NAMES,
         organizationNames,
       )
-      genericProtoDataStore.write(
-        GenericProtoDataStore.Keys.PRACTITIONER_LOCATION_HIERARCHIES,
-        locationHierarchies,
+      genericProtoDataStore.writeLocationHierarchies(
+        locationHierarchies
       )
     }
   }

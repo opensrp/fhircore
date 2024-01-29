@@ -16,15 +16,12 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import java.util.Calendar
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
@@ -38,8 +35,11 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.GenericProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import java.util.Calendar
+import java.util.Date
 
 object Faker {
 
@@ -54,6 +54,7 @@ object Faker {
 
   fun buildTestConfigurationRegistry(
     preferencesDataStore: PreferencesDataStore,
+    genericProtoDataStore: GenericProtoDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -62,6 +63,7 @@ object Faker {
       fhirResourceService,
       fhirResourceDataSource,
       preferencesDataStore,
+      genericProtoDataStore,
       dispatcherProvider,
     )
   }
@@ -70,6 +72,7 @@ object Faker {
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
     preferencesDataStore: PreferencesDataStore,
+    genericProtoDataStore: GenericProtoDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -80,6 +83,7 @@ object Faker {
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           preferencesDataStore = preferencesDataStore,
+          genericProtoDataStore = genericProtoDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json,

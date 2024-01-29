@@ -87,7 +87,7 @@ constructor(
 
       preferencesDataStore.write(
         key,
-        dataToStore = updatedLastOffset.toString(),
+        updatedLastOffset.toString(),
       )
       Result.success()
     }

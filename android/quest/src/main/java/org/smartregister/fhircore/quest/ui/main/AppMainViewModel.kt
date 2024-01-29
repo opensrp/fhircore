@@ -168,7 +168,7 @@ constructor(
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
         viewModelScope.launch {
-          preferencesDataStore.write(PreferencesDataStore.LANG, dataToStore = event.language.tag)
+          preferencesDataStore.write(PreferencesDataStore.LANG, event.language.tag)
         }
         event.context.run {
           setAppLocale(event.language.tag)
@@ -188,7 +188,7 @@ constructor(
           viewModelScope.launch {
             preferencesDataStore.write(
               PreferencesDataStore.LAST_SYNC_TIMESTAMP,
-              dataToStore = formatLastSyncTimestamp(event.state.timestamp),
+              formatLastSyncTimestamp(event.state.timestamp),
             )
 
             retrieveAppMainUiState()

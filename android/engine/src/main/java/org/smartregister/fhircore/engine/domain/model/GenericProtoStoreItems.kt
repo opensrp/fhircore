@@ -28,10 +28,10 @@ data class GenericProtoStoreItems(
   val careTeamNames: List<String>? = null,
   val locationIds: List<String>? = null,
   val locationNames: List<String>? = null,
+  val locationHierarchies: List<LocationHierarchy>? = null,
   val organizationIds: List<String>? = null,
   val organizationNames: List<String>? = null,
   val remoteSyncResources: List<ResourceType>? = null,
   val userInfo: UserInfo? = null,
   val practitionerDetails: PractitionerDetails? = null,
-  val practitionerLocationHierarchies: List<LocationHierarchy>? = null,
 )
