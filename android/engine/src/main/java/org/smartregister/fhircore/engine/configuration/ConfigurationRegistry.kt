@@ -24,6 +24,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import java.io.FileNotFoundException
 import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
@@ -33,6 +34,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
+import okio.ByteString.Companion.decodeBase64
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -44,8 +47,12 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -60,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
+import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
@@ -371,88 +379,91 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources() {
+  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
+    // Reset configurations before loading new ones
+    configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      fhirEngine.searchCompositionByIdentifier(parsedAppId)?.let { composition ->
+      // if (isInitialLogin) return null
+      val filterResourceList =
+        listOf(
+          ResourceType.Questionnaire.name,
+          ResourceType.StructureMap.name,
+          ResourceType.List.name,
+          ResourceType.PlanDefinition.name,
+          ResourceType.Library.name,
+          ResourceType.Measure.name,
+          ResourceType.Basic.name,
+          ResourceType.Binary.name,
+          ResourceType.Parameters,
+        )
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      val compositionResource = fetchRemoteComposition(parsedAppId)
+      compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
+          .asSequence()
+          .filter {
+            it.hasFocus() && it.focus.hasReferenceElement()
+          } // is focus.identifier a necessary check
           .groupBy { section ->
-            section.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: ""
+            section.focus.reference.substringBefore(
+              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
           }
-          .filter { entry ->
-            entry.key in
-              listOf(
-                ResourceType.Questionnaire.name,
-                ResourceType.StructureMap.name,
-                ResourceType.List.name,
-                ResourceType.PlanDefinition.name,
-                ResourceType.Library.name,
-                ResourceType.Measure.name,
-                ResourceType.Basic.name,
+          .filter { entry -> entry.key in filterResourceList }
+          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+            if (entry.key == ResourceType.List.name) {
+              processCompositionListResources(
+                entry,
+                patientRelatedResourceTypes = patientRelatedResourceTypes,
               )
-          }
-          .forEach { resourceGroup ->
-            if (resourceGroup.key == ResourceType.List.name) {
-              if (isNonProxy()) {
-                val chunkedResourceIdList =
-                  resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-                chunkedResourceIdList.forEach {
-                  processCompositionManifestResources(
-                      resourceGroup.key,
-                      it.map { sectionComponent -> sectionComponent.focus.extractId() },
-                    )
-                    .entry
-                    .forEach { bundleEntryComponent ->
-                      when (bundleEntryComponent.resource) {
-                        is ListResource -> {
-                          addOrUpdate(bundleEntryComponent.resource)
-                          val list = bundleEntryComponent.resource as ListResource
-                          list.entry.forEach { listEntryComponent ->
-                            val resourceKey =
-                              listEntryComponent.item.reference.substringBefore(
-                                TYPE_REFERENCE_DELIMITER,
-                              )
-                            val resourceId =
-                              listEntryComponent.item.reference.extractLogicalIdUuid()
-                            val listResourceUrlPath =
-                              "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
-                            fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
-                              listEntryResourceBundle ->
-                              addOrUpdate(listEntryResourceBundle.resource)
-                              Timber.d("Fetched and processed List reference $listResourceUrlPath")
-                            }
-                          }
-                        }
-                      }
-                    }
-                }
-              } else {
-                resourceGroup.value.forEach {
-                  processCompositionManifestResources(
-                    FHIR_GATEWAY_MODE_HEADER_VALUE,
-                    "${resourceGroup.key}/${it.focus.extractId()}",
-                  )
-                }
-              }
             } else {
-              val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEach {
+              chunkedResourceIdList.forEach { parentIt ->
+                Timber.d(
+                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                )
                 processCompositionManifestResources(
-                  resourceGroup.key,
-                  it.map { sectionComponent -> sectionComponent.focus.extractId() },
+                  entry.key,
+                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
+                  patientRelatedResourceTypes,
                 )
               }
             }
           }
+
+        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+
+        // Save composition after fetching all the referenced section resources
+        addOrUpdate(compositionResource)
+
+        Timber.d("Done fetching application configurations remotely")
       }
+    }
+  }
+
+  suspend fun fetchRemoteComposition(appId: String?): Composition? {
+    Timber.i("Fetching configs for app $appId")
+    val urlPath =
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
+
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
     }
   }
 
   private suspend fun processCompositionManifestResources(
     resourceType: String,
     resourceIdList: List<String>,
+    patientRelatedResourceTypes: MutableList<ResourceType>,
   ): Bundle {
     val resultBundle =
       if (isNonProxy()) {
@@ -465,7 +476,7 @@ constructor(
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
 
-    processResultBundleEntries(resultBundle)
+    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
 
     return resultBundle
   }
@@ -473,6 +484,7 @@ constructor(
   private suspend fun processCompositionManifestResources(
     gatewayModeHeaderValue: String? = null,
     searchPath: String,
+    patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
     val resultBundle =
       if (gatewayModeHeaderValue.isNullOrEmpty()) {
@@ -483,11 +495,12 @@ constructor(
           searchPath,
         )
 
-    processResultBundleEntries(resultBundle)
+    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
   }
 
   private suspend fun processResultBundleEntries(
     resultBundle: Bundle,
+    patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
     resultBundle.entry?.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
@@ -505,6 +518,11 @@ constructor(
               else -> saveListEntryResource(entryComponent)
             }
           }
+        }
+        is Binary -> {
+          val binary = bundleEntryComponent.resource as Binary
+          processResultBundleBinaries(binary, patientRelatedResourceTypes)
+          addOrUpdate(bundleEntryComponent.resource)
         }
         else -> {
           if (bundleEntryComponent.resource != null) {
@@ -538,7 +556,7 @@ constructor(
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         try {
-          create(resource)
+          createRemote(resource)
         } catch (sqlException: SQLException) {
           Timber.e(sqlException)
         }
@@ -552,9 +570,12 @@ constructor(
    *
    * @param resources vararg of resources
    */
-  suspend fun create(vararg resources: Resource) {
+  suspend fun createRemote(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
-      resources.onEach { it.generateMissingId() }
+      resources.onEach {
+        it.updateLastUpdated()
+        it.generateMissingId()
+      }
       fhirEngine.createRemote(*resources)
     }
   }
@@ -609,6 +630,93 @@ constructor(
   }
 
   fun clearConfigsCache() = configCacheMap.clear()
+
+  suspend fun processCompositionListResources(
+    resourceGroup:
+      Map.Entry<
+        String,
+        List<Composition.SectionComponent>,
+      >,
+    patientRelatedResourceTypes: MutableList<ResourceType>,
+  ) {
+    if (isNonProxy()) {
+      val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+      chunkedResourceIdList.forEach {
+        processCompositionManifestResources(
+            resourceType = resourceGroup.key,
+            resourceIdList = it.map { sectionComponent -> sectionComponent.focus.extractId() },
+            patientRelatedResourceTypes = patientRelatedResourceTypes,
+          )
+          .entry
+          .forEach { bundleEntryComponent ->
+            when (bundleEntryComponent.resource) {
+              is ListResource -> {
+                addOrUpdate(bundleEntryComponent.resource)
+                val list = bundleEntryComponent.resource as ListResource
+                list.entry.forEach { listEntryComponent ->
+                  val resourceKey =
+                    listEntryComponent.item.reference.substringBefore(
+                      TYPE_REFERENCE_DELIMITER,
+                    )
+                  val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
+                  val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
+                  fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
+                    listEntryResourceBundle ->
+                    addOrUpdate(listEntryResourceBundle.resource)
+                    Timber.d("Fetched and processed List reference $listResourceUrlPath")
+                  }
+                }
+              }
+            }
+          }
+      }
+    } else {
+      resourceGroup.value.forEach {
+        processCompositionManifestResources(
+          gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
+          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          patientRelatedResourceTypes = patientRelatedResourceTypes,
+        )
+      }
+    }
+  }
+
+  fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    this.baseResource.dependentResourceTypes(target)
+    this.relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    target.add(resource)
+    relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  fun processResultBundleBinaries(
+    binary: Binary,
+    patientRelatedResourceTypes: MutableList<ResourceType>,
+  ) {
+    binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
+      val config =
+        it.tryDecodeJson<RegisterConfiguration>() ?: it.tryDecodeJson<ProfileConfiguration>()
+
+      when (config) {
+        is RegisterConfiguration ->
+          config.fhirResource.dependentResourceTypes(
+            patientRelatedResourceTypes,
+          )
+        is ProfileConfiguration ->
+          config.fhirResource.dependentResourceTypes(
+            patientRelatedResourceTypes,
+          )
+      }
+    }
+  }
+
+  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+      resourceTypes.distinctBy { it.name },
+    )
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
