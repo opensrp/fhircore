@@ -34,6 +34,7 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -359,6 +360,22 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     assertEquals("practitioner/1234", hivProfileData.chwAssigned.reference)
     assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
+  }
+  @Test
+  fun testProfileTaskList() {
+    val data = runBlocking {
+      hivRegisterDao.loadProfileData(appFeatureName = "HIV", resourceId = "1")
+    }
+    assertNotNull(data)
+    val hivProfileData = data as ProfileData.HivProfileData
+    val order = hivProfileData.tasks.none { it.clinicVisitOrder("https://d-tree.org") == null }
+    Assert.assertEquals(hivProfileData.tasks.isEmpty(), false)
+    val sorted = hivProfileData.tasks.sortedWith(compareBy { it.description }).isEmpty()
+    val sortedIds = hivProfileData.tasks.map { it.id }
+
+    assertFalse(sorted)
+    assertEquals(order, true)
+    assertEquals(listOf("2", "1"), sortedIds)
   }
 
   @Test

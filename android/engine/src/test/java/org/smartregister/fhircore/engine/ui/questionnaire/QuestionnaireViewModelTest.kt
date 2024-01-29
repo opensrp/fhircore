@@ -1253,7 +1253,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun `test generateQuestionnaireResponse`() = runTest {
-    val questionnaire = Questionnaire()
+    val questionnaire = Questionnaire().apply { id = "test" }
     val patient = samplePatient()
     coEvery {
       questionnaireViewModel.getPopulationResources(any(), questionnaire.logicalId)
@@ -1263,6 +1263,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val response = questionnaireViewModel.generateQuestionnaireResponse(questionnaire, intent)
 
     Assert.assertNotNull(response.contained.firstOrNull { it.resourceType == ResourceType.Patient })
+    Assert.assertEquals(response.questionnaire, "${questionnaire.resourceType}/test")
   }
 
   @Test
