@@ -486,9 +486,11 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
     coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
-    } returns Bundle().apply { addEntry().resource = composition }
+      appSettingViewModel.configurationRegistry.fetchRemoteComposition(appId)
+    } returns composition
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+    coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just runs
+    coEvery { appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any()) } just runs
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply {
         entry =
@@ -520,17 +522,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertTrue(capturedResources.first() is Binary)
     Assert.assertTrue(capturedResources.second() is Binary)
     Assert.assertTrue(capturedResources.last() is Composition)
-
-    val requestPathArgumentSlot = mutableListOf<String>()
-
-    coVerify { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
-
-    Assert.assertEquals(1, requestPathArgumentSlot.size)
-
-    Assert.assertEquals(
-      "Composition?identifier=test_app_id&_count=200",
-      requestPathArgumentSlot.first(),
-    )
 
     val urlArgumentSlot = mutableListOf<String>()
     val requestPathPostArgumentSlot = mutableListOf<RequestBody>()
