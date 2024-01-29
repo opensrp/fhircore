@@ -228,7 +228,7 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify {
         appSettingViewModel.configurationRegistry.processResultBundleBinaries(
           capture(binarySlot),
-          any()
+          any(),
         )
       }
 
