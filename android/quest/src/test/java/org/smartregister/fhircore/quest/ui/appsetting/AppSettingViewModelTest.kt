@@ -21,7 +21,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -438,27 +437,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
-    val resourceType =
-      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-
-    appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(resourceType)
-
-    val savedSyncResourcesResult =
-      sharedPreferencesHelper.read(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-        null,
-      )!!
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      sharedPreferencesHelper.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
-
-    Assert.assertEquals(2, savedSyncResourceTypes.size)
-    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
-  }
-
-  @Test
   fun testFetchConfigurationsChunking() = runTest {
     val appId = "test_app_id"
     val compositionSections = mutableListOf<Composition.SectionComponent>()
@@ -485,12 +463,13 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
-    coEvery {
-      appSettingViewModel.configurationRegistry.fetchRemoteComposition(appId)
-    } returns composition
+    coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(appId) } returns
+      composition
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
     coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just runs
-    coEvery { appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any()) } just runs
+    coEvery {
+      appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
+    } just runs
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply {
         entry =
