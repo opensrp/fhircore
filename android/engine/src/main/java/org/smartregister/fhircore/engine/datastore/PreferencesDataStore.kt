@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ResourceType
 
 @Singleton
 class PreferencesDataStore
@@ -92,7 +93,6 @@ constructor(
   val practitionerLocationHierarchies by lazy {
     observe(PRACTITIONER_LOCATION_HIERARCHIES, defaultValue = "")
   }
-  val practitionerDetails by lazy { observe(PRACTITIONER_DETAILS, defaultValue = "") }
   val remoteSyncResources by lazy { observe(REMOTE_SYNC_RESOURCES) }
   val migrationVersion by lazy { observe(MIGRATION_VERSION, defaultValue = null) }
 
@@ -107,7 +107,6 @@ constructor(
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("PRACTITIONER_LOCATION ") }
     val PRACTITIONER_LOCATION_HIERARCHIES by lazy { stringPreferencesKey("LOCATION_HIERARCHIES") }
     val USER_INFO by lazy { stringPreferencesKey("USER_INFO") }
-    val PRACTITIONER_DETAILS by lazy { stringPreferencesKey("PRACTITIONER_DETAILS") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("REMOTE_SYNC_RESOURCES") }
     val MIGRATION_VERSION by lazy { intPreferencesKey("migrationVersion") }
   }

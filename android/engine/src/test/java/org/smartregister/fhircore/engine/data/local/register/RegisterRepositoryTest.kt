@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -94,6 +95,8 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
@@ -105,20 +108,23 @@ class RegisterRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+        Faker.buildTestConfigurationRegistry(
+            preferencesDataStore = preferencesDataStore,
+            practitionerDataStore = practitionerDataStore,
+            dispatcherProvider = dispatcherProvider)
     registerRepository =
-      spyk(
-        RegisterRepository(
-          fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
-          preferencesDataStore = mockk(),
-          configurationRegistry = configurationRegistry,
-          configService = mockk(),
-          configRulesExecutor = mockk(),
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          parser = parser,
-        ),
-      )
+        spyk(
+            RegisterRepository(
+                fhirEngine = fhirEngine,
+                dispatcherProvider = dispatcherProvider,
+                preferencesDataStore = mockk(),
+                configurationRegistry = configurationRegistry,
+                configService = mockk(),
+                configRulesExecutor = mockk(),
+                fhirPathDataExtractor = fhirPathDataExtractor,
+                parser = parser,
+            ),
+        )
   }
 
   @Test
@@ -147,31 +153,31 @@ class RegisterRepositoryTest : RobolectricTest() {
   fun countRegisterDataWithParams() {
     runTest {
       val paramsList =
-        arrayListOf(
-          ActionParameter(
-            key = "paramsName",
-            paramType = ActionParameterType.PARAMDATA,
-            value = "testing1",
-            dataType = DataType.STRING,
-            linkId = null,
-          ),
-          ActionParameter(
-            key = "paramName2",
-            paramType = ActionParameterType.PARAMDATA,
-            value = "testing2",
-            dataType = DataType.STRING,
-            linkId = null,
-          ),
-        )
+          arrayListOf(
+              ActionParameter(
+                  key = "paramsName",
+                  paramType = ActionParameterType.PARAMDATA,
+                  value = "testing1",
+                  dataType = DataType.STRING,
+                  linkId = null,
+              ),
+              ActionParameter(
+                  key = "paramName2",
+                  paramType = ActionParameterType.PARAMDATA,
+                  value = "testing2",
+                  dataType = DataType.STRING,
+                  linkId = null,
+              ),
+          )
       paramsList
-        .asSequence()
-        .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
-        .associate { it.key to it.value }
+          .asSequence()
+          .filter { it.paramType == ActionParameterType.PARAMDATA && it.value.isNotEmpty() }
+          .associate { it.key to it.value }
       val paramsMap = emptyMap<String, String>()
       val searchSlot = slot<Search>()
       coEvery { fhirEngine.count(capture(searchSlot)) } returns 20
       val recordsCount =
-        registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
+          registerRepository.countRegisterData(registerId = PATIENT_REGISTER, paramsMap = paramsMap)
       Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
       Assert.assertEquals(20, recordsCount)
     }
@@ -179,200 +185,200 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Test
   fun testLoadRegisterDataWithForwardAndReverseIncludedResources() =
-    runTest(timeout = 90.seconds) {
-      runTest {
-        val registerId = HOUSEHOLD_REGISTER_ID
-        every { registerRepository.retrieveRegisterConfiguration(registerId, emptyMap()) } returns
-          RegisterConfiguration(
-            appId = "app",
-            id = registerId,
-            fhirResource = fhirResourceConfig(),
+      runTest(timeout = 90.seconds) {
+        runTest {
+          val registerId = HOUSEHOLD_REGISTER_ID
+          every { registerRepository.retrieveRegisterConfiguration(registerId, emptyMap()) } returns
+              RegisterConfiguration(
+                  appId = "app",
+                  id = registerId,
+                  fhirResource = fhirResourceConfig(),
+              )
+
+          val group = createGroup(id = GROUP_ID, active = true, members = listOf(patient))
+          val anotherGroup = createGroup(id = "inactiveGroup", active = false)
+          val carePlan = createCarePlan(id = "carePlan", subject = patient.asReference())
+          val parentTask = createTask(id = TASK_ID, partOf = null, subject = patient.asReference())
+          val dependentTask =
+              createTask(
+                  id = PART_OF_TASK_ID,
+                  partOf = parentTask.asReference(),
+                  subject = patient.asReference(),
+              )
+          val observation =
+              Observation().apply {
+                id = "obs1"
+                subject = patient.asReference()
+              }
+
+          // Prepare database with required resources
+          fhirEngine.create(
+              patient,
+              group,
+              carePlan,
+              anotherGroup,
+              parentTask,
+              dependentTask,
+              observation,
           )
+
+          val registerData =
+              registerRepository.loadRegisterData(currentPage = 0, registerId = registerId)
+
+          Assert.assertTrue(registerData.isNotEmpty())
+          val repositoryResourceData = registerData.firstOrNull()
+          Assert.assertTrue(repositoryResourceData?.resource is Group)
+          Assert.assertEquals(GROUP_ID, repositoryResourceData?.resource?.id)
+          Assert.assertTrue((repositoryResourceData?.resource as Group).member.isNotEmpty())
+
+          // Ensure all the related resources (including nested ones) are available in the final map
+          val relatedResources = repositoryResourceData.relatedResourcesMap
+          Assert.assertTrue(relatedResources.isNotEmpty())
+
+          // All group members added to the map
+          Assert.assertTrue(relatedResources.containsKey(GROUP_MEMBERS))
+          val firstGroupMember = relatedResources[GROUP_MEMBERS]?.firstOrNull()
+          Assert.assertNotNull(firstGroupMember)
+          Assert.assertTrue(firstGroupMember is Patient)
+          Assert.assertEquals(patient.id, firstGroupMember?.id)
+
+          // All Task resources grouped together (nested ones flattened) and added to the map
+          Assert.assertTrue(relatedResources.containsKey(ALL_TASKS))
+          Assert.assertEquals(2, relatedResources[ALL_TASKS]?.size)
+
+          val firstTask = relatedResources[ALL_TASKS]?.firstOrNull()
+          Assert.assertNotNull(firstTask)
+          Assert.assertTrue(firstTask is Task)
+          Assert.assertEquals(TASK_ID, firstTask?.id)
+          val lastTask = relatedResources[ALL_TASKS]?.lastOrNull()
+          Assert.assertNotNull(lastTask)
+          Assert.assertTrue(lastTask is Task)
+          Assert.assertEquals(PART_OF_TASK_ID, lastTask?.id)
+
+          // All CarePlan resources grouped together (nested ones flattened) and added to the map
+          Assert.assertTrue(relatedResources.containsKey(MEMBER_CARE_PLANS))
+          val firstMemberCarePlan = relatedResources[MEMBER_CARE_PLANS]?.firstOrNull()
+          Assert.assertNotNull(firstMemberCarePlan)
+          Assert.assertTrue(firstMemberCarePlan is CarePlan)
+          Assert.assertEquals("carePlan", firstMemberCarePlan?.id)
+
+          // Assert Observation and Encounter resource counts
+          assertRepositoryResourceDataContainsCounts(repositoryResourceData)
+        }
+      }
+
+  @Test
+  fun testLoadProfileDataWithForwardAndReverseIncludedResources() =
+      runTest(timeout = 120.seconds) {
+        val profileId = "profile"
+        every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
+            ProfileConfiguration(
+                appId = "app",
+                id = profileId,
+                fhirResource = fhirResourceConfig(),
+                // Load extra resources not related to the baseResource
+                secondaryResources =
+                    listOf(
+                        FhirResourceConfig(
+                            baseResource = ResourceConfig(resource = ResourceType.CarePlan),
+                            relatedResources =
+                                listOf(
+                                    ResourceConfig(
+                                        resource = ResourceType.Encounter,
+                                        searchParameter = "encounter",
+                                        isRevInclude = false,
+                                    ),
+                                ),
+                        ),
+                    ),
+            )
 
         val group = createGroup(id = GROUP_ID, active = true, members = listOf(patient))
-        val anotherGroup = createGroup(id = "inactiveGroup", active = false)
         val carePlan = createCarePlan(id = "carePlan", subject = patient.asReference())
+        val encounter =
+            Encounter().apply {
+              id = "encounter123"
+              subject = patient.asReference()
+            }
+        val secondaryCarePlan =
+            createCarePlan(
+                id = SECONDARY_RESOURCE_CARE_PLAN_ID,
+                encounter = encounter.asReference(),
+                subject = patient.asReference(),
+            )
+
         val parentTask = createTask(id = TASK_ID, partOf = null, subject = patient.asReference())
         val dependentTask =
-          createTask(
-            id = PART_OF_TASK_ID,
-            partOf = parentTask.asReference(),
-            subject = patient.asReference(),
-          )
-        val observation =
-          Observation().apply {
-            id = "obs1"
-            subject = patient.asReference()
-          }
+            createTask(
+                id = PART_OF_TASK_ID,
+                partOf = parentTask.asReference(),
+                subject = patient.asReference(),
+            )
 
-        // Prepare database with required resources
+        val observation =
+            Observation().apply {
+              id = "obs1"
+              subject = patient.asReference()
+            }
+
+        // Prepare database with the required resources
         fhirEngine.create(
-          patient,
-          group,
-          carePlan,
-          anotherGroup,
-          parentTask,
-          dependentTask,
-          observation,
+            group,
+            patient,
+            carePlan,
+            encounter,
+            secondaryCarePlan,
+            parentTask,
+            dependentTask,
+            observation,
         )
 
-        val registerData =
-          registerRepository.loadRegisterData(currentPage = 0, registerId = registerId)
+        val repositoryResourceData =
+            registerRepository.loadProfileData(
+                profileId = profileId,
+                resourceId = GROUP_ID,
+                fhirResourceConfig = null,
+                paramsList = null,
+            )
+        Assert.assertTrue(repositoryResourceData.resource is Group)
+        Assert.assertEquals(GROUP_ID, repositoryResourceData.resource.logicalId)
+        Assert.assertTrue((repositoryResourceData.resource as Group).member.isNotEmpty())
 
-        Assert.assertTrue(registerData.isNotEmpty())
-        val repositoryResourceData = registerData.firstOrNull()
-        Assert.assertTrue(repositoryResourceData?.resource is Group)
-        Assert.assertEquals(GROUP_ID, repositoryResourceData?.resource?.id)
-        Assert.assertTrue((repositoryResourceData?.resource as Group).member.isNotEmpty())
-
-        // Ensure all the related resources (including nested ones) are available in the final map
+        // Ensure the related resources were included
         val relatedResources = repositoryResourceData.relatedResourcesMap
         Assert.assertTrue(relatedResources.isNotEmpty())
-
-        // All group members added to the map
         Assert.assertTrue(relatedResources.containsKey(GROUP_MEMBERS))
-        val firstGroupMember = relatedResources[GROUP_MEMBERS]?.firstOrNull()
-        Assert.assertNotNull(firstGroupMember)
-        Assert.assertTrue(firstGroupMember is Patient)
-        Assert.assertEquals(patient.id, firstGroupMember?.id)
-
-        // All Task resources grouped together (nested ones flattened) and added to the map
         Assert.assertTrue(relatedResources.containsKey(ALL_TASKS))
-        Assert.assertEquals(2, relatedResources[ALL_TASKS]?.size)
-
-        val firstTask = relatedResources[ALL_TASKS]?.firstOrNull()
-        Assert.assertNotNull(firstTask)
-        Assert.assertTrue(firstTask is Task)
-        Assert.assertEquals(TASK_ID, firstTask?.id)
-        val lastTask = relatedResources[ALL_TASKS]?.lastOrNull()
-        Assert.assertNotNull(lastTask)
-        Assert.assertTrue(lastTask is Task)
-        Assert.assertEquals(PART_OF_TASK_ID, lastTask?.id)
-
-        // All CarePlan resources grouped together (nested ones flattened) and added to the map
         Assert.assertTrue(relatedResources.containsKey(MEMBER_CARE_PLANS))
-        val firstMemberCarePlan = relatedResources[MEMBER_CARE_PLANS]?.firstOrNull()
-        Assert.assertNotNull(firstMemberCarePlan)
-        Assert.assertTrue(firstMemberCarePlan is CarePlan)
-        Assert.assertEquals("carePlan", firstMemberCarePlan?.id)
+
+        // Assert that secondary resources are loaded
+        val secondaryRepositoryResourceDataList =
+            repositoryResourceData.secondaryRepositoryResourceData
+        Assert.assertNotNull(secondaryRepositoryResourceDataList)
+        Assert.assertTrue(secondaryRepositoryResourceDataList!!.isNotEmpty())
+        val secondaryRepositoryResourceData: RepositoryResourceData? =
+            secondaryRepositoryResourceDataList.find {
+              it.resource.logicalId == SECONDARY_RESOURCE_CARE_PLAN_ID
+            }
+        val secondaryResource = secondaryRepositoryResourceData?.resource
+        Assert.assertNotNull(secondaryResource)
+        Assert.assertTrue(secondaryResource is CarePlan)
+        Assert.assertEquals(SECONDARY_RESOURCE_CARE_PLAN_ID, secondaryResource?.logicalId)
+        Assert.assertFalse(secondaryRepositoryResourceData?.relatedResourcesMap.isNullOrEmpty())
+        Assert.assertTrue(
+            secondaryRepositoryResourceData
+                ?.relatedResourcesMap
+                ?.containsKey(
+                    ResourceType.Encounter.name,
+                )!!,
+        )
 
         // Assert Observation and Encounter resource counts
         assertRepositoryResourceDataContainsCounts(repositoryResourceData)
       }
-    }
-
-  @Test
-  fun testLoadProfileDataWithForwardAndReverseIncludedResources() =
-    runTest(timeout = 120.seconds) {
-      val profileId = "profile"
-      every { registerRepository.retrieveProfileConfiguration(profileId, emptyMap()) } returns
-        ProfileConfiguration(
-          appId = "app",
-          id = profileId,
-          fhirResource = fhirResourceConfig(),
-          // Load extra resources not related to the baseResource
-          secondaryResources =
-            listOf(
-              FhirResourceConfig(
-                baseResource = ResourceConfig(resource = ResourceType.CarePlan),
-                relatedResources =
-                  listOf(
-                    ResourceConfig(
-                      resource = ResourceType.Encounter,
-                      searchParameter = "encounter",
-                      isRevInclude = false,
-                    ),
-                  ),
-              ),
-            ),
-        )
-
-      val group = createGroup(id = GROUP_ID, active = true, members = listOf(patient))
-      val carePlan = createCarePlan(id = "carePlan", subject = patient.asReference())
-      val encounter =
-        Encounter().apply {
-          id = "encounter123"
-          subject = patient.asReference()
-        }
-      val secondaryCarePlan =
-        createCarePlan(
-          id = SECONDARY_RESOURCE_CARE_PLAN_ID,
-          encounter = encounter.asReference(),
-          subject = patient.asReference(),
-        )
-
-      val parentTask = createTask(id = TASK_ID, partOf = null, subject = patient.asReference())
-      val dependentTask =
-        createTask(
-          id = PART_OF_TASK_ID,
-          partOf = parentTask.asReference(),
-          subject = patient.asReference(),
-        )
-
-      val observation =
-        Observation().apply {
-          id = "obs1"
-          subject = patient.asReference()
-        }
-
-      // Prepare database with the required resources
-      fhirEngine.create(
-        group,
-        patient,
-        carePlan,
-        encounter,
-        secondaryCarePlan,
-        parentTask,
-        dependentTask,
-        observation,
-      )
-
-      val repositoryResourceData =
-        registerRepository.loadProfileData(
-          profileId = profileId,
-          resourceId = GROUP_ID,
-          fhirResourceConfig = null,
-          paramsList = null,
-        )
-      Assert.assertTrue(repositoryResourceData.resource is Group)
-      Assert.assertEquals(GROUP_ID, repositoryResourceData.resource.logicalId)
-      Assert.assertTrue((repositoryResourceData.resource as Group).member.isNotEmpty())
-
-      // Ensure the related resources were included
-      val relatedResources = repositoryResourceData.relatedResourcesMap
-      Assert.assertTrue(relatedResources.isNotEmpty())
-      Assert.assertTrue(relatedResources.containsKey(GROUP_MEMBERS))
-      Assert.assertTrue(relatedResources.containsKey(ALL_TASKS))
-      Assert.assertTrue(relatedResources.containsKey(MEMBER_CARE_PLANS))
-
-      // Assert that secondary resources are loaded
-      val secondaryRepositoryResourceDataList =
-        repositoryResourceData.secondaryRepositoryResourceData
-      Assert.assertNotNull(secondaryRepositoryResourceDataList)
-      Assert.assertTrue(secondaryRepositoryResourceDataList!!.isNotEmpty())
-      val secondaryRepositoryResourceData: RepositoryResourceData? =
-        secondaryRepositoryResourceDataList.find {
-          it.resource.logicalId == SECONDARY_RESOURCE_CARE_PLAN_ID
-        }
-      val secondaryResource = secondaryRepositoryResourceData?.resource
-      Assert.assertNotNull(secondaryResource)
-      Assert.assertTrue(secondaryResource is CarePlan)
-      Assert.assertEquals(SECONDARY_RESOURCE_CARE_PLAN_ID, secondaryResource?.logicalId)
-      Assert.assertFalse(secondaryRepositoryResourceData?.relatedResourcesMap.isNullOrEmpty())
-      Assert.assertTrue(
-        secondaryRepositoryResourceData
-          ?.relatedResourcesMap
-          ?.containsKey(
-            ResourceType.Encounter.name,
-          )!!,
-      )
-
-      // Assert Observation and Encounter resource counts
-      assertRepositoryResourceDataContainsCounts(repositoryResourceData)
-    }
 
   private fun assertRepositoryResourceDataContainsCounts(
-    repositoryResourceData: RepositoryResourceData,
+      repositoryResourceData: RepositoryResourceData,
   ) {
     val relatedResourceCountMap = repositoryResourceData.relatedResourcesCountMap
     Assert.assertEquals(2, relatedResourceCountMap.size)
@@ -382,8 +388,8 @@ class RegisterRepositoryTest : RobolectricTest() {
     val encounterRepositoryResourceCount = encounterRepositoryResourceCounts?.firstOrNull()
     Assert.assertNotNull(encounterRepositoryResourceCount)
     Assert.assertEquals(
-      ResourceType.Encounter,
-      encounterRepositoryResourceCount?.relatedResourceType,
+        ResourceType.Encounter,
+        encounterRepositoryResourceCount?.relatedResourceType,
     )
     Assert.assertEquals(patient.id, encounterRepositoryResourceCount?.parentResourceId)
     Assert.assertEquals(1L, encounterRepositoryResourceCount?.count)
@@ -393,83 +399,83 @@ class RegisterRepositoryTest : RobolectricTest() {
     val observationRelatedResourceCount = observationRelatedResourceCounts?.firstOrNull()
     Assert.assertNotNull(observationRelatedResourceCount)
     Assert.assertEquals(
-      ResourceType.Observation,
-      observationRelatedResourceCount?.relatedResourceType,
+        ResourceType.Observation,
+        observationRelatedResourceCount?.relatedResourceType,
     )
     Assert.assertEquals(patient.id, observationRelatedResourceCount?.parentResourceId)
     Assert.assertEquals(1L, observationRelatedResourceCount?.count)
   }
 
   private fun fhirResourceConfig() =
-    FhirResourceConfig(
-      baseResource = ResourceConfig(resource = ResourceType.Group),
-      relatedResources =
-        listOf(
-          ResourceConfig(
-            resource = ResourceType.Patient,
-            id = GROUP_MEMBERS,
-            searchParameter = MEMBER,
-            isRevInclude = false,
-            relatedResources =
+      FhirResourceConfig(
+          baseResource = ResourceConfig(resource = ResourceType.Group),
+          relatedResources =
               listOf(
-                ResourceConfig(
-                  id = ENCOUNTERS_COUNT,
-                  resource = ResourceType.Encounter,
-                  searchParameter = SUBJECT,
-                  countResultConfig = CountResultConfig(sumCounts = false),
-                  resultAsCount = true,
-                ),
-                ResourceConfig(
-                  id = OBSERVATIONS_COUNT,
-                  resource = ResourceType.Observation,
-                  searchParameter = SUBJECT,
-                  resultAsCount = true,
-                  countResultConfig = CountResultConfig(sumCounts = false),
-                ),
-                ResourceConfig(
-                  id = ALL_TASKS,
-                  resource = ResourceType.Task,
-                  searchParameter = SUBJECT,
-                  relatedResources =
-                    listOf(
-                      ResourceConfig(
-                        id = ALL_TASKS, // Referenced task
-                        resource = ResourceType.Task,
-                        searchParameter = PART_OF,
-                        isRevInclude = false,
-                      ),
-                    ),
-                ),
-                ResourceConfig(
-                  id = MEMBER_CARE_PLANS,
-                  resource = ResourceType.CarePlan,
-                  searchParameter = SUBJECT,
-                ),
+                  ResourceConfig(
+                      resource = ResourceType.Patient,
+                      id = GROUP_MEMBERS,
+                      searchParameter = MEMBER,
+                      isRevInclude = false,
+                      relatedResources =
+                          listOf(
+                              ResourceConfig(
+                                  id = ENCOUNTERS_COUNT,
+                                  resource = ResourceType.Encounter,
+                                  searchParameter = SUBJECT,
+                                  countResultConfig = CountResultConfig(sumCounts = false),
+                                  resultAsCount = true,
+                              ),
+                              ResourceConfig(
+                                  id = OBSERVATIONS_COUNT,
+                                  resource = ResourceType.Observation,
+                                  searchParameter = SUBJECT,
+                                  resultAsCount = true,
+                                  countResultConfig = CountResultConfig(sumCounts = false),
+                              ),
+                              ResourceConfig(
+                                  id = ALL_TASKS,
+                                  resource = ResourceType.Task,
+                                  searchParameter = SUBJECT,
+                                  relatedResources =
+                                      listOf(
+                                          ResourceConfig(
+                                              id = ALL_TASKS, // Referenced task
+                                              resource = ResourceType.Task,
+                                              searchParameter = PART_OF,
+                                              isRevInclude = false,
+                                          ),
+                                      ),
+                              ),
+                              ResourceConfig(
+                                  id = MEMBER_CARE_PLANS,
+                                  resource = ResourceType.CarePlan,
+                                  searchParameter = SUBJECT,
+                              ),
+                          ),
+                  ),
               ),
-          ),
-        ),
-    )
+      )
 
   private fun createCarePlan(id: String, subject: Reference, encounter: Reference? = null) =
-    CarePlan().apply {
-      this.id = id
-      this.subject = subject
-      if (encounter != null) this.encounter = encounter
-    }
+      CarePlan().apply {
+        this.id = id
+        this.subject = subject
+        if (encounter != null) this.encounter = encounter
+      }
 
   private fun createTask(id: String, partOf: Reference?, subject: Reference) =
-    Task().apply {
-      this.id = id
-      if (partOf != null) {
-        addPartOf(partOf)
+      Task().apply {
+        this.id = id
+        if (partOf != null) {
+          addPartOf(partOf)
+        }
+        this.`for` = subject
       }
-      this.`for` = subject
-    }
 
   private fun createGroup(id: String, active: Boolean, members: List<Resource> = emptyList()) =
-    Group().apply {
-      this.id = id
-      this.active = active
-      members.forEach { addMember(Group.GroupMemberComponent(it.asReference())) }
-    }
+      Group().apply {
+        this.id = id
+        this.active = active
+        members.forEach { addMember(Group.GroupMemberComponent(it.asReference())) }
+      }
 }

@@ -27,59 +27,42 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import javax.inject.Inject
 
 @HiltAndroidTest
-internal class ProtoDataStoreTest : RobolectricTest() {
+internal class PractitionerDataStoreTest : RobolectricTest() {
   private val testContext: Context = ApplicationProvider.getApplicationContext()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var protoDataStore: ProtoDataStore
+  @Inject
+  private lateinit var dataStore: PractitionerDataStore
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    protoDataStore = ProtoDataStore(testContext)
   }
 
   @Test
   fun testReadPractitionerDetails() {
-    val expectedPreferencesValue = PractitionerDetails()
+    val expectedPreferencesValue = PractitionerPreferences()
     runTest {
-      protoDataStore.practitioner.map { dataStoreValue ->
+      dataStore.observe.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
       }
     }
   }
 
   @Test
-  fun testWritePractitionerDetails() {
-    val valueToWrite = PractitionerDetails()
+  fun testWritePractitionerDetails() { // can just test writing any value of the data class
+    val valueToWrite = listOf("careTeamId1", "careTeamId2")
     runTest {
-      protoDataStore.writePractitioner(valueToWrite)
-      protoDataStore.practitioner.map { assert(it == (valueToWrite)) }
-    }
-  }
-
-  @Test
-  fun testReadUserInfo() {
-    val expectedPreferencesValue = PractitionerDetails()
-    runTest {
-      protoDataStore.practitioner.map { dataStoreValue ->
-        assert(dataStoreValue == expectedPreferencesValue)
-      }
-    }
-  }
-
-  @Test
-  fun testWriteUserInfo() {
-    val valueToWrite = UserInfo()
-    runTest {
-      protoDataStore.writeUserInfo(valueToWrite)
-      protoDataStore.userInfo.map { assert(it == valueToWrite) }
+      dataStore.write(PractitionerDataStore.Keys.CARE_TEAM_IDS,valueToWrite)
+      dataStore.observe.map { assert(it.careTeamIds == valueToWrite) }
     }
   }
 }

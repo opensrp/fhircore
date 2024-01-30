@@ -44,7 +44,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -67,7 +67,7 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
   val preferencesDataStore: PreferencesDataStore,
-  val protoDataStore: ProtoDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
@@ -233,8 +233,9 @@ constructor(
 
   fun saveSyncPreferences(resourceTypes: List<ResourceType>) {
     viewModelScope.launch {
-      protoDataStore.writeRemoteSyncResources(
-        resourceTypes.distinctBy { it.name },
+      preferencesDataStore.write(
+        PreferencesDataStore.Keys.REMOTE_SYNC_RESOURCES,
+        resourceTypes.distinctBy { it.name }.joinToString(",") {it.name},
       )
     }
   }

@@ -35,7 +35,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -52,7 +52,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var protoDataStore: ProtoDataStore
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -67,25 +67,26 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, protoDataStore, dispatcherProvider)
+        Faker.buildTestConfigurationRegistry(
+            preferencesDataStore, practitionerDataStore, dispatcherProvider)
     MockKAnnotations.init(this)
     syncListenerManager =
-      SyncListenerManager(
-        configService = configService,
-        preferencesDataStore = preferencesDataStore,
-        configurationRegistry = configurationRegistry,
-      )
+        SyncListenerManager(
+            configService = configService,
+            preferencesDataStore = preferencesDataStore,
+            configurationRegistry = configurationRegistry,
+        )
 
     syncBroadcaster =
-      spyk(
-        SyncBroadcaster(
-          configurationRegistry = configurationRegistry,
-          fhirEngine = fhirEngine,
-          dispatcherProvider = dispatcherProvider,
-          syncListenerManager = syncListenerManager,
-          context = context,
-        ),
-      )
+        spyk(
+            SyncBroadcaster(
+                configurationRegistry = configurationRegistry,
+                fhirEngine = fhirEngine,
+                dispatcherProvider = dispatcherProvider,
+                syncListenerManager = syncListenerManager,
+                context = context,
+            ),
+        )
   }
 
   @Test fun testRunSyncWorksAsExpected() = runTest {}
@@ -93,34 +94,36 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_IDS,
-        listOf("1"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.CARE_TEAM_IDS,
+          listOf("1"),
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_IDS,
-        listOf("2"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.ORGANIZATION_IDS,
+          listOf("2"),
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_IDS,
-        listOf("2"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.LOCATION_IDS,
+          listOf("2"),
       )
-      protoDataStore.writeRemoteSyncResources(
-        arrayOf(
-            ResourceType.CarePlan,
-            ResourceType.Condition,
-            ResourceType.Encounter,
-            ResourceType.Group,
-            ResourceType.Library,
-            ResourceType.Observation,
-            ResourceType.Patient,
-            ResourceType.PlanDefinition,
-            ResourceType.Questionnaire,
-            ResourceType.QuestionnaireResponse,
-            ResourceType.StructureMap,
-            ResourceType.Task,
-          )
-          .sorted(),
+      preferencesDataStore.write(
+          PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+          arrayOf(
+                  ResourceType.CarePlan,
+                  ResourceType.Condition,
+                  ResourceType.Encounter,
+                  ResourceType.Group,
+                  ResourceType.Library,
+                  ResourceType.Observation,
+                  ResourceType.Patient,
+                  ResourceType.PlanDefinition,
+                  ResourceType.Questionnaire,
+                  ResourceType.QuestionnaireResponse,
+                  ResourceType.StructureMap,
+                  ResourceType.Task,
+              )
+              .sorted()
+              .joinToString(",") { it.name },
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
@@ -128,99 +131,99 @@ class SyncBroadcasterTest : RobolectricTest() {
     Assert.assertTrue(syncParam.isNotEmpty())
 
     val resourceTypes =
-      arrayOf(
-          ResourceType.CarePlan,
-          ResourceType.Condition,
-          ResourceType.Encounter,
-          ResourceType.Group,
-          ResourceType.Library,
-          ResourceType.Observation,
-          ResourceType.Patient,
-          ResourceType.PlanDefinition,
-          ResourceType.Questionnaire,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.StructureMap,
-          ResourceType.Task,
-        )
-        .sorted()
+        arrayOf(
+                ResourceType.CarePlan,
+                ResourceType.Condition,
+                ResourceType.Encounter,
+                ResourceType.Group,
+                ResourceType.Library,
+                ResourceType.Observation,
+                ResourceType.Patient,
+                ResourceType.PlanDefinition,
+                ResourceType.Questionnaire,
+                ResourceType.QuestionnaireResponse,
+                ResourceType.StructureMap,
+                ResourceType.Task,
+            )
+            .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
 
     syncParam.keys
-      .asSequence()
-      .filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }
-      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
+        .asSequence()
+        .filter { it.isIn(ResourceType.Binary, ResourceType.StructureMap) }
+        .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
 
     syncParam.keys
-      .asSequence()
-      .filter { it.isIn(ResourceType.Patient) }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
+        .asSequence()
+        .filter { it.isIn(ResourceType.Patient) }
+        .forEach {
+          Assert.assertTrue(syncParam[it]!!.containsKey("organization"))
+          Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+        }
 
     syncParam.keys
-      .asSequence()
-      .filter {
-        it.isIn(
-          ResourceType.Encounter,
-          ResourceType.Condition,
-          ResourceType.MedicationRequest,
-          ResourceType.Task,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.Observation,
-        )
-      }
-      .forEach {
-        Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
-        Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
-      }
+        .asSequence()
+        .filter {
+          it.isIn(
+              ResourceType.Encounter,
+              ResourceType.Condition,
+              ResourceType.MedicationRequest,
+              ResourceType.Task,
+              ResourceType.QuestionnaireResponse,
+              ResourceType.Observation,
+          )
+        }
+        .forEach {
+          Assert.assertTrue(syncParam[it]!!.containsKey("subject.organization"))
+          Assert.assertTrue(syncParam[it]!!.containsKey("_count"))
+        }
 
     syncParam.keys
-      .asSequence()
-      .filter { it.isIn(ResourceType.Questionnaire) }
-      .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
+        .asSequence()
+        .filter { it.isIn(ResourceType.Questionnaire) }
+        .forEach { Assert.assertTrue(syncParam[it]!!.containsKey("_count")) }
   }
 
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_IDS,
-        listOf("1"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.CARE_TEAM_IDS,
+          listOf("1"),
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_IDS,
-        listOf("2"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.ORGANIZATION_IDS,
+          listOf("2"),
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_IDS,
-        listOf("3"),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.LOCATION_IDS,
+          listOf("3"),
       )
     }
-    runTest { protoDataStore.clear() }
+    runTest { practitionerDataStore.clear() }
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 
     val resourceTypes =
-      arrayOf(
-          ResourceType.CarePlan,
-          ResourceType.Condition,
-          ResourceType.Encounter,
-          ResourceType.Group,
-          ResourceType.Library,
-          ResourceType.Observation,
-          ResourceType.Measure,
-          ResourceType.Patient,
-          ResourceType.PlanDefinition,
-          ResourceType.Questionnaire,
-          ResourceType.QuestionnaireResponse,
-          ResourceType.StructureMap,
-          ResourceType.Task,
-        )
-        .sorted()
+        arrayOf(
+                ResourceType.CarePlan,
+                ResourceType.Condition,
+                ResourceType.Encounter,
+                ResourceType.Group,
+                ResourceType.Library,
+                ResourceType.Observation,
+                ResourceType.Measure,
+                ResourceType.Patient,
+                ResourceType.PlanDefinition,
+                ResourceType.Questionnaire,
+                ResourceType.QuestionnaireResponse,
+                ResourceType.StructureMap,
+                ResourceType.Task,
+            )
+            .sorted()
 
     Assert.assertEquals(resourceTypes, syncParam.keys.toTypedArray().sorted())
   }
@@ -230,32 +233,32 @@ class SyncBroadcasterTest : RobolectricTest() {
     val organizationId = "organization-id"
     runTest {
       // stringPreferencesKey(ResourceType.Organization.name),
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_IDS,
-        listOf(organizationId),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.ORGANIZATION_IDS,
+          listOf(organizationId),
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     // Resource types that can be filtered based on Organization
     val resourceTypes =
-      arrayOf(
-        ResourceType.CarePlan,
-        ResourceType.Condition,
-        ResourceType.Encounter,
-        ResourceType.Group,
-        ResourceType.Observation,
-        ResourceType.Patient,
-        ResourceType.RelatedPerson,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Task,
-      )
+        arrayOf(
+            ResourceType.CarePlan,
+            ResourceType.Condition,
+            ResourceType.Encounter,
+            ResourceType.Group,
+            ResourceType.Observation,
+            ResourceType.Patient,
+            ResourceType.RelatedPerson,
+            ResourceType.QuestionnaireResponse,
+            ResourceType.Task,
+        )
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam
-      .filterKeys { it.isIn(*resourceTypes) }
-      .values
-      .forEach { Assert.assertTrue(it.containsValue(organizationId)) }
+        .filterKeys { it.isIn(*resourceTypes) }
+        .values
+        .forEach { Assert.assertTrue(it.containsValue(organizationId)) }
   }
 
   // TODO: Not supported yet; need to refactor sync implementation to be based on tags.
@@ -263,9 +266,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_IDS,
-        listOf(careTeamId),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.CARE_TEAM_IDS,
+          listOf(careTeamId),
       )
     }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
@@ -279,9 +282,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_IDS,
-        listOf(locationId),
+      practitionerDataStore.write(
+          PractitionerDataStore.Keys.LOCATION_IDS,
+          listOf(locationId),
       )
     }
 
@@ -297,8 +300,8 @@ class SyncBroadcasterTest : RobolectricTest() {
     val practitionerId = "practitioner-id"
     runTest {
       preferencesDataStore.write(
-        PreferencesDataStore.PRACTITIONER_ID,
-        practitionerId,
+          PreferencesDataStore.PRACTITIONER_ID,
+          practitionerId,
       )
     }
 

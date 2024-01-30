@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -67,7 +67,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val preferencesDataStore: PreferencesDataStore,
-  val protoDataStore: ProtoDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -418,7 +418,7 @@ constructor(
   ) {
     viewModelScope.launch {
       if (userInfo != null) {
-        protoDataStore.writeUserInfo(userInfo)
+        practitionerDataStore.writeUserInfo(userInfo)
       }
     }
   }
@@ -452,31 +452,31 @@ constructor(
         PreferencesDataStore.PRACTITIONER_ID,
         fhirPractitionerDetails.fhirPractitionerDetails?.id!!,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
         careTeamIds,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_NAMES,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_NAMES,
         careTeamNames,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
         locationIds,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_NAMES,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_NAMES,
         locationNames,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
         organizationIds,
       )
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_NAMES,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_NAMES,
         organizationNames,
       )
-      protoDataStore.writeLocationHierarchies(
+      practitionerDataStore.writeLocationHierarchies(
         locationHierarchies
       )
     }

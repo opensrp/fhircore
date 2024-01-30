@@ -59,7 +59,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -80,7 +80,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
-  @Inject lateinit var protoDataStore: ProtoDataStore
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val context: Context = ApplicationProvider.getApplicationContext()
@@ -99,7 +99,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine,
         fhirResourceDataSource,
         preferencesDataStore,
-        protoDataStore,
+        practitionerDataStore,
         dispatcherProvider,
         AppConfigService(context),
         Faker.json,

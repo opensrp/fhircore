@@ -50,7 +50,7 @@ import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
 import org.smartregister.fhircore.engine.sync.ResourceTag
@@ -89,7 +89,7 @@ object Faker {
     )
 
   fun buildGenericProtoDataStore() =
-    ProtoDataStore(
+    PractitionerDataStore(
       ApplicationProvider.getApplicationContext<Application>(),
       test_protostore,
     )
@@ -218,7 +218,7 @@ object Faker {
         fhirEngine = fhirEngine,
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
         preferencesDataStore = buildPreferencesDataStore(),
-        protoDataStore = buildGenericProtoDataStore(),
+        practitionerDataStore = buildGenericProtoDataStore(),
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,

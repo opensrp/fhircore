@@ -45,7 +45,7 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -73,7 +73,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val preferencesDataStore: PreferencesDataStore,
-  val protoDataStore: ProtoDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,

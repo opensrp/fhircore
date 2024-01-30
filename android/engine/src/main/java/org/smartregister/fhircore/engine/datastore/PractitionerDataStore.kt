@@ -32,7 +32,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ProtoDataStore
+class PractitionerDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
@@ -105,8 +105,7 @@ constructor(
         locationIds = null,
         locationNames = null,
         organizationIds = null,
-        organizationNames = null,
-        remoteSyncResources = null,
+        organizationNames = null
       )
     }
   }

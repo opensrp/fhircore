@@ -28,6 +28,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.datastore.TimeStampDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -36,12 +37,13 @@ class AppTimeStampContextTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+  @Inject lateinit var timeStampDataStore: TimeStampDataStore
   private lateinit var appTimeStampContext: AppTimeStampContext
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-    appTimeStampContext = AppTimeStampContext(preferencesDataStore)
+    appTimeStampContext = AppTimeStampContext(timeStampDataStore)
   }
 
   @Test

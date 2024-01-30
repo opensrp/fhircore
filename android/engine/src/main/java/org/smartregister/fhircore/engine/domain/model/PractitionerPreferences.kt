@@ -30,6 +30,5 @@ data class PractitionerPreferences(
   val locationHierarchies: List<LocationHierarchyInfo>? = null,
   val organizationIds: List<String>? = null,
   val organizationNames: List<String>? = null,
-  val remoteSyncResources: List<ResourceType>? = null,
   val userInfo: UserInfo? = null,
 )

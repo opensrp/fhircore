@@ -29,7 +29,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
-import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
@@ -44,7 +44,7 @@ class ConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
-  @Inject lateinit var protoDataStore: ProtoDataStore
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   private val configService = spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
 
@@ -73,8 +73,8 @@ class ConfigServiceTest : RobolectricTest() {
     val locationId2 = "location-id2"
 
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.LOCATION_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
         listOf(locationId1, locationId2)
       )
     }
@@ -90,8 +90,8 @@ class ConfigServiceTest : RobolectricTest() {
     val organizationId1 = "organization-id1"
     val organizationId2 = "organization-id2"
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.ORGANIZATION_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
         listOf(organizationId1, organizationId2)
       )
     }
@@ -109,8 +109,8 @@ class ConfigServiceTest : RobolectricTest() {
     val careTeamId2 = "careteam-id2"
 
     runTest {
-      protoDataStore.write(
-        ProtoDataStore.Keys.CARE_TEAM_IDS,
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
         listOf(careTeamId1, careTeamId2)
       )
     }
