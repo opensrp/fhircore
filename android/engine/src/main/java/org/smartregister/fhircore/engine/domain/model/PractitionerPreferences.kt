@@ -21,10 +21,8 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 
-
-// TODO: KELVIN rename to practitionerdatastore
 @Serializable
-data class PractitionerDataStore(
+data class PractitionerPreferences(
   val careTeamIds: List<String>? = null,
   val careTeamNames: List<String>? = null,
   val locationIds: List<String>? = null,

@@ -52,7 +52,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
-import org.smartregister.fhircore.engine.datastore.serializers.GenericProtoStoreSerializer
+import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 
@@ -80,7 +80,7 @@ object Faker {
   val genericProtoStore = "generic_protostore.json"
   val test_protostore =
     DataStoreFactory.create(
-      serializer = GenericProtoStoreSerializer,
+      serializer = PractitionerDataStoreSerializer,
       scope = CoroutineScope(UnconfinedTestDispatcher() + SupervisorJob()),
       produceFile = {
         ApplicationProvider.getApplicationContext<Application>()

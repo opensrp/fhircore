@@ -21,17 +21,17 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.domain.model.PractitionerDataStore
+import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import timber.log.Timber
 
-object GenericProtoStoreSerializer : Serializer<PractitionerDataStore> {
-  override val defaultValue: PractitionerDataStore
-    get() = PractitionerDataStore()
+object PractitionerDataStoreSerializer : Serializer<PractitionerPreferences> {
+  override val defaultValue: PractitionerPreferences
+    get() = PractitionerPreferences()
 
-  override suspend fun readFrom(input: InputStream): PractitionerDataStore {
+  override suspend fun readFrom(input: InputStream): PractitionerPreferences {
     return try {
       Json.decodeFromString(
-        deserializer = PractitionerDataStore.serializer(),
+        deserializer = PractitionerPreferences.serializer(),
         string = input.readBytes().decodeToString(),
       )
     } catch (e: SerializationException) {
@@ -40,10 +40,10 @@ object GenericProtoStoreSerializer : Serializer<PractitionerDataStore> {
     }
   }
 
-  override suspend fun writeTo(t: PractitionerDataStore, output: OutputStream) {
+  override suspend fun writeTo(t: PractitionerPreferences, output: OutputStream) {
     output.write(
       Json.encodeToString(
-          serializer = PractitionerDataStore.serializer(),
+          serializer = PractitionerPreferences.serializer(),
           value = t,
         )
         .encodeToByteArray(),

@@ -23,10 +23,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
-import org.smartregister.fhircore.engine.domain.model.PractitionerDataStore
+import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -37,21 +36,21 @@ class ProtoDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val dataStore: DataStore<PractitionerDataStore>,
+  val dataStore: DataStore<PractitionerPreferences>,
 ) {
 
-  val observe: Flow<PractitionerDataStore> =
+  val observe: Flow<PractitionerPreferences> =
     dataStore.data.catch { exception ->
       if (exception is IOException) {
         Timber.e(exception, "Error observing proto datastore: GenericProtoDataStore details")
-        emit(PractitionerDataStore())
+        emit(PractitionerPreferences())
       } else {
         throw exception
       }
     }
 
   fun readOnce(key: Keys, defaultValue: List<String>? = null): List<String>? {
-    var data: PractitionerDataStore
+    var data: PractitionerPreferences
     runBlocking { data = observe.first() }
     return when (key) {
       Keys.CARE_TEAM_IDS -> data.careTeamIds

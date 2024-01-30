@@ -22,23 +22,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
+import org.smartregister.fhircore.engine.datastore.TimeStampDataStore
 
 @Singleton
 class AppTimeStampContext
 @Inject
-constructor(private val preferencesDataStore: PreferencesDataStore) :
+constructor(private val dataStore: TimeStampDataStore) :
   ResourceParamsBasedDownloadWorkManager.TimestampContext {
 
   override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String? {
-    return preferencesDataStore.readOnce(timestampKey(resourceType), null)
+    return dataStore.readOnce(resourceType)
   }
-
+  // TODO: KELVIN ask Elly why nullable string is allowed. if no timestamp, why save?
   override suspend fun saveLastUpdatedTimestamp(resourceType: ResourceType, timestamp: String?) {
-    preferencesDataStore.write(timestampKey(resourceType), timestamp ?: "")
+    dataStore.write(resourceType, timestamp ?: "")
   }
-
-  private fun timestampKey(resourceType: ResourceType) =
-    stringPreferencesKey(
-      "${resourceType.name.uppercase()}_${PreferencesDataStore.LAST_SYNC_TIMESTAMP.name}",
-    )
 }

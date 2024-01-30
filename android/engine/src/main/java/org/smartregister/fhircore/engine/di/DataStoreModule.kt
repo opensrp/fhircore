@@ -27,13 +27,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
-import org.smartregister.fhircore.engine.datastore.serializers.GenericProtoStoreSerializer
-import org.smartregister.fhircore.engine.domain.model.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
+import org.smartregister.fhircore.engine.datastore.serializers.TimeStampDataStoreSerializer
+import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
+import org.smartregister.fhircore.engine.domain.model.TimeStampPreferences
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -54,21 +56,6 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideGenericProtoStore(
-    @ApplicationContext context: Context,
-    dispatcherProvider: DispatcherProvider,
-  ): DataStore<PractitionerDataStore> {
-    val genericProtoStore = "generic_protostore.json"
-
-    return DataStoreFactory.create(
-      serializer = GenericProtoStoreSerializer,
-      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
-      produceFile = { context.preferencesDataStoreFile(genericProtoStore) },
-    )
-  }
-
-  @Singleton
-  @Provides
   fun providePreferencesDataStore(
     @ApplicationContext context: Context,
     dataStore: DataStore<Preferences>,
@@ -78,4 +65,37 @@ class DataStoreModule {
       dataStore,
     )
   }
+
+  @Singleton
+  @Provides
+  fun provideProtoStore(
+    @ApplicationContext context: Context,
+    dispatcherProvider: DispatcherProvider,
+  ): DataStore<PractitionerPreferences> {
+    val protoStore = "protostore.json"
+
+    return DataStoreFactory.create(
+      serializer = PractitionerDataStoreSerializer,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+      produceFile = { context.preferencesDataStoreFile(protoStore) },
+    )
+  }
+
+  @Singleton
+  @Provides
+  fun provideTimeStampProtoStore(
+    @ApplicationContext context: Context,
+    dispatcherProvider: DispatcherProvider
+  ): DataStore<TimeStampPreferences> {
+    val timeStampProtoStore = "time_stamp_protostore.json"
+
+    return DataStoreFactory.create(
+      serializer = TimeStampDataStoreSerializer,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+      produceFile = { context.preferencesDataStoreFile(timeStampProtoStore) },
+    )
+
+  }
+
+
 }
