@@ -17,11 +17,11 @@
 package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
+import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication

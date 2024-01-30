@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -56,6 +57,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
   private lateinit var preferencesDataStore: PreferencesDataStore
+  private lateinit var practitionerDataStore: PractitionerDataStore
   private val secureSharedPreference = mockk<SecureSharedPreference>()
   private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
@@ -78,6 +80,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           fhirResourceDataSource = fhirResourceDataSource,
           preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = configService,
           json = Faker.json,
@@ -112,7 +115,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
@@ -141,7 +144,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
     coEvery { fhirResourceDataSource.getResource("List?_id=123456") } returns bundle
 
@@ -178,7 +181,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "List/123456",
       )
     } returns bundle
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()

@@ -383,7 +383,7 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
     // Reset configurations before loading new ones
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       // if (isInitialLogin) return null
       val filterResourceList =
@@ -713,11 +713,13 @@ constructor(
     }
   }
 
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name },
-    )
+  suspend fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    withContext(dispatcherProvider.io()) {
+      preferencesDataStore.write(
+        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+        resourceTypes.distinctBy { it.name }.joinToString(",") { it.name },
+      )
+    }
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"

@@ -43,6 +43,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
