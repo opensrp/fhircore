@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.questionnaire
 
 import android.content.Context
+import android.location.Location
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -84,6 +85,7 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireLocation
 import timber.log.Timber
 
 @HiltViewModel
@@ -110,6 +112,8 @@ constructor(
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
       ?.extractLogicalIdUuid()
   }
+
+  fun getLocation() = sharedPreferencesHelper.read<QuestionnaireLocation>(key = SharedPreferenceKey.GOOGLE_LOCATION.name)
 
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
   val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>

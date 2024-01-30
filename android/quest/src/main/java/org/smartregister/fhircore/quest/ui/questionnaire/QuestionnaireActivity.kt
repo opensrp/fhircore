@@ -58,6 +58,8 @@ import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
@@ -78,24 +80,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
 
-  private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private val loc = org.hl7.fhir.r4.model.Location()
-  var location:Location? = null
-//  private lateinit var service: LocationService
+  val loc = org.hl7.fhir.r4.model.Location()
 
-  @Inject lateinit var service: LocationService
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val applicationConfiguration = viewModel.applicationConfiguration
-
-//    service = LocationService()
-
-    if (applicationConfiguration.logQuestionnaireLocation) {
-      //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      //getLocation()
-
+    //if (applicationConfiguration.logQuestionnaireLocation) {
       ActivityCompat.requestPermissions(
         this,
         arrayOf(
@@ -108,7 +100,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         action = LocationService.ACTION_START
         startService(this)
       }
-    }
+   // }
 
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -290,12 +282,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-            location = service.start() //this might still block the ui????
-            Timber.d("Activity Location: ${location?.latitude},${location?.longitude}")
-
-            loc.position.altitude = location?.altitude?.toBigDecimal()
+            val location = viewModel.getLocation()
+            Timber.d("Activity Location: ${location?.latitide},${location?.longitude}")
+           /* loc.position.altitude = location?.altitude?.toBigDecimal()
             loc.position.latitude = location?.latitude?.toBigDecimal()
-            loc.position.longitude = location?.longitude?.toBigDecimal()
+            loc.position.longitude = location?.longitude?.toBigDecimal()*/
             questionnaireResponse.contained.add(loc)
             setResult(
               Activity.RESULT_OK,
@@ -305,10 +296,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
               },
             )
-            Intent(this@QuestionnaireActivity,LocationService::class.java).apply {
+          /*  Intent(this@QuestionnaireActivity,LocationService::class.java).apply {
               action = LocationService.ACTION_STOP
               startService(this)
-            }
+            }*/
             finish()
           }
           // do background location processing

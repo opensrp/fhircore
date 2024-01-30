@@ -18,39 +18,27 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireLocation
 import timber.log.Timber
 import javax.inject.Inject
 
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface LocationClientProvider{
-    val locationClient: LocationClient
-}
 
 
 @AndroidEntryPoint
-class LocationService : Service() {
+class LocationService: Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob() )
-//    @Inject
-//    lateinit var locationClient: LocationClient
 
-//    @ApplicationContext context: Contex
-    val locationClient = EntryPointAccessors.fromApplication(applicationContext, LocationClientProvider::class.java).locationClient
+    @Inject lateinit var locationClient:LocationClient
+    @Inject
+    lateinit var sharedPreferences: SharedPreferencesHelper
 
-    //var loc:Location? = null
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
-
-//    override fun onCreate() {
-//        super.onCreate()
-//
-//        locationClient = LocationClientImpl(
-//            applicationContext,
-//            LocationServices.getFusedLocationProviderClient(applicationContext)
-//        )
-//    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when(intent?.action) {
@@ -60,21 +48,35 @@ class LocationService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    fun start(): Location? {
-        var loc: Location? = null
+    fun start() {
         locationClient
             .getLocationUpdate(10000L)
             .catch { e -> e.printStackTrace() }
             .onEach { location ->
-                loc = location
+                // write location to shared pref
                 Timber.d("Service Location: ${location.latitude},${location.longitude}")
+                writeLocation(
+                    QuestionnaireLocation(
+                        latitide = location.latitude,
+                        longitude = location.longitude,
+                        altitude = location.altitude
+                    )
+                )
             }
             .launchIn(serviceScope)
-        return loc
     }
 
     private fun stop() {
         stopSelf()
+    }
+
+    private fun writeLocation(
+        location:QuestionnaireLocation,
+    ) {
+        sharedPreferences.write(
+            key = SharedPreferenceKey.GOOGLE_LOCATION.name,
+            value = location,
+        )
     }
 
     override fun onDestroy() {
