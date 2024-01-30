@@ -15,10 +15,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.quest.util.extensions.hasLocationPermission
+import timber.log.Timber
+import javax.inject.Inject
 
-class LocationClientImpl(
+class LocationClientImpl @Inject constructor(
     private val context: Context,
-    private val client:FusedLocationProviderClient
+    private val client: FusedLocationProviderClient
     ):LocationClient {
     @SuppressLint("MissingPermission")
     override fun getLocationUpdate(interval: Long): Flow<Location> {
@@ -43,6 +45,8 @@ class LocationClientImpl(
                     super.onLocationResult(result)
                     result.locations.lastOrNull()?.let { location ->
                         launch { send(location) }
+                        Timber.d("Client Location: ${location.latitude},${location.longitude}")
+
                     }
                 }
             }

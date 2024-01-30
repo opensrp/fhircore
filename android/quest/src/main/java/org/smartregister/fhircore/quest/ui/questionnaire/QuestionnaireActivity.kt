@@ -66,6 +66,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.location.LocationService
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
@@ -80,17 +81,29 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private val loc = org.hl7.fhir.r4.model.Location()
   var location:Location? = null
-  val service = LocationService()
+//  private lateinit var service: LocationService
+
+  @Inject lateinit var service: LocationService
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val applicationConfiguration = viewModel.applicationConfiguration
 
+//    service = LocationService()
 
     if (applicationConfiguration.logQuestionnaireLocation) {
       //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
       //getLocation()
+
+      ActivityCompat.requestPermissions(
+        this,
+        arrayOf(
+          Manifest.permission.ACCESS_COARSE_LOCATION,
+          Manifest.permission.ACCESS_FINE_LOCATION,
+        ),
+        0
+      )
       Intent(this,LocationService::class.java).apply {
         action = LocationService.ACTION_START
         startService(this)
@@ -277,7 +290,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-            location = service.loc
+            location = service.start() //this might still block the ui????
+            Timber.d("Activity Location: ${location?.latitude},${location?.longitude}")
+
             loc.position.altitude = location?.altitude?.toBigDecimal()
             loc.position.latitude = location?.latitude?.toBigDecimal()
             loc.position.longitude = location?.longitude?.toBigDecimal()
