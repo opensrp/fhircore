@@ -19,8 +19,6 @@ package org.smartregister.fhircore.quest.app
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.SearchResult
-import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -37,7 +35,6 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Before
 import org.junit.Rule
@@ -113,13 +110,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(ResourceType.Composition, any()) } returns composition
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
-    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -144,16 +138,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirResourceService.getResource("List?_id=123456") } returns bundle
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
-    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
+    coEvery { fhirResourceDataSource.getResource("List?_id=123456") } returns bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
+    coVerify { fhirResourceDataSource.getResource("List?_id=123456") }
   }
 
   @Test
@@ -177,17 +171,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
         "List/123456",
       )
     } returns bundle
-    every { preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null) } returns "demo"
+    every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
 

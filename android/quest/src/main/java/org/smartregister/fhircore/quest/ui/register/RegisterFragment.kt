@@ -173,6 +173,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                registerViewModel = registerViewModel,
               )
             }
           }
@@ -302,6 +303,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .onEach { appEvent ->
             if (appEvent is AppEvent.OnSubmitQuestionnaire) {
               handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            } else if (appEvent is AppEvent.OnMigrateData) {
+              registerViewModel.setOnMigrateDataInProgress(appEvent.inProgress)
             }
           }
           .launchIn(lifecycleScope)
