@@ -23,7 +23,6 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class MigrationConfig(
-  val resourceType: ResourceType,
   val updateValues: List<UpdateValueConfig>,
   val resourceConfig: FhirResourceConfig,
   val rules: List<RuleConfig>,
