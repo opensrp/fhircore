@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.app
 
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -84,10 +85,25 @@ interface ConfigService {
     return tags
   }
 
-  fun getPatientLocationIdFromCurrentResource(currentResource: Resource): String {
-    // TODO: find the patient resource connected to the currentResource and return the id
-    // TODO: find the location connected (how?) to that patient
-    return currentResource.id
+  fun getPatientLocationIdFromCurrentResource(currentResource: Resource): String? {
+    // Find the patient resource connected to the currentResource and return the id.
+    // It would be nice to get all the values for the current resource, filter those that are
+    // references to patient, and then get the id of the location linked to that patient
+    // but if a resource has or will have multiple references to a patient that is ambiguous
+    val patientResource = when (currentResource.resourceType) {
+      ResourceType.Patient -> currentResource
+      ResourceType.Encounter -> (currentResource as Encounter).subject
+      // TODO: add more cases for other resources that can be linked to a patient
+      else -> {
+        // TODO: log no matching resource
+        null
+      }
+    }
+    if (patientResource != null) {
+      // TODO: find the location connected (how?) to that patient and return the location id
+      throw NotImplementedError("Not implemented")
+    }
+    return null
   }
 
   fun provideConfigurationSyncPageSize(): String
