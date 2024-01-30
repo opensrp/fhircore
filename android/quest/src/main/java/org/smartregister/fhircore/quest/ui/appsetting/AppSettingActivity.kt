@@ -18,6 +18,8 @@
 
 package org.smartregister.fhircore.quest.ui.appsetting
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -42,6 +44,13 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
+  companion object{
+    private val key = "text"
+    fun create(context: Context, text: String? = null): Intent = Intent(context, AppSettingActivity::class.java).putExtra(
+      key,text)
+  }
+
+
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 

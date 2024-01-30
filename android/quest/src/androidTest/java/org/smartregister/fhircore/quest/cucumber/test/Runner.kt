@@ -5,10 +5,10 @@ import android.content.Context
 import android.os.Bundle
 import io.cucumber.android.runner.CucumberAndroidJUnitRunner
 import io.cucumber.junit.Cucumber
-import io.cucumber.junit.CucumberJUnitRunner
 import io.cucumber.junit.CucumberOptions
 import org.junit.runner.RunWith
 import org.smartregister.fhircore.quest.QuestApplication
+
 
 @RunWith(Cucumber::class)
 @CucumberOptions(

@@ -1,28 +1,31 @@
 package org.smartregister.fhircore.quest.cucumber.steps
 
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.smartregister.fhircore.quest.cucumber.ActivityScenarioHolder
 import org.smartregister.fhircore.quest.cucumber.ComposeRuleHolder
-import org.smartregister.fhircore.quest.cucumber.objects.Login
+import org.smartregister.fhircore.quest.ui.appsetting.APP_ID_TEXT_INPUT_TAG
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 
-class LoginSteps(val composeRuleHolder: ComposeRuleHolder, val scenarioHolder: ActivityScenarioHolder): SemanticsNodeInteractionsProvider by composeRuleHolder.composeRule {
-    val login = Login()
-    val applicationID = "quest"
+class LoginSteps(val composeRuleHolder: ComposeRuleHolder, val activityScenarioHolder: ActivityScenarioHolder): SemanticsNodeInteractionsProvider by composeRuleHolder.composeRule {
+    //private var activityScenario:ActivityScenarioHolder?= null
 
-    @Given("I am on the application settings page")
-    fun i_am_on_the_application_settings_page() {
+    @Given("^I am on the application settings page")
+    fun initializeApp() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        //scenarioHolder.launch(AppSettingActivity)
-        login.composeTestAppScreen
+        activityScenarioHolder.launch(AppSettingActivity.create(instrumentation.targetContext,null))
     }
     @When("I enter an application id")
     fun i_enter_an_application_id() {
-        login.enterApplicationIdField(applicationID)
+        composeRuleHolder.composeRule.onNodeWithTag(APP_ID_TEXT_INPUT_TAG).performTextInput("notice-f")
+        //onNode(hasTestTag(APP_ID_TEXT_INPUT_TAG)).performTextInput("Hello")
+        //composeRuleHolder.composeRule.onNodeWithTag(APP_ID_TEXT_INPUT_TAG).performTextInput("quest")
     }
     @When("I tap the \"Load application settings\" button")
     fun i_tap_the_load_settings_button() {
