@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.sync.ResourceTag
@@ -38,26 +39,42 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper, currentResource: Resource): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
-      if (strategy.type == ResourceType.Practitioner.name) {
-        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-        if (id.isNullOrBlank()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-        } else {
-          strategy.tag.let { tag ->
-            tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
-          }
-        }
-      } else {
-        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
-        if (ids.isNullOrEmpty()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-        } else {
-          ids.forEach { id ->
+      when(strategy.type) {
+        ResourceType.Practitioner.name -> {
+          val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+          // TODO: refactor below to remove duplication w/Patient.name + Location.name case
+          if (id.isNullOrBlank()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
             strategy.tag.let { tag ->
               tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+        // TODO: write a PatientLocation helper for the below string concatenation
+        ResourceType.Patient.name + ResourceType.Location.name -> {
+          val id = getPatientLocationIdFromCurrentResource(currentResource)
+          // TODO: refactor below to remove duplication w/Practitioner.name case
+          if (id.isNullOrBlank()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            strategy.tag.let { tag ->
+              tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+            }
+          }
+        }
+        else -> {
+          val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+          if (ids.isNullOrEmpty()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            ids.forEach { id ->
+              strategy.tag.let { tag ->
+                tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+              }
             }
           }
         }
@@ -65,6 +82,12 @@ interface ConfigService {
     }
 
     return tags
+  }
+
+  fun getPatientLocationIdFromCurrentResource(currentResource: Resource): String {
+    // TODO: find the patient resource connected to the currentResource and return the id
+    // TODO: find the location connected (how?) to that patient
+    return currentResource.id
   }
 
   fun provideConfigurationSyncPageSize(): String
