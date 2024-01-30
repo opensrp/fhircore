@@ -16,23 +16,20 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.TimeStampDataStore
 
 @Singleton
-class AppTimeStampContext
-@Inject
-constructor(private val dataStore: TimeStampDataStore) :
+class AppTimeStampContext @Inject constructor(private val dataStore: TimeStampDataStore) :
   ResourceParamsBasedDownloadWorkManager.TimestampContext {
 
   override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String? {
     return dataStore.readOnce(resourceType)
   }
+
   // TODO: KELVIN ask Elly why nullable string is allowed. if no timestamp, why save?
   override suspend fun saveLastUpdatedTimestamp(resourceType: ResourceType, timestamp: String?) {
     dataStore.write(resourceType, timestamp ?: "")

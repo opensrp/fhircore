@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
-import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -30,8 +29,12 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -56,9 +59,6 @@ import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel
@@ -212,7 +212,9 @@ constructor(
     // val practitionerDetails = genericProtoDataStore.observe.first().practitionerDetails
 
     // encoding and decoding
-    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) { // TODO: KELVIN null check against existence of protostore INSTEAD OF THE CODE ABOVE
+    if (
+      tokenAuthenticator.sessionActive() && practitionerDetails != null
+    ) { // TODO: KELVIN null check against existence of protostore INSTEAD OF THE CODE ABOVE
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -373,7 +375,6 @@ constructor(
           defaultRepository.createRemote(false, *it)
         }
 
-
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
             careTeamNames = careTeamNames,
@@ -442,9 +443,9 @@ constructor(
     // Likely incorrect: verify how preferencesDataStore is able to accept the object, where does
     // the
     // serialization happen?
-//    viewModelScope.launch {
-//      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
-//    }
+    //    viewModelScope.launch {
+    //      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
+    //    }
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
@@ -477,7 +478,7 @@ constructor(
         organizationNames,
       )
       practitionerDataStore.writeLocationHierarchies(
-        locationHierarchies
+        locationHierarchies,
       )
     }
   }

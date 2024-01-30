@@ -38,6 +38,10 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -97,10 +101,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 import timber.log.Timber
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest

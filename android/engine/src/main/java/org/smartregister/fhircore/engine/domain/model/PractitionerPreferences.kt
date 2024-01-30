@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 

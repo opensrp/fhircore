@@ -57,9 +57,7 @@ class ConfigServiceTest : RobolectricTest() {
   fun testProvideSyncTagsShouldHavePractitionerId() {
     val practitionerId = "practitioner-id"
 
-    runTest {
-      preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId)
-    }
+    runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId) }
 
     val resourceTags = configService.provideResourceTags(preferencesDataStore)
     val practitionerTag =
@@ -75,7 +73,7 @@ class ConfigServiceTest : RobolectricTest() {
     runTest {
       practitionerDataStore.write(
         PractitionerDataStore.Keys.LOCATION_IDS,
-        listOf(locationId1, locationId2)
+        listOf(locationId1, locationId2),
       )
     }
 
@@ -92,7 +90,7 @@ class ConfigServiceTest : RobolectricTest() {
     runTest {
       practitionerDataStore.write(
         PractitionerDataStore.Keys.ORGANIZATION_IDS,
-        listOf(organizationId1, organizationId2)
+        listOf(organizationId1, organizationId2),
       )
     }
 
@@ -111,7 +109,7 @@ class ConfigServiceTest : RobolectricTest() {
     runTest {
       practitionerDataStore.write(
         PractitionerDataStore.Keys.CARE_TEAM_IDS,
-        listOf(careTeamId1, careTeamId2)
+        listOf(careTeamId1, careTeamId2),
       )
     }
 

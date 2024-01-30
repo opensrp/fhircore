@@ -37,6 +37,7 @@ class AppTimeStampContextTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   @Inject lateinit var timeStampDataStore: TimeStampDataStore
   private lateinit var appTimeStampContext: AppTimeStampContext
 

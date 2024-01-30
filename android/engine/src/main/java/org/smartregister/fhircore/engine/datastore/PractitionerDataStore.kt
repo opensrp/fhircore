@@ -19,6 +19,9 @@ package org.smartregister.fhircore.engine.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -27,9 +30,6 @@ import org.smartregister.fhircore.engine.data.remote.model.response.LocationHier
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import timber.log.Timber
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class PractitionerDataStore
@@ -89,13 +89,13 @@ constructor(
     dataStore.updateData { it.copy(userInfo = data) }
   }
 
-  fun readOnceUserInfo() = runBlocking {dataStore.data.first().userInfo }
+  fun readOnceUserInfo() = runBlocking { dataStore.data.first().userInfo }
 
   suspend fun writeLocationHierarchies(data: List<LocationHierarchyInfo>) {
     dataStore.updateData { it.copy(locationHierarchies = data) }
   }
 
-  fun readOnceLocationHierarchies() = runBlocking {dataStore.data.first().locationHierarchies }
+  fun readOnceLocationHierarchies() = runBlocking { dataStore.data.first().locationHierarchies }
 
   suspend fun clear() {
     dataStore.updateData {
@@ -105,7 +105,7 @@ constructor(
         locationIds = null,
         locationNames = null,
         organizationIds = null,
-        organizationNames = null
+        organizationNames = null,
       )
     }
   }

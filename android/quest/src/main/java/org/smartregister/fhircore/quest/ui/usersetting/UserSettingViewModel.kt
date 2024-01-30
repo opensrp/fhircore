@@ -24,6 +24,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Locale
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -53,8 +55,6 @@ import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import org.smartregister.p2p.utils.startP2PScreen
-import java.util.Locale
-import javax.inject.Inject
 
 @HiltViewModel
 class UserSettingViewModel
@@ -88,8 +88,7 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
-  fun retrieveUserInfo() =
-    practitionerDataStore.readOnceUserInfo()
+  fun retrieveUserInfo() = practitionerDataStore.readOnceUserInfo()
 
   fun practitionerLocation() =
     preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, null)
@@ -97,7 +96,8 @@ constructor(
   fun retrieveOrganizationNames() =
     practitionerDataStore.readOnce(PractitionerDataStore.Keys.ORGANIZATION_NAMES, null)
 
-  fun retrieveCareTeamNames() = practitionerDataStore.readOnce(PractitionerDataStore.Keys.CARE_TEAM_NAMES, null)
+  fun retrieveCareTeamNames() =
+    practitionerDataStore.readOnce(PractitionerDataStore.Keys.CARE_TEAM_NAMES, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)

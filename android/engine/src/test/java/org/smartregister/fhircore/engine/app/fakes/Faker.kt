@@ -22,6 +22,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
@@ -38,8 +40,6 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import java.util.Calendar
-import java.util.Date
 
 object Faker {
 

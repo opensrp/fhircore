@@ -21,15 +21,14 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import javax.inject.Inject
 
 @HiltAndroidTest
 internal class PractitionerDataStoreTest : RobolectricTest() {
@@ -39,8 +38,7 @@ internal class PractitionerDataStoreTest : RobolectricTest() {
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject
-  private lateinit var dataStore: PractitionerDataStore
+  @Inject private lateinit var dataStore: PractitionerDataStore
 
   @Before
   fun setUp() {
@@ -51,9 +49,7 @@ internal class PractitionerDataStoreTest : RobolectricTest() {
   fun testReadPractitionerDetails() {
     val expectedPreferencesValue = PractitionerPreferences()
     runTest {
-      dataStore.observe.map { dataStoreValue ->
-        assert(dataStoreValue == expectedPreferencesValue)
-      }
+      dataStore.observe.map { dataStoreValue -> assert(dataStoreValue == expectedPreferencesValue) }
     }
   }
 
@@ -61,7 +57,7 @@ internal class PractitionerDataStoreTest : RobolectricTest() {
   fun testWritePractitionerDetails() { // can just test writing any value of the data class
     val valueToWrite = listOf("careTeamId1", "careTeamId2")
     runTest {
-      dataStore.write(PractitionerDataStore.Keys.CARE_TEAM_IDS,valueToWrite)
+      dataStore.write(PractitionerDataStore.Keys.CARE_TEAM_IDS, valueToWrite)
       dataStore.observe.map { assert(it.careTeamIds == valueToWrite) }
     }
   }

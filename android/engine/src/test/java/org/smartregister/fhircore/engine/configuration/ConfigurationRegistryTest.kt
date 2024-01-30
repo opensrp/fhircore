@@ -80,6 +80,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
   @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider

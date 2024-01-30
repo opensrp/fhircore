@@ -219,9 +219,7 @@ constructor(
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            this.launch {
-              preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId)
-            }
+            this.launch { preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
@@ -235,7 +233,7 @@ constructor(
     viewModelScope.launch {
       preferencesDataStore.write(
         PreferencesDataStore.Keys.REMOTE_SYNC_RESOURCES,
-        resourceTypes.distinctBy { it.name }.joinToString(",") {it.name},
+        resourceTypes.distinctBy { it.name }.joinToString(",") { it.name },
       )
     }
   }
