@@ -57,7 +57,7 @@ class LocationService: Service() {
                 Timber.d("Service Location: ${location.latitude},${location.longitude}")
                 writeLocation(
                     QuestionnaireLocation(
-                        latitide = location.latitude,
+                        latitude = location.latitude,
                         longitude = location.longitude,
                         altitude = location.altitude
                     )

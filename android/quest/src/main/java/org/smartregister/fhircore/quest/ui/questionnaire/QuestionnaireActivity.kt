@@ -80,14 +80,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
 
-  val loc = org.hl7.fhir.r4.model.Location()
 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
     val applicationConfiguration = viewModel.applicationConfiguration
-    //if (applicationConfiguration.logQuestionnaireLocation) {
+    if (applicationConfiguration.logQuestionnaireLocation) {
       ActivityCompat.requestPermissions(
         this,
         arrayOf(
@@ -100,7 +99,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         action = LocationService.ACTION_START
         startService(this)
       }
-   // }
+    }
 
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -283,10 +282,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
             val location = viewModel.getLocation()
-            Timber.d("Activity Location: ${location?.latitide},${location?.longitude}")
-           /* loc.position.altitude = location?.altitude?.toBigDecimal()
+            val loc = org.hl7.fhir.r4.model.Location()
+            Timber.d("Activity Location: ${location?.latitude},${location?.longitude}")
+            loc.position.altitude = location?.altitude?.toBigDecimal()
             loc.position.latitude = location?.latitude?.toBigDecimal()
-            loc.position.longitude = location?.longitude?.toBigDecimal()*/
+            loc.position.longitude = location?.longitude?.toBigDecimal()
             questionnaireResponse.contained.add(loc)
             setResult(
               Activity.RESULT_OK,
@@ -296,10 +296,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
                 putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
               },
             )
-          /*  Intent(this@QuestionnaireActivity,LocationService::class.java).apply {
+            Intent(this@QuestionnaireActivity,LocationService::class.java).apply {
               action = LocationService.ACTION_STOP
               startService(this)
-            }*/
+            }
             finish()
           }
           // do background location processing
