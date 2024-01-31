@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Card
 import androidx.compose.material.Chip
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -39,60 +40,71 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-@ExcludeFromJacocoGeneratedReport
 @Composable
 fun InfoCard(viewModel: SettingsViewModel) {
-  val data by viewModel.data.observeAsState()
+  val state by viewModel.profileData.observeAsState()
 
-  if (data != null) {
-    val username = data!!.userName
-    if (!username.isNullOrEmpty()) {
-      Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
-        Box(
-          modifier = Modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-          contentAlignment = Alignment.Center
-        ) {
+  when (state) {
+    is DataLoadState.Loading ->
+      Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+      ) { CircularProgressIndicator(Modifier.testTag("ProgressBarItem")) }
+    is DataLoadState.Error -> Column { Text(text = "Something went wrong while fetching data..") }
+    is DataLoadState.Success -> {
+      val data = (state as DataLoadState.Success<ProfileData>).data
+      val username = data.userName
+      if (username.isNotEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
+          Box(
+            modifier = Modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            Text(
+              text = username.first().uppercase(),
+              textAlign = TextAlign.Center,
+              fontWeight = FontWeight.Bold,
+              fontSize = 28.sp,
+              color = BlueTextColor
+            )
+          }
           Text(
-            text = username.first().uppercase(),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-            fontSize = 28.sp,
-            color = BlueTextColor
+            text = username.capitalize(Locale.current),
+            fontSize = 22.sp,
+            modifier = Modifier.padding(vertical = 22.dp),
+            fontWeight = FontWeight.Bold
           )
         }
-        Text(
-          text = username.capitalize(Locale.current),
-          fontSize = 22.sp,
-          modifier = Modifier.padding(vertical = 22.dp),
-          fontWeight = FontWeight.Bold
-        )
       }
-    }
-    Card(Modifier.padding(6.dp)) {
-      Column(Modifier.padding(10.dp)) {
-        generateData(data!!).forEach {
-          Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            Text(text = it.key, style = MaterialTheme.typography.h6)
-            Box(modifier = Modifier.height(8.dp))
-            it.value.map { FieldCard(it) }
+      Card(Modifier.padding(6.dp)) {
+        Column(Modifier.padding(10.dp)) {
+          generateData(data).forEach {
+            Column(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+              Text(text = it.key, style = MaterialTheme.typography.h6)
+              Box(modifier = Modifier.height(8.dp))
+              it.value.map { FieldCard(it) }
+            }
           }
         }
       }
     }
+    else -> {}
   }
 }
 
-@ExcludeFromJacocoGeneratedReport
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun FieldCard(fieldData: FieldData) {

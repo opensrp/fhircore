@@ -33,6 +33,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator.checkQuestionnaireResponse
+import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -218,6 +219,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireViewModel2 = spyk(questionnaireViewModel)
     val questionnaire =
       Questionnaire().apply {
+        id = "test"
+        url = "Questionnaire/test"
         addItem().apply {
           linkId = "page-1"
           type = Questionnaire.QuestionnaireItemType.GROUP
@@ -275,6 +278,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
     val questionnaireResponse =
       questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     assertFailsWith<IllegalArgumentException>(
       message = "Multiple answers for non-repeat questionnaire item phone-value-1"
     ) { checkQuestionnaireResponse(questionnaire, questionnaireResponse) }
@@ -285,6 +289,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireViewModel2 = spyk(questionnaireViewModel)
     val questionnaire =
       Questionnaire().apply {
+        id = "test"
+        url = "Questionnaire/test"
         addItem().apply {
           linkId = "page-1"
           type = Questionnaire.QuestionnaireItemType.GROUP
@@ -343,6 +349,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val questionnaireResponse =
       questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
     questionnaireResponse.distinctifyLinkId()
+    questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     checkQuestionnaireResponse(questionnaire, questionnaireResponse)
   }
 
