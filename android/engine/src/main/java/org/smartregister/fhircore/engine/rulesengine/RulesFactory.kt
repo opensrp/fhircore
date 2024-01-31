@@ -250,7 +250,7 @@ constructor(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String,
-      matchAllExtraConditions: Boolean? = null,
+      matchAllExtraConditions: Boolean? = false,
       vararg extraConditions: Any? = emptyArray(),
     ): String =
       resources
@@ -259,9 +259,13 @@ constructor(
             fhirPathDataExtractor.extractData(resource, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
             } &&
-              if (matchAllExtraConditions == true) {
+              if (matchAllExtraConditions == true && extraConditions.isNotEmpty()) {
                 extraConditions.all { it is Boolean && it == true }
-              } else extraConditions.any { it is Boolean && it == true }
+              } else if (matchAllExtraConditions == false && extraConditions.isNotEmpty()) {
+                extraConditions.any { it is Boolean && it == true }
+              } else {
+                true
+              }
           ) {
             label
           } else {
