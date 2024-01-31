@@ -18,14 +18,12 @@ package org.smartregister.fhircore.engine.task
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
@@ -36,7 +34,6 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
-import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.ParameterDefinition
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
@@ -50,7 +47,6 @@ import org.opencds.cqf.fhir.cql.LibraryEngine
 import org.opencds.cqf.fhir.cr.plandefinition.r4.PlanDefinitionProcessor
 import org.opencds.cqf.fhir.utility.r4.Parameters.part
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import timber.log.Timber
 
 @Singleton
@@ -65,20 +61,8 @@ constructor(
 ) {
 
   private var cqlLibraryIdList = ArrayList<String>()
-  private val fhirContext = FhirContext.forCached(FhirVersionEnum.R4)
+  private val fhirContext = FhirContext.forR4Cached()
   private val jsonParser = fhirContext.newJsonParser()
-
-  private fun writeToFile(resource: Resource): File {
-    val fileName =
-      if (resource is MetadataResource && resource.name != null) {
-        resource.name
-      } else {
-        resource.idElement.idPart
-      }
-    return File(context.filesDir, fileName).apply {
-      writeText(jsonParser.encodeResourceToString(resource))
-    }
-  }
 
   /**
    * Extracts resources present in PlanDefinition.contained field
@@ -88,7 +72,7 @@ constructor(
    *
    * @param planDefinition PlanDefinition resource for which dependent resources are extracted
    */
-  private suspend fun getPlanDefinitionDependentResources(
+  private fun getPlanDefinitionDependentResources(
     planDefinition: PlanDefinition,
   ): Collection<Resource> {
     var bundleCollection: Collection<Resource> = mutableListOf()
@@ -98,7 +82,7 @@ constructor(
       if (resource is Library) {
         cqlLibraryIdList.add(IdType(resource.id).idPart)
       }
-      knowledgeManager.install(writeToFile(resource))
+      // knowledgeManager.install(writeToFile(resource))
 
       bundleCollection += resource
     }
@@ -115,7 +99,7 @@ constructor(
     val availablePlanDefinitions =
       defaultRepository.search<PlanDefinition>(Search(ResourceType.PlanDefinition))
     for (cqlLibrary in availableCqlLibraries) {
-      knowledgeManager.install(writeToFile(cqlLibrary))
+      // knowledgeManager.install(writeToFile(cqlLibrary))
       cqlLibraryIdList.add(IdType(cqlLibrary.id).idPart)
     }
     for (planDefinition in availablePlanDefinitions) {
@@ -127,10 +111,10 @@ constructor(
    * Executes $apply on a [PlanDefinition] for a [Patient] and creates the request resources as per
    * the proposed [CarePlan]
    *
-   * @param planDefinitionId PlanDefinition resource ID for which $apply is run
+   * @param planDefinition PlanDefinition for which $apply is run
    * @param patient Patient resource for which the [PlanDefinition] $apply is run
-   * @param requestResourceConfigs List of configurations that need to be applied to the request
-   *   resources as a result of the proposed [CarePlan]
+   * @param data Bundle resource containing the input resource/data
+   * @param output [CarePlan] resource object with the generated care plan
    */
   suspend fun applyPlanDefinitionOnPatient(
     planDefinition: PlanDefinition,

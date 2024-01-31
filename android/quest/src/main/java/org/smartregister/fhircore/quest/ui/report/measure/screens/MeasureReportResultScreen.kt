@@ -132,11 +132,9 @@ fun MeasureReportResultPage(
           }
         }
         if (measureReportPopulationResult != null) {
-          println("FIKRI 2")
           MeasureReportPopulationResultView(
             measureReportPopulationResult.distinctBy { it.title },
           )
-          println("FIKRI 2.1")
         }
       }
     }

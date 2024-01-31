@@ -245,7 +245,7 @@ constructor(
       ?.run { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = this) }
   }
 
-  suspend fun cancelTaskByTaskId(id: String, reason: String) {
+  private suspend fun cancelTaskByTaskId(id: String, reason: String) {
     updateTaskDetailsByResourceId(id, TaskStatus.CANCELLED, reason)
   }
 

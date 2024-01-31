@@ -53,7 +53,7 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
 
   private var configuration: DataCaptureConfig? = null
 
-  private var fhirServerHost: String? = null
+  private var fhirServerHost: URL? = null
 
   override fun onCreate() {
     super.onCreate()
@@ -126,8 +126,8 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
       )
       .build()
 
-  override fun getFhirServerHost(): String {
-    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL).host
-    return fhirServerHost ?: ""
+  override fun getFhirServerHost(): URL? {
+    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL)
+    return fhirServerHost
   }
 }
