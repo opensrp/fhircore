@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -42,8 +45,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.util.LinkedList
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Location
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -55,6 +56,8 @@ import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.util.extensions.coordinates
 import org.smartregister.fhircore.geowidget.util.extensions.generateLocation
 import timber.log.Timber
+import java.util.LinkedList
+import javax.inject.Inject
 
 @AndroidEntryPoint
 open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
@@ -66,15 +69,77 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
   var geoJsonSource: GeoJsonSource? = null
   var featureCollection: FeatureCollection? = null
 
+  private val permissionArray =  arrayOf(
+    Manifest.permission.ACCESS_COARSE_LOCATION,
+    Manifest.permission.ACCESS_FINE_LOCATION,
+    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    Manifest.permission.READ_EXTERNAL_STORAGE
+  )
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View? {
-    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    geoWidgetConfiguration = geoWidgetConfiguration()
+
+    // Check and request storage permissions
+    if (!areStoragePermissionsGranted()) {
+      requestPermissions()
+    }
 
     return setupViews()
+  }
+
+  private val permissionLauncher =
+    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+      val arePermissionsGranted = permissionArray.all { permissions[it] == true}
+
+      if (arePermissionsGranted) {
+        kujakuMapView.getMapAsync { mapboxMap ->
+          Timber.i("Get Map async finished")
+          val builder = Style.Builder().fromUri("asset://fhircore_style.json")
+
+          mapboxMap.setStyle(builder) { style ->
+            Timber.i("Finished setting the style")
+            renderResourcesOnMap(style)
+          }
+        }
+      } else {
+        requestStoragePermission()
+      }
+    }
+
+  private fun areStoragePermissionsGranted(): Boolean {
+    return ContextCompat.checkSelfPermission(
+      requireContext(),
+      Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+              requireContext(),
+              Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+      requireContext(),
+      Manifest.permission.ACCESS_FINE_LOCATION
+    ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+              requireContext(),
+              Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            &&   ContextCompat.checkSelfPermission(
+      requireContext(),
+      Manifest.permission.
+    ) == PackageManager.PERMISSION_GRANTED
+  }
+
+  private fun requestPermissions() {
+    permissionLauncher.launch(permissionArray)
+  }
+
+  private fun requestStoragePermission() {
+    permissionLauncher.launch(arrayOf(
+      Manifest.permission.WRITE_EXTERNAL_STORAGE,
+      Manifest.permission.READ_EXTERNAL_STORAGE))
   }
 
   private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
@@ -85,6 +150,10 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
 
   /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
   private fun setupViews(): LinearLayout {
+    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
+    geoWidgetConfiguration = geoWidgetConfiguration()
+
+
     val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
 
     val toolbar =
@@ -100,15 +169,7 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
     kujakuMapView =
       KujakuMapView(requireActivity()).apply {
         id = R.id.kujaku_widget
-        getMapAsync { mapboxMap ->
-          Timber.i("Get Map async finished")
-          val builder = Style.Builder().fromUri("asset://fhircore_style.json")
 
-          mapboxMap.setStyle(builder) { style ->
-            Timber.i("Finished setting the style")
-            renderResourcesOnMap(style)
-          }
-        }
       }
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
