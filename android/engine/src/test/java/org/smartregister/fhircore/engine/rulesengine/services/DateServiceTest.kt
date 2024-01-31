@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -166,5 +166,35 @@ class DateServiceTest : RobolectricTest() {
     assertThrows(NotImplementedException::class.java) {
       DateService.addOrSubtractTimeUnitFromCurrentDate(2, "*", timeUnit = "YEAR")
     }
+  }
+
+  @Test
+  fun testCompareDates() {
+    val result =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2023-09-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(-1, result)
+
+    val result2 =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2024-31-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(1, result2)
+
+    val result3 =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2024-01-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(0, result3)
   }
 }

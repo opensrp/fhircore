@@ -65,7 +65,7 @@ android {
     dataBinding = true
     buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.6" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
 
   packaging {
     resources.excludes.addAll(
@@ -132,7 +132,6 @@ dependencies {
   implementation(libs.appcompat)
   implementation(libs.material)
   implementation(libs.constraintlayout)
-  implementation(libs.constraintlayout.compose)
   implementation(libs.fragment.ktx)
   implementation(libs.security.crypto)
   implementation(libs.cardview)
@@ -145,46 +144,36 @@ dependencies {
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
 
+  api(libs.bundles.datastore.kt)
+  api(libs.bundles.navigation)
+  api(libs.bundles.materialicons)
+  api(libs.bundles.compose)
+  api(libs.bundles.lifecycle)
+  api(libs.bundles.accompanist)
+  api(libs.bundles.coroutines)
+  api(libs.bundles.retrofit2)
+  api(libs.bundles.okhttp3)
+  api(libs.bundles.paging)
+  api(libs.ui)
+
   // Shared dependencies
-  api(libs.datastore)
-  api(libs.datastore.preferences)
   api(libs.glide)
   api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
   api(libs.jjwt)
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
-  api(libs.lifecycle.livedata.ktx)
-  api(libs.lifecycle.viewmodel.ktx)
-  api(libs.ui)
-  api(libs.ui.tooling)
   api(libs.runtime.livedata)
-  api(libs.navigation.fragment.ktx)
-  api(libs.navigation.ui.ktx)
-  api(libs.navigation.compose)
-  api(libs.navigation.testing)
-  api(libs.material.icons.extended)
-  api(libs.material.icons.core)
   api(libs.material3)
   api(libs.foundation)
-  api(libs.hilt.navigation.compose)
-  api(libs.lifecycle.viewmodel.compose)
-  api(libs.paging.compose)
-  api(libs.activity.compose)
+  api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)
   api(libs.work.runtime.ktx)
   api(libs.prettytime)
-  api(libs.kotlinx.coroutines.core)
-  api(libs.kotlinx.coroutines.android)
   api(libs.kotlin.reflect)
   api(libs.stax.api)
   api(libs.gson)
   api(libs.timber)
-  api(libs.retrofit)
   api(libs.converter.gson)
-  api(libs.retrofit.mock)
-  api(libs.retrofit2.kotlinx.serialization.converter)
-  api(libs.okhttp)
-  api(libs.okhttp.logging.interceptor)
   api(libs.json.path)
   api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
   api(libs.easy.rules.jexl) {
@@ -230,38 +219,34 @@ dependencies {
   kapt(libs.dagger.hilt.compiler)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Test dependencies
   testImplementation(libs.work.runtime.ktx)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.json)
-  testImplementation(libs.kotlinx.coroutines.debug)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.work.testing)
 
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
+  debugImplementation(libs.ui.tooling)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.benchmark.junit)
 
   /**
@@ -270,7 +255,7 @@ dependencies {
    *
    * To be included in the engine/build.gradle.kts file via apply {}
    */
-  api(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
+  implementation(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
   implementation(Dependencies.HapiFhir.guavaCaching)
   implementation(Dependencies.HapiFhir.validationR4)
   implementation(Dependencies.HapiFhir.validation) {
@@ -280,7 +265,7 @@ dependencies {
 
   constraints {
     Dependencies.hapiFhirConstraints().forEach { (libName, constraints) ->
-      implementation(libName, constraints)
+      api(libName, constraints)
     }
   }
 

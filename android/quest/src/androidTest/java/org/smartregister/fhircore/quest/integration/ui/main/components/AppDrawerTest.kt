@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
-import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -47,7 +46,7 @@ import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_MAIN_R
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ITEM_TEXT_TEST_TAG
 
 class AppDrawerTest {
-  private val mockAppMainEventListener: (AppMainEvent) -> Unit = spyk({})
+  private val noOpAppMainEventListener: (AppMainEvent) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -124,7 +123,7 @@ class AppDrawerTest {
   fun testAppDrawerRendersNavBottomSectionCorrectly() {
     setContent("")
     composeTestRule
-      .onNodeWithText("Sync", useUnmergedTree = true)
+      .onNodeWithText("Manual Sync", useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
     composeTestRule
@@ -161,13 +160,17 @@ class AppDrawerTest {
 
   @Test
   fun testThatSideMenuClickCallsTheListener() {
-    setContent("")
+    var clicked = 0
+    setContent("", onClickListener = { clicked = 12 })
     val sideMenuItem = composeTestRule.onAllNodesWithTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG)
     sideMenuItem[0].performClick()
-    verify { mockAppMainEventListener(any()) }
+    Assert.assertEquals(12, clicked)
   }
 
-  private fun setContent(name: String) {
+  private fun setContent(
+    name: String,
+    onClickListener: (AppMainEvent) -> Unit = noOpAppMainEventListener,
+  ) {
     composeTestRule.setContent {
       AppDrawer(
         appUiState =
@@ -185,7 +188,7 @@ class AppDrawerTest {
           ),
         navController = rememberNavController(),
         openDrawer = {},
-        onSideMenuClick = mockAppMainEventListener,
+        onSideMenuClick = onClickListener,
         appVersionPair = Pair(1, "0.0.1"),
       )
     }

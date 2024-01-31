@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -133,8 +132,7 @@ constructor(
     val questionnaireComputedValues =
       questionnaireConfig.configRules?.let {
         resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
-      }
-        ?: emptyMap()
+      } ?: emptyMap()
 
     val allActionParameters =
       actionParameters?.plus(
@@ -301,8 +299,7 @@ constructor(
     val extractedResourceUniquePropertyExpressionsMap =
       questionnaireConfig.extractedResourceUniquePropertyExpressions?.associateBy {
         it.resourceType
-      }
-        ?: emptyMap()
+      } ?: emptyMap()
 
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
@@ -357,7 +354,16 @@ constructor(
 
         defaultRepository.addOrUpdate(true, resource = this)
 
-        addMemberToConfiguredGroup(this, questionnaireConfig.groupResource)
+        updateGroupManagingEntity(
+          resource = this,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+          managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
+        )
+        addMemberToGroup(
+          resource = this,
+          memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+        )
 
         // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
         val listEntryComponent =
@@ -624,7 +630,7 @@ constructor(
             .map { it.name }
             .toSet()
 
-        // TODO move to Sync
+        // TODO move to Sync : Issue tracker https://github.com/opensrp/fhircore/issues/3019
         knowledgeManager.install(
           File.createTempFile(library.name, ".json").apply {
             this.writeText(library.encodeResourceToString())
@@ -664,14 +670,44 @@ constructor(
     }
   }
 
+  /** Update the [Group.managingEntity] */
+  suspend fun updateGroupManagingEntity(
+    resource: Resource,
+    groupIdentifier: String?,
+    managingEntityRelationshipCode: String?,
+  ) {
+    // Load the group from the database to get the updated Resource always.
+    val group =
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group?
+
+    if (
+      group != null &&
+        resource is RelatedPerson &&
+        !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
+        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
+    ) {
+      defaultRepository.addOrUpdate(
+        resource = group.apply { managingEntity = resource.asReference() },
+      )
+    }
+  }
+
   /**
    * Adds [Resource] to [Group.member] if the member does not exist and if [Resource.logicalId] is
    * NOT the same as the retrieved [GroupResourceConfig.groupIdentifier] (Cannot add a [Group] as
    * member of itself.
    */
-  suspend fun addMemberToConfiguredGroup(resource: Resource, groupConfig: GroupResourceConfig?) {
-    val group: Group =
-      groupConfig?.groupIdentifier?.let { loadResource(ResourceType.Group, it) } as Group? ?: return
+  suspend fun addMemberToGroup(
+    resource: Resource,
+    memberResourceType: ResourceType?,
+    groupIdentifier: String?,
+  ) {
+    // Load the Group resource from the database to get the updated one
+    val group =
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group? ?: return
+
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
 
@@ -690,20 +726,11 @@ constructor(
         ResourceType.Practitioner,
         ResourceType.PractitionerRole,
         ResourceType.Specimen,
-      )
+      ) && resource.resourceType == memberResourceType
     ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
+      defaultRepository.addOrUpdate(resource = group)
     }
-    // here Group is coming with groupIdentifier thus it make sense that
-    // there is an interaction inside group rather addingMemberItems only for above check
-    // so for every cases group is to be updated
-
-    /**
-     * The Group Resource is fetched by the `groupIdentifier`. We trigger the group update every
-     * time anything linked to it in order to change the `_lastUpdated` timestamp. This helps us
-     * with order the last updated group (household) on the top of the register.
-     */
-    defaultRepository.addOrUpdate(resource = group)
   }
 
   /**

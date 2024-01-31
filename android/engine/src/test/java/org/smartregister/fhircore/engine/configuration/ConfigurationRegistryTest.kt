@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
@@ -76,6 +77,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -93,7 +96,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine,
         fhirResourceDataSource,
         sharedPreferencesHelper,
-        coroutineRule.testDispatcherProvider,
+        dispatcherProvider,
         AppConfigService(context),
         Faker.json,
       )

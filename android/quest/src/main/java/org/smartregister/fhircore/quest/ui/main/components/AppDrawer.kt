@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,7 +318,8 @@ private fun MenuActionButton(
       Spacer(modifier.width(16.dp))
       Text(
         modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
-        text = navigationConfiguration.menuActionButton?.display?.uppercase()
+        text =
+          navigationConfiguration.menuActionButton?.display?.uppercase()
             ?: stringResource(id = org.smartregister.fhircore.engine.R.string.register_new_client),
         color = MenuActionButtonTextColor,
         fontSize = 18.sp,

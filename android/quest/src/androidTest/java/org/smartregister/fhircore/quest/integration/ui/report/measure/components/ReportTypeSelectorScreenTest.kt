@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.android.material.datepicker.MaterialDatePicker
-import io.mockk.spyk
 import java.util.Date
 import org.hl7.fhir.r4.model.MeasureReport.MeasureReportType
 import org.junit.Before
@@ -45,9 +44,9 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.YEAR_TEST_TAG
 
 class ReportTypeSelectorScreenTest {
 
-  private val mockRangeSelectListener: (Date?) -> Unit = spyk({})
-  private val mockDateSelectListener: (androidx.core.util.Pair<Long, Long>?) -> Unit = spyk({})
-  private val mockBackListener: () -> Unit = spyk({})
+  private val rangeSelectListener: (Date?) -> Unit = {}
+  private val dateSelectListener: (androidx.core.util.Pair<Long, Long>?) -> Unit = {}
+  private val backListener: () -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
 
@@ -64,7 +63,7 @@ class ReportTypeSelectorScreenTest {
   fun testMonthYearListDisplayed() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
         innerPadding = PaddingValues(),
@@ -80,7 +79,7 @@ class ReportTypeSelectorScreenTest {
   fun testProgressIndicatorIsDisplayed() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = true,
         innerPadding = PaddingValues(),
@@ -102,7 +101,7 @@ class ReportTypeSelectorScreenTest {
   fun testMonthClickListener() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
         innerPadding = PaddingValues(),
@@ -123,9 +122,9 @@ class ReportTypeSelectorScreenTest {
         showProgressIndicator = false,
         startDate = "Start Date",
         endDate = "End Date",
-        onGenerateReportClicked = mockBackListener,
+        onGenerateReportClicked = backListener,
         dateRange = mutableStateOf(defaultDateRangeState()),
-        onDateRangeSelected = mockDateSelectListener,
+        onDateRangeSelected = dateSelectListener,
         generateReport = false,
         innerPadding = PaddingValues(),
       )
@@ -141,7 +140,7 @@ class ReportTypeSelectorScreenTest {
   fun testPleaseWaitDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = true,
         innerPadding = PaddingValues(),
@@ -179,7 +178,7 @@ class ReportTypeSelectorScreenTest {
   fun testCorrectHeaderYearDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
         innerPadding = PaddingValues(),
@@ -198,7 +197,7 @@ class ReportTypeSelectorScreenTest {
   fun testCorrectHeaderMonthDisplayedCorrectly() {
     composeTestRule.setContent {
       FixedMonthYearListing(
-        onMonthSelected = mockRangeSelectListener,
+        onMonthSelected = rangeSelectListener,
         reportGenerationRange = dateRange,
         showProgressIndicator = false,
         innerPadding = PaddingValues(),

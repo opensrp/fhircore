@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.profile
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
@@ -64,6 +66,10 @@ class ProfileViewModelTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var profileViewModel: ProfileViewModel
   private lateinit var resourceData: ResourceData
@@ -92,6 +98,7 @@ class ProfileViewModelTest : RobolectricTest() {
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
+          parser = parser,
         ),
       )
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
@@ -108,7 +115,7 @@ class ProfileViewModelTest : RobolectricTest() {
       ProfileViewModel(
         registerRepository = registerRepository,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         fhirPathDataExtractor = fhirPathDataExtractor,
         resourceDataRulesExecutor = resourceDataRulesExecutor,
       )

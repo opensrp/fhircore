@@ -31,7 +31,7 @@ group extractTask(
                task.priority = 'routine',
                // dosage[version] does not work, hence skipping the item from given index via skip.first
                task.description = evaluate(definition, $this.product.text + ' ' + currentDose.select(sequence.toString())),
-               task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.type().name + $this.id.replaceMatches('/_history/.*', '')),
+               task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.type().name + '/' + $this.id.replaceMatches('/_history/.*', '')),
                task.basedOn = reference(careplan),
                task.authoredOn = evaluate(subject, now()),
                task.requester = evaluate(subject, $this.generalPractitioner.first()),

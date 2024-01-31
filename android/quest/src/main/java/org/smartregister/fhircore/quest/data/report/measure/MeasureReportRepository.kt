@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
@@ -56,6 +57,7 @@ constructor(
   private val fhirOperator: FhirOperator,
   private val knowledgeManager: KnowledgeManager,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -65,6 +67,7 @@ constructor(
     configService = configService,
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
   ) {
 
   /**
@@ -95,7 +98,7 @@ constructor(
             .first()
             .resource
 
-        // TODO move to Sync
+        // TODO move to Sync : Issue tracker https://github.com/opensrp/fhircore/issues/3019
         knowledgeManager.install(
           File.createTempFile(measure.name, ".json").apply {
             this.writeText(measure.encodeResourceToString())

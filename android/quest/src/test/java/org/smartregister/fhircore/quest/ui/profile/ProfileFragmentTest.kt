@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -63,22 +65,14 @@ class ProfileFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @BindValue val registerRepository: RegisterRepository = mockk(relaxUnitFun = true, relaxed = true)
 
-  @BindValue
-  val profileViewModel =
-    spyk(
-      ProfileViewModel(
-        registerRepository,
-        configurationRegistry = configurationRegistry,
-        this.coroutineTestRule.testDispatcherProvider,
-        mockk(),
-        mockk(),
-      ),
-    )
+  @BindValue lateinit var profileViewModel: ProfileViewModel
 
   private val activityController = Robolectric.buildActivity(AppMainActivity::class.java)
 
@@ -95,7 +89,16 @@ class ProfileFragmentTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
-
+    profileViewModel =
+      spyk(
+        ProfileViewModel(
+          registerRepository,
+          configurationRegistry = configurationRegistry,
+          dispatcherProvider = dispatcherProvider,
+          mockk(),
+          mockk(),
+        ),
+      )
     profileFragment =
       ProfileFragment().apply {
         arguments =

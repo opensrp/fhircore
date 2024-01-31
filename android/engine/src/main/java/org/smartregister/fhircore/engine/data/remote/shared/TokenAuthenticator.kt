@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -224,12 +224,15 @@ constructor(
    * [HttpException] or [UnknownHostException] exceptions
    */
   @Throws(HttpException::class, UnknownHostException::class)
-  fun refreshToken(currentRefreshToken: String): String {
+  fun refreshToken(account: Account, currentRefreshToken: String): String {
     return runBlocking {
       val oAuthResponse =
         oAuthService.fetchToken(
           buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) },
         )
+
+      // Updates with new refresh-token
+      accountManager.setPassword(account, oAuthResponse.refreshToken!!)
 
       // Returns valid token or throws exception, NullPointerException not expected
       oAuthResponse.accessToken!!
