@@ -21,7 +21,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -38,6 +37,7 @@ import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -157,9 +157,9 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `fetchConfigurations() should save shared preferences for patient related resource types`() =
+  fun `fetchConfigurations() should call configurationRegistry#processResultBundleBinaries with correct values`() =
     runTest {
-      coEvery { appSettingViewModel.fetchComposition(any(), any()) } returns
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) } returns
         Composition().apply {
           addSection().apply {
             this.focus =
@@ -169,10 +169,12 @@ class AppSettingViewModelTest : RobolectricTest() {
               }
           }
         }
-      coEvery { fhirResourceDataSource.post(any(), any()) } returns
+
+      val expectedBundle =
         Bundle().apply {
           addEntry().resource =
             Binary().apply {
+              id = "binary-id-1"
               data =
                 Base64.getEncoder()
                   .encode(
@@ -202,27 +204,36 @@ class AppSettingViewModelTest : RobolectricTest() {
                   )
             }
         }
+      coEvery { fhirResourceDataSource.post(any(), any()) } returns expectedBundle
+
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
       coEvery { appSettingViewModel.isNonProxy() } returns false
+      coEvery {
+        appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
+      } just runs
 
       appSettingViewModel.run {
         onApplicationIdChanged("app")
         fetchConfigurations(context)
       }
 
-      val slot = slot<List<ResourceType>>()
+      val binarySlot = slot<Binary>()
 
-      coVerify { appSettingViewModel.fetchComposition(any(), any()) }
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.processResultBundleBinaries(
+          capture(binarySlot),
+          any(),
+        )
+      }
 
-      Assert.assertEquals(
-        listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
-        slot.captured,
-      )
+      assertEquals(expectedBundle.entry[0].resource.id, binarySlot.captured.id)
+      assertEquals((expectedBundle.entry[0].resource as Binary).data, binarySlot.captured.data)
     }
 
   @Test
@@ -274,7 +285,8 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.isNonProxy() } returns false
 
       appSettingViewModel.run {
@@ -287,7 +299,9 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.fetchComposition(any(), any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+      }
 
       Assert.assertEquals(
         listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),
@@ -432,27 +446,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
-    val resourceType =
-      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-
-    appSettingViewModel.saveSyncSharedPreferences(resourceType)
-
-    val savedSyncResourcesResult =
-      sharedPreferencesHelper.read(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-        null,
-      )!!
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      sharedPreferencesHelper.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
-
-    Assert.assertEquals(2, savedSyncResourceTypes.size)
-    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
-  }
-
-  @Test
   fun testFetchConfigurationsChunking() = runTest {
     val appId = "test_app_id"
     val compositionSections = mutableListOf<Composition.SectionComponent>()
@@ -479,10 +472,13 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
-    coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=test_app_id&_count=200")
-    } returns Bundle().apply { addEntry().resource = composition }
+    coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(appId) } returns
+      composition
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+    coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just runs
+    coEvery {
+      appSettingViewModel.configurationRegistry.processResultBundleBinaries(any(), any())
+    } just runs
     coEvery { fhirResourceDataSource.post(any(), any()) } returns
       Bundle().apply {
         entry =
@@ -514,17 +510,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertTrue(capturedResources.first() is Binary)
     Assert.assertTrue(capturedResources.second() is Binary)
     Assert.assertTrue(capturedResources.last() is Composition)
-
-    val requestPathArgumentSlot = mutableListOf<String>()
-
-    coVerify { fhirResourceDataSource.getResource(capture(requestPathArgumentSlot)) }
-
-    Assert.assertEquals(1, requestPathArgumentSlot.size)
-
-    Assert.assertEquals(
-      "Composition?identifier=test_app_id&_count=200",
-      requestPathArgumentSlot.first(),
-    )
 
     val urlArgumentSlot = mutableListOf<String>()
     val requestPathPostArgumentSlot = mutableListOf<RequestBody>()
@@ -591,7 +576,8 @@ class AppSettingViewModelTest : RobolectricTest() {
             }
         }
       coEvery { defaultRepository.createRemote(any(), any()) } just runs
-      coEvery { appSettingViewModel.saveSyncSharedPreferences(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just
+        runs
       coEvery { appSettingViewModel.isNonProxy() } returns true
 
       appSettingViewModel.run {
@@ -604,7 +590,9 @@ class AppSettingViewModelTest : RobolectricTest() {
       coVerify { appSettingViewModel.fetchComposition(any(), any()) }
       coVerify { fhirResourceDataSource.getResource(any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
-      coVerify { appSettingViewModel.saveSyncSharedPreferences(capture(slot)) }
+      coVerify {
+        appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(capture(slot))
+      }
 
       Assert.assertEquals(
         listOf(ResourceType.Patient, ResourceType.Encounter, ResourceType.Task),

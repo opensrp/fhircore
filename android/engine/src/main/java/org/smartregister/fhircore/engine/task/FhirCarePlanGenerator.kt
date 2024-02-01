@@ -213,8 +213,11 @@ constructor(
         val dependents = carePlan.contained.map { it }
 
         carePlan.contained.clear()
-        defaultRepository.create(true, carePlan)
-        dependents.forEach { defaultRepository.create(true, it) }
+
+        // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
+        if (output.hasActivity()) defaultRepository.addOrUpdate(true, carePlan)
+
+        dependents.forEach { defaultRepository.addOrUpdate(true, it) }
 
         if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED) {
           carePlan.activity
