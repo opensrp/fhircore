@@ -21,6 +21,4 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 sealed class AppEvent {
   data class OnSubmitQuestionnaire(val questionnaireSubmission: QuestionnaireSubmission) :
     AppEvent()
-
-  data class OnMigrateData(val inProgress: Boolean) : AppEvent()
 }
