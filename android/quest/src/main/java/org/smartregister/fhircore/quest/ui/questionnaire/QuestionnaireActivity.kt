@@ -21,7 +21,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.os.Parcelable
@@ -31,7 +30,6 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -39,14 +37,18 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.Priority
+import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.Serializable
-import java.util.LinkedList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -65,7 +67,11 @@ import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
+import org.smartregister.fhircore.quest.util.extensions.hasLocationPermission
 import timber.log.Timber
+import java.io.Serializable
+import java.util.LinkedList
+import java.util.UUID
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
@@ -80,6 +86,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var fusedLocationClient: FusedLocationProviderClient
   private val loc = org.hl7.fhir.r4.model.Location()
 
+  private var currLocation: Location? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -87,7 +95,25 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
     if (applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      getLocation()
+
+      val builder = LocationSettingsRequest.Builder()
+      val client: SettingsClient = LocationServices.getSettingsClient(this)
+      val result: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+      result.addOnSuccessListener { _ ->
+        AlertDialog.Builder(this)
+          .setMessage("Location services are disabled. Do you want to enable them?")
+          .setCancelable(false)
+          .setPositiveButton("Yes") { _, _ ->
+            // Open GPS settings
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+          }
+          .setNegativeButton("No") { dialog, _ ->
+            dialog.cancel()
+          }
+          .show()
+      }
+      lifecycleScope.launch { getLocationPermission()}
     }
 
     setTheme(R.style.AppTheme_Questionnaire)
@@ -263,6 +289,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
           questionnaireResponse.contained.add(loc)
+          if (currLocation != null) {
+            questionnaireResponse.contained.add(createLocationResource(currLocation))
+          }
 
           handleQuestionnaireSubmission(
             questionnaire = questionnaire!!,
@@ -284,43 +313,32 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             )
             finish()
           }
-          // do background location processing
-          // check here that "logQuestionnaireLocation": true
         }
       }
     }
   }
 
-  private fun getLocation() {
-    if (
-      ActivityCompat.checkSelfPermission(
-        this@QuestionnaireActivity,
-        Manifest.permission.ACCESS_FINE_LOCATION,
-      ) != PackageManager.PERMISSION_GRANTED &&
-        ActivityCompat.checkSelfPermission(
-          this@QuestionnaireActivity,
-          Manifest.permission.ACCESS_COARSE_LOCATION,
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
+  private fun getLocationPermission() {
+      if (!this@QuestionnaireActivity.hasLocationPermission()) {
       val locationPermissionRequest =
         this@QuestionnaireActivity.registerForActivityResult(
           ActivityResultContracts.RequestMultiplePermissions(),
         ) { permissions ->
           when {
             permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-              getCurrentLocation()
+              lifecycleScope.launch { getCurrentLocation() }
             }
             permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
               // request approx permissions
-              getCurrentApproximateLocation()
+              lifecycleScope.launch { getCurrentApproximateLocation()}
             }
             else -> {
               // No location access granted. Notify and fail
               Toast.makeText(
-                  this,
-                  "Location Access Permission not granted",
-                  Toast.LENGTH_LONG,
-                )
+                this@QuestionnaireActivity,
+                "Location currently disabled due to denied permission.",
+                Toast.LENGTH_LONG,
+              )
                 .show()
             }
           }
@@ -332,63 +350,85 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         ),
       )
     } else {
-      getCurrentLocation()
+        lifecycleScope.launch { getCurrentLocation() }
     }
   }
 
   @SuppressLint("MissingPermission")
-  private fun getCurrentLocation() {
-    fusedLocationClient
-      .getCurrentLocation(
-        Priority.PRIORITY_HIGH_ACCURACY,
-        object : CancellationToken() {
-          override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-            CancellationTokenSource().token
+  private suspend fun getCurrentLocation() {
+    withContext(Dispatchers.IO){
+      fusedLocationClient
+        .getCurrentLocation(
+          Priority.PRIORITY_HIGH_ACCURACY,
+          object : CancellationToken() {
+            override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+              CancellationTokenSource().token
 
-          override fun isCancellationRequested() = false
-        },
-      )
-      .addOnSuccessListener { location: Location? ->
-        if (location != null) {
-          Timber.d("current location${location.latitude} ${location.longitude}")
-          loc.position.altitude = location.altitude.toBigDecimal()
-          loc.position.latitude = location.latitude.toBigDecimal()
-          loc.position.longitude = location.longitude.toBigDecimal()
+            override fun isCancellationRequested() = false
+          },
+        )
+        .addOnSuccessListener { location: Location? ->
+          if (location != null) {
+            Timber.d("current location${location.latitude} ${location.longitude}")
+            loc.position.altitude = location.altitude.toBigDecimal()
+            loc.position.latitude = location.latitude.toBigDecimal()
+            loc.position.longitude = location.longitude.toBigDecimal()
+            Timber.d(
+              "Precise location - latitude: ${location.latitude}; longitude: ${location.longitude}; altitude: ${location.altitude}",
+            )
+            currLocation = location
+          } else {
+
+          }
         }
-      }
-      .addOnFailureListener {
-        // Location services are not enabled, prompt the user to enable them
-        val settingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        this.startActivity(settingsIntent)
-      }
+        .addOnFailureListener {e ->
+          Timber.e(e, "Failed to get current location")
+          // Notify user about failure
+          Toast.makeText(
+            this@QuestionnaireActivity,
+            "Failed to get current location: ${e.message}",
+            Toast.LENGTH_LONG
+          ).show()
+        }
+    }
   }
 
   @SuppressLint("MissingPermission")
-  private fun getCurrentApproximateLocation() {
-    fusedLocationClient
-      .getCurrentLocation(
-        Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-        object : CancellationToken() {
-          override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-            CancellationTokenSource().token
+  private suspend fun getCurrentApproximateLocation() {
+    withContext(Dispatchers.IO) {
+      fusedLocationClient
+        .getCurrentLocation(
+          Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+          object : CancellationToken() {
+            override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+              CancellationTokenSource().token
 
-          override fun isCancellationRequested() = false
-        },
-      )
-      .addOnSuccessListener { approxLocation: Location? ->
-        if (approxLocation != null) {
-          Timber.d("current location${approxLocation.latitude} ${approxLocation.longitude}")
-          loc.position.altitude = approxLocation.altitude.toBigDecimal()
-          loc.position.latitude = approxLocation.latitude.toBigDecimal()
-          loc.position.longitude = approxLocation.longitude.toBigDecimal()
+            override fun isCancellationRequested() = false
+          },
+        )
+        .addOnSuccessListener { approxLocation: Location? ->
+          if (approxLocation != null) {
+            Timber.d("current location${approxLocation.latitude} ${approxLocation.longitude}")
+            loc.position.altitude = approxLocation.altitude.toBigDecimal()
+            loc.position.latitude = approxLocation.latitude.toBigDecimal()
+            loc.position.longitude = approxLocation.longitude.toBigDecimal()
+          }
         }
-      }
-      .addOnFailureListener {
-        // Location services are not enabled, prompt the user to enable them
-        val settingsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        this.startActivity(settingsIntent)
-      }
+        .addOnFailureListener {
+
+        }
+    }
   }
+
+  private fun createLocationResource(gpsLocation: Location?): org.hl7.fhir.r4.model.Location {
+    var locationResource = org.hl7.fhir.r4.model.Location()
+    locationResource.id = UUID.randomUUID().toString()
+    locationResource.position.latitude = gpsLocation!!.latitude.toBigDecimal()
+    locationResource.position.longitude = gpsLocation!!.longitude.toBigDecimal()
+    locationResource.position.altitude = gpsLocation!!.altitude.toBigDecimal()
+
+    return locationResource
+    }
 
   private fun handleBackPress() {
     if (questionnaireConfig.isReadOnly()) {
