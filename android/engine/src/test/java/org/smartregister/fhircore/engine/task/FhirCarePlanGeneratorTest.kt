@@ -501,7 +501,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -577,7 +578,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -643,7 +645,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
 
@@ -817,7 +820,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val createdTasksSlot = mutableListOf<Resource>()
     val updatedTasksSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(createdTasksSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(createdTasksSlot)) } just
+      runs
     coEvery { defaultRepository.addOrUpdate(any(), capture(updatedTasksSlot)) } just runs
     coEvery { fhirEngine.update(any()) } just runs
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
@@ -899,7 +903,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.get<StructureMap>("528a8603-2e43-4a2e-a33d-1ec2563ffd3e") } returns
       structureMap
 
@@ -1547,7 +1552,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.get<StructureMap>("63752b18-9f0e-48a7-9a21-d3714be6309a") } returns
       structureMap
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns emptyList()
@@ -2085,7 +2091,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       fhirEngine.create(patient)
 
       val resourceSlot = slot<Resource>()
-      coEvery { defaultRepository.addOrUpdate(any(), capture(resourceSlot)) }  answers
+      coEvery { defaultRepository.addOrUpdate(any(), capture(resourceSlot)) } answers
         {
           runBlocking(Dispatchers.IO) { fhirEngine.create(resourceSlot.captured) }
         }
@@ -2143,7 +2149,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     val resourcesSlot = mutableListOf<Resource>()
     val booleanSlot = slot<Boolean>()
-    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just runs
+    coEvery { defaultRepository.addOrUpdate(capture(booleanSlot), capture(resourcesSlot)) } just
+      runs
     coEvery { fhirEngine.search<CarePlan>(Search(ResourceType.CarePlan)) } returns listOf()
     coEvery { fhirEngine.get<StructureMap>(structureMapRegister.logicalId) } returns
       structureMapRegister
