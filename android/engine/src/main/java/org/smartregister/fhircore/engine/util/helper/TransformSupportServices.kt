@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Appointment
@@ -27,14 +30,17 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
 import org.hl7.fhir.r4.model.ResourceFactory
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.RiskAssessment.RiskAssessmentPredictionComponent
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.terminologies.ConceptMapEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities.ITransformerServices
+import org.smartregister.fhircore.engine.util.extension.toReference
 import timber.log.Timber
 
 /**
@@ -47,7 +53,9 @@ import timber.log.Timber
  * Immunization.Reaction
  */
 @Singleton
-class TransformSupportServices @Inject constructor(val simpleWorkerContext: SimpleWorkerContext) :
+class TransformSupportServices
+@Inject
+constructor(val simpleWorkerContext: SimpleWorkerContext, val fhirEngine: FhirEngine) :
   ITransformerServices {
 
   val outputs: MutableList<Base> = mutableListOf()
@@ -89,11 +97,16 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
 
   @Throws(FHIRException::class)
   override fun resolveReference(appContext: Any, url: String): Base {
-    throw FHIRException("resolveReference is not supported yet")
+    return runBlocking {
+      val reference = url.toReference()
+      IdType(reference?.reference).let {
+        fhirEngine.get(ResourceType.fromCode(it.resourceType), it.idPart)
+      }
+    }
   }
 
   @Throws(FHIRException::class)
   override fun performSearch(appContext: Any, url: String): List<Base> {
-    throw FHIRException("performSearch is not supported yet")
+    return runBlocking { fhirEngine.search(url).map { it.resource } }
   }
 }

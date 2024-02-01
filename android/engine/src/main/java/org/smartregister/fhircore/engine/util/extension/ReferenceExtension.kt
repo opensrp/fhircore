@@ -23,6 +23,19 @@ fun Reference.extractId(): String =
   if (this.reference.isNullOrEmpty()) ""
   else this.reference.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 
+fun String.toReference(): Reference? {
+  return if (this.isEmpty()) null
+  else {
+    val parts = this.split("/")
+    if (parts.size != 2) return null
+    val resourceString = parts[0]
+    val resourceId = parts[1]
+    val resourceType = ResourceType.fromCode(resourceString)
+
+    return resourceId.asReference(resourceType)
+  }
+}
+
 fun String.asReference(resourceType: ResourceType): Reference {
   val resourceId = this
   return Reference().apply { reference = "${resourceType.name}/$resourceId" }
