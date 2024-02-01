@@ -215,9 +215,9 @@ constructor(
         carePlan.contained.clear()
 
         // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-        if (output.hasActivity()) defaultRepository.create(true, carePlan)
+        if (output.hasActivity()) defaultRepository.addOrUpdate(true, carePlan)
 
-        dependents.forEach { defaultRepository.create(true, it) }
+        dependents.forEach { defaultRepository.addOrUpdate(true, it) }
 
         if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED) {
           carePlan.activity
@@ -376,7 +376,7 @@ constructor(
             )
 
           if (resourceClosureConditionsMet) {
-            defaultRepository.updateResourcesRecursively(eventResource, subject)
+            defaultRepository.updateResourcesRecursively(eventResource, subject, eventWorkFlow)
           }
         }
       }
