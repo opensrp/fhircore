@@ -33,6 +33,16 @@ class ReferenceExtensionTest {
   }
 
   @Test
+  fun testExtractReferenceFromString() {
+    val ref = "Patient/123456"
+
+    val result = ref.toReference()
+
+    Assert.assertNotNull(result)
+    Assert.assertEquals("Patient/123456", result?.reference)
+  }
+
+  @Test
   fun testStringAsReferenceShouldReturnReference() {
     val ref = "123456"
 

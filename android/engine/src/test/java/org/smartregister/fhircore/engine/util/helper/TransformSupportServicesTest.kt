@@ -16,8 +16,13 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
+import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.search
+import io.mockk.coEvery
 import io.mockk.mockk
-import org.hl7.fhir.exceptions.FHIRException
+import kotlin.test.assertEquals
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
@@ -25,6 +30,7 @@ import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.RiskAssessment
 import org.hl7.fhir.r4.model.TimeType
 import org.junit.Assert
@@ -34,12 +40,12 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 24-09-2021. */
 class TransformSupportServicesTest : RobolectricTest() {
-
-  lateinit var transformSupportServices: TransformSupportServices
+  private val fhirEngine = mockk<FhirEngine>()
+  private lateinit var transformSupportServices: TransformSupportServices
 
   @Before
   fun setUp() {
-    transformSupportServices = TransformSupportServices(mockk())
+    transformSupportServices = TransformSupportServices(mockk(), fhirEngine)
   }
 
   @Test
@@ -149,15 +155,28 @@ class TransformSupportServicesTest : RobolectricTest() {
 
   @Test
   fun `resolveReference() should throw FHIRException this is not supported yet when given url`() {
-    Assert.assertThrows("resolveReference is not supported yet", FHIRException::class.java) {
-      transformSupportServices.resolveReference("", "https://url.com")
-    }
+    coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns Patient().apply { id = "1234" }
+
+    val result = transformSupportServices.resolveReference("", "Patient/1234")
+
+    assertEquals(ResourceType.Patient.name, result.fhirType())
+    assertEquals("1234", result.idBase)
   }
 
   @Test
   fun `performSearch() should throw FHIRException this is not supported yet when given url`() {
-    Assert.assertThrows("performSearch is not supported yet", FHIRException::class.java) {
-      transformSupportServices.performSearch("", "https://url.com")
-    }
+    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns
+      listOf(
+        SearchResult(
+          resource = Patient().apply { id = "1234" },
+          included = null,
+          revIncluded = null
+        )
+      )
+
+    val result = transformSupportServices.performSearch("", "Patient")
+
+    assertEquals(result.size, 1)
+    assertEquals("1234", result.first().idBase)
   }
 }
