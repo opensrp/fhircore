@@ -52,8 +52,7 @@
             "sortConfigs": [
               {
                 "paramName": "period",
-                "dataType": "DATE",
-                "order": "DESCENDING"
+                "dataType": "DATE"
               }
             ]
           },
@@ -182,13 +181,6 @@
       ]
     },
     {
-      "name": "familyLogicalIdOnly",
-      "condition": "true",
-      "actions": [
-        "data.put('familyLogicalIdOnly', fhirPath.extractValue(Group, 'Group.id').split(\"/\").get(1))"
-      ]
-    },
-    {
       "name": "familyVillage",
       "condition": "true",
       "actions": [
@@ -231,10 +223,18 @@
       ]
     },
     {
-      "name": "isFamilyVisitAvailable",
+      "name": "hhVisitEncounter",
       "condition": "true",
       "actions": [
-        "data.put('isFamilyVisitAvailable', fhirPath.extractValue(service.filterResources(groupEncounter, \"Encounter.reasonCode[0].coding[0].code = 'family_registration'\").get(0), \"Encounter.period.start < today() - 365 'days'\"))"
+        "data.put('hhVisitEncounter', service.filterResources(groupEncounter, \"Encounter.reasonCode[0].coding[0].code = 'household_visit'\"))"
+      ]
+    },
+    {
+      "name": "isFamilyVisitAvailable",
+      "condition": "true",
+      "priority": 2,
+      "actions": [
+        "data.put('isFamilyVisitAvailable', size(data.get('hhVisitEncounter')) > 0 ? fhirPath.extractValue(data.get('hhVisitEncounter').get(0), \"Encounter.period.start < today() - 365 'days'\") : true)"
       ]
     }
   ],
@@ -393,13 +393,6 @@
                   "condition": "true",
                   "actions": [
                     "data.put('patientLogicalId', fhirPath.extractValue(Patient, 'Patient.id'))"
-                  ]
-                },
-                {
-                  "name": "serviceStatus",
-                  "condition": "true",
-                  "actions": [
-                    "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
                   ]
                 },
                 {
@@ -703,8 +696,8 @@
                         "paramType": "PREPOPULATE",
                         "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
                         "dataType": "STRING",
-                        "key": "familyLogicalIdOnly",
-                        "value": "@{familyLogicalIdOnly}"
+                        "key": "familyLogicalId",
+                        "value": "@{familyLogicalId}"
                       }
                     ]
                   }
@@ -729,8 +722,15 @@
                     "fhirPathExpression": "Condition.subject.reference"
                   },
                   {
+                    "id": "dueTaskList",
                     "resourceType": "Task",
-                    "fhirPathExpression": "Task.for.reference"
+                    "fhirPathExpression": "Task.for.reference",
+                    "conditionalFhirPathExpression": "((Task.status = 'ready' or Task.status = 'failed' or Task.status = 'requested') and (Task.code.empty()))",
+                    "sortConfig": {
+                      "dataType": "DATETIME",
+                      "fhirPathExpression": "Task.executionPeriod.start",
+                      "order": "ASCENDING"
+                    }
                   },
                   {
                     "resourceType": "Observation",
@@ -788,59 +788,61 @@
                   ]
                 },
                 {
-                  "name": "activeDueTaskList",
+                  "name": "taskStatus",
                   "condition": "true",
                   "actions": [
-                    "data.put('activeDueTaskList', service.filterResources(Task, 'Task.status=\"ready\" or Task.status=\"requested\"'))"
+                    "data.put('taskStatus', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.status') : null)"
                   ]
                 },
                 {
                   "name": "serviceStatus",
                   "condition": "true",
+                  "priority": 2,
                   "actions": [
-                    "data.put('serviceStatus',  service.evaluateToBoolean(Task, \"Task.status = 'ready' \", false) ? 'DUE' : 'UPCOMING')"
+                    "data.put('serviceStatus', data.get('taskStatus').equals('ready') ? 'DUE' : data.get('taskStatus').equals('failed') || data.get('taskStatus').equals('cancelled') ? 'OVERDUE' : data.get('taskStatus').equals('requested') ? 'UPCOMING' : 'UPCOMING')"
                   ]
                 },
                 {
                   "name": "taskDescription",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskDescription', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.description'))"
+                    "data.put('taskDescription', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.description') : '')"
                   ]
                 },
                 {
                   "name": "taskId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskId', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.id'))"
+                    "data.put('taskId', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.id') : '')"
                   ]
                 },
                 {
                   "name": "taskExecutionStartDate",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskExecutionStartDate', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.executionPeriod.start'))"
+                    "data.put('taskExecutionStartDate', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.executionPeriod.start') : null)"
                   ]
                 },
                 {
                   "name": "taskScheduleDate",
                   "condition": "true",
+                  "priority": 2,
                   "actions": [
-                    "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+                    "data.put('taskScheduleDate', data.get('taskExecutionStartDate') != null ? service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\") : '')"
                   ]
                 },
                 {
                   "name": "taskFor",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskFor', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.for.reference'))"
+                    "data.put('taskFor', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.for.reference') : '')"
                   ]
                 },
                 {
                   "name": "taskQuestionnaireId",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskQuestionnaireId', fhirPath.extractValue(size(data.get('activeDueTaskList')) > 0 ? data.get('activeDueTaskList').get(0) : null, 'Task.reasonReference.reference'))"
+                    "data.put('taskQuestionnaireId', size(dueTaskList) > 0 ? fhirPath.extractValue(dueTaskList.get(0), 'Task.reasonReference.reference') : '')"
                   ]
                 },
                 {
@@ -848,7 +850,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(data.get('activeDueTaskList')) > 0)"
+                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(dueTaskList) > 0)"
                   ]
                 },
                 {
@@ -1065,6 +1067,7 @@
         ]
       },
       {
+        "id": "hhCompletedHistory",
         "viewType": "COLUMN",
         "backgroundColor": "#FFFFFF",
         "children": [
@@ -1085,8 +1088,15 @@
                     "fhirPathExpression": "Condition.subject.reference"
                   },
                   {
+                    "id": "completedTaskList",
                     "resourceType": "Task",
-                    "fhirPathExpression": "Task.for.reference"
+                    "fhirPathExpression": "Task.for.reference",
+                    "conditionalFhirPathExpression": "((Task.status = 'completed') and (Task.code.empty()))",
+                    "sortConfig": {
+                      "dataType": "DATETIME",
+                      "fhirPathExpression": "Task.lastModified",
+                      "order": "DESCENDING"
+                    }
                   },
                   {
                     "resourceType": "Observation",
@@ -1101,6 +1111,13 @@
             ],
             "registerCard": {
               "rules": [
+                {
+                  "name": "completedTaskCount",
+                  "condition": "true",
+                  "actions": [
+                    "data.put('completedTaskCount', size(completedTaskList))"
+                  ]
+                },
                 {
                   "name": "patientName",
                   "condition": "true",
@@ -1130,38 +1147,34 @@
                   ]
                 },
                 {
-                  "name": "activeCompletedTaskList",
-                  "condition": "true",
-                  "actions": [
-                    "data.put('activeCompletedTaskList', service.filterResources(Task, 'Task.status=\"completed\"'))"
-                  ]
-                },
-                {
                   "name": "taskDescription",
                   "condition": "true",
                   "actions": [
-                    "data.put('taskDescription', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.description'))"
+                    "data.put('taskDescription', size(completedTaskList) > 0 ? fhirPath.extractValue(completedTaskList.get(0), 'Task.description') : '')"
                   ]
                 },
                 {
                   "name": "taskId",
+                  "priority": 2,
                   "condition": "true",
                   "actions": [
-                    "data.put('taskId', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.id'))"
+                    "data.put('taskId', size(completedTaskList) > 0 ? fhirPath.extractValue(completedTaskList.get(0), 'Task.id') : '')"
                   ]
                 },
                 {
                   "name": "taskFor",
+                  "priority": 2,
                   "condition": "true",
                   "actions": [
-                    "data.put('taskFor', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.for.reference'))"
+                    "data.put('taskFor', size(completedTaskList) > 0 ? fhirPath.extractValue(completedTaskList.get(0), 'Task.for.reference') : '')"
                   ]
                 },
                 {
                   "name": "taskQuestionnaireId",
+                  "priority": 2,
                   "condition": "true",
                   "actions": [
-                    "data.put('taskQuestionnaireId', fhirPath.extractValue(size(data.get('activeCompletedTaskList')) > 0 ? data.get('activeCompletedTaskList').get(0), 'Task.reasonReference.reference'))"
+                    "data.put('taskQuestionnaireId', size(completedTaskList) > 0 ? fhirPath.extractValue(completedTaskList.get(0), 'Task.reasonReference.reference') : '')"
                   ]
                 },
                 {
@@ -1169,7 +1182,7 @@
                   "condition": "true",
                   "priority": 2,
                   "actions": [
-                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(data.get('activeCompletedTaskList')) > 0)"
+                    "data.put('showMemberTasks', data.get('patientActive') == 'true' && size(completedTaskList) > 0)"
                   ]
                 },
                 {
@@ -1395,7 +1408,7 @@
           "trigger": "ON_CLICK",
           "workflow": "CHANGE_MANAGING_ENTITY",
           "managingEntity": {
-            "nameFhirPathExpression": "Patient.name.given + ' ' + Patient.name.family | Patient.name.given",
+            "nameFhirPathExpression": "Patient.name.text",
             "resourceType": "Patient",
             "eligibilityCriteriaFhirPathExpression": "Patient.active and (Patient.birthDate <= today() - 5 'years')",
             "dialogTitle": "{{ assign.household.head.title }}",

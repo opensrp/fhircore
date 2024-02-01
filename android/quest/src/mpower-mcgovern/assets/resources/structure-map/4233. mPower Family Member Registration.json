@@ -1387,7 +1387,7 @@
                           "transform": "c",
                           "parameter": [
                             {
-                              "valueString": "http://snomed.info/sct"
+                              "valueString": "http://hl7.org/fhir/ValueSet/marital-status"
                             },
                             {
                               "valueId": "statusCode"
@@ -1432,7 +1432,7 @@
               "context": "src",
               "element": "item",
               "variable": "household_relationship",
-              "condition": "(((linkId = 'c33296ce-1abb-4685-8bd0-e7f7187f2e98') or (linkId = 'ffe83655-d445-471d-8172-c0d3bafb8940')) and answer.value.exists())"
+              "condition": "(((linkId = 'c33296ce-1abb-4685-8bd0-e7f7187f2e98') or (linkId = 'ffe83655-d445-471d-8172-c0d3bafb8940') or (linkId = '7b469fdd-7c64-4cd6-9a03-9a84df42322d')) and answer.value.exists())"
             }
           ],
           "rule": [

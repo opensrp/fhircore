@@ -144,7 +144,22 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
               rulesFactory.rulesEngineService.filterResources(
                 retrieveRelatedResources,
                 relatedListResource.conditionalFhirPathExpression,
-              )
+              ).let { filteredResources ->
+                val sortConfig = relatedListResource.sortConfig
+
+                // Sort resources if sort configuration is provided
+                if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty()) {
+                  rulesFactory.rulesEngineService.sortResources(
+                    resources = filteredResources,
+                    fhirPathExpression = sortConfig.fhirPathExpression,
+                    dataType = sortConfig.dataType.name,
+                    order = sortConfig.order.name,
+                  )
+                    ?: filteredResources
+                } else {
+                  filteredResources
+                }
+              }
             } else {
               retrieveRelatedResources
             }

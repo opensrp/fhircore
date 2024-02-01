@@ -85,8 +85,9 @@ constructor(
     }
   }
 
-  private suspend fun getStockOutInventoryDetails() =
-    defaultRepository.fhirEngine
+  private suspend fun getStockOutInventoryDetails(): List<String> {
+    val inventorySet = hashSetOf<String>()
+    return defaultRepository.fhirEngine
       .search<Observation> {
         filter(
           Observation.STATUS,
@@ -102,16 +103,21 @@ constructor(
         )
       }
       .map { it.resource }
-      .map { obs ->
-        val inventory = defaultRepository.fhirEngine
-          .get(ResourceType.Group, obs.subject.extractId()) as Group
+      .mapNotNull { obs ->
+        if (inventorySet.add(obs.subject.extractId())) {
+          val inventory = defaultRepository.fhirEngine
+            .get(ResourceType.Group, obs.subject.extractId()) as Group
 
-        StringBuilder()
-          .append(inventory.name)
-          .append(" -> ")
-          .appendLine(obs.componentFirstRep.valueQuantity.value)
-          .toString()
+          StringBuilder()
+            .append(inventory.name)
+            .append(" -> ")
+            .appendLine(obs.componentFirstRep.valueQuantity.value)
+            .toString()
+        } else {
+          null
+        }
       }
+  }
 
   companion object {
     const val WORK_ID = "FhirStockOutNotifierWorker"

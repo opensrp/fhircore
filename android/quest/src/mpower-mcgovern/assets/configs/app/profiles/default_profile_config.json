@@ -2100,10 +2100,7 @@
             "setPractitionerDetails": true,
             "setOrganizationDetails": true,
             "type": "EDIT",
-            "resourceIdentifier": "@{patientId}",
-            "planDefinitions": [
-              "4242"
-            ]
+            "resourceIdentifier": "@{patientId}"
           },
           "params": [
             {

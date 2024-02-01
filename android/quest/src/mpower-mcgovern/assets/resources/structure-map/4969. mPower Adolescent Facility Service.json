@@ -145,39 +145,51 @@
           ]
         },
         {
-          "name": "r_extract_due_task",
+          "name": "check_refer",
           "source": [
             {
-              "context": "questionnaireResponse"
+              "context": "questionnaireResponse",
+              "element": "item",
+              "condition": "((linkId = '1d42768c-4a14-4549-a892-18883b3fba5d') and (answer.value.code = 'yes'))"
             }
           ],
-          "target": [
+          "rule": [
             {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "dueTask",
-              "transform": "create",
-              "parameter": [
+              "name": "r_extract_due_task",
+              "source": [
                 {
-                  "valueString": "Task"
+                  "context": "questionnaireResponse"
                 }
-              ]
-            }
-          ],
-          "dependent": [
-            {
-              "name": "ExtractDueTask",
-              "variable": [
-                "questionnaireResponse",
-                "refPatient",
-                "dueTask"
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "dueTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractDueTask",
+                  "variable": [
+                    "questionnaireResponse",
+                    "refPatient",
+                    "dueTask"
+                  ]
+                }
               ]
             }
           ]
@@ -1713,184 +1725,6 @@
               "parameter": [
                 {
                   "valueString": "Questionnaire/4970"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "name": "check_refer_reason",
-          "source": [
-            {
-              "context": "questionnaireResponse",
-              "element": "item",
-              "variable": "refer_reason",
-              "condition": "((linkId = 'fe713e46-42bc-4931-8364-d4945cd0ea26') and answer.value.exists())"
-            }
-          ],
-          "rule": [
-            {
-              "name": "r_task_input",
-              "source": [
-                {
-                  "context": "questionnaireResponse"
-                }
-              ],
-              "target": [
-                {
-                  "context": "task",
-                  "contextType": "variable",
-                  "element": "input",
-                  "variable": "input",
-                  "transform": "create",
-                  "parameter": [
-                    {
-                      "valueString": "Task_Input"
-                    }
-                  ]
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_task_input_cod",
-                  "source": [
-                    {
-                      "context": "questionnaireResponse"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "input",
-                      "contextType": "variable",
-                      "element": "value",
-                      "variable": "taskCode",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "CodeableConcept"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_en_cc_cod",
-                      "source": [
-                        {
-                          "context": "questionnaireResponse"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "taskCode",
-                          "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "create",
-                          "parameter": [
-                            {
-                              "valueString": "Coding"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_en_cod_system",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "system",
-                              "transform": "copy",
-                              "parameter": [
-                                {
-                                  "valueString": "https://www.mpower-social.com/"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_en_cod_cod",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "code",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "refer_reason"
-                                },
-                                {
-                                  "valueString": "$this.answer.value.code"
-                                }
-                              ]
-                            }
-                          ]
-                        },
-                        {
-                          "name": "r_en_cod_disp",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "display",
-                              "transform": "evaluate",
-                              "parameter": [
-                                {
-                                  "valueId": "refer_reason"
-                                },
-                                {
-                                  "valueString": "$this.answer.value.display"
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_en_text",
-                      "source": [
-                        {
-                          "context": "questionnaireResponse"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "taskCode",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "evaluate",
-                          "parameter": [
-                            {
-                              "valueId": "refer_reason"
-                            },
-                            {
-                              "valueString": "answer.value.display"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
                 }
               ]
             }

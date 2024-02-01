@@ -107,39 +107,52 @@
       ],
       "rule": [
         {
-          "name": "r_extract_due_task",
+          "name": "check_refer_reason",
           "source": [
             {
-              "context": "questionnaireResponse"
+              "context": "questionnaireResponse",
+              "element": "item",
+              "variable": "refer_reason",
+              "condition": "((linkId = 'a6847847-727d-497a-8d9f-037e9bc6d02d') and (answer.value.code = 'yes'))"
             }
           ],
-          "target": [
+          "rule": [
             {
-              "context": "bundle",
-              "contextType": "variable",
-              "element": "entry",
-              "variable": "entry"
-            },
-            {
-              "context": "entry",
-              "contextType": "variable",
-              "element": "resource",
-              "variable": "dueTask",
-              "transform": "create",
-              "parameter": [
+              "name": "r_extract_due_task",
+              "source": [
                 {
-                  "valueString": "Task"
+                  "context": "questionnaireResponse"
                 }
-              ]
-            }
-          ],
-          "dependent": [
-            {
-              "name": "ExtractDueTask",
-              "variable": [
-                "questionnaireResponse",
-                "refPatient",
-                "dueTask"
+              ],
+              "target": [
+                {
+                  "context": "bundle",
+                  "contextType": "variable",
+                  "element": "entry",
+                  "variable": "entry"
+                },
+                {
+                  "context": "entry",
+                  "contextType": "variable",
+                  "element": "resource",
+                  "variable": "dueTask",
+                  "transform": "create",
+                  "parameter": [
+                    {
+                      "valueString": "Task"
+                    }
+                  ]
+                }
+              ],
+              "dependent": [
+                {
+                  "name": "ExtractDueTask",
+                  "variable": [
+                    "questionnaireResponse",
+                    "refPatient",
+                    "dueTask"
+                  ]
+                }
               ]
             }
           ]
@@ -921,18 +934,29 @@
           ]
         },
         {
-          "name": "check_refer_reason",
+          "name": "r_task_input",
           "source": [
             {
-              "context": "questionnaireResponse",
-              "element": "item",
-              "variable": "refer_reason",
-              "condition": "((linkId = 'a6847847-727d-497a-8d9f-037e9bc6d02d') and (answer.value.code = 'yes'))"
+              "context": "questionnaireResponse"
+            }
+          ],
+          "target": [
+            {
+              "context": "task",
+              "contextType": "variable",
+              "element": "input",
+              "variable": "input",
+              "transform": "create",
+              "parameter": [
+                {
+                  "valueString": "Task_Input"
+                }
+              ]
             }
           ],
           "rule": [
             {
-              "name": "r_task_input",
+              "name": "r_task_input_cod",
               "source": [
                 {
                   "context": "questionnaireResponse"
@@ -940,21 +964,21 @@
               ],
               "target": [
                 {
-                  "context": "task",
+                  "context": "input",
                   "contextType": "variable",
-                  "element": "input",
-                  "variable": "input",
+                  "element": "value",
+                  "variable": "taskCode",
                   "transform": "create",
                   "parameter": [
                     {
-                      "valueString": "Task_Input"
+                      "valueString": "CodeableConcept"
                     }
                   ]
                 }
               ],
               "rule": [
                 {
-                  "name": "r_task_input_cod",
+                  "name": "r_en_cc_cod",
                   "source": [
                     {
                       "context": "questionnaireResponse"
@@ -962,21 +986,24 @@
                   ],
                   "target": [
                     {
-                      "context": "input",
+                      "context": "taskCode",
                       "contextType": "variable",
-                      "element": "value",
-                      "variable": "taskCode",
-                      "transform": "create",
+                      "element": "coding",
+                      "variable": "coding",
+                      "transform": "c",
                       "parameter": [
                         {
-                          "valueString": "CodeableConcept"
+                          "valueString": "https://www.mpower-social.com/"
+                        },
+                        {
+                          "valueString": "child_problems"
                         }
                       ]
                     }
                   ],
                   "rule": [
                     {
-                      "name": "r_en_cc_cod",
+                      "name": "r_cp_cod_disp_v",
                       "source": [
                         {
                           "context": "questionnaireResponse"
@@ -984,63 +1011,36 @@
                       ],
                       "target": [
                         {
-                          "context": "taskCode",
+                          "context": "coding",
                           "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "c",
+                          "element": "display",
+                          "transform": "copy",
                           "parameter": [
                             {
-                              "valueString": "https://www.mpower-social.com/"
-                            },
-                            {
-                              "valueString": "child_problems"
-                            }
-                          ]
-                        }
-                      ],
-                      "rule": [
-                        {
-                          "name": "r_cp_cod_disp_v",
-                          "source": [
-                            {
-                              "context": "questionnaireResponse"
-                            }
-                          ],
-                          "target": [
-                            {
-                              "context": "coding",
-                              "contextType": "variable",
-                              "element": "display",
-                              "transform": "copy",
-                              "parameter": [
-                                {
-                                  "valueString": "শিশ�? বিষয়ক সমস�?যা"
-                                }
-                              ]
+                              "valueString": "শিশু বিষয়ক সমস্যা"
                             }
                           ]
                         }
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "name": "r_en_text",
+                  "source": [
                     {
-                      "name": "r_en_text",
-                      "source": [
+                      "context": "questionnaireResponse"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "taskCode",
+                      "contextType": "variable",
+                      "element": "text",
+                      "transform": "copy",
+                      "parameter": [
                         {
-                          "context": "questionnaireResponse"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "taskCode",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "শিশ�? বিষয়ক সমস�?যা"
-                            }
-                          ]
+                          "valueString": "শিশু বিষয়ক সমস্যা"
                         }
                       ]
                     }
