@@ -93,7 +93,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val transformSupportServices = TransformSupportServices(contextR4)
+    val transformSupportServices = TransformSupportServices(contextR4, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "PatientRegistration")
@@ -127,7 +127,7 @@ class SimpleDetailsActivityTest : RobolectricTest() {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val transformSupportServices = TransformSupportServices(contextR4)
+    val transformSupportServices = TransformSupportServices(contextR4, mockk())
 
     val scu = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val map = scu.parse(g6pdStructureMap, "TestResults")

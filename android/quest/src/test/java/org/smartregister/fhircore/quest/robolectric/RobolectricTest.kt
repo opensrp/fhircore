@@ -26,6 +26,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
+import io.mockk.mockk
 import java.io.File
 import java.io.FileReader
 import java.util.Base64
@@ -122,7 +123,7 @@ abstract class RobolectricTest {
     contextR4.setExpansionProfile(Parameters())
     contextR4.isCanRunWithoutTerminology = true
 
-    val transformSupportServices = TransformSupportServices(contextR4)
+    val transformSupportServices = TransformSupportServices(contextR4, mockk())
 
     return StructureMapUtilities(contextR4, transformSupportServices)
   }
