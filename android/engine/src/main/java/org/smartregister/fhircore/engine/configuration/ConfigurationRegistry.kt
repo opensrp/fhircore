@@ -536,7 +536,6 @@ constructor(
    * resource, or create it if not found.
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
-    if (resource == null) return
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
@@ -595,9 +594,10 @@ constructor(
   }
 
   suspend fun fetchRemoteComposition(appId: String): Composition? {
-    Timber.i("Fetching configs for app $appId")
+    val theAppId = appId.replace(DEBUG_SUFFIX, "")
+    Timber.i("Fetching configs for app $theAppId")
     val urlPath =
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$HAPI_FHIR_DEFAULT_COUNT"
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$theAppId&_count=$HAPI_FHIR_DEFAULT_COUNT"
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
