@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
@@ -34,7 +37,10 @@ import io.mockk.verifyAll
 import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.repackaged.net.bytebuddy.matcher.ElementMatchers.any
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Before
@@ -52,9 +58,11 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.BLACK_COLOR_HEX_CODE
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -101,8 +109,13 @@ class ProfileViewModelTest : RobolectricTest() {
           parser = parser,
         ),
       )
-    coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
-      RepositoryResourceData(resource = Faker.buildPatient())
+    coEvery {
+      registerRepository.loadProfileData(
+        any(),
+        any(),
+        paramsList = emptyArray(),
+      )
+    } returns RepositoryResourceData(resource = Faker.buildPatient())
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -208,6 +221,79 @@ class ProfileViewModelTest : RobolectricTest() {
     verifyAll {
       mockActionConfig.interpolate(any())
       profileViewModel.onEvent(event)
+    }
+  }
+
+  @Test
+  fun testManagingEntityShowsProfileBottomSheetFragment() = runTest {
+    val navController = mockk<NavController>()
+    val event = mockk<ProfileEvent.OverflowMenuClick>()
+    val fragmentManager = mockk<FragmentManager>()
+    val fragmentManagerTransaction = mockk<FragmentTransaction>()
+    val overflowMenuItemConfig =
+      OverflowMenuItemConfig(
+        id = 1,
+        title = "open profile bottom sheet",
+        confirmAction = false,
+        icon = null,
+        titleColor = BLACK_COLOR_HEX_CODE,
+        backgroundColor = null,
+        visible = "true",
+        showSeparator = false,
+        enabled = "true",
+        actions = emptyList(),
+      )
+    val group =
+      Group().apply { managingEntity = managingEntity.apply { reference = "patient/1424251" } }
+    val managingEntityResource = mockk<Group.GroupMemberComponent>()
+    val profileBottomSheetFragment = mockk<ProfileBottomSheetFragment>()
+    val activity = mockk<AppCompatActivity>()
+
+    val viewModel =
+      ProfileViewModel(
+        registerRepository,
+        configurationRegistry,
+        dispatcherProvider,
+        fhirPathDataExtractor,
+        resourceDataRulesExecutor,
+      )
+
+    val managingEntityConfig =
+      ManagingEntityConfig(
+        nameFhirPathExpression = "name",
+        eligibilityCriteriaFhirPathExpression = "criteria",
+        resourceType = ResourceType.Patient,
+        dialogTitle = "Change Managing Entity",
+        dialogWarningMessage = "Warning",
+        dialogContentMessage = "Select a new managing entity",
+        noMembersErrorMessage = "No members found",
+        managingEntityReassignedMessage = "Managing entity reassigned",
+      )
+
+    coEvery { registerRepository.loadResource<Group>("group1") } returns group
+    coEvery { group.member } returns listOf(managingEntityResource)
+    every { managingEntityResource.id } returns "entity1"
+    every {
+      fhirPathDataExtractor.extractValue(
+        managingEntityResource,
+        "name",
+      )
+    } returns "memebr 1"
+    every { fhirPathDataExtractor.extractValue(managingEntityResource, any()) } returns "true"
+    every { activity.supportFragmentManager } returns fragmentManager
+    every { activity.supportFragmentManager.beginTransaction() } returns fragmentManagerTransaction
+    viewModel.onEvent(
+      ProfileEvent.OverflowMenuClick(
+        navController,
+        resourceData,
+        overflowMenuItemConfig,
+      ),
+    )
+    profileViewModel.changeManagingEntity(event, managingEntityConfig)
+    verifyAll {
+      navController.context
+      activity.getActivity()
+      profileBottomSheetFragment.show(fragmentManager, ProfileBottomSheetFragment.TAG)
     }
   }
 }
