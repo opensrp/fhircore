@@ -75,7 +75,6 @@ import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -324,11 +323,10 @@ constructor(
   suspend fun removeGroupMember(
     memberId: String,
     groupId: String?,
-    groupMemberResourceType: String?,
+    memberResourceType: ResourceType?,
     configComputedRuleValues: Map<String, Any>
   ) {
-    val memberResourceType =
-      groupMemberResourceType?.resourceClassType()?.newInstance()?.resourceType
+
     val fhirResource: Resource? =
       try {
         if (memberResourceType == null) {

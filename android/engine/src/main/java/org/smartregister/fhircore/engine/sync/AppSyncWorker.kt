@@ -49,7 +49,7 @@ constructor(
 
   /** Disable ETag for upload */
   override fun getUploadConfiguration(): UploadConfiguration =
-    UploadConfiguration(useETagForUpload = false)
+    UploadConfiguration(useETagForUpload = false, uploadBundleSize = 100)
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 }
