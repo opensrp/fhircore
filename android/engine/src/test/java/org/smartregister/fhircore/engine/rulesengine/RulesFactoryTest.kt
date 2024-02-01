@@ -413,6 +413,51 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun `test mapResourcesToLabeledCSV with no resources`() {
+    val resources = null
+    val fhirPathExpression = "Patient.active and (Patient.birthDate <= today() - 60 'years')"
+    val label = "ELDERLY"
+    val matchAllExtraConditions = false
+    val extraConditions = emptyArray<Any>()
+
+    val result =
+      rulesEngineService.mapResourcesToLabeledCSV(
+        resources,
+        fhirPathExpression,
+        label,
+        matchAllExtraConditions,
+        *extraConditions,
+      )
+
+    Assert.assertEquals("", result)
+  }
+
+  @Test
+  fun `test mapResourcesToLabeledCSV with no matching resources`() {
+    val resources =
+      listOf(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("1954-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("1944-10-03").toDate()),
+      )
+    val fhirPathExpression = "Patient.active and (Patient.birthDate <= today() - 60 'years')"
+    val label = "ELDERLY"
+    val matchAllExtraConditions = false
+    val extraConditions = emptyArray<Any>()
+
+    val result =
+      rulesEngineService.mapResourcesToLabeledCSV(
+        resources,
+        fhirPathExpression,
+        label,
+        matchAllExtraConditions,
+        *extraConditions,
+      )
+
+    Assert.assertEquals("ELDERLY", result)
+  }
+
+  @Test
   fun filterResourceList() {
     val fhirPathExpression =
       "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
@@ -427,7 +472,7 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService
         .filterResources(
           resources = resources,
-          fhirPathExpression = fhirPathExpression,
+          conditionalFhirPathExpression = fhirPathExpression,
         )
         .size == 2,
     )

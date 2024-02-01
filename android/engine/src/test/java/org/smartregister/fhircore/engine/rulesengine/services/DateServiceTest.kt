@@ -167,4 +167,34 @@ class DateServiceTest : RobolectricTest() {
       DateService.addOrSubtractTimeUnitFromCurrentDate(2, "*", timeUnit = "YEAR")
     }
   }
+
+  @Test
+  fun testCompareDates() {
+    val result =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2023-09-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(-1, result)
+
+    val result2 =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2024-31-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(1, result2)
+
+    val result3 =
+      DateService.compareDates(
+        firstDateFormat = SDF_YYYY_MM_DD,
+        firstDateString = "2024-01-01",
+        secondDateFormat = SDF_YYYY_MM_DD,
+        secondDateString = "2024-01-01",
+      )
+    assertEquals(0, result3)
+  }
 }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
@@ -91,6 +92,8 @@ class RegisterRepositoryTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
@@ -108,6 +111,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = parser,
         ),
       )
   }
