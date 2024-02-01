@@ -34,6 +34,9 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verifyAll
+import javax.inject.Inject
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Group
@@ -61,9 +64,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import javax.inject.Inject
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @HiltAndroidTest
 class ProfileViewModelTest : RobolectricTest() {
