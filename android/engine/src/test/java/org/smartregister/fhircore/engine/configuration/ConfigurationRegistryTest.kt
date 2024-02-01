@@ -273,7 +273,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
     coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
-    coVerify(exactly = 1) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 1) { fhirEngine.create(capture(requestPathArgumentSlot)) }
     Assert.assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
     Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
   }
@@ -406,7 +406,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
-      configRegistry.create(patient)
+      configRegistry.createRemote(patient)
       coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
