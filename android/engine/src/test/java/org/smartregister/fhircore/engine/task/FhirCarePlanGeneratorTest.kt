@@ -1285,7 +1285,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       val questionnaireResponses = planDefinitionResources.questionnaireResponses
       val resourcesSlot = planDefinitionResources.resourcesSlot
       val vaccines = makeVaccinesMapForPatient(patient)
-
+g
       installToIgManager(planDefinition)
       installToIgManager(planDefinitionResources.structureMap)
       importToFhirEngine(patient)
@@ -1475,6 +1475,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             .addEntry(
               Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
             ),
+          true,
         )!!
         .also { carePlan ->
           assertCarePlan(
@@ -2204,7 +2205,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       ::installToIgManager,
     )
     loadFile(
-      "/plans/measles-immunizations/Library-IMMZCommonIzDataElements.json",
+      "/plans/measles-immunizations/Library-IMMZCommonIzDataEleents.json",
       ::installToIgManager,
     )
     loadFile(

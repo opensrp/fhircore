@@ -416,6 +416,7 @@ dependencies {
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
+  androidTestImplementation(libs.navigation.testing)
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }

@@ -28,6 +28,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -122,25 +124,27 @@ constructor(
     data: Bundle = Bundle(),
     output: CarePlan,
   ) {
-    if (cqlLibraryIdList.isEmpty()) {
-      loadPlanDefinitionResourcesFromDb()
+    withContext(Dispatchers.IO) {
+      if (cqlLibraryIdList.isEmpty()) {
+        loadPlanDefinitionResourcesFromDb()
+      }
+
+      val carePlanProposal =
+        fhirOperator.generateCarePlan(
+          planDefinition,
+          patient,
+          data,
+        ) as CarePlan
+
+      acceptCarePlan(carePlanProposal, output)
+
+      resolveDynamicValues(
+        planDefinition = planDefinition,
+        input = data,
+        subject = patient,
+        output,
+      )
     }
-
-    val carePlanProposal =
-      fhirOperator.generateCarePlan(
-        planDefinition,
-        patient,
-        data,
-      ) as CarePlan
-
-    acceptCarePlan(carePlanProposal, output)
-
-    resolveDynamicValues(
-      planDefinition = planDefinition,
-      input = data,
-      subject = patient,
-      output,
-    )
   }
 
   private fun FhirOperator.generateCarePlan(

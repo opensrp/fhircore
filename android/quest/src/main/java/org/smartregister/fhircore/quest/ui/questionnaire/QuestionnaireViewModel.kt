@@ -619,42 +619,44 @@ constructor(
       bundle.addEntry(Bundle.BundleEntryComponent().setResource(basicResource))
     }
 
-    val filters =
+    val libraryFilters =
       questionnaire.cqfLibraryUrls().map {
         val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
         apply
       }
 
-    defaultRepository.fhirEngine
-      .search<Library> { filter(Resource.RES_ID, *filters.toTypedArray()) }
-      .forEach { librarySearchResult ->
-        val result: Parameters =
-          fhirOperator.evaluateLibrary(
-            librarySearchResult.resource.url,
-            subject.asReference().reference,
-            null,
-            bundle,
-            null,
-          ) as Parameters
+    if (libraryFilters.isNotEmpty()) {
+      defaultRepository.fhirEngine
+        .search<Library> { filter(Resource.RES_ID, *libraryFilters.toTypedArray()) }
+        .forEach { librarySearchResult ->
+          val result: Parameters =
+            fhirOperator.evaluateLibrary(
+              librarySearchResult.resource.url,
+              subject.asReference().reference,
+              null,
+              bundle,
+              null,
+            ) as Parameters
 
-        result.parameter.mapNotNull { cqlResultParameterComponent ->
-          (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-            resultParameterResource ->
-            if (
-              cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                resultParameterResource.isResource
-            ) {
-              defaultRepository.create(true, resultParameterResource as Resource)
-            }
+          result.parameter.mapNotNull { cqlResultParameterComponent ->
+            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+              resultParameterResource ->
+              if (
+                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                  resultParameterResource.isResource
+              ) {
+                defaultRepository.create(true, resultParameterResource as Resource)
+              }
 
-            if (BuildConfig.DEBUG) {
-              Timber.d(
-                "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
-              )
+              if (BuildConfig.DEBUG) {
+                Timber.d(
+                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
+                )
+              }
             }
           }
         }
-      }
+    }
   }
 
   private fun getStringRepresentation(base: Base): String =
