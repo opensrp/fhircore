@@ -16,18 +16,21 @@
 
 package org.smartregister.fhircore.geowidget.model
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.json.JSONObject
 
-@Serializable
-sealed class GeoWidgetEvent {
+data class GeoWidgetLocation(
+  val id: String = "",
+  val name: String = "",
+  val position: Position? = null,
+  val contexts: List<Context> = listOf(),
+)
 
-  @Serializable
-  data class OpenProfile(val data: String, val geoWidgetConfiguration: GeoWidgetConfiguration) :
-    GeoWidgetEvent()
+data class Position(
+  val latitude: Double = 0.0,
+  val longitude: Double = 0.0,
+)
 
-  @Serializable
-  data class RegisterClient(val data: String, val questionnaire: QuestionnaireConfig) :
-    GeoWidgetEvent()
-}
+data class Context(
+  val id: String = "", // the id of 'type'
+  val type: String = "", // Group, Patient, Healthcare Service
+)
