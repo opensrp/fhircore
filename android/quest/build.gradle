@@ -173,22 +173,22 @@ android {
             dimension "apps"
             applicationIdSuffix ".mwcore"
             versionNameSuffix "-mwcore"
-            versionCode 31
-            versionName "0.1.21"
+            versionCode 32
+            versionName "0.1.22"
         }
         mwcoreDev {
             dimension "apps"
             applicationIdSuffix ".mwcoreDev"
             versionNameSuffix "-mwcoreDev"
-            versionCode 31
-            versionName "0.1.21"
+            versionCode 32
+            versionName "0.1.22"
         }
         mwcoreProd {
             dimension "apps"
             applicationIdSuffix ".mwcoreProd"
             versionNameSuffix "-mwcoreProd"
-            versionCode 9
-            versionName "0.0.9"
+            versionCode 10
+            versionName "0.1.0"
         }
         afyayangu {
             dimension "apps"

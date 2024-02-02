@@ -174,8 +174,7 @@ constructor(
         profile.isHomeTracing?.let { isHomeTracing ->
           QuestionnaireActivity.launchQuestionnaire(
             event.context,
-            // TODO: Replace with actual tracing outcomes url
-            if (isHomeTracing) "tests/home_outcome.json" else "tests/phone_outcome.json",
+            if (isHomeTracing) "home-tracing-outcome" else "phone-tracing-outcome",
             clientIdentifier = patientId,
             questionnaireType = QuestionnaireType.EDIT,
             populationResources = profile.populationResources

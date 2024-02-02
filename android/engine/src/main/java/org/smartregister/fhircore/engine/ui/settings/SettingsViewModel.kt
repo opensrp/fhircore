@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
@@ -66,55 +67,69 @@ constructor(
 
   val language = MutableLiveData<Language?>(null)
 
-  val data = MutableLiveData<ProfileData>()
+  val profileData = MutableLiveData<DataLoadState<ProfileData>>()
 
   init {
     viewModelScope.launch @ExcludeFromJacocoGeneratedReport { fetchData() }
   }
 
   private suspend fun fetchData() {
-    var practitionerName: String? = null
-    sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
-      ?.let {
-        val practitioner = fhirEngine.get(ResourceType.Practitioner, it) as Practitioner
-        practitionerName = practitioner.nameFirstRep.nameAsSingleString
-      }
+    try {
+      profileData.value = DataLoadState.Loading
 
-    val organizationIds =
-      sharedPreferences.read<List<String>>(
-          key = ResourceType.Organization.name,
-          decodeWithGson = true
+      var practitionerName: String? = null
+      sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
+        ?.let {
+          val practitioner = fhirEngine.get(ResourceType.Practitioner, it) as Practitioner
+          practitionerName = practitioner.nameFirstRep.nameAsSingleString
+        }
+
+      val organizationIds =
+        sharedPreferences.read<List<String>>(
+            key = ResourceType.Organization.name,
+            decodeWithGson = true
+          )
+          ?.map {
+            val resource = (fhirEngine.get(ResourceType.Organization, it) as Organization)
+            FieldData(resource.logicalId, resource.name)
+          }
+
+      val locationIds =
+        sharedPreferences.read<List<String>>(
+            key = ResourceType.Location.name,
+            decodeWithGson = true
+          )
+          ?.map {
+            val resource = (fhirEngine.get(ResourceType.Location, it) as Location)
+            FieldData(resource.logicalId, resource.name)
+          }
+
+      val careTeamIds =
+        sharedPreferences.read<List<String>>(
+            key = ResourceType.CareTeam.name,
+            decodeWithGson = true
+          )
+          ?.map {
+            val resource = (fhirEngine.get(ResourceType.CareTeam, it) as CareTeam)
+            FieldData(resource.logicalId, resource.name)
+          }
+
+      val isValid = organizationIds != null || locationIds != null || careTeamIds != null
+
+      profileData.value =
+        DataLoadState.Success(
+          ProfileData(
+            userName = practitionerName ?: "",
+            organisations = organizationIds ?: listOf(),
+            locations = locationIds ?: listOf(),
+            careTeams = careTeamIds ?: listOf(),
+            isUserValid = isValid,
+            practitionerDetails = null
+          )
         )
-        ?.map {
-          val resource = (fhirEngine.get(ResourceType.Organization, it) as Organization)
-          FieldData(resource.logicalId, resource.name)
-        }
-
-    val locationIds =
-      sharedPreferences.read<List<String>>(key = ResourceType.Location.name, decodeWithGson = true)
-        ?.map {
-          val resource = (fhirEngine.get(ResourceType.Location, it) as Location)
-          FieldData(resource.logicalId, resource.name)
-        }
-
-    val careTeamIds =
-      sharedPreferences.read<List<String>>(key = ResourceType.CareTeam.name, decodeWithGson = true)
-        ?.map {
-          val resource = (fhirEngine.get(ResourceType.CareTeam, it) as CareTeam)
-          FieldData(resource.logicalId, resource.name)
-        }
-
-    val isValid = organizationIds != null || locationIds != null || careTeamIds != null
-
-    data.value =
-      ProfileData(
-        userName = practitionerName ?: "",
-        organisations = organizationIds ?: listOf(),
-        locations = locationIds ?: listOf(),
-        careTeams = careTeamIds ?: listOf(),
-        isUserValid = isValid,
-        practitionerDetails = null
-      )
+    } catch (e: Exception) {
+      profileData.value = DataLoadState.Error(e)
+    }
   }
 
   fun runSync() {

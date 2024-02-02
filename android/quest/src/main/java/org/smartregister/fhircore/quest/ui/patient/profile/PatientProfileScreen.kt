@@ -207,7 +207,6 @@ fun PatientProfileScreen(
               profileViewSection = PatientProfileViewSection.TASKS
             ) {
               profileViewData.tasks.forEach {
-                println(taskId)
                 ProfileActionableItem(
                   it,
                   onActionClick = { taskFormId, taskId ->
