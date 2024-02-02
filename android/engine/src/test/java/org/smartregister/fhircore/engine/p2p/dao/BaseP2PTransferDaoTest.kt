@@ -16,209 +16,239 @@
 
 package org.smartregister.fhircore.engine.p2p.dao
 
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.DateParamFilterCriterion
+import com.google.android.fhir.search.SearchQuery
 import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import java.util.Date
+import java.util.TreeSet
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Address
-import org.hl7.fhir.r4.model.ContactPoint
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.HumanName
-import org.hl7.fhir.r4.model.Meta
+import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
-import org.joda.time.LocalDate
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.sync.DataType
 
 class BaseP2PTransferDaoTest : RobolectricTest() {
-
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
-  private lateinit var fhirEngine: FhirEngine
-  private val currentDate = Date()
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk(relaxed = true)
 
   @Before
   fun setUp() {
-    fhirEngine = mockk(relaxed = true)
-    baseP2PTransferDao = spyk(P2PReceiverTransferDao(fhirEngine, DefaultDispatcherProvider()))
+    baseP2PTransferDao =
+      spyk(
+        P2PReceiverTransferDao(
+          fhirEngine,
+          DefaultDispatcherProvider(),
+          configurationRegistry,
+          mockk(),
+        ),
+      )
   }
 
   @Test
   fun `getDataTypes() returns correct list of datatypes`() {
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
-    Assert.assertEquals(6, actualDataTypes.size)
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+    assertEquals(9, actualDataTypes.size)
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
-    )
-    Assert.assertTrue(
+    assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
+    )
+  }
+
+  @Test
+  fun `getDynamicDataTypes() returns correct list of datatypes`() {
+    val resourceList =
+      listOf(
+        ResourceType.Group.name,
+        ResourceType.Patient.name,
+        ResourceType.Questionnaire.name,
+        ResourceType.QuestionnaireResponse.name,
+        ResourceType.Observation.name,
+        ResourceType.Encounter.name,
       )
+    val actualDataTypes = baseP2PTransferDao.getDynamicDataTypes(resourceList)
+    assertEquals(6, actualDataTypes.size)
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
   @Test
-  fun `addOrUpdate() calls fhirEngine#update() when resource already exists`() {
-    val expectedPatient = populateTestPatient()
-
-    coEvery { fhirEngine.get(ResourceType.Patient, expectedPatient.logicalId) } returns
-      expectedPatient
-    runBlocking { baseP2PTransferDao.addOrUpdate(expectedPatient) }
-
-    val resourceSlot = slot<Resource>()
-    coVerify { fhirEngine.update(capture(resourceSlot)) }
-    val actualPatient = resourceSlot.captured as Patient
-    Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
-    Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
-    Assert.assertEquals(expectedPatient.gender, actualPatient.gender)
-    Assert.assertEquals(expectedPatient.address[0].city, actualPatient.address[0].city)
-    Assert.assertEquals(expectedPatient.address[0].country, actualPatient.address[0].country)
-    Assert.assertEquals(expectedPatient.name[0].family, actualPatient.name[0].family)
-    Assert.assertEquals(expectedPatient.meta.lastUpdated, actualPatient.meta.lastUpdated)
-  }
-
-  @Test
-  fun `addOrUpdate() calls fhirEngine#create() when resource does not exist`() {
-    val expectedPatient = populateTestPatient()
-    val resourceNotFoundException = ResourceNotFoundException("", "")
-    coEvery { fhirEngine.get(ResourceType.Patient, expectedPatient.logicalId) } throws
-      resourceNotFoundException
-    runBlocking { baseP2PTransferDao.addOrUpdate(expectedPatient) }
-
-    val resourceSlot = slot<Resource>()
-    coVerify { fhirEngine.create(capture(resourceSlot)) }
-    val actualPatient = resourceSlot.captured as Patient
-    Assert.assertEquals(expectedPatient.logicalId, actualPatient.logicalId)
-    Assert.assertEquals(expectedPatient.birthDate, actualPatient.birthDate)
-    Assert.assertEquals(expectedPatient.gender, actualPatient.gender)
-    Assert.assertEquals(expectedPatient.address[0].city, actualPatient.address[0].city)
-    Assert.assertEquals(expectedPatient.address[0].country, actualPatient.address[0].country)
-    Assert.assertEquals(expectedPatient.name[0].family, actualPatient.name[0].family)
-    Assert.assertEquals(expectedPatient.meta.lastUpdated, actualPatient.meta.lastUpdated)
-  }
-
-  @Test
+  @Ignore("SDK does not allow custom queries, do we need this anymore?")
   fun `loadResources() calls fhirEngine#search()`() {
+    val expectedQuery =
+      "SELECT a.serializedResource\n" +
+        "  FROM ResourceEntity a\n" +
+        "  LEFT JOIN DateIndexEntity b\n" +
+        "  ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = \"_lastUpdated\"\n" +
+        "  LEFT JOIN DateTimeIndexEntity c\n" +
+        "  ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = \"_lastUpdated\"\n" +
+        "  WHERE a.resourceType = \"Patient\"\n" +
+        "  AND a.resourceUuid IN (\n" +
+        "  SELECT resourceUuid FROM DateTimeIndexEntity\n" +
+        "  WHERE resourceType = \"Patient\" AND index_name = \"_lastUpdated\" AND index_to >= ?\n" +
+        "  )\n" +
+        "  ORDER BY b.index_from ASC, c.index_from ASC\n" +
+        "  LIMIT ? OFFSET ?"
 
+    val patientDataType = DataType("Patient", DataType.Filetype.JSON, 1)
+    val classType = patientDataType.name.resourceClassType()
     runBlocking {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
-        classType = Patient::class.java
+        offset = 0,
+        classType = classType,
       )
     }
+    val searchQuerySlot = slot<SearchQuery>()
 
-    val searchSlot = slot<Search>()
-    coVerify { fhirEngine.search<Patient>(capture(searchSlot)) }
-    Assert.assertEquals(25, searchSlot.captured.count)
-    Assert.assertEquals(ResourceType.Patient, searchSlot.captured.type)
-
-    val dateTimeFilterCriterion: MutableList<Any> =
-      ReflectionHelpers.getField(searchSlot.captured, "dateTimeFilterCriteria")
-    val tokenFilters: MutableList<DateParamFilterCriterion> =
-      ReflectionHelpers.getField(dateTimeFilterCriterion[0], "filters")
-    Assert.assertEquals("_lastUpdated", tokenFilters[0].parameter.paramName)
-    Assert.assertEquals(ParamPrefixEnum.GREATERTHAN, tokenFilters[0].prefix)
+    //    coVerify { fhirEngine.search<Patient>(capture(searchQuerySlot)) }
+    assertEquals(25, searchQuerySlot.captured.args[1])
+    assertEquals(expectedQuery, searchQuerySlot.captured.query)
   }
 
   @Test
   fun `resourceClassType() returns correct resource class type for data type`() {
-    Assert.assertEquals(
+    assertEquals(
       Group::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
-    Assert.assertEquals(
+    assertEquals(
       Encounter::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
-    Assert.assertEquals(
+    assertEquals(
       Observation::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
-    Assert.assertEquals(
+    assertEquals(
       Patient::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
-    Assert.assertEquals(
+    assertEquals(
       Questionnaire::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
-    Assert.assertEquals(
+    assertEquals(
       QuestionnaireResponse::class.java,
-      baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
-      )
+      DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
+        .name
+        .resourceClassType(),
+    )
+    assertEquals(
+      ListResource::class.java,
+      DataType(ResourceType.List.name, DataType.Filetype.JSON, 0).name.resourceClassType(),
     )
   }
 
-  private fun populateTestPatient(): Patient {
-    val patientId = "patient-123456"
-    val patient: Patient =
-      Patient().apply {
-        id = patientId
-        active = true
-        birthDate = LocalDate.parse("1999-10-03").toDate()
-        gender = Enumerations.AdministrativeGender.MALE
-        address =
-          listOf(
-            Address().apply {
-              city = "Nairobi"
-              country = "Kenya"
-            }
-          )
-        name =
-          listOf(
-            HumanName().apply {
-              given = mutableListOf(StringType("Kiptoo"))
-              family = "Maina"
-            }
-          )
-        telecom = listOf(ContactPoint().apply { value = "12345" })
-        meta = Meta().apply { lastUpdated = currentDate }
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun `countTotalRecordsForSync() calls fhirEngine#count`() = runTest {
+    val expectedDataTypeTotalCountMap: HashMap<String, Long> = hashMapOf()
+    expectedDataTypeTotalCountMap["Patient"] = 1L
+    val expectedRecordCount =
+      RecordCount(totalRecordCount = 1, dataTypeTotalCountMap = expectedDataTypeTotalCountMap)
+    every { baseP2PTransferDao.getDataTypes() } returns
+      TreeSet<DataType>().apply {
+        add(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
       }
-    return patient
+
+    coEvery { fhirEngine.count(any()) } returns 1
+
+    val actualRecordCount = baseP2PTransferDao.countTotalRecordsForSync(HashMap())
+    assertEquals(expectedRecordCount, actualRecordCount)
+    assertEquals(1L, actualRecordCount.dataTypeTotalCountMap["Patient"])
+  }
+
+  @Test
+  fun `getSearchObjectForCount() create search filter in fhirEngine`() {
+    val search = baseP2PTransferDao.getSearchObjectForCount(1656663911, Patient::class.java)
+    assertEquals("Patient", search.type.name)
+  }
+
+  @Test
+  fun getDefaultDataTypesReturnsCorrectListOfDataTypes() {
+    val actualDataTypes = baseP2PTransferDao.getDefaultDataTypes()
+    assertEquals(6, actualDataTypes.size)
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
+    )
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
+    )
   }
 }

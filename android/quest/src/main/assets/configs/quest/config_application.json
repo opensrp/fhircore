@@ -6,6 +6,19 @@
     "en",
     "sw"
   ],
+  "deviceToDeviceSync": {
+    "resourcesToSync": [
+      "Group",
+      "Patient",
+      "CarePlan",
+      "Task",
+      "Encounter",
+      "Observation",
+      "Condition",
+      "Questionnaire",
+      "QuestionnaireResponse"
+    ]
+  },
   "applicationName": "Quest",
   "appLogoIconResourceFile": "ic_liberia",
   "count": "100",

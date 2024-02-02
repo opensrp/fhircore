@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 class AppFeatureManagerTest : RobolectricTest() {
 
   val context: Context = ApplicationProvider.getApplicationContext()
-  lateinit var appFeatureManager: AppFeatureManager
+  private lateinit var appFeatureManager: AppFeatureManager
 
   @Before
   fun setUp() {
@@ -41,9 +41,9 @@ class AppFeatureManagerTest : RobolectricTest() {
   }
 
   @Test
-  fun testActivatedFeatures_shouldReturn_2() {
+  fun testActivatedFeatures_shouldReturn_3() {
     appFeatureManager.loadAndActivateFeatures()
-    Assert.assertEquals(2, appFeatureManager.activatedFeatures().size)
+    Assert.assertEquals(3, appFeatureManager.activatedFeatures().size)
   }
 
   @Test
