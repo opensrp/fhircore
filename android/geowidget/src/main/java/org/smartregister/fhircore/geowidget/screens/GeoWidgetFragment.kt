@@ -21,14 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -43,47 +42,58 @@ import io.ona.kujaku.callbacks.AddPointCallback
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import java.util.LinkedList
-import javax.inject.Inject
-import org.hl7.fhir.r4.model.Location
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import org.smartregister.fhircore.geowidget.util.extensions.coordinates
-import org.smartregister.fhircore.geowidget.util.extensions.generateLocation
+import org.smartregister.fhircore.geowidget.model.Context
+import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.util.extensions.position
 import timber.log.Timber
 
 @AndroidEntryPoint
-open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
-  val geoWidgetActivityArgs by navArgs<GeoWidgetFragmentArgs>()
-  val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
-  lateinit var kujakuMapView: KujakuMapView
-  var geoJsonSource: GeoJsonSource? = null
-  var featureCollection: FeatureCollection? = null
+class GeoWidgetFragment : Fragment() {
+  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+  internal var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  internal var onCancelAddingLocationCallback: () -> Unit = {}
+  internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  internal var useGpsOnAddingLocation: Boolean = false
+
+  private lateinit var mapView: KujakuMapView
+  private var geoJsonSource: GeoJsonSource? = null
+  private var featureCollection: FeatureCollection? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?,
-  ): View? {
+  ): View {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
     geoWidgetConfiguration = geoWidgetConfiguration()
 
     return setupViews()
   }
 
-  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      geoWidgetActivityArgs.configId,
-    )
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    setLocationCollector()
+  }
 
-  /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
+  private fun setLocationCollector() {
+    viewLifecycleOwner.lifecycleScope.launch {
+      geoWidgetViewModel.featuresFlow
+        .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+        .collect { features ->
+          val featureCollection = FeatureCollection.fromFeatures(features.toList())
+          this@GeoWidgetFragment.featureCollection = featureCollection
+          if (geoJsonSource != null && featureCollection != null) {
+            geoJsonSource!!.setGeoJson(featureCollection)
+            zoomToLocationsOnMap(featureCollection)
+          }
+        }
+    }
+  }
+
   private fun setupViews(): LinearLayout {
     val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
 
