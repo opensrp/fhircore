@@ -23,12 +23,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
-import okio.ByteString.Companion.decodeBase64
 import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -40,13 +38,9 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.di.NetworkModule
-import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
-import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -55,7 +49,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
@@ -110,19 +103,27 @@ constructor(
       try {
         showProgressBar.postValue(true)
         Timber.i("Fetching configs for app $appId")
-        val urlPath =
-          "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
         val compositionResource =
-          withContext(dispatcherProvider.io()) { fetchComposition(urlPath, context) }
-            ?: return@launch
+          withContext(dispatcherProvider.io()) {
+            configurationRegistry.fetchRemoteComposition(appId)
+          }
+
+        if (compositionResource == null) {
+          showProgressBar.postValue(false)
+          _error.postValue(context.getString(R.string.application_not_supported, appId?.trim()))
+          return@launch
+        }
 
         val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         compositionResource
           .retrieveCompositionSections()
           .asSequence()
-          .filter { it.hasFocus() && it.focus.hasReferenceElement() && it.focus.hasIdentifier() }
+          .filter { it.hasFocus() && it.focus.hasReferenceElement() }
           .groupBy {
-            it.focus.reference.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
+            it.focus.reference.substringBefore(
+              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
           }
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
@@ -152,34 +153,17 @@ constructor(
                   defaultRepository.createRemote(false, bundleEntryComponent.resource)
 
                   if (bundleEntryComponent.resource is Binary) {
-                    val binary = bundleEntryComponent.resource as Binary
-                    binary.data
-                      .decodeToString()
-                      .decodeBase64()
-                      ?.string(StandardCharsets.UTF_8)
-                      ?.let {
-                        val config =
-                          it.tryDecodeJson<RegisterConfiguration>()
-                            ?: it.tryDecodeJson<ProfileConfiguration>()
-
-                        when (config) {
-                          is RegisterConfiguration ->
-                            config.fhirResource.dependentResourceTypes(
-                              patientRelatedResourceTypes,
-                            )
-                          is ProfileConfiguration ->
-                            config.fhirResource.dependentResourceTypes(
-                              patientRelatedResourceTypes,
-                            )
-                        }
-                      }
+                    configurationRegistry.processResultBundleBinaries(
+                      bundleEntryComponent.resource as Binary,
+                      patientRelatedResourceTypes,
+                    )
                   }
                 }
               }
             }
           }
 
-        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+        configurationRegistry.saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
         // Save composition after fetching all the referenced section resources
         defaultRepository.createRemote(false, compositionResource)
@@ -226,22 +210,6 @@ constructor(
         }
       }
     }
-  }
-
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name },
-    )
-
-  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    this.baseResource.dependentResourceTypes(target)
-    this.relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
-  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
-    target.add(resource)
-    relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
   fun hasDebugSuffix(): Boolean =
