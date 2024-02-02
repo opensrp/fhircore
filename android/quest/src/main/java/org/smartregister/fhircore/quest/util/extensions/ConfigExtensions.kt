@@ -144,8 +144,8 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
-          MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
+          MainNavigationScreen.GeoWidgetLauncher.route,
+          bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
         )
       ApplicationWorkflow.LAUNCH_DIALLER -> {
         val actionParameter = interpolatedParams.first()
