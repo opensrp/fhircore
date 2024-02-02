@@ -135,53 +135,52 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
-  fun enableFamilyRegistration() {
-    kujakuMapView.addPoint(
-      true,
+  private fun setOnClickLocationListener(mapView: KujakuMapView) {
+    mapView.setOnFeatureClickListener(
+      { featuresList ->
+        val feature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
+        if (feature.geometry() !is Point) {
+          Timber.w("Only feature geometry of type Point is supported!")
+          return@setOnFeatureClickListener
+        }
+
+        val point = (feature.geometry() as Point)
+        val geoWidgetLocation = GeoWidgetLocation(
+          id = feature.getStringProperty("id") ?: "",
+          name = feature.getStringProperty("name") ?: "",
+          position = Position(
+            latitude = point.latitude(),
+            longitude = point.longitude()
+          ),
+          contexts = listOf(Context(
+            id = feature.getStringProperty("id") ?: "",
+            type = feature.getStringProperty("type") ?: "",
+          ))
+        )
+
+        onClickLocationCallback(geoWidgetLocation)
+      },
+      "quest-data-points",
+    )
+  }
+
+  private fun setOnAddLocationListener(mapView: KujakuMapView) {
+    mapView.addPoint(
+      useGpsOnAddingLocation,
       object : AddPointCallback {
 
         override fun onPointAdd(featureJSONObject: JSONObject?) {
           // Open the family registration with the coordinates
           featureJSONObject ?: return
-          val coordinates = featureJSONObject.coordinates() ?: return
-
-          val geoWidgetActivity = requireContext()
-          Toast.makeText(geoWidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
-            .show()
-
-          val location: Location = generateLocation(featureJSONObject, coordinates)
-
-          geoWidgetViewModel.saveLocation(location).observe(viewLifecycleOwner) { saveLocation ->
-            if (saveLocation) {
-              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.RegisterClient(
-                  location.idElement.value,
-                  geoWidgetConfiguration.registrationQuestionnaire,
-                ),
-              )
-            }
-          }
+          val position = featureJSONObject.position() ?: return
+          val geoWidgetLocation = GeoWidgetLocation(position = position)
+          onAddLocationCallback(geoWidgetLocation)
         }
 
-        override fun onCancel() {}
+        override fun onCancel() {
+          onCancelAddingLocationCallback
+        }
       },
-    )
-  }
-
-  fun setFeatureClickListener() {
-    kujakuMapView.setOnFeatureClickListener(
-      { featuresList ->
-        featuresList
-          .firstOrNull { it.hasProperty("family-id") }
-          ?.let {
-            it.getStringProperty("family-id")?.also { familyId ->
-              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
-              )
-            }
-          }
-      },
-      "quest-data-points",
     )
   }
 
