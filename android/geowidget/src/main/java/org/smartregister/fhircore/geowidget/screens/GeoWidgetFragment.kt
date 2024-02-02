@@ -103,16 +103,35 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
-  fun renderResourcesOnMap(style: Style) {
-    geoJsonSource = style.getSourceAs("quest-data-set")
-
-    geoJsonSource?.also { source ->
-      featureCollection?.also { collection ->
-        Timber.i("Setting the feature collection")
-        source.setGeoJson(collection)
-
-        zoomToPointsOnMap(featureCollection)
+  // TODO: move toolbar to quest
+  private fun setUpToolbar(): Toolbar {
+    return Toolbar(requireContext()).apply {
+      popupTheme = R.style.AppTheme
+      visibility = View.VISIBLE
+      navigationIcon =
+        ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+      layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+      setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+      setNavigationOnClickListener {
+        activity?.onBackPressedDispatcher?.onBackPressed()
       }
+    }
+  }
+
+  private fun setUpMapView(): KujakuMapView {
+    return KujakuMapView(requireActivity()).apply {
+      id = R.id.kujaku_widget
+      val builder = Style.Builder().fromUri("asset://fhircore_style.json")
+      getMapAsync { mapboxMap ->
+        mapboxMap.setStyle(builder) { style ->
+          geoJsonSource = style.getSourceAs("quest-data-set")
+          if (geoJsonSource != null && featureCollection != null) {
+            geoJsonSource!!.setGeoJson(featureCollection)
+          }
+        }
+      }
+      setOnAddLocationListener(this)
+      setOnClickLocationListener(this)
     }
   }
 
