@@ -93,42 +93,14 @@ class GeoWidgetFragment : Fragment() {
   }
 
   private fun setupViews(): LinearLayout {
-    val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+    val toolbar = setUpToolbar()
+    mapView = setUpMapView()
 
-    val toolbar =
-      Toolbar(requireContext()).apply {
-        popupTheme = R.style.AppTheme
-        visibility = View.VISIBLE
-        navigationIcon =
-          ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
-        setLayoutParams(layoutParams)
-        setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
-        setNavigationOnClickListener { findNavController().popBackStack() }
-      }
-    kujakuMapView =
-      KujakuMapView(requireActivity()).apply {
-        id = R.id.kujaku_widget
-        getMapAsync { mapboxMap ->
-          Timber.i("Get Map async finished")
-          val builder = Style.Builder().fromUri("asset://fhircore_style.json")
-
-          mapboxMap.setStyle(builder) { style ->
-            Timber.i("Finished setting the style")
-            renderResourcesOnMap(style)
-          }
-        }
-      }
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
       addView(toolbar)
-      addView(kujakuMapView)
+      addView(mapView)
     }
-  }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    setFeatureClickListener()
-    enableFamilyRegistration()
   }
 
   fun renderResourcesOnMap(style: Style) {
