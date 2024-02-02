@@ -36,7 +36,7 @@ sealed class MainNavigationScreen(
   object Profile :
     MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
 
-  object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
+  object GeoWidgetLauncher : MainNavigationScreen(route = R.id.geoWidgetLauncherFragment)
 
   object Insight : MainNavigationScreen(route = R.id.userInsightScreenFragment)
 
