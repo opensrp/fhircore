@@ -170,7 +170,6 @@ class GeoWidgetFragment : Fragment() {
       object : AddPointCallback {
 
         override fun onPointAdd(featureJSONObject: JSONObject?) {
-          // Open the family registration with the coordinates
           featureJSONObject ?: return
           val position = featureJSONObject.position() ?: return
           val geoWidgetLocation = GeoWidgetLocation(position = position)
@@ -207,36 +206,32 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onStart() {
     super.onStart()
-    kujakuMapView.onStart()
+    mapView.onStart()
   }
 
   override fun onResume() {
     super.onResume()
-    kujakuMapView.onResume()
-    // Display the groups
-    geoWidgetViewModel
-      .getFamiliesFeatureCollectionStream(requireContext())
-      .observe(viewLifecycleOwner, this)
+    mapView.onResume()
   }
 
   override fun onPause() {
     super.onPause()
-    kujakuMapView.onPause()
+    mapView.onPause()
   }
 
   override fun onStop() {
     super.onStop()
-    kujakuMapView.onStop()
+    mapView.onStop()
   }
 
   override fun onDestroy() {
     super.onDestroy()
-    kujakuMapView.onDestroy()
+    mapView.onDestroy()
   }
 
   override fun onLowMemory() {
     super.onLowMemory()
-    kujakuMapView.onLowMemory()
+    mapView.onLowMemory()
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
