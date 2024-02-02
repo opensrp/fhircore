@@ -66,6 +66,7 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     }
   }
 
-    return liveData
+  fun clearLocations() {
+    _featuresFlow.value = setOf()
   }
 }
