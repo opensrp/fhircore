@@ -1285,7 +1285,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       val questionnaireResponses = planDefinitionResources.questionnaireResponses
       val resourcesSlot = planDefinitionResources.resourcesSlot
       val vaccines = makeVaccinesMapForPatient(patient)
-g
+
       installToIgManager(planDefinition)
       installToIgManager(planDefinitionResources.structureMap)
       importToFhirEngine(patient)
