@@ -241,6 +241,51 @@ class GeoWidgetFragment : Fragment() {
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
-    kujakuMapView.onSaveInstanceState(outState)
+    mapView.onSaveInstanceState(outState)
+  }
+
+  fun addLocationToMap(location: GeoWidgetLocation) {
+    geoWidgetViewModel.addLocationToMap(location)
+  }
+
+  fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+    geoWidgetViewModel.addLocationsToMap(locations)
+  }
+
+  companion object {
+    fun builder() = Builder()
+  }
+}
+
+class Builder {
+
+  private var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  private var onCancelAddingLocationCallback: () -> Unit = {}
+  private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  private var useGpsOnAddingLocation: Boolean = false
+
+  fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+    this.onAddLocationCallback = onAddLocationCallback
+  }
+
+  fun setOnCancelAddingLocationListener(onCancelAddingLocationCallback: () -> Unit) = apply {
+    this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
+  }
+
+  fun setOnClickLocationListener(onClickLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+    this.onClickLocationCallback = onClickLocationCallback
+  }
+
+  fun setUseGpsOnAddingLocation(value: Boolean) = apply {
+    this.useGpsOnAddingLocation = value
+  }
+
+  fun build(): GeoWidgetFragment {
+    return GeoWidgetFragment().apply {
+      this.onAddLocationCallback = this@Builder.onAddLocationCallback
+      this.onCancelAddingLocationCallback = this@Builder.onCancelAddingLocationCallback
+      this.onClickLocationCallback = this@Builder.onClickLocationCallback
+      this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
+    }
   }
 }
