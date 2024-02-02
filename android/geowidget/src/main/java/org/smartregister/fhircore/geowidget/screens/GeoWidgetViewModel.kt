@@ -16,39 +16,25 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
-import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.get
-import com.google.android.fhir.search.search
-import com.mapbox.geojson.FeatureCollection
+import com.mapbox.geojson.Feature
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import org.json.JSONArray
+import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import timber.log.Timber
+import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
 
 @HiltViewModel
-class GeoWidgetViewModel
-@Inject
-constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: DispatcherProvider) :
+class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  val geoWidgetEventLiveData = MutableLiveData<GeoWidgetEvent>()
-
-  suspend fun getFamiliesFeatureCollection(context: Context): FeatureCollection {
-    val families = getFamilies()
+  private val _featuresFlow: MutableStateFlow<Set<Feature>> =
+    MutableStateFlow(setOf())
+  val featuresFlow: StateFlow<Set<Feature>> = _featuresFlow
 
     return KujakuFhirCoreConverter()
       .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
