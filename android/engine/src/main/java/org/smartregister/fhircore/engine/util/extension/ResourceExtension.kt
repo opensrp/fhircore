@@ -58,9 +58,13 @@ import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
+const val REFERENCE = "reference"
+const val PARTOF = "part-of"
 
 fun Base?.valueToString(): String {
   return when {
@@ -398,5 +402,26 @@ suspend fun Task.updateDependentTaskDueDate(
   }
 }
 
-const val REFERENCE = "reference"
-const val PARTOF = "part-of"
+/**
+ * Filter provided [Resource]'s using FhirPath expressions. The extracted FHIRPath value is REQUIRED
+ * to be a boolean otherwise the [toBoolean] function will evaluate to false and hence return an
+ * empty list.
+ */
+fun List<RepositoryResourceData>.filterByFhirPathExpression(
+  fhirPathDataExtractor: FhirPathDataExtractor,
+  conditionalFhirPathExpressions: List<String>?,
+  matchAll: Boolean,
+): List<RepositoryResourceData> {
+  if (conditionalFhirPathExpressions.isNullOrEmpty()) return this
+  return this.filter { repositoryResourceData ->
+    if (matchAll) {
+      conditionalFhirPathExpressions.all {
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
+      }
+    } else {
+      conditionalFhirPathExpressions.any {
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
+      }
+    }
+  }
+}

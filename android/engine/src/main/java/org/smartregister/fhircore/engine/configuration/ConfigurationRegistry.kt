@@ -224,6 +224,7 @@ constructor(
     context: Context,
     configsLoadedCallback: (Boolean) -> Unit = {}
   ) {
+    configCacheMap.clear()
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
     // extract appId by removing the suffix e.g. app from above example
     val loadFromAssets = appId.endsWith(DEBUG_SUFFIX, ignoreCase = true)
@@ -356,9 +357,12 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources() {
+  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true): Composition? {
+    configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId: String ->
-      fhirEngine.searchCompositionByIdentifier(appId)?.let { composition ->
+      if (isInitialLogin) return null
+      val compositionResource = fetchRemoteComposition(appId)
+      compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
           .groupBy { it.focus.reference?.split(TYPE_REFERENCE_DELIMITER)?.firstOrNull() ?: "" }
@@ -370,7 +374,9 @@ constructor(
                 ResourceType.List.name,
                 ResourceType.PlanDefinition.name,
                 ResourceType.Library.name,
-                ResourceType.Measure.name
+                ResourceType.Measure.name,
+                ResourceType.Binary.name,
+                ResourceType.Parameters
               )
           }
           .forEach { resourceGroup ->
@@ -431,7 +437,9 @@ constructor(
             }
           }
       }
+      return compositionResource
     }
+    return null
   }
 
   private suspend fun processCompositionManifestResources(
@@ -583,6 +591,21 @@ constructor(
     return Bundle().apply {
       type = Bundle.BundleType.BATCH
       entry = bundleEntryComponents
+    }
+  }
+
+  suspend fun fetchRemoteComposition(appId: String): Composition? {
+    Timber.i("Fetching configs for app $appId")
+    val urlPath =
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$HAPI_FHIR_DEFAULT_COUNT"
+
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
     }
   }
 

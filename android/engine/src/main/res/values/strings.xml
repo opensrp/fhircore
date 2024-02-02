@@ -12,6 +12,7 @@
     <string name="app_logo">Application logo</string>
     <string name="powered_by">Powered By</string>
     <string name="app_version">App version %1$d(%2$s)</string>
+    <string name="data_migration_version">Migration Version %1$d</string>
     <string name="last_sync">Last sync %1$s</string>
     <string name="login_text">LOGIN</string>
     <string name="login_call_fail_error_message">Failed to verify credentials from the server. Check your internet connection</string>
@@ -148,6 +149,9 @@
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred" translatable="false">Something went wrong...</string>
     <string name="insights">Insights</string>
+    <string name="export_db" translatable="false">Export DB</string>
+    <string name="exporting_db" translatable="false">Exporting DB...</string>
+    <string name="share_file" translatable="false">Share File</string>
     <string name="dismiss">Dismiss</string>
     <string name="unsynced_resources">Unsynced Resources</string>
     <string name="all_data_synced">All data synced</string>

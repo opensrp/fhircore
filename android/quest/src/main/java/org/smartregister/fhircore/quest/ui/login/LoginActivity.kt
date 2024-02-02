@@ -25,10 +25,13 @@ import androidx.annotation.VisibleForTesting
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -44,6 +47,7 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingViewModel
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.pin.PinLoginActivity
 import org.smartregister.p2p.P2PLibrary
@@ -57,6 +61,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   @Inject lateinit var dataMigration: DataMigration
   @Inject lateinit var eventBus: EventBus
   val loginViewModel by viewModels<LoginViewModel>()
+  val appSettingViewModel by viewModels<AppSettingViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -100,7 +105,7 @@ open class LoginActivity : BaseMultiLanguageActivity() {
 
       navigateToHome.observe(loginActivity) { launchHomeScreen ->
         if (launchHomeScreen) {
-          downloadNowWorkflowConfigs()
+          downloadNowWorkflowConfigs(isInitialLogin = false)
           if (isPinEnabled && !hasActivePin) navigateToPinLogin(launchSetup = true)
           else loginActivity.navigateToHome()
         }
@@ -117,7 +122,6 @@ open class LoginActivity : BaseMultiLanguageActivity() {
   @VisibleForTesting open fun deviceOnline() = isDeviceOnline()
   @OptIn(ExperimentalMaterialApi::class)
   fun navigateToHome() {
-    loginViewModel.viewModelScope.launch { dataMigration.migrate() }
 
     startActivity(Intent(this, AppMainActivity::class.java))
     // Initialize P2P after login only when username is provided then finish activity

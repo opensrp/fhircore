@@ -25,7 +25,9 @@ import dagger.assisted.AssistedInject
 import java.net.UnknownHostException
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.DataMigration
 import retrofit2.HttpException
 
 @HiltWorker
@@ -35,13 +37,20 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted val workerParams: WorkerParameters,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val defaultRepository: DefaultRepository,
+  val dataMigration: DataMigration
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    val isInitialLogin = inputData.getBoolean(IS_INITIAL_LOGIN, true)
     return withContext(dispatcherProvider.io()) {
       try {
-        configurationRegistry.fetchNonWorkflowConfigResources()
+        // Save composition after fetching all the referenced section resources
+        configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)?.run {
+          defaultRepository.createRemote(false, this)
+        }
+        dataMigration.migrate()
         Result.success()
       } catch (httpException: HttpException) {
         Result.failure()
@@ -49,5 +58,9 @@ constructor(
         Result.failure()
       }
     }
+  }
+
+  companion object {
+    const val IS_INITIAL_LOGIN = "isInitialLogin"
   }
 }
