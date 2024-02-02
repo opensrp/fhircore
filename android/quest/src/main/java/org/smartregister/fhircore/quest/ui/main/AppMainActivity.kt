@@ -47,8 +47,6 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -75,7 +73,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var eventBus: EventBus
   lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
-  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
 
@@ -106,23 +103,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       .replace(R.id.nav_host, navHostFragment)
       .setPrimaryNavigationFragment(navHostFragment)
       .commit()
-
-    geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
-      when (geoWidgetEvent) {
-        is GeoWidgetEvent.OpenProfile ->
-          appMainViewModel.launchProfileFromGeoWidget(
-            navHostFragment.navController,
-            geoWidgetEvent.geoWidgetConfiguration.id,
-            geoWidgetEvent.data,
-          )
-        is GeoWidgetEvent.RegisterClient ->
-          appMainViewModel.launchFamilyRegistrationWithLocationId(
-            context = this,
-            locationId = geoWidgetEvent.data,
-            questionnaireConfig = geoWidgetEvent.questionnaire,
-          )
-      }
-    }
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
