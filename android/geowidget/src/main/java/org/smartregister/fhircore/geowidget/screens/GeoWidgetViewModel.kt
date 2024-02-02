@@ -36,72 +36,35 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     MutableStateFlow(setOf())
   val featuresFlow: StateFlow<Set<Feature>> = _featuresFlow
 
-    return KujakuFhirCoreConverter()
-      .generateFeatureCollection(context, families.map { listOf(it.first, it.second) })
-  }
-
-  fun getFamiliesFeatureCollectionStream(context: Context): LiveData<FeatureCollection> {
-    val featureCollectionLiveData = MutableLiveData<FeatureCollection>()
-
-    viewModelScope.launch(dispatcherProvider.io()) {
-      val familyFeatures = getFamiliesFeatureCollection(context)
-      featureCollectionLiveData.postValue(familyFeatures)
-    }
-
-    return featureCollectionLiveData
-  }
-
-  suspend fun getFamilies(): List<Pair<Group, Location>> {
-    val coding =
-      Coding().apply {
-        system = "http://hl7.org/fhir/group-type"
-        code = "person"
-      }
-
-    val familiesWithLocations =
-      defaultRepository.fhirEngine
-        .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
-        .asSequence()
-        .map { it.resource }
-        .filter {
-          // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
-          it.characteristic.firstOrNull { characteristic ->
-            characteristic.value is Reference &&
-              characteristic.valueReference.reference.contains(ResourceType.Location.name)
-          } != null
-        }
-
-    val familiesList = ArrayList<Pair<Group, Location>>()
-
-    familiesWithLocations.forEach { family ->
-      try {
-        val familyLocation = defaultRepository.fhirEngine.get<Location>(familyLocationId(family))
-
-        familiesList.add(Pair(family, familyLocation))
-      } catch (ex: ResourceNotFoundException) {
-        Timber.e(ex)
+  fun addLocationToMap(location: GeoWidgetLocation) {
+    val contexts = location.contexts.map { context ->
+      JSONObject().apply {
+        put("id", context.id)
+        put("type", context.type)
       }
     }
+    val properties = JSONObject().apply {
+      put("id", location.id)
+      put("name", location.name)
+      put("contexts", JSONArray(contexts))
+    }
 
-    return familiesList
+    val jsonFeature =
+      JSONObject().apply {
+        put("type", "Feature")
+        put("properties", properties)
+        put("geometry", location.getGeoJsonGeometry())
+      }
+    val feature = Feature.fromJson(jsonFeature.toString())
+
+    _featuresFlow.value = _featuresFlow.value + feature
   }
 
-  private fun familyLocationId(family: Group) =
-    family.characteristic
-      .firstOrNull { characteristic ->
-        characteristic.value is Reference &&
-          characteristic.valueReference.reference.contains("Location")
-      }!!
-      .valueReference
-      .referenceElement
-      .idPart
-
-  fun saveLocation(location: Location): LiveData<Boolean> {
-    val liveData = MutableLiveData<Boolean>()
-    viewModelScope.launch(dispatcherProvider.io()) {
-      defaultRepository.create(true, location)
-      liveData.postValue(true)
+  fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+    locations.forEach { location ->
+      addLocationToMap(location)
     }
+  }
 
     return liveData
   }
