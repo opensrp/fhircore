@@ -206,10 +206,10 @@ constructor(
 
     /**
      * This function returns a true or false value if any ( [matchAll]= false) or all ( [matchAll]=
-     * true) of the [resources] satisfy the [fhirPathExpression] provided
+     * true) of the [resources] satisfy the [conditionalFhirPathExpression] provided
      *
-     * [resources] List of resources the expressions are run against [fhirPathExpression] An
-     * expression to run against the provided resources [matchAll] When true the function checks
+     * [resources] List of resources the expressions are run against [conditionalFhirPathExpression]
+     * An expression to run against the provided resources [matchAll] When true the function checks
      * whether all of the resources fulfill the expression provided
      *
      * ```
@@ -219,19 +219,19 @@ constructor(
     @JvmOverloads
     fun evaluateToBoolean(
       resources: List<Resource>?,
-      fhirPathExpression: String,
+      conditionalFhirPathExpression: String,
       matchAll: Boolean = false,
     ): Boolean =
       if (matchAll) {
         resources?.all { base ->
-          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+          fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
         }
           ?: false
       } else {
         resources?.any { base ->
-          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+          fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
         }
@@ -246,17 +246,27 @@ constructor(
      * return Comma Separated Values of 'CHILD' (to be serialized into [ServiceMemberIcon]) for
      * each.
      */
+    @JvmOverloads
     fun mapResourcesToLabeledCSV(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String,
+      matchAllExtraConditions: Boolean? = false,
+      vararg extraConditions: Any? = emptyArray(),
     ): String =
       resources
-        ?.mapNotNull {
+        ?.mapNotNull { resource ->
           if (
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+            fhirPathDataExtractor.extractData(resource, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
-            }
+            } &&
+              if (matchAllExtraConditions == true && extraConditions.isNotEmpty()) {
+                extraConditions.all { it is Boolean && it == true }
+              } else if (matchAllExtraConditions == false && extraConditions.isNotEmpty()) {
+                extraConditions.any { it is Boolean && it == true }
+              } else {
+                true
+              }
           ) {
             label
           } else {
