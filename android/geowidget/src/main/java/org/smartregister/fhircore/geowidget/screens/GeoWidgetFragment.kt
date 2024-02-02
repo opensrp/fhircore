@@ -70,8 +70,6 @@ class GeoWidgetFragment : Fragment() {
     savedInstanceState: Bundle?,
   ): View {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    geoWidgetConfiguration = geoWidgetConfiguration()
-
     return setupViews()
   }
 
