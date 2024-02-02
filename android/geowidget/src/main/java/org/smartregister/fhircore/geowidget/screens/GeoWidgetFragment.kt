@@ -184,46 +184,25 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
-  override fun onChanged(value: FeatureCollection) {
-    Timber.e("Feature collection loaded")
-    this.featureCollection = value
-
-    geoJsonSource?.also { source ->
-      featureCollection?.also { collection ->
-        source.setGeoJson(collection)
-        zoomToPointsOnMap(featureCollection)
-      }
-    }
-  }
-
-  fun zoomToPointsOnMap(featureCollection: FeatureCollection?) {
+  private fun zoomToLocationsOnMap(featureCollection: FeatureCollection?) {
     featureCollection ?: return
 
-    val points = LinkedList<Point>()
-
+    val locationPoint = LinkedList<Point>()
     featureCollection.features()?.forEach { feature ->
       val geometry = feature.geometry()
-
       if (geometry is Point) {
-        points.add(geometry)
+        locationPoint.add(geometry)
       }
     }
 
-    if ((featureCollection.features()?.size ?: 0) == 0) {
-      return
-    }
+    if ((featureCollection.features()?.size ?: 0) == 0) return
 
-    val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))
+    val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoint))
     val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+    val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
+    val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
 
-    kujakuMapView.getMapAsync { mapboxMap ->
-      mapboxMap.easeCamera(
-        CameraUpdateFactory.newLatLngBounds(
-          LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0]),
-          50,
-        ),
-      )
-    }
+    mapView.getMapAsync { mapboxMap -> mapboxMap.easeCamera(finalCameraPosition) }
   }
 
   override fun onStart() {
