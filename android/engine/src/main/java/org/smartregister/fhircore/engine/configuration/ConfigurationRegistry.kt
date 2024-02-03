@@ -583,7 +583,10 @@ constructor(
         }
       }
 
-      // Knowledge manager install
+      /**
+       * Knowledge manager [MetadataResource]s install Here we install all resources types of
+       * [MetadataResource] as per FHIR Spec.This supports future use cases as well
+       */
       try {
         // if( METADATARESOURCES.contains(resource.resourceType.name)){
         if (resource is MetadataResource && resource.name != null) {

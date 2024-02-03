@@ -17,9 +17,9 @@
     "coding": [ {
       "system": "http://snomed.info/sct",
       "code": "259695003",
-      "display": "Hemoglobin"
+      "display": "Hemoglobin [Mass/volume] in Blood"
     } ],
-    "text": "Hemoglobin"
+    "text": "Haemoglobin"
   },
   "subject": {
     "reference": "Patient/TEST_PATIENT"

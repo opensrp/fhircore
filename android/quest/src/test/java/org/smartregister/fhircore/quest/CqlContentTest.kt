@@ -21,6 +21,7 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.io.File
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Library
@@ -50,8 +51,6 @@ class CqlContentTest : RobolectricTest() {
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-
-  @Inject lateinit var iParser: IParser
 
   @Before
   fun setUp() {
@@ -107,6 +106,8 @@ class CqlContentTest : RobolectricTest() {
       fhirOperator.evaluateLibrary(
         cqlLibrary.url,
         dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
+        null,
+        null,
         null,
       ) as Parameters
 
@@ -190,11 +191,11 @@ class CqlContentTest : RobolectricTest() {
   private suspend fun createTestData(dataBundle: Bundle, cqlLibrary: Library) {
     dataBundle.entry.forEach { fhirEngine.create(it.resource) }
 
-    //    knowledgeManager.install(
-    //      File.createTempFile(cqlLibrary.name, ".json").apply {
-    //        this.writeText(cqlLibrary.encodeResourceToString())
-    //      },
-    //    )
+    knowledgeManager.install(
+      File.createTempFile(cqlLibrary.name, ".json").apply {
+        this.writeText(cqlLibrary.encodeResourceToString())
+      },
+    )
   }
 
   private fun printResult(result: Parameters) {

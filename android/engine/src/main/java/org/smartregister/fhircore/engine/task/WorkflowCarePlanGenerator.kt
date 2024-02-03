@@ -92,8 +92,8 @@ constructor(
   }
 
   /**
-   * Knowledge resources are loaded from [FhirEngine] and installed so that they may be used when
-   * running $apply on a [PlanDefinition]
+   * TODO replace WKFLOWAPI Knowledge resources are loaded from [FhirEngine] and installed so that
+   * they may be used when running $apply on a [PlanDefinition]
    */
   private suspend fun loadPlanDefinitionResourcesFromDb() {
     // Load Library resources
@@ -210,24 +210,23 @@ constructor(
     subject: Patient,
     output: CarePlan,
   ) {
-    for (action in planDefinition.action) {
-      if (action.hasDynamicValue()) {
-        action.dynamicValue.forEach { dynamicValue ->
-          dynamicValue.expression.expression
-            .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
-            ?.takeIf { it.isNotEmpty() }
-            ?.let { evaluatedValue ->
-              Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
-              TerserUtil.setFieldByFhirPath(
-                FhirContext.forR4Cached(),
-                dynamicValue.path,
-                output,
-                evaluatedValue.first(),
-              )
-            }
-        }
+    planDefinition.action
+      .filter { it.hasDynamicValue() }
+      .flatMap { it.dynamicValue }
+      .forEach { dynamicValue ->
+        dynamicValue.expression.expression
+          .let { fhirPathEngine.evaluate(null, input, planDefinition, subject, it) }
+          ?.takeIf { it.isNotEmpty() }
+          ?.let { evaluatedValue ->
+            Timber.d("${dynamicValue.path}, evaluatedValue: $evaluatedValue")
+            TerserUtil.setFieldByFhirPath(
+              FhirContext.forR4Cached(),
+              dynamicValue.path,
+              output,
+              evaluatedValue.first(),
+            )
+          }
       }
-    }
   }
 
   /** Link the request resources created for the [Patient] back to the [CarePlan] of record */

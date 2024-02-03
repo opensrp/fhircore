@@ -417,6 +417,10 @@ dependencies {
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
   androidTestImplementation(libs.navigation.testing)
+  // Android Test dependencies
+  androidTestImplementation(libs.junit)
+  androidTestImplementation(libs.espresso.core)
+
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
