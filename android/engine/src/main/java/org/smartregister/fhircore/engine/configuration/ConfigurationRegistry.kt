@@ -588,7 +588,6 @@ constructor(
        * [MetadataResource] as per FHIR Spec.This supports future use cases as well
        */
       try {
-        // if( METADATARESOURCES.contains(resource.resourceType.name)){
         if (resource is MetadataResource && resource.name != null) {
           knowledgeManager.install(
             writeToFile(resource.overwriteCanonicalURL()),
@@ -789,11 +788,5 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
-    val METADATARESOURCES =
-      listOf(
-        ResourceType.PlanDefinition.name,
-        ResourceType.Library.name,
-        ResourceType.Measure.name,
-      )
   }
 }

@@ -88,31 +88,6 @@ constructor(
     val measureReport = mutableListOf<MeasureReport>()
     try {
       withContext(dispatcherProvider.io()) {
-        //        val measure =
-        //          fhirEngine
-        //            .search<Measure> { filter(Measure.URL, { value = measureUrl }) }
-        //            .first()
-        //            .resource
-        //
-        //        // TODO move to Sync : Issue tracker
-        // https://github.com/opensrp/fhircore/issues/3019
-        //        knowledgeManager.install(
-        //          File.createTempFile(measure.name, ".json").apply {
-        //            this.writeText(measure.encodeResourceToString())
-        //          },
-        //        )
-        //
-        //        measure.relatedArtifact.forEach {
-        //          val library =
-        //            fhirEngine.search<Library> { filter(Library.URL, { value = it.url })
-        // }.first().resource
-        //          knowledgeManager.install(
-        //            File.createTempFile(library.name, ".json").apply {
-        //              this.writeText(library.encodeResourceToString())
-        //            },
-        //          )
-        //        }
-
         if (subjects.isNotEmpty()) {
           subjects
             .map {

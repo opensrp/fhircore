@@ -214,8 +214,11 @@ constructor(
 
         carePlan.contained.clear()
 
+        // TODO Confirm why reversion here
         // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-        if (output.hasActivity()) defaultRepository.addOrUpdate(true, carePlan)
+        // if (output.hasActivity()) defaultRepository.addOrUpdate(true, carePlan)
+
+        defaultRepository.addOrUpdate(true, carePlan)
 
         dependents.forEach { defaultRepository.addOrUpdate(true, it) }
 
