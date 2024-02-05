@@ -39,6 +39,8 @@ val ValidationResult.errorMessages
   get() = buildString {
     for (validationMsg in
       messages.filter { it.severity.ordinal >= ResultSeverityEnum.WARNING.ordinal }) {
-      appendLine("${validationMsg.message} - ${validationMsg.locationString}")
+      appendLine(
+        "${validationMsg.message} - ${validationMsg.locationString} -- (${validationMsg.severity})",
+      )
     }
   }
