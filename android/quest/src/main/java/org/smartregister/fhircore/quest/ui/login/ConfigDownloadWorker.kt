@@ -48,7 +48,7 @@ constructor(
       try {
         // Save composition after fetching all the referenced section resources
         configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)?.run {
-          configurationRegistry.addOrUpdate(this)
+          configurationRegistry.addOrUpdateRemote(this)
         }
         dataMigration.migrate()
         Result.success()

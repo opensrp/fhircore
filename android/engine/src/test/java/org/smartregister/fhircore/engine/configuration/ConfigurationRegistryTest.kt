@@ -272,14 +272,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
 
     // when exists
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
   }
@@ -294,7 +294,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
 

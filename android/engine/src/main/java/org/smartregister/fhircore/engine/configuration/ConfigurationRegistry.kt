@@ -247,7 +247,7 @@ constructor(
                   "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids&_count=$HAPI_FHIR_DEFAULT_COUNT"
                 )
                 .entry
-                .forEach { addOrUpdate(it.resource) }
+                .forEach { addOrUpdateRemote(it.resource) }
             }
             populateConfigurationsMap(
               composition = this,
@@ -396,7 +396,7 @@ constructor(
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
                         is ListResource -> {
-                          addOrUpdate(bundleEntryComponent.resource)
+                          addOrUpdateRemote(bundleEntryComponent.resource)
                           val list = bundleEntryComponent.resource as ListResource
                           list.entry.forEach { listEntryComponent ->
                             val resourceKey = listEntryComponent.item.reference.substringBefore("/")
@@ -407,7 +407,7 @@ constructor(
                               "$resourceKey?${Composition.SP_RES_ID}=$resourceId&_count=$HAPI_FHIR_DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
-                              addOrUpdate(listEntryResourceBundle.resource)
+                              addOrUpdateRemote(listEntryResourceBundle.resource)
                               Timber.d("Fetched and processed List reference $listResourceUrlPath")
                             }
                           }
@@ -462,7 +462,7 @@ constructor(
               is Bundle -> {
 
                 val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
+                addOrUpdateRemote(bundle)
                 bundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
@@ -473,7 +473,7 @@ constructor(
         }
         else -> {
           if (bundleEntryComponent.resource != null) {
-            addOrUpdate(bundleEntryComponent.resource)
+            addOrUpdateRemote(bundleEntryComponent.resource)
             Timber.d(
               "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
             )
@@ -503,7 +503,7 @@ constructor(
               is Bundle -> {
 
                 val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
+                addOrUpdateRemote(bundle)
                 bundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
@@ -513,7 +513,7 @@ constructor(
           }
         }
         else -> {
-          addOrUpdate(bundleEntryComponent.resource)
+          addOrUpdateRemote(bundleEntryComponent.resource)
           Timber.d(
             "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
           )
@@ -524,7 +524,7 @@ constructor(
 
   private suspend fun saveListEntryResource(entryComponent: BundleEntryComponent) {
 
-    addOrUpdate(entryComponent.resource)
+    addOrUpdateRemote(entryComponent.resource)
     Timber.d(
       "Fetched and processed List reference ${entryComponent.resource.resourceType}/${entryComponent.resource.id}"
     )
@@ -534,7 +534,7 @@ constructor(
    * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
    * resource, or create it if not found.
    */
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
+  suspend fun <R : Resource> addOrUpdateRemote(resource: R) {
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
