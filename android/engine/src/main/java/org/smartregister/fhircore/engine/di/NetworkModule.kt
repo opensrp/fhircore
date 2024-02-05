@@ -95,7 +95,7 @@ class NetworkModule {
 
             openSrpApplication?.let {
               if (
-                (request.url.host == it.getFhirServerHost()) &&
+                (request.url.host == it.getFhirServerHost()?.host) &&
                   CUSTOM_ENDPOINTS.contains(resourcePath)
               ) {
                 val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()

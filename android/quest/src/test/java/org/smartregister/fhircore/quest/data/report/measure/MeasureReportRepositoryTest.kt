@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.knowledge.KnowledgeManager
@@ -76,6 +77,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var registerRepository: RegisterRepository
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi

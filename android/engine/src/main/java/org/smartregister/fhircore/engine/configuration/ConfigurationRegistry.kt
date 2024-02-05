@@ -19,10 +19,14 @@ package org.smartregister.fhircore.engine.configuration
 import android.content.Context
 import android.database.SQLException
 import android.os.Process
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
 import java.io.FileNotFoundException
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
@@ -42,11 +46,13 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -66,6 +72,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fileExtension
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
@@ -85,6 +92,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,
+  @ApplicationContext val context: Context,
+  private var openSrpApplication: OpenSrpApplication?,
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -92,6 +101,11 @@ constructor(
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
+  private val fhirContext = FhirContext.forR4Cached()
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
+
+  private val jsonParser = fhirContext.newJsonParser()
 
   init {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -568,6 +582,40 @@ constructor(
           Timber.e(sqlException)
         }
       }
+
+      /**
+       * Knowledge manager [MetadataResource]s install Here we install all resources types of
+       * [MetadataResource] as per FHIR Spec.This supports future use cases as well
+       */
+      try {
+        if (resource is MetadataResource && resource.name != null) {
+          knowledgeManager.install(
+            writeToFile(resource.overwriteCanonicalURL()),
+          )
+        }
+      } catch (exception: Exception) {
+        Timber.e(exception)
+      }
+    }
+  }
+
+  private fun MetadataResource.overwriteCanonicalURL() =
+    this.apply {
+      url =
+        url
+          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
+    }
+
+  private fun writeToFile(resource: Resource): File {
+    val fileName =
+      if (resource is MetadataResource && resource.name != null) {
+        resource.name
+      } else {
+        resource.idElement.idPart
+      }
+
+    return File(context.filesDir, "$fileName.json").apply {
+      writeText(jsonParser.encodeResourceToString(resource))
     }
   }
 

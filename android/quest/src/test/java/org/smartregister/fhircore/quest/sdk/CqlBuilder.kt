@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.sdk
 
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import java.io.InputStream
 import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.LibraryManager
@@ -35,7 +34,7 @@ import org.junit.Assert.fail
 // required
 
 object CqlBuilder : Loadable() {
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  private val jsonParser = FhirContext.forR4Cached().newJsonParser()
 
   /**
    * Compiles a CQL Text to ELM

@@ -52,8 +52,6 @@ class CqlContentTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var iParser: IParser
-
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -108,6 +106,8 @@ class CqlContentTest : RobolectricTest() {
       fhirOperator.evaluateLibrary(
         cqlLibrary.url,
         dataBundle.entry.find { it.resource.resourceType == ResourceType.Patient }!!.resource.id,
+        null,
+        null,
         null,
       ) as Parameters
 
