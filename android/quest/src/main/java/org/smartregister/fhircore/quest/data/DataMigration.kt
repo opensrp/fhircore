@@ -202,7 +202,10 @@ constructor(
             if (migrationConfig.purgeAffectedResources) {
               defaultRepository.purge(updatedResource as Resource, forcePurge = true)
             }
-            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
+              defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            } else
+              defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
           }
         }
         Timber.i("Data migration completed successfully for version: ${migrationConfig.version}")
