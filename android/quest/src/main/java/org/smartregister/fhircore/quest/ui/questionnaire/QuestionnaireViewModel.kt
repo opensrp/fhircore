@@ -785,13 +785,16 @@ constructor(
     questionnaire: Questionnaire,
     populationResources: List<Resource>
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
-      questionnaireResponse ->
-      if (!questionnaireResponse.hasItem()) {
-        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
-          .d("Questionnaire response has no populated answers")
+    return ResourceMapper.populate(
+        questionnaire,
+        populationResources.associateBy { it.resourceType.name.lowercase() }
+      )
+      .also { questionnaireResponse ->
+        if (!questionnaireResponse.hasItem()) {
+          Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
+            .d("Questionnaire response has no populated answers")
+        }
       }
-    }
   }
 
   /**

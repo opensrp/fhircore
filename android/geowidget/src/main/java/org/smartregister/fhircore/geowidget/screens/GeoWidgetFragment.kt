@@ -182,9 +182,9 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
     )
   }
 
-  override fun onChanged(featureCollection: FeatureCollection?) {
+  override fun onChanged(value: FeatureCollection) {
     Timber.e("Feature collection loaded")
-    this.featureCollection = featureCollection
+    this.featureCollection = value
 
     geoJsonSource?.also { source ->
       featureCollection?.also { collection ->
