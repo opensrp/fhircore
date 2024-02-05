@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -540,11 +539,12 @@ constructor(
       resource.updateLastUpdated()
       try {
         fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
+          fhirEngine.purge(resource.resourceType, resource.logicalId, true)
+          createRemote(resource)
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         try {
-          create(resource)
+          createRemote(resource)
         } catch (e: Exception) {
           Timber.e(e)
         }
@@ -554,11 +554,11 @@ constructor(
 
   /**
    * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
-   * have IDs or generate if they don't, then pass them to create.
+   * have IDs or generate if they don't, then pass them to createRemote.
    *
    * @param resources vararg of resources
    */
-  suspend fun create(vararg resources: Resource) {
+  suspend fun createRemote(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach { it.generateMissingId() }
       fhirEngine.createRemote(*resources)
