@@ -100,8 +100,6 @@ constructor(
     get() = _loginErrorState
 
   private val _dataMigrationInProgress = MutableLiveData(false)
-  val dataMigrationInProgress: LiveData<Boolean>
-    get() = _dataMigrationInProgress
 
   private val _showProgressBar = MutableLiveData(false)
   val showProgressBar
@@ -407,9 +405,5 @@ constructor(
         .setInputData(data)
         .build()
     workManager.enqueue(oneTimeWorkRequest)
-  }
-
-  fun setOnMigrateDataInProgress(inProgress: Boolean) {
-    _dataMigrationInProgress.postValue(inProgress)
   }
 }

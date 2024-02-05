@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.configuration.migration
 
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
@@ -28,6 +27,7 @@ data class MigrationConfig(
   val rules: List<RuleConfig>,
   val version: Int,
   val purgeAffectedResources: Boolean = false,
+  val createLocalChangeEntitiesAfterPurge: Boolean = true,
   val resourceFilterExpression: ResourceFilterExpression? = null,
 ) : java.io.Serializable
 

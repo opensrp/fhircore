@@ -51,7 +51,8 @@ data class QuestionnaireConfig(
   val readOnlyLinkIds: List<String>? = emptyList(),
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
-  val onSubmitActions: List<ActionConfig>? = null
+  val onSubmitActions: List<ActionConfig>? = null,
+  val managingEntityRelationshipCode: String? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -89,7 +90,7 @@ data class ConfirmationDialog(
 @Parcelize
 data class GroupResourceConfig(
   val groupIdentifier: String,
-  val memberResourceType: String,
+  val memberResourceType: ResourceType,
   val removeMember: Boolean = false,
   val removeGroup: Boolean = false,
   val deactivateMembers: Boolean = true

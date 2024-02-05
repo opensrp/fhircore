@@ -43,7 +43,6 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -273,14 +272,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
 
     // when exists
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
   }
@@ -295,7 +294,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
-      configRegistry.addOrUpdate(patient)
+      configRegistry.addOrUpdateRemote(patient)
       Assert.assertNotEquals(previousLastUpdate, patient.meta.lastUpdated)
     }
 
@@ -310,7 +309,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.createRemote(patient) } just runs
 
     runTest {
-      configRegistry.create(patient)
+      configRegistry.createRemote(patient)
       coVerify { fhirEngine.createRemote(patient) }
     }
   }

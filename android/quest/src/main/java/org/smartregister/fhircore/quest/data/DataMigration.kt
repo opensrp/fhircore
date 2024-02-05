@@ -16,15 +16,15 @@
 
 package org.smartregister.fhircore.quest.data
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
@@ -42,8 +42,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
-import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
 
@@ -67,13 +68,13 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val eventBus: EventBus,
+  @ApplicationContext val context: Context
 ) {
 
-  private val coroutineScope = CoroutineScope(dispatcherProvider.io())
   private var conf: Configuration =
     Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
-  fun migrate() {
+  suspend fun migrate() {
     val migrations =
       try {
         configurationRegistry.retrieveConfiguration<DataMigrationConfiguration>(
@@ -84,13 +85,14 @@ constructor(
         emptyList()
       }
 
-    coroutineScope.launch {
-      val previousVersion =
-        sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
-      val newMigrations = migrations?.filter { it.version > previousVersion }
-      if (!newMigrations.isNullOrEmpty()) {
-        migrate(newMigrations, previousVersion)
-      }
+    val previousVersion =
+      sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
+    val newMigrations = migrations?.filter { it.version > previousVersion }
+    Timber.i(
+      "Previous data migration version is $previousVersion, ${if (!newMigrations.isNullOrEmpty()) "new migration(s) ${newMigrations.map { it.version }} found " else "no migration required"}"
+    )
+    if (!newMigrations.isNullOrEmpty()) {
+      migrate(newMigrations, previousVersion)
     }
   }
 
@@ -138,10 +140,13 @@ constructor(
    * ```
    */
   suspend fun migrate(migrationConfigs: List<MigrationConfig>?, previousVersion: Int) {
-    eventBus.triggerEvent(AppEvent.OnMigrateData(true))
+    withContext(dispatcherProvider.main()) {
+      context.showToast(context.getString(R.string.data_migration_started, previousVersion))
+    }
     val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
     migrationConfigs?.forEach { migrationConfig ->
       try {
+        Timber.i("Data migration started for version: ${migrationConfig.version}")
         val resourceFilterExpression = migrationConfig.resourceFilterExpression
         val repositoryResourceDataList =
           defaultRepository
@@ -197,15 +202,22 @@ constructor(
             if (migrationConfig.purgeAffectedResources) {
               defaultRepository.purge(updatedResource as Resource, forcePurge = true)
             }
-            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
+              defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            } else
+              defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
           }
         }
-        eventBus.triggerEvent(AppEvent.OnMigrateData(false))
+        Timber.i("Data migration completed successfully for version: ${migrationConfig.version}")
       } catch (throwable: Throwable) {
+        Timber.i("Data migration failed for version: ${migrationConfig.version}")
         Timber.e(throwable)
       }
     }
     sharedPreferencesHelper.write(SharedPreferenceKey.MIGRATION_VERSION.name, maxVersion)
+    withContext(dispatcherProvider.main()) {
+      context.showToast(context.getString(R.string.data_migration_completed, maxVersion))
+    }
   }
 
   private fun computeValueRule(

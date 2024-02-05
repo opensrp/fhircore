@@ -116,7 +116,7 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (dataMigrationInProgress) {
-        LoaderDialog(dialogMessage = stringResource(id = R.string.migrating_data))
+        LoaderDialog(dialogMessage = stringResource(id = R.string.data_migration_started))
       }
       if (registerUiState.isFirstTimeSync &&
           !registerUiState.dismissLoaderView.collectAsState(initial = false).value

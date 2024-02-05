@@ -60,7 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -248,7 +247,7 @@ constructor(
                   "${ResourceType.Binary.name}?${Composition.SP_RES_ID}=$ids&_count=$HAPI_FHIR_DEFAULT_COUNT"
                 )
                 .entry
-                .forEach { addOrUpdate(it.resource) }
+                .forEach { addOrUpdateRemote(it.resource) }
             }
             populateConfigurationsMap(
               composition = this,
@@ -397,7 +396,7 @@ constructor(
                     .forEach { bundleEntryComponent ->
                       when (bundleEntryComponent.resource) {
                         is ListResource -> {
-                          addOrUpdate(bundleEntryComponent.resource)
+                          addOrUpdateRemote(bundleEntryComponent.resource)
                           val list = bundleEntryComponent.resource as ListResource
                           list.entry.forEach { listEntryComponent ->
                             val resourceKey = listEntryComponent.item.reference.substringBefore("/")
@@ -408,7 +407,7 @@ constructor(
                               "$resourceKey?${Composition.SP_RES_ID}=$resourceId&_count=$HAPI_FHIR_DEFAULT_COUNT"
                             fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                               listEntryResourceBundle ->
-                              addOrUpdate(listEntryResourceBundle.resource)
+                              addOrUpdateRemote(listEntryResourceBundle.resource)
                               Timber.d("Fetched and processed List reference $listResourceUrlPath")
                             }
                           }
@@ -463,7 +462,7 @@ constructor(
               is Bundle -> {
 
                 val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
+                addOrUpdateRemote(bundle)
                 bundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
@@ -474,7 +473,7 @@ constructor(
         }
         else -> {
           if (bundleEntryComponent.resource != null) {
-            addOrUpdate(bundleEntryComponent.resource)
+            addOrUpdateRemote(bundleEntryComponent.resource)
             Timber.d(
               "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
             )
@@ -504,7 +503,7 @@ constructor(
               is Bundle -> {
 
                 val bundle = entryComponent.resource as Bundle
-                addOrUpdate(bundle)
+                addOrUpdateRemote(bundle)
                 bundle.entry.forEach { innerEntryComponent ->
                   saveListEntryResource(innerEntryComponent)
                 }
@@ -514,7 +513,7 @@ constructor(
           }
         }
         else -> {
-          addOrUpdate(bundleEntryComponent.resource)
+          addOrUpdateRemote(bundleEntryComponent.resource)
           Timber.d(
             "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
           )
@@ -525,7 +524,7 @@ constructor(
 
   private suspend fun saveListEntryResource(entryComponent: BundleEntryComponent) {
 
-    addOrUpdate(entryComponent.resource)
+    addOrUpdateRemote(entryComponent.resource)
     Timber.d(
       "Fetched and processed List reference ${entryComponent.resource.resourceType}/${entryComponent.resource.id}"
     )
@@ -535,17 +534,17 @@ constructor(
    * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
    * resource, or create it if not found.
    */
-  suspend fun <R : Resource> addOrUpdate(resource: R) {
-    if (resource == null) return
+  suspend fun <R : Resource> addOrUpdateRemote(resource: R) {
     withContext(dispatcherProvider.io()) {
       resource.updateLastUpdated()
       try {
         fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
+          fhirEngine.purge(resource.resourceType, resource.logicalId, true)
+          createRemote(resource)
         }
       } catch (resourceNotFoundException: ResourceNotFoundException) {
         try {
-          create(resource)
+          createRemote(resource)
         } catch (e: Exception) {
           Timber.e(e)
         }
@@ -555,11 +554,11 @@ constructor(
 
   /**
    * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
-   * have IDs or generate if they don't, then pass them to create.
+   * have IDs or generate if they don't, then pass them to createRemote.
    *
    * @param resources vararg of resources
    */
-  suspend fun create(vararg resources: Resource) {
+  suspend fun createRemote(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach { it.generateMissingId() }
       fhirEngine.createRemote(*resources)
@@ -595,9 +594,10 @@ constructor(
   }
 
   suspend fun fetchRemoteComposition(appId: String): Composition? {
-    Timber.i("Fetching configs for app $appId")
+    val theAppId = appId.replace(DEBUG_SUFFIX, "")
+    Timber.i("Fetching configs for app $theAppId")
     val urlPath =
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$HAPI_FHIR_DEFAULT_COUNT"
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$theAppId&_count=$HAPI_FHIR_DEFAULT_COUNT"
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {

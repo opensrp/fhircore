@@ -157,5 +157,6 @@
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
     <string name="select_month">Select Month</string>
-    <string name="migrating_data">Migrating data</string>
+    <string name="data_migration_started">Started data migration from version %1$d</string>
+    <string name="data_migration_completed">Application data migrated to version %1$d</string>
 </resources>

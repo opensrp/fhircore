@@ -69,7 +69,7 @@ class FhirEngineModule {
           httpLogger =
             HttpLogger(
               HttpLogger.Configuration(
-                level = HttpLogger.Level.BASIC,
+                level = if (BuildConfig.DEBUG) HttpLogger.Level.BODY else HttpLogger.Level.BASIC,
                 headersToIgnore = listOf(AUTHORIZATION, COOKIE)
               )
             ) { Timber.tag(QUEST_OKHTTP_CLIENT_TAG).d(it) }

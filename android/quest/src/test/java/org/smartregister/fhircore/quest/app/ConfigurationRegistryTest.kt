@@ -109,7 +109,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
-    coVerify { configurationRegistry.create(any()) }
+    coVerify { configurationRegistry.createRemote(any()) }
   }
 
   @Test
@@ -141,6 +141,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.fhirResourceDataSource.getResource(any()) }
-    coVerify { configurationRegistry.create(any()) }
+    coVerify { configurationRegistry.createRemote(any()) }
   }
 }

@@ -149,36 +149,58 @@ constructor(
     return structureMap
   }
 
-  suspend fun addGroupMember(resource: Resource, groupResourceId: String) {
-    defaultRepository.loadResource<Group>(groupResourceId)?.run {
-      // Support all the valid group member references as per the FHIR specs
-      if (resource.resourceType.isIn(
-          ResourceType.CareTeam,
-          ResourceType.Device,
-          ResourceType.Group,
-          ResourceType.HealthcareService,
-          ResourceType.Location,
-          ResourceType.Organization,
-          ResourceType.Patient,
-          ResourceType.Practitioner,
-          ResourceType.PractitionerRole,
-          ResourceType.Specimen
-        )
-      ) {
-        val eList =
-          this.member.filter {
-            it.entity.reference.extractLogicalIdUuid() == resource.id.extractLogicalIdUuid()
-          }
-        if (eList.isEmpty()) {
-          this.member?.add(Group.GroupMemberComponent().apply { entity = resource.asReference() })
-        }
+  suspend fun addGroupMember(
+    resource: Resource,
+    groupResourceId: String,
+    memberResourceType: ResourceType
+  ) {
+    // Load the Group resource from the database to get the updated one
+    val group = defaultRepository.loadResource(groupResourceId) as Group? ?: return
+
+    val reference = resource.asReference()
+    val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
+
+    // Cannot add Group as member of itself; Cannot not duplicate existing members
+    if (resource.logicalId == group.logicalId || member != null) return
+
+    if (resource.resourceType.isIn(
+        ResourceType.CareTeam,
+        ResourceType.Device,
+        ResourceType.Group,
+        ResourceType.HealthcareService,
+        ResourceType.Location,
+        ResourceType.Organization,
+        ResourceType.Patient,
+        ResourceType.Practitioner,
+        ResourceType.PractitionerRole,
+        ResourceType.Specimen,
+      ) && resource.resourceType == memberResourceType
+    ) {
+      group.addMember(Group.GroupMemberComponent().apply { entity = reference })
+      defaultRepository.addOrUpdate(resource = group)
+    }
+  }
+
+  /** Update the [Group.managingEntity] */
+  private suspend fun updateGroupManagingEntity(
+    resource: Resource,
+    groupIdentifier: String?,
+    managingEntityRelationshipCode: String?,
+  ) {
+    // Load the group from the database to get the updated Resource always.
+    val group =
+      groupIdentifier?.extractLogicalIdUuid()?.let {
+        defaultRepository.loadResource<Group>(groupIdentifier)
       }
 
-      // set managing entity for extracted related resource
-      if (resource.resourceType == ResourceType.RelatedPerson) {
-        this.managingEntity = resource.logicalId.asReference(ResourceType.RelatedPerson)
-      }
-      defaultRepository.addOrUpdate(resource = this)
+    if (group != null &&
+        resource is RelatedPerson &&
+        !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
+        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
+    ) {
+      defaultRepository.addOrUpdate(
+        resource = group.apply { managingEntity = resource.asReference() },
+      )
     }
   }
 
@@ -232,16 +254,7 @@ constructor(
             appendAppVersion(context, bundleEntry.resource)
           }
           if (bundleEntry.hasResource()) bundleEntry.resource.updateLastUpdated()
-          if (questionnaireConfig.type != QuestionnaireType.EDIT &&
-              bundleEntry.resource.resourceType.isIn(
-                ResourceType.Patient,
-                ResourceType.RelatedPerson
-              )
-          ) {
-            questionnaireConfig.groupResource?.groupIdentifier?.let {
-              addGroupMember(resource = bundleEntry.resource, groupResourceId = it)
-            }
-          }
+
           updateResourceLastUpdatedLinkedAsSubject(questionnaireResponse)
 
           // TODO https://github.com/opensrp/fhircore/issues/900
@@ -263,7 +276,29 @@ constructor(
           Timber.w(
             "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
           )
-        } else saveBundleResources(bundle)
+        } else {
+          saveBundleResources(bundle)
+          bundle.entry.forEach { bundleEntry ->
+            // Add configured members to group group member
+            if (questionnaireConfig.type != QuestionnaireType.EDIT) {
+              if (questionnaireConfig.groupResource != null &&
+                  questionnaireConfig.groupResource!!.groupIdentifier.isNotEmpty()
+              )
+                addGroupMember(
+                  resource = bundleEntry.resource,
+                  groupResourceId = questionnaireConfig.groupResource!!.groupIdentifier,
+                  memberResourceType = questionnaireConfig.groupResource!!.memberResourceType
+                )
+            }
+
+            // Update managing entity of Group
+            updateGroupManagingEntity(
+              resource = bundleEntry.resource,
+              groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+              managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode
+            )
+          }
+        }
 
         if (questionnaireConfig.type.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
@@ -594,7 +629,7 @@ constructor(
   fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
-    memberResourceType: String?,
+    memberResourceType: ResourceType?,
     removeMember: Boolean
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
@@ -603,8 +638,8 @@ constructor(
           defaultRepository.removeGroupMember(
             memberId = memberId,
             groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType,
-            emptyMap()
+            memberResourceType = memberResourceType,
+            configComputedRuleValues = emptyMap()
           )
         } catch (exception: Exception) {
           Timber.e(exception)
