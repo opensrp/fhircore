@@ -58,5 +58,6 @@ constructor(
           }
         }
     )
+
   override fun getFhirEngine(): FhirEngine = engine
 }

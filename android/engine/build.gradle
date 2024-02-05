@@ -112,12 +112,6 @@ android {
             }
         }
     }
-
-    configurations.all {
-        resolutionStrategy {
-            force "ca.uhn.hapi.fhir:org.hl7.fhir.utilities:5.5.7"
-        }
-    }
 }
 
 dependencies {
@@ -147,6 +141,9 @@ dependencies {
     implementation(group: "com.github.java-json-tools", name: "msg-simple", version: "1.2");
     implementation 'org.codehaus.woodstox:woodstox-core-asl:4.4.1'
     implementation "ca.uhn.hapi.fhir:hapi-fhir-android:5.4.0"
+    implementation ("ca.uhn.hapi.fhir:hapi-fhir-validation:6.0.1"){
+        exclude module: "commons-logging"
+    }
     implementation 'org.opencds.cqf.cql:engine:1.5.4'
     implementation 'org.opencds.cqf.cql:engine.fhir:1.5.4'
     implementation 'org.opencds.cqf.cql:evaluator:1.4.2'

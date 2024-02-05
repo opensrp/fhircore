@@ -23,6 +23,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
@@ -47,6 +48,7 @@ import io.mockk.verify
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -109,6 +111,8 @@ import org.smartregister.model.practitioner.PractitionerDetails
 class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var fhirValidatorProvider: Provider<FhirValidator>
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
@@ -175,6 +179,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           dispatcherProvider = defaultRepo.dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           libraryEvaluatorProvider = { libraryEvaluator },
+          fhirValidatorProvider = fhirValidatorProvider,
           tracer = FakePerformanceReporter()
         )
       )
@@ -471,6 +476,96 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testExtractAndSaveResourcesWithTargetStructureMapShouldCallSaveForValidCarePlan() = runTest {
+    mockkObject(ResourceMapper)
+    val patient = samplePatient()
+    val sampleExtractedCarePlan =
+      CarePlan().apply {
+        status = CarePlan.CarePlanStatus.ACTIVE
+        intent = CarePlan.CarePlanIntent.PLAN
+        subject = patient.asReference()
+      }
+
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
+      Bundle().apply { addEntry().apply { this.resource = sampleExtractedCarePlan } }
+
+    val questionnaire =
+      Questionnaire().apply {
+        addUseContext().apply {
+          code = Coding().apply { code = "focus" }
+          value = CodeableConcept().apply { addCoding().apply { code = "1234567" } }
+        }
+        addExtension(
+          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+          CanonicalType("1234")
+        )
+      }
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    val questionnaireResponse = QuestionnaireResponse()
+
+    questionnaireViewModel.extractAndSaveResources(
+      context = context,
+      resourceId = "12345",
+      questionnaireResponse = questionnaireResponse,
+      questionnaire = questionnaire
+    )
+
+    coVerify { defaultRepo.addOrUpdate(resource = sampleExtractedCarePlan) }
+    coVerify { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+    coVerify(timeout = 10000) { ResourceMapper.extract(any(), any(), any()) }
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
+  fun testExtractAndSaveResourcesWithTargetStructureMapDoesNotSaveWhenExtractedResourceHasValidationError() =
+      runTest {
+    mockkObject(ResourceMapper)
+    val sampleExtractedCarePlan = CarePlan()
+
+    coEvery { ResourceMapper.extract(any(), any(), any()) } returns
+      Bundle().apply {
+        addEntry(Bundle.BundleEntryComponent().apply { resource = sampleExtractedCarePlan })
+      }
+    val questionnaire =
+      Questionnaire().apply {
+        addExtension(
+          "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+          CanonicalType("1234")
+        )
+      }
+    val questionnaireResponse = QuestionnaireResponse()
+    questionnaireViewModel.extractAndSaveResources(
+      context = context,
+      resourceId = "12345",
+      questionnaireResponse = questionnaireResponse,
+      questionnaire = questionnaire
+    )
+
+    coVerify(exactly = 0) { defaultRepo.addOrUpdate(resource = sampleExtractedCarePlan) }
+    coVerify(exactly = 0) { defaultRepo.addOrUpdate(resource = questionnaireResponse) }
+
+    val extractionProgressValue = questionnaireViewModel.extractionProgress.value
+    Assert.assertNotNull(extractionProgressValue)
+    extractionProgressValue!!
+    Assert.assertTrue(extractionProgressValue is ExtractionProgress.Failed)
+    extractionProgressValue as ExtractionProgress.Failed
+    Assert.assertNotNull(extractionProgressValue.errorMessages)
+    Assert.assertTrue(
+      "CarePlan.status: minimum required = 1" in extractionProgressValue.errorMessages!!
+    )
+    Assert.assertTrue(
+      "CarePlan.intent: minimum required = 1" in extractionProgressValue.errorMessages!!
+    )
+    Assert.assertTrue(
+      "CarePlan.subject: minimum required = 1" in extractionProgressValue.errorMessages!!
+    )
+
+    unmockkObject(ResourceMapper)
+  }
+
+  @Test
   fun testExtractAndSaveResourcesWithExtractionExtensionAndNullResourceShouldAssignTags() {
     val questionnaire =
       Questionnaire().apply {
@@ -628,13 +723,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       )
       Assert.assertEquals(relatedPerson.name.first().family, result?.name?.first()?.family)
     }
-  }
-
-  @Test
-  fun testSaveResourceShouldVerifyResourceSaveMethodCall() {
-    coEvery { defaultRepo.save(any()) } returns Unit
-    questionnaireViewModel.saveResource(mockk())
-    coVerify(exactly = 1) { defaultRepo.save(any()) }
   }
 
   @Test
@@ -1091,14 +1179,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.saveQuestionnaireResponse(questionnaire, questionnaireResponse)
     }
     coVerify { libraryEvaluator.runCqlLibrary("123", any(), any(), any()) }
-  }
-
-  @Test
-  fun testSaveResourceShouldCallDefaultRepositorySave() {
-    val sourcePatient = Patient().apply { id = "test_patient_1_id" }
-    questionnaireViewModel.saveResource(sourcePatient)
-
-    coVerify { defaultRepo.save(sourcePatient) }
   }
 
   @Test

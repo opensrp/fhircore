@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.VisibleForTesting
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,6 +27,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import ca.uhn.fhir.validation.FhirValidator
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -82,8 +85,10 @@ import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
+import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
+import org.smartregister.fhircore.engine.util.extension.errorMessages
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
@@ -110,14 +115,20 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
+  val fhirValidatorProvider: Provider<FhirValidator>,
   var tracer: PerformanceReporter
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
-  val extractionProgress = MutableLiveData<ExtractionProgress>()
+  private val _extractionProgress = MutableLiveData<ExtractionProgress>()
+  val extractionProgress: LiveData<ExtractionProgress> = _extractionProgress
+
   val questionnaireResponseLiveData = MutableLiveData<QuestionnaireResponse?>(null)
 
-  val extractionProgressMessage = MutableLiveData<String>()
+  @Suppress("PropertyName")
+  @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+  val _extractionProgressMessage = MutableLiveData<String>()
+  val extractionProgressMessage: LiveData<String> = _extractionProgressMessage
 
   var editQuestionnaireResponse: QuestionnaireResponse? = null
 
@@ -334,7 +345,23 @@ constructor(
           Timber.w(
             "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
           )
-        } else saveBundleResources(bundle)
+        } else {
+          val unsuccessfulValidationResults =
+            bundle.entry
+              .flatMap { fhirValidatorProvider.get().checkResourceValid(it.resource) }
+              .filter { it.errorMessages.isNotBlank() }
+
+          if (unsuccessfulValidationResults.isNotEmpty()) {
+            val mergedErrorMessages = buildString {
+              unsuccessfulValidationResults.forEach { appendLine(it.errorMessages) }
+            }
+            Timber.e(mergedErrorMessages)
+            _extractionProgress.postValue(ExtractionProgress.Failed(mergedErrorMessages))
+            return@launch
+          }
+
+          saveBundleResources(bundle)
+        }
 
         if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
@@ -357,7 +384,7 @@ constructor(
       }
       tracer.stopTrace(QUESTIONNAIRE_TRACE)
       viewModelScope.launch(Dispatchers.Main) {
-        extractionProgress.postValue(ExtractionProgress.Success(extras))
+        _extractionProgress.postValue(ExtractionProgress.Success(extras))
       }
     }
   }
@@ -398,7 +425,7 @@ constructor(
         .runCatching { fhirCarePlanGenerator.generateCarePlan(planId, subject, data) }
         .onFailure {
           Timber.e(it)
-          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+          _extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
         }
     }
   }
@@ -420,7 +447,7 @@ constructor(
           libraryEvaluatorProvider.get().runCqlLibrary(it, patient, data, defaultRepository)
         }
         .forEach { output ->
-          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
+          if (output.isNotEmpty()) _extractionProgressMessage.postValue(output.joinToString("\n"))
         }
     }
   }
@@ -466,7 +493,6 @@ constructor(
     questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
       it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
     }
-
     defaultRepository.addOrUpdate(true, questionnaireResponse)
   }
 
@@ -613,10 +639,6 @@ constructor(
         }
         .map { it.resource }
     return tasks.filter { it.status in arrayOf(TaskStatus.READY, TaskStatus.INPROGRESS) }
-  }
-
-  fun saveResource(resource: Resource) {
-    viewModelScope.launch { defaultRepository.save(resource = resource) }
   }
 
   fun extractRelevantObservation(

@@ -71,6 +71,7 @@
     <string name="questionnaire_alert_confirm_button_title">Yes</string>
     <string name="questionnaire_alert_invalid_message">Given details have validation errors. Resolve errors and submit again</string>
     <string name="questionnaire_alert_invalid_title">Validation Failed</string>
+    <string name="questionnaire_alert_extraction_fail">Extraction did not succeed</string>
     <string name="questionnaire_alert_ack_button_title">Ok</string>
     <string name="username">Username</string>
     <string name="password">Password</string>

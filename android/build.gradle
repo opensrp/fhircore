@@ -35,6 +35,14 @@ allprojects {
             url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
         }
     }
+
+    configurations {
+        configureEach {
+            resolutionStrategy {
+                force "ca.uhn.hapi.fhir:hapi-fhir-validation:6.0.1"
+            }
+        }
+    }
 }
 
 subprojects {
