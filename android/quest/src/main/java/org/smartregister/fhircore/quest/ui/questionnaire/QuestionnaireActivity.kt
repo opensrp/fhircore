@@ -128,17 +128,12 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-      if (LocationUtils.isLocationEnabled(this)) {
-        launchLocationPermissionsDialog()
-      } else {
-        activityResultLauncher =
-          PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
-            if (resultCode == RESULT_OK || LocationUtils.isLocationEnabled(this)) {
-              launchLocationPermissionsDialog()
-            }
-          }
+      if (!LocationUtils.isLocationEnabled(this)) {
+        openLocationServicesSettings()
+      }
 
-        showLocationSettingsDialog()
+      if (!hasLocationPermissions()) {
+        launchLocationPermissionsDialog()
       }
     }
   }
@@ -153,38 +148,50 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun launchLocationPermissionsDialog() {
-    if (hasLocationPermissions()) {
-      fetchLocation()
-    } else {
-      locationPermissionLauncher =
-        PermissionUtils.getLocationPermissionLauncher(
-          this,
-          onFineLocationPermissionGranted = { fetchLocation(true) },
-          onCoarseLocationPermissionGranted = { fetchLocation(false) },
-          onLocationPermissionDenied = {
-            Toast.makeText(
-                this,
-                getString(R.string.location_permissions_denied),
-                Toast.LENGTH_SHORT,
-              )
-              .show()
-            Timber.e("Location permissions denied")
-          },
-        )
+  private fun openLocationServicesSettings() {
+    activityResultLauncher =
+      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
+        if (resultCode == RESULT_OK || hasLocationPermissions()) {
+          fetchLocation()
+        }
+      }
 
-      locationPermissionLauncher.launch(
-        arrayOf(
-          Manifest.permission.ACCESS_FINE_LOCATION,
-          Manifest.permission.ACCESS_COARSE_LOCATION,
-        ),
-      )
-    }
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    showLocationSettingsDialog(intent)
   }
 
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.clear()
+  private fun showLocationSettingsDialog(intent: Intent) {
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.location_services_disabled))
+      .setCancelable(true)
+      .setPositiveButton(getString(R.string.yes)) { _, _ -> activityResultLauncher.launch(intent) }
+      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
+      .show()
+  }
+
+  private fun launchLocationPermissionsDialog() {
+    locationPermissionLauncher =
+      PermissionUtils.getLocationPermissionLauncher(
+        this,
+        onFineLocationPermissionGranted = { fetchLocation(true) },
+        onCoarseLocationPermissionGranted = { fetchLocation(false) },
+        onLocationPermissionDenied = {
+          Toast.makeText(
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
+            .show()
+          Timber.e("Location permissions denied")
+        },
+      )
+
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      ),
+    )
   }
 
   private fun fetchLocation(highAccuracy: Boolean = true) {
@@ -201,16 +208,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun showLocationSettingsDialog() {
-    AlertDialog.Builder(this)
-      .setMessage(getString(R.string.location_services_disabled))
-      .setCancelable(true)
-      .setPositiveButton(getString(R.string.yes)) { _, _ ->
-        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-        activityResultLauncher.launch(intent)
-      }
-      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
-      .show()
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.clear()
   }
 
   private fun renderQuestionnaire() {
