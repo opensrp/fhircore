@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.profile.FAB_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -65,6 +66,12 @@ const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEST_TAG = "noRegisterViewButtonTestTag"
 const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
+const val REGISTER_TOP_BAR_TEST_TAG = "registerTopBarTestTag"
+const val FAB_REGISTER_BUTTON_TEST_TAG = "fabRegisterButtonTestTag"
+const val DATA_MIGRATION_DIALOG = "dataMigrationDialogTestTag"
+const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncDialogTestTag"
+
+
 
 @Composable
 fun RegisterScreen(
@@ -84,7 +91,7 @@ fun RegisterScreen(
 
   Scaffold(
     topBar = {
-      Column {
+      Column ( modifier = Modifier.testTag(REGISTER_TOP_BAR_TEST_TAG)) {
         // Top section has toolbar and a results counts view
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
@@ -118,6 +125,7 @@ fun RegisterScreen(
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
+          modifier = Modifier.testTag(FAB_REGISTER_BUTTON_TEST_TAG),
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,
@@ -125,7 +133,8 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(modifier = modifier.padding(innerPadding).testTag(DATA_MIGRATION_DIALOG).testTag(
+      FIRST_TIME_SYNC_DIALOG)) {
       if (dataMigrationInProgress) {
         LoaderDialog(dialogMessage = stringResource(id = R.string.migrating_data))
       }
