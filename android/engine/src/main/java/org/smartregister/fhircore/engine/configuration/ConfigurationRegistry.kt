@@ -416,6 +416,11 @@ constructor(
           ResourceType.Measure.name,
           ResourceType.Basic.name,
           ResourceType.Binary.name,
+          ResourceType.ActivityDefinition.name,
+          ResourceType.CodeSystem.name,
+          ResourceType.ConceptMap.name,
+          ResourceType.StructureDefinition.name,
+          ResourceType.Device.name,
           ResourceType.Parameters,
         )
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
