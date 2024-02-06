@@ -94,7 +94,6 @@ subprojects {
           "org.jacoco" -> useVersion("0.8.11")
         }
       }
-      force("com.google.guava:guava:32.1.2-android")
     }
   }
 
