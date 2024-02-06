@@ -77,7 +77,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -109,7 +108,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -174,7 +172,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -197,7 +194,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -220,7 +216,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -240,7 +235,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -260,7 +254,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
