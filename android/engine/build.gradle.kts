@@ -1,4 +1,3 @@
-import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 buildscript {
@@ -119,7 +118,6 @@ configurations {
     exclude(group = "javax", module = "javaee-api")
     exclude(group = "xml-apis")
     exclude(group = "xpp3")
-    removeIncompatibleDependencies()
   }
 }
 
@@ -248,28 +246,6 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.benchmark.junit)
-
-  /**
-   * This is an SDK Dependency graph bug workaround file HAPI FHIR Dependencies missing at runtime
-   * after building FHIRCore application module
-   *
-   * To be included in the engine/build.gradle.kts file via apply {}
-   */
-  implementation(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
-  implementation(Dependencies.HapiFhir.guavaCaching)
-  implementation(Dependencies.HapiFhir.validationR4)
-  implementation(Dependencies.HapiFhir.validation) {
-    exclude(module = "commons-logging")
-    exclude(module = "httpclient")
-  }
-
-  constraints {
-    Dependencies.hapiFhirConstraints().forEach { (libName, constraints) ->
-      api(libName, constraints)
-    }
-  }
-
-  /** End SDK Dependency Graph workaround * */
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
