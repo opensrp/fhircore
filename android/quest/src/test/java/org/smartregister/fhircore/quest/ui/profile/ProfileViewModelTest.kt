@@ -224,7 +224,7 @@ class ProfileViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testManagingEntityShowsProfileBottomSheetFragment() = runTest {
+  fun testThatManagingEntityProfileBottomSheetIsShownOnActionTriggered() = runTest {
     val navController = mockk<NavController>()
     val event = mockk<ProfileEvent.OverflowMenuClick>()
     val fragmentManager = mockk<FragmentManager>()
@@ -278,7 +278,6 @@ class ProfileViewModelTest : RobolectricTest() {
         "name",
       )
     } returns "memebr 1"
-    every { fhirPathDataExtractor.extractValue(managingEntityResource, any()) } returns "true"
     every { activity.supportFragmentManager } returns fragmentManager
     every { activity.supportFragmentManager.beginTransaction() } returns fragmentManagerTransaction
     viewModel.onEvent(
