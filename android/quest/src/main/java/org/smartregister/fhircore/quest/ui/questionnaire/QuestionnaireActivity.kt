@@ -80,7 +80,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    configureLocationServices()
+    setupLocationServices()
 
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -124,7 +124,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun configureLocationServices() {
+  private fun setupLocationServices() {
     if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
