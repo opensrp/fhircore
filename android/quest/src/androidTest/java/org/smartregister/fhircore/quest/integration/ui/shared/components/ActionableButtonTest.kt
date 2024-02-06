@@ -26,7 +26,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.navigation.testing.TestNavHostController
-import androidx.test.core.app.ApplicationProvider
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -37,13 +36,14 @@ import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
 class ActionableButtonTest {
   @get:Rule val composeRule = createComposeRule()
-  private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
 
   @Test
   fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusDue() {
@@ -100,6 +100,17 @@ class ActionableButtonTest {
       .performClick()
   }
 
+  @Test
+  fun testActionableButtonRendersAndCopyText() {
+    setCopyButtonContent("false")
+
+    composeRule
+      .onNodeWithText("Copy Button Text", useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
   private fun setContent(
     serviceStatus: String,
     enabled: String = "true",
@@ -122,6 +133,43 @@ class ActionableButtonTest {
                 ),
               enabled = enabled,
               startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
+            ),
+          resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
+          navController = TestNavHostController(LocalContext.current),
+        )
+      }
+    }
+  }
+
+  private fun setCopyButtonContent(
+    serviceStatus: String,
+    enabled: String = "true",
+    computedValuesMap: Map<String, Any> = emptyMap(),
+  ) {
+    composeRule.setContent {
+      Column(modifier = Modifier.height(50.dp)) {
+        ActionableButton(
+          buttonProperties =
+            ButtonProperties(
+              status = serviceStatus,
+              text = "Copy Button Text",
+              actions =
+                listOf(
+                  ActionConfig(
+                    trigger = ActionTrigger.ON_CLICK,
+                    workflow = ApplicationWorkflow.COPY_TEXT.name,
+                    params =
+                      listOf(
+                        ActionParameter(
+                          key = "copyText",
+                          value = "https://my-url",
+                          paramType = ActionParameterType.PARAMDATA,
+                        ),
+                      ),
+                  ),
+                ),
+              enabled = enabled,
+              startIcon = ImageConfig("ic_copy", ICON_TYPE_LOCAL),
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = TestNavHostController(LocalContext.current),

@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.ContextCompat
@@ -45,9 +48,12 @@ fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
+  context: Context? = null,
+  copyText: String? = null,
 ) {
   val onClickAction =
     this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
@@ -153,6 +159,13 @@ fun List<ActionConfig>.handleClickEvent(
         val intent = Intent(Intent.ACTION_DIAL)
         intent.data = Uri.parse("tel:$patientPhoneNumber")
         ContextCompat.startActivity(navController.context, intent, null)
+      }
+      ApplicationWorkflow.COPY_TEXT -> {
+        val copyTextActionParameter = interpolatedParams.first()
+        val clipboardManager =
+          context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText(null, copyTextActionParameter.value)
+        clipboardManager.setPrimaryClip(clipData)
       }
       else -> return
     }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +69,7 @@ fun ActionableButton(
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
   navController: NavController,
+  context: Context = LocalContext.current,
 ) {
   if (buttonProperties.visible.toBoolean()) {
     val status = buttonProperties.status
@@ -89,6 +92,7 @@ fun ActionableButton(
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData,
+            context = context,
           )
         }
       },
@@ -152,7 +156,11 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
+          imageProperties =
+            ImageProperties(
+              imageConfig = buttonProperties.startIcon,
+              size = 16,
+            ),
           tint = iconTintColor,
         )
       } else {
