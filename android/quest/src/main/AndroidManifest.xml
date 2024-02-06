@@ -3,11 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="org.smartregister.fhircore.quest">
 
-<!--    <uses-permission android:name="android.permission.INTERNET"></uses-permission>-->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
     <application
         android:name=".QuestApplication"
         android:allowBackup="true"
@@ -97,4 +92,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 </manifest>

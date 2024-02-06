@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import PermissionUtils
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -28,6 +29,7 @@ import android.provider.Settings
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
@@ -37,15 +39,14 @@ import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
-import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.location.Priority
-import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
-import com.google.android.gms.tasks.Task
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
+import java.util.LinkedList
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -67,11 +68,8 @@ import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
-import org.smartregister.fhircore.quest.util.extensions.hasLocationPermission
+import org.smartregister.fhircore.quest.util.LocationUtils
 import timber.log.Timber
-import java.io.Serializable
-import java.util.LinkedList
-import java.util.UUID
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
@@ -84,37 +82,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var alertDialog: AlertDialog? = null
 
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private val loc = org.hl7.fhir.r4.model.Location()
-
   private var currLocation: Location? = null
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    val applicationConfiguration = viewModel.applicationConfiguration
-
-    if (applicationConfiguration.logQuestionnaireLocation) {
-      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-      val builder = LocationSettingsRequest.Builder()
-      val client: SettingsClient = LocationServices.getSettingsClient(this)
-      val result: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-      result.addOnSuccessListener { _ ->
-        AlertDialog.Builder(this)
-          .setMessage("Location services are disabled. Do you want to enable them?")
-          .setCancelable(false)
-          .setPositiveButton("Yes") { _, _ ->
-            // Open GPS settings
-            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivity(intent)
-          }
-          .setNegativeButton("No") { dialog, _ ->
-            dialog.cancel()
-          }
-          .show()
-      }
-      lifecycleScope.launch { getLocationPermission()}
-    }
 
     setTheme(R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -122,6 +93,31 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     with(intent) {
       parcelable<QuestionnaireConfig>(QUESTIONNAIRE_CONFIG)?.also { questionnaireConfig = it }
       actionParameters = parcelableArrayList(QUESTIONNAIRE_ACTION_PARAMETERS) ?: arrayListOf()
+    }
+
+    if (true || viewModel.applicationConfiguration.logQuestionnaireLocation) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+      if (LocationUtils.isLocationEnabled(this)) {
+        getLocationPermission()
+      } else {
+        val locationSettingsLauncher: ActivityResultLauncher<Intent> =
+          this.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (LocationUtils.isLocationEnabled(this)) {
+              getLocationPermission()
+            }
+          }
+
+        AlertDialog.Builder(this)
+          .setMessage("Location services are disabled. Do you want to enable them?")
+          .setCancelable(true)
+          .setPositiveButton("Yes") { _, _ ->
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            locationSettingsLauncher.launch(intent)
+          }
+          .setNegativeButton("No") { dialog, _ -> dialog.cancel() }
+          .show()
+      }
     }
 
     if (!::questionnaireConfig.isInitialized) {
@@ -288,7 +284,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.run {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          questionnaireResponse.contained.add(loc)
           if (currLocation != null) {
             questionnaireResponse.contained.add(createLocationResource(currLocation))
           }
@@ -319,7 +314,15 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun getLocationPermission() {
-      if (!this@QuestionnaireActivity.hasLocationPermission()) {
+    if (
+      !PermissionUtils.checkPermissions(
+        this,
+        listOf(
+          Manifest.permission.ACCESS_COARSE_LOCATION,
+          Manifest.permission.ACCESS_FINE_LOCATION
+        ),
+      )
+    ) {
       val locationPermissionRequest =
         this@QuestionnaireActivity.registerForActivityResult(
           ActivityResultContracts.RequestMultiplePermissions(),
@@ -329,16 +332,14 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               lifecycleScope.launch { getCurrentLocation() }
             }
             permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-              // request approx permissions
-              lifecycleScope.launch { getCurrentApproximateLocation()}
+              lifecycleScope.launch { getCurrentApproximateLocation() }
             }
             else -> {
-              // No location access granted. Notify and fail
               Toast.makeText(
-                this@QuestionnaireActivity,
-                "Location currently disabled due to denied permission.",
-                Toast.LENGTH_LONG,
-              )
+                  this@QuestionnaireActivity,
+                  "Location currently disabled due to denied permission.",
+                  Toast.LENGTH_LONG,
+                )
                 .show()
             }
           }
@@ -350,13 +351,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         ),
       )
     } else {
-        lifecycleScope.launch { getCurrentLocation() }
+      lifecycleScope.launch { getCurrentLocation() }
     }
   }
 
   @SuppressLint("MissingPermission")
   private suspend fun getCurrentLocation() {
-    withContext(Dispatchers.IO){
+    withContext(Dispatchers.IO) {
       fusedLocationClient
         .getCurrentLocation(
           Priority.PRIORITY_HIGH_ACCURACY,
@@ -369,26 +370,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         )
         .addOnSuccessListener { location: Location? ->
           if (location != null) {
-            Timber.d("current location${location.latitude} ${location.longitude}")
-            loc.position.altitude = location.altitude.toBigDecimal()
-            loc.position.latitude = location.latitude.toBigDecimal()
-            loc.position.longitude = location.longitude.toBigDecimal()
-            Timber.d(
-              "Precise location - latitude: ${location.latitude}; longitude: ${location.longitude}; altitude: ${location.altitude}",
-            )
             currLocation = location
-          } else {
-
-          }
+            Timber.d(
+              "Location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+            )
+          } else {}
         }
-        .addOnFailureListener {e ->
+        .addOnFailureListener { e ->
           Timber.e(e, "Failed to get current location")
           // Notify user about failure
           Toast.makeText(
-            this@QuestionnaireActivity,
-            "Failed to get current location: ${e.message}",
-            Toast.LENGTH_LONG
-          ).show()
+              this@QuestionnaireActivity,
+              "Failed to get current location: ${e.message}",
+              Toast.LENGTH_LONG,
+            )
+            .show()
         }
     }
   }
@@ -406,17 +402,15 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             override fun isCancellationRequested() = false
           },
         )
-        .addOnSuccessListener { approxLocation: Location? ->
-          if (approxLocation != null) {
-            Timber.d("current location${approxLocation.latitude} ${approxLocation.longitude}")
-            loc.position.altitude = approxLocation.altitude.toBigDecimal()
-            loc.position.latitude = approxLocation.latitude.toBigDecimal()
-            loc.position.longitude = approxLocation.longitude.toBigDecimal()
+        .addOnSuccessListener { location: Location? ->
+          if (location != null) {
+            currLocation = location
+            Timber.d(
+              "Location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+            )
           }
         }
-        .addOnFailureListener {
-
-        }
+        .addOnFailureListener {}
     }
   }
 
@@ -428,7 +422,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     locationResource.position.altitude = gpsLocation!!.altitude.toBigDecimal()
 
     return locationResource
-    }
+  }
 
   private fun handleBackPress() {
     if (questionnaireConfig.isReadOnly()) {
