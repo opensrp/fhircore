@@ -19,14 +19,18 @@ package org.smartregister.fhircore.quest.integration
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
-import com.google.android.fhir.LocalChangeToken
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.LocalChangesFetchMode
+import com.google.android.fhir.sync.upload.SyncUploadProgress
+import com.google.android.fhir.sync.upload.UploadSyncResult
 import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltTestApplication
+import java.net.URL
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
@@ -37,6 +41,7 @@ import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -57,9 +62,8 @@ object Faker {
 
         override suspend fun count(search: Search): Long = 0
 
-        override suspend fun create(vararg resource: Resource): List<String> = emptyList()
-
-        override suspend fun createRemote(vararg resource: Resource) {}
+        override suspend fun create(vararg resource: Resource, isLocalOnly: Boolean): List<String> =
+          emptyList()
 
         override suspend fun delete(type: ResourceType, id: String) {}
 
@@ -93,8 +97,10 @@ object Faker {
 
         override suspend fun syncUpload(
           localChangesFetchMode: LocalChangesFetchMode,
-          upload: suspend (List<LocalChange>) -> Flow<Pair<LocalChangeToken, Resource>>,
-        ) {}
+          upload: suspend (List<LocalChange>) -> UploadSyncResult,
+        ): Flow<SyncUploadProgress> {
+          return flowOf()
+        }
 
         override suspend fun update(vararg resource: Resource) {}
       }
@@ -177,6 +183,13 @@ object Faker {
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,
+        context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+        openSrpApplication =
+          object : OpenSrpApplication() {
+            override fun getFhirServerHost(): URL? {
+              return URL("http://my_test_fhirbase_url/fhir/")
+            }
+          },
       )
 
     runBlocking {

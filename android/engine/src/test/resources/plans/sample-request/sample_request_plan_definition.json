@@ -53,7 +53,7 @@
           "path": "author",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "%subject.generalPractitioner.first()"
+            "expression": "$this.generalPractitioner.first()"
           }
         },
         {
@@ -71,17 +71,10 @@
           }
         },
         {
-          "path": "%action.description",
+          "path": "performer",
           "expression": {
             "language": "text/fhirpath",
-            "expression": "'This action will assess careplan on registration to init careplan'"
-          }
-        },
-        {
-          "path": "%action.performer",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%subject.generalPractitioner.first()"
+            "expression": "$this.generalPractitioner.first()"
           }
         }
       ]

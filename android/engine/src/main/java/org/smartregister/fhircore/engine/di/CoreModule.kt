@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.di
 import android.accounts.AccountManager
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
@@ -68,7 +67,7 @@ class CoreModule {
   fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
     KnowledgeManager.create(context)
 
-  @Singleton @Provides fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
+  @Singleton @Provides fun provideFhirContext(): FhirContext = FhirContext.forR4Cached()!!
 
   @Singleton
   @Provides

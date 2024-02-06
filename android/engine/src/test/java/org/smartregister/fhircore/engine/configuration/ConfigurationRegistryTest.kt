@@ -29,10 +29,12 @@ import com.google.common.reflect.TypeToken
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
+import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import okhttp3.RequestBody
@@ -52,6 +54,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
@@ -100,6 +103,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
         dispatcherProvider,
         AppConfigService(context),
         Faker.json,
+        context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+        openSrpApplication =
+          object : OpenSrpApplication() {
+            override fun getFhirServerHost(): URL? {
+              return URL("http://my_test_fhirbase_url/fhir/")
+            }
+          },
       )
     configRegistry.setNonProxy(false)
     Assert.assertNotNull(configRegistry)
