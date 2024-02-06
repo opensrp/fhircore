@@ -95,7 +95,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       actionParameters = parcelableArrayList(QUESTIONNAIRE_ACTION_PARAMETERS) ?: arrayListOf()
     }
 
-    if (true || viewModel.applicationConfiguration.logQuestionnaireLocation) {
+    if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (LocationUtils.isLocationEnabled(this)) {
