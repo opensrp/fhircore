@@ -28,6 +28,7 @@ data class MigrationConfig(
   val rules: List<RuleConfig>,
   val version: Int,
   val purgeAffectedResources: Boolean = false,
+  val createLocalChangeEntitiesAfterPurge: Boolean = true,
   val resourceFilterExpression: ResourceFilterExpression? = null,
 ) : java.io.Serializable
 

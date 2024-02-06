@@ -196,7 +196,9 @@ constructor(
             if (migrationConfig.purgeAffectedResources) {
               defaultRepository.purge(resource = updatedResource as Resource, forcePurge = true)
             }
-            defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            if (migrationConfig.createLocalChangeEntitiesAfterPurge) {
+              defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+            } else defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
           }
         }
         eventBus.triggerEvent(AppEvent.OnMigrateData(false))
