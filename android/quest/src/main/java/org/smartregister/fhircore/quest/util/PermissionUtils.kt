@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+package org.smartregister.fhircore.quest.util
+
+import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
 object PermissionUtils {
+
   fun checkPermissions(context: Context, permissions: List<String>): Boolean {
     for (permission in permissions) {
       if (
@@ -28,5 +36,35 @@ object PermissionUtils {
       }
     }
     return true
+  }
+
+  fun getLocationPermissionLauncher(
+    activity: AppCompatActivity,
+    onFineLocationPermissionGranted: () -> Unit,
+    onCoarseLocationPermissionGranted: () -> Unit,
+    onLocationPermissionDenied: () -> Unit,
+  ): ActivityResultLauncher<Array<String>> {
+    return activity.registerForActivityResult(
+      ActivityResultContracts.RequestMultiplePermissions(),
+    ) { permissions ->
+      if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+        onFineLocationPermissionGranted()
+      } else if (permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
+        onCoarseLocationPermissionGranted()
+      } else {
+        onLocationPermissionDenied()
+      }
+    }
+  }
+
+  fun getStartActivityForResultLauncher(
+    activity: AppCompatActivity,
+    onResult: (resultCode: Int, data: Intent?) -> Unit,
+  ): ActivityResultLauncher<Intent> {
+    return activity.registerForActivityResult(
+      ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+      onResult(result.resultCode, result.data)
+    }
   }
 }
