@@ -81,8 +81,8 @@ fun GenerateView(
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
-          navController = navController,
           resourceData = resourceData,
+          navController = navController,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children

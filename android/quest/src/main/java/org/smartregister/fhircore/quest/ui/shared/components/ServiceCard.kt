@@ -254,8 +254,8 @@ private fun RowScope.RenderActionButtons(
             ) {
               ActionableButton(
                 buttonProperties = serviceCardProperties.serviceButton!!,
-                navController = navController,
                 resourceData = resourceData,
+                navController = navController,
               )
             }
           }
@@ -276,8 +276,8 @@ private fun RowScope.RenderActionButtons(
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
-                navController = navController,
                 resourceData = resourceData,
+                navController = navController,
               )
             }
           }

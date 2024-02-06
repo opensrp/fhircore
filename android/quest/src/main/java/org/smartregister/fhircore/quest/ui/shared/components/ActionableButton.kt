@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -69,7 +68,6 @@ fun ActionableButton(
   buttonProperties: ButtonProperties,
   resourceData: ResourceData,
   navController: NavController,
-  context: Context = LocalContext.current,
 ) {
   if (buttonProperties.visible.toBoolean()) {
     val status = buttonProperties.status
@@ -83,6 +81,7 @@ fun ActionableButton(
     val clickable = buttonProperties.clickable.toBoolean()
     val backgroundOpacity = buttonProperties.backgroundOpacity
     val colorOpacity = buttonProperties.colorOpacity
+    val context = LocalContext.current
     OutlinedButton(
       onClick = {
         if (
