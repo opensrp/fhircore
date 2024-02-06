@@ -405,19 +405,6 @@ constructor(
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      // if (isInitialLogin) return null
-      val filterResourceList =
-        listOf(
-          ResourceType.Questionnaire.name,
-          ResourceType.StructureMap.name,
-          ResourceType.List.name,
-          ResourceType.PlanDefinition.name,
-          ResourceType.Library.name,
-          ResourceType.Measure.name,
-          ResourceType.Basic.name,
-          ResourceType.Binary.name,
-          ResourceType.Parameters,
-        )
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
       compositionResource?.let { composition ->
@@ -433,7 +420,7 @@ constructor(
               missingDelimiterValue = "",
             )
           }
-          .filter { entry -> entry.key in filterResourceList }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
             if (entry.key == ResourceType.List.name) {
               processCompositionListResources(
@@ -686,7 +673,7 @@ constructor(
 
   fun clearConfigsCache() = configCacheMap.clear()
 
-  suspend fun processCompositionListResources(
+  private suspend fun processCompositionListResources(
     resourceGroup:
       Map.Entry<
         String,
@@ -736,12 +723,12 @@ constructor(
     }
   }
 
-  fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
     this.relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
-  fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     target.add(resource)
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }
@@ -788,5 +775,23 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+
+    /**
+     * The list of resources whose types can be synced down as part of the Composition configs.
+     * These are hardcoded as they are not meant to be easily configurable to avoid config vs data
+     * sync issues
+     */
+    val FILTER_RESOURCE_LIST =
+      listOf(
+        ResourceType.Questionnaire.name,
+        ResourceType.StructureMap.name,
+        ResourceType.List.name,
+        ResourceType.PlanDefinition.name,
+        ResourceType.Library.name,
+        ResourceType.Measure.name,
+        ResourceType.Basic.name,
+        ResourceType.Binary.name,
+        ResourceType.Parameters,
+      )
   }
 }
