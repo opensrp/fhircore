@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,9 +215,9 @@ constructor(
         carePlan.contained.clear()
 
         // Save CarePlan only if it has activity, otherwise just save contained/dependent resources
-        if (output.hasActivity()) defaultRepository.create(true, carePlan)
+        if (output.hasActivity()) defaultRepository.addOrUpdate(true, carePlan)
 
-        dependents.forEach { defaultRepository.create(true, it) }
+        dependents.forEach { defaultRepository.addOrUpdate(true, it) }
 
         if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED) {
           carePlan.activity
@@ -376,7 +376,7 @@ constructor(
             )
 
           if (resourceClosureConditionsMet) {
-            defaultRepository.updateResourcesRecursively(eventResource, subject)
+            defaultRepository.updateResourcesRecursively(eventResource, subject, eventWorkFlow)
           }
         }
       }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 package org.smartregister.fhircore.quest.data
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.search.Search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
@@ -41,8 +41,9 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
-import org.smartregister.fhircore.engine.util.extension.filterBy
-import org.smartregister.fhircore.quest.event.AppEvent
+import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.event.EventBus
 import timber.log.Timber
 
@@ -64,25 +65,33 @@ constructor(
   val parser: IParser,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val fhirPathDataExtractor: FhirPathDataExtractor,
   val eventBus: EventBus,
+  @ApplicationContext val context: Context,
 ) {
 
   private var conf: Configuration =
     Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
-  fun migrate() {
+  suspend fun migrate() {
     val migrations =
       try {
         configurationRegistry
-          .retrieveConfiguration<DataMigrationConfiguration>(configType = ConfigType.DataMigration)
+          .retrieveConfiguration<DataMigrationConfiguration>(
+            configType = ConfigType.DataMigration,
+          )
           .migrations
       } catch (exception: NoSuchElementException) {
         emptyList()
       }
 
-    runBlocking {
-      val previousVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).first()
-      val newMigrations = migrations?.filter { it.version > previousVersion }
+    val previousVersion =
+      preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0
+    val newMigrations = migrations?.filter { it.version > previousVersion }
+    Timber.i(
+      "Previous data migration version is $previousVersion, ${if (!newMigrations.isNullOrEmpty()) "new migration(s) ${newMigrations.map { it.version }} found " else "no migration required"}",
+    )
+    if (!newMigrations.isNullOrEmpty()) {
       migrate(newMigrations, previousVersion)
     }
   }
@@ -95,8 +104,8 @@ constructor(
    *
    * This function uses JSONPath instead of FHIRPath because JSONPath allows setting of values for a
    * given path. The syntax is almost similar to FHIRPath with a few exceptions. JSONPath uses the
-   * '$' to refer to the root of the JSON unlike FHIRPath that uses the [ResourceType] .The
-   * implementation uses both '$' and '[ResourceType]', the [ResourceType] will be replaced with a
+   * '$' to refer to the root of the JSON unlike FHIRPath that uses the [ResourceType].The
+   * implementation uses both '$' and ' [ResourceType]', the [ResourceType] will be replaced with a
    * dollar sign at runtime.
    *
    * Examples: Given this Patient object:
@@ -131,26 +140,48 @@ constructor(
    * ```
    */
   suspend fun migrate(migrationConfigs: List<MigrationConfig>?, previousVersion: Int) {
-    eventBus.triggerEvent(AppEvent.OnMigrateData(true))
+    withContext(dispatcherProvider.main()) {
+      context.showToast(
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.data_migration_started,
+          previousVersion,
+        ),
+      )
+    }
     val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
     migrationConfigs?.forEach { migrationConfig ->
       try {
-        val search: Search =
-          Search(type = migrationConfig.resourceType).apply {
-            migrationConfig.dataQueries?.forEach { dataQuery ->
-              filterBy(dataQuery = dataQuery, configComputedRuleValues = emptyMap())
-            }
-          }
-        val resources =
-          withContext(dispatcherProvider.io()) { defaultRepository.search<Resource>(search) }
-        resources.forEach { resource ->
+        Timber.i("Data migration started for version: ${migrationConfig.version}")
+        val resourceFilterExpression = migrationConfig.resourceFilterExpression
+        val repositoryResourceDataList =
+          defaultRepository
+            .searchResourcesRecursively(
+              filterActiveResources = null,
+              fhirResourceConfig = migrationConfig.resourceConfig,
+              configRules = null,
+              secondaryResourceConfigs = null,
+            )
+            .filterByFhirPathExpression(
+              fhirPathDataExtractor = fhirPathDataExtractor,
+              conditionalFhirPathExpressions =
+                resourceFilterExpression?.conditionalFhirPathExpressions,
+              matchAll = resourceFilterExpression?.matchAll ?: true,
+            )
+
+        repositoryResourceDataList.forEach { repositoryResourceData ->
+          val resource = repositoryResourceData.resource
           val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
           val updatedResourceDocument =
             jsonParse.apply {
               migrationConfig.updateValues.forEach { updateExpression ->
                 // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-                val value = computeValueRule(updateExpression.valueRule, resource)
+                val value =
+                  computeValueRule(
+                    rules = migrationConfig.rules,
+                    repositoryResourceData = repositoryResourceData,
+                    computedValueKey = updateExpression.computedValueKey,
+                  )
                 if (updateExpression.jsonPathExpression.startsWith("\$") && value != null) {
                   set(updateExpression.jsonPathExpression, value)
                 }
@@ -174,23 +205,39 @@ constructor(
           val updatedResource =
             parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
           withContext(dispatcherProvider.io()) {
+            if (migrationConfig.purgeAffectedResources) {
+              defaultRepository.purge(updatedResource as Resource, forcePurge = true)
+            }
             defaultRepository.addOrUpdate(resource = updatedResource as Resource)
           }
         }
-        eventBus.triggerEvent(AppEvent.OnMigrateData(false))
+        Timber.i("Data migration completed successfully for version: ${migrationConfig.version}")
       } catch (throwable: Throwable) {
+        Timber.i("Data migration failed for version: ${migrationConfig.version}")
         Timber.e(throwable)
       }
     }
-    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion.plus(1))
+    preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion)
+    withContext(dispatcherProvider.main()) {
+      context.showToast(
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.data_migration_completed,
+          maxVersion,
+        ),
+      )
+    }
   }
 
-  private fun computeValueRule(valueRule: RuleConfig, resource: Resource): Any? {
+  private fun computeValueRule(
+    rules: List<RuleConfig>?,
+    repositoryResourceData: RepositoryResourceData,
+    computedValueKey: String,
+  ): Any? {
     return resourceDataRulesExecutor
       .computeResourceDataRules(
-        ruleConfigs = listOf(valueRule),
-        repositoryResourceData = RepositoryResourceData(resource = resource),
+        ruleConfigs = rules ?: emptyList(),
+        repositoryResourceData = repositoryResourceData,
         params = emptyMap(),
-      )[valueRule.name]
+      )[computedValueKey]
   }
 }

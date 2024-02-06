@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -109,7 +108,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -174,7 +172,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -197,7 +194,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -220,7 +216,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -240,7 +235,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -260,7 +254,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule

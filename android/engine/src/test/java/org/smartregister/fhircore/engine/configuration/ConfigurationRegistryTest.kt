@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.common.reflect.TypeToken
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -220,6 +221,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     val appId = "theAppId"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = Composition() }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
@@ -234,6 +238,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns
       listOf(SearchResult(resource = composition, null, null))
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
@@ -246,6 +253,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "theAppId"
     val composition =
       Composition().apply {
+        id = "composition-id-1"
         identifier = Identifier().apply { value = appId }
         section =
           listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
@@ -255,14 +263,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
       listOf(SearchResult(resource = composition, null, null))
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     runTest {
       configRegistry.fhirEngine.create(composition)
       configRegistry.fetchNonWorkflowConfigResources()
     }
 
-    coVerify(inverse = true) { fhirEngine.get(any(), any()) }
-    coVerify(inverse = true) { fhirEngine.update(any()) }
+    val requestPathArgumentSlot = mutableListOf<Resource>()
+
+    coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
+    coVerify(exactly = 1) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    Assert.assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
+    Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
   }
 
   @Test
@@ -333,6 +348,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     configRegistry.fhirEngine.create(composition)
     configRegistry.setNonProxy(true)
@@ -390,7 +408,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.createRemote(patient) } just runs
 
     runTest {
-      configRegistry.create(patient)
+      configRegistry.createRemote(patient)
       coVerify { fhirEngine.createRemote(patient) }
     }
   }
@@ -666,12 +684,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val composition =
       Composition().apply {
+        id = "composition-id-1"
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
+
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
@@ -684,17 +707,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configRegistry.fetchNonWorkflowConfigResources()
 
-    val requestPathArgumentSlot = mutableListOf<Group>()
+    val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 2) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
 
-    Assert.assertEquals(2, requestPathArgumentSlot.size)
+    Assert.assertEquals(3, requestPathArgumentSlot.size)
 
     Assert.assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
     Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
 
-    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
+    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.second().id)
+    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+
+    Assert.assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
+    Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
   }
 
   @Test
@@ -715,12 +741,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       val composition =
         Composition().apply {
+          id = "composition-id-1"
           identifier = Identifier().apply { value = appId }
           section = compositionSections
         }
       configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
       fhirEngine.create(composition)
+
+      coEvery {
+        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
         fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
@@ -746,9 +777,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
-      coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+      coVerify(exactly = 4) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
 
-      Assert.assertEquals(3, requestPathArgumentSlot.size)
+      Assert.assertEquals(4, requestPathArgumentSlot.size)
 
       Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
       Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
@@ -756,7 +787,34 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Assert.assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
       Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
 
-      Assert.assertEquals("Group/2000001", requestPathArgumentSlot.last().id)
-      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.last().resourceType)
+      Assert.assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
+      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
+
+      Assert.assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
+      Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
     }
+
+  @Test
+  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
+    val resourceType =
+      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
+
+    configRegistry.saveSyncSharedPreferences(resourceType)
+
+    val savedSyncResourcesResult =
+      configRegistry.sharedPreferencesHelper.read(
+        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+        null,
+      )!!
+    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
+    val savedSyncResourceTypes: List<ResourceType> =
+      configRegistry.sharedPreferencesHelper.gson.fromJson(
+        savedSyncResourcesResult,
+        listResourceTypeToken,
+      )
+
+    Assert.assertEquals(2, savedSyncResourceTypes.size)
+    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
+    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
+  }
 }

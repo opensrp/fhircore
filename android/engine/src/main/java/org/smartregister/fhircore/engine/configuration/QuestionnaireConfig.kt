@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,7 @@ data class QuestionnaireConfig(
   val showClearAll: Boolean = false,
   val showRequiredTextAsterisk: Boolean = true,
   val showRequiredText: Boolean = false,
+  val managingEntityRelationshipCode: String? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -66,6 +67,8 @@ data class QuestionnaireConfig(
       taskId = taskId?.interpolate(computedValuesMap),
       title = title?.interpolate(computedValuesMap),
       type = type.interpolate(computedValuesMap),
+      managingEntityRelationshipCode =
+        managingEntityRelationshipCode?.interpolate(computedValuesMap),
       resourceIdentifier =
         resourceIdentifier?.interpolate(computedValuesMap)?.extractLogicalIdUuid(),
       groupResource =

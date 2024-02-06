@@ -239,20 +239,20 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
       versionNameSuffix = "-sidBunda"
-      manifestPlaceholders["appLabel"] = "Bunda ANC"
+      manifestPlaceholders["appLabel"] = "BidanKu"
     }
 
     create("sidCadre") {
       dimension = "apps"
       applicationIdSuffix = ".sidCadre"
       versionNameSuffix = "-sidCadre"
-      manifestPlaceholders["appLabel"] = "Cadre App"
+      manifestPlaceholders["appLabel"] = "KaderKu"
     }
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
       versionNameSuffix = "-sidEir"
-      manifestPlaceholders["appLabel"] = "SID EIR"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
     create("diabetesCompass") {
@@ -301,6 +301,12 @@ android {
       applicationIdSuffix = ".psi_eswatini"
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
+    }
+    create("eusm") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusm"
+      versionNameSuffix = "-eusm"
+      manifestPlaceholders["appLabel"] = "EUSM"
     }
   }
 

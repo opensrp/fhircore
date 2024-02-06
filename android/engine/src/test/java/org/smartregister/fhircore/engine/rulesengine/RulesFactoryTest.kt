@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 @HiltAndroidTest
@@ -412,6 +413,51 @@ class RulesFactoryTest : RobolectricTest() {
   }
 
   @Test
+  fun `test mapResourcesToLabeledCSV with no resources`() {
+    val resources = null
+    val fhirPathExpression = "Patient.active and (Patient.birthDate <= today() - 60 'years')"
+    val label = "ELDERLY"
+    val matchAllExtraConditions = false
+    val extraConditions = emptyArray<Any>()
+
+    val result =
+      rulesEngineService.mapResourcesToLabeledCSV(
+        resources,
+        fhirPathExpression,
+        label,
+        matchAllExtraConditions,
+        *extraConditions,
+      )
+
+    Assert.assertEquals("", result)
+  }
+
+  @Test
+  fun `test mapResourcesToLabeledCSV with no matching resources`() {
+    val resources =
+      listOf(
+        Patient().setBirthDate(LocalDate.parse("2015-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("1954-10-03").toDate()),
+        Patient().setActive(true).setBirthDate(LocalDate.parse("1944-10-03").toDate()),
+      )
+    val fhirPathExpression = "Patient.active and (Patient.birthDate <= today() - 60 'years')"
+    val label = "ELDERLY"
+    val matchAllExtraConditions = false
+    val extraConditions = emptyArray<Any>()
+
+    val result =
+      rulesEngineService.mapResourcesToLabeledCSV(
+        resources,
+        fhirPathExpression,
+        label,
+        matchAllExtraConditions,
+        *extraConditions,
+      )
+
+    Assert.assertEquals("ELDERLY", result)
+  }
+
+  @Test
   fun filterResourceList() {
     val fhirPathExpression =
       "Task.status = 'ready' or Task.status = 'cancelled' or  Task.status = 'failed'"
@@ -426,7 +472,7 @@ class RulesFactoryTest : RobolectricTest() {
       rulesEngineService
         .filterResources(
           resources = resources,
-          fhirPathExpression = fhirPathExpression,
+          conditionalFhirPathExpression = fhirPathExpression,
         )
         .size == 2,
     )
@@ -846,6 +892,15 @@ class RulesFactoryTest : RobolectricTest() {
     val inputDate = Date()
     val expected = rulesFactory.RulesEngineService().prettifyDate(inputDate)
     Assert.assertEquals("", expected)
+  }
+
+  @Test
+  fun testDaysPassed() {
+    val daysAgo = 14
+    val inputDateString = LocalDate.now().minusDays(daysAgo).toString()
+    val daysPassedResult =
+      rulesFactory.RulesEngineService().daysPassed(inputDateString, SDF_YYYY_MM_DD)
+    Assert.assertEquals("14", daysPassedResult)
   }
 
   @Test
