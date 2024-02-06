@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Upgrade to latest Android FHIR SDK version includes
-    - an upgrade to the HAPI FHIR libraries used to process StructureMaps. In the previous libraries `$this.id` returned `[ResourceType]/[ID #]`, the new libraries return `[ID #]`. Therefore, any existing StructureMaps that call `$this.id` will need to replace that with `$this.type().name + '/' + $this.id` to have the equivalent output.
-    - changes to Measure evaluation that requires all Measure JSON files to be rebuilt.
-    - change to some [MetadataResources](https://hl7.org/fhir/R5/metadataresource.html) that requires they are referenced by URL and not ID. Any existing content that referes to StructureMaps by ID must be updated to refer to it by URL. If we are not storing a URL for it, we will need to add that. E.g. `Library.url`, `Plandefinition.url` because the `FhirOperator` API uses that field to uniquely identify/retrieve the Metadata resource.
-    - For CQL evaluation, the context is referred to using `%subject` and not `$this`. The latter is reserved for FHIRPath expressions while the  former is used for CQL expressions to refer to the primary subject of the expression e.g. patient.
+    1. an upgrade to the HAPI FHIR libraries used to process StructureMaps. In the previous libraries `$this.id` returned `[ResourceType]/[ID #]`, the new libraries return `[ID #]`. Therefore, any existing StructureMaps that call `$this.id` will need to replace that with `$this.type().name + '/' + $this.id` to have the equivalent output.
+    2. changes to Measure evaluation that requires all Measure JSON files to be rebuilt.
+    3. change to some [MetadataResources](https://hl7.org/fhir/R5/metadataresource.html) that requires they are referenced by URL and not ID. Any existing content that referes to StructureMaps by ID must be updated to refer to it by URL. If we are not storing a URL for it, we will need to add that. E.g. `Library.url`, `Plandefinition.url` because the `FhirOperator` API uses that field to uniquely identify/retrieve the Metadata resource.
+    4. for CQL evaluation, the context is referred to using `%subject` and not `$this`. The latter is reserved for FHIRPath expressions while the  former is used for CQL expressions to refer to the primary subject of the expression e.g. patient.
 
 ## [0.2.4] - 2023-06-24
 ### Added
