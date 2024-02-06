@@ -193,9 +193,9 @@ constructor(
       }
       is AppMainEvent.TriggerWorkflow ->
         event.navMenu.actions?.handleClickEvent(
-          navController = event.navController,
-          resourceData = null,
-          navMenu = event.navMenu,
+            navController = event.navController,
+            resourceData = null,
+            navMenu = event.navMenu,
         )
       is AppMainEvent.OpenProfile -> {
         val args =

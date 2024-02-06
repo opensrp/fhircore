@@ -96,8 +96,8 @@ fun ServiceCard(
             {
               clickable {
                 serviceCardProperties.actions.handleClickEvent(
-                  navController = navController,
-                  resourceData = resourceData,
+                    navController = navController,
+                    resourceData = resourceData,
                 )
               }
             },
@@ -137,8 +137,8 @@ fun ServiceCard(
             {
               clickable {
                 serviceCardProperties.actions.handleClickEvent(
-                  navController = navController,
-                  resourceData = resourceData,
+                    navController = navController,
+                    resourceData = resourceData,
                 )
               }
             },
@@ -325,8 +325,8 @@ private fun BigServiceButton(
         .clickable {
           if (isButtonEnabled && (status == ServiceStatus.DUE.name || buttonClickable)) {
             buttonProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData,
+                navController = navController,
+                resourceData = resourceData,
             )
           }
         },

@@ -49,7 +49,6 @@ fun List<ActionConfig>.handleClickEvent(
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
   context: Context? = null,
-  copyText: String? = null,
 ) {
   val onClickAction =
     this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
