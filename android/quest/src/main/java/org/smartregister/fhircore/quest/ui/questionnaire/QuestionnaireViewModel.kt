@@ -49,8 +49,10 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -116,6 +118,10 @@ constructor(
   }
 
   private var editQuestionnaireResourceParams: List<ActionParameter>? = emptyList()
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   suspend fun loadQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,

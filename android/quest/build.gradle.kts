@@ -330,6 +330,7 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
     exclude(group = "ca.uhn.hapi.fhir")
   }
+  implementation(libs.play.services.location)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
