@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.extensions
-
-import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 
-fun Context.hasLocationPermission(): Boolean {
-  return ContextCompat.checkSelfPermission(
-    this,
-    Manifest.permission.ACCESS_COARSE_LOCATION,
-  ) == PackageManager.PERMISSION_GRANTED &&
-    ContextCompat.checkSelfPermission(
-      this,
-      Manifest.permission.ACCESS_FINE_LOCATION,
-    ) == PackageManager.PERMISSION_GRANTED
+object PermissionUtils {
+  fun checkPermissions(context: Context, permissions: List<String>): Boolean {
+    for (permission in permissions) {
+      if (
+        ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED
+      ) {
+        return false
+      }
+    }
+    return true
+  }
 }

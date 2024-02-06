@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util.extensions
+package org.smartregister.fhircore.quest.util
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
+import android.location.LocationManager
 
-fun Context.hasLocationPermission(): Boolean {
-  return ContextCompat.checkSelfPermission(
-    this,
-    Manifest.permission.ACCESS_COARSE_LOCATION,
-  ) == PackageManager.PERMISSION_GRANTED &&
-    ContextCompat.checkSelfPermission(
-      this,
-      Manifest.permission.ACCESS_FINE_LOCATION,
-    ) == PackageManager.PERMISSION_GRANTED
+class LocationUtils {
+
+  companion object {
+    fun isLocationEnabled(context: Context): Boolean {
+      val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+      return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+  }
 }
