@@ -174,7 +174,8 @@
     <string name="os_version">OS Version</string>
     <string name="device_date">Date</string>
     <string name="device">Device</string>
-    <string name="migrating_data">Migrating data</string>
     <string name="ok">OK</string>
     <string name="add">ADD</string>
+    <string name="data_migration_started">Started data migration from version %1$d</string>
+    <string name="data_migration_completed">Application data migrated to version %1$d</string>
 </resources>
