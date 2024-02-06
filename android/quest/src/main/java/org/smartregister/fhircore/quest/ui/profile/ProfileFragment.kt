@@ -130,8 +130,8 @@ class ProfileFragment : Fragment() {
       if (onSubmitActions != null) {
         appMainViewModel.retrieveAppMainUiState(refreshAll = false)
         onSubmitActions.handleClickEvent(
-            navController = findNavController(),
-            resourceData = profileViewModel.profileUiState.value.resourceData,
+          navController = findNavController(),
+          resourceData = profileViewModel.profileUiState.value.resourceData,
         )
       }
     }

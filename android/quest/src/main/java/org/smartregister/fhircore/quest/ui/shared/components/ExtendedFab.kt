@@ -67,8 +67,8 @@ fun ExtendedFab(
     onClick = {
       if (firstFabEnabled) {
         firstFabAction.actions?.handleClickEvent(
-            navController = navController,
-            resourceData = resourceData,
+          navController = navController,
+          resourceData = resourceData,
         )
       }
     },
