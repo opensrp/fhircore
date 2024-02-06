@@ -16,16 +16,91 @@
 
 package org.smartregister.fhircore.quest.util
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.location.LocationManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationToken
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.tasks.OnTokenCanceledListener
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class LocationUtils {
 
   companion object {
     fun isLocationEnabled(context: Context): Boolean {
       val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
       return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
         locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun getAccurateLocation(
+      fusedLocationClient: FusedLocationProviderClient,
+    ): Location? {
+      return withContext(Dispatchers.IO) {
+        suspendCoroutine<Location> { continuation ->
+          fusedLocationClient
+            .getCurrentLocation(
+              Priority.PRIORITY_HIGH_ACCURACY,
+              object : CancellationToken() {
+                override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                  CancellationTokenSource().token
+
+                override fun isCancellationRequested() = false
+              },
+            )
+            .addOnSuccessListener { location: Location? ->
+              if (location != null) {
+                Timber.d(
+                  "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+                )
+                continuation.resume(location)
+              }
+            }
+            .addOnFailureListener { e ->
+              Timber.e(e, "Failed to get accurate location")
+              continuation.resumeWithException(e)
+            }
+        }
+      }
+    }
+
+    @SuppressLint("MissingPermission")
+    suspend fun getApproximateLocation(
+      fusedLocationClient: FusedLocationProviderClient,
+    ): Location? {
+      return withContext(Dispatchers.IO) {
+        suspendCoroutine<Location> { continuation ->
+          fusedLocationClient
+            .getCurrentLocation(
+              Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+              object : CancellationToken() {
+                override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                  CancellationTokenSource().token
+
+                override fun isCancellationRequested() = false
+              },
+            )
+            .addOnSuccessListener { location: Location? ->
+              if (location != null) {
+                Timber.d(
+                  "Approx location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+                )
+                continuation.resume(location)
+              }
+            }
+            .addOnFailureListener { e -> continuation.resumeWithException(e) }
+        }
+      }
     }
   }
 }

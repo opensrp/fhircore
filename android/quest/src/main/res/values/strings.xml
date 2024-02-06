@@ -110,4 +110,7 @@
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
 
+    <string name="location_permissions_denied">Location Access Denied: To use this feature, please enable location permissions in your device settings.</string>
+    <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
+
 </resources>
