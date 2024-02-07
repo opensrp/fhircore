@@ -187,23 +187,25 @@ fun LoginPage(
             modifier =
               modifier
                 .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
+                .requiredHeight(applicationConfiguration.loginConfig.logoHeight.dp)
+                .requiredWidth(applicationConfiguration.loginConfig.logoWidth.dp)
                 .testTag(APP_LOGO_TAG),
           )
         }
-        Text(
-          color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
-          text = applicationConfiguration.appTitle,
-          fontWeight = FontWeight.Bold,
-          fontSize = 32.sp,
-          modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 8.dp)
-              .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG),
-        )
+        if (applicationConfiguration.appTitle.isNotEmpty()) {
+          Text(
+            color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
+            text = applicationConfiguration.appTitle,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(vertical = 8.dp)
+                .align(Alignment.CenterHorizontally)
+                .testTag(APP_NAME_TEXT_TAG),
+          )
+        }
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
         OutlinedTextField(
