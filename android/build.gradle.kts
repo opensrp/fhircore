@@ -92,6 +92,16 @@ subprojects {
           "org.jacoco" -> useVersion("0.8.7")
         }
       }
+
+      // Maximum Jackson libraries (excluding core) version that supports Android API Level 24:
+      // https://github.com/FasterXML/jackson-databind/issues/3658
+      force("com.fasterxml.jackson.core:jackson-annotations:2.13.4")
+      force("com.fasterxml.jackson:jackson-bom:2.13.4")
+      force("com.fasterxml.jackson.core:jackson-core:2.13.4")
+      force("com.fasterxml.jackson.core:jackson-databind:2.13.4")
+      force("com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.13.4")
+      force("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.4")
+      force("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.4")
     }
   }
 
