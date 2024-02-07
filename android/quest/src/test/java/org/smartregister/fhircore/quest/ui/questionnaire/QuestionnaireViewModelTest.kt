@@ -182,14 +182,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
-          fhirPathDataExtractor = fhirPathDataExtractor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
-          knowledgeManager = knowledgeManager,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
