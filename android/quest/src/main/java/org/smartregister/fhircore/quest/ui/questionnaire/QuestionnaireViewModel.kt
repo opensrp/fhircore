@@ -32,9 +32,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -82,6 +79,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -797,6 +797,7 @@ constructor(
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
+
 
   /**
    * Return [Resource]s to be used in the launch context of the questionnaire. Launch context allows
