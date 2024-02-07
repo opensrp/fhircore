@@ -178,5 +178,4 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
-    ?.associate { it.key to it.value }
-    ?: emptyMap()
+    ?.associate { it.key to it.value } ?: emptyMap()
