@@ -187,8 +187,8 @@ fun LoginPage(
             modifier =
               modifier
                 .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
+                .requiredHeight(applicationConfiguration.loginConfig.logoHeight.dp)
+                .requiredWidth(applicationConfiguration.loginConfig.logoWidth.dp)
                 .testTag(APP_LOGO_TAG),
           )
         }
