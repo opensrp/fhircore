@@ -40,11 +40,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
@@ -132,7 +132,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
             SnackBarMessageConfig(message = getString(R.string.syncing)),
           )
         }
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
             SnackBarMessageConfig(

@@ -1,6 +1,5 @@
 {
   "resourceType": "Observation",
-  "id": "#TEST_ID",
   "status": "final",
   "category": [
     {

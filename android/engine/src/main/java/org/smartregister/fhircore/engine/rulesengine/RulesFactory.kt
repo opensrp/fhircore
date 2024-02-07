@@ -226,15 +226,13 @@ constructor(
           fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
-        }
-          ?: false
+        } ?: false
       } else {
         resources?.any { base ->
           fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
-        }
-          ?: false
+        } ?: false
       }
 
     /**
@@ -273,8 +271,7 @@ constructor(
           }
         }
         ?.distinctBy { it }
-        ?.joinToString(",")
-        ?: ""
+        ?.joinToString(",") ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -407,8 +404,7 @@ constructor(
       }
       return resources?.filter {
         fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
-      }
-        ?: emptyList()
+      } ?: emptyList()
     }
 
     /**
@@ -496,8 +492,7 @@ constructor(
     ): Long =
       relatedResourceCounts
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
-        ?.count
-        ?: 0
+        ?.count ?: 0
 
     /**
      * This function sorts [resources] by comparing the values extracted by FHIRPath using the
