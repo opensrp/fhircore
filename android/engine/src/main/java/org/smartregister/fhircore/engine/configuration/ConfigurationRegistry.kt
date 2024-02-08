@@ -416,7 +416,7 @@ constructor(
           } // is focus.identifier a necessary check
           .groupBy { section ->
             section.focus.reference.substringBefore(
-              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              TYPE_REFERENCE_DELIMITER,
               missingDelimiterValue = "",
             )
           }

@@ -41,6 +41,7 @@ data class ImageProperties(
   override val clickable: String = "false",
   override val visible: String = "true",
   val tint: String? = null,
+  val text:String?=null,
   val imageConfig: ImageConfig? = null,
   val size: Int? = null,
   val shape: ImageShape? = null,
@@ -55,6 +56,7 @@ data class ImageProperties(
         ),
       tint = this.tint?.interpolate(computedValuesMap),
       backgroundColor = this.backgroundColor?.interpolate(computedValuesMap),
+      text = this.text?.interpolate(computedValuesMap)
     )
   }
 }

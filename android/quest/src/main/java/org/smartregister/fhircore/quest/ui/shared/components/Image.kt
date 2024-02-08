@@ -16,15 +16,19 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +40,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -70,69 +76,119 @@ fun Image(
   val imageConfig = imageProperties.imageConfig
   val context = LocalContext.current
   if (imageConfig != null) {
-    Box(
-      contentAlignment = Alignment.Center,
-      modifier =
-        modifier
-          .conditional(
-            imageProperties.shape != null,
-            { clip(imageProperties.shape!!.composeShape) },
-            { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) },
-          )
-          .conditional(
-            imageProperties.size != null,
-            { size(imageProperties.size!!.dp) },
-            { size(24.dp) },
-          )
-          .conditional(
-            !imageProperties.backgroundColor.isNullOrEmpty(),
-            { background(imageProperties.backgroundColor.parseColor()) },
-          )
-          .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
-          .clickable(
-            onClick = {
-              if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
-                imageProperties.actions.handleClickEvent(
-                  navController = navController,
-                  resourceData = resourceData,
-                  context = context,
-                )
-              }
-            }
-          ),
-    ) {
-      when (imageConfig.type) {
-        ICON_TYPE_LOCAL ->
-          LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
-            Icon(
-              modifier =
-                Modifier.testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-                  .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
-                  .align(Alignment.Center)
-                  .fillMaxSize(0.9f),
-              painter = painterResource(id = drawableId),
-              contentDescription = SIDE_MENU_ICON,
-              tint = tint ?: imageProperties.imageConfig?.color.parseColor(),
-            )
-          }
-        ICON_TYPE_REMOTE ->
-          if (imageConfig.decodedBitmap != null) {
-            Image(
-              modifier =
-                Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-                  .conditional(paddingEnd != null, { padding(end = paddingEnd!!.dp) })
-                  .align(Alignment.Center)
-                  .fillMaxSize(0.9f),
-              bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
-              contentDescription = null,
-              contentScale = ContentScale.Crop,
-              colorFilter = ColorFilter.tint(tint!!),
-            )
-          }
+    if(imageProperties.text!=null) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+      ) {
+        Text(
+          text = imageProperties.text !!,
+          textAlign = TextAlign.Center,
+          modifier = Modifier.padding(end = 8.dp),
+          color = imageProperties.imageConfig?.color.parseColor(),
+          textDecoration = TextDecoration.Underline
+        )
+        ClickableImageIcon(
+          imageProperties =imageProperties ,
+          imageConfig =imageConfig ,
+          tint = tint,
+          paddingEnd = paddingEnd,
+          navController =navController ,
+          resourceData = resourceData,
+          context = context,
+          modifier = modifier
+        )
       }
+    }
+    else {
+      ClickableImageIcon(
+        imageProperties =imageProperties ,
+        imageConfig =imageConfig ,
+        tint = tint,
+        paddingEnd = paddingEnd,
+        navController =navController ,
+        resourceData = resourceData,
+        context = context,
+        modifier = modifier
+      )
+
+    }}
+
+
+}
+@Composable
+fun ClickableImageIcon(
+  modifier: Modifier = Modifier,
+  imageProperties: ImageProperties,
+  imageConfig: ImageConfig,
+  tint: Color?,
+  paddingEnd: Int?,
+  navController: NavController,
+  resourceData: ResourceData?=null,
+  context: Context
+) {
+  Box(
+    contentAlignment = Alignment.Center,
+    modifier = modifier
+      .conditional(
+        imageProperties.shape != null,
+        { clip(imageProperties.shape!!.composeShape) },
+        { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) },
+      )
+      .conditional(
+        imageProperties.size != null,
+        { size(imageProperties.size!!.dp) },
+        { size(24.dp) },
+      )
+      .conditional(
+        !imageProperties.backgroundColor.isNullOrEmpty(),
+        { background(imageProperties.backgroundColor.parseColor()) },
+      )
+      .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
+      .clickable(
+        onClick = {
+          if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
+            imageProperties.actions.handleClickEvent(
+              navController = navController,
+              resourceData = resourceData,
+              context = context,
+            )
+          }
+        }
+      )
+  ) {
+    when (imageConfig.type) {
+      ICON_TYPE_LOCAL ->
+        LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
+          Icon(
+            modifier = Modifier
+              .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+              .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+              .align(Alignment.Center)
+              .fillMaxSize(0.9f),
+            painter = painterResource(id = drawableId),
+            contentDescription = SIDE_MENU_ICON,
+            tint = tint ?: imageProperties.imageConfig?.color.parseColor(),
+          )
+        }
+      ICON_TYPE_REMOTE ->
+        if (imageConfig.decodedBitmap != null) {
+          Image(
+            modifier = Modifier
+              .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+              .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+              .align(Alignment.Center)
+              .fillMaxSize(0.9f),
+            bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            colorFilter = ColorFilter.tint(tint!!),
+          )
+        }
     }
   }
 }
+
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
@@ -154,7 +210,7 @@ fun ImagePreview() {
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-fun ClickableImagePreview() {
+fun ClickableImageWithTextPreview() {
   Image(
     modifier = Modifier,
     imageProperties =
@@ -165,6 +221,7 @@ fun ClickableImagePreview() {
         shape = ImageShape.RECTANGLE,
         clickable = "true",
         visible = "true",
+        text = "Click on the icon to copy your text"
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
