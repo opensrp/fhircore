@@ -19,11 +19,13 @@ package org.smartregister.fhircore.quest.app.fakes
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -34,6 +36,7 @@ import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -69,6 +72,13 @@ object Faker {
           dispatcherProvider = mockk(),
           configService = mockk(),
           json = json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          openSrpApplication =
+            object : OpenSrpApplication() {
+              override fun getFhirServerHost(): URL? {
+                return URL("http://my_test_fhirbase_url/fhir/")
+              }
+            },
         ),
       )
 

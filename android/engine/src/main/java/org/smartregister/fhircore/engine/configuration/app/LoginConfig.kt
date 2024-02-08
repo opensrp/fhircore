@@ -24,4 +24,6 @@ data class LoginConfig(
   val enablePin: Boolean? = false,
   val pinLength: Int = 4,
   val pinLoginMessage: String? = null,
+  val logoHeight: Int = 120,
+  val logoWidth: Int = 140,
 )

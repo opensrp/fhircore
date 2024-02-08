@@ -120,8 +120,7 @@ constructor(
           (it.paramType == ActionParameterType.PARAMDATA ||
             it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
-        ?.associate { it.key to it.value }
-        ?: emptyMap()
+        ?.associate { it.key to it.value } ?: emptyMap()
 
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource

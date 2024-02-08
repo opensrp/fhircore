@@ -20,9 +20,9 @@ code "deviceOperation": '15361003' from "SNOMED" display 'Device Operation'
 
 define "QR" : Last([QuestionnaireResponse] H)
 
-define "Control1Obs": "QR".item.where(linkId='result_type').answer.value ~ "g6pdControl1"
+define "Control1Obs": "QR".item.where(linkId='result_type').answer.value.first() ~ "g6pdControl1"
 
-define "Control2Obs": "QR".item.where(linkId='result_type').answer.value ~  "g6pdControl2"
+define "Control2Obs": "QR".item.where(linkId='result_type').answer.value.first() ~  "g6pdControl2"
 
 define "HaemoglobinObs": "QR".item.where(linkId='haemoglobin').answer.first().value
 
@@ -72,7 +72,7 @@ define "Conclusion Details": '\nDetails:\n'+ "G6PD Conclusion" + '\n' + "Haemogl
 define "QRRef": ReplaceMatches('QuestionnaireResponse/'+"QR".id,'#','')
 
 define "Observation": Observation{
-  focus: Reference { reference: string { value: "QRRef" } },
+  focus: { Reference { reference: string { value: "QRRef" } } },
   code: CreateConcept("deviceOperation"),
   effective: dateTime{ value: Now() },
   value: CreateConcept("ConclusionCode")

@@ -91,12 +91,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.quest.R
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -187,23 +187,25 @@ fun LoginPage(
             modifier =
               modifier
                 .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
+                .requiredHeight(applicationConfiguration.loginConfig.logoHeight.dp)
+                .requiredWidth(applicationConfiguration.loginConfig.logoWidth.dp)
                 .testTag(APP_LOGO_TAG),
           )
         }
-        Text(
-          color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
-          text = applicationConfiguration.appTitle,
-          fontWeight = FontWeight.Bold,
-          fontSize = 32.sp,
-          modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 8.dp)
-              .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG),
-        )
+        if (applicationConfiguration.appTitle.isNotEmpty()) {
+          Text(
+            color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
+            text = applicationConfiguration.appTitle,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(vertical = 8.dp)
+                .align(Alignment.CenterHorizontally)
+                .testTag(APP_NAME_TEXT_TAG),
+          )
+        }
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
         OutlinedTextField(
@@ -300,7 +302,9 @@ fun LoginPage(
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
+                  ),
                 )
               LoginErrorState.INVALID_OFFLINE_STATE ->
                 stringResource(
