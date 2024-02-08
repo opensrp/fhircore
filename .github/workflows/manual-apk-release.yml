@@ -26,4 +26,4 @@ jobs:
          - name: Test secret from Vault
            id: test-secret
            run: |
-              echo "$KEYSTORE_ALIAS"           
+              echo '${{steps.import-secrets.outputs.KEYSTORE_ALIAS}}'         
