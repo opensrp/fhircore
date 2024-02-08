@@ -75,7 +75,11 @@ android {
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
     buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
 
-    testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
+    // TODO -> How to run both android UI tests and cucumber tests
+    android.defaultConfig.testApplicationId = "org.smartregister.fhircore.quest.cucumber.test"
+    //testInstrumentationRunner = "org.smartregister.fhircore.quest.cucumber.test.OpensrpRunner"
+    //android.defaultConfig.testInstrumentationRunner = "io.cucumber.android.runner.CucumberAndroidJUnitRunner"
+    testInstrumentationRunner = "io.cucumber.android.runner.CucumberAndroidJUnitRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
       "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"

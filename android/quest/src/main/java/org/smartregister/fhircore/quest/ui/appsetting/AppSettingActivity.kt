@@ -45,7 +45,7 @@ import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
   companion object{
-    private val key = "text"
+    private val key = "text1"
     fun create(context: Context, text: String? = null): Intent = Intent(context, AppSettingActivity::class.java).putExtra(
       key,text)
   }

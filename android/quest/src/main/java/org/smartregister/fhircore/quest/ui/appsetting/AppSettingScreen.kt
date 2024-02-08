@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.ui.login.LOGIN_ERROR_TEXT_TAG
 
 const val APP_ID_TEXT_INPUT_TAG = "appIdTextInputTag"
+const val LOAD_CONFIGURATION_BUTTON_TAG = "loadConfigurationTestTag"
 
 @Composable
 fun AppSettingScreen(
@@ -147,7 +148,7 @@ fun AppSettingScreen(
         Button(
           onClick = { fetchConfiguration(context) },
           enabled = !showProgressBar && appId.isNotEmpty(),
-          modifier = modifier.fillMaxWidth(),
+          modifier = modifier.fillMaxWidth().testTag(LOAD_CONFIGURATION_BUTTON_TAG),
           colors =
             ButtonDefaults.buttonColors(
               disabledContentColor = Color.Gray,
