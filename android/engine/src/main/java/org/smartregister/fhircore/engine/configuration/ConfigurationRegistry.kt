@@ -47,8 +47,11 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.PlanDefinition
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
@@ -271,7 +274,40 @@ constructor(
             .readText()
             .decodeResourceFromString<Composition>()
 
+        val localListResource =
+          context.assets
+            .open(String.format(LIST_PATH, parsedAppId))
+            .bufferedReader()
+            .readText()
+            .decodeResourceFromString<ListResource>()
+
+        val localPlanDefinitionResource =
+          context.assets
+            .open(String.format(PLAN_DEFINITION_PATH, parsedAppId))
+            .bufferedReader()
+            .readText()
+            .decodeResourceFromString<PlanDefinition>()
+
+        val localQuestionnaireResource =
+          context.assets
+            .open(String.format(QUESTIONNAIRE_PATH, parsedAppId))
+            .bufferedReader()
+            .readText()
+            .decodeResourceFromString<Questionnaire>()
+
+        val localStructureMapResource =
+          context.assets
+            .open(String.format(STRUCTURE_MAP_PATH, parsedAppId))
+            .bufferedReader()
+            .readText()
+            .decodeResourceFromString<StructureMap>()
+
         addOrUpdate(localCompositionResource)
+        addOrUpdate(localListResource)
+        addOrUpdate(localPlanDefinitionResource)
+        addOrUpdate(localQuestionnaireResource)
+        addOrUpdate(localStructureMapResource)
+
 
         localCompositionResource.run {
           val iconConfigs =
@@ -305,6 +341,7 @@ constructor(
       }
     }
   }
+
 
   private suspend fun populateConfigurationsMap(
     context: Context,
@@ -368,7 +405,7 @@ constructor(
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
-    context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
+    context.assets.list(String.format(BASE_CONFIG_PATH,))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
       } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
@@ -763,6 +800,10 @@ constructor(
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
+    const val LIST_PATH = "configs/%s/resources/list"
+    const val PLAN_DEFINITION_PATH = "configs/%s/resources/plan_definition"
+    const val QUESTIONNAIRE_PATH = "configs/%s/resources/questionnaire"
+    const val STRUCTURE_MAP_PATH = "configs/%s/resources/structure_map"
     const val CONFIG_SUFFIX = "_config"
     const val CONFIG_TYPE = "configType"
     const val COUNT = "count"
