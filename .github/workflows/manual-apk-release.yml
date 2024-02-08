@@ -26,4 +26,6 @@ jobs:
          - name: Test secret from Vault
            id: test-secret
            run: |
-              echo '${{steps.import-secrets.outputs.KEYSTORE_ALIAS}}'         
+              touch secrets.json
+              echo '${{ toJson(steps.import-secrets.outputs)}}' >> secrets.json
+              cat secrets.json
