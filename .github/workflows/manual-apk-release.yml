@@ -3,7 +3,7 @@ run-name: Generating a FHIR Core Release APK 🚀
 on: [push]
 jobs:
    build:
-      runs-on: self-hosted
+      runs-on: ubuntu-latest
       permissions:
          id-token: write
          contents: read
