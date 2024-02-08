@@ -26,6 +26,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.messageFormat
@@ -40,12 +41,18 @@ class LocalizationHelperTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   private lateinit var configRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    configRegistry = Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+    Faker.buildTestConfigurationRegistry(
+      preferencesDataStore,
+      practitionerDataStore,
+      dispatcherProvider,
+    )
   }
 
   @Test

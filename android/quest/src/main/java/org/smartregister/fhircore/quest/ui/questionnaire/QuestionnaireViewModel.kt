@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -92,12 +93,13 @@ constructor(
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServices,
   val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
 
   private val authenticatedOrganizationIds by lazy {
-    preferencesDataStore.readOnce<List<String>>(PreferencesDataStore.ORGANIZATION_NAMES)
+    practitionerDataStore.readOnce(PractitionerDataStore.Keys.ORGANIZATION_NAMES)
   }
 
   private val practitionerId: String? by lazy {

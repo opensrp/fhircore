@@ -21,7 +21,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.util.JsonUtil
 import com.google.android.fhir.FhirEngine
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -461,18 +460,12 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     appSettingViewModel.saveSyncPreferences(resourceType)
 
-    val savedSyncResourcesResult =
-      preferencesDataStore.readOnce(
-        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
-        null,
-      )
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      preferencesDataStore.gson.fromJson(savedSyncResourcesResult, listResourceTypeToken)
+    val savedSyncResourceTypes: List<String> =
+      preferencesDataStore.readOnce(PreferencesDataStore.REMOTE_SYNC_RESOURCES)?.split(",")!!
 
     Assert.assertEquals(2, savedSyncResourceTypes.size)
-    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
+    Assert.assertEquals(ResourceType.Task.name, savedSyncResourceTypes.first())
+    Assert.assertEquals(ResourceType.Patient.name, savedSyncResourceTypes.last())
   }
 
   @Test

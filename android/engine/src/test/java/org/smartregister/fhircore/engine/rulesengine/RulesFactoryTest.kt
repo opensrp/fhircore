@@ -56,6 +56,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
@@ -79,8 +80,9 @@ class RulesFactoryTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private val rulesEngine = mockk<DefaultRulesEngine>()
-  val keys = PreferencesDataStore.Keys
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var rulesFactory: RulesFactory
   private lateinit var rulesEngineService: RulesFactory.RulesEngineService
@@ -90,7 +92,11 @@ class RulesFactoryTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     rulesFactory =
       spyk(
         RulesFactory(
@@ -936,7 +942,7 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testExtractDataStoreValuesReturnsPractitionerId() {
-    val dataStoreKey = keys.PRACTITIONER_ID
+    val dataStoreKey = PreferencesDataStore.PRACTITIONER_ID
     val expectedValue = "1234"
 
     every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
@@ -950,35 +956,35 @@ class RulesFactoryTest : RobolectricTest() {
 
   @Test
   fun testExtractDataStoreValuesReturnsCareTeam() {
-    val dataStoreKey = keys.CARE_TEAM_NAMES
-    val expectedValue = "1234"
+    val dataStoreKey = PractitionerDataStore.Keys.CARE_TEAM_NAMES
+    val expectedValue = listOf("1234")
 
-    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+    every { configurationRegistry.practitionerDataStore.readOnce(dataStoreKey, null) } returns
       expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    verify { configurationRegistry.practitionerDataStore.readOnce(dataStoreKey, null) }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractDataStoreValuesReturnsOrganization() {
-    val dataStoreKey = keys.ORGANIZATION_NAMES
-    val expectedValue = "1234"
+    val dataStoreKey = PractitionerDataStore.Keys.ORGANIZATION_NAMES
+    val expectedValue = listOf("1234")
 
-    every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns
+    every { configurationRegistry.practitionerDataStore.readOnce(dataStoreKey, null) } returns
       expectedValue
 
     val result = rulesEngineService.extractPractitionerInfoFromDataStore(dataStoreKey.name)
 
-    verify { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") }
+    verify { configurationRegistry.practitionerDataStore.readOnce(dataStoreKey, null) }
     Assert.assertEquals(expectedValue, result)
   }
 
   @Test
   fun testExtractDataStoreValuesReturnsPractitionerLocation() {
-    val dataStoreKey = keys.PRACTITIONER_LOCATION
+    val dataStoreKey = PreferencesDataStore.PRACTITIONER_LOCATION
     val expectedValue = "1234"
 
     every { configurationRegistry.preferencesDataStore.readOnce(dataStoreKey, "") } returns

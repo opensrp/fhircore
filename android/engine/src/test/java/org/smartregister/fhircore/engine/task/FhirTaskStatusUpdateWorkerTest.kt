@@ -45,6 +45,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -62,6 +63,8 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var context: Context
   private val fhirEngine: FhirEngine = mockk()
@@ -72,7 +75,11 @@ class FhirTaskStatusUpdateWorkerTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     context = ApplicationProvider.getApplicationContext()
     every { defaultRepository.fhirEngine } returns fhirEngine
 

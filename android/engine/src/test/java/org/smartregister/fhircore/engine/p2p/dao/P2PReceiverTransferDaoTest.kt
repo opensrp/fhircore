@@ -50,6 +50,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -63,6 +64,8 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private lateinit var p2PReceiverTransferDao: P2PReceiverTransferDao
@@ -79,7 +82,11 @@ class P2PReceiverTransferDaoTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     p2PReceiverTransferDao =
       spyk(
         P2PReceiverTransferDao(

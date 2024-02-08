@@ -188,6 +188,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
           preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,

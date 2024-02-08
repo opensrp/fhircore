@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -47,6 +48,8 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var configService: ConfigService
@@ -59,7 +62,11 @@ class SyncListenerManagerTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     hiltActivityForTest = activityController.get()
     ApplicationProvider.getApplicationContext<HiltTestApplication>().setTheme(R.style.AppTheme)
     syncListenerManager =

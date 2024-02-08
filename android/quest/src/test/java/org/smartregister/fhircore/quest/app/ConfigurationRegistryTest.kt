@@ -72,6 +72,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     preferencesDataStore = mockk()
+    practitionerDataStore = mockk()
     fhirEngine = mockk()
 
     configurationRegistry =

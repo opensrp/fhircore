@@ -33,6 +33,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -45,6 +46,8 @@ class ApplicationExtensionTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Before
   fun setUp() {
@@ -72,7 +75,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val patientId = "patient-john-doe"
     coEvery { fhirEngine.get(ResourceType.Patient, patientId) } throws
-      ResourceNotFoundException("Patient not found", "Patient with id $patientId was not found")
+        ResourceNotFoundException("Patient not found", "Patient with id $patientId was not found")
 
     val patient: Patient?
     runBlocking { patient = fhirEngine.loadResource(patientId) }
@@ -84,12 +87,13 @@ class ApplicationExtensionTest : RobolectricTest() {
   @Test
   fun `fetchLanguage should return default language when no language is set`() {
     val languages =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
-        .fetchLanguages()
+        Faker.buildTestConfigurationRegistry(
+                preferencesDataStore, practitionerDataStore, dispatcherProvider)
+            .fetchLanguages()
 
     Assert.assertEquals(
-      arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
-      languages,
+        arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
+        languages,
     )
   }
 

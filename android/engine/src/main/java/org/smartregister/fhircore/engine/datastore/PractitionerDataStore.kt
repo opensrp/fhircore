@@ -29,6 +29,7 @@ import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
+import org.smartregister.model.location.LocationHierarchy
 import timber.log.Timber
 
 @Singleton
@@ -91,8 +92,18 @@ constructor(
 
   fun readOnceUserInfo() = runBlocking { dataStore.data.first().userInfo }
 
-  suspend fun writeLocationHierarchies(data: List<LocationHierarchyInfo>) {
-    dataStore.updateData { it.copy(locationHierarchies = data) }
+  suspend fun writeLocationHierarchies(data: List<LocationHierarchy>) {
+    val serializedHierarchies: MutableList<LocationHierarchyInfo> = mutableListOf()
+    data.forEach {
+      serializedHierarchies.add(
+        LocationHierarchyInfo()
+          .copy(
+            id = it.id,
+          ),
+      )
+    }
+
+    dataStore.updateData { it.copy(locationHierarchies = serializedHierarchies) }
   }
 
   fun readOnceLocationHierarchies() = runBlocking { dataStore.data.first().locationHierarchies }
@@ -104,9 +115,18 @@ constructor(
         careTeamNames = null,
         locationIds = null,
         locationNames = null,
+        locationHierarchies = null,
         organizationIds = null,
         organizationNames = null,
+        userInfo = null,
       )
+    }
+  }
+
+  fun isEmpty(): Boolean {
+    return runBlocking {
+      dataStore.data.first() ==
+        PractitionerPreferences() // i.e file never made or preferences cleared
     }
   }
 
@@ -115,7 +135,6 @@ constructor(
     CARE_TEAM_NAMES,
     LOCATION_IDS,
     LOCATION_NAMES,
-    LOCATION_HIERARCHIES,
     ORGANIZATION_IDS,
     ORGANIZATION_NAMES,
   }

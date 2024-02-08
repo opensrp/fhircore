@@ -214,7 +214,7 @@ constructor(
 
     // encoding and decoding
     if (
-      tokenAuthenticator.sessionActive() && practitionerDetails != null
+      tokenAuthenticator.sessionActive() && !practitionerDataStore.isEmpty()
     ) { // TODO: KELVIN null check against existence of protostore INSTEAD OF THE CODE ABOVE
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
@@ -381,7 +381,6 @@ constructor(
             careTeamNames = careTeamNames,
             organizationNames = organizationNames,
             locationNames = locationNames,
-            fhirPractitionerDetails = practitionerDetails,
             careTeamIds = careTeamIds,
             organizationIds = organizationIds,
             locationIds = locationIds,
@@ -401,7 +400,6 @@ constructor(
                 careTeamNames = careTeamNames,
                 organizationNames = organizationNames,
                 locationNames = locationNames,
-                fhirPractitionerDetails = practitionerDetails,
                 careTeamIds = careTeamIds,
                 organizationIds = organizationIds,
                 locationIds = locationIds,
@@ -450,10 +448,6 @@ constructor(
 
     // Store the practitioner details components in the preferences datastore
     viewModelScope.launch {
-      preferencesDataStore.write(
-        PreferencesDataStore.PRACTITIONER_ID,
-        fhirPractitionerDetails.fhirPractitionerDetails?.id!!,
-      )
       practitionerDataStore.write(
         PractitionerDataStore.Keys.CARE_TEAM_IDS,
         careTeamIds,

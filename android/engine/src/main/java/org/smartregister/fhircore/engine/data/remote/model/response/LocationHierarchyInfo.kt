@@ -24,5 +24,5 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class LocationHierarchyInfo(
-  val x: Int = 1,
+  val id: String = "",
 )

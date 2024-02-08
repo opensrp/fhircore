@@ -258,6 +258,7 @@ class SyncBroadcasterTest : RobolectricTest() {
       )
 
     Assert.assertTrue(syncParam.isNotEmpty())
+    println(syncParam)
     syncParam
       .filterKeys { it.isIn(*resourceTypes) }
       .values

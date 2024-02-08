@@ -63,6 +63,7 @@ object Faker {
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           dispatcherProvider = mockk(),
           configService = mockk(),
           json = json,

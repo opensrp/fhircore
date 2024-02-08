@@ -38,7 +38,7 @@ internal class PractitionerDataStoreTest : RobolectricTest() {
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @Inject private lateinit var dataStore: PractitionerDataStore
+  @Inject lateinit var dataStore: PractitionerDataStore
 
   @Before
   fun setUp() {

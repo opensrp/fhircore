@@ -46,6 +46,7 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -75,6 +76,8 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
@@ -90,6 +93,7 @@ class UserSettingViewModelTest : RobolectricTest() {
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
     preferencesDataStore = mockk()
+    practitionerDataStore = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(
@@ -110,6 +114,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
           preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = dispatcherProvider,

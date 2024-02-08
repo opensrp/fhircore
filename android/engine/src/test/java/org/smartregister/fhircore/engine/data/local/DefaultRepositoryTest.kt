@@ -80,6 +80,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityCon
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_CODE
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
@@ -119,6 +120,8 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
@@ -126,7 +129,11 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(

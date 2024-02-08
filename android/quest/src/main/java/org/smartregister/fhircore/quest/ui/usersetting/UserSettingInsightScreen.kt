@@ -80,8 +80,8 @@ fun UserSettingInsightScreen(
   team: String?,
   locality: String?,
   userName: String?,
-  organization: String?,
-  careTeam: String?,
+  organizationNames: List<String>?,
+  careTeamNames: List<String>?,
   location: String?,
   appVersionCode: String,
   appVersion: String,
@@ -156,12 +156,14 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        if (userName != null && organization != null && careTeam != null && location != null) {
+        if (
+          userName != null && organizationNames != null && careTeamNames != null && location != null
+        ) {
           val items =
             listOf(
               stringResource(id = R.string.username) to userName,
-              stringResource(R.string.team_organization) to organization.take(10),
-              stringResource(R.string.care_team) to careTeam,
+              stringResource(R.string.team_organization) to organizationNames,
+              stringResource(R.string.care_team) to careTeamNames,
               stringResource(R.string.location) to location,
             )
           InsightInfoView(
@@ -264,7 +266,7 @@ fun UnsyncedDataView(
 @Composable
 fun InsightInfoView(
   title: String,
-  items: List<Pair<String, String>>,
+  items: List<Pair<String, Any>>,
   headerTextStyle: TextStyle =
     TextStyle(color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Medium),
   contentTextStyle: TextStyle =
@@ -288,7 +290,7 @@ fun InsightInfoView(
           style = headerTextStyle,
         )
         Text(
-          text = content,
+          text = content.toString(),
           style = contentTextStyle,
           softWrap = true,
           overflow = TextOverflow.Ellipsis,
@@ -316,8 +318,8 @@ fun UserSettingInsightScreenPreview() {
       team = "Team_tembo",
       locality = "Ps Dev-a",
       userName = "user_name",
-      organization = "team_organization",
-      careTeam = "care_team",
+      organizationNames = listOf("team_organization"),
+      careTeamNames = listOf("care_team"),
       location = "location",
       appVersionCode = "v2.3.4",
       appVersion = "119",

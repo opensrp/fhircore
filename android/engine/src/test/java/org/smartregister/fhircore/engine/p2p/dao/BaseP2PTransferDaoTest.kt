@@ -45,6 +45,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -61,6 +62,8 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
   @Inject lateinit var preferencesDataStore: PreferencesDataStore
 
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   private lateinit var baseP2PTransferDao: BaseP2PTransferDao
   private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
@@ -69,7 +72,11 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
   fun setUp() {
     hiltAndroidRule.inject()
     configurationRegistry =
-      Faker.buildTestConfigurationRegistry(preferencesDataStore, dispatcherProvider)
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     baseP2PTransferDao =
       spyk(
         P2PReceiverTransferDao(
