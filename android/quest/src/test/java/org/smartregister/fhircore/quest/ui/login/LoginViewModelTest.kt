@@ -21,6 +21,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.CapturingSlot
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -406,7 +407,9 @@ internal class LoginViewModelTest : RobolectricTest() {
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
     verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
-    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is SocketTimeoutException)
+    Assert.assertTrue(
+      getCapturedUserInfoResult(userInfoSlot).exceptionOrNull() is SocketTimeoutException,
+    )
   }
 
   @Test
@@ -427,7 +430,9 @@ internal class LoginViewModelTest : RobolectricTest() {
     verify { fetchUserInfoCallback(capture(userInfoSlot)) }
     verify(exactly = 0) { fetchPractitionerCallback(any(), any()) }
 
-    Assert.assertTrue(userInfoSlot.captured.exceptionOrNull() is UnknownHostException)
+    Assert.assertTrue(
+      getCapturedUserInfoResult(userInfoSlot).exceptionOrNull() is UnknownHostException,
+    )
   }
 
   @Test
@@ -452,8 +457,11 @@ internal class LoginViewModelTest : RobolectricTest() {
     verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
-    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
-    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is UnknownHostException)
+    Assert.assertEquals(
+      "awesome_uuid",
+      getCapturedUserInfoResult(userInfoSlot).getOrThrow().keycloakUuid,
+    )
+    Assert.assertTrue(getCapturedBundleResult(bundleSlot).exceptionOrNull() is UnknownHostException)
   }
 
   @Test
@@ -478,8 +486,13 @@ internal class LoginViewModelTest : RobolectricTest() {
     verify { fetchPractitionerCallback(capture(bundleSlot), any()) }
 
     Assert.assertTrue(userInfoSlot.captured.isSuccess)
-    Assert.assertEquals("awesome_uuid", userInfoSlot.captured.getOrThrow().keycloakUuid)
-    Assert.assertTrue(bundleSlot.captured.exceptionOrNull() is SocketTimeoutException)
+    Assert.assertEquals(
+      "awesome_uuid",
+      getCapturedUserInfoResult(userInfoSlot).getOrThrow().keycloakUuid,
+    )
+    Assert.assertTrue(
+      getCapturedBundleResult(bundleSlot).exceptionOrNull() is SocketTimeoutException,
+    )
   }
 
   private fun practitionerDetails(): PractitionerDetails {
@@ -636,5 +649,17 @@ internal class LoginViewModelTest : RobolectricTest() {
     val activity = mockk<HiltActivityForTest>(relaxed = true)
     every { activity.isDeviceOnline() } returns isDeviceOnline
     return activity
+  }
+
+  private fun getCapturedBundleResult(bundleSlot: CapturingSlot<Result<Bundle>>): Result<Bundle> {
+    val capturedResult = (bundleSlot.captured as Result<Any>).getOrNull()
+    return capturedResult as Result<Bundle>
+  }
+
+  private fun getCapturedUserInfoResult(
+    bundleSlot: CapturingSlot<Result<UserInfo>>,
+  ): Result<UserInfo> {
+    val capturedResult = (bundleSlot.captured as Result<Any>).getOrNull()
+    return capturedResult as Result<UserInfo>
   }
 }

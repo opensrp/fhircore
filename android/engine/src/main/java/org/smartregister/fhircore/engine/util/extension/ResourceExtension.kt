@@ -24,6 +24,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
@@ -443,8 +444,11 @@ suspend fun Task.updateDependentTaskDueDate(
                           dependantTask
                             .apply {
                               executionPeriod.start =
-                                Date.from(immunizationDate?.toInstant())
-                                  .plusDays(dependentTaskInputDuration)
+                                Date.from(
+                                  immunizationDate
+                                    ?.toInstant()
+                                    ?.plus(dependentTaskInputDuration.toLong(), ChronoUnit.DAYS),
+                                )
                             }
                             .run {
                               defaultRepository.addOrUpdate(

@@ -13,10 +13,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
    * into functional tests and performance tests. Performance tests can take upto 1 hr and are not required
    * while functional tests alone will take ~40 mins and they are required.
    */
-  if (!isApplication) {
-    tasksList += "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
-  }
-  else {}
+  tasksList += "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
 
   dependsOn(
     tasksList
