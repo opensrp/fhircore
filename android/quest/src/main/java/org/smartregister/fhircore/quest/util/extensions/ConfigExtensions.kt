@@ -170,7 +170,7 @@ fun List<ActionConfig>.handleClickEvent(
         clipboardManager.setPrimaryClip(clipData)
         context.showToast(
           context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
-          Toast.LENGTH_LONG
+          Toast.LENGTH_LONG,
         )
       }
       else -> return

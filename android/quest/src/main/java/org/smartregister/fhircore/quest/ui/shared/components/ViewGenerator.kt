@@ -260,7 +260,7 @@ fun GenerateView(
           modifier = modifier,
           imageProperties = properties as ImageProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
     }
   }

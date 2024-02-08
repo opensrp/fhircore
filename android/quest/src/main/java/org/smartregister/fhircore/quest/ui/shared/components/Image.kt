@@ -76,46 +76,44 @@ fun Image(
   val imageConfig = imageProperties.imageConfig
   val context = LocalContext.current
   if (imageConfig != null) {
-    if(imageProperties.text!=null) {
+    if (imageProperties.text != null) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
       ) {
         Text(
-          text = imageProperties.text !!,
+          text = imageProperties.text!!,
           textAlign = TextAlign.Center,
           modifier = Modifier.padding(end = 8.dp),
           color = imageProperties.imageConfig?.color.parseColor(),
-          textDecoration = TextDecoration.Underline
+          textDecoration = TextDecoration.Underline,
         )
         ClickableImageIcon(
-          imageProperties =imageProperties ,
-          imageConfig =imageConfig ,
+          imageProperties = imageProperties,
+          imageConfig = imageConfig,
           tint = tint,
           paddingEnd = paddingEnd,
-          navController =navController ,
+          navController = navController,
           resourceData = resourceData,
           context = context,
-          modifier = modifier
+          modifier = modifier,
         )
       }
-    }
-    else {
+    } else {
       ClickableImageIcon(
-        imageProperties =imageProperties ,
-        imageConfig =imageConfig ,
+        imageProperties = imageProperties,
+        imageConfig = imageConfig,
         tint = tint,
         paddingEnd = paddingEnd,
-        navController =navController ,
+        navController = navController,
         resourceData = resourceData,
         context = context,
-        modifier = modifier
+        modifier = modifier,
       )
-
-    }}
-
-
+    }
+  }
 }
+
 @Composable
 fun ClickableImageIcon(
   modifier: Modifier = Modifier,
@@ -124,48 +122,49 @@ fun ClickableImageIcon(
   tint: Color?,
   paddingEnd: Int?,
   navController: NavController,
-  resourceData: ResourceData?=null,
-  context: Context
+  resourceData: ResourceData? = null,
+  context: Context,
 ) {
   Box(
     contentAlignment = Alignment.Center,
-    modifier = modifier
-      .conditional(
-        imageProperties.shape != null,
-        { clip(imageProperties.shape!!.composeShape) },
-        { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) },
-      )
-      .conditional(
-        imageProperties.size != null,
-        { size(imageProperties.size!!.dp) },
-        { size(24.dp) },
-      )
-      .conditional(
-        !imageProperties.backgroundColor.isNullOrEmpty(),
-        { background(imageProperties.backgroundColor.parseColor()) },
-      )
-      .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
-      .clickable(
-        onClick = {
-          if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
-            imageProperties.actions.handleClickEvent(
-              navController = navController,
-              resourceData = resourceData,
-              context = context,
-            )
-          }
-        }
-      )
+    modifier =
+      modifier
+        .conditional(
+          imageProperties.shape != null,
+          { clip(imageProperties.shape!!.composeShape) },
+          { clip(RoundedCornerShape(imageProperties.borderRadius.dp)) },
+        )
+        .conditional(
+          imageProperties.size != null,
+          { size(imageProperties.size!!.dp) },
+          { size(24.dp) },
+        )
+        .conditional(
+          !imageProperties.backgroundColor.isNullOrEmpty(),
+          { background(imageProperties.backgroundColor.parseColor()) },
+        )
+        .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
+        .clickable(
+          onClick = {
+            if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
+              imageProperties.actions.handleClickEvent(
+                navController = navController,
+                resourceData = resourceData,
+                context = context,
+              )
+            }
+          },
+        ),
   ) {
     when (imageConfig.type) {
       ICON_TYPE_LOCAL ->
         LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
           Icon(
-            modifier = Modifier
-              .testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
-              .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
-              .align(Alignment.Center)
-              .fillMaxSize(0.9f),
+            modifier =
+              Modifier.testTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG)
+                .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+                .align(Alignment.Center)
+                .fillMaxSize(0.9f),
             painter = painterResource(id = drawableId),
             contentDescription = SIDE_MENU_ICON,
             tint = tint ?: imageProperties.imageConfig?.color.parseColor(),
@@ -174,11 +173,11 @@ fun ClickableImageIcon(
       ICON_TYPE_REMOTE ->
         if (imageConfig.decodedBitmap != null) {
           Image(
-            modifier = Modifier
-              .testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
-              .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
-              .align(Alignment.Center)
-              .fillMaxSize(0.9f),
+            modifier =
+              Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+                .conditional(paddingEnd != null, { padding(end = paddingEnd?.dp!!) })
+                .align(Alignment.Center)
+                .fillMaxSize(0.9f),
             bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -188,7 +187,6 @@ fun ClickableImageIcon(
     }
   }
 }
-
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
@@ -221,7 +219,7 @@ fun ClickableImageWithTextPreview() {
         shape = ImageShape.RECTANGLE,
         clickable = "true",
         visible = "true",
-        text = "Click on the icon to copy your text"
+        text = "Click on the icon to copy your text",
       ),
     resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
     navController = rememberNavController(),
