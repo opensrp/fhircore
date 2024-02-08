@@ -65,7 +65,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setTheme(R.style.AppTheme_Questionnaire)
+    setTheme(org.smartregister.fhircore.engine.R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)
     with(intent) {
@@ -189,8 +189,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
 
       if (launchContextResources.isNotEmpty()) {
-        questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(
-          launchContextResources.map { it.json() },
+        questionnaireFragmentBuilder.setQuestionnaireLaunchContextMap(
+          launchContextResources.associate {
+            Pair(it.resourceType.name.lowercase(), it.encodeResourceToString())
+          },
         )
       }
 
@@ -267,24 +269,31 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     } else if (questionnaireConfig.saveDraft) {
       AlertDialogue.showCancelAlert(
         context = this,
-        message = R.string.questionnaire_in_progress_alert_back_pressed_message,
-        title = R.string.questionnaire_alert_back_pressed_title,
+        message =
+          org.smartregister.fhircore.engine.R.string
+            .questionnaire_in_progress_alert_back_pressed_message,
+        title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
         confirmButtonListener = {
           retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
             viewModel.saveDraftQuestionnaire(questionnaireResponse)
           }
         },
-        confirmButtonText = R.string.questionnaire_alert_back_pressed_save_draft_button_title,
+        confirmButtonText =
+          org.smartregister.fhircore.engine.R.string
+            .questionnaire_alert_back_pressed_save_draft_button_title,
         neutralButtonListener = { finish() },
-        neutralButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+        neutralButtonText =
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_button_title,
       )
     } else {
       AlertDialogue.showConfirmAlert(
         context = this,
-        message = R.string.questionnaire_alert_back_pressed_message,
-        title = R.string.questionnaire_alert_back_pressed_title,
+        message =
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_message,
+        title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
         confirmButtonListener = { finish() },
-        confirmButtonText = R.string.questionnaire_alert_back_pressed_button_title,
+        confirmButtonText =
+          org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_button_title,
       )
     }
   }

@@ -207,8 +207,7 @@ constructor(
       .find { it.reference.startsWith(ResourceType.Task.name + "/") }
       ?.let {
         defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
-      }
-      ?: false
+      } ?: false
 
   suspend fun closeRelatedResources(resource: Resource) {
     val appRegistry =
