@@ -42,7 +42,6 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.passwordHashString
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -76,7 +75,10 @@ class PinViewModelTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     pinViewModel.setPinUiState(true, context)
     val pinUiState = pinViewModel.pinUiState.value
-    Assert.assertEquals(context.getString(R.string.set_pin_message), pinUiState.message)
+    Assert.assertEquals(
+      context.getString(org.smartregister.fhircore.engine.R.string.set_pin_message),
+      pinUiState.message,
+    )
     Assert.assertEquals(true, pinUiState.setupPin)
     Assert.assertTrue(pinUiState.setupPin)
   }

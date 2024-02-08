@@ -51,9 +51,9 @@ class ProfileFragment : Fragment() {
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
-  val profileViewModel by viewModels<ProfileViewModel>()
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
+  private val profileViewModel by viewModels<ProfileViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,

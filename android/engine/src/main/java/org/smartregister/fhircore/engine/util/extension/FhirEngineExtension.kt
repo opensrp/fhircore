@@ -51,11 +51,6 @@ suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: Strin
   val library =
     runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
       ?: search<Library> { filter(Library.URL, { value = path }) }.map { it.resource }.firstOrNull()
-
-  library?.let {
-    fhirOperator.loadLib(it)
-    it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-  }
 }
 
 suspend fun FhirEngine.loadLibraryAtPath(
