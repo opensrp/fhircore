@@ -94,7 +94,6 @@ fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   navController: NavController,
-  resourceData: ResourceData? = null,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
@@ -162,7 +161,6 @@ fun AppDrawer(
                 onSideMenuClick = onSideMenuClick,
                 openDrawer = openDrawer,
                 navController = navController,
-                resourceData = resourceData,
               )
               if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
             }
@@ -223,7 +221,6 @@ private fun OtherPatientsItem(
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
   navController: NavController,
-  resourceData: ResourceData? = null,
 ) {
   val context = LocalContext.current
   SideMenuItem(

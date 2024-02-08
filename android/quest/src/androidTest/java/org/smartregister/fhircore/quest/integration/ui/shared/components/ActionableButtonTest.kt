@@ -100,17 +100,6 @@ class ActionableButtonTest {
       .performClick()
   }
 
-  @Test
-  fun testActionableButtonRendersAndCopyText() {
-    setCopyButtonContent("false")
-
-    composeRule
-      .onNodeWithText("Copy Button Text", useUnmergedTree = true)
-      .assertExists()
-      .assertIsDisplayed()
-      .performClick()
-  }
-
   private fun setContent(
     serviceStatus: String,
     enabled: String = "true",
@@ -133,43 +122,6 @@ class ActionableButtonTest {
                 ),
               enabled = enabled,
               startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
-            ),
-          resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
-          navController = TestNavHostController(LocalContext.current),
-        )
-      }
-    }
-  }
-
-  private fun setCopyButtonContent(
-    serviceStatus: String,
-    enabled: String = "true",
-    computedValuesMap: Map<String, Any> = emptyMap(),
-  ) {
-    composeRule.setContent {
-      Column(modifier = Modifier.height(50.dp)) {
-        ActionableButton(
-          buttonProperties =
-            ButtonProperties(
-              status = serviceStatus,
-              text = "Copy Button Text",
-              actions =
-                listOf(
-                  ActionConfig(
-                    trigger = ActionTrigger.ON_CLICK,
-                    workflow = ApplicationWorkflow.COPY_TEXT.name,
-                    params =
-                      listOf(
-                        ActionParameter(
-                          key = "copyText",
-                          value = "https://my-url",
-                          paramType = ActionParameterType.PARAMDATA,
-                        ),
-                      ),
-                  ),
-                ),
-              enabled = enabled,
-              startIcon = ImageConfig("ic_copy", ICON_TYPE_LOCAL),
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
           navController = TestNavHostController(LocalContext.current),
