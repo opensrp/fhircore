@@ -82,7 +82,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
     setupLocationServices()
 
-    setTheme(R.style.AppTheme_Questionnaire)
     setTheme(org.smartregister.fhircore.engine.R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)

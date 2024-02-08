@@ -171,8 +171,6 @@ p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-li
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
 paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging-runtime-ktx" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
