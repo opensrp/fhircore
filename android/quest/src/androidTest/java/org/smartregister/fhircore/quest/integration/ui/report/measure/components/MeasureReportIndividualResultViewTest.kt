@@ -69,12 +69,7 @@ class MeasureReportIndividualResultViewTest {
   private fun initComposable(isMatchedIndicator: Boolean) {
     scenario.onActivity { activity ->
       activity.setContent {
-        AppTheme {
-          MeasureReportIndividualResultView(
-            subjectViewData = subjectViewData,
-            isMatchedIndicator = isMatchedIndicator,
-          )
-        }
+        AppTheme { MeasureReportIndividualResultView(subjectViewData = subjectViewData) }
       }
     }
   }

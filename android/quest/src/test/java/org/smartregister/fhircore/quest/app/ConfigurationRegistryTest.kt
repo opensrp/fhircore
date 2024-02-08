@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -39,8 +41,8 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -58,7 +60,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val secureSharedPreference = mockk<SecureSharedPreference>()
-  private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService =
     mockk<FhirResourceService> { coEvery { post(any(), any()) } returns Bundle() }
@@ -80,13 +81,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
-          configService = configService,
+          configService = mockk(),
           json = Faker.json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          openSrpApplication =
+            object : OpenSrpApplication() {
+              override fun getFhirServerHost(): URL? {
+                return URL("http://my_test_fhirbase_url/fhir/")
+              }
+            },
         ),
       )
     configurationRegistry.setNonProxy(false)
     coEvery { configurationRegistry.addOrUpdate(any()) } just runs
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 

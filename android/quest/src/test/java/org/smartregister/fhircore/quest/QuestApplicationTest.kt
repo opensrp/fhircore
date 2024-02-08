@@ -46,7 +46,6 @@ class QuestApplicationTest : RobolectricTest() {
     application = QuestApplication()
     application.referenceUrlResolver = mockk()
     application.xFhirQueryResolver = mockk()
-    application.workerFactory = mockk()
   }
 
   @Test
@@ -102,7 +101,6 @@ class QuestApplicationTest : RobolectricTest() {
 
     val intent = Intent(application, AppSettingActivity::class.java)
     application.startActivity(intent)
-    assertNotNull(application.workerFactory)
     assertNotNull(application.referenceUrlResolver)
     assertNotNull(application.xFhirQueryResolver)
   }

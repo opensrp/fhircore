@@ -50,8 +50,6 @@ define "is Pregnant":
     where O.clinicalStatus ~ "active"
       sort by recordedDate) is not null
 
-define "OOOOBS": Observation
-
 define "Registerd Haem":
   Last([Observation: "Haemoglobin code"] H)
 

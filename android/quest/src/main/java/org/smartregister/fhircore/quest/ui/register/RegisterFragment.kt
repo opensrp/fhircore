@@ -52,12 +52,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -172,7 +172,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
-                registerViewModel = registerViewModel,
               )
             }
           }
@@ -201,7 +200,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -275,8 +274,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .onEach { appEvent ->
             if (appEvent is AppEvent.OnSubmitQuestionnaire) {
               handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-            } else if (appEvent is AppEvent.OnMigrateData) {
-              registerViewModel.setOnMigrateDataInProgress(appEvent.inProgress)
             }
           }
           .launchIn(lifecycleScope)
