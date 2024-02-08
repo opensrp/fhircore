@@ -378,7 +378,6 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
   implementation(libs.play.services.location)
 
   // Annotation processors
