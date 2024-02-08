@@ -253,7 +253,13 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
-      ViewType.IMAGE -> Image(modifier = modifier, imageProperties = properties as ImageProperties)
+      ViewType.IMAGE ->
+        Image(
+          modifier = modifier,
+          imageProperties = properties as ImageProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
     }
   }
 }

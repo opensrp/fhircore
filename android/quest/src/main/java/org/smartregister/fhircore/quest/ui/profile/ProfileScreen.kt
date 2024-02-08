@@ -355,6 +355,8 @@ private fun ProfileTopAppBarMenuAction(
             Image(
               imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
               tint = contentColor,
+              navController = navController,
+              resourceData = profileUiState.resourceData!!,
             )
             if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
             Text(text = overflowMenuItemConfig.title, color = contentColor)

@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -81,7 +80,6 @@ fun ActionableButton(
     val clickable = buttonProperties.clickable.toBoolean()
     val backgroundOpacity = buttonProperties.backgroundOpacity
     val colorOpacity = buttonProperties.colorOpacity
-    val context = LocalContext.current
     OutlinedButton(
       onClick = {
         if (
@@ -91,7 +89,6 @@ fun ActionableButton(
           buttonProperties.actions.handleClickEvent(
             navController = navController,
             resourceData = resourceData,
-            context = context,
           )
         }
       },
@@ -155,12 +152,10 @@ fun ActionableButton(
         }
       if (buttonProperties.startIcon != null) {
         Image(
-          imageProperties =
-            ImageProperties(
-              imageConfig = buttonProperties.startIcon,
-              size = 16,
-            ),
+          imageProperties = ImageProperties(imageConfig = buttonProperties.startIcon, size = 16),
           tint = iconTintColor,
+          resourceData = resourceData,
+          navController = navController,
         )
       } else {
         Icon(

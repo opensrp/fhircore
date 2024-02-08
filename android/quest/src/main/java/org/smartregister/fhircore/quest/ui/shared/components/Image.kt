@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.ui.shared.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -29,17 +30,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageShape
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -47,6 +53,7 @@ import org.smartregister.fhircore.engine.util.extension.parseColor
 import org.smartregister.fhircore.engine.util.extension.retrieveResourceId
 import org.smartregister.fhircore.quest.ui.main.components.SIDE_MENU_ICON
 import org.smartregister.fhircore.quest.util.extensions.conditional
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG = "sideMenuItemLocalIconTestTag"
 const val SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG = "sideMenuItemBinaryIconTestTag"
@@ -57,8 +64,11 @@ fun Image(
   paddingEnd: Int? = null,
   tint: Color? = null,
   imageProperties: ImageProperties = ImageProperties(viewType = ViewType.IMAGE, size = 24),
+  navController: NavController,
+  resourceData: ResourceData? = null,
 ) {
   val imageConfig = imageProperties.imageConfig
+  val context = LocalContext.current
   if (imageConfig != null) {
     Box(
       contentAlignment = Alignment.Center,
@@ -78,7 +88,18 @@ fun Image(
             !imageProperties.backgroundColor.isNullOrEmpty(),
             { background(imageProperties.backgroundColor.parseColor()) },
           )
-          .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) }),
+          .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
+          .clickable(
+            onClick = {
+              if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
+                imageProperties.actions.handleClickEvent(
+                  navController = navController,
+                  resourceData = resourceData,
+                  context = context,
+                )
+              }
+            }
+          ),
     ) {
       when (imageConfig.type) {
         ICON_TYPE_LOCAL ->
@@ -91,7 +112,7 @@ fun Image(
                   .fillMaxSize(0.9f),
               painter = painterResource(id = drawableId),
               contentDescription = SIDE_MENU_ICON,
-              tint = tint ?: imageProperties.tint.parseColor(),
+              tint = tint ?: imageProperties.imageConfig?.color.parseColor(),
             )
           }
         ICON_TYPE_REMOTE ->
@@ -105,6 +126,7 @@ fun Image(
               bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
               contentDescription = null,
               contentScale = ContentScale.Crop,
+              colorFilter = ColorFilter.tint(tint!!),
             )
           }
       }
@@ -125,5 +147,26 @@ fun ImagePreview() {
         shape = ImageShape.CIRCLE,
       ),
     tint = DangerColor.copy(0.1f),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    navController = rememberNavController(),
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun ClickableImagePreview() {
+  Image(
+    modifier = Modifier,
+    imageProperties =
+      ImageProperties(
+        imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_copy", color = "#FFF000"),
+        backgroundColor = Color.White.toString(),
+        size = 24,
+        shape = ImageShape.RECTANGLE,
+        clickable = "true",
+        visible = "true",
+      ),
+    resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+    navController = rememberNavController(),
   )
 }

@@ -59,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationConf
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
@@ -93,6 +94,7 @@ fun AppDrawer(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   navController: NavController,
+  resourceData: ResourceData? = null,
   openDrawer: (Boolean) -> Unit,
   onSideMenuClick: (AppMainEvent) -> Unit,
   appVersionPair: Pair<Int, String>? = null,
@@ -160,6 +162,7 @@ fun AppDrawer(
                 onSideMenuClick = onSideMenuClick,
                 openDrawer = openDrawer,
                 navController = navController,
+                resourceData = resourceData,
               )
               if (navigationConfiguration.staticMenu.isNotEmpty()) Divider(color = DividerColor)
             }
@@ -220,6 +223,7 @@ private fun OtherPatientsItem(
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
   navController: NavController,
+  resourceData: ResourceData? = null,
 ) {
   val context = LocalContext.current
   SideMenuItem(
@@ -355,6 +359,7 @@ private fun SideMenuItem(
         paddingEnd = 10,
         imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
         tint = MenuItemColor,
+        navController = rememberNavController(),
       )
       SideMenuItemText(title = title, textColor = Color.White)
     }
