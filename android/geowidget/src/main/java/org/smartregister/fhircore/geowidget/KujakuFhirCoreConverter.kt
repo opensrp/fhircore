@@ -18,7 +18,6 @@ package org.smartregister.fhircore.geowidget
 
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import com.mapbox.geojson.Feature
 import com.mapbox.geojson.FeatureCollection
 import java.util.LinkedList
@@ -66,7 +65,7 @@ class KujakuFhirCoreConverter {
     checkConversionGuide(context)
 
     val featureCollection = arrayOfNulls<Feature>(resourcesGroups.size)
-    val fhirPath = FhirContext.forCached(FhirVersionEnum.R4).newFhirPath()
+    val fhirPath = FhirContext.forR4Cached().newFhirPath()
 
     resourcesGroups.forEachIndexed { index, resourceGroup ->
       val feature = JSONObject()

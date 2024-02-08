@@ -182,7 +182,7 @@ constructor(
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        if (event.state is SyncJobStatus.Finished) {
+        if (event.state is SyncJobStatus.Succeeded) {
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),

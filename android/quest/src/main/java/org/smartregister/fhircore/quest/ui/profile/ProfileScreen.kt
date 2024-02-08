@@ -167,8 +167,8 @@ fun ProfileScreen(
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
           )
         }
@@ -241,8 +241,8 @@ private fun RenderSimpleAppTopBar(
   ) {
     ViewRenderer(
       viewProperties = topBarConfig.content,
-      resourceData = profileUiState.resourceData
-          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      resourceData =
+        profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
     )
   }
