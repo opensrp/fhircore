@@ -1,6 +1,5 @@
 {
   "resourceType": "Observation",
-  "id": "#UID",
   "status": "final",
   "category": [
     {

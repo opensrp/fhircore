@@ -17,7 +17,8 @@
 package org.smartregister.fhircore.engine
 
 import android.app.Application
+import java.net.URL
 
 abstract class OpenSrpApplication : Application() {
-  abstract fun getFhirServerHost(): String
+  abstract fun getFhirServerHost(): URL?
 }
