@@ -32,6 +32,8 @@ There can only be one instance of application configuration for the entire appli
     "loginConfig": {
         "showLogo": true,
         "enablePin": true
+        "logoHeight" : 120,
+        "logoWidth" : 140
     },
     "deviceToDeviceSync": {
         "resourcesToSync": [
@@ -65,4 +67,6 @@ syncInterval | Configuration duration for periodic sync | Yes | `30` |
 syncStrategy | Tag every resource with the values for the resource types indicated here | Yes | `emptyList()` |
 loginConfig.showLogo | Display logo in login page | Yes | `true` |
 loginConfig.enablePin | Request user for pin after login; to be used for subsequent logins | No | `false` |
+loginConfig.logoHeight | Set the maximum height a logo can have | No | 120 |
+loginConfig.logoWidth | Set the maximum width a logo can have | No | 140 |
 deviceToDeviceSync.resourcesToSync | Types of resource to be synced from one device to another during peer connection | No | `false` |

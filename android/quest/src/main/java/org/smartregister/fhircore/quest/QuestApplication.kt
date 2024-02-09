@@ -22,7 +22,11 @@ import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.components.SingletonComponent
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
@@ -37,14 +41,19 @@ import timber.log.Timber
 
 @HiltAndroidApp
 class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Configuration.Provider {
-  @Inject lateinit var workerFactory: HiltWorkerFactory
+  @EntryPoint
+  @InstallIn(SingletonComponent::class)
+  interface HiltWorkerFactoryEntryPoint {
+    fun workerFactory(): HiltWorkerFactory
+  }
 
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
   private var configuration: DataCaptureConfig? = null
 
-  private var fhirServerHost: String? = null
+  private var fhirServerHost: URL? = null
 
   override fun onCreate() {
     super.onCreate()
@@ -109,14 +118,16 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
     return configuration as DataCaptureConfig
   }
 
-  override fun getWorkManagerConfiguration(): Configuration =
+  override val workManagerConfiguration: Configuration =
     Configuration.Builder()
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
-      .setWorkerFactory(workerFactory)
+      .setWorkerFactory(
+        EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory(),
+      )
       .build()
 
-  override fun getFhirServerHost(): String {
-    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL).host
-    return fhirServerHost ?: ""
+  override fun getFhirServerHost(): URL? {
+    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL)
+    return fhirServerHost
   }
 }

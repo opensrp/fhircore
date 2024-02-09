@@ -84,9 +84,18 @@ class ViewExtensionTest : RobolectricTest() {
     mockkStatic(ContextCompat::getDrawable)
     val view = View(ApplicationProvider.getApplicationContext())
 
-    Assert.assertNotNull(view.getDrawable(R.drawable.camera_flash))
+    Assert.assertNotNull(
+      view.getDrawable(
+        com.google.android.fhir.datacapture.contrib.views.barcode.R.drawable.camera_flash,
+      ),
+    )
 
-    verify { ContextCompat.getDrawable(view.context, R.drawable.camera_flash) }
+    verify {
+      ContextCompat.getDrawable(
+        view.context,
+        com.google.android.fhir.datacapture.contrib.views.barcode.R.drawable.camera_flash,
+      )
+    }
     unmockkStatic(ContextCompat::getDrawable)
   }
 }

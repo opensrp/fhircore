@@ -19,9 +19,10 @@ plugins {
 android {
   compileSdk = 34
 
+  namespace = "org.smartregister.fhircore.geowidget"
+
   defaultConfig {
     minSdk = 26
-    targetSdk = 34
     buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
@@ -33,7 +34,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
     create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
@@ -44,12 +45,12 @@ android {
 
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility", "-opt-in=kotlin.RequiresOptIn")
   }
 
@@ -57,11 +58,12 @@ android {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -99,7 +101,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.11" }
 }
 
 tasks.withType<Test> {
@@ -113,7 +115,7 @@ configurations { all { exclude(group = "xpp3") } }
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
 
-  implementation(project(":engine"))
+  implementation(project(":engine")) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   implementation(libs.core.ktx)
   implementation(libs.appcompat)
   implementation(libs.material)
@@ -129,8 +131,7 @@ dependencies {
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
@@ -138,8 +139,8 @@ dependencies {
   testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.bundles.coroutine.test)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
 
   // To run only on debug builds
@@ -147,8 +148,8 @@ dependencies {
   debugImplementation(libs.fragment.testing)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
   androidTestUtil(libs.orchestrator)
 
@@ -156,5 +157,5 @@ dependencies {
   androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
 }

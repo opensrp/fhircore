@@ -24,7 +24,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.get
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -86,12 +85,14 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    ApplicationProvider.getApplicationContext<Context>().apply {
+      setTheme(org.smartregister.fhircore.engine.R.style.AppTheme)
+    }
     defaultRepository =
       mockk(relaxUnitFun = true) {
         every { dispatcherProvider } returns testDispatcherProvider
         every { fhirEngine } returns spyk(this@QuestionnaireActivityTest.fhirEngine)
       }
-    ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
     questionnaireConfig =
       QuestionnaireConfig(
         id = "754", // Same as ID in sample_patient_registration.json
