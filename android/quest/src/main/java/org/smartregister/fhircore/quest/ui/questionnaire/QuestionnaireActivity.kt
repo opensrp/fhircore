@@ -163,7 +163,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder()
         .setQuestionnaire(questionnaire.json())
-        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER)
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+          OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
+        )
         .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
         .showRequiredText(questionnaireConfig.showRequiredText)
 
@@ -188,12 +190,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             ),
           )
         }
-
-//      if (launchContextResources.isNotEmpty()) {
-//        questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(
-//          launchContextResources.map { it.json() },
-//        )
-//      }
 
       // Populate questionnaire with latest QuestionnaireResponse
       if (questionnaireConfig.isEditable()) {
