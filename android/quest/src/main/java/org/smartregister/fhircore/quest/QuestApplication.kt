@@ -34,7 +34,6 @@ import java.net.URL
 import javax.inject.Inject
 import org.hl7.fhir.utilities.npm.NpmPackage
 import org.smartregister.fhircore.engine.OpenSrpApplication
-import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver

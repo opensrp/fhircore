@@ -29,7 +29,6 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -43,6 +42,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
@@ -58,6 +58,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -102,7 +103,7 @@ constructor(
   val transformSupportServices: TransformSupportServicesMatchBox,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
-  val knowledgeManager: KnowledgeManager,
+  private val simpleWorkerContext: SimpleWorkerContext,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
@@ -489,8 +490,8 @@ constructor(
                 context = context,
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                  structureMapUrl?.extractLogicalIdUuid()?.let { structureMapId ->
+                    loadStructureMapDependencyTree(structureMapId)
                   }
                 },
               ),
@@ -818,6 +819,28 @@ constructor(
         }
       }
     }
+  }
+
+  /**
+   * This function recursively fetches and loads all dependent structure maps as defined here
+   * https://hl7.org/fhir/R4B/structuremap-definitions.html#StructureMap.import to the worker
+   * context cache
+   *
+   * @param structureMapId String id of the parent StructureMap
+   * @return [StructureMap] the parent StructureMap resource
+   */
+  private suspend fun loadStructureMapDependencyTree(
+    structureMapId: String,
+  ): StructureMap? {
+    val structureMap = defaultRepository.loadResource<StructureMap>(structureMapId)
+    structureMap?.also { structureMapIterator ->
+      simpleWorkerContext.cacheResource(structureMapIterator)
+
+      structureMapIterator.import?.let { canonicalTypes ->
+        canonicalTypes.forEach { loadStructureMapDependencyTree(it.value) }
+      }
+    }
+    return structureMap
   }
 
   /**
