@@ -28,5 +28,6 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "logQuestionnaireLocation": true
 }
