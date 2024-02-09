@@ -216,7 +216,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private fun setupLocationServices() {
-    if (questionnaireViewModel.applicationConfiguration.logQuestionnaireLocation) {
+    if (true || questionnaireViewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
@@ -225,6 +225,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
       if (!hasLocationPermissions()) {
         launchLocationPermissionsDialog()
+      }
+
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation(true)
       }
     }
   }
