@@ -353,7 +353,7 @@ class ViewGeneratorTest {
         properties =
           ImageProperties(
             imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk", color = "#FFF000"),
-            text = "Copy text"
+            text = "Copy text",
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
