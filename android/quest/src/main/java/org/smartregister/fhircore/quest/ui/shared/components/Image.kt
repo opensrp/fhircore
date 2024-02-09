@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -75,6 +74,7 @@ fun Image(
 ) {
   val imageConfig = imageProperties.imageConfig
   val context = LocalContext.current
+  val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
   if (imageConfig != null) {
     if (imageProperties.text != null) {
       Row(
@@ -86,12 +86,11 @@ fun Image(
           textAlign = TextAlign.Center,
           modifier = Modifier.padding(end = 8.dp),
           color = imageProperties.imageConfig?.color.parseColor(),
-          textDecoration = TextDecoration.Underline,
         )
         ClickableImageIcon(
           imageProperties = imageProperties,
           imageConfig = imageConfig,
-          tint = tint,
+          tint = colorTint,
           paddingEnd = paddingEnd,
           navController = navController,
           resourceData = resourceData,
@@ -103,7 +102,7 @@ fun Image(
       ClickableImageIcon(
         imageProperties = imageProperties,
         imageConfig = imageConfig,
-        tint = tint,
+        tint = colorTint,
         paddingEnd = paddingEnd,
         navController = navController,
         resourceData = resourceData,
@@ -119,7 +118,7 @@ fun ClickableImageIcon(
   modifier: Modifier = Modifier,
   imageProperties: ImageProperties,
   imageConfig: ImageConfig,
-  tint: Color?,
+  tint: Color,
   paddingEnd: Int?,
   navController: NavController,
   resourceData: ResourceData? = null,
@@ -157,7 +156,7 @@ fun ClickableImageIcon(
         ),
   ) {
     when (imageConfig.type) {
-      ICON_TYPE_LOCAL ->
+      ICON_TYPE_LOCAL -> {
         LocalContext.current.retrieveResourceId(imageConfig.reference)?.let { drawableId ->
           Icon(
             modifier =
@@ -167,9 +166,10 @@ fun ClickableImageIcon(
                 .fillMaxSize(0.9f),
             painter = painterResource(id = drawableId),
             contentDescription = SIDE_MENU_ICON,
-            tint = tint ?: imageProperties.imageConfig?.color.parseColor(),
+            tint = tint,
           )
         }
+      }
       ICON_TYPE_REMOTE ->
         if (imageConfig.decodedBitmap != null) {
           Image(
@@ -181,7 +181,7 @@ fun ClickableImageIcon(
             bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.tint(tint!!),
+            colorFilter = ColorFilter.tint(tint ?: imageProperties.imageConfig?.color.parseColor()),
           )
         }
     }
