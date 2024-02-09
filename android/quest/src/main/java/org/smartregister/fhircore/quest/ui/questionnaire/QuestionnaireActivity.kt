@@ -135,6 +135,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       if (!hasLocationPermissions()) {
         launchLocationPermissionsDialog()
       }
+
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation(true)
+      }
     }
   }
 
