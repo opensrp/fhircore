@@ -25,11 +25,13 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
-import org.junit.Before
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -69,9 +71,12 @@ class RegisterScreenTest {
         params = emptyMap())
     val searchText = mutableStateOf("")
     val currentPage = mutableStateOf(0)
-    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {  }
 
     composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
       RegisterScreen(
         openDrawer = {},
         onEvent = {},
@@ -94,7 +99,7 @@ class RegisterScreenTest {
       RegisterUiState(
         screenTitle= "Register101",
         isFirstTimeSync = true,
-        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
         registerId= "register101",
         totalRecordsCount = 0,
         filteredRecordsCount = 0,
