@@ -85,7 +85,7 @@ fun Image(
           text = imageProperties.text!!,
           textAlign = TextAlign.Center,
           modifier = Modifier.padding(end = 8.dp),
-          color = imageProperties.imageConfig?.color.parseColor(),
+          color = imageProperties.textColor?.parseColor() ?: Color.Gray,
         )
         ClickableImageIcon(
           imageProperties = imageProperties,

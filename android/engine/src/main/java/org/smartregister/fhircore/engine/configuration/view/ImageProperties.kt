@@ -45,6 +45,7 @@ data class ImageProperties(
   val imageConfig: ImageConfig? = null,
   val size: Int? = null,
   val shape: ImageShape? = null,
+  val textColor: String? = null,
   val actions: List<ActionConfig> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
