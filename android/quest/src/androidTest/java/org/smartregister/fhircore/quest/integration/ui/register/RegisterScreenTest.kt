@@ -51,12 +51,6 @@ class RegisterScreenTest {
 
   private val noResults = NoResultsConfig()
 
-  @Before
-  fun setUp() {
-    composeTestRule.setContent {
-      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
-    }
-  }
   @Test
   fun testRegisterCardListIsRendered(){
 
@@ -130,6 +124,9 @@ class RegisterScreenTest {
 
   @Test
   fun testNoRegisterDataViewDisplaysNoTestTag() {
+    composeTestRule.setContent {
+      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
+    }
     composeTestRule
       .onNodeWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -138,6 +135,9 @@ class RegisterScreenTest {
 
   @Test
   fun testCountAllNodeNoRegisterDataViewDisplaysNoTestTag() {
+    composeTestRule.setContent {
+      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
+    }
     composeTestRule
       .onAllNodesWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
       .assertCountEquals(1)
@@ -145,6 +145,9 @@ class RegisterScreenTest {
 
   @Test
   fun checkNodeWithNoRegisterViewColumTestTag() {
+    composeTestRule.setContent {
+      NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
+    }
     composeTestRule
       .onNodeWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
       .onChildAt(0)
