@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.integration.ui.register
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -23,13 +24,25 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.LazyPagingItems
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.quest.integration.Faker
+import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
+import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_LIST_TEST_TAG
+import org.smartregister.fhircore.quest.ui.register.RegisterScreen
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -44,6 +57,76 @@ class RegisterScreenTest {
       NoRegisterDataView(modifier = Modifier, noResults = noResults, onClick = {})
     }
   }
+  @Test
+  fun testRegisterCardListIsRendered(){
+
+    val configurationRegistry : ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle= "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId= "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 1,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap())
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {  }
+
+    composeTestRule.setContent {
+      RegisterScreen(
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState ,
+        searchText = searchText ,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).assertExists()
+
+  }
+
+  @Test
+  fun testThatDialogIsDisplayedDuringSyncing() {
+    val configurationRegistry : ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle= "Register101",
+        isFirstTimeSync = true,
+        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId= "register101",
+        totalRecordsCount = 0,
+        filteredRecordsCount = 0,
+        pagesCount = 1,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap())
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {  }
+
+
+    composeTestRule.setContent {
+      RegisterScreen(
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState ,
+        searchText = searchText ,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+    composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG).assertExists()
+  }
+
 
   @Test
   fun testNoRegisterDataViewDisplaysNoTestTag() {
