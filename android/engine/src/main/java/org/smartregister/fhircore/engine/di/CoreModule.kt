@@ -31,7 +31,6 @@ import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.utils.FHIRPathEngine
-import org.hl7.fhir.utilities.npm.NpmPackage
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
@@ -41,16 +40,10 @@ class CoreModule {
   @Singleton
   @Provides
   fun provideWorkerContextProvider(@ApplicationContext context: Context): SimpleWorkerContext =
-    SimpleWorkerContext.fromPackage(
-        NpmPackage.fromPackage(
-          context.assets.open("who_eir/packages/package.r4.tgz"),
-        ),
-        true,
-      )
-      .apply {
-        setExpansionProfile(Parameters())
-        isCanRunWithoutTerminology = true
-      }
+    SimpleWorkerContext().apply {
+      setExpansionProfile(Parameters())
+      isCanRunWithoutTerminology = true
+    }
 
   @Singleton
   @Provides

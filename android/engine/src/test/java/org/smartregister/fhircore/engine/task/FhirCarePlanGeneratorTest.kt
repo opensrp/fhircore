@@ -65,8 +65,8 @@ import org.cqframework.cql.cql2elm.CqlTranslator
 import org.cqframework.cql.cql2elm.LibraryManager
 import org.cqframework.cql.cql2elm.ModelManager
 import org.cqframework.cql.cql2elm.quick.FhirLibrarySourceProvider
-import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.ActivityDefinition
+import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
