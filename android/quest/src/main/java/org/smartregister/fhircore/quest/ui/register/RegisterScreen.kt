@@ -63,6 +63,8 @@ const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEST_TAG = "noRegisterViewButtonTestTag"
 const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
+const val REGISTER_CARD_LIST_TEST_TAG= "registerCardListTestTag"
+const val FIRST_TIME_SYNC_DIALOG= "firstTimeSyncTestTag"
 
 @Composable
 fun RegisterScreen(

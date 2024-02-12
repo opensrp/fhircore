@@ -35,7 +35,6 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
-  @get:Rule val composeRegisterTestRule = createComposeRule()
 
   private val noResults = NoResultsConfig()
 
