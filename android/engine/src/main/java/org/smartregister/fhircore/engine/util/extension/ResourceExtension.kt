@@ -60,6 +60,7 @@ import org.hl7.fhir.r4.model.Timing
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -383,6 +384,14 @@ fun String.resourceClassType(): Class<out Resource> =
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
+
+/**
+ * This function extracts the resource id from a URL request e.g.
+ * http://my-structuremap-url/fhir/StructureMap/123456 returns 123456 Note: NOT to be used as is
+ * with urls that contain query parameters or any extra characters after the id
+ */
+fun String.extractResourceId() =
+  this.substringAfterLast(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
 
 /**
  * This suspend function updates the due date of the dependents of the current [Task], based on the
