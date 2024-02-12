@@ -48,106 +48,102 @@ const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun RegisterFooter(
-    resultCount: Int,
-    currentPage: Int,
-    pagesCount: Int,
-    previousButtonClickListener: () -> Unit,
-    nextButtonClickListener: () -> Unit,
-    modifier: Modifier = Modifier,
-    fabActions: List<NavigationMenuConfig>? = null,
+  resultCount: Int,
+  currentPage: Int,
+  pagesCount: Int,
+  previousButtonClickListener: () -> Unit,
+  nextButtonClickListener: () -> Unit,
+  modifier: Modifier = Modifier,
+  fabActions: List<NavigationMenuConfig>? = null,
 ) {
-    if (resultCount > 0)
-        Row(
-            modifier = modifier
-              .fillMaxWidth()
-              .testTag(SEARCH_FOOTER_TAG)
-              .padding(
-                bottom = if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-                  PADDING_BOTTOM_WITH_FAB.dp
-                } else {
-                  PADDING_BOTTOM_WITHOUT_FAB.dp
-                }
-              )
-        ) {
-            Box(
-                modifier = modifier
-                  .weight(1f)
-                  .padding(4.dp)
-                  .wrapContentWidth(Alignment.Start),
-            ) {
-                if (currentPage > 1) {
-                    TextButton(
-                        onClick = previousButtonClickListener,
-                        modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_chevron_left),
-                            contentDescription = stringResource(R.string.str_next)
-                        )
-                        Text(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colors.primary,
-                            text = stringResource(id = R.string.str_previous),
-                        )
-                    }
-                }
-            }
-            Text(
-                fontSize = 14.sp,
-                color = GreyTextColor,
-                text = stringResource(id = R.string.str_page_info, currentPage, pagesCount),
-                modifier =
-                modifier
-                  .testTag(SEARCH_FOOTER_PAGINATION_TAG)
-                  .padding(4.dp)
-                  .align(Alignment.CenterVertically)
+  if (resultCount > 0)
+    Row(
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .testTag(SEARCH_FOOTER_TAG)
+          .padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else {
+                PADDING_BOTTOM_WITHOUT_FAB.dp
+              }
+          )
+    ) {
+      Box(
+        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
+      ) {
+        if (currentPage > 1) {
+          TextButton(
+            onClick = previousButtonClickListener,
+            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG)
+          ) {
+            Icon(
+              painter = painterResource(id = R.drawable.ic_chevron_left),
+              contentDescription = stringResource(R.string.str_next)
             )
-            Box(
-                modifier = modifier
-                  .weight(1f)
-                  .padding(4.dp)
-                  .wrapContentWidth(Alignment.End),
-            ) {
-                if (currentPage < pagesCount) {
-                    TextButton(
-                        onClick = nextButtonClickListener,
-                        modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
-                    ) {
-                        Text(
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colors.primary,
-                            text = stringResource(id = R.string.str_next),
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_chevron_right),
-                            contentDescription = stringResource(R.string.str_next)
-                        )
-                    }
-                }
-            }
+            Text(
+              fontSize = 14.sp,
+              color = MaterialTheme.colors.primary,
+              text = stringResource(id = R.string.str_previous),
+            )
+          }
         }
+      }
+      Text(
+        fontSize = 14.sp,
+        color = GreyTextColor,
+        text = stringResource(id = R.string.str_page_info, currentPage, pagesCount),
+        modifier =
+          modifier
+            .testTag(SEARCH_FOOTER_PAGINATION_TAG)
+            .padding(4.dp)
+            .align(Alignment.CenterVertically)
+      )
+      Box(
+        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
+      ) {
+        if (currentPage < pagesCount) {
+          TextButton(
+            onClick = nextButtonClickListener,
+            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG)
+          ) {
+            Text(
+              fontSize = 14.sp,
+              color = MaterialTheme.colors.primary,
+              text = stringResource(id = R.string.str_next),
+            )
+            Icon(
+              painter = painterResource(id = R.drawable.ic_chevron_right),
+              contentDescription = stringResource(R.string.str_next)
+            )
+          }
+        }
+      }
+    }
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SearchFooterPreviewNoPreviousButton() {
-    RegisterFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SearchFooterPreviewNoNextButton() {
-    RegisterFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-    RegisterFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun SearchFooterPreviewWithZeroResults() {
-    RegisterFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
 }

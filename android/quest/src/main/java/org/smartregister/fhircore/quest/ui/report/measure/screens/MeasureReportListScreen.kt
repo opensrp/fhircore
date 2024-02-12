@@ -92,7 +92,9 @@ fun MeasureReportListScreen(
           }
         }
       } else {
-        LazyColumn(modifier = modifier.background(Color.White).fillMaxSize().padding(bottom = 32.dp)) {
+        LazyColumn(
+          modifier = modifier.background(Color.White).fillMaxSize().padding(bottom = 32.dp)
+        ) {
           lazyReportItems.keys.forEach { key ->
             item {
               key?.let { it1 ->

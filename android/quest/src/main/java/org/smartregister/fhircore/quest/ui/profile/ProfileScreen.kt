@@ -149,13 +149,16 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary
         )
       }
-      LazyColumn(state = lazyListState,modifier =
-      Modifier.padding(
-        bottom =
-        if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-          PADDING_BOTTOM_WITH_FAB.dp
-        } else PADDING_BOTTOM_WITHOUT_FAB.dp,
-      ),) {
+      LazyColumn(
+        state = lazyListState,
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+          ),
+      ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
