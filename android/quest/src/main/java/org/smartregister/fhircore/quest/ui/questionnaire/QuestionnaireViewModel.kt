@@ -837,7 +837,11 @@ constructor(
       simpleWorkerContext.cacheResource(structureMapIterator)
 
       structureMapIterator.import?.let { canonicalTypes ->
-        canonicalTypes.forEach { loadStructureMapDependencyTree(it.value) }
+        canonicalTypes.forEach { structureMapUrl ->
+          structureMapUrl.value?.substringAfterLast("/")?.let { structureMapId ->
+            loadStructureMapDependencyTree(structureMapId)
+          }
+        }
       }
     }
     return structureMap
