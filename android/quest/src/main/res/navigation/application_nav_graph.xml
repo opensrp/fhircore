@@ -11,7 +11,8 @@
         <argument
             android:name="geoWidgetId"
             app:argType="string"
-            app:nullable="false" />
+            app:nullable="true"
+            android:defaultValue="householdRegistrationMap"/>
     </fragment>
 
     <fragment

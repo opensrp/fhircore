@@ -72,6 +72,7 @@ const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
+  isSearchBarVisible: Boolean,
   searchText: String,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
@@ -85,12 +86,12 @@ fun TopScreenSection(
   ) {
     Row(
       modifier =
-        modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 16.dp)
-          .testTag(
-            TITLE_ROW_TEST_TAG,
-          ),
+      modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 16.dp)
+        .testTag(
+          TITLE_ROW_TEST_TAG,
+        ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(
@@ -101,7 +102,7 @@ fun TopScreenSection(
         contentDescription = DRAWER_MENU,
         tint = Color.White,
         modifier =
-          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
+        modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
       )
       Text(
         text = title,
@@ -129,14 +130,14 @@ fun TopScreenSection(
             contentDescription = FILTER,
             tint = Color.White,
             modifier =
-              modifier
-                .clickable { onClick(ToolbarClickEvent.FilterData) }
-                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+            modifier
+              .clickable { onClick(ToolbarClickEvent.FilterData) }
+              .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
           )
         }
       }
     }
-
+    if (isSearchBarVisible) {
     OutlinedTextField(
       colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
       value = searchText,
@@ -151,12 +152,12 @@ fun TopScreenSection(
         )
       },
       modifier =
-        modifier
-          .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(size = 10.dp))
-          .background(Color.White)
-          .testTag(OUTLINED_BOX_TEST_TAG),
+      modifier
+        .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(size = 10.dp))
+        .background(Color.White)
+        .testTag(OUTLINED_BOX_TEST_TAG),
       leadingIcon = {
         Icon(
           imageVector = Icons.Filled.Search,
@@ -181,6 +182,7 @@ fun TopScreenSection(
       },
     )
   }
+  }
 }
 
 @PreviewWithBackgroundExcludeGenerated
@@ -194,6 +196,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
+    isSearchBarVisible = true
   )
 }
 
@@ -208,6 +211,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
+    isSearchBarVisible = true
   )
 }
 
@@ -221,5 +225,6 @@ fun TopScreenSectionNoFilterIconPreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
     onClick = {},
+    isSearchBarVisible = true
   )
 }
