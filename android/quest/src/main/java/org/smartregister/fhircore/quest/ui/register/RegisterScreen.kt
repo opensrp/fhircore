@@ -123,7 +123,7 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(modifier = modifier.padding(innerPadding).testTag(FIRST_TIME_SYNC_DIALOG)) {
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
@@ -149,6 +149,7 @@ fun RegisterScreen(
           registerUiState = registerUiState,
           currentPage = currentPage,
           showPagination = searchText.value.isEmpty(),
+          modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG)
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
