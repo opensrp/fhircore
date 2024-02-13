@@ -64,6 +64,8 @@ class LocationUtils {
                   "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
                 )
                 continuation.resume(location)
+              } else {
+                Timber.e("Failed to get accurate location")
               }
             }
             .addOnFailureListener { e ->
@@ -96,6 +98,8 @@ class LocationUtils {
                   "Approx location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
                 )
                 continuation.resume(location)
+              } else {
+                Timber.e("Failed to get approximate location")
               }
             }
             .addOnFailureListener { e -> continuation.resumeWithException(e) }
