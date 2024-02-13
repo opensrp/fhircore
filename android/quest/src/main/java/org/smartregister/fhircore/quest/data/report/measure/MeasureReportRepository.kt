@@ -26,7 +26,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -140,7 +142,7 @@ constructor(
    * @param endDateFormatted end date of measure period with format yyyy-MM-dd
    * @param subject the individual subject reference (ResourceType/id) to run report for
    */
-  private fun runMeasureReport(
+  private suspend fun runMeasureReport(
     measureUrl: String,
     reportType: String,
     startDateFormatted: String,
@@ -149,7 +151,10 @@ constructor(
     practitionerId: String?,
   ): MeasureReport {
     return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
+      measure =
+        knowledgeManager
+          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
+          .firstOrNull() as Measure,
       start = startDateFormatted,
       end = endDateFormatted,
       reportType = reportType,
