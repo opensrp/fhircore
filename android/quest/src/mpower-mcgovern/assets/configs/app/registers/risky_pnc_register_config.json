@@ -19,30 +19,7 @@
                     "system": "http://snomed.info/sct",
                     "code": "234234234"
                   }
-                }
-              ]
-            },
-            {
-              "paramName": "clinical-status",
-              "filterCriteria": [
-                {
-                  "dataType": "CODEABLECONCEPT",
-                  "value": {
-                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                    "code": "active"
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "resourceType": "Condition",
-          "referenceParam": "subject",
-          "dataQueries": [
-            {
-              "paramName": "code",
-              "filterCriteria": [
+                },
                 {
                   "dataType": "CODEABLECONCEPT",
                   "value": {
@@ -77,15 +54,134 @@
     },
     "relatedResources": [
       {
-        "resource": "CarePlan",
-        "searchParameter": "subject"
+        "resource": "Group",
+        "searchParameter": "member"
+      },
+      {
+        "resource": "Condition",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "paramName": "clinical-status",
+            "filterCriteria": [
+              {
+                "dataType": "CODEABLECONCEPT",
+                "value": {
+                  "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                  "code": "active"
+                }
+              }
+            ]
+          }
+        ]
       },
       {
         "resource": "Task",
+        "searchParameter": "subject",
+        "dataQueries": [
+          {
+            "paramName": "status",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "ready"
+                }
+              },
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://hl7.org/fhir/task-status",
+                  "code": "failed"
+                }
+              }
+            ]
+          }
+        ],
+        "sortConfigs": [
+          {
+            "paramName": "period",
+            "dataType": "DATE"
+          }
+        ]
+      },
+      {
+        "resource": "Observation",
+        "searchParameter": "subject"
+      },
+      {
+        "resource": "Encounter",
         "searchParameter": "subject"
       }
     ]
   },
+  "secondaryResources": [
+    {
+      "baseResource": {
+        "id": "commodities",
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
+          },
+          {
+            "paramName": "identifier",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "code": "20005544332"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "relatedResources": [
+        {
+          "id": "stockObservations",
+          "resource": "Observation",
+          "searchParameter": "subject",
+          "dataQueries": [
+            {
+              "paramName": "status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODE",
+                  "value": {
+                    "code": "preliminary"
+                  }
+                }
+              ]
+            }
+          ],
+          "sortConfigs": [
+            {
+              "paramName": "date",
+              "dataType": "DATE",
+              "order": "DESCENDING"
+            }
+          ]
+        },
+        {
+          "id": "stockOutFlags",
+          "resource": "Flag",
+          "searchParameter": "subject"
+        }
+      ]
+    }
+  ],
   "searchBar": {
     "visible": true,
     "display": "{{ search.by.name }}",
@@ -97,24 +193,24 @@
   "registerCard": {
     "rules": [
       {
-        "name": "patientFirstName",
+        "name": "familyName",
         "condition": "true",
         "actions": [
-          "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+          "data.put('familyName', fhirPath.extractValue(Group.get(0), 'Group.name'))"
         ]
       },
       {
-        "name": "patientMiddleName",
+        "name": "patientLogicalId",
         "condition": "true",
         "actions": [
-          "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+          "data.put('patientLogicalId', fhirPath.extractValue(Patient, 'Patient.id').replace(\"Patient/\",\"\").split(\"/\").get(0))"
         ]
       },
       {
-        "name": "patientLastName",
+        "name": "patientName",
         "condition": "true",
         "actions": [
-          "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+          "data.put('patientName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
         ]
       },
       {
@@ -132,13 +228,6 @@
         ]
       },
       {
-        "name": "patientName",
-        "condition": "true",
-        "actions": [
-          "data.put('patientName', data.get('patientFirstName') + ' ' + data.get('patientMiddleName') + ' ' + data.get('patientLastName') + ' , ' + (data.get('patientGender') == 'Female'? 'F': data.get('patientGender') == 'Male'? 'M': data.get('patientGender')) + ' , ' +  data.get('patientAge'))"
-        ]
-      },
-      {
         "name": "patientId",
         "condition": "true",
         "actions": [
@@ -146,43 +235,56 @@
         ]
       },
       {
-        "name": "showMemberTasks",
+        "name": "otherTasksAvailable",
         "condition": "true",
         "actions": [
-          "data.put('showMemberTasks', size(Task) > 0)"
+          "data.put('otherTasksAvailable', size(Task) > 0)"
         ]
       },
       {
         "name": "serviceStatus",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('serviceStatus', service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE')"
+          "data.put('serviceStatus', data.get('otherTasksAvailable') ? (service.evaluateToBoolean(Task, \"Task.status = 'failed' \", false) ? 'OVERDUE' : 'DUE') : 'DUE')"
         ]
       },
       {
-        "name": "taskDescription",
+        "name": "otherTaskDescription",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('taskDescription', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.description'))"
+          "data.put('otherTaskDescription', data.get('otherTasksAvailable') ? fhirPath.extractValue(Task.get(0), 'Task.description') : '')"
         ]
       },
       {
-        "name": "taskId",
+        "name": "otherTaskId",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('taskId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.id'))"
+          "data.put('otherTaskId', data.get('otherTasksAvailable') ? fhirPath.extractValue(Task.get(0), 'Task.id') : '')"
+        ]
+      },
+      {
+        "name": "otherTaskQuestionnaireId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('otherTaskQuestionnaireId', data.get('otherTasksAvailable') ? fhirPath.extractValue(Task.get(0), 'Task.reasonReference.reference') : '')"
         ]
       },
       {
         "name": "taskExecutionStartDate",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('taskExecutionStartDate', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.executionPeriod.start'))"
+          "data.put('taskExecutionStartDate', data.get('otherTasksAvailable') ? fhirPath.extractValue(Task.get(0), 'Task.executionPeriod.start') : now())"
         ]
       },
       {
         "name": "taskScheduleDate",
         "condition": "true",
+        "priority": 3,
         "actions": [
           "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
         ]
@@ -190,15 +292,125 @@
       {
         "name": "taskFor",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('taskFor', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.for.reference'))"
+          "data.put('taskFor', data.get('otherTasksAvailable') ? fhirPath.extractValue(Task.get(0), 'Task.for.reference') : 'Patient/' + data.get('patientLogicalId'))"
+        ]
+      },
+      {
+        "name": "bracPncVisits",
+        "condition": "true",
+        "actions": [
+          "data.put('bracPncVisits', service.filterResources(Encounter, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \"))"
+        ]
+      },
+      {
+        "name": "noOfBracPncVisit",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('noOfBracPncVisit', size(data.get('bracPncVisits')))"
+        ]
+      },
+      {
+        "name": "isLastPncVisitPast24Hours",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('isLastPncVisitPast24Hours', data.get('noOfBracPncVisit') > 0 ? fhirPath.extractValue(service.filterResources(Encounter, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \").get(0), \"Encounter.period.start < now() - 24 'hours'\") : true)"
+        ]
+      },
+      {
+        "name": "pncFollowupTaskName",
+        "condition": "true",
+        "priority": 4,
+        "actions": [
+          "data.put('pncFollowupTaskName', (data.get('noOfBracPncVisit') == 0 ? '1st' : data.get('noOfBracPncVisit') == 1 ? '2nd' : data.get('noOfBracPncVisit') == 2 ? '3rd' : '4th') + ' PNC Follow Up Visit')"
+        ]
+      },
+      {
+        "name": "applicableForPncFollowup",
+        "condition": "true",
+        "priority": 4,
+        "actions": [
+          "data.put('applicableForPncFollowup', data.get('noOfBracPncVisit') < 4 and data.get('isLastPncVisitPast24Hours'))"
+        ]
+      },
+      {
+        "name": "showMemberTasks",
+        "condition": "true",
+        "priority": 5,
+        "actions": [
+          "data.put('showMemberTasks', data.get('applicableForPncFollowup') || data.get('otherTasksAvailable'))"
+        ]
+      },
+      {
+        "name": "taskDescription",
+        "condition": "true",
+        "priority": 5,
+        "actions": [
+          "data.put('taskDescription', data.get('applicableForPncFollowup') ? data.get('pncFollowupTaskName') : data.get('otherTaskDescription'))"
+        ]
+      },
+      {
+        "name": "taskId",
+        "condition": "true",
+        "priority": 5,
+        "actions": [
+          "data.put('taskId', data.get('applicableForPncFollowup') ? null : data.get('otherTaskId'))"
         ]
       },
       {
         "name": "taskQuestionnaireId",
         "condition": "true",
+        "priority": 5,
         "actions": [
-          "data.put('taskQuestionnaireId', fhirPath.extractValue(size(Task) > 0 ? Task.get(0) : null, 'Task.reasonReference.reference'))"
+          "data.put('taskQuestionnaireId', data.get('applicableForPncFollowup') ? '6058' : data.get('otherTaskQuestionnaireId'))"
+        ]
+      },
+      {
+        "name": "pncObservationId",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('pncObservationId', fhirPath.extractValue(stockObservations.get(0), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "pncPreviousBalance",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('pncPreviousBalance', fhirPath.extractValue(stockObservations.get(0), 'Observation.component.value.value') )"
+        ]
+      },
+      {
+        "name": "activeFlags",
+        "condition": "true",
+        "actions": [
+          "data.put('activeFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
+        ]
+      },
+      {
+        "name": "pncStockOutFlagId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('pncStockOutFlagId', fhirPath.extractValue(data.get('activeFlags').get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "activeDeliveryDate",
+        "condition": "true",
+        "actions": [
+          "data.put('activeDeliveryDate', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code=\"234234234\"').get(0), \"Condition.onset\"))"
+        ]
+      },
+      {
+        "name": "riskyPncConditionId",
+        "condition": "true",
+        "actions": [
+          "data.put('riskyPncConditionId', service.filterResources(Condition, \"Condition.code.coding.code = 'high-risk-pnc'\").get(0).idElement.idPart)"
         ]
       }
     ],
@@ -216,9 +428,14 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "ID: @{patientId}",
-                "fontSize": 14.0,
-                "primaryTextColor": "#000000"
+                "primaryText": "{{patient.age}}",
+                "primaryTextColor": "#939596"
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{family.name.family}}",
+                "primaryTextColor": "#939596",
+                "fontSize": 14
               }
             ],
             "showVerticalDivider": false,
@@ -245,6 +462,55 @@
                       "dataType": "DATE",
                       "key": "taskScheduleDate",
                       "value": "@{taskScheduleDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "54777657-5ff3-44d6-fe0d-317cce261588",
+                      "dataType": "STRING",
+                      "key": "pncFollowupTaskName",
+                      "value": "@{pncFollowupTaskName}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "bd4dba60-545c-4946-88c2-29c85f9bdf7e",
+                      "dataType": "DATETIME",
+                      "key": "activeDeliveryDate",
+                      "value": "@{activeDeliveryDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "6d331134-5e5d-47eb-c828-22d5927c67ba",
+                      "dataType": "INTEGER",
+                      "key": "noOfBracPncVisit",
+                      "value": "@{noOfBracPncVisit}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "9e5b72da-8e7c-4646-8e12-f3bacb5ac50a",
+                      "dataType": "INTEGER",
+                      "key": "pncPreviousBalance",
+                      "value": "@{pncPreviousBalance}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d9fc1aaf-00d8-429f-d5ba-3b1831921b1d",
+                      "dataType": "STRING",
+                      "key": "pncObservationId",
+                      "value": "@{pncObservationId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "9fc038a4-1526-4e2b-826a-1833b654a045",
+                      "dataType": "STRING",
+                      "key": "pncStockOutFlagId",
+                      "value": "@{pncStockOutFlagId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "a1f75d6a-7be8-42c6-9dbf-7ef293b49227",
+                      "dataType": "STRING",
+                      "key": "riskyPncConditionId",
+                      "value": "@{riskyPncConditionId}"
                     }
                   ]
                 }
@@ -254,7 +520,7 @@
               {
                 "trigger": "ON_CLICK",
                 "workflow": "LAUNCH_PROFILE",
-                "id": "otherRegistersProfile"
+                "id": "defaultProfile"
               }
             ]
           }
@@ -263,3 +529,4 @@
     ]
   }
 }
+
