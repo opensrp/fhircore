@@ -24,6 +24,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -65,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.util.LocationUtils
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -201,6 +204,69 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     Assert.assertNotNull(dialog)
   }
+
+  @Test
+  fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns true
+    every { activity.hasLocationPermissions() } returns true
+    every { activity.fetchLocation(any()) } just runs
+
+    activity.setupLocationServices()
+
+    verify(exactly = 1) { activity.fetchLocation(true) }
+    verify(exactly = 0) { activity.openLocationServicesSettings() }
+    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+  }
+
+  @Test
+  fun `setupLocationServices should open location settings if location is disabled`() {
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns false
+    every { activity.hasLocationPermissions() } returns true
+    every { activity.fetchLocation(any()) } just runs
+    every { activity.openLocationServicesSettings() } just runs
+    every { activity.launchLocationPermissionsDialog() } just runs
+
+    activity.setupLocationServices()
+
+    verify(exactly = 1) { activity.openLocationServicesSettings() }
+    verify(exactly = 0) { activity.fetchLocation(any()) }
+    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+  }
+
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns true
+    every { activity.hasLocationPermissions() } returns false
+    every { activity.fetchLocation(any()) } just runs
+    every { activity.openLocationServicesSettings() } just runs
+    every { activity.launchLocationPermissionsDialog() } just runs
+
+
+    activity.setupLocationServices()
+
+
+    verify(exactly = 1) { activity.launchLocationPermissionsDialog() }
+    verify(exactly = 0) { activity.fetchLocation(any()) }
+    verify(exactly = 0) { activity.openLocationServicesSettings() }
+  }
+
 
   private fun setupActivity() {
     val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
