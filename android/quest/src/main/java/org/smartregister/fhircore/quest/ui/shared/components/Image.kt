@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -73,6 +74,7 @@ fun Image(
 ) {
   val imageConfig = imageProperties.imageConfig
   val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
+  val cotext = LocalContext.current
   if (imageConfig != null) {
     if (imageProperties.text != null) {
       Row(
@@ -93,6 +95,7 @@ fun Image(
           navController = navController,
           resourceData = resourceData,
           modifier = modifier,
+          context = cotext,
         )
       }
     } else {
@@ -104,6 +107,7 @@ fun Image(
         navController = navController,
         resourceData = resourceData,
         modifier = modifier,
+        context = cotext,
       )
     }
   }
@@ -118,6 +122,7 @@ fun ClickableImageIcon(
   paddingEnd: Int?,
   navController: NavController,
   resourceData: ResourceData? = null,
+  context: Context? = null,
 ) {
   Box(
     contentAlignment = Alignment.Center,
@@ -138,16 +143,19 @@ fun ClickableImageIcon(
           { background(imageProperties.backgroundColor.parseColor()) },
         )
         .conditional(imageProperties.padding >= 0, { padding(imageProperties.padding.dp) })
-        .clickable(
-          onClick = {
-            if (imageProperties.visible.toBoolean() && imageProperties.clickable.toBoolean()) {
-              imageProperties.actions.handleClickEvent(
-                navController = navController,
-                resourceData = resourceData,
-                context = null,
-              )
-            }
-          },
+        .conditional(
+          imageProperties.clickable.toBoolean() && imageProperties.visible.toBoolean(),
+          {
+            clickable(
+              onClick = {
+                imageProperties.actions.handleClickEvent(
+                  navController = navController,
+                  resourceData = resourceData,
+                  context = context,
+                )
+              },
+            )
+          }
         ),
   ) {
     when (imageConfig.type) {
