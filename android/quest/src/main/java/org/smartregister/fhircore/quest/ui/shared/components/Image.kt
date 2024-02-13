@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -73,7 +72,6 @@ fun Image(
   resourceData: ResourceData? = null,
 ) {
   val imageConfig = imageProperties.imageConfig
-  val context = LocalContext.current
   val colorTint = tint ?: imageProperties.imageConfig?.color.parseColor()
   if (imageConfig != null) {
     if (imageProperties.text != null) {
@@ -94,7 +92,6 @@ fun Image(
           paddingEnd = paddingEnd,
           navController = navController,
           resourceData = resourceData,
-          context = context,
           modifier = modifier,
         )
       }
@@ -106,7 +103,6 @@ fun Image(
         paddingEnd = paddingEnd,
         navController = navController,
         resourceData = resourceData,
-        context = context,
         modifier = modifier,
       )
     }
@@ -122,7 +118,6 @@ fun ClickableImageIcon(
   paddingEnd: Int?,
   navController: NavController,
   resourceData: ResourceData? = null,
-  context: Context,
 ) {
   Box(
     contentAlignment = Alignment.Center,
@@ -149,7 +144,7 @@ fun ClickableImageIcon(
               imageProperties.actions.handleClickEvent(
                 navController = navController,
                 resourceData = resourceData,
-                context = context,
+                context = null,
               )
             }
           },
