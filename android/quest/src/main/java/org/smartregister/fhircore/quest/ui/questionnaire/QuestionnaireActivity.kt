@@ -124,7 +124,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun setupLocationServices() {
+  fun setupLocationServices() {
     if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -142,7 +142,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun hasLocationPermissions(): Boolean {
+  fun hasLocationPermissions(): Boolean {
     return PermissionUtils.checkPermissions(
       this,
       listOf(
@@ -152,7 +152,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun openLocationServicesSettings() {
+  fun openLocationServicesSettings() {
     activityResultLauncher =
       PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
         if (resultCode == RESULT_OK || hasLocationPermissions()) {
@@ -173,7 +173,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       .show()
   }
 
-  private fun launchLocationPermissionsDialog() {
+  fun launchLocationPermissionsDialog() {
     locationPermissionLauncher =
       PermissionUtils.getLocationPermissionLauncher(
         this,
@@ -198,7 +198,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  private fun fetchLocation(highAccuracy: Boolean = true) {
+  fun fetchLocation(highAccuracy: Boolean = true) {
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
