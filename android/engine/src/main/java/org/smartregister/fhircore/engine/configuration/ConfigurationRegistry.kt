@@ -274,40 +274,7 @@ constructor(
             .readText()
             .decodeResourceFromString<Composition>()
 
-        val localListResource =
-          context.assets
-            .open(String.format(LIST_PATH, parsedAppId))
-            .bufferedReader()
-            .readText()
-            .decodeResourceFromString<ListResource>()
-
-        val localPlanDefinitionResource =
-          context.assets
-            .open(String.format(PLAN_DEFINITION_PATH, parsedAppId))
-            .bufferedReader()
-            .readText()
-            .decodeResourceFromString<PlanDefinition>()
-
-        val localQuestionnaireResource =
-          context.assets
-            .open(String.format(QUESTIONNAIRE_PATH, parsedAppId))
-            .bufferedReader()
-            .readText()
-            .decodeResourceFromString<Questionnaire>()
-
-        val localStructureMapResource =
-          context.assets
-            .open(String.format(STRUCTURE_MAP_PATH, parsedAppId))
-            .bufferedReader()
-            .readText()
-            .decodeResourceFromString<StructureMap>()
-
         addOrUpdate(localCompositionResource)
-        addOrUpdate(localListResource)
-        addOrUpdate(localPlanDefinitionResource)
-        addOrUpdate(localQuestionnaireResource)
-        addOrUpdate(localStructureMapResource)
-
 
         localCompositionResource.run {
           val iconConfigs =
@@ -357,7 +324,8 @@ constructor(
         // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
-          val configKey =
+          val configJson = context.assets.open(fileName).bufferedReader().readText()
+          val configKey = if(configJson.contains("resourceType") && configJson.decodeResourceFromString<Resource>().hasId()) configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid() else
             fileName
               .lowercase(Locale.ENGLISH)
               .substring(
@@ -366,7 +334,6 @@ constructor(
               )
               .camelCase()
 
-          val configJson = context.assets.open(fileName).bufferedReader().readText()
           configsJsonMap[configKey] = configJson
         }
       }
@@ -804,6 +771,7 @@ constructor(
     const val PLAN_DEFINITION_PATH = "configs/%s/resources/plan_definition"
     const val QUESTIONNAIRE_PATH = "configs/%s/resources/questionnaire"
     const val STRUCTURE_MAP_PATH = "configs/%s/resources/structure_map"
+    const val RESOURCE_TYPE = "resourceType"
     const val CONFIG_SUFFIX = "_config"
     const val CONFIG_TYPE = "configType"
     const val COUNT = "count"
@@ -816,6 +784,7 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+    const val RESOURCE_ID = "id"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
