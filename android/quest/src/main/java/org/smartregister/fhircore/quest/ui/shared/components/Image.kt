@@ -155,7 +155,7 @@ fun ClickableImageIcon(
                 )
               },
             )
-          }
+          },
         ),
   ) {
     when (imageConfig.type) {
