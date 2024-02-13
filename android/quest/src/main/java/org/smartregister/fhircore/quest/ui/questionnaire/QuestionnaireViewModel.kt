@@ -23,7 +23,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
-import com.google.android.fhir.datacapture.DataCaptureConfig
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.NotValidated
@@ -60,6 +59,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureDefinition
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
@@ -104,7 +104,6 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  val transformSupportServices: TransformSupportServicesMatchBox,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
@@ -484,6 +483,7 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
+        val worker = getFhirSdkSimpleWorkerContext()
         if (extractByStructureMap) {
           ResourceMapper.extract(
             questionnaire = questionnaire,
@@ -491,9 +491,12 @@ constructor(
             structureMapExtractionContext =
               StructureMapExtractionContext(
                 context = context,
-                transformSupportServices = transformSupportServices,
+                transformSupportServices = TransformSupportServicesMatchBox(worker),
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.extractResourceId()?.let { structureMapId ->
+                    defaultRepository
+                      .search<StructureDefinition>(Search(ResourceType.StructureDefinition))
+                      .forEach(worker::cacheResource)
                     loadStructureMapDependencyTree(structureMapId)
                   }
                 },
@@ -857,13 +860,12 @@ constructor(
    * @return [SimpleWorkerContext]
    */
   private fun getFhirSdkSimpleWorkerContext(): SimpleWorkerContext {
-    return (sharedPreferencesHelper.context as QuestApplication)
-      .getDataCaptureConfig()
-      .javaClass
-      .kotlin
-      .memberProperties
-      .find { it.name == "simpleWorkerContext" }
-      ?.get(DataCaptureConfig()) as SimpleWorkerContext
+    val dataCaptureConfig =
+      (sharedPreferencesHelper.context as QuestApplication).getDataCaptureConfig()
+    return (dataCaptureConfig.javaClass.kotlin.memberProperties
+        .find { it.name == "simpleWorkerContext" }
+        ?.get(dataCaptureConfig) as SimpleWorkerContext)
+      .apply { isAllowLoadingDuplicates = true }
   }
 
   /**
