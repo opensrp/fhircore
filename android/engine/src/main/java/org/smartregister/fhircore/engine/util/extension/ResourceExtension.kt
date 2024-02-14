@@ -199,7 +199,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String = "QuestionnaireResponse.item",
-  readOnly: Boolean = false,
+  readOnly: Boolean,
   readOnlyLinkIds: List<String>? = emptyList(),
 ) {
   forEach { item ->

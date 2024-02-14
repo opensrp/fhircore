@@ -145,7 +145,7 @@ constructor(
       defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
         if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.isReadOnly(),
+            readOnly = questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable(),
             readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
           )
         }
