@@ -64,7 +64,21 @@
         "relatedResources": [
           {
             "resource": "Condition",
-            "searchParameter": "subject"
+            "searchParameter": "subject",
+            "dataQueries": [
+              {
+                "paramName": "clinical-status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODEABLECONCEPT",
+                    "value": {
+                      "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                      "code": "active"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             "id": "overdueTasks",

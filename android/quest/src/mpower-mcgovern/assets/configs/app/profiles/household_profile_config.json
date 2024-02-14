@@ -40,7 +40,21 @@
         "relatedResources": [
           {
             "resource": "Condition",
-            "searchParameter": "subject"
+            "searchParameter": "subject",
+            "dataQueries": [
+            {
+              "paramName": "clinical-status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": "active"
+                  }
+                }
+              ]
+            }
+          ]
           },
           {
             "resource": "Task",
@@ -331,7 +345,8 @@
       "actions": [
         "data.put('ancPreviousBalance', fhirPath.extractValue(data.get('ancObservation'), 'Observation.component.value.value') )"
       ]
-    },{
+    },
+    {
       "name": "pncObservation",
       "condition": "true",
       "actions": [
@@ -987,6 +1002,13 @@
                   ]
                 },
                 {
+                  "name": "activeDeliveryDate",
+                  "condition": "true",
+                  "actions": [
+                    "data.put('activeDeliveryDate', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code=\"234234234\"').get(0), \"Condition.onset\"))"
+                  ]
+                },
+                {
                   "name": "riskyPncConditionId",
                   "condition": "true",
                   "actions": [
@@ -1319,6 +1341,20 @@
                             "dataType": "STRING",
                             "key": "ancStockOutFlagId",
                             "value": "@{ancStockOutFlagId}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "bd4dba60-545c-4946-88c2-29c85f9bdf7e",
+                            "dataType": "DATETIME",
+                            "key": "activeDeliveryDate",
+                            "value": "@{activeDeliveryDate}"
+                          },
+                          {
+                            "paramType": "PREPOPULATE",
+                            "linkId": "6d331134-5e5d-47eb-c828-22d5927c67ba",
+                            "dataType": "INTEGER",
+                            "key": "noOfBracPncVisit",
+                            "value": "@{noOfBracPncVisit}"
                           },
                           {
                             "paramType": "PREPOPULATE",
