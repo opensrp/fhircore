@@ -50,25 +50,25 @@ import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
-
   private val noResults = NoResultsConfig()
 
   @Test
-  fun testRegisterCardListIsRendered(){
-
-    val configurationRegistry : ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  fun testRegisterCardListIsRendered() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
       RegisterUiState(
-        screenTitle= "Register101",
+        screenTitle = "Register101",
         isFirstTimeSync = false,
-        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
-        registerId= "register101",
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
         totalRecordsCount = 1,
         filteredRecordsCount = 0,
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap())
+        params = emptyMap(),
+      )
     val searchText = mutableStateOf("")
     val currentPage = mutableStateOf(0)
 
@@ -80,8 +80,8 @@ class RegisterScreenTest {
       RegisterScreen(
         openDrawer = {},
         onEvent = {},
-        registerUiState = registerUiState ,
-        searchText = searchText ,
+        registerUiState = registerUiState,
+        searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -89,35 +89,35 @@ class RegisterScreenTest {
     }
 
     composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).assertExists()
-
   }
 
   @Test
   fun testThatDialogIsDisplayedDuringSyncing() {
-    val configurationRegistry : ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
       RegisterUiState(
-        screenTitle= "Register101",
+        screenTitle = "Register101",
         isFirstTimeSync = true,
-        registerConfiguration = configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
-        registerId= "register101",
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Profile, "householdProfile"),
+        registerId = "register101",
         totalRecordsCount = 0,
         filteredRecordsCount = 0,
         pagesCount = 1,
         progressPercentage = flowOf(0),
         isSyncUpload = flowOf(false),
-        params = emptyMap())
+        params = emptyMap(),
+      )
     val searchText = mutableStateOf("")
     val currentPage = mutableStateOf(0)
-    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {  }
-
+    val pagingItems = mockk<LazyPagingItems<ResourceData>>().apply {}
 
     composeTestRule.setContent {
       RegisterScreen(
         openDrawer = {},
         onEvent = {},
-        registerUiState = registerUiState ,
-        searchText = searchText ,
+        registerUiState = registerUiState,
+        searchText = searchText,
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
@@ -125,7 +125,6 @@ class RegisterScreenTest {
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG).assertExists()
   }
-
 
   @Test
   fun testNoRegisterDataViewDisplaysNoTestTag() {
