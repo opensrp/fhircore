@@ -29,6 +29,18 @@
     {
       "resource": {
         "resourceType": "SearchParameter",
+        "name": "organization",
+        "code": "_tag",
+        "base": [
+          "Task"
+        ],
+        "type": "token",
+        "expression": "#organization"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "SearchParameter",
         "name": "_id",
         "code": "_id",
         "base": [

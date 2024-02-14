@@ -8,6 +8,7 @@
       "dataQueries": [
         {
           "paramName": "status",
+          "operation": "OR",
           "filterCriteria": [
             {
               "dataType": "CODE",
@@ -15,8 +16,21 @@
                 "system": "http://hl7.org/fhir/task-status",
                 "code": "ready"
               }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "failed"
+              }
             }
           ]
+        }
+      ],
+      "sortConfigs": [
+        {
+          "paramName": "period",
+          "dataType": "DATE"
         }
       ]
     },
@@ -24,10 +38,114 @@
       {
         "resource": "Patient",
         "isRevInclude": false,
-        "searchParameter": "subject"
+        "searchParameter": "subject",
+        "relatedResources": [
+          {
+            "resource": "Group",
+            "searchParameter": "member"
+          },
+          {
+            "resource": "Condition",
+            "searchParameter": "subject",
+            "dataQueries": [
+              {
+                "paramName": "clinical-status",
+                "filterCriteria": [
+                  {
+                    "dataType": "CODEABLECONCEPT",
+                    "value": {
+                      "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                      "code": "active"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "resource": "Observation",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "Encounter",
+            "searchParameter": "subject"
+          }
+        ]
       }
     ]
   },
+  "secondaryResources": [
+    {
+      "baseResource": {
+        "id": "commodities",
+        "resource": "Group",
+        "dataQueries": [
+          {
+            "paramName": "code",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "system": "http://snomed.info/sct",
+                  "code": "386452003"
+                }
+              }
+            ]
+          },
+          {
+            "paramName": "identifier",
+            "operation": "OR",
+            "filterCriteria": [
+              {
+                "dataType": "CODE",
+                "value": {
+                  "code": "20005544332"
+                }
+              },
+              {
+                "dataType": "CODE",
+                "value": {
+                  "code": "10004433221"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "relatedResources": [
+        {
+          "id": "stockObservations",
+          "resource": "Observation",
+          "searchParameter": "subject",
+          "dataQueries": [
+            {
+              "paramName": "status",
+              "filterCriteria": [
+                {
+                  "dataType": "CODE",
+                  "value": {
+                    "code": "preliminary"
+                  }
+                }
+              ]
+            }
+          ],
+          "sortConfigs": [
+            {
+              "paramName": "date",
+              "dataType": "DATE",
+              "order": "DESCENDING"
+            }
+          ]
+        },
+        {
+          "id": "stockOutFlags",
+          "resource": "Flag",
+          "searchParameter": "subject"
+        }
+      ]
+    }
+  ],
   "searchBar": {
     "visible": true,
     "display": "{{ search.by.task.practitioner.patient }}",
@@ -39,6 +157,13 @@
   },
   "registerCard": {
     "rules": [
+      {
+        "name": "familyName",
+        "condition": "true",
+        "actions": [
+          "data.put('familyName', fhirPath.extractValue(Group.get(0), 'Group.name'))"
+        ]
+      },
       {
         "name": "totalPatient",
         "condition": "true",
@@ -75,10 +200,27 @@
         ]
       },
       {
-        "name": "taskStartDate",
+        "name": "taskScheduleDate",
         "condition": "true",
+        "priority": 2,
         "actions": [
-          "data.put('taskStartDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+          "data.put('taskScheduleDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"yyyy-MM-dd\"))"
+        ]
+      },
+      {
+        "name": "taskPeriodDueDate",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('taskPeriodDueDate', service.formatDate(data.get('taskExecutionStartDate'), \"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", \"dd MMM yyyy\"))"
+        ]
+      },
+      {
+        "name": "taskStatusWithStartDate",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('taskStatusWithStartDate', 'Due on' + ' ' + data.get('taskPeriodDueDate'))"
         ]
       },
       {
@@ -86,6 +228,13 @@
         "condition": "true",
         "actions": [
           "data.put('taskDescription', fhirPath.extractValue(Task, 'Task.description'))"
+        ]
+      },
+      {
+        "name": "taskReasonCode",
+        "condition": "true",
+        "actions": [
+          "data.put('taskReasonCode', fhirPath.extractValue(Task, 'Task.input[0].value.coding.code'))"
         ]
       },
       {
@@ -129,6 +278,157 @@
         "actions": [
           "data.put('patientMobile', fhirPath.extractValue(Patient.get(0), \"Patient.telecom.value\"))"
         ]
+      },
+      {
+        "name": "lmpDate",
+        "condition": "true",
+        "actions": [
+          "data.put('lmpDate', fhirPath.extractValue(service.filterResources(Condition, \"Condition.code.text = 'Pregnant' \").get(0), \"Condition.onset\"))"
+        ]
+      },
+      {
+        "name": "patientHeightObservations",
+        "condition": "true",
+        "actions": [
+          "data.put('patientHeightObservations', service.filterResources(Observation, \"Observation.code.coding.code = '1153637007' \"))"
+        ]
+      },
+      {
+        "name": "patientHeight",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('patientHeight', size(data.get('patientHeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientHeightObservations').get(0), \"Observation.value\") : 0)"
+        ]
+      },
+      {
+        "name": "patientWeightObservations",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('patientWeightObservations', service.filterResources(Observation, \"Observation.code.coding.code = '27113001' \"))"
+        ]
+      },
+      {
+        "name": "patientWeight",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('patientWeight', size(data.get('patientWeightObservations')) > 0 ? fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.value\") : 0)"
+        ]
+      },
+      {
+        "name": "patientWeightDate",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('patientWeightDate', size(data.get('patientWeightObservations')) > 0 ? service.formatDate(fhirPath.extractValue(data.get('patientWeightObservations').get(0), \"Observation.effective\"), \"yyyy-MM-dd'T'HH:mm:ssZ\", \"yyyy-MM-dd\") : null)"
+        ]
+      },
+      {
+        "name": "noOfBracAncVisit",
+        "condition": "true",
+        "priority": 3,
+        "actions": [
+          "data.put('noOfBracAncVisit', size(service.filterResources(Encounter, \"Encounter.type[0].coding.code = 'anc-contact-in-brac' \")))"
+        ]
+      },
+      {
+        "name": "noOfBracPncVisit",
+        "condition": "true",
+        "actions": [
+          "data.put('noOfBracPncVisit', size(service.filterResources(Encounter, \"Encounter.type[0].coding.code = 'pnc-contact-in-brac' \")))"
+        ]
+      },
+      {
+        "name": "ancObservation",
+        "condition": "true",
+        "actions": [
+          "data.put('ancObservation', service.filterResources(stockObservations, \"Observation.subject.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42'\").get(0) )"
+        ]
+      },
+      {
+        "name": "ancObservationId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('ancObservationId', fhirPath.extractValue(data.get('ancObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "ancPreviousBalance",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('ancPreviousBalance', fhirPath.extractValue(data.get('ancObservation'), 'Observation.component.value.value') )"
+        ]
+      },
+      {
+        "name": "pncObservation",
+        "condition": "true",
+        "actions": [
+          "data.put('pncObservation', service.filterResources(stockObservations, \"Observation.subject.reference = 'Group/e5897c35-d071-4254-a844-43b5a2a799cb'\").get(0) )"
+        ]
+      },
+      {
+        "name": "pncObservationId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('pncObservationId', fhirPath.extractValue(data.get('pncObservation'), 'Observation.id').replace(\"Observation/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "pncPreviousBalance",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('pncPreviousBalance', fhirPath.extractValue(data.get('pncObservation'), 'Observation.component.value.value') )"
+        ]
+      },
+      {
+        "name": "activeFlags",
+        "condition": "true",
+        "actions": [
+          "data.put('activeFlags', service.filterResources(stockOutFlags, \"Flag.status = 'active'\"))"
+        ]
+      },
+      {
+        "name": "ancStockOutFlagId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('ancStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/f1c7de7d-0c2a-448d-8060-2b8defd51e42'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "pncStockOutFlagId",
+        "condition": "true",
+        "priority": 2,
+        "actions": [
+          "data.put('pncStockOutFlagId', fhirPath.extractValue(service.filterResources(data.get('activeFlags'), \"Flag.subject.reference = 'Group/e5897c35-d071-4254-a844-43b5a2a799cb'\").get(0), 'Flag.id').replace(\"Flag/\",\"\").split(\"/\").get(0) )"
+        ]
+      },
+      {
+        "name": "riskyAncConditionId",
+        "condition": "true",
+        "actions": [
+          "data.put('riskyAncConditionId', service.filterResources(Condition, \"Condition.code.coding.code = 'high-risk-anc'\").get(0).idElement.idPart)"
+        ]
+      },
+      {
+        "name": "activeDeliveryDate",
+        "condition": "true",
+        "actions": [
+          "data.put('activeDeliveryDate', fhirPath.extractValue(service.filterResources(Condition, 'Condition.code.coding.code=\"234234234\"').get(0), \"Condition.onset\"))"
+        ]
+      },
+      {
+        "name": "riskyPncConditionId",
+        "condition": "true",
+        "actions": [
+          "data.put('riskyPncConditionId', service.filterResources(Condition, \"Condition.code.coding.code = 'high-risk-pnc'\").get(0).idElement.idPart)"
+        ]
       }
     ],
     "views": [
@@ -145,12 +445,6 @@
               },
               {
                 "viewType": "COMPOUND_TEXT",
-                "primaryText": "{{ task.start.date }}",
-                "primaryTextColor": "#5A5A5A",
-                "fontSize": 14.0
-              },
-              {
-                "viewType": "COMPOUND_TEXT",
                 "primaryText": "{{ patient.col.name }}",
                 "primaryTextColor": "#5A5A5A",
                 "fontSize": 14.0
@@ -160,12 +454,18 @@
                 "primaryText": "{{ patient.col.mobile }}",
                 "primaryTextColor": "#5A5A5A",
                 "fontSize": 14.0
+              },
+              {
+                "viewType": "COMPOUND_TEXT",
+                "primaryText": "{{family.name.family}}",
+                "primaryTextColor": "#939596",
+                "fontSize": 14
               }
             ],
             "showVerticalDivider": false,
             "serviceButton": {
               "visible": true,
-              "text": "@{taskStatus}",
+              "text": "@{taskStatusWithStartDate}",
               "status": "@{taskStatusColorCode}",
               "smallSized": false,
               "actions": [
@@ -184,8 +484,15 @@
                       "paramType": "PREPOPULATE",
                       "linkId": "ae2f17cb-deff-48a6-8ece-27e6bd475f30",
                       "dataType": "DATE",
-                      "key": "taskStartDate",
-                      "value": "@{taskStartDate}"
+                      "key": "taskScheduleDate",
+                      "value": "@{taskScheduleDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d5962592-08d5-447b-d6a2-62a077e6bb05",
+                      "dataType": "STRING",
+                      "key": "taskReasonCode",
+                      "value": "@{taskReasonCode}"
                     },
                     {
                       "paramType": "PREPOPULATE",
@@ -214,6 +521,90 @@
                       "dataType": "INTEGER",
                       "key": "patientHeight",
                       "value": "@{patientHeight}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "4e7336a4-4dd1-4efc-89a1-0eb0748a828c",
+                      "dataType": "INTEGER",
+                      "key": "patientWeight",
+                      "value": "@{patientWeight}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "2fd89181-2d0f-405b-8d15-f312427dd7c6",
+                      "dataType": "DATE",
+                      "key": "patientWeightDate",
+                      "value": "@{patientWeightDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d91c5e51-ac81-41f6-8f09-87805b87a98d",
+                      "dataType": "INTEGER",
+                      "key": "ancPreviousBalance",
+                      "value": "@{ancPreviousBalance}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "77001671-c07b-4afb-81ae-2220d4f38157",
+                      "dataType": "STRING",
+                      "key": "ancObservationId",
+                      "value": "@{ancObservationId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "351ca898-582a-4585-8bd9-30aafc7a6174",
+                      "dataType": "STRING",
+                      "key": "riskyAncConditionId",
+                      "value": "@{riskyAncConditionId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "e6b390ca-699d-4f4f-b388-d3abfb097e26",
+                      "dataType": "STRING",
+                      "key": "ancStockOutFlagId",
+                      "value": "@{ancStockOutFlagId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "bd4dba60-545c-4946-88c2-29c85f9bdf7e",
+                      "dataType": "DATETIME",
+                      "key": "activeDeliveryDate",
+                      "value": "@{activeDeliveryDate}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "6d331134-5e5d-47eb-c828-22d5927c67ba",
+                      "dataType": "INTEGER",
+                      "key": "noOfBracPncVisit",
+                      "value": "@{noOfBracPncVisit}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "9e5b72da-8e7c-4646-8e12-f3bacb5ac50a",
+                      "dataType": "INTEGER",
+                      "key": "pncPreviousBalance",
+                      "value": "@{pncPreviousBalance}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "d9fc1aaf-00d8-429f-d5ba-3b1831921b1d",
+                      "dataType": "STRING",
+                      "key": "pncObservationId",
+                      "value": "@{pncObservationId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "9fc038a4-1526-4e2b-826a-1833b654a045",
+                      "dataType": "STRING",
+                      "key": "pncStockOutFlagId",
+                      "value": "@{pncStockOutFlagId}"
+                    },
+                    {
+                      "paramType": "PREPOPULATE",
+                      "linkId": "a1f75d6a-7be8-42c6-9dbf-7ef293b49227",
+                      "dataType": "STRING",
+                      "key": "riskyPncConditionId",
+                      "value": "@{riskyPncConditionId}"
                     }
                   ]
                 }
