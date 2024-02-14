@@ -309,7 +309,6 @@ constructor(
     }
   }
 
-
   private suspend fun populateConfigurationsMap(
     context: Context,
     composition: Composition,
@@ -325,14 +324,20 @@ constructor(
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
           val configJson = context.assets.open(fileName).bufferedReader().readText()
-          val configKey = if(configJson.contains("resourceType") && configJson.decodeResourceFromString<Resource>().hasId()) configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid() else
-            fileName
-              .lowercase(Locale.ENGLISH)
-              .substring(
-                fileName.indexOfLast { it == '/' }.plus(1),
-                fileName.lastIndexOf(CONFIG_SUFFIX),
-              )
-              .camelCase()
+          val configKey =
+            if (
+              configJson.contains("resourceType") &&
+                configJson.decodeResourceFromString<Resource>().hasId()
+            ) {
+              configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid()
+            } else
+              fileName
+                .lowercase(Locale.ENGLISH)
+                .substring(
+                  fileName.indexOfLast { it == '/' }.plus(1),
+                  fileName.lastIndexOf(CONFIG_SUFFIX),
+                )
+                .camelCase()
 
           configsJsonMap[configKey] = configJson
         }
@@ -372,7 +377,7 @@ constructor(
   private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
     val filesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
-    context.assets.list(String.format(BASE_CONFIG_PATH,))?.onEach {
+    context.assets.list(String.format(BASE_CONFIG_PATH))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
       } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
