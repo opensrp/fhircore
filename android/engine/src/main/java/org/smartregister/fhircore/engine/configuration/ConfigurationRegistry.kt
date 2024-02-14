@@ -47,11 +47,8 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
-import org.hl7.fhir.r4.model.PlanDefinition
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StructureMap
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
@@ -326,7 +323,7 @@ constructor(
           val configJson = context.assets.open(fileName).bufferedReader().readText()
           val configKey =
             if (
-              configJson.contains("resourceType") &&
+              configJson.contains(RESOURCE_TYPE) &&
                 configJson.decodeResourceFromString<Resource>().hasId()
             ) {
               configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid()
@@ -772,11 +769,6 @@ constructor(
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
-    const val LIST_PATH = "configs/%s/resources/list"
-    const val PLAN_DEFINITION_PATH = "configs/%s/resources/plan_definition"
-    const val QUESTIONNAIRE_PATH = "configs/%s/resources/questionnaire"
-    const val STRUCTURE_MAP_PATH = "configs/%s/resources/structure_map"
-    const val RESOURCE_TYPE = "resourceType"
     const val CONFIG_SUFFIX = "_config"
     const val CONFIG_TYPE = "configType"
     const val COUNT = "count"
@@ -790,6 +782,7 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val RESOURCE_ID = "id"
+    const val RESOURCE_TYPE= "resourceType"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
