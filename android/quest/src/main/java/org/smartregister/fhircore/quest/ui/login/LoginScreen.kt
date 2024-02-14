@@ -192,7 +192,10 @@ fun LoginPage(
                 .testTag(APP_LOGO_TAG),
           )
         }
-        if (applicationConfiguration.appTitle.isNotEmpty() && applicationConfiguration.loginConfig.showAppTitle) {
+        if (
+          applicationConfiguration.appTitle.isNotEmpty() &&
+            applicationConfiguration.loginConfig.showAppTitle
+        ) {
           Text(
             color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
             text = applicationConfiguration.appTitle,
