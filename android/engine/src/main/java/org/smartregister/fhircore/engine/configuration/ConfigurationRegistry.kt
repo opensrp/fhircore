@@ -782,7 +782,7 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val RESOURCE_ID = "id"
-    const val RESOURCE_TYPE= "resourceType"
+    const val RESOURCE_TYPE = "resourceType"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
