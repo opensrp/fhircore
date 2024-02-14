@@ -23,8 +23,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -59,6 +62,7 @@ data class QuestionnaireConfig(
   val showRequiredTextAsterisk: Boolean = true,
   val showRequiredText: Boolean = false,
   val managingEntityRelationshipCode: String? = null,
+  val uniqueIdAssignment: UniqueIdAssignmentConfig? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -87,6 +91,8 @@ data class QuestionnaireConfig(
       onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
       barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
+      uniqueIdAssignment =
+        uniqueIdAssignment?.copy(linkId = uniqueIdAssignment.linkId.interpolate(computedValuesMap)),
     )
 }
 
@@ -113,4 +119,28 @@ data class GroupResourceConfig(
 data class ExtractedResourceUniquePropertyExpression(
   val resourceType: ResourceType,
   val fhirPathExpression: String,
+) : java.io.Serializable, Parcelable
+
+@Serializable
+@Parcelize
+/**
+ * @property linkId The linkId used to capture the OpenSRP unique ID in the Questionnaire. Typically
+ *   a GUID.
+ * @property idFhirPathExpression The FHIR Path expression for extracting ID from the configured
+ *   [resource]
+ * @property resource The type of resource used to store generated IDs
+ * @property readOnly Whether to disable/enable editing of link ID.
+ * @property dataQueries The queries used to filter resources used for representing OpenSRP unique
+ *   IDs.
+ * @property sortConfigs Configuration for sorting resources
+ * @property resourceFilterExpression Expression used to filter the returned resources
+ */
+data class UniqueIdAssignmentConfig(
+  val linkId: String,
+  val idFhirPathExpression: String,
+  val readOnly: Boolean = true,
+  val resource: ResourceType,
+  val dataQueries: List<DataQuery> = emptyList(),
+  val sortConfigs: List<SortConfig>? = null,
+  val resourceFilterExpression: ResourceFilterExpression? = null,
 ) : java.io.Serializable, Parcelable

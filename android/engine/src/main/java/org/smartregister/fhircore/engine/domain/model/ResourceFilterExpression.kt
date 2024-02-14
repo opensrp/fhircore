@@ -16,10 +16,13 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 data class ResourceFilterExpression(
   val conditionalFhirPathExpressions: List<String>,
   val matchAll: Boolean = true,
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable
