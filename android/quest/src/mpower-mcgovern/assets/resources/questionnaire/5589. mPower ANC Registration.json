@@ -103,12 +103,32 @@
               "valueString": "Enter the correct date"
             },
             {
-              "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
-              "valueString": "today() - 308 'days'"
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today() - 308 'days'"
+                    }
+                  }
+                ]
+              }
             },
             {
-              "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
-              "valueString": "today() - 42 'days'"
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today() - 42 'days'"
+                    }
+                  }
+                ]
+              }
             }
           ],
           "linkId": "245679f2-6172-456e-8ff3-425f5cea3243",
@@ -123,8 +143,18 @@
               "valueString": "Enter the correct date"
             },
             {
-              "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
-              "valueString": "today() - 280 'days'"
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today() - 280 'days'"
+                    }
+                  }
+                ]
+              }
             },
             {
               "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
