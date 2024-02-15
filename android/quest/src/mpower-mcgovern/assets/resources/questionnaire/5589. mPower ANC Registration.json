@@ -3555,6 +3555,24 @@
               ]
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 3
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 20
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+                  "valueInteger": 2
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "3 এর সমান বা বেশি এবং 20 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "1bb2c861-9007-43bf-8ebf-366c23055cc1",
               "type": "decimal",
               "text": "ফাস্টিং",
@@ -3605,6 +3623,24 @@
               ]
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 3
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 20
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+                  "valueInteger": 2
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "3 এর সমান বা বেশি এবং 20 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "37048123-ef53-40fe-94ca-6be3c46a5ad9",
               "type": "decimal",
               "text": "রেন্ডম",

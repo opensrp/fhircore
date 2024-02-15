@@ -1797,6 +1797,20 @@
           "text": "রক্তচাপ",
           "item": [
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueInteger": 51
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 219
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "51 এর সমান বা বেশি  এবং 219 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "df0bde3d-6fa8-4d75-ccd5-0834b9323440",
               "type": "integer",
               "text": "সিস্টোলিক",
@@ -1857,6 +1871,20 @@
               "required": true
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueInteger": 21
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 119
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "21 এর সমান বা বেশি  এবং 119 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "e6e8dd78-09f5-422b-8a3f-2211f5889a23",
               "type": "integer",
               "text": "ডায়াস্টোলিক",
@@ -2317,6 +2345,24 @@
               ]
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 3
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 20
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+                  "valueInteger": 2
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "3 এর সমান বা বেশি এবং 20 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "1bb2c861-9007-43bf-8ebf-366c23055cc1",
               "type": "decimal",
               "text": "ফাস্টিং",
@@ -2367,6 +2413,24 @@
               ]
             },
             {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+                  "valueDecimal": 3
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueDecimal": 20
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxDecimalPlaces",
+                  "valueInteger": 2
+                },
+                {
+                  "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+                  "valueString": "3 এর সমান বা বেশি এবং 20 এর সমান বা কম হওয়া উচিত"
+                }
+              ],
               "linkId": "37048123-ef53-40fe-94ca-6be3c46a5ad9",
               "type": "decimal",
               "text": "রেন্ডম",
