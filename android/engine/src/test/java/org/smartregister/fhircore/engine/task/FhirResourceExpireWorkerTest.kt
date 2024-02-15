@@ -127,6 +127,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),

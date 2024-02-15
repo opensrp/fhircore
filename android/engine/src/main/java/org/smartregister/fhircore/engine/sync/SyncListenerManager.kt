@@ -31,6 +31,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import timber.log.Timber
 
@@ -45,6 +46,7 @@ constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore
 ) {
 
   private val syncConfig by lazy {
@@ -97,7 +99,7 @@ constructor(
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideResourceTags(preferencesDataStore)
+    val mandatoryTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
 
     // See AppSettingViewModel#saveSyncPreferences to understand this split()
     val relatedResourceTypes: List<String>? =

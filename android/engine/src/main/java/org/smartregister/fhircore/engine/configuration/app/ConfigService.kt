@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -38,7 +39,18 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(preferencesDataStore: PreferencesDataStore): List<Coding> {
+
+  fun provideResourceTags(preferencesDataStore: PreferencesDataStore, practitionerDataStore: PractitionerDataStore): List<Coding> {
+    fun resourceTagTypeToKey(tagType: String): PractitionerDataStore.Keys? {
+      return when(tagType) {
+        ResourceType.Location.name -> PractitionerDataStore.Keys.LOCATION_IDS
+        ResourceType.CareTeam.name -> PractitionerDataStore.Keys.CARE_TEAM_IDS
+        ResourceType.Organization.name -> PractitionerDataStore.Keys.ORGANIZATION_IDS
+        else -> null
+      }
+    }
+
+
     val tags = mutableListOf<Coding>()
     val resourceTags = defineResourceTags()
 
@@ -54,9 +66,8 @@ interface ConfigService {
           }
         }
       } else {
-        // TODO: KELVIN ask Elly: what is being read here, where was it written
-        val key = stringPreferencesKey(strategy.type)
-        val ids = preferencesDataStore.readOnce(key)?.split(",")
+        val key = resourceTagTypeToKey(strategy.type)
+        val ids = practitionerDataStore.readOnce(key!!) // Trip point if the strategy type hasn't had its key registered in the function above
         if (ids.isNullOrEmpty()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {

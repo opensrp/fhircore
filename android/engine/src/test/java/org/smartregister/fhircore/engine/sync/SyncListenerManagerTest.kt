@@ -73,6 +73,7 @@ class SyncListenerManagerTest : RobolectricTest() {
       SyncListenerManager(
         configService = configService,
         preferencesDataStore = preferencesDataStore,
+        practitionerDataStore = practitionerDataStore,
         configurationRegistry = configurationRegistry,
       )
   }

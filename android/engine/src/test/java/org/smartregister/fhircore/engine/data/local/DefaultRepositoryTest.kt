@@ -140,6 +140,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         preferencesDataStore = preferencesDataStore,
+        practitionerDataStore =  practitionerDataStore,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
@@ -332,7 +333,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(preferencesDataStore) } returns
+    every { spiedConfigService.provideResourceTags(preferencesDataStore, practitionerDataStore) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
@@ -578,6 +579,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
@@ -655,6 +657,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),

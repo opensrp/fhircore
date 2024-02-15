@@ -59,7 +59,7 @@ class ConfigServiceTest : RobolectricTest() {
 
     runTest { preferencesDataStore.write(PreferencesDataStore.PRACTITIONER_ID, practitionerId) }
 
-    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    val resourceTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
     val practitionerTag =
       resourceTags.firstOrNull { it.system == AppConfigService.PRACTITIONER_SYSTEM }
     Assert.assertEquals(practitionerId, practitionerTag?.code)
@@ -77,7 +77,7 @@ class ConfigServiceTest : RobolectricTest() {
       )
     }
 
-    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    val resourceTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
     val locationTags = resourceTags.filter { it.system == AppConfigService.LOCATION_SYSTEM }
     Assert.assertTrue(locationTags.any { it.code == locationId1 })
     Assert.assertTrue(locationTags.any { it.code == locationId2 })
@@ -94,7 +94,7 @@ class ConfigServiceTest : RobolectricTest() {
       )
     }
 
-    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    val resourceTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.ORGANIZATION_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == organizationId1 })
@@ -113,7 +113,7 @@ class ConfigServiceTest : RobolectricTest() {
       )
     }
 
-    val resourceTags = configService.provideResourceTags(preferencesDataStore)
+    val resourceTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
     val organizationTags = resourceTags.filter { it.system == AppConfigService.CARETEAM_SYSTEM }
 
     Assert.assertTrue(organizationTags.any { it.code == careTeamId1 })
