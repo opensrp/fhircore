@@ -289,11 +289,11 @@
           "extension": [
             {
               "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "সংখ্যাটি 210 এর কম হতে হবে"
+              "valueString": "120 এর সমান বা বেশি এবং 209 এর সমান বা কম হওয়া উচিত"
             },
             {
               "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-              "valueInteger": 0
+              "valueInteger": 120
             },
             {
               "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
