@@ -1681,78 +1681,6 @@
           "linkId": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
           "type": "choice",
           "text": "নিচের সমস্যাগুলো আছে কিনা?",
-          "item": [
-            {
-              "linkId": "d20b30ac-bb85-4d09-f54b-54009957af23",
-              "type": "display",
-              "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                        "code": "highlight"
-                      }
-                    ]
-                  }
-                }
-              ],
-              "required": false,
-              "enableWhen": [
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "unconscious_state"
-                  }
-                },
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "dyspnoea_chest_pain"
-                  }
-                },
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "fatigue"
-                  }
-                },
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "over_sweating"
-                  }
-                },
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "cold_intolerant"
-                  }
-                },
-                {
-                  "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
-                    "code": "obesity"
-                  }
-                }
-              ],
-              "enableBehavior": "any"
-            }
-          ],
           "required": true,
           "answerOption": [
             {
@@ -1832,6 +1760,36 @@
             }
           ],
           "repeats": true
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "highlight"
+                  }
+                ]
+              }
+            }
+          ],
+          "linkId": "d20b30ac-bb85-4d09-f54b-54009957af23",
+          "text": "<span style=\"color:#cf0800;\">বিশেষজ্ঞ ডাক্তারের পরামর্শ নিন</span>",
+          "type": "display",
+          "enableWhen": [
+            {
+              "question": "c38bec92-2286-47d7-e19a-0d55acc9c48a",
+              "operator": "!=",
+              "answerCoding": {
+                "system": "urn:uuid:e4406f09-2245-4c83-8bbb-42bbd570f7be",
+                "code": "chk_none"
+              }
+            }
+          ],
+          "enableBehavior": "any",
+          "required": false
         },
         {
           "linkId": "0ec6a003-d90c-4476-f9c7-e68e892e8d96",
