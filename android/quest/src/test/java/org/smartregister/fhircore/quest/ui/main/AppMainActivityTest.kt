@@ -122,7 +122,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() = runTest{
+  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() = runTest {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.preferencesDataStore.write(
       PreferencesDataStore.LAST_SYNC_TIMESTAMP,

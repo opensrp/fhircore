@@ -140,7 +140,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         preferencesDataStore = preferencesDataStore,
-        practitionerDataStore =  practitionerDataStore,
+        practitionerDataStore = practitionerDataStore,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
@@ -333,8 +333,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(preferencesDataStore, practitionerDataStore) } returns
-      listOf(coding, anotherCoding)
+    every {
+      spiedConfigService.provideResourceTags(preferencesDataStore, practitionerDataStore)
+    } returns listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
     // Expecting 2 tags; tag with code 86453 should not be duplicated.

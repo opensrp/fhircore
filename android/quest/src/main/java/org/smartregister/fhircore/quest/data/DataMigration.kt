@@ -25,9 +25,6 @@ import com.jayway.jsonpath.Option
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Resource
@@ -87,8 +84,7 @@ constructor(
         emptyList()
       }
 
-    val previousVersion =
-      preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION) ?: 0
+    val previousVersion = preferencesDataStore.readOnce(PreferencesDataStore.MIGRATION_VERSION) ?: 0
     val newMigrations = migrations?.filter { it.version > previousVersion }
     Timber.i(
       "Previous data migration version is $previousVersion, ${if (!newMigrations.isNullOrEmpty()) "new migration(s) ${newMigrations.map { it.version }} found " else "no migration required"}",

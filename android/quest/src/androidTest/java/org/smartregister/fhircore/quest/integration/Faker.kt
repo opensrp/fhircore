@@ -29,7 +29,6 @@ import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.LocalChangesFetchMode
 import com.google.android.fhir.sync.upload.SyncUploadProgress
 import com.google.android.fhir.sync.upload.UploadRequestResult
-import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
 import java.net.URL
 import java.time.OffsetDateTime

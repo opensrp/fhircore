@@ -16,11 +16,9 @@
 
 package org.smartregister.fhircore.quest.app.fakes
 
-import android.app.Application
 import androidx.test.core.app.ApplicationProvider
-import com.google.gson.Gson
-import dagger.hilt.android.testing.HiltTestApplication
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk

@@ -33,8 +33,8 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
 import java.net.URL
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
@@ -644,7 +644,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
-    runBlocking { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId)  }
+    runBlocking { configRegistry.preferencesDataStore.write(PreferencesDataStore.APP_ID, appId) }
 
     // Add composition to database
     fhirEngine.create(composition)

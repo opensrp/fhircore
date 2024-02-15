@@ -75,7 +75,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     val fhirEngine = mockk<FhirEngine>()
     val patientId = "patient-john-doe"
     coEvery { fhirEngine.get(ResourceType.Patient, patientId) } throws
-        ResourceNotFoundException("Patient not found", "Patient with id $patientId was not found")
+      ResourceNotFoundException("Patient not found", "Patient with id $patientId was not found")
 
     val patient: Patient?
     runBlocking { patient = fhirEngine.loadResource(patientId) }
@@ -87,13 +87,16 @@ class ApplicationExtensionTest : RobolectricTest() {
   @Test
   fun `fetchLanguage should return default language when no language is set`() {
     val languages =
-        Faker.buildTestConfigurationRegistry(
-                preferencesDataStore, practitionerDataStore, dispatcherProvider)
-            .fetchLanguages()
+      Faker.buildTestConfigurationRegistry(
+          preferencesDataStore,
+          practitionerDataStore,
+          dispatcherProvider,
+        )
+        .fetchLanguages()
 
     Assert.assertEquals(
-        arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
-        languages,
+      arrayListOf(Language("en", "English"), Language("sw", "Swahili")),
+      languages,
     )
   }
 
