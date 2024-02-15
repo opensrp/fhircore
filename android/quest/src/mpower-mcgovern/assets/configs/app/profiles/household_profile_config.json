@@ -742,6 +742,7 @@
               "views": [
                 {
                   "viewType": "ROW",
+                  "fillMaxWidth": true,
                   "alignment": "CENTER",
                   "children": [
                     {
