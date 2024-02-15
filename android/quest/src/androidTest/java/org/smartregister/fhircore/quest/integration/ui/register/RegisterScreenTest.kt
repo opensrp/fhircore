@@ -54,7 +54,6 @@ class RegisterScreenTest {
 
   @Test
   fun testRegisterCardListIsRendered() {
-
     val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
       RegisterUiState(
@@ -94,7 +93,6 @@ class RegisterScreenTest {
 
   @Test
   fun testThatDialogIsDisplayedDuringSyncing() {
-
     val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
     val registerUiState =
       RegisterUiState(
