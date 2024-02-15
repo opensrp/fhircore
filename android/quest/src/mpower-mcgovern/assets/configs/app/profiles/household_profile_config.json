@@ -267,6 +267,13 @@
       ]
     },
     {
+      "name": "familyLogicalIdOnly",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalIdOnly', fhirPath.extractValue(Group, 'Group.id').replace(\"Group/\",\"\").split(\"/\").get(0))"
+      ]
+    },
+    {
       "name": "familyVillage",
       "condition": "true",
       "actions": [
@@ -848,8 +855,8 @@
                         "paramType": "PREPOPULATE",
                         "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
                         "dataType": "STRING",
-                        "key": "familyLogicalId",
-                        "value": "@{familyLogicalId}"
+                        "key": "familyLogicalIdOnly",
+                        "value": "@{familyLogicalIdOnly}"
                       }
                     ]
                   }
