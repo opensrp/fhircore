@@ -20,7 +20,7 @@
   "subjectType": [
     "Patient"
   ],
-  "date": "2023-09-10T00:00:00+06:00",
+  "date": "2024-02-07T00:00:00+06:00",
   "item": [
     {
       "linkId": "40c5bb3b-756d-4fa0-8090-40ce045db064",
@@ -103,11 +103,11 @@
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-          "valueInteger": 1
+          "valueDecimal": 1
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-          "valueInteger": 5
+          "valueDecimal": 5
         },
         {
           "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
@@ -137,7 +137,6 @@
             {
               "question": "d8c3ef60-0ca6-4f85-eaf9-b9ae7d04e2fc",
               "operator": ">=",
-              "answerInteger": 97,
               "answerDecimal": 1.5
             },
             {
@@ -192,13 +191,11 @@
             {
               "question": "dcbb3eaa-5d55-4624-f1df-284c94505bd2",
               "operator": ">",
-              "answerInteger": 160,
-              "answerDecimal": 1.5
+              "answerInteger": 160
             },
             {
               "question": "dcbb3eaa-5d55-4624-f1df-284c94505bd2",
               "operator": "<",
-              "answerDecimal": 2.4,
               "answerInteger": 120
             }
           ],
@@ -248,13 +245,11 @@
             {
               "question": "8c8fde36-3bb0-42f4-80cd-a2bb1a749691",
               "operator": ">",
-              "answerInteger": 60,
-              "answerDecimal": 1.5
+              "answerInteger": 60
             },
             {
               "question": "8c8fde36-3bb0-42f4-80cd-a2bb1a749691",
               "operator": "<",
-              "answerDecimal": 2.4,
               "answerInteger": 30
             }
           ],
