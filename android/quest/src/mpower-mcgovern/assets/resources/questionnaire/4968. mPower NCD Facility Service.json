@@ -251,7 +251,7 @@
         {
           "linkId": "c5fa8d99-d5ba-4d74-96d5-18cb452029c9",
           "type": "display",
-          "text": "নিয়মিত ব্যায়াম এবং স্বাস্থ্যকর খাবার খেয়ে ওজন কমাতে হবে।  যেমন- তৈলাক্ত ও শর্করা জাতীয় খাবার - ভাত, আলু ইত্যাদি খাওয়া কমাতে হবে এবং  শাক-সবজি বেশি বেশি খেতে হবে",
+          "text": "<span style=\"color:#cf0800;\">নিয়মিত ব্যায়াম এবং স্বাস্থ্যকর খাবার খেয়ে ওজন কমাতে হবে।  যেমন- তৈলাক্ত ও শর্করা জাতীয় খাবার - ভাত, আলু ইত্যাদি খাওয়া কমাতে হবে এবং  শাক-সবজি বেশি বেশি খেতে হবে</span>",
           "extension": [
             {
               "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -305,7 +305,7 @@
             {
               "linkId": "52397431-ca42-455f-887f-f5c06fd83d85",
               "type": "display",
-              "text": "ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে",
+              "text": "<span style=\"color:#cf0800;\">ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -353,7 +353,7 @@
             {
               "linkId": "0d6aa7d7-f4a3-48dc-86cc-44287f5a6240",
               "type": "display",
-              "text": "ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে",
+              "text": "<span style=\"color:#cf0800;\">ওজন বেশি থাকলে কমাতে হবে। পরিমিত (কম) লবন এবং স্বাস্থ্যকর খাদ্য খেতে হবে</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -496,7 +496,7 @@
             {
               "linkId": "bda00e4c-633f-4130-85fe-db65f8bd0089",
               "type": "display",
-              "text": "চিনি এবং শর্করা জাতীয় খাবার কমাতে হবে, নিয়মিত ব্যায়াম করতে হবে।  তাছাড়াও নিয়মিত পরীক্ষা করতে হবে",
+              "text": "<span style=\"color:#cf0800;\">চিনি এবং শর্করা জাতীয় খাবার কমাতে হবে, নিয়মিত ব্যায়াম করতে হবে।  তাছাড়াও নিয়মিত পরীক্ষা করতে হবে</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
