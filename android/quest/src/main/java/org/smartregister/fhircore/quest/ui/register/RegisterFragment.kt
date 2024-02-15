@@ -53,6 +53,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -173,7 +174,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
-                registerViewModel = registerViewModel,
               )
             }
           }
@@ -203,7 +203,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -236,32 +236,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
                   if (hasAuthError) {
                     R.string.sync_unauthorised
                   } else R.string.sync_completed_with_errors,
-                ),
-              duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
-            ),
-          )
-        }
-      }
-      is SyncJobStatus.Glitch -> {
-        val hasAuthError =
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-            syncJobStatus.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 403
-            }
-          } catch (nullPointerException: NullPointerException) {
-            false
-          }
-
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message =
-                getString(
-                  if (hasAuthError) {
-                    R.string.syncing_glitched_auth
-                  } else R.string.syncing_glitched_unspecified,
                 ),
               duration = SnackbarDuration.Long,
               actionLabel = getString(R.string.ok).uppercase(),
@@ -303,8 +277,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
           .onEach { appEvent ->
             if (appEvent is AppEvent.OnSubmitQuestionnaire) {
               handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
-            } else if (appEvent is AppEvent.OnMigrateData) {
-              registerViewModel.setOnMigrateDataInProgress(appEvent.inProgress)
             }
           }
           .launchIn(lifecycleScope)

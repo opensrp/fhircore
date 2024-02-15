@@ -26,6 +26,7 @@
       "title" : "Administer Medication 1",
       "prefix": "1",
       "priority": "routine",
+      "kind" : "Task",
       "dynamicValue": [
         {
           "path": "title",
@@ -39,34 +40,6 @@
           "expression": {
             "language": "text/fhirpath",
             "expression": "%rootResource.description"
-          }
-        },
-        {
-          "path": "instantiatesCanonical",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "%rootResource.id.replaceMatches('/_history/.*', '')"
-          }
-        },
-        {
-          "path": "status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'active'"
-          }
-        },
-        {
-          "path": "intent",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'plan'"
-          }
-        },
-        {
-          "path": "created",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "now()"
           }
         },
         {
@@ -98,28 +71,7 @@
           }
         },
         {
-          "path": "activity.detail.kind",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'Task'"
-          }
-        },
-        {
-          "path": "activity.detail.status",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'in-progress'"
-          }
-        },
-        {
-          "path": "activity.detail.description",
-          "expression": {
-            "language": "text/fhirpath",
-            "expression": "'This action will assess careplan on registration to init careplan'"
-          }
-        },
-        {
-          "path": "activity.detail.performer",
+          "path": "performer",
           "expression": {
             "language": "text/fhirpath",
             "expression": "$this.generalPractitioner.first()"

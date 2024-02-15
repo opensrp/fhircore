@@ -107,7 +107,7 @@ constructor(
         // PeriodSync doesn't return state. It's enqueued instead. Finish the sync as workaround.
         if (workInfo.state == WorkInfo.State.ENQUEUED) {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(SyncJobStatus.Finished())
+            onSyncListener.onSync(SyncJobStatus.Succeeded())
           }
         } else {
           val data =

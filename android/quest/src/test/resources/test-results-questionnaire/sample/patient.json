@@ -1,0 +1,58 @@
+{
+  "resourceType": "Patient",
+  "id": "Patient/TEST_PATIENT",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/us/core/StructureDefinition/us-core-ethnicity",
+      "valueCoding": {
+        "code": "black",
+        "display": "Black"
+      }
+    },
+    {
+      "url": "http://hl7.org.nz/fhir/StructureDefinition/current-occupation",
+      "valueCoding": {
+        "code": "employed",
+        "display": "Employed"
+      }
+    }
+  ],
+  "identifier": [
+    {
+      "value": "3456"
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "family": "Hadi",
+      "given": [
+        "Bareera"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "4688755"
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1998-12-14",
+  "address": [
+    {
+      "use": "home",
+      "type": "physical",
+      "city": "NAIROBI",
+      "country": "Kenya"
+    }
+  ],
+  "maritalStatus": {
+    "coding": [
+      {
+        "code": "married",
+        "display": "Married"
+      }
+    ]
+  }
+}

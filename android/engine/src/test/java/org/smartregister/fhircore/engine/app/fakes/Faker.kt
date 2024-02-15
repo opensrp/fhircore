@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -34,6 +37,7 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -51,6 +55,19 @@ object Faker {
     isLenient = true
     useAlternativeNames = true
   }
+
+  private val testDispatcher = UnconfinedTestDispatcher()
+
+  private val testDispatcherProvider =
+    object : DispatcherProvider {
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun main() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
 
   fun buildTestConfigurationRegistry(
     preferencesDataStore: PreferencesDataStore,
@@ -87,6 +104,13 @@ object Faker {
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          openSrpApplication =
+            object : OpenSrpApplication() {
+              override fun getFhirServerHost(): URL? {
+                return URL("http://my_test_fhirbase_url/fhir/")
+              }
+            },
         ),
       )
 

@@ -27,12 +27,12 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -54,6 +54,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
@@ -106,6 +107,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
         dispatcherProvider,
         AppConfigService(context),
         Faker.json,
+        context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+        openSrpApplication =
+          object : OpenSrpApplication() {
+            override fun getFhirServerHost(): URL? {
+              return URL("http://my_test_fhirbase_url/fhir/")
+            }
+          },
       )
     configRegistry.setNonProxy(false)
     Assert.assertNotNull(configRegistry)
@@ -281,7 +289,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
     coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
-    coVerify(exactly = 1) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 1) { fhirEngine.create(capture(requestPathArgumentSlot)) }
     Assert.assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
     Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
   }
@@ -385,7 +393,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val patient = Faker.buildPatient()
     coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
       ResourceNotFoundException("", "")
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
       val previousLastUpdate = patient.meta.lastUpdated
@@ -394,18 +402,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
     }
 
     coVerify(inverse = true) { fhirEngine.update(any()) }
-    coVerify { fhirEngine.createRemote(patient) }
+    coVerify { fhirEngine.create(patient, isLocalOnly = true) }
   }
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testCreate() {
     val patient = Faker.buildPatient()
-    coEvery { fhirEngine.createRemote(patient) } just runs
+    coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
       configRegistry.createRemote(patient)
-      coVerify { fhirEngine.createRemote(patient) }
+      coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
 
@@ -699,13 +707,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
 
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
     configRegistry.fetchNonWorkflowConfigResources()
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 3) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+    coVerify(exactly = 3) {
+      fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
+    }
 
     Assert.assertEquals(3, requestPathArgumentSlot.size)
 
@@ -768,13 +778,15 @@ class ConfigurationRegistryTest : RobolectricTest() {
       coEvery { fhirEngine.get(any(), any()) } throws
         ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
 
-      coEvery { fhirEngine.createRemote(any()) } just runs
+      coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
       configRegistry.fetchNonWorkflowConfigResources()
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
-      coVerify(exactly = 4) { fhirEngine.createRemote(capture(requestPathArgumentSlot)) }
+      coVerify(exactly = 4) {
+        fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
+      }
 
       Assert.assertEquals(4, requestPathArgumentSlot.size)
 
@@ -797,23 +809,23 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
     val resourceType =
       listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-    //
-    //    configRegistry.saveSyncSharedPreferences(resourceType)
-    //
-    //    val savedSyncResourcesResult =
-    //      configRegistry.sharedPreferencesHelper.read(
-    //        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-    //        null,
-    //      )!!
-    //    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    //    val savedSyncResourceTypes: List<ResourceType> =
-    //      configRegistry.sharedPreferencesHelper.gson.fromJson(
-    //        savedSyncResourcesResult,
-    //        listResourceTypeToken,
-    //      )
 
-    //    Assert.assertEquals(2, savedSyncResourceTypes.size)
-    //    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    //    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
+    configRegistry.saveSyncSharedPreferences(resourceType)
+
+    val savedSyncResourcesResult =
+      configRegistry.sharedPreferencesHelper.read(
+        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
+        null,
+      )!!
+    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
+    val savedSyncResourceTypes: List<ResourceType> =
+      configRegistry.sharedPreferencesHelper.gson.fromJson(
+        savedSyncResourcesResult,
+        listResourceTypeToken,
+      )
+
+    Assert.assertEquals(2, savedSyncResourceTypes.size)
+    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
+    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
   }
 }

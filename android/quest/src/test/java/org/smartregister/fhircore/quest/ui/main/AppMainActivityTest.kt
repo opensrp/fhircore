@@ -122,14 +122,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
+  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() = runTest{
     val viewModel = appMainActivity.appMainViewModel
-    runTest {
-      viewModel.preferencesDataStore.write(
-        PreferencesDataStore.LAST_SYNC_TIMESTAMP,
-        "2022-05-19",
-      )
-    }
+    viewModel.preferencesDataStore.write(
+      PreferencesDataStore.LAST_SYNC_TIMESTAMP,
+      "2022-05-19",
+    )
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
     val syncJobStatus = SyncJobStatus.Failed(listOf())
     appMainActivity.onSync(syncJobStatus)
@@ -146,13 +144,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFinished() {
+  fun testOnSyncWithSyncStateSucceded() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = SyncJobStatus.Finished()
-    appMainActivity.onSync(stateFinished)
+    val stateSucceded = SyncJobStatus.Succeeded()
+    appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
       viewModel.retrieveLastSyncTimestamp(),
     )
   }

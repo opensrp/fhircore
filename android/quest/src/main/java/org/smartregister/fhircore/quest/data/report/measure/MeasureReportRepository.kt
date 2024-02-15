@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
@@ -25,7 +26,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -50,6 +53,7 @@ constructor(
   override val configRulesExecutor: ConfigRulesExecutor,
   val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
+  private val knowledgeManager: KnowledgeManager,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
 ) :
@@ -138,7 +142,7 @@ constructor(
    * @param endDateFormatted end date of measure period with format yyyy-MM-dd
    * @param subject the individual subject reference (ResourceType/id) to run report for
    */
-  private fun runMeasureReport(
+  private suspend fun runMeasureReport(
     measureUrl: String,
     reportType: String,
     startDateFormatted: String,
@@ -147,11 +151,14 @@ constructor(
     practitionerId: String?,
   ): MeasureReport {
     return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
+      measure =
+        knowledgeManager
+          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
+          .firstOrNull() as Measure,
       start = startDateFormatted,
       end = endDateFormatted,
       reportType = reportType,
-      subject = subject,
+      subjectId = subject,
       practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
     )
   }

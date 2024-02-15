@@ -91,9 +91,6 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-  private val _dataMigrationInProgress = MutableLiveData(false)
-  val dataMigrationInProgress: LiveData<Boolean>
-    get() = _dataMigrationInProgress
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -461,14 +458,5 @@ constructor(
   suspend fun emitPercentageProgressState(progress: Int, isUploadSync: Boolean) {
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)
-  }
-
-  fun setOnMigrateDataInProgress(inProgress: Boolean) {
-    Timber.i("+++++++++++ on migrate data called from register with inProgress as $inProgress")
-    _dataMigrationInProgress.postValue(inProgress)
-  }
-
-  fun <T> writePreference(key: Preferences.Key<T>, data: T) {
-    viewModelScope.launch { preferencesDataStore.write(key, data) }
   }
 }

@@ -18,9 +18,9 @@ package org.smartregister.fhircore.quest.data.report.measure
 
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -59,22 +59,25 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var parser: IParser
-  private val fhirEngine: FhirEngine = mockk()
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+  @Inject lateinit var fhirOperator: FhirOperator
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
+
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
   private lateinit var measureReportRepository: MeasureReportRepository
   private val registerId = "register id"
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
   private lateinit var registerRepository: RegisterRepository
+  private val parser = FhirContext.forR4Cached().newJsonParser()
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -118,7 +121,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
         mockk(),
         mockk(),
         registerRepository,
-        FhirOperator(FhirContext.forR4(), fhirEngine),
+        fhirOperator,
+        knowledgeManager,
         mockk(),
         parser,
       )

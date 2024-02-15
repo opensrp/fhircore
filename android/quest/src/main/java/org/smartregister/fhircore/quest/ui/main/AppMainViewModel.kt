@@ -184,15 +184,15 @@ constructor(
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
-        if (event.state is SyncJobStatus.Finished) {
+        if (event.state is SyncJobStatus.Succeeded) {
           viewModelScope.launch {
             preferencesDataStore.write(
               PreferencesDataStore.LAST_SYNC_TIMESTAMP,
               formatLastSyncTimestamp(event.state.timestamp),
             )
-
-            retrieveAppMainUiState()
           }
+
+          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
