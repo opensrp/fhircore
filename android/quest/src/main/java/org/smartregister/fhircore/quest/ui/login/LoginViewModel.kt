@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.engine.util.practitionerIdKey
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
@@ -154,14 +155,11 @@ constructor(
                 .map { it.resource }
                 .filterIsInstance<PractitionerDetails>()
                 .forEach {
-                  val existingCredentials = secureSharedPreference.retrieveCredentials()
-                  val practitionerExists =
-                    sharedPreferences
-                      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-                      .isNullOrBlank()
-                      .not()
-
-                  if (existingCredentials == null || !practitionerExists) {
+                  val existingLogins = secureSharedPreference.retrieveLoggedInUsernames()
+                  if (
+                    existingLogins.isEmpty() ||
+                      (existingLogins.size == 1 && existingLogins.first() == trimmedUsername)
+                  ) {
                     savePractitionerDetails(it, userInfo) {
                       _showProgressBar.postValue(false)
                       updateNavigateHome(true)
@@ -267,18 +265,19 @@ constructor(
   ) {
     val practitionerID =
       sharedPreferences.read(
-        key = SharedPreferenceKey.PRACTITIONER_ID.name,
+        key = practitionerIdKey(username),
         defaultValue = null,
       )
-    // Get credentials for the current user
-    val currentCredentials = secureSharedPreference.retrieveCredentials()
+    // Get credentials for username
+    val currentCredentials = secureSharedPreference.retrieveCredentials(username)
     if (
       currentCredentials != null &&
         practitionerID.isNullOrBlank().not() &&
         username.equals(currentCredentials.username, ignoreCase = true) &&
-        tokenAuthenticator.sessionActive()
+        tokenAuthenticator.sessionActive(username)
     ) {
       // Allow login access
+      secureSharedPreference.saveSessionUsername(username)
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
       return
@@ -484,12 +483,14 @@ constructor(
     locations: List<String>,
     locationHierarchies: List<LocationHierarchy>,
   ) {
+    val trimmedUsername = username.value!!.trim()
+
     sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      key = practitionerIdKey(trimmedUsername),
       value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
     )
     sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      "${trimmedUsername}_${SharedPreferenceKey.PRACTITIONER_DETAILS.name}",
       fhirPractitionerDetails,
     )
     sharedPreferences.write(ResourceType.CareTeam.name, careTeams)

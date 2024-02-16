@@ -28,8 +28,12 @@ enum class SharedPreferenceKey {
   LOGIN_CREDENTIAL_KEY,
   LOGIN_PIN_KEY,
   LOGIN_PIN_SALT,
+  LOGIN_USERS,
+  LOGIN_SESSION_USER,
   LAST_OFFSET,
   USER_INFO,
   CARE_TEAM,
   ORGANIZATION,
 }
+
+fun practitionerIdKey(username: String) = "${username}_${SharedPreferenceKey.PRACTITIONER_ID.name}"

@@ -67,7 +67,7 @@ constructor(
   private var isLoginPageRendered = false
 
   fun getAccessToken(): String {
-    val account = findAccount() ?: return ""
+    val account = findCurrentLoggedInAccount() ?: return ""
     val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
     if (isTokenActive(accessToken)) {
       isLoginPageRendered = false
@@ -151,7 +151,8 @@ constructor(
     }
   }
 
-  fun isCurrentRefreshTokenActive() = isTokenActive(accountManager.getPassword(findAccount()))
+  fun isCurrentRefreshTokenActive() =
+    isTokenActive(accountManager.getPassword(findCurrentLoggedInAccount()))
 
   private fun buildOAuthPayload(grantType: String) =
     mutableMapOf(
@@ -186,7 +187,7 @@ constructor(
   }
 
   fun logout(): Result<Boolean> {
-    val account = findAccount() ?: return Result.success(false)
+    val account = findCurrentLoggedInAccount() ?: return Result.success(false)
     return runBlocking {
       try {
         // Logout remotely then invalidate token
@@ -222,7 +223,7 @@ constructor(
         accounts.find { it.name == username && it.type == authConfiguration.accountType }
 
       val currentAccount =
-        secureSharedPreference.retrieveCredentials()?.let { cred ->
+        secureSharedPreference.retrieveSessionCredentials()?.let { cred ->
           accounts.find { it.name == cred.username && it.type == authConfiguration.accountType }
         }
       if (currentAccount != null) {
@@ -231,8 +232,6 @@ constructor(
         val currentUserRoles = getRolesList(currentAccessToken)
         val secondUserRoles = getRolesList(oAuthResponse.accessToken)
 
-        // todo: verify requirements (with pm/tpm) on comparing match for user permission roles,
-        //  also which roles to compare
         // todo: optimise
         val allMatching = currentUserRoles.all { secondUserRoles.contains(it) }
         if (!allMatching) throw IllegalAccessException("Unauthorized")
@@ -247,7 +246,10 @@ constructor(
         setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
       }
       // Save credentials
-      secureSharedPreference.saveCredentials(username, password)
+      secureSharedPreference.apply {
+        saveMultiCredentials(username, password)
+        saveSessionUsername(username)
+      }
     }
   }
 
@@ -272,28 +274,47 @@ constructor(
   }
 
   fun validateSavedLoginCredentials(username: String, enteredPassword: CharArray): Boolean {
-    val credentials = secureSharedPreference.retrieveCredentials()
-    return if (username.equals(credentials?.username, ignoreCase = true)) {
-      val generatedHash =
-        enteredPassword.toPasswordHash(Base64.getDecoder().decode(credentials!!.salt))
-      generatedHash == credentials.passwordHash
+    val usernameCredential = secureSharedPreference.retrieveCredentials(username)
+    return if (usernameCredential != null) {
+      val usernameGeneratedHash =
+        enteredPassword.toPasswordHash(
+          Base64.getDecoder()
+            .decode(
+              usernameCredential.salt,
+            ),
+        )
+      usernameGeneratedHash == usernameCredential.passwordHash
     } else {
       false
     }
   }
 
-  fun findAccount(): Account? {
-    val credentials = secureSharedPreference.retrieveCredentials()
+  fun findCurrentLoggedInAccount(): Account? {
+    val credentials = secureSharedPreference.retrieveSessionCredentials()
+    return accountManager.getAccountsByType(authConfiguration.accountType).find {
+      it.name == credentials?.username
+    }
+  }
+
+  fun findAccount(username: String): Account? {
+    val credentials = secureSharedPreference.retrieveCredentials(username)
     return accountManager.getAccountsByType(authConfiguration.accountType).find {
       it.name == credentials?.username
     }
   }
 
   fun sessionActive(): Boolean =
-    findAccount()?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) } ?: false
+    findCurrentLoggedInAccount()?.let {
+      isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE))
+    }
+      ?: false
+
+  fun sessionActive(username: String) =
+    findAccount(username)?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) }
+      ?: false
 
   fun invalidateSession(onSessionInvalidated: () -> Unit) {
-    findAccount()?.let { account ->
+    findCurrentLoggedInAccount()?.let { account ->
       accountManager.run {
         invalidateAuthToken(account.type, AUTH_TOKEN_TYPE)
         runCatching { removeAccountExplicitly(account) }

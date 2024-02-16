@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
+import Demo_ExposedDropdownMenuBox
+import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -38,6 +40,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -85,10 +88,11 @@ fun PinLoginScreen(viewModel: PinViewModel) {
     onSetPin = viewModel::onSetPin,
     onShowPinError = viewModel::onShowPinError,
     onPinEntered = viewModel::pinLogin,
+    onNameSelected = viewModel::selectUser,
   )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PinLoginPage(
   modifier: Modifier = Modifier,
@@ -99,6 +103,7 @@ fun PinLoginPage(
   onShowPinError: (Boolean) -> Unit,
   forgotPin: () -> Unit,
   onPinEntered: (CharArray, (Boolean) -> Unit) -> Unit,
+  onNameSelected: (String, Context) -> Unit = { _, _ -> },
 ) {
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
@@ -134,6 +139,15 @@ fun PinLoginPage(
           } else {
             PinLogoSection(showLogo = pinUiState.showLogo, title = pinUiState.appName)
           }
+
+          if (!pinUiState.setupPin && pinUiState.loggedInUsers.size > 1) {
+            Demo_ExposedDropdownMenuBox(
+              names = pinUiState.loggedInUsers,
+              selectedName = pinUiState.selectedUser,
+              onNameSelect = onNameSelected,
+            )
+          }
+
           Text(
             text = pinUiState.message,
             textAlign = TextAlign.Center,

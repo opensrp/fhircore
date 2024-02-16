@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
@@ -102,9 +101,7 @@ constructor(
   }
 
   private val practitionerId: String? by lazy {
-    sharedPreferencesHelper
-      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-      ?.extractLogicalIdUuid()
+    sharedPreferencesHelper.retrieveSessionPractitionerId()?.extractLogicalIdUuid()
   }
 
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
