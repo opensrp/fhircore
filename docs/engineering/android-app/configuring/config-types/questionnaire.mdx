@@ -111,6 +111,7 @@ These are used when generating other tasks, CarePlans and related resources.See 
 | saveQuestionnaireResponse                  | Indicate whether to save QuestionnaireResponse or not                                              |   yes    |  true   |
 | onSubmitActions                            | Configurations for actions invoked post Questionnaire submission                                   |    no    |  null   |
 | extractedResourceUniquePropertyExpressions | Configurations for unique properties used to identify resources during Questionnaire edit          |    no    |  null   |
+| uniqueIdAssignment                         | Configuration for unique identifier assignment                                                      |    no    |  null   |
 
 ## Dynamic data pass between Profiles and Questionnaires
 
@@ -314,3 +315,43 @@ triggerConditions | This defines an array of condition for to be met for the eve
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
 
+
+## Unique ID assignment
+
+Unique ID configs are used to configure how generated unique ID is extracted from a FHIR resource. Currently the Group Resource
+is used to sync generated identifiers. 
+
+Here is as sample configuration for the unique identifier assignment:
+
+```json
+{
+  "uniqueIdAssignment": {
+    "linkId": "phn",
+    "idFhirPathExpression": "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+    "readOnly": false,
+    "resource": "Group",
+    "sortConfigs": [
+      {
+        "paramName": "_lastUpdated",
+        "dataType": "DATE",
+        "order": "DESCENDING"
+      }
+    ],
+    "resourceFilterExpression": {
+      "conditionalFhirPathExpressions": [
+        "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'"
+      ],
+      "matchAll": true
+    }
+  }
+}
+```
+
+The configuration contains the following properties:
+
+**linkId** - The linkId for the targeted Questionnaire item 
+**idFhirPathExpression** - The FHIR path expression used to extract ID from a resource
+**readOnly** - Enable or disable editing of the field. Defaults to `true`
+**resource** - FHIR resource used to store generated unique IDs
+**sortConfigs** - For ordering resources. It is important to ensure the resources are ordered by last updated.
+**resourceFilterExpression** - Extra configurations to apply filter via code on the declared Resource.
