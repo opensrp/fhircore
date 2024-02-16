@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.elementmodel.Manager
@@ -49,9 +47,7 @@ import org.slf4j.LoggerFactory
  * #L%
  */
 
-@Singleton
-class TransformSupportServicesMatchBox @Inject constructor(val context: SimpleWorkerContext) :
-  ITransformerServices {
+class TransformSupportServicesMatchBox(val context: SimpleWorkerContext) : ITransformerServices {
 
   override fun createType(appInfo: Any, name: String): Base {
     return try {

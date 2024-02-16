@@ -29,7 +29,6 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -39,10 +38,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
@@ -58,6 +59,8 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureDefinition
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -79,6 +82,7 @@ import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.extractResourceId
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -88,6 +92,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServicesMatchBox
+import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -99,10 +104,8 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
-  val transformSupportServices: TransformSupportServicesMatchBox,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
-  val knowledgeManager: KnowledgeManager,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
@@ -480,6 +483,7 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
+        val worker = getFhirSdkSimpleWorkerContext()
         if (extractByStructureMap) {
           ResourceMapper.extract(
             questionnaire = questionnaire,
@@ -487,10 +491,13 @@ constructor(
             structureMapExtractionContext =
               StructureMapExtractionContext(
                 context = context,
-                transformSupportServices = transformSupportServices,
+                transformSupportServices = TransformSupportServicesMatchBox(worker),
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                  structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                  structureMapUrl?.extractResourceId()?.let { structureMapId ->
+                    defaultRepository
+                      .search<StructureDefinition>(Search(ResourceType.StructureDefinition))
+                      .forEach(worker::cacheResource)
+                    loadStructureMapDependencyTree(structureMapId)
                   }
                 },
               ),
@@ -818,6 +825,47 @@ constructor(
         }
       }
     }
+  }
+
+  /**
+   * This function recursively fetches and loads all dependent structure maps as defined here
+   * https://hl7.org/fhir/R4B/structuremap-definitions.html#StructureMap.import to the worker
+   * context cache
+   *
+   * @param structureMapId String id of the parent StructureMap
+   * @return [StructureMap] the parent StructureMap resource
+   */
+  private suspend fun loadStructureMapDependencyTree(
+    structureMapId: String,
+  ): StructureMap? {
+    val structureMap = defaultRepository.loadResource<StructureMap>(structureMapId)
+    structureMap?.also { structureMapIterator ->
+      getFhirSdkSimpleWorkerContext().cacheResource(structureMapIterator)
+
+      structureMapIterator.import?.let { canonicalTypes ->
+        canonicalTypes.forEach { structureMapUrl ->
+          structureMapUrl.value?.extractResourceId()?.let { structureMapId ->
+            loadStructureMapDependencyTree(structureMapId)
+          }
+        }
+      }
+    }
+    return structureMap
+  }
+
+  /**
+   * This function uses Kotlin reflection API to retrieve the simpleWorkerContext instance in use by
+   * the FHIR SDK
+   *
+   * @return [SimpleWorkerContext]
+   */
+  private fun getFhirSdkSimpleWorkerContext(): SimpleWorkerContext {
+    val dataCaptureConfig =
+      (sharedPreferencesHelper.context as QuestApplication).getDataCaptureConfig()
+    return (dataCaptureConfig.javaClass.kotlin.memberProperties
+        .find { it.name == "simpleWorkerContext" }
+        ?.get(dataCaptureConfig) as SimpleWorkerContext)
+      .apply { isAllowLoadingDuplicates = true }
   }
 
   /**

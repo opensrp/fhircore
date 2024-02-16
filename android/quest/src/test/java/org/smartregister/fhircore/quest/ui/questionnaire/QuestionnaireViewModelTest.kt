@@ -189,7 +189,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           fhirOperator = fhirOperator,
-          knowledgeManager = knowledgeManager,
         ),
       )
 

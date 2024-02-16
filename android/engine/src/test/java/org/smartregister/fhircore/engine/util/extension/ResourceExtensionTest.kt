@@ -677,6 +677,12 @@ class ResourceExtensionTest : RobolectricTest() {
   }
 
   @Test
+  fun extractResourceIdReturnsCorrectValue() {
+    val structureMapId = "http://my-structuremap-url/fhir/StructureMap/123456".extractResourceId()
+    Assert.assertEquals("123456", structureMapId)
+  }
+
+  @Test
   fun testGenerateMissingItemsFromQuestionnaireShouldNotThrowException() {
     val patientRegistrationQuestionnaire =
       "register-patient-missingitems/missingitem-questionnaire.json".readFile()

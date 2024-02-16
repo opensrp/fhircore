@@ -379,6 +379,8 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
 
+  implementation(kotlin("reflect"))
+
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
