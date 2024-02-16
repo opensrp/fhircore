@@ -119,7 +119,7 @@ constructor(
   val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
     get() = _questionnaireProgressStateLiveData
 
-  private var uniqueIdResourcePair: Pair<String, Resource>? = null
+  var uniqueIdResourcePair: Pair<String, Resource>? = null
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
@@ -188,7 +188,7 @@ constructor(
                 expression = uniqueIdAssignmentConfig.idFhirPathExpression,
               )
             if (resource != null && extractedId.isNotEmpty()) {
-              uniqueIdResourcePair = Pair(extractedId, resource) // To be updated on submission
+              uniqueIdResourcePair = Pair(extractedId, resource) // To be updated upon submission
               initial =
                 mutableListOf(
                   Questionnaire.QuestionnaireItemInitialComponent()
@@ -302,14 +302,14 @@ constructor(
     }
   }
 
-  private suspend fun retireUsedQuestionnaireUniqueId() {
+  suspend fun retireUsedQuestionnaireUniqueId() {
     if (uniqueIdResourcePair != null) {
       val (id, resource) = uniqueIdResourcePair!!
 
       // Update Group resource. Can be extended in future to support other resources
       if (resource is Group) {
         resource.characteristic.onEach {
-          if (it.valueCodeableConcept.text == id) {
+          if (it.hasValueCodeableConcept() && it.valueCodeableConcept.text == id) {
             it.exclude = true
             return@onEach
           }

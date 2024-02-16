@@ -48,6 +48,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Basic
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -1112,4 +1113,63 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
   }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {
+    val coding = Coding().apply { code = "phn" }
+    val group =
+      Group().apply {
+        id = "grp1"
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(coding),
+            CodeableConcept(Coding().apply { code = "1234" }),
+            BooleanType(false)
+          )
+        )
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(coding),
+            CodeableConcept(Coding().apply { code = "1235" }),
+            BooleanType(false)
+          )
+        )
+      }
+    questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+    questionnaireViewModel.retireUsedQuestionnaireUniqueId()
+
+    Assert.assertTrue(group.characteristic.first().exclude)
+    Assert.assertFalse(group.characteristic.last().exclude)
+    Assert.assertTrue(group.active)
+  }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldDeactivateGroupResourceWhenAllIDsAreUsed() =
+    runTest {
+      val coding = Coding().apply { code = "phn" }
+      val group =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(coding),
+              CodeableConcept(Coding().apply { code = "1234" }),
+              BooleanType(false)
+            )
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(coding),
+              CodeableConcept(Coding().apply { code = "1235" }),
+              BooleanType(true)
+            )
+          )
+        }
+      questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+      questionnaireViewModel.retireUsedQuestionnaireUniqueId()
+
+      Assert.assertTrue(group.characteristic.first().exclude)
+      Assert.assertTrue(group.characteristic.last().exclude)
+      Assert.assertFalse(group.active)
+    }
 }
