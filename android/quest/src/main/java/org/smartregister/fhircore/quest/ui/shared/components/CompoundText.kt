@@ -20,6 +20,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CompoundText(
   modifier: Modifier = Modifier,
@@ -161,7 +163,8 @@ private fun CompoundTextPart(
         TextCase.TITLE_CASE -> text.capitalize()
         null -> text
       }.removeExtraWhiteSpaces(),
-    color = textColor?.parseColor()?.copy(alpha = colorOpacity)
+    color =
+      textColor?.parseColor()?.copy(alpha = colorOpacity)
         ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier

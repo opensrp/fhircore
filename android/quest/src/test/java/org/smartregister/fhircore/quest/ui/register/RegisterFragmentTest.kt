@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -130,7 +129,9 @@ class RegisterFragmentTest : RobolectricTest() {
     activityController.create().resume()
     mainActivity = activityController.get()
     navController =
-      TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
+      TestNavHostController(mainActivity).apply {
+        setGraph(org.smartregister.fhircore.quest.R.navigation.application_nav_graph)
+      }
     Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
@@ -148,7 +149,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncState() {
-    val syncJobStatus = SyncJobStatus.Finished()
+    val syncJobStatus = SyncJobStatus.Succeeded()
     coEvery { registerFragmentMock.onSync(syncJobStatus) } just runs
     registerFragmentMock.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentMock.onSync(syncJobStatus) }
@@ -274,7 +275,11 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
+    verify {
+      registerFragmentSpy.getString(
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
+      )
+    }
   }
 
   @Test
@@ -286,7 +291,11 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
+    verify {
+      registerFragmentSpy.getString(
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
+      )
+    }
   }
 
   @Test
@@ -313,6 +322,8 @@ class RegisterFragmentTest : RobolectricTest() {
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_unauthorised) }
+    verify {
+      registerFragmentSpy.getString(org.smartregister.fhircore.engine.R.string.sync_unauthorised)
+    }
   }
 }

@@ -36,8 +36,7 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
       val bundle =
         configurationRegistry.retrieveResourceBundleConfiguration(
           getLocaleSpecificFileName(bundleName, locale),
-        )
-          ?: ResourceBundle.getBundle(bundleName, locale)
+        ) ?: ResourceBundle.getBundle(bundleName, locale)
       val lookup = mutableMapOf<String, Any>()
       bundle.keys.toList().forEach { lookup[it] = bundle.getObject(it) }
       template.interpolate(lookup, "{{", "}}")

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration.migration
 
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
@@ -27,13 +28,8 @@ data class MigrationConfig(
   val rules: List<RuleConfig>,
   val version: Int,
   val purgeAffectedResources: Boolean = false,
+  val createLocalChangeEntitiesAfterPurge: Boolean = true,
   val resourceFilterExpression: ResourceFilterExpression? = null,
-) : java.io.Serializable
-
-@Serializable
-data class ResourceFilterExpression(
-  val conditionalFhirPathExpressions: List<String>,
-  val matchAll: Boolean = true,
 ) : java.io.Serializable
 
 @Serializable

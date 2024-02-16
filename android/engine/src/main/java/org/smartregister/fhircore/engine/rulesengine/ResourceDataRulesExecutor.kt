@@ -120,8 +120,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           relatedListResource.fhirPathExpression.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
-              relatedResourceKey = relatedListResource.relatedResourceId
-                  ?: relatedListResource.resourceType.name,
+              relatedResourceKey =
+                relatedListResource.relatedResourceId ?: relatedListResource.resourceType.name,
               referenceFhirPathExpression = it,
               relatedResourcesMap = relatedResourcesMap,
             )
@@ -184,7 +184,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       ) {
         rulesFactory.rulesEngineService.filterResources(
           resources = newListRelatedResources,
-          fhirPathExpression = listResource.conditionalFhirPathExpression,
+          conditionalFhirPathExpression = listResource.conditionalFhirPathExpression,
         )
       } else newListRelatedResources ?: listOf()
 
@@ -197,8 +197,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
         fhirPathExpression = sortConfig.fhirPathExpression,
         dataType = sortConfig.dataType.name,
         order = sortConfig.order.name,
-      )
-        ?: resources
+      ) ?: resources
     } else {
       resources
     }

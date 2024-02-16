@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
 import javax.inject.Inject
@@ -49,6 +50,7 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
 ) :
   Repository,
   DefaultRepository(
@@ -59,6 +61,7 @@ constructor(
     configService = configService,
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
   ) {
 
   override suspend fun loadRegisterData(
@@ -117,8 +120,7 @@ constructor(
           (it.paramType == ActionParameterType.PARAMDATA ||
             it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
-        ?.associate { it.key to it.value }
-        ?: emptyMap()
+        ?.associate { it.key to it.value } ?: emptyMap()
 
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
