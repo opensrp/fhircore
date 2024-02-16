@@ -20,12 +20,6 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.math.BigDecimal
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import javax.inject.Inject
-import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
@@ -43,6 +37,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
@@ -59,6 +54,12 @@ import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 
 class RulesFactory
 @Inject
@@ -87,6 +88,7 @@ constructor(
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
+        put(LOCATION_SERVICE, LocationService)
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {
@@ -198,6 +200,7 @@ constructor(
       fhirPathExpression: String,
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as List<Resource>
+      println("Here!!!!!")
       val parentResourceId =
         fhirPathDataExtractor.extractValue(childResource, fhirPathExpression).extractLogicalIdUuid()
       return value.find { it.logicalId == parentResourceId }
@@ -569,6 +572,7 @@ constructor(
 
   companion object {
     private const val SERVICE = "service"
+    private const val LOCATION_SERVICE = "locationService"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
     private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"

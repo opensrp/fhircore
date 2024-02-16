@@ -58,8 +58,8 @@ import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
-import org.smartregister.fhircore.quest.util.LocationUtils
-import org.smartregister.fhircore.quest.util.PermissionUtils
+import org.smartregister.fhircore.engine.util.location.LocationUtils
+import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 

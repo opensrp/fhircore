@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.engine.util.location
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -25,12 +25,13 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class LocationUtils {
 
@@ -45,7 +46,7 @@ class LocationUtils {
     @SuppressLint("MissingPermission")
     suspend fun getAccurateLocation(
       fusedLocationClient: FusedLocationProviderClient,
-    ): Location? {
+    ): Location {
       return withContext(Dispatchers.IO) {
         suspendCoroutine<Location> { continuation ->
           fusedLocationClient
@@ -101,6 +102,21 @@ class LocationUtils {
             .addOnFailureListener { e -> continuation.resumeWithException(e) }
         }
       }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getAccurateLocations(
+      fusedLocationClient: FusedLocationProviderClient
+    ): Task<Location> {
+      return fusedLocationClient.getCurrentLocation(
+        Priority.PRIORITY_HIGH_ACCURACY,
+        object : CancellationToken() {
+          override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+            CancellationTokenSource().token
+
+          override fun isCancellationRequested() = false
+        }
+      )
     }
   }
 }
