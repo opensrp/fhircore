@@ -314,6 +314,10 @@ constructor(
             return@onEach
           }
         }
+
+        // Mark Group as inactive when all IDs are retired
+        resource.active = resource.characteristic.any { !it.exclude }
+
         defaultRepository.addOrUpdate(resource = resource)
         Timber.i("ID '$id' marked as used on Resource identified by '${resource.id}'")
       }
