@@ -170,7 +170,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventUpdateSyncStates() {
     // Simulate sync state Finished
     val syncFinishedTimestamp = OffsetDateTime.now()
-    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Finished>()
+    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Succeeded>()
     every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
     appMainViewModel.onEvent(
@@ -215,15 +215,13 @@ class AppMainViewModelTest : RobolectricTest() {
   @Test
   fun testOnEventTriggerWorkflow() {
     val action =
-      spyk(
-        listOf(
-          ActionConfig(
-            trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
-          ),
+      listOf(
+        ActionConfig(
+          trigger = ActionTrigger.ON_CLICK,
+          workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
         ),
       )
-    val navMenu = spyk(NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action))
+    val navMenu = NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action)
     appMainViewModel.onEvent(
       AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu),
     )

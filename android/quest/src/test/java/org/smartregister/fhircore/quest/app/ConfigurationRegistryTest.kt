@@ -19,10 +19,9 @@ package org.smartregister.fhircore.quest.app
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.SearchResult
-import com.google.android.fhir.db.ResourceNotFoundException
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -30,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
@@ -37,13 +37,12 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -61,7 +60,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private val secureSharedPreference = mockk<SecureSharedPreference>()
-  private val configService = mockk<ConfigService>()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService =
     mockk<FhirResourceService> { coEvery { post(any(), any()) } returns Bundle() }
@@ -83,13 +81,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
-          configService = configService,
+          configService = mockk(),
           json = Faker.json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          openSrpApplication =
+            object : OpenSrpApplication() {
+              override fun getFhirServerHost(): URL? {
+                return URL("http://my_test_fhirbase_url/fhir/")
+              }
+            },
         ),
       )
     configurationRegistry.setNonProxy(false)
     coEvery { configurationRegistry.addOrUpdate(any()) } just runs
-    coEvery { fhirEngine.createRemote(any()) } just runs
+    coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
     runBlocking { configurationRegistry.loadConfigurations("app/debug", application) }
   }
 
@@ -114,13 +119,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(ResourceType.Composition, any()) } returns composition
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
@@ -145,16 +147,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirResourceService.getResource("List?_id=123456") } returns bundle
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
 
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
+    coEvery { fhirResourceDataSource.getResource("List?_id=123456") } returns bundle
 
     configurationRegistry.fetchNonWorkflowConfigResources()
     coVerify { configurationRegistry.addOrUpdate(any()) }
+    coVerify { fhirResourceDataSource.getResource("List?_id=123456") }
   }
 
   @Test
@@ -178,10 +180,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(any(), any()) } throws ResourceNotFoundException("Exce", "Exce")
-    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
@@ -189,6 +188,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
+    coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
 
     configurationRegistry.fetchNonWorkflowConfigResources()
 
