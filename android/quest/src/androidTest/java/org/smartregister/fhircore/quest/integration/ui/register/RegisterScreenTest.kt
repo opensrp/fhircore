@@ -42,7 +42,7 @@ import org.smartregister.fhircore.quest.integration.Faker
 import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
-import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_LIST_TEST_TAG
+import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 
@@ -88,7 +88,7 @@ class RegisterScreenTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).assertExists()
+    composeTestRule.onNodeWithTag(REGISTER_CARD_TEST_TAG).assertExists()
   }
 
   @Test
