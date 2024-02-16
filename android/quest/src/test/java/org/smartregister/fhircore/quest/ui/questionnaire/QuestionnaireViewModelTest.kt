@@ -1124,15 +1124,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           Group.GroupCharacteristicComponent(
             CodeableConcept(coding),
             CodeableConcept(Coding().apply { code = "1234" }),
-            BooleanType(false)
-          )
+            BooleanType(false),
+          ),
         )
         addCharacteristic(
           Group.GroupCharacteristicComponent(
             CodeableConcept(coding),
             CodeableConcept(Coding().apply { code = "1235" }),
-            BooleanType(false)
-          )
+            BooleanType(false),
+          ),
         )
       }
     questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
@@ -1154,15 +1154,15 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             Group.GroupCharacteristicComponent(
               CodeableConcept(coding),
               CodeableConcept(Coding().apply { code = "1234" }),
-              BooleanType(false)
-            )
+              BooleanType(false),
+            ),
           )
           addCharacteristic(
             Group.GroupCharacteristicComponent(
               CodeableConcept(coding),
               CodeableConcept(Coding().apply { code = "1235" }),
-              BooleanType(true)
-            )
+              BooleanType(true),
+            ),
           )
         }
       questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
