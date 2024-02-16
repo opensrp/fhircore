@@ -231,8 +231,6 @@ constructor(
         val currentUserRoles = getRolesList(currentAccessToken)
         val secondUserRoles = getRolesList(oAuthResponse.accessToken)
 
-        // todo: verify requirements (with pm/tpm) on comparing match for user permission roles,
-        //  also which roles to compare
         // todo: optimise
         val allMatching = currentUserRoles.all { secondUserRoles.contains(it) }
         if (!allMatching) throw IllegalAccessException("Unauthorized")
@@ -247,7 +245,10 @@ constructor(
         setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
       }
       // Save credentials
-      secureSharedPreference.saveCredentials(username, password)
+      secureSharedPreference.apply {
+        saveMultiCredentials(username, password)
+        saveSessionUsername(username)
+      }
     }
   }
 
@@ -283,7 +284,7 @@ constructor(
   }
 
   fun findAccount(): Account? {
-    val credentials = secureSharedPreference.retrieveCredentials()
+    val credentials = secureSharedPreference.retrieveSessionCredentials()
     return accountManager.getAccountsByType(authConfiguration.accountType).find {
       it.name == credentials?.username
     }

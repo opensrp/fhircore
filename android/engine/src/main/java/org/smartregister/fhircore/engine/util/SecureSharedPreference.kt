@@ -44,7 +44,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   private fun getMasterKey() =
     MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
 
-  fun saveCredentials(username: String, password: CharArray) {
+  @Deprecated("") private fun saveCredentials(username: String, password: CharArray) {
     val randomSaltBytes = get256RandomBytes()
 
     secureSharedPreferences.edit {
@@ -61,17 +61,70 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     clearPasswordInMemory(password)
   }
 
+  fun saveMultiCredentials(username: String, password: CharArray){
+    val randomSaltBytes = get256RandomBytes()
+
+    secureSharedPreferences.apply {
+
+      edit {
+        putString(
+          "${username}_${SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name}",
+          AuthCredentials(
+            username = username,
+            salt = Base64.getEncoder().encodeToString(randomSaltBytes),
+            passwordHash = password.toPasswordHash(randomSaltBytes),
+          )
+            .encodeJson(),
+        )
+
+        putStringSet(SharedPreferenceKey.LOGIN_USERS.name, retrieveLoggedInUsernames() + username)
+      }
+    }
+
+    saveCredentials(username, password)
+
+    clearPasswordInMemory(password)
+  }
+
+  fun saveSessionUsername(username: String) = secureSharedPreferences.edit {
+    putString(SharedPreferenceKey.LOGIN_SESSION_USER.name, username)
+  }
+
+  fun retrieveLoggedInUsernames(): Set<String> = secureSharedPreferences.getStringSet(SharedPreferenceKey.LOGIN_USERS.name, emptySet())!!
+
+
+  @Deprecated("")
   fun deleteCredentials() =
     secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name) }
 
-  fun retrieveSessionUsername() = retrieveCredentials()?.username
+  fun deleteCredentials(username: String) = secureSharedPreferences.apply {
+    val users = retrieveLoggedInUsernames()
+    edit {
+      remove("${username}_${SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name}")
+      putStringSet(SharedPreferenceKey.LOGIN_USERS.name, users - username)
+    }
+  }
 
-  fun retrieveCredentials(): AuthCredentials? =
+//  fun retrieveSessionUsername() = retrieveCredentials()?.username
+
+  fun retrieveSessionUsername() = secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_SESSION_USER.name, null)
+
+  fun retrieveSessionUsername(username: String) = retrieveCredentials(username)?.username
+
+  @Deprecated("") fun retrieveCredentials(): AuthCredentials? =
     secureSharedPreferences
       .getString(SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name, null)
       ?.decodeJson<AuthCredentials>()
 
-  fun saveSessionPin(pin: CharArray) {
+  fun retrieveSessionCredentials(): AuthCredentials? =
+    retrieveSessionUsername()?.let { retrieveCredentials(it) }
+
+  fun retrieveCredentials(username: String): AuthCredentials? =
+    secureSharedPreferences
+      .getString("${username}_${SharedPreferenceKey.LOGIN_CREDENTIAL_KEY.name}", null)
+      ?.decodeJson<AuthCredentials>()
+
+  @Deprecated("") private fun saveSessionPin(pin: CharArray) {
     val randomSaltBytes = get256RandomBytes()
     secureSharedPreferences.edit {
       putString(
@@ -82,16 +135,39 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     }
   }
 
+  fun saveSessionPin(username: String, pin: CharArray){
+    val randomSaltBytes = get256RandomBytes()
+    val hash = pin.toPasswordHash(randomSaltBytes)
+
+    secureSharedPreferences.edit {
+      putString("${username}_${SharedPreferenceKey.LOGIN_PIN_SALT.name}", Base64.getEncoder().encodeToString(randomSaltBytes))
+
+      putString("${username}_${SharedPreferenceKey.LOGIN_PIN_KEY.name}", hash)
+    }
+
+    saveSessionPin(pin)
+  }
+
+  fun retrieveSessionUserSalt(username: String) = secureSharedPreferences.getString("${username}_${SharedPreferenceKey.LOGIN_PIN_SALT.name}", null)
+
+  fun retrieveSessionUserPin(username: String) = secureSharedPreferences.getString("${username}_${SharedPreferenceKey.LOGIN_PIN_KEY.name}", null)
+
   @VisibleForTesting fun get256RandomBytes() = 256.getRandomBytesOfSize()
 
-  fun retrievePinSalt() =
+  @Deprecated("") fun retrievePinSalt() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_SALT.name, null)
 
-  fun retrieveSessionPin() =
+  @Deprecated("") fun retrieveSessionPin() =
     secureSharedPreferences.getString(SharedPreferenceKey.LOGIN_PIN_KEY.name, null)
 
-  fun deleteSessionPin() =
+  @Deprecated("") fun deleteSessionPin() =
     secureSharedPreferences.edit { remove(SharedPreferenceKey.LOGIN_PIN_KEY.name) }
+
+  fun deleteSessionPin(username: String) =
+  secureSharedPreferences.edit {
+    remove("${username}_${SharedPreferenceKey.LOGIN_PIN_KEY.name}")
+    remove("${username}_${SharedPreferenceKey.LOGIN_PIN_SALT.name}")
+  }
 
   /** This method resets/clears all existing values in the shared preferences synchronously */
   fun resetSharedPrefs() = secureSharedPreferences.edit { clear() }
