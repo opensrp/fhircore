@@ -7,9 +7,15 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireBottomNavContainerStyle">@style/AppTheme.BottomNavContainerStyle</item>
+        <item name="questionnaireDropDownSelectedTextStyle">@style/AppTheme.DropDownSelectedTextStyle</item>
     </style>
 
     <style name="AppTheme.BottomNavContainerStyle" parent="Questionnaire.BottomNavContainerStyle">
         <item name="android:paddingTop">16dp</item>
+    </style>
+
+    <style name="AppTheme.DropDownSelectedTextStyle" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:focusable">false</item>
+        <item name="android:cursorVisible">false</item>
     </style>
 </resources>
