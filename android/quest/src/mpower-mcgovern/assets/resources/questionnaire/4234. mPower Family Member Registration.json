@@ -199,12 +199,32 @@
           }
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-minvalue",
-          "valueString": "today() - 120 years"
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() - 120 'years'"
+                }
+              }
+            ]
+          }
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-maxvalue",
-          "valueString": "today()"
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
         },
         {
           "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
@@ -230,12 +250,12 @@
     {
       "extension": [
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-          "valueInteger": 120
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/sdf-fhirpath",
-          "valueString": "Patient.extension.where(url = 'http://helsenorge.no/fhir/StructureDefinition/sdf-age').value"
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueInteger": 120
         },
         {
           "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
@@ -1318,6 +1338,16 @@
       ]
     },
     {
+      "extension": [
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় হতে হবে"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueInteger": 0
+        }
+      ],
       "linkId": "0bcd75c0-2fc9-4027-9c54-23f1d0812d91",
       "type": "integer",
       "text": "ওজন(কেজি) *",
