@@ -417,7 +417,11 @@ private fun ProfileTopAppBarMenuAction(
   navController: NavController,
   modifier: Modifier = Modifier,
 ) {
-  if (!profileUiState.profileConfiguration?.overFlowMenuItems.isNullOrEmpty()) {
+  val overflowMenuItems = profileUiState.profileConfiguration?.overFlowMenuItems?.map {
+    it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+  }
+
+  if (!overflowMenuItems.isNullOrEmpty() && overflowMenuItems.any { it.visible.toBoolean() }) {
     var showOverflowMenu by remember { mutableStateOf(false) }
     IconButton(
       onClick = { showOverflowMenu = !showOverflowMenu },
@@ -427,9 +431,7 @@ private fun ProfileTopAppBarMenuAction(
     }
 
     DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
-      profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-        val overflowMenuItemConfig =
-          it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+      overflowMenuItems.forEach { overflowMenuItemConfig ->
         if (!overflowMenuItemConfig.visible.toBoolean()) return@forEach
         val enabled = overflowMenuItemConfig.enabled.toBoolean()
         if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)

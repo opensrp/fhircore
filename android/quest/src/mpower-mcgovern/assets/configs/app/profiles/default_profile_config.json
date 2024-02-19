@@ -2108,7 +2108,7 @@
     {
       "title": "Registration info",
       "titleColor": "@{patientTextColor}",
-      "visible": "true",
+      "visible": "false",
       "enabled": "@{patientActive}",
       "actions": [
         {
