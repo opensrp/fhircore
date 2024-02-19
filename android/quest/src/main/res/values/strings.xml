@@ -113,6 +113,8 @@
     <string name="required_permission_message">Below permissions are required to be allowed to use this app.\n\n %s \n</string>
     <string name="default_notification_channel_id">quest_notification_channel_id</string>
     <string name="default_notification_channel_name">quest_notification_channel</string>
+    <string name="application_alert_back_pressed_message">Are you sure you want to close the application?</string>
+    <string name="application_alert_confirm_button_title">Yes</string>
 
 
 

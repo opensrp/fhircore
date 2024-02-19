@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -56,6 +57,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
@@ -113,6 +115,21 @@ class RegisterFragment : Fragment(), OnSyncListener {
         val openDrawer: (Boolean) -> Unit = { open: Boolean ->
           scope.launch {
             if (open) scaffoldState.drawerState.open() else scaffoldState.drawerState.close()
+          }
+        }
+
+        BackHandler {
+          if(scaffoldState.drawerState.isOpen) {
+            scope.launch {
+              scaffoldState.drawerState.close()
+            }
+          } else {
+            AlertDialogue.showConfirmAlert(
+              context = requireActivity(),
+              message = R.string.application_alert_back_pressed_message,
+              confirmButtonListener = { requireActivity().finish() },
+              confirmButtonText = R.string.application_alert_confirm_button_title,
+            )
           }
         }
 
