@@ -101,8 +101,8 @@ constructor(
 
   fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
 
-  fun retrieveDataMigrationVersion(): Int =
-    sharedPreferencesHelper.read(SharedPreferenceKey.MIGRATION_VERSION.name, "0")!!.toInt()
+  fun retrieveDataMigrationVersion(): String =
+    sharedPreferencesHelper.read(SharedPreferenceKey.DATA_MIGRATION.name, "0").toString()
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)

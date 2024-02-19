@@ -123,7 +123,7 @@ fun UserSettingScreen(
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
   allowP2PSync: Boolean,
-  dataMigrationVersion: Int,
+  dataMigrationVersion: String,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
 ) {
@@ -502,7 +502,7 @@ fun UserSettingPreview() {
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
     allowP2PSync = true,
-    dataMigrationVersion = 0,
+    dataMigrationVersion = "0",
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
   )
