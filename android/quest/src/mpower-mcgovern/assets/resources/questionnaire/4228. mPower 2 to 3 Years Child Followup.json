@@ -59,6 +59,43 @@
       ]
     },
     {
+      "linkId": "a0562269-c3fa-4f20-8733-c32a9a037ee3",
+      "type": "choice",
+      "text": "রং চিনতে পারে ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0ba86346-aa6b-4d37-b323-b7a911b09003",
+            "code": "yes",
+            "system": "urn:uuid:c2aedaf7-9a00-46dd-9f41-53dfbced0ad6",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "dbc9a73e-6b4e-49ea-8ace-49b4486896e4",
+            "code": "no",
+            "system": "urn:uuid:c2aedaf7-9a00-46dd-9f41-53dfbced0ad6",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "linkId": "58bf1fc0-c7f1-48da-8cf1-5eb3bcd071a2",
       "type": "choice",
       "text": "দ্রুতগতিতে হাঁটতে বা দৌড়াতে পারে ?",

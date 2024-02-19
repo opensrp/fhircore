@@ -96,6 +96,43 @@
       ]
     },
     {
+      "linkId": "e73802b2-a565-4562-8408-7e7a9ec0b264",
+      "type": "choice",
+      "text": "গত ২৪ ঘন্টায় পুষ্টিকণা খাওয়ানো হয়েছে কিনা ?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0475a564-85a7-489a-dc92-78e537691a8d",
+            "code": "yes",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
+            "code": "no",
+            "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
       "linkId": "63863a71-2808-4923-89af-e89395faadf2",
       "type": "choice",
       "text": "ছোট বাক্য উচ্চারণ করতে পারে কি না ?",
@@ -135,7 +172,7 @@
     {
       "linkId": "a1226a04-209a-4c90-8b3f-4d9c8af3659d",
       "type": "choice",
-      "text": "একটি সম্পূর্ণ বাক্য উচ্চারণ করতে পারে কি না ? *",
+      "text": "একটি সম্পূর্ণ বাক্য উচ্চারণ করতে পারে কি না ?",
       "required": true,
       "answerOption": [
         {
@@ -151,6 +188,43 @@
             "id": "b06d4304-4961-481f-9a5a-4b4292a80830",
             "code": "no",
             "system": "urn:uuid:962130e1-7552-47cd-8b5c-6662fc37c580",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "4868f7c1-bb96-4ae9-8783-70ae541acfff",
+      "type": "choice",
+      "text": "শিশু সবগুলো টিকা গ্রহণ করেছে কিনা ? টিকার কার্ড দেখে তথ্য নিতে হবে।",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "0ba86346-aa6b-4d37-b323-b7a911b09003",
+            "code": "yes",
+            "system": "urn:uuid:c2aedaf7-9a00-46dd-9f41-53dfbced0ad6",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "dbc9a73e-6b4e-49ea-8ace-49b4486896e4",
+            "code": "no",
+            "system": "urn:uuid:c2aedaf7-9a00-46dd-9f41-53dfbced0ad6",
             "display": "না"
           }
         }
