@@ -37,7 +37,7 @@ object LocationService {
 
   fun calculateDistanceByProvidedLocations(
     destination: Location,
-    currentLocation: Location
+    currentLocation: Location,
   ): String? {
     val distanceInMeters = currentLocation.distanceTo(destination)
     return formatDistance(distanceInMeters)
