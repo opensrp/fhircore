@@ -160,6 +160,29 @@ class LoginScreenTest {
     )
   }
 
+  @Test
+  fun testAppTitleLoginConfigShouldHideAppTitleWhenFalse() {
+    val appConfigs =
+      ApplicationConfiguration(
+        appTitle = "My app",
+        appId = "app/debug",
+        loginConfig = LoginConfig(showLogo = true, showAppTitle = false),
+      )
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = appConfigs,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+      )
+    }
+    composeRule.onNodeWithTag(APP_NAME_TEXT_TAG).assertDoesNotExist()
+  }
+
   private fun verifyUnknownTextErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int) {
     composeRule.setContent {
       LoginPage(
