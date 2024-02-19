@@ -27,7 +27,6 @@ import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
 class PermissionsUtilsTest {
-
   val context = mockk<Context>()
 
   @Test
