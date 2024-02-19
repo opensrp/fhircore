@@ -20,6 +20,12 @@ import android.content.Context
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import javax.inject.Inject
+import kotlin.system.measureTimeMillis
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
@@ -54,12 +60,6 @@ import org.smartregister.fhircore.engine.util.extension.translationPropertyKey
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import timber.log.Timber
-import java.math.BigDecimal
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import javax.inject.Inject
-import kotlin.system.measureTimeMillis
 
 class RulesFactory
 @Inject

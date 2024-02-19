@@ -31,6 +31,5 @@ enum class SharedPreferenceKey {
   LAST_OFFSET,
   USER_INFO,
   CARE_TEAM,
-  ORGANIZATION,
-  GOOGLE_LOCATION
+  ORGANIZATION
 }

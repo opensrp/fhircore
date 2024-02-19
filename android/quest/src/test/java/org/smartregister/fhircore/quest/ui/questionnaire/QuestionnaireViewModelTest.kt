@@ -189,7 +189,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          configurationRegistry = configurationRegistry
+          configurationRegistry = configurationRegistry,
         ),
       )
 

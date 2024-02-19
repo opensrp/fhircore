@@ -201,7 +201,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private fun setupLocationServices() {
     if (appMainViewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      LocationService.init(fusedLocationClient)
+      LocationService.init(fusedLocationClient, hasLocationPermissions())
       if (!LocationUtils.isLocationEnabled(this)) {
         openLocationServicesSettings()
       }
@@ -251,10 +251,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         onCoarseLocationPermissionGranted = { fetchLocation(false) },
         onLocationPermissionDenied = {
           Toast.makeText(
-            this,
-            getString(R.string.location_permissions_denied),
-            Toast.LENGTH_SHORT,
-          )
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
             .show()
           Timber.e("Location permissions denied")
         },
@@ -271,11 +271,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private fun fetchLocation(highAccuracy: Boolean = true) {
     lifecycleScope.launch {
       try {
-        currLocation = if (highAccuracy) {
-          LocationUtils.getAccurateLocation(fusedLocationClient)
-        } else {
-          LocationUtils.getApproximateLocation(fusedLocationClient)
-        }
+        currLocation =
+          if (highAccuracy) {
+            LocationUtils.getAccurateLocation(fusedLocationClient)
+          } else {
+            LocationUtils.getApproximateLocation(fusedLocationClient)
+          }
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location")
       }

@@ -26,12 +26,12 @@ import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
 import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class LocationUtils {
 
@@ -61,9 +61,10 @@ class LocationUtils {
             )
             .addOnSuccessListener { location: Location? ->
               if (location != null) {
-                Timber.d(
-                  "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
-                )
+                //                Timber.d(
+                //                  "Accurate location - lat: ${location.latitude}; long:
+                // ${location.longitude}; alt: ${location.altitude}",
+                //                )
                 continuation.resume(location)
               }
             }
@@ -106,7 +107,7 @@ class LocationUtils {
 
     @SuppressLint("MissingPermission")
     fun getAccurateLocations(
-      fusedLocationClient: FusedLocationProviderClient
+      fusedLocationClient: FusedLocationProviderClient,
     ): Task<Location> {
       return fusedLocationClient.getCurrentLocation(
         Priority.PRIORITY_HIGH_ACCURACY,
@@ -115,7 +116,7 @@ class LocationUtils {
             CancellationTokenSource().token
 
           override fun isCancellationRequested() = false
-        }
+        },
       )
     }
   }
