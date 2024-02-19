@@ -200,7 +200,6 @@ constructor(
       fhirPathExpression: String,
     ): Resource? {
       val value = facts.getFact(parentResourceType).value as List<Resource>
-      println("Here!!!!!")
       val parentResourceId =
         fhirPathDataExtractor.extractValue(childResource, fhirPathExpression).extractLogicalIdUuid()
       return value.find { it.logicalId == parentResourceId }
