@@ -211,7 +211,8 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
     every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true
     every { activity.hasLocationPermissions() } returns true
     every { activity.fetchLocation(any()) } just runs
@@ -229,7 +230,8 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
     every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns false
     every { activity.hasLocationPermissions() } returns true
     every { activity.fetchLocation(any()) } just runs
@@ -243,30 +245,26 @@ class QuestionnaireActivityTest : RobolectricTest() {
     verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
   }
 
-
   @Test
   fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
-
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
     every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns fusedLocationProviderClient
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true
     every { activity.hasLocationPermissions() } returns false
     every { activity.fetchLocation(any()) } just runs
     every { activity.openLocationServicesSettings() } just runs
     every { activity.launchLocationPermissionsDialog() } just runs
 
-
     activity.setupLocationServices()
-
 
     verify(exactly = 1) { activity.launchLocationPermissionsDialog() }
     verify(exactly = 0) { activity.fetchLocation(any()) }
     verify(exactly = 0) { activity.openLocationServicesSettings() }
   }
-
 
   private fun setupActivity() {
     val bundle = QuestionnaireActivity.intentBundle(questionnaireConfig, emptyList())
