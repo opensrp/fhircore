@@ -39,7 +39,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
   val defaultRepository: DefaultRepository,
-  val dataMigration: DataMigration,
+  val dataMigration: DataMigration
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {

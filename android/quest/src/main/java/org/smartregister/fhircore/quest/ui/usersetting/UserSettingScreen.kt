@@ -123,6 +123,7 @@ fun UserSettingScreen(
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
   allowP2PSync: Boolean,
+  dataMigrationVersion: Int,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
 ) {
@@ -383,6 +384,13 @@ fun UserSettingScreen(
         Text(
           color = contentColor,
           fontSize = 16.sp,
+          text = stringResource(id = R.string.data_migration_version, dataMigrationVersion),
+          modifier = modifier.padding(top = 2.dp).align(Alignment.CenterHorizontally)
+        )
+
+        Text(
+          color = contentColor,
+          fontSize = 16.sp,
           text = stringResource(id = R.string.last_sync, lastSyncTime ?: ""),
           modifier =
             modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
@@ -494,6 +502,7 @@ fun UserSettingPreview() {
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
     allowP2PSync = true,
+    dataMigrationVersion = 0,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
   )
