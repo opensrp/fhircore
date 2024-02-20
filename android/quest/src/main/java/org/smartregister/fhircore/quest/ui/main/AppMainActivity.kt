@@ -20,7 +20,6 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.location.Location
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -39,7 +38,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -68,6 +66,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -90,7 +89,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private var currLocation: Location? = null
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
@@ -199,9 +197,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private fun setupLocationServices() {
-    if (appMainViewModel.applicationConfiguration.logQuestionnaireLocation) {
+    if (appMainViewModel.applicationConfiguration.enableLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      LocationService.init(fusedLocationClient, hasLocationPermissions())
       if (!LocationUtils.isLocationEnabled(this)) {
         openLocationServicesSettings()
       }
@@ -226,7 +223,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     activityResultLauncher =
       PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
         if (resultCode == RESULT_OK || hasLocationPermissions()) {
-          fetchLocation()
+          LocationService.init(fusedLocationClient, true)
         }
       }
 
@@ -247,8 +244,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     locationPermissionLauncher =
       PermissionUtils.getLocationPermissionLauncher(
         this,
-        onFineLocationPermissionGranted = { fetchLocation(true) },
-        onCoarseLocationPermissionGranted = { fetchLocation(false) },
+        onFineLocationPermissionGranted = { LocationService.init(fusedLocationClient, true) },
+        onCoarseLocationPermissionGranted = { LocationService.init(fusedLocationClient, true) },
         onLocationPermissionDenied = {
           Toast.makeText(
               this,
@@ -266,21 +263,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         Manifest.permission.ACCESS_COARSE_LOCATION,
       ),
     )
-  }
-
-  private fun fetchLocation(highAccuracy: Boolean = true) {
-    lifecycleScope.launch {
-      try {
-        currLocation =
-          if (highAccuracy) {
-            LocationUtils.getAccurateLocation(fusedLocationClient)
-          } else {
-            LocationUtils.getApproximateLocation(fusedLocationClient)
-          }
-      } catch (e: Exception) {
-        Timber.e(e, "Failed to get GPS location")
-      }
-    }
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {

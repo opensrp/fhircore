@@ -62,11 +62,6 @@ class LocationServiceTest : RobolectricTest() {
     assertEquals("100.00 mtrs", result)
   }
 
-  @Test
-  fun testOut() {
-    assertEquals(1, 1)
-  }
-
   private fun generateTestLocations(longitude: Double, latitude: Double): Location {
     val location = Location("test Location")
     location.longitude = longitude
