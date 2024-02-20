@@ -66,7 +66,7 @@ class MeasureReportResultScreenTest {
 
   @Inject lateinit var registerRepository: RegisterRepository
 
-  @BindValue val sharedPreferencesHelper = configurationRegistry.sharedPreferencesHelper
+  val preferencesDataStore = configurationRegistry.preferencesDataStore
 
   @Inject lateinit var defaultRepository: DefaultRepository
 
@@ -81,7 +81,7 @@ class MeasureReportResultScreenTest {
       MeasureReportViewModel(
         fhirEngine,
         fhirOperator,
-        sharedPreferencesHelper,
+        preferencesDataStore,
         DefaultDispatcherProvider(),
         configurationRegistry,
         registerRepository,

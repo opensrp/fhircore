@@ -38,13 +38,14 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
 import org.smartregister.fhircore.engine.util.extension.daysPassed
@@ -324,37 +325,47 @@ constructor(
      * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
      * configs.
      */
-    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
-      val key = SharedPreferenceKey.valueOf(practitionerKey)
+    fun extractPractitionerInfoFromDataStore(practitionerKey: String): String {
       try {
-        return when (key) {
-          SharedPreferenceKey.PRACTITIONER_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_ID.name,
+        return when (practitionerKey) {
+          PreferencesDataStore.PRACTITIONER_ID.name ->
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.PRACTITIONER_ID,
               "",
-            )
-          SharedPreferenceKey.CARE_TEAM ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.CARE_TEAM.name,
+            )!!
+          PractitionerDataStore.Keys.CARE_TEAM_NAMES.name ->
+            configurationRegistry.practitionerDataStore
+              .readOnce(
+                PractitionerDataStore.Keys.CARE_TEAM_NAMES,
+                listOf(""),
+              )!!
+              .joinToString()
+          PractitionerDataStore.Keys.ORGANIZATION_NAMES.name ->
+            configurationRegistry.practitionerDataStore
+              .readOnce(
+                PractitionerDataStore.Keys.ORGANIZATION_NAMES,
+                listOf(""),
+              )!!
+              .joinToString()
+          PreferencesDataStore.PRACTITIONER_LOCATION.name ->
+            configurationRegistry.preferencesDataStore.readOnce(
+              PreferencesDataStore.PRACTITIONER_LOCATION,
               "",
+            )!!
+          else ->
+            throw IllegalArgumentException(
+              "The key queried does not store any Practitioner Details",
             )
-          SharedPreferenceKey.ORGANIZATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.ORGANIZATION.name,
-              "",
-            )
-          SharedPreferenceKey.PRACTITIONER_LOCATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-              "",
-            )
-          else -> ""
         }
-      } catch (exception: Exception) {
-        if (exception is IllegalArgumentException) {
-          Timber.e("key is not a member of practitioner keys: ", exception)
+      } catch (e: Exception) {
+        if (e is IllegalArgumentException) {
+          Timber.e(e.message)
+          throw e
         } else {
-          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+          Timber.e(
+            "An exception occurred while fetching your data from Datastore: ${e.message ?: ""}",
+            e,
+          )
         }
       }
       return ""

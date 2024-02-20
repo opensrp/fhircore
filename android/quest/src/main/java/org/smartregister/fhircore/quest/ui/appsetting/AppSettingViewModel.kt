@@ -40,10 +40,12 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Com
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -59,7 +61,8 @@ class AppSettingViewModel
 constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
@@ -202,7 +205,7 @@ constructor(
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
-            sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, thisAppId)
+            this.launch { preferencesDataStore.write(PreferencesDataStore.APP_ID, thisAppId) }
             context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
           } else {
             _error.postValue(context.getString(R.string.application_not_supported, thisAppId))
@@ -210,6 +213,25 @@ constructor(
         }
       }
     }
+  }
+
+  fun saveSyncPreferences(resourceTypes: List<ResourceType>) {
+    viewModelScope.launch {
+      preferencesDataStore.write(
+        PreferencesDataStore.Keys.REMOTE_SYNC_RESOURCES,
+        resourceTypes.distinctBy { it.name }.joinToString(",") { it.name },
+      )
+    }
+  }
+
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    this.baseResource.dependentResourceTypes(target)
+    this.relatedResources.forEach { it.dependentResourceTypes(target) }
+  }
+
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+    target.add(resource)
+    relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
   fun hasDebugSuffix(): Boolean =

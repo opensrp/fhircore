@@ -20,6 +20,9 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.preferences.core.Preferences
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -45,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -55,8 +59,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
@@ -69,7 +71,7 @@ class RegisterViewModel
 constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
@@ -425,8 +427,8 @@ constructor(
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+              preferencesDataStore
+                .readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
                 .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,

@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -53,11 +54,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -192,12 +194,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started ->
+      is SyncJobStatus.Started -> {
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(message = getString(R.string.syncing)),
           )
         }
+      }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
       is SyncJobStatus.Succeeded -> {
@@ -318,12 +321,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private fun calculateActualPercentageProgress(
     progressSyncJobStatus: SyncJobStatus.InProgress,
   ): Int {
+    val keyName =
+      PreferencesDataStore.PREFS_SYNC_PROGRESS_TOTAL + progressSyncJobStatus.syncOperation.name
+    val key = longPreferencesKey(keyName)
     val totalRecordsOverall =
-      registerViewModel.sharedPreferencesHelper.read(
-        SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-          progressSyncJobStatus.syncOperation.name,
+      registerViewModel.preferencesDataStore.readOnce(
+        key,
         1L,
-      )
+      )!!
     val isProgressTotalLess = progressSyncJobStatus.total <= totalRecordsOverall
     val currentProgress: Int
     val currentTotalRecords =
@@ -333,11 +338,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
             progressSyncJobStatus.completed
         totalRecordsOverall.toInt()
       } else {
-        registerViewModel.sharedPreferencesHelper.write(
-          SharedPreferencesHelper.PREFS_SYNC_PROGRESS_TOTAL +
-            progressSyncJobStatus.syncOperation.name,
-          progressSyncJobStatus.total.toLong(),
-        )
+        registerViewModel.writePreference(key, data = progressSyncJobStatus.total.toLong())
+
         currentProgress = progressSyncJobStatus.completed
         progressSyncJobStatus.total
       }

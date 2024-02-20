@@ -47,8 +47,8 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -82,7 +82,7 @@ class NetworkModule {
   @WithAuthorizationOkHttpClientQualifier
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+    preferencesDataStore: PreferencesDataStore,
     openSrpApplication: OpenSrpApplication?,
   ) =
     OkHttpClient.Builder()
@@ -125,9 +125,8 @@ class NetworkModule {
             val request = chain.request().newBuilder()
             if (accessToken.isNotEmpty()) {
               request.addHeader(AUTHORIZATION, "Bearer $accessToken")
-              sharedPreferencesHelper.retrieveApplicationId()?.let {
-                request.addHeader(APPLICATION_ID, it)
-              }
+              val appId = preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null)
+              appId?.let { request.addHeader(APPLICATION_ID, it) }
             }
             chain.proceed(request.build())
           } catch (e: Exception) {

@@ -31,7 +31,6 @@ import javax.inject.Inject
 import kotlin.io.path.Path
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -64,8 +63,8 @@ open class TestAppMainActivity : AppMainActivity() {
 
   fun setSyncTime() {
     val today = Calendar.getInstance()
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+    preferencesDataStore.write(
+      PreferencesDataStore.LAST_SYNC_TIMESTAMP,
       formatLastSyncTimestamp(today.time),
     )
   }

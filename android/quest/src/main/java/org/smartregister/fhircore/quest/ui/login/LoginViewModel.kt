@@ -36,7 +36,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -46,10 +45,10 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -68,7 +67,8 @@ class LoginViewModel
 constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
-  val sharedPreferences: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -157,7 +157,10 @@ constructor(
             _showProgressBar.postValue(false)
             _loginErrorState.postValue(LoginErrorState.INVALID_OFFLINE_STATE)
           } else if (
-            accountAuthenticator.validateLoginCredentials(trimmedUsername, passwordAsCharArray)
+            accountAuthenticator.validateLoginCredentials(
+              trimmedUsername,
+              passwordAsCharArray,
+            )
           ) {
             try {
               // Configure Sentry scope
@@ -203,12 +206,12 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    val practitionerDetails =
-      sharedPreferences.read<PractitionerDetails>(
-        key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-        decodeWithGson = true,
-      )
-    if (tokenAuthenticator.sessionActive() && practitionerDetails != null) {
+    // val practitionerDetails = genericProtoDataStore.observe.first().practitionerDetails
+
+    // encoding and decoding
+    if (
+      tokenAuthenticator.sessionActive() && !practitionerDataStore.isEmpty()
+    ) { // TODO: KELVIN null check against existence of protostore INSTEAD OF THE CODE ABOVE
       _showProgressBar.postValue(false)
       updateNavigateHome(true)
     } else {
@@ -257,7 +260,9 @@ constructor(
         onFetchUserInfo(Result.success(userInfo))
         try {
           val bundle =
-            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
+            fhirResourceService.getResource(
+              url = userInfo.keycloakUuid!!.practitionerEndpointUrl(),
+            )
           onFetchPractitioner(Result.success(bundle), userInfo)
         } catch (httpException: HttpException) {
           onFetchPractitioner(Result.failure(httpException), userInfo)
@@ -336,20 +341,20 @@ constructor(
             }
           }
 
-        val location =
+        val locationNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *locations.toTypedArray()).run {
               locations.map { it.name }
             }
           }
 
-        val careTeam =
+        val careTeamNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
               careTeams.map { it.name }
             }
           }
-        val organization =
+        val organizationNames =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
               organizations.map { it.name }
@@ -369,13 +374,12 @@ constructor(
 
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToShredPref(
-            careTeam = careTeam,
-            organization = organization,
-            location = location,
-            fhirPractitionerDetails = practitionerDetails,
-            careTeams = careTeamIds,
-            organizations = organizationIds,
-            locations = locationIds,
+            careTeamNames = careTeamNames,
+            organizationNames = organizationNames,
+            locationNames = locationNames,
+            careTeamIds = careTeamIds,
+            organizationIds = organizationIds,
+            locationIds = locationIds,
             locationHierarchies = locationHierarchies,
           )
         } else {
@@ -389,13 +393,12 @@ constructor(
                 identifier.value == userInfo!!.keycloakUuid
             ) {
               writePractitionerDetailsToShredPref(
-                careTeam = careTeam,
-                organization = organization,
-                location = location,
-                fhirPractitionerDetails = practitionerDetails,
-                careTeams = careTeamIds,
-                organizations = organizationIds,
-                locations = locationIds,
+                careTeamNames = careTeamNames,
+                organizationNames = organizationNames,
+                locationNames = locationNames,
+                careTeamIds = careTeamIds,
+                organizationIds = organizationIds,
+                locationIds = locationIds,
                 locationHierarchies = locationHierarchies,
               )
             }
@@ -409,49 +412,66 @@ constructor(
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.USER_INFO.name,
-      value = userInfo,
-    )
+    viewModelScope.launch {
+      if (userInfo != null) {
+        practitionerDataStore.writeUserInfo(userInfo)
+      }
+    }
   }
 
   private fun writePractitionerDetailsToShredPref(
-    careTeam: List<String>,
-    organization: List<String>,
-    location: List<String>,
-    fhirPractitionerDetails: PractitionerDetails,
-    careTeams: List<String>,
-    organizations: List<String>,
-    locations: List<String>,
+    careTeamIds: List<String>,
+    careTeamNames: List<String>,
+    locationIds: List<String>,
+    locationNames: List<String>,
     locationHierarchies: List<LocationHierarchy>,
+    organizationIds: List<String>,
+    organizationNames: List<String>,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
-    )
-    sharedPreferences.write(
+    // TODO: Store the whole object in proto datastore instead of preferencesDataStore
+    /*
+      preferencesDataStore.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       fhirPractitionerDetails,
-    )
-    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
-    sharedPreferences.write(ResourceType.Organization.name, organizations)
-    sharedPreferences.write(ResourceType.Location.name, locations)
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-      value = location.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.CARE_TEAM.name,
-      value = careTeam.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.ORGANIZATION.name,
-      value = organization.joinToString(separator = ""),
-    )
+    )*/
+
+    // Likely incorrect: verify how preferencesDataStore is able to accept the object, where does
+    // the
+    // serialization happen?
+    //    viewModelScope.launch {
+    //      genericProtoDataStore.writePractitionerDetails(fhirPractitionerDetails)
+    //    }
+
+    // Store the practitioner details components in the preferences datastore
+    viewModelScope.launch {
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
+        careTeamIds,
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_NAMES,
+        careTeamNames,
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
+        locationIds,
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_NAMES,
+        locationNames,
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
+        organizationIds,
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_NAMES,
+        organizationNames,
+      )
+      practitionerDataStore.writeLocationHierarchies(
+        locationHierarchies,
+      )
+    }
   }
 
   fun downloadNowWorkflowConfigs(isInitialLogin: Boolean = true) {

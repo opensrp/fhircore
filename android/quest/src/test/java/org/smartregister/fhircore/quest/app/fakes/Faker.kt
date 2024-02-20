@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import io.mockk.coEvery
 import io.mockk.just
 import io.mockk.mockk
@@ -41,7 +42,6 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 object Faker {
@@ -68,7 +68,8 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           dispatcherProvider = mockk(),
           configService = mockk(),
           json = json,
@@ -87,18 +88,12 @@ object Faker {
     runBlocking {
       configurationRegistry.loadConfigurations(
         appId = APP_DEBUG,
-        context = ApplicationProvider.getApplicationContext(),
+        context = getApplicationContext(),
       ) {}
     }
 
     return configurationRegistry
   }
-
-  fun buildSharedPreferencesHelper() =
-    SharedPreferencesHelper(
-      ApplicationProvider.getApplicationContext<Application>(),
-      Gson(),
-    )
 
   fun buildPatient(
     id: String = "sampleId",

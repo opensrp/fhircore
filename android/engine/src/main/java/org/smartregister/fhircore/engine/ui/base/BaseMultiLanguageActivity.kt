@@ -20,35 +20,34 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import java.lang.UnsupportedOperationException
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import java.util.Locale
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.DataStoreEntryPoint
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 
 /**
  * Base class for all activities used in the app. Every activity should extend this class for
  * multi-language support.
  */
+@AndroidEntryPoint
 abstract class BaseMultiLanguageActivity : AppCompatActivity() {
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   override fun onCreate(savedInstanceState: Bundle?) {
     inject()
     super.onCreate(savedInstanceState)
+
     // Disable dark theme on All Activities.
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
   }
 
   override fun attachBaseContext(baseContext: Context) {
+    val preferencesDataStore =
+      EntryPointAccessors.fromApplication(baseContext, DataStoreEntryPoint::class.java).dataStore
     val lang =
-      baseContext
-        .getSharedPreferences(SharedPreferencesHelper.PREFS_NAME, Context.MODE_PRIVATE)
-        .getString(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
-        ?: Locale.ENGLISH.toLanguageTag()
-    baseContext.setAppLocale(lang).run {
+      preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
+    baseContext.setAppLocale(lang!!).run {
       super.attachBaseContext(baseContext)
       applyOverrideConfiguration(this)
     }

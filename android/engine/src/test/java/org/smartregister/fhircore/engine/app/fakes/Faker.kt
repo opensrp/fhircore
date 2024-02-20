@@ -28,7 +28,6 @@ import java.net.URL
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -42,8 +41,9 @@ import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 object Faker {
 
@@ -70,15 +70,17 @@ object Faker {
     }
 
   fun buildTestConfigurationRegistry(
-    sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
-    dispatcherProvider: DispatcherProvider = testDispatcherProvider,
+    preferencesDataStore: PreferencesDataStore,
+    practitionerDataStore: PractitionerDataStore,
+    dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     return buildTestConfigurationRegistry(
       fhirResourceService,
       fhirResourceDataSource,
-      sharedPreferencesHelper,
+      preferencesDataStore,
+      practitionerDataStore,
       dispatcherProvider,
     )
   }
@@ -86,7 +88,8 @@ object Faker {
   fun buildTestConfigurationRegistry(
     fhirResourceService: FhirResourceService,
     fhirResourceDataSource: FhirResourceDataSource,
-    sharedPreferencesHelper: SharedPreferencesHelper,
+    preferencesDataStore: PreferencesDataStore,
+    practitionerDataStore: PractitionerDataStore,
     dispatcherProvider: DispatcherProvider,
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
@@ -96,7 +99,8 @@ object Faker {
         ConfigurationRegistry(
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = json,

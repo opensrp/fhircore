@@ -42,6 +42,7 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import java.time.OffsetDateTime
 import javax.inject.Inject
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -59,6 +60,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -68,8 +70,6 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
@@ -100,15 +100,14 @@ class AppMainViewModelTest : RobolectricTest() {
   private val registerRepository: RegisterRepository = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val syncBroadcaster: SyncBroadcaster = mockk(relaxed = true)
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
   private lateinit var appMainViewModel: AppMainViewModel
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
 
@@ -117,7 +116,7 @@ class AppMainViewModelTest : RobolectricTest() {
         AppMainViewModel(
           syncBroadcaster = syncBroadcaster,
           secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
           dispatcherProvider = dispatcherProvider,
@@ -138,7 +137,7 @@ class AppMainViewModelTest : RobolectricTest() {
 
     appMainViewModel.onEvent(appMainEvent)
 
-    Assert.assertEquals("en", sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, ""))
+    Assert.assertEquals("en", preferencesDataStore.readOnce(PreferencesDataStore.LANG, ""))
 
     unmockkStatic(Activity::class)
   }
@@ -179,10 +178,14 @@ class AppMainViewModelTest : RobolectricTest() {
         appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
       ),
     )
-    Assert.assertEquals(
-      appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
-      sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null),
-    )
+
+    preferencesDataStore.observe(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null).map { data ->
+      Assert.assertEquals(
+        appMainViewModel.formatLastSyncTimestamp(syncFinishedTimestamp),
+        data,
+      )
+    }
+
     coVerify { appMainViewModel.retrieveAppMainUiState() }
   }
 

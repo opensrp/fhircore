@@ -113,7 +113,9 @@ constructor(
           val data =
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
               workInfo.outputData
-            } else workInfo.progress
+            } else {
+              workInfo.progress
+            }
           data
             .takeIf { it.keyValueMap.isNotEmpty() && it.hasKeyWithValueOfType<String>("StateType") }
             ?.let {

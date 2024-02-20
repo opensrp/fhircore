@@ -21,17 +21,17 @@ import java.io.InputStream
 import java.io.OutputStream
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
+import org.smartregister.fhircore.engine.domain.model.TimeStampPreferences
 import timber.log.Timber
 
-object UserInfoDataStoreSerializer : Serializer<UserInfo> {
-  override val defaultValue: UserInfo
-    get() = UserInfo()
+object TimeStampDataStoreSerializer : Serializer<TimeStampPreferences> {
+  override val defaultValue: TimeStampPreferences
+    get() = TimeStampPreferences(emptyMap())
 
-  override suspend fun readFrom(input: InputStream): UserInfo {
+  override suspend fun readFrom(input: InputStream): TimeStampPreferences {
     return try {
       Json.decodeFromString(
-        deserializer = UserInfo.serializer(),
+        deserializer = TimeStampPreferences.serializer(),
         string = input.readBytes().decodeToString(),
       )
     } catch (e: SerializationException) {
@@ -40,10 +40,10 @@ object UserInfoDataStoreSerializer : Serializer<UserInfo> {
     }
   }
 
-  override suspend fun writeTo(t: UserInfo, output: OutputStream) {
+  override suspend fun writeTo(t: TimeStampPreferences, output: OutputStream) {
     output.write(
       Json.encodeToString(
-          serializer = UserInfo.serializer(),
+          serializer = TimeStampPreferences.serializer(),
           value = t,
         )
         .encodeToByteArray(),

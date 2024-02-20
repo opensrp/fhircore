@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore.mockdata
+package org.smartregister.fhircore.engine.data.remote.model.response
 
 import kotlinx.serialization.Serializable
 
+/**
+ * This data class holds the members of the LocationHierarchy class that we need to store in the
+ * Proto Datastore. It is similar to the PractitionerInfo data class
+ */
 @Serializable
-data class UserInfo(
-  val name: String = "sample name",
+data class LocationHierarchyInfo(
+  val id: String = "",
 )

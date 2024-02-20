@@ -35,11 +35,11 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
 @ExperimentalCoroutinesApi
@@ -50,12 +50,14 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -64,11 +66,18 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Before
   fun setup() {
     hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     MockKAnnotations.init(this)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
+        practitionerDataStore = practitionerDataStore,
         configurationRegistry = configurationRegistry,
       )
 
@@ -88,28 +97,39 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      arrayOf(
-          ResourceType.CarePlan.name,
-          ResourceType.Condition.name,
-          ResourceType.Encounter.name,
-          ResourceType.Group.name,
-          ResourceType.Library.name,
-          ResourceType.Observation.name,
-          ResourceType.Patient.name,
-          ResourceType.PlanDefinition.name,
-          ResourceType.Questionnaire.name,
-          ResourceType.QuestionnaireResponse.name,
-          ResourceType.StructureMap.name,
-          ResourceType.Task.name,
-        )
-        .sorted(),
-    )
-
+    runTest {
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
+        listOf("1"),
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
+        listOf("2"),
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
+        listOf("2"),
+      )
+      preferencesDataStore.write(
+        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+        arrayOf(
+            ResourceType.CarePlan,
+            ResourceType.Condition,
+            ResourceType.Encounter,
+            ResourceType.Group,
+            ResourceType.Library,
+            ResourceType.Observation,
+            ResourceType.Patient,
+            ResourceType.PlanDefinition,
+            ResourceType.Questionnaire,
+            ResourceType.QuestionnaireResponse,
+            ResourceType.StructureMap,
+            ResourceType.Task,
+          )
+          .sorted()
+          .joinToString(",") { it.name },
+      )
+    }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -171,10 +191,21 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Test
   fun `loadSyncParams() should load configuration when remote sync preference is missing`() {
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
-    sharedPreferencesHelper.resetSharedPrefs()
+    runTest {
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
+        listOf("1"),
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
+        listOf("2"),
+      )
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
+        listOf("3"),
+      )
+    }
+    runTest { practitionerDataStore.clear() }
 
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
@@ -204,7 +235,13 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldHaveOrganizationId() {
     val organizationId = "organization-id"
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
+    runTest {
+      // stringPreferencesKey(ResourceType.Organization.name),
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.ORGANIZATION_IDS,
+        listOf(organizationId),
+      )
+    }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     // Resource types that can be filtered based on Organization
@@ -222,6 +259,7 @@ class SyncBroadcasterTest : RobolectricTest() {
       )
 
     Assert.assertTrue(syncParam.isNotEmpty())
+    println(syncParam)
     syncParam
       .filterKeys { it.isIn(*resourceTypes) }
       .values
@@ -232,7 +270,12 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
-    sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
+    runTest {
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.CARE_TEAM_IDS,
+        listOf(careTeamId),
+      )
+    }
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -243,7 +286,13 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
-    sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
+    runTest {
+      practitionerDataStore.write(
+        PractitionerDataStore.Keys.LOCATION_IDS,
+        listOf(locationId),
+      )
+    }
+
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -254,7 +303,13 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Test
   fun loadSyncParamsShouldNotHavePractitionerIdNotSupported() {
     val practitionerId = "practitioner-id"
-    sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
+    runTest {
+      preferencesDataStore.write(
+        PreferencesDataStore.PRACTITIONER_ID,
+        practitionerId,
+      )
+    }
+
     val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())

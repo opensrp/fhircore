@@ -23,7 +23,6 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -47,21 +46,17 @@ import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.shadows.ShadowLooper
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
-import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -78,24 +73,18 @@ class UserSettingViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   lateinit var fhirEngine: FhirEngine
-  private var sharedPreferencesHelper: SharedPreferencesHelper
-  private var configService: ConfigService
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var userSettingViewModel: UserSettingViewModel
   private lateinit var accountAuthenticator: AccountAuthenticator
   private lateinit var secureSharedPreference: SecureSharedPreference
-  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
-  private val resourceService: FhirResourceService = mockk()
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
-  private var fhirResourceDataSource: FhirResourceDataSource
-  private val sync = mockk<Sync>(relaxed = true)
   private val navController = mockk<NavController>(relaxUnitFun = true)
-
-  init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
-    configService = AppConfigService(context = context)
-    fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
-  }
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -103,7 +92,8 @@ class UserSettingViewModelTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
+    preferencesDataStore = mockk()
+    practitionerDataStore = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
     syncBroadcaster =
       spyk(
@@ -123,7 +113,8 @@ class UserSettingViewModelTest : RobolectricTest() {
           syncBroadcaster = syncBroadcaster,
           accountAuthenticator = accountAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
           dispatcherProvider = dispatcherProvider,
@@ -203,24 +194,24 @@ class UserSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun loadSelectedLanguage() {
-    every { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") } returns "fr"
+    every { preferencesDataStore.readOnce(PreferencesDataStore.LANG, "en") } returns "fr"
     Assert.assertEquals("French", userSettingViewModel.loadSelectedLanguage())
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-    verify { sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, "en") }
+    verify { preferencesDataStore.readOnce(PreferencesDataStore.LANG, "en") }
   }
 
   @Test
-  fun setLanguageShouldCallSharedPreferencesHelperWriteWithSelectedLanguageTagAndPostValue() {
+  fun setLanguageShouldCallPreferencesDataStoreWriteWithSelectedLanguageTagAndPostValue() {
     val language = Language("es", "Spanish")
     val userSettingsEvent = UserSettingsEvent.SwitchLanguage(language, context)
 
-    every { sharedPreferencesHelper.write(any(), any<String>()) } just runs
+    coEvery { preferencesDataStore.write(any(), any<String>()) } just runs
 
     userSettingViewModel.onEvent(userSettingsEvent)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-    verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
+    coVerify { preferencesDataStore.write(PreferencesDataStore.LANG, "es") }
 
     Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }

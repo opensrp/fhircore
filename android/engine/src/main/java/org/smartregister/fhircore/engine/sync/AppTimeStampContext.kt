@@ -20,23 +20,18 @@ import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkMana
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.TimeStampDataStore
 
 @Singleton
-class AppTimeStampContext
-@Inject
-constructor(private val sharedPreference: SharedPreferencesHelper) :
+class AppTimeStampContext @Inject constructor(private val dataStore: TimeStampDataStore) :
   ResourceParamsBasedDownloadWorkManager.TimestampContext {
 
   override suspend fun getLasUpdateTimestamp(resourceType: ResourceType): String? {
-    return sharedPreference.read(timestampKey(resourceType), null)
+    return dataStore.readOnce(resourceType)
   }
 
+  // TODO: KELVIN ask Elly why nullable string is allowed. if no timestamp, why save?
   override suspend fun saveLastUpdatedTimestamp(resourceType: ResourceType, timestamp: String?) {
-    sharedPreference.write(timestampKey(resourceType), timestamp)
+    dataStore.write(resourceType, timestamp ?: "")
   }
-
-  private fun timestampKey(resourceType: ResourceType) =
-    "${resourceType.name.uppercase()}_${SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name}"
 }

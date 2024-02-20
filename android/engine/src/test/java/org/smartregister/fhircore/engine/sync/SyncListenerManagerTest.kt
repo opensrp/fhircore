@@ -31,8 +31,10 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 @HiltAndroidTest
@@ -42,9 +44,13 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   private lateinit var syncListenerManager: SyncListenerManager
 
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var configService: ConfigService
 
@@ -55,12 +61,19 @@ class SyncListenerManagerTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     hiltActivityForTest = activityController.get()
     ApplicationProvider.getApplicationContext<HiltTestApplication>().setTheme(R.style.AppTheme)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
+        practitionerDataStore = practitionerDataStore,
         configurationRegistry = configurationRegistry,
       )
   }

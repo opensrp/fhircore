@@ -16,13 +16,14 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
+import androidx.datastore.preferences.core.stringPreferencesKey
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
 /** An interface that provides the application configurations. */
@@ -38,11 +39,25 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+
+  fun provideResourceTags(preferencesDataStore: PreferencesDataStore, practitionerDataStore: PractitionerDataStore): List<Coding> {
+    fun resourceTagTypeToKey(tagType: String): PractitionerDataStore.Keys? {
+      return when(tagType) {
+        ResourceType.Location.name -> PractitionerDataStore.Keys.LOCATION_IDS
+        ResourceType.CareTeam.name -> PractitionerDataStore.Keys.CARE_TEAM_IDS
+        ResourceType.Organization.name -> PractitionerDataStore.Keys.ORGANIZATION_IDS
+        else -> null
+      }
+    }
+
+
     val tags = mutableListOf<Coding>()
-    defineResourceTags().forEach { strategy ->
+    val resourceTags = defineResourceTags()
+
+    resourceTags.forEach { strategy ->
       if (strategy.type == ResourceType.Practitioner.name) {
-        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+        val id = preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_ID, null)
+
         if (id.isNullOrBlank()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {
@@ -51,7 +66,8 @@ interface ConfigService {
           }
         }
       } else {
-        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+        val key = resourceTagTypeToKey(strategy.type)
+        val ids = practitionerDataStore.readOnce(key!!) // Trip point if the strategy type hasn't had its key registered in the function above
         if (ids.isNullOrEmpty()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {

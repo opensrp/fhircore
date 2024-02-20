@@ -49,6 +49,8 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.CountResultConfig
@@ -91,22 +93,33 @@ class RegisterRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val patient = Faker.buildPatient(PATIENT_ID)
   private lateinit var registerRepository: RegisterRepository
 
   @Before
   fun setUp() {
     hiltRule.inject()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore = preferencesDataStore,
+        practitionerDataStore = practitionerDataStore,
+        dispatcherProvider = dispatcherProvider,
+      )
     registerRepository =
       spyk(
         RegisterRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),

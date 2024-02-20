@@ -19,68 +19,51 @@ package org.smartregister.fhircore.engine.datastore
 import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
+import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
-import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-internal class ProtoDataStoreTest : RobolectricTest() {
+internal class PreferencesDataStoreTest : RobolectricTest() {
   private val testContext: Context = ApplicationProvider.getApplicationContext()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var protoDataStore: ProtoDataStore
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  private val keys = PreferencesDataStore.Keys
+
+  @Inject lateinit var gson: Gson
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    protoDataStore = ProtoDataStore(testContext)
   }
 
   @Test
-  fun testReadPractitionerDetails() {
-    val expectedPreferencesValue = PractitionerDetails()
-    runTest {
-      protoDataStore.practitioner.map { dataStoreValue ->
-        assert(dataStoreValue == expectedPreferencesValue)
-      }
-    }
+  fun testReadAppId() {
+    val expectedValue = ""
+    runTest { preferencesDataStore.appId.map { value -> assert(value == expectedValue) } }
   }
 
   @Test
-  fun testWritePractitionerDetails() {
-    val valueToWrite = PractitionerDetails(name = "Kelvin", id = 1)
-    runTest {
-      protoDataStore.writePractitioner(valueToWrite)
-      protoDataStore.practitioner.map { assert(it == (valueToWrite)) }
-    }
-  }
+  fun testWriteAppId() {
+    val newAppId = "new_app_id"
+    val key = keys.APP_ID
 
-  @Test
-  fun testReadUserInfo() {
-    val expectedPreferencesValue = PractitionerDetails()
     runTest {
-      protoDataStore.practitioner.map { dataStoreValue ->
-        assert(dataStoreValue == expectedPreferencesValue)
-      }
-    }
-  }
-
-  @Test
-  fun testWriteUserInfo() {
-    val valueToWrite = UserInfo(name = "Kelvin")
-    runTest {
-      protoDataStore.writeUserInfo(valueToWrite)
-      protoDataStore.userInfo.map { assert(it == valueToWrite) }
+      preferencesDataStore.write(key, newAppId)
+      assert(preferencesDataStore.appId.first() == newAppId)
     }
   }
 }

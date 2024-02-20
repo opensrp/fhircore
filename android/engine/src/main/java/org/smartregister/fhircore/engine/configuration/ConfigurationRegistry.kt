@@ -57,12 +57,12 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -88,7 +88,8 @@ class ConfigurationRegistry
 constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,
@@ -403,7 +404,7 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
     // Reset configurations before loading new ones
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
@@ -754,11 +755,13 @@ constructor(
     }
   }
 
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name },
-    )
+  suspend fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    withContext(dispatcherProvider.io()) {
+      preferencesDataStore.write(
+        PreferencesDataStore.REMOTE_SYNC_RESOURCES,
+        resourceTypes.distinctBy { it.name }.joinToString(",") { it.name },
+      )
+    }
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"

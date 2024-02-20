@@ -35,13 +35,12 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
@@ -65,7 +64,8 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -88,27 +88,25 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
-  fun retrieveUserInfo() =
-    sharedPreferencesHelper.read<UserInfo>(
-      key = SharedPreferenceKey.USER_INFO.name,
-    )
+  fun retrieveUserInfo() = practitionerDataStore.readOnceUserInfo()
 
   fun practitionerLocation() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.PRACTITIONER_LOCATION, null)
 
-  fun retrieveOrganization() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+  fun retrieveOrganizationNames() =
+    practitionerDataStore.readOnce(PractitionerDataStore.Keys.ORGANIZATION_NAMES, null)
 
-  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+  fun retrieveCareTeamNames() =
+    practitionerDataStore.readOnce(PractitionerDataStore.Keys.CARE_TEAM_NAMES, null)
 
   fun retrieveLastSyncTimestamp(): String? =
-    sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+    preferencesDataStore.readOnce(PreferencesDataStore.LAST_SYNC_TIMESTAMP, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
+        preferencesDataStore.readOnce(PreferencesDataStore.LANG, Locale.ENGLISH.toLanguageTag())
           ?: Locale.ENGLISH.toLanguageTag(),
       )
       .displayName
@@ -140,7 +138,9 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
-        sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
+        viewModelScope.launch {
+          preferencesDataStore.write(PreferencesDataStore.LANG, event.language.tag)
+        }
         event.context.run {
           configurationRegistry.clearConfigsCache()
           setAppLocale(event.language.tag)
@@ -182,7 +182,8 @@ constructor(
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
       accountAuthenticator.invalidateSession {
-        sharedPreferencesHelper.resetSharedPrefs()
+        // TODO: KELVIN ask Elly about these resets()
+        viewModelScope.launch { preferencesDataStore.clear() }
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }

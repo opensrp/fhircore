@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore.mockdata
+package org.smartregister.fhircore.engine.datastore
 
-import kotlinx.serialization.Serializable
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
-@Serializable
-data class PractitionerDetails(
-  val name: String = "sample_name",
-  val id: Int = 1,
-)
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface DataStoreEntryPoint {
+  val dataStore: PreferencesDataStore
+}

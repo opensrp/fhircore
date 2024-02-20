@@ -80,14 +80,15 @@ import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityCon
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_CODE
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
@@ -113,23 +114,33 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
   private val application = ApplicationProvider.getApplicationContext<Application>()
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  private lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
+  private val context = ApplicationProvider.getApplicationContext<Application>()
+  private lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    dispatcherProvider = DefaultDispatcherProvider()
-    sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferenceHelper,
+        preferencesDataStore = preferencesDataStore,
+        practitionerDataStore =  practitionerDataStore,
         configurationRegistry = configurationRegistry,
         configService = spiedConfigService,
         configRulesExecutor = configRulesExecutor,
@@ -322,7 +333,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+    every { spiedConfigService.provideResourceTags(preferencesDataStore, practitionerDataStore) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
@@ -567,7 +578,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),
@@ -644,7 +656,8 @@ class DefaultRepositoryTest : RobolectricTest() {
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = mockk(),
+          preferencesDataStore = mockk(),
+          practitionerDataStore = mockk(),
           configurationRegistry = mockk(),
           configService = mockk(),
           configRulesExecutor = mockk(),

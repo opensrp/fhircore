@@ -61,6 +61,8 @@ import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -68,8 +70,6 @@ import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
@@ -99,19 +99,20 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServices,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
+    practitionerDataStore.readOnce(PractitionerDataStore.Keys.ORGANIZATION_NAMES)
   }
 
   private val practitionerId: String? by lazy {
-    sharedPreferencesHelper
-      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+    preferencesDataStore
+      .readOnce(PreferencesDataStore.PRACTITIONER_ID, null)
       ?.extractLogicalIdUuid()
   }
 

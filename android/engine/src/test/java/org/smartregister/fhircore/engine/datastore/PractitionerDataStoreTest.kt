@@ -21,49 +21,44 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.flow.first
+import javax.inject.Inject
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-internal class PreferenceDataStoreTest : RobolectricTest() {
+internal class PractitionerDataStoreTest : RobolectricTest() {
   private val testContext: Context = ApplicationProvider.getApplicationContext()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  private lateinit var preferenceDataStore: PreferenceDataStore
-
-  private val keys = PreferenceDataStore.Keys
+  @Inject lateinit var dataStore: PractitionerDataStore
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    preferenceDataStore = PreferenceDataStore(testContext)
   }
 
   @Test
-  fun testReadAppId() {
-    val expectedValue = ""
+  fun testReadPractitionerDetails() {
+    val expectedPreferencesValue = PractitionerPreferences()
     runTest {
-      val valueFlow = preferenceDataStore.read(keys.APP_ID)
-      valueFlow.map { value -> assert(value == expectedValue) }
+      dataStore.observe.map { dataStoreValue -> assert(dataStoreValue == expectedPreferencesValue) }
     }
   }
 
   @Test
-  fun testWriteAppId() {
-    val newAppId = "new_app_id"
-    val key = keys.APP_ID
-
+  fun testWritePractitionerDetails() { // can just test writing any value of the data class
+    val valueToWrite = listOf("careTeamId1", "careTeamId2")
     runTest {
-      preferenceDataStore.write(key, newAppId)
-      assert(preferenceDataStore.read(keys.APP_ID).first() == newAppId)
+      dataStore.write(PractitionerDataStore.Keys.CARE_TEAM_IDS, valueToWrite)
+      dataStore.observe.map { assert(it.careTeamIds == valueToWrite) }
     }
   }
 }

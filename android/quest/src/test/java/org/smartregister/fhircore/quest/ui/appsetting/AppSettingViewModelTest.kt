@@ -65,11 +65,11 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -84,11 +84,14 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
+
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val configService = mockk<ConfigService>()
@@ -105,7 +108,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         AppSettingViewModel(
           fhirResourceDataSource = fhirResourceDataSource,
           defaultRepository = defaultRepository,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
@@ -128,10 +132,11 @@ class AppSettingViewModelTest : RobolectricTest() {
 
     val appId = "app/debug"
     appSettingViewModel.appId.value = appId
+
     appSettingViewModel.loadConfigurations(context)
     Assert.assertNotNull(appSettingViewModel.showProgressBar.value)
     Assert.assertFalse(appSettingViewModel.showProgressBar.value!!)
-    Assert.assertEquals(appId, sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null))
+    Assert.assertEquals(appId, preferencesDataStore.readOnce(PreferencesDataStore.APP_ID, null))
   }
 
   @Test
@@ -266,7 +271,10 @@ class AppSettingViewModelTest : RobolectricTest() {
                           appId = "a",
                           fhirResource =
                             FhirResourceConfig(
-                              baseResource = ResourceConfig(resource = ResourceType.Patient),
+                              baseResource =
+                                ResourceConfig(
+                                  resource = ResourceType.Patient,
+                                ),
                               relatedResources =
                                 listOf(
                                   ResourceConfig(
@@ -446,6 +454,21 @@ class AppSettingViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun testSaveSyncPreferencesDataStoreShouldVerifyDataSave() {
+    val resourceType =
+      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
+
+    appSettingViewModel.saveSyncPreferences(resourceType)
+
+    val savedSyncResourceTypes: List<String> =
+      preferencesDataStore.readOnce(PreferencesDataStore.REMOTE_SYNC_RESOURCES)?.split(",")!!
+
+    Assert.assertEquals(2, savedSyncResourceTypes.size)
+    Assert.assertEquals(ResourceType.Task.name, savedSyncResourceTypes.first())
+    Assert.assertEquals(ResourceType.Patient.name, savedSyncResourceTypes.last())
+  }
+
+  @Test
   fun testFetchConfigurationsChunking() = runTest {
     val appId = "test_app_id"
     val compositionSections = mutableListOf<Composition.SectionComponent>()
@@ -557,7 +580,10 @@ class AppSettingViewModelTest : RobolectricTest() {
                           appId = "a",
                           fhirResource =
                             FhirResourceConfig(
-                              baseResource = ResourceConfig(resource = ResourceType.Patient),
+                              baseResource =
+                                ResourceConfig(
+                                  resource = ResourceType.Patient,
+                                ),
                               relatedResources =
                                 listOf(
                                   ResourceConfig(

@@ -78,6 +78,8 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -85,8 +87,6 @@ import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -108,7 +108,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
 
   @Inject lateinit var configService: ConfigService
 
@@ -150,19 +152,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     hiltRule.inject()
 
     // Write practitioner and organization to shared preferences
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
-    )
+    runTest {
+      preferencesDataStore.write(
+        PreferencesDataStore.PRACTITIONER_ID,
+        practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString(),
+      )
 
-    sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("105"))
+      practitionerDataStore.write(PractitionerDataStore.Keys.ORGANIZATION_NAMES, listOf("orgName"))
+    }
 
     defaultRepository =
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferencesDataStore = preferencesDataStore,
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
@@ -183,10 +187,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
           dispatcherProvider = defaultRepository.dispatcherProvider,
+          preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = practitionerDataStore,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
           transformSupportServices = mockk(),
-          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
         ),

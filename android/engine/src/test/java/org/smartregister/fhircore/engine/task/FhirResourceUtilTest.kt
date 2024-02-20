@@ -49,7 +49,10 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.today
@@ -60,6 +63,12 @@ class FhirResourceUtilTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private lateinit var fhirResourceUtil: FhirResourceUtil
   private lateinit var defaultRepository: DefaultRepository
   private lateinit var configurationRegistry: ConfigurationRegistry
@@ -68,7 +77,12 @@ class FhirResourceUtilTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     defaultRepository = mockk()
-    configurationRegistry = Faker.buildTestConfigurationRegistry()
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(
+        preferencesDataStore,
+        practitionerDataStore,
+        dispatcherProvider,
+      )
     every { defaultRepository.fhirEngine } returns fhirEngine
     fhirResourceUtil =
       spyk(

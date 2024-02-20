@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
@@ -37,10 +38,11 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.launchFragmentInHiltContainer
@@ -59,7 +61,10 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
-  private var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var preferencesDataStore: PreferencesDataStore
+
+  @Inject lateinit var practitionerDataStore: PractitionerDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -68,7 +73,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   private lateinit var secureSharedPreference: SecureSharedPreference
 
   init {
-    sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -79,7 +83,6 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
     hiltRule.inject()
     accountAuthenticator = mockk()
     secureSharedPreference = mockk()
-    sharedPreferencesHelper = mockk()
     syncBroadcaster =
       SyncBroadcaster(
         configurationRegistry,
@@ -95,7 +98,8 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
         syncBroadcaster = syncBroadcaster,
         accountAuthenticator = accountAuthenticator,
         secureSharedPreference = secureSharedPreference,
-        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferencesDataStore = preferencesDataStore,
+        practitionerDataStore = practitionerDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
         dispatcherProvider = testDispatcherProvider,

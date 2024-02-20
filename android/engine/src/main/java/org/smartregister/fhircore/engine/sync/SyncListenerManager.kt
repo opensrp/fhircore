@@ -23,6 +23,7 @@ import com.google.android.fhir.sync.SyncJobStatus
 import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.map
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -30,8 +31,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.PractitionerDataStore
+import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import timber.log.Timber
 
 /**
@@ -44,7 +45,8 @@ class SyncListenerManager
 constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferencesDataStore: PreferencesDataStore,
+  val practitionerDataStore: PractitionerDataStore
 ) {
 
   private val syncConfig by lazy {
@@ -90,15 +92,18 @@ constructor(
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        ConfigType.Application,
+      )
 
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val mandatoryTags = configService.provideResourceTags(preferencesDataStore, practitionerDataStore)
 
+    // See AppSettingViewModel#saveSyncPreferences to understand this split()
     val relatedResourceTypes: List<String>? =
-      sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
+      preferencesDataStore.readOnce(PreferencesDataStore.REMOTE_SYNC_RESOURCES)?.split(",")
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
@@ -115,7 +120,10 @@ constructor(
             ConfigurationRegistry.ORGANIZATION ->
               mandatoryTags
                 .firstOrNull {
-                  it.display.contentEquals(organizationResourceTag?.tag?.display, ignoreCase = true)
+                  it.display.contentEquals(
+                    organizationResourceTag?.tag?.display,
+                    ignoreCase = true,
+                  )
                 }
                 ?.code
             ConfigurationRegistry.ID -> paramExpression
