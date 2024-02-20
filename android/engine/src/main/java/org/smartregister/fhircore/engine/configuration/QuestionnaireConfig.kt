@@ -49,7 +49,7 @@ data class QuestionnaireConfig(
   val configRules: List<RuleConfig>? = null,
   val extraParams: List<ActionParameter>? = null,
   val onSubmitActions: List<ActionConfig>? = null,
-  val barcodeLinkId: String = "patient-barcode",
+  val barcodeLinkId: String? = "patient-barcode",
   val extractedResourceUniquePropertyExpressions: List<ExtractedResourceUniquePropertyExpression>? =
     null,
   val saveQuestionnaireResponse: Boolean = true,
@@ -59,6 +59,7 @@ data class QuestionnaireConfig(
   val showRequiredTextAsterisk: Boolean = true,
   val showRequiredText: Boolean = false,
   val managingEntityRelationshipCode: String? = null,
+  val linkIds: List<LinkIdConfig>? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -85,8 +86,9 @@ data class QuestionnaireConfig(
       planDefinitions = planDefinitions?.map { it.interpolate(computedValuesMap) },
       readOnlyLinkIds = readOnlyLinkIds?.map { it.interpolate(computedValuesMap) },
       onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
-      barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
+      barcodeLinkId = barcodeLinkId?.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
+      linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
     )
 }
 
@@ -114,3 +116,19 @@ data class ExtractedResourceUniquePropertyExpression(
   val resourceType: ResourceType,
   val fhirPathExpression: String,
 ) : java.io.Serializable, Parcelable
+
+@Serializable
+@Parcelize
+data class LinkIdConfig(
+  val linkId: String,
+  val type: LinkIdType,
+) : java.io.Serializable, Parcelable
+
+@Serializable
+@Parcelize
+enum class LinkIdType : Parcelable {
+  READ_ONLY,
+  BARCODE,
+  LOCATION,
+  IDENTIFIER,
+}

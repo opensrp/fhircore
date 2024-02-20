@@ -59,6 +59,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -146,7 +147,11 @@ constructor(
         if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
             readOnly = questionnaireConfig.isReadOnly(),
-            readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
+            readOnlyLinkIds =
+              questionnaireConfig.readOnlyLinkIds
+                ?: questionnaireConfig.linkIds
+                  ?.filter { it.type == LinkIdType.READ_ONLY }
+                  ?.map { it.linkId },
           )
         }
 
@@ -159,14 +164,18 @@ constructor(
 
         // Set barcode to the configured linkId default: "patient-barcode"
         if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-          find(questionnaireConfig.barcodeLinkId)?.apply {
-            initial =
-              mutableListOf(
-                Questionnaire.QuestionnaireItemInitialComponent()
-                  .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-              )
-            readOnly = true
-          }
+          (questionnaireConfig.barcodeLinkId
+              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+            ?.let { barcodeLinkId ->
+              find(barcodeLinkId)?.apply {
+                initial =
+                  mutableListOf(
+                    Questionnaire.QuestionnaireItemInitialComponent()
+                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                  ) // TODO should this be resource identifier or OpenSrp unique ID?
+                readOnly = true
+              }
+            }
         }
       }
     return questionnaire
