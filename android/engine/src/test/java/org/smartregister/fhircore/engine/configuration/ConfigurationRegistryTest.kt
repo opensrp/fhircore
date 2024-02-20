@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
@@ -282,7 +281,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
     coVerify(exactly = 1) { fhirEngine.create(capture(requestPathArgumentSlot)) }
     Assert.assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
     Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
@@ -350,8 +348,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
       bundle
 
-    coEvery { fhirEngine.update(any()) } returns Unit
-    coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
@@ -364,7 +360,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.setNonProxy(true)
     configRegistry.fetchNonWorkflowConfigResources()
 
-    coVerify { fhirEngine.get(ResourceType.List, testListId) }
+    val createdResourceArgumentSlot = mutableListOf<Resource>()
+
+    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
+    Assert.assertEquals(
+      "test-list-id",
+      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id
+    )
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
@@ -416,7 +418,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
-      configRegistry.createRemote(patient)
+      configRegistry.createOrUpdateRemote(patient)
       coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
