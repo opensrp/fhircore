@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -60,6 +61,8 @@ import org.hl7.fhir.r4.model.Timing
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -298,6 +301,40 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
       else -> {}
     }
   }
+}
+
+fun Resource.appendRelatedEntityLocation(
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaireConfig: QuestionnaireConfig,
+  context: Context,
+) {
+  val locationCoding =
+    Coding().apply {
+      system =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+      display =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
+        )
+    }
+  questionnaireConfig.linkIds
+    ?.filter { it.type == LinkIdType.LOCATION }
+    ?.forEach { linkIdConfig ->
+      val locationId =
+        questionnaireResponse
+          .find(linkIdConfig.linkId)
+          ?.itemFirstRep
+          ?.answerFirstRep
+          ?.valueStringType
+          ?.value
+
+      val existingTag = this.meta.getTag(locationCoding.system, locationId)
+      if (!locationId.isNullOrEmpty() && existingTag == null) {
+        this.meta.addTag(locationCoding.apply { setCode(locationId) })
+      }
+    }
 }
 
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =

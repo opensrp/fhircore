@@ -107,9 +107,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       ),
     )
 
-  override fun provideConfigurationSyncPageSize(): String {
-    return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
-  }
+  override fun provideConfigurationSyncPageSize(): String = BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
 
   companion object {
     private const val APP_VERSION = "AppVersion"

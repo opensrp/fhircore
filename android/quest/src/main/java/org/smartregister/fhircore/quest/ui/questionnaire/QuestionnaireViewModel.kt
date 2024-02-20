@@ -74,6 +74,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
+import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
@@ -213,7 +214,7 @@ constructor(
         return@launch
       }
 
-      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig)
+      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig, context)
 
       val bundle =
         performExtraction(
@@ -227,7 +228,8 @@ constructor(
         bundle = bundle,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
-        currentQuestionnaireResponse = currentQuestionnaireResponse,
+        questionnaireResponse = currentQuestionnaireResponse,
+        context = context,
       )
 
       updateResourcesLastUpdatedProperty(actionParameters)
@@ -283,7 +285,8 @@ constructor(
     bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
-    currentQuestionnaireResponse: QuestionnaireResponse,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
   ) {
     val extractionDate = Date()
 
@@ -313,18 +316,18 @@ constructor(
 
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
-        applyResourceMetadata()
+        applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
         if (
-          currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+          questionnaireResponse.subject.reference.isNullOrEmpty() &&
             subjectType != null &&
             resourceType == subjectType &&
             logicalId.isNotEmpty()
         ) {
-          currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
+          questionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
         if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
-            this.id = currentQuestionnaireResponse.subject.extractId()
+            this.id = questionnaireResponse.subject.extractId()
           } else if (
             extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
               previouslyExtractedResources.containsKey(resourceType)
@@ -362,6 +365,24 @@ constructor(
           }
         }
 
+        // Set the Group's Related Entity Location metadata tag on Resource before saving.
+        questionnaireConfig.groupResource?.let {
+          if (it.groupIdentifier.isNotEmpty() && !it.deactivateMembers && !it.removeGroup) {
+            val group =
+              loadResource(ResourceType.Group, it.groupIdentifier.extractLogicalIdUuid()) as Group?
+            if (group != null) {
+              val system =
+                context.getString(
+                  org.smartregister.fhircore.engine.R.string
+                    .sync_strategy_related_entity_location_system,
+                )
+              group.meta.tag
+                .filter { coding -> coding.system == system }
+                .forEach { coding -> this.meta.addTag(coding) }
+            }
+          }
+        }
+
         defaultRepository.addOrUpdate(true, resource = this)
 
         updateGroupManagingEntity(
@@ -386,14 +407,14 @@ constructor(
       }
     }
 
-    // Reference extracted resources in QR then save it if subject exists and config is true
-    currentQuestionnaireResponse.apply { addContained(listResource) }
+    // Reference extracted resources in QR then save it if subject exists
+    questionnaireResponse.apply { addContained(listResource) }
 
     if (
-      !currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+      !questionnaireResponse.subject.reference.isNullOrEmpty() &&
         questionnaireConfig.saveQuestionnaireResponse
     ) {
-      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
+      defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
   }
 
@@ -437,6 +458,7 @@ constructor(
   private fun QuestionnaireResponse.processMetadata(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
+    context: Context,
   ) {
     status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
     authored = Date()
@@ -444,7 +466,7 @@ constructor(
     questionnaire.useContext
       .filter { it.hasValueCodeableConcept() }
       .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
-    applyResourceMetadata()
+    applyResourceMetadata(questionnaireConfig, this, context)
     setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
 
     // Set subject if exists
@@ -464,15 +486,18 @@ constructor(
       ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
   }
 
-  private fun Resource?.applyResourceMetadata(): Resource? {
+  private fun Resource?.applyResourceMetadata(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
+  ) =
     this?.apply {
       appendOrganizationInfo(authenticatedOrganizationIds)
       appendPractitionerInfo(practitionerId)
+      appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
       updateLastUpdated()
       generateMissingId()
     }
-    return this
-  }
 
   /**
    * Perform StructureMap or Definition based definition. The result of this function returns a

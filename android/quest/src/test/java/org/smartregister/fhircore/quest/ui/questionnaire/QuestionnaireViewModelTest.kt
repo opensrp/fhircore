@@ -23,7 +23,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -102,7 +101,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
@@ -129,7 +127,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
-  private val knowledgeManager: KnowledgeManager = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private val patient =
     Faker.buildPatient().apply {
@@ -288,7 +285,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
-        currentQuestionnaireResponse = questionnaireResponse,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
       )
     }
 
@@ -545,7 +543,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
 
     // Barcode linkId updated
-    val questionnaireBarcodeItem = questionnaire?.find(newQuestionnaireConfig.barcodeLinkId)
+    val questionnaireBarcodeItem =
+      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
     Assert.assertTrue(barCodeItemValue is StringType)
     Assert.assertEquals(
@@ -1043,7 +1042,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle = extractedBundle,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig,
-      currentQuestionnaireResponse = questionnaireResponse,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
     )
 
     // The Observation ID for the extracted Obs should be the same as previousObs'Id

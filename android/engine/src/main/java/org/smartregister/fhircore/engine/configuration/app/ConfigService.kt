@@ -43,7 +43,7 @@ interface ConfigService {
     defineResourceTags().forEach { strategy ->
       if (strategy.type == ResourceType.Practitioner.name) {
         val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-        if (id.isNullOrBlank()) {
+        if (id.isNullOrBlank() || id.isEmpty()) {
           strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
         } else {
           strategy.tag.let { tag ->
@@ -63,7 +63,6 @@ interface ConfigService {
         }
       }
     }
-
     return tags
   }
 
