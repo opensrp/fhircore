@@ -38,6 +38,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -66,7 +67,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -253,7 +253,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               Toast.LENGTH_SHORT,
             )
             .show()
-          Timber.e("Location permissions denied")
         },
       )
 

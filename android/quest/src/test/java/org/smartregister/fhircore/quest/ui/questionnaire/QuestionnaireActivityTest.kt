@@ -210,7 +210,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { viewModel.applicationConfiguration.enableLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true
@@ -229,7 +229,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { viewModel.applicationConfiguration.enableLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns false
@@ -250,7 +250,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { viewModel.applicationConfiguration.enableLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true
