@@ -726,7 +726,7 @@ class ResourceExtensionTest : RobolectricTest() {
         type = Questionnaire.QuestionnaireItemType.GROUP
       },
     )
-    questionnaire.item.prepareQuestionsForReadingOrEditing("", true)
+    questionnaire.item.prepareQuestionsForReadingOrEditing("", true, readOnlyLinkIds = listOf("1"))
 
     Assert.assertTrue(questionnaire.item[0].readOnly)
     Assert.assertFalse(questionnaire.item[1].readOnly)
@@ -743,7 +743,7 @@ class ResourceExtensionTest : RobolectricTest() {
       },
     )
     questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
-    questionnaire.item.prepareQuestionsForReadingOrEditing("", readOnlyLinkIds = listOf("3"))
+    questionnaire.item.prepareQuestionsForReadingOrEditing("", readOnly = false, readOnlyLinkIds = listOf("3"))
 
     Assert.assertFalse(questionnaire.item[0].readOnly)
     Assert.assertTrue(questionnaire.item[1].readOnly)
