@@ -505,4 +505,37 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals("Patient", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
   }
+
+
+  @Test
+  fun `perform family extraction via gps location`() {
+    val registrationQuestionnaireResponseString: String =
+      "content/general/family/questionnaire-response-gps.json".readFile()
+    val registrationStructureMap = "content/general/family/family-registration-gps.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap =
+      structureMapUtilities.parse(registrationStructureMap, "eCHIS Family Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        registrationQuestionnaireResponseString,
+      )
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Location", targetResource.entry[1].resource.resourceType.toString())
+  }
 }
