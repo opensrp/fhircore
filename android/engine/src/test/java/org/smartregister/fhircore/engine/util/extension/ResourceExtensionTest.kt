@@ -746,7 +746,7 @@ class ResourceExtensionTest : RobolectricTest() {
     questionnaire.item.prepareQuestionsForReadingOrEditing(
       "",
       readOnly = false,
-      readOnlyLinkIds = listOf("3")
+      readOnlyLinkIds = listOf("3"),
     )
 
     Assert.assertFalse(questionnaire.item[0].readOnly)
