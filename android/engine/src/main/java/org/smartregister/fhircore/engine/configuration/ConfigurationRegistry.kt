@@ -593,7 +593,7 @@ constructor(
           ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
-  private fun writeToFile(resource: Resource): File {
+  fun writeToFile(resource: Resource): File {
     val fileName =
       if (resource is MetadataResource && resource.name != null) {
         resource.name
