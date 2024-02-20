@@ -23,7 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
 import org.jetbrains.annotations.VisibleForTesting
-import org.smartregister.fhircore.engine.util.location.LocationUtils.Companion.getAccurateLocation
+import org.smartregister.fhircore.engine.util.location.LocationUtils.getAccurateLocation
 
 object LocationService {
   private lateinit var fusedLocationClient: FusedLocationProviderClient
