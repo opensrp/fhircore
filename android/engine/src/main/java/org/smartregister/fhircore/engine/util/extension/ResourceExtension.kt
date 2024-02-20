@@ -123,9 +123,9 @@ fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
   parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
-  var extensionUpdateForm = listOf<Extension>()
+  var extensionUpdateFrom = listOf<Extension>()
   if (updatedResource is Patient) {
-    extensionUpdateForm = updatedResource.extension
+    extensionUpdateFrom = updatedResource.extension
   }
   var extension = listOf<Extension>()
   if (this is Patient) {
@@ -138,27 +138,27 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(jsonParser)))
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
     val meta = this.meta
-    val metaUpdateForm = this@updateFrom.meta
+    val metaUpdateFrom = this@updateFrom.meta
     if ((meta == null || meta.isEmpty)) {
-      if (metaUpdateForm != null) {
-        this.meta = metaUpdateForm
-        this.meta.tag = metaUpdateForm.tag
+      if (metaUpdateFrom != null) {
+        this.meta = metaUpdateFrom
+        this.meta.tag = metaUpdateFrom.tag
       }
     } else {
       val setOfTags = mutableSetOf<Coding>()
       setOfTags.addAll(meta.tag)
-      setOfTags.addAll(metaUpdateForm.tag)
+      setOfTags.addAll(metaUpdateFrom.tag)
       this.meta.tag = setOfTags.distinctBy { it.code + it.system }
     }
     if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
       if (extension.isEmpty()) {
-        if (extensionUpdateForm.isNotEmpty()) {
-          this.extension = extensionUpdateForm
+        if (extensionUpdateFrom.isNotEmpty()) {
+          this.extension = extensionUpdateFrom
         }
       } else {
         val setOfExtension = mutableSetOf<Extension>()
         setOfExtension.addAll(extension)
-        setOfExtension.addAll(extensionUpdateForm)
+        setOfExtension.addAll(extensionUpdateFrom)
         this.extension = setOfExtension.distinct()
       }
     }
