@@ -74,6 +74,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -215,7 +217,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         // Use StructureMap for extraction
         extension = samplePatientRegisterQuestionnaire.extension
       }
-    val questionnaireResponse = extractionQuestionnaireResponse()
+    val theLinkId = "someLinkId"
+    val locationId = "awesome-location-uuid"
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType(locationId))
+              },
+            )
+          },
+        )
+      }
+    val updatedQuestionnaireConfig =
+      questionnaireConfig.copy(
+        linkIds = listOf(LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION)),
+      )
     val actionParameters = emptyList<ActionParameter>()
     val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
@@ -241,16 +260,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       currentQuestionnaireResponse = questionnaireResponse,
       actionParameters = actionParameters,
       context = context,
-      questionnaireConfig = questionnaireConfig,
+      questionnaireConfig = updatedQuestionnaireConfig,
       onSuccessfulSubmission = onSuccessfulSubmission,
     )
 
     // Verify QuestionnaireResponse was validated
     verify {
       questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
       )
     }
 
@@ -280,11 +299,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Verify that the questionnaire response and extracted resources were saved
     val bundleSlot = slot<Bundle>()
     // https://github.com/mockk/mockk/issues/352#issuecomment-592426549
-    coVerifyOrder {
+    coVerify {
       questionnaireViewModel.saveExtractedResources(
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         questionnaireResponse = questionnaireResponse,
         context = context,
       )
@@ -299,10 +318,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val resource = it.resource
       Assert.assertNotNull(resource.id)
       Assert.assertNotNull(resource.meta.lastUpdated)
+
+      // Assert every resource contains Related Entity Location meta tag as configured
+      val relatedEntityLocationCodingSystem =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+
+      val relatedEntityLocationMetaTag =
+        resource.meta.tag.findLast { coding ->
+          coding.system == relatedEntityLocationCodingSystem && coding.code == locationId
+        }
+      Assert.assertNotNull(relatedEntityLocationMetaTag)
+
       coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource) }
-      /*coVerify {
-        questionnaireViewModel.addMemberToConfiguredGroup(resource = resource, groupConfig = null)
-      }*/
     }
     // QuestionnaireResponse should have, subject and contained properties set then it's saved
     Assert.assertEquals("Patient/" + patient.logicalId, questionnaireResponse.subject.reference)
@@ -331,23 +360,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.generateCarePlan(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
       )
 
       questionnaireViewModel.executeCql(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
       )
 
-      questionnaireViewModel.softDeleteResources(questionnaireConfig)
+      questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
 
       onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }

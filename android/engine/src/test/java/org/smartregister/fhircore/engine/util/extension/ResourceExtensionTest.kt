@@ -860,9 +860,9 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertNotNull(lastMetaTag)
     Assert.assertEquals(
       context.getString(
-        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system
+        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
       ),
-      lastMetaTag?.system
+      lastMetaTag?.system,
     )
     Assert.assertEquals(locationId, lastMetaTag?.code)
   }
