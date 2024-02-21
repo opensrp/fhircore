@@ -365,7 +365,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
     Assert.assertEquals(
       "test-list-id",
-      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id
+      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
