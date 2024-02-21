@@ -207,6 +207,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         fhirResourceUtil = fhirResourceUtil,
         workflowCarePlanGenerator = workflowCarePlanGenerator,
+        context = context,
       )
 
     immunizationResource =
