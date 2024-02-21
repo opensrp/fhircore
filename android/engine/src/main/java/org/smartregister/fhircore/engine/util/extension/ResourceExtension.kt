@@ -55,9 +55,11 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
+import org.hl7.fhir.r4.model.Type
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
@@ -322,14 +324,13 @@ fun Resource.appendRelatedEntityLocation(
   questionnaireConfig.linkIds
     ?.filter { it.type == LinkIdType.LOCATION }
     ?.forEach { linkIdConfig ->
+      val answer: Type? = questionnaireResponse.find(linkIdConfig.linkId)?.answerFirstRep?.value
       val locationId =
-        questionnaireResponse
-          .find(linkIdConfig.linkId)
-          ?.itemFirstRep
-          ?.answerFirstRep
-          ?.valueStringType
-          ?.value
-
+        when (answer) {
+          is Reference -> answer.reference.extractLogicalIdUuid()
+          is StringType -> answer.value.extractLogicalIdUuid()
+          else -> null
+        }
       val existingTag = this.meta.getTag(locationCoding.system, locationId)
       if (!locationId.isNullOrEmpty() && existingTag == null) {
         this.meta.addTag(locationCoding.apply { setCode(locationId) })

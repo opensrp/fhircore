@@ -367,7 +367,12 @@ constructor(
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
         questionnaireConfig.groupResource?.let {
-          if (it.groupIdentifier.isNotEmpty() && !it.deactivateMembers && !it.removeGroup) {
+          if (
+            it.groupIdentifier.isNotEmpty() &&
+              !it.deactivateMembers &&
+              !it.removeGroup &&
+              !it.removeMember
+          ) {
             val group =
               loadResource(ResourceType.Group, it.groupIdentifier.extractLogicalIdUuid()) as Group?
             if (group != null) {

@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigService.Companion.APP_VERSION
 import org.smartregister.fhircore.engine.sync.ResourceTag
 
 @Singleton
@@ -108,8 +109,4 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
     )
 
   override fun provideConfigurationSyncPageSize(): String = BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
-
-  companion object {
-    private const val APP_VERSION = "AppVersion"
-  }
 }
