@@ -16,12 +16,13 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
+import android.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -35,13 +36,17 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.layers.FillLayer
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
 import dagger.hilt.android.AndroidEntryPoint
 import io.ona.kujaku.callbacks.AddPointCallback
+import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
+import io.ona.kujaku.plugin.switcher.layer.SatelliteBaseLayer
+import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.smartregister.fhircore.geowidget.BuildConfig
@@ -51,6 +56,10 @@ import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
 import org.smartregister.fhircore.geowidget.util.extensions.position
 import timber.log.Timber
+import java.net.URI
+import java.net.URISyntaxException
+import java.util.LinkedList
+
 
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
@@ -106,17 +115,49 @@ class GeoWidgetFragment : Fragment() {
   private fun setUpMapView(): KujakuMapView {
     return KujakuMapView(requireActivity()).apply {
       id = R.id.kujaku_widget
-      val builder = Style.Builder().fromUri("asset://fhircore_style.json")
+      val builder = Style.Builder().fromUri("asset://base-layer-switcher-style.json")
       getMapAsync { mapboxMap ->
         mapboxMap.setStyle(builder) { style ->
           geoJsonSource = style.getSourceAs("quest-data-set")
+          addMapStyle(style)
           if (geoJsonSource != null && featureCollection != null) {
             geoJsonSource!!.setGeoJson(featureCollection)
           }
         }
       }
+
       setOnAddLocationListener(this)
       setOnClickLocationListener(this)
+    }
+  }
+
+  private fun KujakuMapView.addMapStyle(style: Style) {
+    val baseLayerSwitcherPlugin = BaseLayerSwitcherPlugin(this, style)
+    val satelliteBaseLayer = SatelliteBaseLayer()
+    val streetsBaseLayer = StreetsBaseLayer(requireActivity())
+
+    baseLayerSwitcherPlugin.addBaseLayer(satelliteBaseLayer, true)
+    baseLayerSwitcherPlugin.addBaseLayer(streetsBaseLayer, false)
+
+    this.mbTilesHelper.setMBTileLayers(requireActivity(), baseLayerSwitcherPlugin)
+    showCurrentLocationBtn(true)
+    baseLayerSwitcherPlugin.show()
+  }
+
+  private fun addStreetViewLayer(style: Style) {
+    try {
+      val sourceUri = URI("asset://street_view.geo.json")
+      val streetViewSource = GeoJsonSource("street-view-source", sourceUri)
+      style.addSource(streetViewSource)
+
+      val streetViewLayer = FillLayer("street-view-layer", "street-view-source")
+        .withProperties(
+          PropertyFactory.fillColor(Color.parseColor("#C0C0C0")),
+          PropertyFactory.fillOpacity(0.5f)
+        )
+      style.addLayerBelow(streetViewLayer, "road-label")
+    } catch (e: URISyntaxException) {
+      e.printStackTrace()
     }
   }
 
