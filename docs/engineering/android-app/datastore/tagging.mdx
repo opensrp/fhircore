@@ -6,6 +6,10 @@ All tags have the system prefix `https://smartregister.org/` and a system suffix
 
 ## Description of Tags
 
+The `meta.tag` field is set to a `code`. We require the `system` and `code` fields to be complete to properly use the tag and rely on the `display` field for a human readable description, although we do not surface this information to any app users.
+
+In the FHIR specification the `system` field is the defined as the terminology service that defines the code. Our tagging interprets that as defining a sub-terminology relevant for the specific tags purpose. For example, in the `app-version` tag the `"https://smartregister.org/app-version"` system defines the set of app version `code`s that are considered valid `app-version`s.
+
 The tags we currently set are shown below.
 
 System Suffix|Display|Purpose
