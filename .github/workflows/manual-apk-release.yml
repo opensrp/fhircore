@@ -1,7 +1,6 @@
 name: Manual APK Release
 run-name: Generating a FHIR Core Release APK 🚀
 on: 
-   push:
    workflow_dispatch:
     inputs:
       buildType:
