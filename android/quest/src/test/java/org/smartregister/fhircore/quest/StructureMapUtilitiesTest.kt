@@ -532,7 +532,10 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         registrationQuestionnaireResponseString,
       )
 
+    //println("sm"+iParser.encodeToString(structureMap))
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+    println("bundle-$targetResource")
+    println("data"+iParser.encodeToString(targetResource))
 
     Assert.assertEquals(3, targetResource.entry.size)
     Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())

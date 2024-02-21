@@ -11,95 +11,103 @@ group HouseholdRegistration(source src : QuestionnaireResponse, target bundle: B
         ExtractGroup(src, group, bundle) "rule_bundle_entries";
 }
 
-group ExtractGroup(source src : QuestionnaireResponse, target group : Group, target bundle: Bundle) {
-       src -> group.id = uuid() "rule_group_id_generation";
-       src -> group.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "rule_group_name";
+group ExtractGroup(source src : QuestionnaireResponse,
+    target group : Group,
+    target bundle: Bundle) {
 
-       src -> group.identifier = create('Identifier') as groupIdentifierOpenSRPId then {
-        src -> groupIdentifierOpenSRPId.value = evaluate(src, $this.item.where(linkId = 'household.id').answer.value)
-        "rule_group_identifier_opensrp_id_value";
-        src -> groupIdentifierOpenSRPId.use = "official" "rule_group_identifier_opensrp_id_use";
-        src -> groupIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-     } "rule_group_identifier_opensrp";
+        // set group data
+        src -> group.id = uuid() "rule_group_id_generation";
+        src -> group.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "rule_group_name";
 
-       src -> group.identifier = create('Identifier') as groupIdentifier then {
-          src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
-          src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
-       } "rule_group_identifier";
+        src -> group.identifier = create('Identifier') as groupIdentifierOpenSRPId then {
+            src -> groupIdentifierOpenSRPId.value = evaluate(src, $this.item.where(linkId = 'household.id').answer.value) "rule_group_identifier_opensrp_id_value";
+            src -> groupIdentifierOpenSRPId.use = "official" "rule_group_identifier_opensrp_id_use";
+            src -> groupIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+        } "rule_group_identifier_opensrp";
 
-       src -> group.active = true "r_grp_status_data";
-       src -> group.type = 'person' "r_grp_type_data";
+        src -> group.identifier = create('Identifier') as groupIdentifier then {
+            src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
+            src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+        } "rule_group_identifier";
 
-       src -> group.code = create('CodeableConcept') as concept then ExtractHouseholdCode(src, concept) "r_grp_code_data";
+        src -> group.active = true "r_grp_status_data";
+        src -> group.type = 'person' "r_grp_type_data";
 
-       src.item as groupCharLocation where(linkId='household.location') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
-        groupCharLocation -> groupChar.code = create('CodeableConcept') as villCode then{
+        src -> group.code = create('CodeableConcept') as concept then ExtractHouseholdCode(src, concept) "r_grp_code_data";
+
+        src.item as groupCharLocation where(linkId='household.location') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+            groupCharLocation -> groupChar.code = create('CodeableConcept') as villCode then {
                 src -> villCode.coding = c("http://ona.io/codes", "hh_location") as coding then {
-                src -> coding.display = 'Household Location' "r_cp_cod_disp_l";
+                    src -> coding.display = 'Household Location' "r_cp_cod_disp_l";
                 } "r_grp_lcode";
-                src -> villCode.text = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r_vcc_hh_location";
-           } "r_cp_cc_coding_l";
-           groupCharLocation -> groupChar.exclude = false "r_cp_cc_exclude_l";
-       } "r_group_char_l";
 
-        src.item as groupGpsLocation where(linkId='location-widget') then {
-            src then ExtractGpsLocation(groupGpsLocation, bundle, group) "r-gps-location";
-        } "r-gps-location-data";
+                src -> villCode.text = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r_vcc_hh_location";
+            } "r_cp_cc_coding_l";
+
+            groupCharLocation -> groupChar.exclude = false "r_cp_cc_exclude_l";
+        } "r_group_char_l";
+
+        src.item where(linkId='location-widget') then {
+            src -> bundle.entry as entry,
+                entry.resource = create("Location") as location then {
+                    src -> bundle.entry as entry,
+                    entry.resource = create("List") as linkingList
+                        then ExtractOtherResources(src, bundle, location, linkingList) "r-other-resources";
+                } "r-other-data-call";
+        } "r-other-resource-data";
 }
 
-group ExtractGpsLocation(source src: QuestionnaireResponse, target bundle: Bundle, source group : Group) {
-    src->bundle.entry as entry,
-         entry.resource = create("Location") as gpsLocation then {
-             src->gpsLocation.id = uuid(),
-             gpsLocation.status = 'active',
-             gpsLocation.mode = 'instance',
-             //gpsLocation.address = 'Regsitering Household Village', // group.characteristic.code.text //
-             //gpsLocation.name = group.name, //'Registering Household Name',
-             gpsLocation.description = 'GPS Coordinates for Household Registration' "r_gps_type_data";
+group ExtractOtherResources(source src: QuestionnaireResponse,
+    target bundle: Bundle,
+    target gpsLocation : Location,
+    target linkingList : List) {
 
-            src -> gpsLocation.type = create('CodeableConcept') as code then {
-                src -> code.coding = create('Coding') as coding then {
-                    src -> coding.system = 'https://fhir-ru.github.io/v3/ServiceDeliveryLocationRoleType/vs.html' "r_gps_type_coding_system";
-                    src -> coding.code = 'PTRES' "r_gps_type_c_coding_code";
-                    src -> coding.display = 'Patient\' Residence' "r_gps_type_c_coding_display";
-                } "r_gps_type_c_coding";
-                src -> code.text = 'Patient\'s Residence' "r_gps_type-text";
-            } "r_gps_location_type";
+        // SETS GPS-Location-Data
 
-            src -> gpsLocation.physicalType = create('CodeableConcept') as code then {
-                src -> code.coding = create('Coding') as coding then {
-                    src -> coding.system = 'http://terminology.hl7.org/CodeSystem/location-physical-type' "r_gps_physicalType_coding_system";
-                    src -> coding.code = 'ho' "r_gps_physicalType_c_coding_code";
-                    src -> coding.display = 'House' "r_gps_physicalType_c_coding_display";
-                } "r_gps_physicalType_c_coding";
-                src -> code.text = 'House' "r_gps_physicalType-text";
-            } "r_gps_location_physicalType";
+        src -> gpsLocation.id = uuid(),
+            gpsLocation.status = 'active',
+            gpsLocation.mode = 'instance',
+            gpsLocation.description = 'GPS Coordinates for Household Registration' "r_gps_type_data";
 
+        //src -> gpsLocation.address = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r-gps-hh-char-loc";
+        src -> gpsLocation.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "r-gps-hh-name";
+
+        src -> gpsLocation.type = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://fhir-ru.github.io/v3/ServiceDeliveryLocationRoleType/vs.html' "r_gps_type_coding_system";
+                src -> coding.code = 'PTRES' "r_gps_type_c_coding_code";
+                src -> coding.display = 'Patient\' Residence' "r_gps_type_c_coding_display";
+            } "r_gps_type_c_coding";
+            src -> code.text = 'Patient\'s Residence' "r_gps_type-text";
+        } "r_gps_location_type";
+
+        src -> gpsLocation.physicalType = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://terminology.hl7.org/CodeSystem/location-physical-type' "r_gps_physicalType_coding_system";
+                src -> coding.code = 'ho' "r_gps_physicalType_c_coding_code";
+                src -> coding.display = 'House' "r_gps_physicalType_c_coding_display";
+            } "r_gps_physicalType_c_coding";
+            src -> code.text = 'House' "r_gps_physicalType-text";
+        } "r_gps_location_physicalType";
+
+        src.item as locationWidgetItem where(linkId='location-widget') then {
             src -> gpsLocation.position = create("Location_Position") as position then {
                  src -> position.altitude = '0.0' "r-position-default-alt";
-                 src.item as itemLatitude where(linkId='latitude') then {
+                 locationWidgetItem.item as itemLatitude where(linkId='latitude') then {
                     src -> position.latitude = evaluate(src, itemLatitude.answer.value) "r-position-latitude";
                 } "r-latitude-item";
-                src.item as itemLongitude where(linkId='longitude') then {
+                locationWidgetItem.item as itemLongitude where(linkId='longitude') then {
                     src -> position.longitude = evaluate(src, itemLongitude.answer.value) "r-position-longitude";
                 } "r-longitude-item";
             } "r_position_data";
+        } "r-loc-lat-lng";
 
-            src then ExtractLinkingList(src, bundle, group) "r-gps-location";
+        // SETS LINKING LIST DATA
 
-    } "r_obs_date_ws";
-
+        src -> linkingList.id = uuid(),
+            linkingList.status = 'current',
+            linkingList.title = 'ABC Household' "r-link-t";
 }
-
-group ExtractLinkingList(source src: QuestionnaireResponse, target bundle: Bundle, source group : Group) {
-    src->bundle.entry as entry,
-         entry.resource = create("List") as linkingList then {
-             src->linkingList.id = uuid(),
-             linkingList.status = 'current',
-             linkingList.title = 'ABC Household' "r-link-t";
-    } "r_list_date_ws";
-}
-
 
 group ExtractHouseholdCode(source src : Group, target concept: CodeableConcept) {
     src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
