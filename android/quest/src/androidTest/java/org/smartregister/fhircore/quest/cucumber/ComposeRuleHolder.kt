@@ -1,22 +1,13 @@
 package org.smartregister.fhircore.quest.cucumber
 
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import org.junit.Rule
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 
 
 class ComposeRuleHolder{
 
-  @get:Rule(order = 1)
-  val composeRule = createComposeRule()
+  @get:Rule
+  val composeRule = createAndroidComposeRule<AppSettingActivity>()
 }
 
-/*
-
-
-@Singleton
-class CustomComposableRuleHolder @Inject constructor() {
-  @get:Rule(order = 2)
-  val composeRule = createComposeRule()
-}
-
- */

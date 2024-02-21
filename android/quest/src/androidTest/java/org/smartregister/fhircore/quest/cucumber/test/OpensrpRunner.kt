@@ -8,6 +8,8 @@ import io.cucumber.android.runner.CucumberAndroidJUnitRunner
 import io.cucumber.junit.CucumberOptions
 import org.smartregister.fhircore.quest.QuestApplication
 
+//, glue = ["org.smartregister.fhircore.quest.cucumber.steps"
+
 @CucumberOptions(features = ["features"], glue = ["org.smartregister.fhircore.quest.cucumber.steps"])
 class OpensrpRunner: CucumberAndroidJUnitRunner() {
 
