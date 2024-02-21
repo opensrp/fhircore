@@ -17,7 +17,13 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -55,7 +61,19 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
     super.onCreate(savedInstanceState)
     geoWidgetConfiguration = geoWidgetConfiguration()
   }
-
+  private fun setUpToolbar(): Toolbar {
+    return Toolbar(requireContext()).apply {
+      popupTheme = org.smartregister.fhircore.geowidget.R.style.AppTheme
+      visibility = View.VISIBLE
+      navigationIcon =
+        ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+      layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+      setBackgroundColor(ContextCompat.getColor(requireContext(), org.smartregister.fhircore.geowidget.R.color.colorPrimary))
+      setNavigationOnClickListener {
+        activity?.onBackPressedDispatcher?.onBackPressed()
+      }
+    }
+  }
   private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
     configurationRegistry.retrieveConfiguration(
       ConfigType.GeoWidget,
@@ -65,6 +83,7 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     geoWidgetLauncherViewModel.retrieveLocations()
+    val toolbar = setUpToolbar()
 
     geoWidgetFragment = GeoWidgetFragment.builder()
       .setUseGpsOnAddingLocation(false)
@@ -87,10 +106,10 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
     if (savedInstanceState == null) {
       addGeoWidgetFragment()
     }
+    (view.rootView as? FrameLayout?)?.addView(toolbar)
     setLocationFromDbCollector()
     setOnQuestionnaireSubmissionListener()
   }
-
   private fun setOnQuestionnaireSubmissionListener() {
     viewLifecycleOwner.lifecycleScope.launch {
       repeatOnLifecycle(Lifecycle.State.STARTED) {
