@@ -57,7 +57,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -516,8 +515,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val patient = Patient()
     val carePlan =
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
-        planDefinition.id,
-        patient,
+        planDefinitionId = planDefinition.id,
+        subject = patient,
         generateCarePlanWithWorkflowApi = true,
       )
     assertNull(carePlan)
@@ -829,13 +828,14 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
 
     fhirCarePlanGenerator
       .generateOrUpdateCarePlan(
-        planDefinition,
-        patient,
-        Bundle()
-          .addEntry(
-            Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
-          ),
-        false,
+        planDefinition = planDefinition,
+        subject = patient,
+        data =
+          Bundle()
+            .addEntry(
+              Bundle.BundleEntryComponent().apply { resource = questionnaireResponses.first() },
+            ),
+        generateCarePlanWithWorkflowApi = false,
       )
       .also { carePlan ->
         assertNull(carePlan)

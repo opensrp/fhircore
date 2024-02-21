@@ -90,11 +90,18 @@ constructor(
     planDefinitionId: String,
     subject: Resource,
     data: Bundle = Bundle(),
+    relatedEntityLocationCode: String? = null,
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
     return planDefinition?.let {
-      generateOrUpdateCarePlan(it, subject, data, generateCarePlanWithWorkflowApi)
+      generateOrUpdateCarePlan(
+        planDefinition = it,
+        subject = subject,
+        data = data,
+        relatedEntityLocationCode = relatedEntityLocationCode,
+        generateCarePlanWithWorkflowApi = generateCarePlanWithWorkflowApi,
+      )
     }
   }
 
@@ -102,11 +109,13 @@ constructor(
     planDefinition: PlanDefinition,
     subject: Resource,
     data: Bundle = Bundle(),
+    relatedEntityLocationCode: String? = null,
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     val relatedEntityLocationTags =
       subject.meta.tag.filter {
-        it.system == context.getString(R.string.sync_strategy_related_entity_location_system)
+        it.system == context.getString(R.string.sync_strategy_related_entity_location_system) &&
+          it.code == relatedEntityLocationCode
       }
 
     // Only one CarePlan per plan, update or init a new one if not exists

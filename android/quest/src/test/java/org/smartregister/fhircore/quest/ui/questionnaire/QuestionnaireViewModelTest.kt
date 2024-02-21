@@ -218,14 +218,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         extension = samplePatientRegisterQuestionnaire.extension
       }
     val theLinkId = "someLinkId"
-    val locationId = "awesome-location-uuid"
+    val relatedEntityLocationCode = "awesome-location-uuid"
     val questionnaireResponse =
       extractionQuestionnaireResponse().apply {
         addItem(
           QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
             addAnswer(
               QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-                setValue(StringType(locationId))
+                setValue(StringType(relatedEntityLocationCode))
               },
             )
           },
@@ -306,6 +306,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = updatedQuestionnaireConfig,
         questionnaireResponse = questionnaireResponse,
         context = context,
+        relatedEntityLocationCode = relatedEntityLocationCode,
       )
     }
 
@@ -327,7 +328,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       val relatedEntityLocationMetaTag =
         resource.meta.tag.findLast { coding ->
-          coding.system == relatedEntityLocationCodingSystem && coding.code == locationId
+          coding.system == relatedEntityLocationCodingSystem &&
+            coding.code == relatedEntityLocationCode
         }
       Assert.assertNotNull(relatedEntityLocationMetaTag)
 
@@ -361,6 +363,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaireConfig = updatedQuestionnaireConfig,
+        relatedEntityLocationCode = relatedEntityLocationCode,
       )
 
       questionnaireViewModel.executeCql(
@@ -717,7 +720,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
     val questionnaireConfig = questionnaireConfig.copy(planDefinitions = listOf("planDefId"))
-    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig)
+    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig, null)
     coVerify {
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinitionId = "planDefId",
@@ -1073,6 +1076,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = questionnaireConfig,
       questionnaireResponse = questionnaireResponse,
       context = context,
+      relatedEntityLocationCode = null,
     )
 
     // The Observation ID for the extracted Obs should be the same as previousObs'Id
