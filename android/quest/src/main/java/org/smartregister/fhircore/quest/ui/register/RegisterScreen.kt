@@ -81,12 +81,16 @@ fun RegisterScreen(
   Scaffold(
     topBar = {
       Column {
-        // Top section has toolbar and a results counts view
+       /*
+       * Top section has toolbar and a results counts view
+       * by default isSearchBarVisible is visible
+       * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
+          isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
