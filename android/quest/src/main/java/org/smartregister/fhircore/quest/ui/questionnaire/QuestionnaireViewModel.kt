@@ -366,27 +366,7 @@ constructor(
         }
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        questionnaireConfig.groupResource?.let {
-          if (
-            it.groupIdentifier.isNotEmpty() &&
-              !it.deactivateMembers &&
-              !it.removeGroup &&
-              !it.removeMember
-          ) {
-            val group =
-              loadResource(ResourceType.Group, it.groupIdentifier.extractLogicalIdUuid()) as Group?
-            if (group != null) {
-              val system =
-                context.getString(
-                  org.smartregister.fhircore.engine.R.string
-                    .sync_strategy_related_entity_location_system,
-                )
-              group.meta.tag
-                .filter { coding -> coding.system == system }
-                .forEach { coding -> this.meta.addTag(coding) }
-            }
-          }
-        }
+        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context)
 
         defaultRepository.addOrUpdate(true, resource = this)
 
@@ -419,7 +399,35 @@ constructor(
       !questionnaireResponse.subject.reference.isNullOrEmpty() &&
         questionnaireConfig.saveQuestionnaireResponse
     ) {
+      // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
+      questionnaireResponse.applyRelatedEntityLocationMetaTag(questionnaireConfig, context)
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
+    }
+  }
+
+  private suspend fun Resource.applyRelatedEntityLocationMetaTag(
+    questionnaireConfig: QuestionnaireConfig,
+    context: Context,
+  ) {
+    questionnaireConfig.groupResource?.let {
+      if (it.groupIdentifier.isNotEmpty() && !it.removeGroup && !it.removeMember) {
+        val group =
+          loadResource(
+            ResourceType.Group,
+            it.groupIdentifier.extractLogicalIdUuid(),
+          )
+            as Group?
+        if (group != null) {
+          val system =
+            context.getString(
+              org.smartregister.fhircore.engine.R.string
+                .sync_strategy_related_entity_location_system,
+            )
+          group.meta.tag
+            .filter { coding -> coding.system == system }
+            .forEach { coding -> this.meta.addTag(coding) }
+        }
+      }
     }
   }
 
