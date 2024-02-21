@@ -534,7 +534,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
-    Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals(3, targetResource.entry.size)
     Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Location", targetResource.entry[1].resource.resourceType.toString())
   }
