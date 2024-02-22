@@ -23,7 +23,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -75,6 +74,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -102,7 +103,6 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
@@ -129,7 +129,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
-  private val knowledgeManager: KnowledgeManager = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private val patient =
     Faker.buildPatient().apply {
@@ -218,7 +217,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         // Use StructureMap for extraction
         extension = samplePatientRegisterQuestionnaire.extension
       }
-    val questionnaireResponse = extractionQuestionnaireResponse()
+    val theLinkId = "someLinkId"
+    val relatedEntityLocationCode = "awesome-location-uuid"
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType(relatedEntityLocationCode))
+              },
+            )
+          },
+        )
+      }
+    val updatedQuestionnaireConfig =
+      questionnaireConfig.copy(
+        linkIds = listOf(LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION)),
+      )
     val actionParameters = emptyList<ActionParameter>()
     val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
@@ -244,16 +260,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       currentQuestionnaireResponse = questionnaireResponse,
       actionParameters = actionParameters,
       context = context,
-      questionnaireConfig = questionnaireConfig,
+      questionnaireConfig = updatedQuestionnaireConfig,
       onSuccessfulSubmission = onSuccessfulSubmission,
     )
 
     // Verify QuestionnaireResponse was validated
     verify {
       questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
       )
     }
 
@@ -283,12 +299,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Verify that the questionnaire response and extracted resources were saved
     val bundleSlot = slot<Bundle>()
     // https://github.com/mockk/mockk/issues/352#issuecomment-592426549
-    coVerifyOrder {
+    coVerify {
       questionnaireViewModel.saveExtractedResources(
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        currentQuestionnaireResponse = questionnaireResponse,
+        questionnaireConfig = updatedQuestionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+        relatedEntityLocationCode = relatedEntityLocationCode,
       )
     }
 
@@ -301,10 +319,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val resource = it.resource
       Assert.assertNotNull(resource.id)
       Assert.assertNotNull(resource.meta.lastUpdated)
+
+      // Assert every resource contains Related Entity Location meta tag as configured
+      val relatedEntityLocationCodingSystem =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+
+      val relatedEntityLocationMetaTag =
+        resource.meta.tag.findLast { coding ->
+          coding.system == relatedEntityLocationCodingSystem &&
+            coding.code == relatedEntityLocationCode
+        }
+      Assert.assertNotNull(relatedEntityLocationMetaTag)
+
       coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource) }
-      /*coVerify {
-        questionnaireViewModel.addMemberToConfiguredGroup(resource = resource, groupConfig = null)
-      }*/
     }
     // QuestionnaireResponse should have, subject and contained properties set then it's saved
     Assert.assertEquals("Patient/" + patient.logicalId, questionnaireResponse.subject.reference)
@@ -333,23 +362,24 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.generateCarePlan(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
+        relatedEntityLocationCode = relatedEntityLocationCode,
       )
 
       questionnaireViewModel.executeCql(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
       )
 
-      questionnaireViewModel.softDeleteResources(questionnaireConfig)
+      questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
 
       onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }
@@ -545,7 +575,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
 
     // Barcode linkId updated
-    val questionnaireBarcodeItem = questionnaire?.find(newQuestionnaireConfig.barcodeLinkId)
+    val questionnaireBarcodeItem =
+      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
     Assert.assertTrue(barCodeItemValue is StringType)
     Assert.assertEquals(
@@ -689,7 +720,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
     val questionnaireConfig = questionnaireConfig.copy(planDefinitions = listOf("planDefId"))
-    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig)
+    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig, null)
     coVerify {
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinitionId = "planDefId",
@@ -1043,7 +1074,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle = extractedBundle,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig,
-      currentQuestionnaireResponse = questionnaireResponse,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+      relatedEntityLocationCode = null,
     )
 
     // The Observation ID for the extracted Obs should be the same as previousObs'Id
