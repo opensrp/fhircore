@@ -53,4 +53,7 @@ enum class ApplicationWorkflow {
 
   /** A workflow that launches user insight screen */
   LAUNCH_INSIGHT_SCREEN,
+
+  /** A workflow that copies text to keyboard */
+  COPY_TEXT,
 }
