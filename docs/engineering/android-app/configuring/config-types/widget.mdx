@@ -176,6 +176,7 @@ Defines the configuration properties of a Button view, which is a view that can 
  ]
 ```
 
+
 ### Config properties of BUTTON
 |Property | Description | Required | Default | Values |
 |--|--|:--:|:--:|:--:|
@@ -197,6 +198,39 @@ startIcon | Specify an icon to be shown before the text |  | null | |
 letterSpacing | The amount of space to be added between each letter of the button's text |  | 0 | |
 buttonType | Specify the button size |  | ButtonType.MEDIUM | `TINY`, `MEDIUM`, `BIG` |
 contentColor | The content color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's content color. | No |  Null | |
+
+#### How to use button with icon and copy ability
+On top of the above properties, you need to add  Image config properties see a `startIcon config`*** IMAGE widget ***. This displays the icon before the button text
+
+ ``` json
+       {
+                  "viewType": "BUTTON",
+                  "smallSized": "true",
+                  "text": "Button text",
+                  "status": "DUE",
+                  "visible": "visibility condition",
+                  "enabled": "enable condition",
+                  "startIcon": {
+                    "type": "local",
+                    "reference": "icon_name if local",
+                    "color": "icon color"
+                  },
+                  "actions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "COPY_TEXT",
+                      "params": [
+                        {
+                          "paramType": "PARAMDATA",
+                          "key": "your copy key e.g myKey",
+                          "value": "The value to be copied"
+                        }
+                      ]
+                    }
+                  ]
+                }
+```
+ The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
 
 ## SERVICE_CARD widgets
 Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
