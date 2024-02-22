@@ -23,6 +23,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -100,7 +101,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import timber.log.Timber
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -129,6 +129,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
+  private val knowledgeManager: KnowledgeManager = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
   private val patient =
     Faker.buildPatient().apply {
@@ -181,13 +182,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
-          fhirPathDataExtractor = fhirPathDataExtractor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
+          fhirPathDataExtractor = fhirPathDataExtractor,
         ),
       )
 
@@ -219,8 +220,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
     val questionnaireResponse = extractionQuestionnaireResponse()
     val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission =
-      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
     // Throw ResourceNotFoundException existing QuestionnaireResponse
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient

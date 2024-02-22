@@ -44,8 +44,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.components.DateRangeItem
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportIndividualResultView
@@ -127,17 +127,14 @@ fun MeasureReportResultPage(
             subjectViewData.forEach {
               MeasureReportIndividualResultView(
                 subjectViewData = it,
-                isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
               )
             }
           }
         }
         if (measureReportPopulationResult != null) {
-          println("FIKRI 2")
           MeasureReportPopulationResultView(
             measureReportPopulationResult.distinctBy { it.title },
           )
-          println("FIKRI 2.1")
         }
       }
     }

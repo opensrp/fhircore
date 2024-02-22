@@ -1,4 +1,5 @@
 import java.io.FileReader
+import org.json.JSONArray
 import org.json.JSONObject
 
 plugins {
@@ -52,12 +53,10 @@ dependencies {
 
 androidComponents { beforeVariants(selector().all()) { it.enabled = it.buildType == "benchmark" } }
 
-/*
-
-This task compares the performance benchmark results to the expected benchmark results
-and throws an error if the result is past the expected result and margin. A message will
-also be printed if the performance significantly improves.
-
+/**
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
  */
 task("evaluatePerformanceBenchmarkResults") {
   val expectedPerformanceLimitsFile = project.file("expected-results.json")
@@ -72,26 +71,27 @@ task("evaluatePerformanceBenchmarkResults") {
       JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
         keys().forEach { key ->
           val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-          val methodExpectedResults = this.getJSONObject(key)
+          val methodExpectedResults = this.getJSONObject(key.toString())
 
           methodExpectedResults.keys().forEach { expectedResultsKey ->
             resultMaxDeltaMap.put(
-              expectedResultsKey,
-              methodExpectedResults.getDouble(expectedResultsKey),
+              expectedResultsKey.toString(),
+              methodExpectedResults.getDouble(expectedResultsKey.toString()),
             )
           }
 
-          expectedResultsMap[key] = resultMaxDeltaMap
+          expectedResultsMap[key.toString()] = resultMaxDeltaMap
         }
       }
 
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
-        getJSONArray("benchmarks").forEachIndexed { index, any ->
-          val benchmarkResult = any as JSONObject
+        val benchMarksArray: JSONArray = this.getJSONArray("benchmarks")
+        for (i in 0 until benchMarksArray.length()) {
+          val benchmarkResult = benchMarksArray.getJSONObject(i) as JSONObject
           val fullName = benchmarkResult.getTestName()
           val traceName = benchmarkResult.getJSONObject("metrics").keys().next()
-          val timings = benchmarkResult.getJSONObject("metrics").getJSONObject(traceName)
+          val timings = benchmarkResult.getJSONObject("metrics").getJSONObject(traceName.toString())
 
           val median = timings.getDouble("median")
           val expectedTimings = expectedResultsMap[fullName]

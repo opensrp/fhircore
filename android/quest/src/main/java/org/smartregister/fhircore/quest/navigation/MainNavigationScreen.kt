@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.navigation
 
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.engine.R
 
 sealed class MainNavigationScreen(
   val titleResource: Int? = null,
@@ -25,20 +25,39 @@ sealed class MainNavigationScreen(
   val showInBottomNav: Boolean = false,
 ) {
   object Home :
-    MainNavigationScreen(R.string.clients, R.drawable.ic_home, R.id.registerFragment, true)
+    MainNavigationScreen(
+      R.string.clients,
+      org.smartregister.fhircore.quest.R.drawable.ic_home,
+      org.smartregister.fhircore.quest.R.id.registerFragment,
+      true,
+    )
 
   object Reports :
-    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, R.id.measureReportFragment, true)
+    MainNavigationScreen(
+      R.string.reports,
+      R.drawable.ic_reports,
+      org.smartregister.fhircore.quest.R.id.measureReportFragment,
+      true,
+    )
 
   object Settings :
-    MainNavigationScreen(R.string.settings, R.drawable.ic_settings, R.id.userSettingFragment, true)
+    MainNavigationScreen(
+      R.string.settings,
+      R.drawable.ic_settings,
+      org.smartregister.fhircore.quest.R.id.userSettingFragment,
+      true,
+    )
 
   object Profile :
-    MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
+    MainNavigationScreen(
+      titleResource = R.string.profile,
+      route = org.smartregister.fhircore.quest.R.id.profileFragment,
+    )
 
   object GeoWidgetLauncher : MainNavigationScreen(route = R.id.geoWidgetLauncherFragment)
 
-  object Insight : MainNavigationScreen(route = R.id.userInsightScreenFragment)
+  object Insight :
+    MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
 
   fun eventId(id: String) = route.toString() + "_" + id
 }

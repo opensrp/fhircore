@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
@@ -49,7 +48,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
 ) {
 
-  protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  protected val jsonParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
   open fun getDataTypes(): TreeSet<DataType> {
     val appRegistry =
