@@ -1032,7 +1032,7 @@
           ]
         },
         {
-          "name": "rule_patient_age",
+          "name": "rule_patient_age_to_dob",
           "source": [
             {
               "context": "src",
@@ -1041,18 +1041,88 @@
               "condition": "((linkId = '8460d986-ef71-4997-80ee-7887d8c345e7') and (answer.value > 0))"
             }
           ],
-          "target": [
+          "rule": [
             {
-              "context": "patient",
-              "contextType": "variable",
-              "element": "birthDate",
-              "transform": "evaluate",
-              "parameter": [
+              "name": "extract_actual_age",
+              "source": [
                 {
-                  "valueId": "patient_age"
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "variable": "actual_age",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "patient_age"
+                    },
+                    {
+                      "valueString": "$this.answer.value"
+                    }
+                  ]
                 },
                 {
-                  "valueString": "today() - (($this.answer.value * 365.5).toString() + ' days').toQuantity()"
+                  "variable": "today_date",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "src"
+                    },
+                    {
+                      "valueString": "today()"
+                    }
+                  ]
+                }
+              ],
+              "rule": [
+                {
+                  "name": "extract_actual_age_year",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "variable": "actual_age_year",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "today_date"
+                        },
+                        {
+                          "valueString": "$this.value.substring(0, 4).toInteger() - actual_age"
+                        }
+                      ]
+                    }
+                  ],
+                  "rule": [
+                    {
+                      "name": "rule_patient_age",
+                      "source": [
+                        {
+                          "context": "src"
+                        }
+                      ],
+                      "target": [
+                        {
+                          "context": "patient",
+                          "contextType": "variable",
+                          "element": "birthDate",
+                          "transform": "evaluate",
+                          "parameter": [
+                            {
+                              "valueId": "today_date"
+                            },
+                            {
+                              "valueString": "actual_age_year.toString() + $this.value.substring(4)"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }

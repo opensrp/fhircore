@@ -1024,17 +1024,18 @@
               ]
             },
             {
-              "name": "r_en_reason_before_48",
+              "name": "check_delivery_date_48_hours",
               "source": [
                 {
                   "context": "src",
                   "element": "item",
-                  "condition": "((linkId = 'e37db999-ea58-44de-c4b7-6e49d36a337c').exists())"
+                  "variable": "deliveryDateItem",
+                  "condition": "((linkId = 'bd4dba60-545c-4946-88c2-29c85f9bdf7e') and answer.value.exists())"
                 }
               ],
               "rule": [
                 {
-                  "name": "r_en_reason",
+                  "name": "add_delivery_date_48_hours",
                   "source": [
                     {
                       "context": "src"
@@ -1042,46 +1043,30 @@
                   ],
                   "target": [
                     {
-                      "context": "encounter",
-                      "contextType": "variable",
-                      "element": "reasonCode",
-                      "variable": "concept",
-                      "transform": "create",
+                      "variable": "deliveryDatePass2Days",
+                      "transform": "evaluate",
                       "parameter": [
                         {
-                          "valueString": "CodeableConcept"
+                          "valueId": "deliveryDateItem"
+                        },
+                        {
+                          "valueString": "($this.answer.value + ('2 days').toQuantity())"
                         }
                       ]
                     }
                   ],
                   "rule": [
                     {
-                      "name": "r_en_rc_cod",
+                      "name": "r_en_reason_before_48",
                       "source": [
                         {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "c",
-                          "parameter": [
-                            {
-                              "valueString": "http://mpower-social.com/"
-                            },
-                            {
-                              "valueString": "pnc_followup_visit_before_48hrs"
-                            }
-                          ]
+                          "context": "src",
+                          "condition": "(deliveryDatePass2Days >= now())"
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_en_rc_cod_disp",
+                          "name": "r_en_reason",
                           "source": [
                             {
                               "context": "src"
@@ -1089,13 +1074,85 @@
                           ],
                           "target": [
                             {
-                              "context": "coding",
+                              "context": "encounter",
                               "contextType": "variable",
-                              "element": "display",
-                              "transform": "copy",
+                              "element": "reasonCode",
+                              "variable": "concept",
+                              "transform": "create",
                               "parameter": [
                                 {
-                                  "valueString": "mPower PNC Followup Visit"
+                                  "valueString": "CodeableConcept"
+                                }
+                              ]
+                            }
+                          ],
+                          "rule": [
+                            {
+                              "name": "r_en_rc_cod",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "concept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "variable": "coding",
+                                  "transform": "c",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://mpower-social.com/"
+                                    },
+                                    {
+                                      "valueString": "pnc_followup_visit_before_48hrs"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_en_rc_cod_disp",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "coding",
+                                      "contextType": "variable",
+                                      "element": "display",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        {
+                                          "valueString": "mPower PNC Followup Visit"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_en_text",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "concept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "mPower PNC Followup Visit"
+                                    }
+                                  ]
                                 }
                               ]
                             }
@@ -1104,89 +1161,16 @@
                       ]
                     },
                     {
-                      "name": "r_en_text",
+                      "name": "r_en_reason_after_48",
                       "source": [
                         {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "copy",
-                          "parameter": [
-                            {
-                              "valueString": "mPower PNC Followup Visit"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "r_en_reason_after_48",
-              "source": [
-                {
-                  "context": "src",
-                  "element": "item",
-                  "condition": "((linkId = 'e37db999-ea58-44de-c4b7-6e49d36a337c').exists().not())"
-                }
-              ],
-              "rule": [
-                {
-                  "name": "r_en_reason",
-                  "source": [
-                    {
-                      "context": "src"
-                    }
-                  ],
-                  "target": [
-                    {
-                      "context": "encounter",
-                      "contextType": "variable",
-                      "element": "reasonCode",
-                      "variable": "concept",
-                      "transform": "create",
-                      "parameter": [
-                        {
-                          "valueString": "CodeableConcept"
-                        }
-                      ]
-                    }
-                  ],
-                  "rule": [
-                    {
-                      "name": "r_en_rc_cod",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "coding",
-                          "variable": "coding",
-                          "transform": "c",
-                          "parameter": [
-                            {
-                              "valueString": "http://mpower-social.com/"
-                            },
-                            {
-                              "valueString": "pnc_followup_visit_after_48hrs"
-                            }
-                          ]
+                          "context": "src",
+                          "condition": "(deliveryDatePass2Days < now())"
                         }
                       ],
                       "rule": [
                         {
-                          "name": "r_en_rc_cod_disp",
+                          "name": "r_en_reason",
                           "source": [
                             {
                               "context": "src"
@@ -1194,36 +1178,87 @@
                           ],
                           "target": [
                             {
-                              "context": "coding",
+                              "context": "encounter",
                               "contextType": "variable",
-                              "element": "display",
-                              "transform": "copy",
+                              "element": "reasonCode",
+                              "variable": "concept",
+                              "transform": "create",
                               "parameter": [
                                 {
-                                  "valueString": "mPower PNC Followup Visit"
+                                  "valueString": "CodeableConcept"
                                 }
                               ]
                             }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "name": "r_en_text",
-                      "source": [
-                        {
-                          "context": "src"
-                        }
-                      ],
-                      "target": [
-                        {
-                          "context": "concept",
-                          "contextType": "variable",
-                          "element": "text",
-                          "transform": "copy",
-                          "parameter": [
+                          ],
+                          "rule": [
                             {
-                              "valueString": "mPower PNC Followup Visit"
+                              "name": "r_en_rc_cod",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "concept",
+                                  "contextType": "variable",
+                                  "element": "coding",
+                                  "variable": "coding",
+                                  "transform": "c",
+                                  "parameter": [
+                                    {
+                                      "valueString": "http://mpower-social.com/"
+                                    },
+                                    {
+                                      "valueString": "pnc_followup_visit_after_48hrs"
+                                    }
+                                  ]
+                                }
+                              ],
+                              "rule": [
+                                {
+                                  "name": "r_en_rc_cod_disp",
+                                  "source": [
+                                    {
+                                      "context": "src"
+                                    }
+                                  ],
+                                  "target": [
+                                    {
+                                      "context": "coding",
+                                      "contextType": "variable",
+                                      "element": "display",
+                                      "transform": "copy",
+                                      "parameter": [
+                                        {
+                                          "valueString": "mPower PNC Followup Visit"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "r_en_text",
+                              "source": [
+                                {
+                                  "context": "src"
+                                }
+                              ],
+                              "target": [
+                                {
+                                  "context": "concept",
+                                  "contextType": "variable",
+                                  "element": "text",
+                                  "transform": "copy",
+                                  "parameter": [
+                                    {
+                                      "valueString": "mPower PNC Followup Visit"
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           ]
                         }

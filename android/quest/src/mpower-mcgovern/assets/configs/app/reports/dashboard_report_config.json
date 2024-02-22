@@ -325,21 +325,14 @@
       "name": "manAbove50Count",
       "condition": "true",
       "actions": [
-        "data.put('manAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate <= today() - 50 'years'\")))"
+        "data.put('manAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'male' and Patient.birthDate < today() - 50 'years'\")))"
       ]
     },
     {
       "name": "womanAbove50Count",
       "condition": "true",
       "actions": [
-        "data.put('womanAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 50 'years'\")))"
-      ]
-    },
-    {
-      "name": "womanAbove50Count",
-      "condition": "true",
-      "actions": [
-        "data.put('womanAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate <= today() - 50 'years'\")))"
+        "data.put('womanAbove50Count', size(service.filterResources(Patient, \"Patient.gender = 'female' and Patient.birthDate < today() - 50 'years'\")))"
       ]
     },
     {
@@ -443,6 +436,7 @@
     {
       "name": "ancFollowupTask",
       "condition": "true",
+      "priority": 2,
       "actions": [
         "data.put('ancFollowupTask', service.filterResources(data.get('completedTasks'), \"Task.reasonReference.reference.contains('5591')\"))"
       ]
@@ -450,6 +444,7 @@
     {
       "name": "ancFollowIn1stTrimester",
       "condition": "true",
+      "priority": 3,
       "actions": [
         "data.put('ancFollowIn1stTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('1st')\")))"
       ]
@@ -457,6 +452,7 @@
     {
       "name": "ancFollowIn2ndTrimester",
       "condition": "true",
+      "priority": 3,
       "actions": [
         "data.put('ancFollowIn2ndTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('2nd')\")))"
       ]
@@ -464,6 +460,7 @@
     {
       "name": "ancFollowIn3rdTrimester",
       "condition": "true",
+      "priority": 3,
       "actions": [
         "data.put('ancFollowIn3rdTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('3rd')\")))"
       ]
@@ -471,6 +468,7 @@
     {
       "name": "ancFollowIn4thTrimester",
       "condition": "true",
+      "priority": 3,
       "actions": [
         "data.put('ancFollowIn4thTrimester', size(service.filterResources(data.get('ancFollowupTask'), \"Task.description.contains('4th')\")))"
       ]
@@ -485,8 +483,9 @@
     {
       "name": "totalChildFollowupCount",
       "condition": "true",
+      "priority": 2,
       "actions": [
-        "data.put('totalChildFollowupCount', size(service.filterResources(data.get('completedTasks'), \"Task.input[0].valueReference.reference.contains('4240')\")))"
+        "data.put('totalChildFollowupCount', size(service.filterResources(data.get('completedTasks'), \"Task.input.value.reference.contains('4242')\")))"
       ]
     },
     {
@@ -549,7 +548,7 @@
       "name": "totalPregnancyReferralCount",
       "condition": "true",
       "actions": [
-        "data.put('totalPregnancyReferralCount', size(service.filterResources(Task, \"Task.input[0].value.coding.code = 'pregnancy_problems'\")))"
+        "data.put('totalPregnancyReferralCount', size(service.filterResources(Task, \"Task.input[0].value.coding.code = 'pregnancy_problems' and Task.reasonReference.reference.contains('4235')\")))"
       ]
     },
     {
@@ -808,7 +807,7 @@
             "cardColor": "primaryColor",
             "header": {
               "viewType": "COMPOUND_TEXT",
-              "primaryText": "৭-২৪ মাস বয়সী শিশু প্রদর্শন",
+              "primaryText": "৭-২৪ মাস বয়সী শিশু পরিদর্শন",
               "primaryTextColor": "#6F7274",
               "primaryTextFontWeight": "BOLD",
               "fontSize": 18.0,
@@ -1139,6 +1138,10 @@
         "fillMaxHeight": true,
         "children": [
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1171,6 +1174,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1207,6 +1214,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1239,6 +1250,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1275,6 +1290,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1307,6 +1326,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1343,6 +1366,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1375,6 +1402,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1411,6 +1442,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1443,6 +1478,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1479,6 +1518,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1511,6 +1554,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1547,6 +1594,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1579,6 +1630,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1615,6 +1670,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1647,6 +1706,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1683,6 +1746,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1715,6 +1782,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1751,6 +1822,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1783,6 +1858,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1819,6 +1898,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1851,6 +1934,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1887,6 +1974,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1919,6 +2010,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -1955,6 +2050,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -1987,6 +2086,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2031,6 +2134,10 @@
         "fillMaxHeight": true,
         "children": [
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2063,6 +2170,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2099,6 +2210,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2131,6 +2246,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2167,6 +2286,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2199,6 +2322,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2235,6 +2362,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2267,6 +2398,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2303,6 +2438,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2335,6 +2474,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2371,6 +2514,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2403,6 +2550,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2439,6 +2590,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2471,6 +2626,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2507,6 +2666,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2539,6 +2702,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2575,6 +2742,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2607,6 +2778,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2643,6 +2818,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2675,6 +2854,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2711,6 +2894,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2743,6 +2930,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2779,6 +2970,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2811,6 +3006,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",
@@ -2847,6 +3046,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2881,6 +3084,10 @@
             ]
           },
           {
+            "viewType": "SPACER",
+            "height": 16
+          },
+          {
             "viewType": "CARD",
             "padding": 16,
             "cardColor": "#008000",
@@ -2913,6 +3120,10 @@
                 ]
               }
             ]
+          },
+          {
+            "viewType": "SPACER",
+            "height": 16
           },
           {
             "viewType": "CARD",

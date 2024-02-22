@@ -121,7 +121,7 @@
               "context": "src",
               "element": "item",
               "variable": "item_pnc_started",
-              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and (answer.value.code = 'born-alive'))"
+              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and answer.value.where(code = 'born-alive').exists())"
             }
           ],
           "rule": [
@@ -197,7 +197,7 @@
             {
               "context": "src",
               "element": "item",
-              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and (answer.value.code = 'born-alive'))"
+              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and answer.value.where(code = 'born-alive').exists())"
             }
           ],
           "rule": [
@@ -229,7 +229,7 @@
               "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and (answer.value.code = 'still-born'))"
+              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and answer.value.where(code = 'born-alive').exists())"
             }
           ],
           "rule": [
@@ -261,7 +261,7 @@
               "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and (answer.value.code = 'born-alive-died'))"
+              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and answer.value.where(code = 'born-alive-died').exists())"
             }
           ],
           "rule": [
@@ -293,7 +293,7 @@
               "context": "src",
               "element": "item",
               "variable": "item",
-              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and (answer.value.code = 'miscarriage'))"
+              "condition": "((linkId = '33455692-f8b4-4b90-809a-94352aad1e2f') and answer.value.where(code = 'miscarriage').exists())"
             }
           ],
           "rule": [
@@ -319,31 +319,44 @@
           ]
         },
         {
-          "name": "rule_pregnancy_outcome_method_observation",
+          "name": "rule_pregnancy_outcome_method_observation_home_brac",
           "source": [
             {
               "context": "src",
               "element": "item",
-              "variable": "item",
-              "condition": "((linkId = '8c68916c-7ed6-407a-e0f9-5c52e6b27442') and (answer.value.code = 'normal'))"
+              "variable": "homeOrBracItem",
+              "condition": "((linkId = '0cd95e60-11a3-45fa-8f29-d6835a0998ba').exists())"
             }
           ],
           "rule": [
             {
-              "name": "rule_pregnancy_outcome_normal_observation",
+              "name": "rule_pregnancy_outcome_method_observation",
               "source": [
                 {
-                  "context": "src"
+                  "context": "homeOrBracItem",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = '8c68916c-7ed6-407a-e0f9-5c52e6b27442') and (answer.value.code = 'normal'))"
                 }
               ],
-              "dependent": [
+              "rule": [
                 {
-                  "name": "ExtractPregnancyOutcomeObservationWhenNormalDelivery",
-                  "variable": [
-                    "src",
-                    "bundle",
-                    "refPatient",
-                    "encounter"
+                  "name": "rule_pregnancy_outcome_normal_observation",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractPregnancyOutcomeObservationWhenNormalDelivery",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "refPatient",
+                        "encounter"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -351,63 +364,76 @@
           ]
         },
         {
-          "name": "rule_pregnancy_outcome_method_observation",
+          "name": "rule_pregnancy_outcome_method_observation_no_home_brac",
           "source": [
             {
               "context": "src",
               "element": "item",
-              "variable": "item",
-              "condition": "((linkId = '844c6c64-7eea-499f-8f00-91aeee58ac6f') and (answer.value.code = 'normal'))"
+              "variable": "noHomeOrBracItem",
+              "condition": "((linkId = '31f3831e-0905-4e71-8a7f-aaef2c21c769').exists())"
             }
           ],
           "rule": [
             {
-              "name": "rule_pregnancy_outcome_normal_observation",
+              "name": "rule_pregnancy_outcome_method_observation",
               "source": [
                 {
-                  "context": "src"
+                  "context": "noHomeOrBracItem",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = '844c6c64-7eea-499f-8f00-91aeee58ac6f') and (answer.value.code = 'normal'))"
                 }
               ],
-              "dependent": [
+              "rule": [
                 {
-                  "name": "ExtractPregnancyOutcomeObservationWhenNormalDelivery",
-                  "variable": [
-                    "src",
-                    "bundle",
-                    "refPatient",
-                    "encounter"
+                  "name": "rule_pregnancy_outcome_normal_observation",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractPregnancyOutcomeObservationWhenNormalDelivery",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "refPatient",
+                        "encounter"
+                      ]
+                    }
                   ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "name": "rule_pregnancy_outcome_method_observation",
-          "source": [
+            },
             {
-              "context": "src",
-              "element": "item",
-              "variable": "item",
-              "condition": "((linkId = '844c6c64-7eea-499f-8f00-91aeee58ac6f') and (answer.value.code = 'c-section'))"
-            }
-          ],
-          "rule": [
-            {
-              "name": "rule_pregnancy_outcome_cesarean_observation",
+              "name": "rule_pregnancy_outcome_method_observation",
               "source": [
                 {
-                  "context": "src"
+                  "context": "noHomeOrBracItem",
+                  "element": "item",
+                  "variable": "item",
+                  "condition": "((linkId = '844c6c64-7eea-499f-8f00-91aeee58ac6f') and (answer.value.code = 'c-section'))"
                 }
               ],
-              "dependent": [
+              "rule": [
                 {
-                  "name": "ExtractPregnancyOutcomeObservationWhenCesareanDelivery",
-                  "variable": [
-                    "src",
-                    "bundle",
-                    "refPatient",
-                    "encounter"
+                  "name": "rule_pregnancy_outcome_cesarean_observation",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "dependent": [
+                    {
+                      "name": "ExtractPregnancyOutcomeObservationWhenCesareanDelivery",
+                      "variable": [
+                        "src",
+                        "bundle",
+                        "refPatient",
+                        "encounter"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -774,7 +800,7 @@
                   "context": "src",
                   "element": "item",
                   "variable": "item",
-                  "condition": "(((linkId = '9a836c2a-b187-43f3-8c7a-f70e67d92943') and (answer.value.code != 'home')) or (answer.value.code != 'other'))"
+                  "condition": "((linkId = '9a836c2a-b187-43f3-8c7a-f70e67d92943') and (answer.value.code != 'home') and (answer.value.code != 'other'))"
                 }
               ],
               "rule": [
@@ -1260,7 +1286,7 @@
                   "context": "src",
                   "element": "item",
                   "variable": "item",
-                  "condition": "(((linkId = '9a836c2a-b187-43f3-8c7a-f70e67d92943') and (answer.value.code != 'home')) or (answer.value.code != 'other'))"
+                  "condition": "((linkId = '9a836c2a-b187-43f3-8c7a-f70e67d92943') and (answer.value.code != 'home') and (answer.value.code != 'other'))"
                 }
               ],
               "rule": [
