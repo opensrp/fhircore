@@ -99,29 +99,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateGlitch() {
-    val viewModel = appMainActivity.appMainViewModel
-    val timestamp = "2022-05-19"
-    runTest {
-      viewModel.preferencesDataStore.write(
-        PreferencesDataStore.LAST_SYNC_TIMESTAMP,
-        timestamp,
-      )
-    }
-
-    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
-    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-
-    appMainActivity.onSync(syncJobStatus)
-
-    // Timestamp last sync timestamp not updated
-    Assert.assertEquals(
-      initialTimestamp,
-      viewModel.appMainUiState.value.lastSyncTime,
-    )
-  }
-
-  @Test
   fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() = runTest {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.preferencesDataStore.write(

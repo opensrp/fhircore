@@ -20,6 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -446,6 +447,10 @@ constructor(
           )
       }
     }
+  }
+
+  fun writeSyncProgress(key: Preferences.Key<Long>, progressSyncJobStatus: Int) {
+    viewModelScope.launch { preferencesDataStore.write(key, progressSyncJobStatus.toLong()) }
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {

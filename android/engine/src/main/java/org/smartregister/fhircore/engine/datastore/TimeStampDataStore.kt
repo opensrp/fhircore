@@ -18,20 +18,34 @@ package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.datastore.serializers.TimeStampDataStoreSerializer
 import org.smartregister.fhircore.engine.domain.model.TimeStampPreferences
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
+@Singleton
 class TimeStampDataStore
 @Inject
-constructor(@ApplicationContext context: Context, val dataStore: DataStore<TimeStampPreferences>) {
+constructor(@ApplicationContext context: Context, val dispatcherProvider: DispatcherProvider) {
+  var dataStore: DataStore<TimeStampPreferences> =
+    DataStoreFactory.create(
+      serializer = TimeStampDataStoreSerializer,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+      produceFile = { context.preferencesDataStoreFile(TIMESTAMP_DATASTORE) },
+    )
 
   val observe: Flow<TimeStampPreferences> =
     dataStore.data.catch { exception ->
@@ -56,5 +70,9 @@ constructor(@ApplicationContext context: Context, val dataStore: DataStore<TimeS
         map = updatedValue,
       )
     }
+  }
+
+  companion object {
+    const val TIMESTAMP_DATASTORE = "time_stamp_datastore.json"
   }
 }

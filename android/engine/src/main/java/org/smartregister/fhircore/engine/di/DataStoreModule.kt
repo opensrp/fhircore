@@ -30,7 +30,6 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.TimeStampDataStoreSerializer
 import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
@@ -43,7 +42,7 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideDataStore(
+  fun providePreferencesDataStore(
     @ApplicationContext context: Context,
     dispatcherProvider: DispatcherProvider,
   ): DataStore<Preferences> {
@@ -54,25 +53,16 @@ class DataStoreModule {
     )
   }
 
+  //  @Binds
+  //  abstract fun bindPractitionerDataStore(practitionerDataStore: PractitionerDataStore):
+  // DataStore<PractitionerPreferences>
   @Singleton
   @Provides
-  fun providePreferencesDataStore(
-    @ApplicationContext context: Context,
-    dataStore: DataStore<Preferences>,
-  ): PreferencesDataStore {
-    return PreferencesDataStore(
-      context,
-      dataStore,
-    )
-  }
-
-  @Singleton
-  @Provides
-  fun provideProtoStore(
+  fun providePractitionerDataStore(
     @ApplicationContext context: Context,
     dispatcherProvider: DispatcherProvider,
   ): DataStore<PractitionerPreferences> {
-    val protoStore = "protostore.json"
+    val protoStore = "practitioner_datastore.json"
 
     return DataStoreFactory.create(
       serializer = PractitionerDataStoreSerializer,
@@ -81,13 +71,16 @@ class DataStoreModule {
     )
   }
 
+  //  @Binds
+  //  abstract fun bindTimeStampDataStore(timeStampDataStore: TimeStampDataStore):
+  // DataStore<TimeStampPreferences>
   @Singleton
   @Provides
-  fun provideTimeStampProtoStore(
+  fun provideTimeStampDataStore(
     @ApplicationContext context: Context,
     dispatcherProvider: DispatcherProvider,
   ): DataStore<TimeStampPreferences> {
-    val timeStampProtoStore = "time_stamp_protostore.json"
+    val timeStampProtoStore = "time_stamp_datastore.json"
 
     return DataStoreFactory.create(
       serializer = TimeStampDataStoreSerializer,

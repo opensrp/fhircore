@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -338,7 +337,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             progressSyncJobStatus.completed
         totalRecordsOverall.toInt()
       } else {
-        registerViewModel.writePreference(key, data = progressSyncJobStatus.total.toLong())
+        registerViewModel.writeSyncProgress(key, progressSyncJobStatus.total)
 
         currentProgress = progressSyncJobStatus.completed
         progressSyncJobStatus.total

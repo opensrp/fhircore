@@ -60,11 +60,23 @@ import org.smartregister.fhircore.engine.datastore.PreferencesDataStore
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
+  private val testDispatcher = UnconfinedTestDispatcher()
+  private val testDispatcherProvider =
+    object : DispatcherProvider {
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun main() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
   val testCoroutineScope = CoroutineScope(UnconfinedTestDispatcher() + Job())
   val testDataStoreName = "test_datastore"
   val testDataStore =
@@ -93,10 +105,10 @@ object Faker {
       },
     )
 
-  fun buildGenericProtoDataStore() =
+  fun buildPractitionerDataStore() =
     PractitionerDataStore(
       ApplicationProvider.getApplicationContext<Application>(),
-      test_protostore,
+      dispatcherProvider = testDispatcherProvider,
     )
 
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -224,7 +236,7 @@ object Faker {
         fhirEngine = fhirEngine,
         fhirResourceDataSource = FhirResourceDataSource(fhirResourceService),
         preferencesDataStore = buildPreferencesDataStore(),
-        practitionerDataStore = buildGenericProtoDataStore(),
+        practitionerDataStore = buildPractitionerDataStore(),
         configService = configService,
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,

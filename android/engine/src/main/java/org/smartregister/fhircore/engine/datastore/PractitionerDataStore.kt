@@ -18,17 +18,23 @@ package org.smartregister.fhircore.engine.datastore
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.DataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.smartregister.fhircore.engine.data.remote.model.response.LocationHierarchyInfo
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDataStoreSerializer
 import org.smartregister.fhircore.engine.domain.model.PractitionerPreferences
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.model.location.LocationHierarchy
 import timber.log.Timber
 
@@ -37,8 +43,14 @@ class PractitionerDataStore
 @Inject
 constructor(
   @ApplicationContext val context: Context,
-  val dataStore: DataStore<PractitionerPreferences>,
+  val dispatcherProvider: DispatcherProvider,
 ) {
+  var dataStore: DataStore<PractitionerPreferences> =
+    DataStoreFactory.create(
+      serializer = PractitionerDataStoreSerializer,
+      scope = CoroutineScope(dispatcherProvider.io() + SupervisorJob()),
+      produceFile = { context.preferencesDataStoreFile(PRACTITIONER_DATASTORE) },
+    )
 
   val observe: Flow<PractitionerPreferences> =
     dataStore.data.catch { exception ->
@@ -137,5 +149,9 @@ constructor(
     LOCATION_NAMES,
     ORGANIZATION_IDS,
     ORGANIZATION_NAMES,
+  }
+
+  companion object {
+    const val PRACTITIONER_DATASTORE = "practitioner_datastore.json"
   }
 }

@@ -167,6 +167,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           preferencesDataStore = preferencesDataStore,
+          practitionerDataStore = mockk(),
           configurationRegistry = configurationRegistry,
           configService = configService,
           configRulesExecutor = configRulesExecutor,
