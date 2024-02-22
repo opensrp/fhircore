@@ -24,7 +24,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
@@ -76,7 +75,6 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -558,22 +556,17 @@ constructor(
   }
 
   /**
-   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
-   * resource, or create it if not found.
+   * Update this stored resources with the passed resource, or create it if not found. If the
+   * resource is a Metadata Resource save it in the Knowledge Manager
+   *
+   * Note
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
       try {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
-        }
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        try {
-          createRemote(resource)
-        } catch (sqlException: SQLException) {
-          Timber.e(sqlException)
-        }
+        createOrUpdateRemote(resource)
+      } catch (sqlException: SQLException) {
+        Timber.e(sqlException)
       }
 
       /**
@@ -616,9 +609,11 @@ constructor(
    * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
    * have IDs or generate if they don't, then pass them to create.
    *
+   * Note: The backing db API for fhirEngine.create(..,isLocalOnly) performs an UPSERT
+   *
    * @param resources vararg of resources
    */
-  suspend fun createRemote(vararg resources: Resource) {
+  suspend fun createOrUpdateRemote(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach {
         it.updateLastUpdated()

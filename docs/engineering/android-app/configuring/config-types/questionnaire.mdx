@@ -50,6 +50,7 @@ enabled    | A string to show if the questionnaire button should be clickable | 
 actions    | A list of actions that you would like to be executed | yes if you are using a questionnaire |  |
 actions (trigger) | Defines when you want to launch the questions | yes |        |
 actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
+linkIds    | Contains configurations for linkIds for fields in the Questionnaires that are used to control application workflow and content; ranging from read only fields to fields used to capure location/barcode details. Each linkId is identified by a type (`READ_ONLY`, `LOCATION`, `BARCODE`, `IDENTIFIER`) | no |  |
 
 ### Questionnaire config actions
 
@@ -57,7 +58,17 @@ actions(workflow) | Import to execute logic related to the questionnaire | yes |
 "questionnaire": {
   "id": "questionnaire-uuid",
   "title": "Record sick child",
-  "resourceIdentifier": "@{patientId}"
+  "resourceIdentifier": "@{patientId}", 
+  "linkIds": [
+    {
+      "linkId": "122d7ffe-3137-46b5-a28d-5c1a335c4899",
+      "type": "READ_ONLY",
+    },
+    {
+      "linkId": "145fb5a7-66b0-455d-9cff-a0d0d5994caf",
+      "type": "LOCATION",
+    }
+  ]
 }
 ```
 
