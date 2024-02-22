@@ -350,12 +350,19 @@ class ViewGeneratorTest {
   fun testImageIsRenderedFromLocalAsset() {
     composeRule.setContent {
       GenerateView(
-        properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
+        properties =
+          ImageProperties(
+            imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk", color = "#FFF000"),
+            text = "Copy text",
+          ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
       )
     }
-    composeRule.onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG).assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
@@ -375,7 +382,7 @@ class ViewGeneratorTest {
       )
     }
     composeRule
-      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

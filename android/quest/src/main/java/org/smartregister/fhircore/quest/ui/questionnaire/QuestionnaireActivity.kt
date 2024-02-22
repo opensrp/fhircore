@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
@@ -73,14 +74,13 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private var currLocation: Location? = null
+  private var currentLocation: Location? = null
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
-    setupLocationServices()
 
     setTheme(org.smartregister.fhircore.engine.R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
@@ -111,6 +111,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           }
         }
     }
+
+    setupLocationServices()
+
 
     if (savedInstanceState == null) renderQuestionnaire()
 
@@ -165,6 +168,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   private fun showLocationSettingsDialog(intent: Intent) {
+    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
     AlertDialog.Builder(this)
       .setMessage(getString(R.string.location_services_disabled))
       .setCancelable(true)
@@ -198,16 +202,21 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  fun fetchLocation(highAccuracy: Boolean = true) {
+  fun fetchLocation(highAccuracy: Boolean = true, questionnaireId: String? = null, context: Context = this ) {
     lifecycleScope.launch {
       try {
+//        throw Exception("Failed to get Location")
         if (highAccuracy) {
-          currLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
+          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
         } else {
-          currLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
+          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
         }
       } catch (e: Exception) {
-        Timber.e(e, "Failed to get GPS location")
+        Timber.e(e, "Failed to get GPS location for questionnaire with ID: $questionnaireId")
+        context.showToast(
+          "Failed to get GPS location for questionnaire with ID: $questionnaireId",
+          Toast.LENGTH_LONG
+        )
       }
     }
   }
@@ -344,9 +353,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         viewModel.run {
           setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          if (currLocation != null) {
+          if (currentLocation != null) {
             questionnaireResponse.contained.add(
-              ResourceUtils.createLocationResource(gpsLocation = currLocation),
+              ResourceUtils.createLocationResource(gpsLocation = currentLocation),
             )
           }
 
