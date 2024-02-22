@@ -65,6 +65,7 @@ const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestT
 const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
 const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
 const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
+const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -116,6 +117,7 @@ fun RegisterScreen(
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
+          modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,

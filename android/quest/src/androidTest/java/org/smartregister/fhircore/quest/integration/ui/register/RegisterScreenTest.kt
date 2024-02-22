@@ -39,6 +39,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
+import org.smartregister.fhircore.quest.ui.register.FAB_BUTTON_REGISTER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
@@ -51,6 +52,45 @@ class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val noResults = NoResultsConfig()
+
+  @Test
+  fun testFloatingActionButtonIsDisplayed() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+    composeTestRule.waitUntil(5_000) { true }
+    composeTestRule.onAllNodesWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+  }
 
   @Test
   fun testRegisterCardListIsRendered() {
