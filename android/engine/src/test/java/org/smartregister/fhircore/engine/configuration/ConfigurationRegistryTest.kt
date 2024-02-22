@@ -290,7 +290,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
     coVerify(exactly = 1) { fhirEngine.create(capture(requestPathArgumentSlot)) }
     assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
     assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
@@ -358,8 +357,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
       bundle
 
-    coEvery { fhirEngine.update(any()) } returns Unit
-    coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
@@ -372,7 +369,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.setNonProxy(true)
     configRegistry.fetchNonWorkflowConfigResources()
 
-    coVerify { fhirEngine.get(ResourceType.List, testListId) }
+    val createdResourceArgumentSlot = mutableListOf<Resource>()
+
+    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
+    Assert.assertEquals(
+      "test-list-id",
+      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
+    )
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
@@ -424,7 +427,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
-      configRegistry.createRemote(patient)
+      configRegistry.createOrUpdateRemote(patient)
       coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
