@@ -93,7 +93,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   /** Write any object by saving it as JSON */
   inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
     with(prefs.edit()) {
-      putString(key, if (encodeWithGson) gson.toJson(value) else value.encodeJson())
+      putString(
+        key,
+        (if (encodeWithGson) gson.toJson(value) else value.encodeJson()),
+      )
       commit()
     }
   }

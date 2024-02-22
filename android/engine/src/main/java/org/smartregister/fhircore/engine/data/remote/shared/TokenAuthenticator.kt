@@ -128,6 +128,17 @@ constructor(
       }
     }
 
+  private fun getRolesList(authToken: String?): List<String> {
+    return authToken
+      ?.takeIf { it.isNotBlank() && isTokenActive(it) }
+      ?.substringBeforeLast('.')
+      ?.plus(".")
+      ?.let {
+        (jwtParser.parseClaimsJwt(it).body["realm_access"] as Map<String, List<String>>)["roles"]
+      }
+      ?: emptyList()
+  }
+
   /** This function checks if token is null or empty or expired */
   fun isTokenActive(authToken: String?): Boolean {
     if (authToken.isNullOrEmpty()) return false
@@ -169,6 +180,8 @@ constructor(
       Result.failure(unknownHostException)
     } catch (sslHandShakeException: SSLHandshakeException) {
       Result.failure(sslHandShakeException)
+    } catch (illegalAccessException: IllegalAccessException) {
+      Result.failure(illegalAccessException)
     }
   }
 
@@ -198,6 +211,7 @@ constructor(
     }
   }
 
+  @kotlin.jvm.Throws(IllegalAccessException::class)
   private fun saveToken(
     username: String,
     password: CharArray,
@@ -206,6 +220,22 @@ constructor(
     accountManager.run {
       val account =
         accounts.find { it.name == username && it.type == authConfiguration.accountType }
+
+      val currentAccount =
+        secureSharedPreference.retrieveCredentials()?.let { cred ->
+          accounts.find { it.name == cred.username && it.type == authConfiguration.accountType }
+        }
+      if (currentAccount != null) {
+        // Assume second user
+        val currentAccessToken = accountManager.peekAuthToken(currentAccount, AUTH_TOKEN_TYPE)
+        val currentUserRoles = getRolesList(currentAccessToken)
+        val secondUserRoles = getRolesList(oAuthResponse.accessToken)
+
+        // todo: optimise
+        val allMatching = currentUserRoles.all { secondUserRoles.contains(it) }
+        if (!allMatching) throw IllegalAccessException("Unauthorized")
+      }
+
       if (account != null) {
         setPassword(account, oAuthResponse.refreshToken)
         setAuthToken(account, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
@@ -215,7 +245,10 @@ constructor(
         setAuthToken(newAccount, AUTH_TOKEN_TYPE, oAuthResponse.accessToken)
       }
       // Save credentials
-      secureSharedPreference.saveCredentials(username, password)
+      secureSharedPreference.apply {
+        saveMultiCredentials(username, password)
+        saveSessionUsername(username)
+      }
     }
   }
 
@@ -251,7 +284,7 @@ constructor(
   }
 
   fun findAccount(): Account? {
-    val credentials = secureSharedPreference.retrieveCredentials()
+    val credentials = secureSharedPreference.retrieveSessionCredentials()
     return accountManager.getAccountsByType(authConfiguration.accountType).find {
       it.name == credentials?.username
     }
