@@ -53,12 +53,14 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -73,6 +75,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
+import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
@@ -150,7 +153,11 @@ constructor(
         if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
           item.prepareQuestionsForReadingOrEditing(
             readOnly = questionnaireConfig.isReadOnly(),
-            readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
+            readOnlyLinkIds =
+              questionnaireConfig.readOnlyLinkIds
+                ?: questionnaireConfig.linkIds
+                  ?.filter { it.type == LinkIdType.READ_ONLY }
+                  ?.map { it.linkId },
           )
         }
 
@@ -163,14 +170,18 @@ constructor(
 
         // Set barcode to the configured linkId default: "patient-barcode"
         if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-          find(questionnaireConfig.barcodeLinkId)?.apply {
-            initial =
-              mutableListOf(
-                Questionnaire.QuestionnaireItemInitialComponent()
-                  .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-              )
-            readOnly = true
-          }
+          (questionnaireConfig.barcodeLinkId
+              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+            ?.let { barcodeLinkId ->
+              find(barcodeLinkId)?.apply {
+                initial =
+                  mutableListOf(
+                    Questionnaire.QuestionnaireItemInitialComponent()
+                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                  ) // TODO should this be resource identifier or OpenSrp unique ID?
+                readOnly = true
+              }
+            }
         }
 
         // Set configured openSrpId on Questionnaire
@@ -234,7 +245,7 @@ constructor(
         return@launch
       }
 
-      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig)
+      currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig, context)
 
       val bundle =
         performExtraction(
@@ -244,11 +255,32 @@ constructor(
           context = context,
         )
 
+      val locationLinkIdAnswer =
+        questionnaireConfig.linkIds
+          ?.find { it.type == LinkIdType.LOCATION }
+          ?.linkId
+          ?.let {
+            currentQuestionnaireResponse
+              .find(
+                it,
+              )
+              ?.answerFirstRep
+              ?.value
+          }
+      val relatedEntityLocationCode =
+        when (locationLinkIdAnswer) {
+          is Reference -> locationLinkIdAnswer.reference.extractLogicalIdUuid()
+          is StringType -> locationLinkIdAnswer.value.extractLogicalIdUuid()
+          else -> null
+        }
+
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
-        currentQuestionnaireResponse = currentQuestionnaireResponse,
+        questionnaireResponse = currentQuestionnaireResponse,
+        relatedEntityLocationCode = relatedEntityLocationCode,
+        context = context,
       )
 
       updateResourcesLastUpdatedProperty(actionParameters)
@@ -272,6 +304,7 @@ constructor(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
+            relatedEntityLocationCode = relatedEntityLocationCode,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -328,7 +361,9 @@ constructor(
     bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
-    currentQuestionnaireResponse: QuestionnaireResponse,
+    questionnaireResponse: QuestionnaireResponse,
+    relatedEntityLocationCode: String?,
+    context: Context,
   ) {
     val extractionDate = Date()
 
@@ -358,18 +393,18 @@ constructor(
 
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
-        applyResourceMetadata()
+        applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
         if (
-          currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+          questionnaireResponse.subject.reference.isNullOrEmpty() &&
             subjectType != null &&
             resourceType == subjectType &&
             logicalId.isNotEmpty()
         ) {
-          currentQuestionnaireResponse.subject = this.logicalId.asReference(subjectType)
+          questionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
         if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
-            this.id = currentQuestionnaireResponse.subject.extractId()
+            this.id = questionnaireResponse.subject.extractId()
           } else if (
             extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
               previouslyExtractedResources.containsKey(resourceType)
@@ -407,6 +442,13 @@ constructor(
           }
         }
 
+        // Set the Group's Related Entity Location metadata tag on Resource before saving.
+        this.applyRelatedEntityLocationMetaTag(
+          relatedEntityLocationCode,
+          questionnaireConfig,
+          context,
+        )
+
         defaultRepository.addOrUpdate(true, resource = this)
 
         updateGroupManagingEntity(
@@ -431,14 +473,49 @@ constructor(
       }
     }
 
-    // Reference extracted resources in QR then save it if subject exists and config is true
-    currentQuestionnaireResponse.apply { addContained(listResource) }
+    // Reference extracted resources in QR then save it if subject exists
+    questionnaireResponse.apply { addContained(listResource) }
 
     if (
-      !currentQuestionnaireResponse.subject.reference.isNullOrEmpty() &&
+      !questionnaireResponse.subject.reference.isNullOrEmpty() &&
         questionnaireConfig.saveQuestionnaireResponse
     ) {
-      defaultRepository.addOrUpdate(resource = currentQuestionnaireResponse)
+      // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
+      questionnaireResponse.applyRelatedEntityLocationMetaTag(
+        relatedEntityLocationCode,
+        questionnaireConfig,
+        context,
+      )
+      defaultRepository.addOrUpdate(resource = questionnaireResponse)
+    }
+  }
+
+  private suspend fun Resource.applyRelatedEntityLocationMetaTag(
+    relatedEntityLocationCode: String?,
+    questionnaireConfig: QuestionnaireConfig,
+    context: Context,
+  ) {
+    questionnaireConfig.groupResource?.let {
+      if (it.groupIdentifier.isNotEmpty() && !it.removeGroup && !it.removeMember) {
+        val group =
+          loadResource(
+            ResourceType.Group,
+            it.groupIdentifier.extractLogicalIdUuid(),
+          )
+            as Group?
+        if (group != null && !relatedEntityLocationCode.isNullOrEmpty()) {
+          val system =
+            context.getString(
+              org.smartregister.fhircore.engine.R.string
+                .sync_strategy_related_entity_location_system,
+            )
+          group.meta.tag
+            .filter { coding ->
+              coding.system == system && coding.code == relatedEntityLocationCode
+            }
+            .forEach { coding -> this.meta.addTag(coding) }
+        }
+      }
     }
   }
 
@@ -482,6 +559,7 @@ constructor(
   private fun QuestionnaireResponse.processMetadata(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
+    context: Context,
   ) {
     status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
     authored = Date()
@@ -489,7 +567,7 @@ constructor(
     questionnaire.useContext
       .filter { it.hasValueCodeableConcept() }
       .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
-    applyResourceMetadata()
+    applyResourceMetadata(questionnaireConfig, this, context)
     setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
 
     // Set subject if exists
@@ -509,15 +587,18 @@ constructor(
       ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
   }
 
-  private fun Resource?.applyResourceMetadata(): Resource? {
+  private fun Resource?.applyResourceMetadata(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
+  ) =
     this?.apply {
       appendOrganizationInfo(authenticatedOrganizationIds)
       appendPractitionerInfo(practitionerId)
+      appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
       updateLastUpdated()
       generateMissingId()
     }
-    return this
-  }
 
   /**
    * Perform StructureMap or Definition based definition. The result of this function returns a
@@ -722,6 +803,7 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
+    relatedEntityLocationCode: String?,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
@@ -730,6 +812,7 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
+            relatedEntityLocationCode = relatedEntityLocationCode,
             generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }

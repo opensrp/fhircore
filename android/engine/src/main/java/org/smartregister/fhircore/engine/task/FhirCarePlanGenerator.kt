@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.task
 
+import android.content.Context
 import androidx.annotation.VisibleForTesting
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
@@ -23,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,6 +35,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CanonicalType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Dosage
 import org.hl7.fhir.r4.model.Expression
@@ -51,6 +54,7 @@ import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -76,6 +80,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val fhirResourceUtil: FhirResourceUtil,
   val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
+  @ApplicationContext val context: Context,
 ) {
   private val structureMapUtilities by lazy {
     StructureMapUtilities(transformSupportServices.simpleWorkerContext, transformSupportServices)
@@ -85,11 +90,18 @@ constructor(
     planDefinitionId: String,
     subject: Resource,
     data: Bundle = Bundle(),
+    relatedEntityLocationCode: String? = null,
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
     val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
     return planDefinition?.let {
-      generateOrUpdateCarePlan(it, subject, data, generateCarePlanWithWorkflowApi)
+      generateOrUpdateCarePlan(
+        planDefinition = it,
+        subject = subject,
+        data = data,
+        relatedEntityLocationCode = relatedEntityLocationCode,
+        generateCarePlanWithWorkflowApi = generateCarePlanWithWorkflowApi,
+      )
     }
   }
 
@@ -97,8 +109,15 @@ constructor(
     planDefinition: PlanDefinition,
     subject: Resource,
     data: Bundle = Bundle(),
+    relatedEntityLocationCode: String? = null,
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
+    val relatedEntityLocationTags =
+      subject.meta.tag.filter {
+        it.system == context.getString(R.string.sync_strategy_related_entity_location_system) &&
+          it.code == relatedEntityLocationCode
+      }
+
     // Only one CarePlan per plan, update or init a new one if not exists
     val output =
       fhirEngine
@@ -121,25 +140,26 @@ constructor(
           this.title = planDefinition.title
           this.description = planDefinition.description
           this.instantiatesCanonical = listOf(CanonicalType(planDefinition.asReference().reference))
+          // Add the subject's Related Entity Location tag to the CarePlan
+          relatedEntityLocationTags.forEach(this.meta::addTag)
         }
 
-    var carePlanModified = false
-
-    if (generateCarePlanWithWorkflowApi) {
-      workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
-        planDefinition = planDefinition,
-        patient = subject as Patient,
-        data = data,
-        output = output,
-      )
-      carePlanModified = true
-    } else {
-      carePlanModified = liteApplyPlanDefinitionOnPatient(planDefinition, data, subject, output)
-    }
+    val carePlanModified: Boolean =
+      if (generateCarePlanWithWorkflowApi) {
+        workflowCarePlanGenerator.applyPlanDefinitionOnPatient(
+          planDefinition = planDefinition,
+          patient = subject as Patient,
+          data = data,
+          output = output,
+        )
+        true
+      } else {
+        liteApplyPlanDefinitionOnPatient(planDefinition, data, subject, output)
+      }
 
     val carePlanTasks = output.contained.filterIsInstance<Task>()
 
-    if (carePlanModified) saveCarePlan(output)
+    if (carePlanModified) saveCarePlan(output, relatedEntityLocationTags)
 
     if (carePlanTasks.isNotEmpty()) {
       fhirResourceUtil.updateUpcomingTasksToDue(
@@ -217,7 +237,7 @@ constructor(
     return carePlanModified
   }
 
-  private suspend fun saveCarePlan(output: CarePlan) {
+  private suspend fun saveCarePlan(output: CarePlan, relatedEntityLocationTags: List<Coding>) {
     output
       .also { Timber.d(it.encodeResourceToString()) }
       .also { carePlan ->
@@ -228,7 +248,10 @@ constructor(
 
         defaultRepository.addOrUpdate(true, carePlan)
 
-        dependents.forEach { defaultRepository.addOrUpdate(true, it) }
+        dependents.forEach {
+          relatedEntityLocationTags.forEach(it.meta::addTag)
+          defaultRepository.addOrUpdate(true, it)
+        }
 
         if (carePlan.status == CarePlan.CarePlanStatus.COMPLETED) {
           carePlan.activity
