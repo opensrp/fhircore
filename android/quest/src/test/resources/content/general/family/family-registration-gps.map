@@ -77,7 +77,12 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
             gpsLocation.mode = 'instance',
             gpsLocation.description = 'GPS Coordinates for Household Registration' "r_gps_type_data";
 
-        //src -> gpsLocation.address = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r-gps-hh-char-loc";
+        src -> gpsLocation.address = create('Address') as gpsAddress then {
+            src -> gpsAddress.type = 'physical' "r-address-type";
+            src -> gpsAddress.use = 'home' "r-address-use";
+            src -> gpsAddress.text = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r-address-char-location";
+       } "r-gps-address";
+
         src -> gpsLocation.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "r-gps-hh-name";
 
         src -> gpsLocation.type = create('CodeableConcept') as code then {
