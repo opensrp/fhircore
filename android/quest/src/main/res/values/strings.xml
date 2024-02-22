@@ -109,5 +109,6 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <string name="copy_text_success_message">Link %1$s copied successfully</string>
 
 </resources>

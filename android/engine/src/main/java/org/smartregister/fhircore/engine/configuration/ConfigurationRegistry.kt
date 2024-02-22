@@ -414,7 +414,7 @@ constructor(
           } // is focus.identifier a necessary check
           .groupBy { section ->
             section.focus.reference.substringBefore(
-              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              TYPE_REFERENCE_DELIMITER,
               missingDelimiterValue = "",
             )
           }
@@ -586,7 +586,7 @@ constructor(
           ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
-  private fun writeToFile(resource: Resource): File {
+  fun writeToFile(resource: Resource): File {
     val fileName =
       if (resource is MetadataResource && resource.name != null) {
         resource.name

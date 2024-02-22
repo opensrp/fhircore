@@ -83,8 +83,8 @@ fun GenerateView(
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
-          navController = navController,
           resourceData = resourceData,
+          navController = navController,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -255,7 +255,13 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
-      ViewType.IMAGE -> Image(modifier = modifier, imageProperties = properties as ImageProperties)
+      ViewType.IMAGE ->
+        Image(
+          modifier = modifier,
+          imageProperties = properties as ImageProperties,
+          resourceData = resourceData,
+          navController = navController,
+        )
     }
   }
 }
