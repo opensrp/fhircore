@@ -15,57 +15,65 @@ group ExtractGroup(source src : QuestionnaireResponse,
     target group : Group,
     target bundle: Bundle) {
 
-        // set group data
-        src -> group.id = uuid() "rule_group_id_generation";
-        src -> group.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "rule_group_name";
+        // SETS GROUP DATA
 
-        src -> group.identifier = create('Identifier') as groupIdentifierOpenSRPId then {
-            src -> groupIdentifierOpenSRPId.value = evaluate(src, $this.item.where(linkId = 'household.id').answer.value) "rule_group_identifier_opensrp_id_value";
-            src -> groupIdentifierOpenSRPId.use = "official" "rule_group_identifier_opensrp_id_use";
-            src -> groupIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
-        } "rule_group_identifier_opensrp";
+        src -> group.id = uuid() as groupId then {
 
-        src -> group.identifier = create('Identifier') as groupIdentifier then {
-            src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
-            src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
-        } "rule_group_identifier";
+            src -> group.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "rule_group_name";
 
-        src -> group.active = true "r_grp_status_data";
-        src -> group.type = 'person' "r_grp_type_data";
+            src -> group.identifier = create('Identifier') as groupIdentifierOpenSRPId then {
+                src -> groupIdentifierOpenSRPId.value = evaluate(src, $this.item.where(linkId = 'household.id').answer.value) "rule_group_identifier_opensrp_id_value";
+                src -> groupIdentifierOpenSRPId.use = "official" "rule_group_identifier_opensrp_id_use";
+                src -> groupIdentifierOpenSRPId.period = create('Period') as period, period.start = evaluate(src, $this.authored) "rule_group_identifier_period";
+            } "rule_group_identifier_opensrp";
 
-        src -> group.code = create('CodeableConcept') as concept then ExtractHouseholdCode(src, concept) "r_grp_code_data";
+            src -> group.identifier = create('Identifier') as groupIdentifier then {
+                src -> groupIdentifier.value = uuid() "rule_group_identifier_value";
+                src -> groupIdentifier.use = "secondary" "rule_group_identifier_use";
+            } "rule_group_identifier";
 
-        src.item as groupCharLocation where(linkId='household.location') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
-            groupCharLocation -> groupChar.code = create('CodeableConcept') as villCode then {
-                src -> villCode.coding = c("http://ona.io/codes", "hh_location") as coding then {
-                    src -> coding.display = 'Household Location' "r_cp_cod_disp_l";
-                } "r_grp_lcode";
+            src -> group.active = true "r_grp_status_data";
+            src -> group.type = 'person' "r_grp_type_data";
 
-                src -> villCode.text = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r_vcc_hh_location";
-            } "r_cp_cc_coding_l";
+            src -> group.code = create('CodeableConcept') as concept then ExtractHouseholdCode(src, concept) "r_grp_code_data";
 
-            groupCharLocation -> groupChar.exclude = false "r_cp_cc_exclude_l";
-        } "r_group_char_l";
+            src.item as groupCharLocation where(linkId='household.location') -> group.characteristic = create ('Group_Characteristic') as groupChar then {
+                groupCharLocation -> groupChar.code = create('CodeableConcept') as villCode then {
+                    src -> villCode.coding = c("http://ona.io/codes", "hh_location") as coding then {
+                        src -> coding.display = 'Household Location' "r_cp_cod_disp_l";
+                    } "r_grp_lcode";
+                    src -> villCode.text = evaluate(src, $this.item.where(linkId = 'household.location').answer.value) "r_vcc_hh_location";
+                } "r_cp_cc_coding_l";
+                groupCharLocation -> groupChar.exclude = false "r_cp_cc_exclude_l";
+            } "r_group_char_l";
 
-        src.item where(linkId='location-widget') then {
-            src -> bundle.entry as entry,
-                entry.resource = create("Location") as location then {
-                    src -> bundle.entry as entry,
-                    entry.resource = create("List") as linkingList
-                        then ExtractOtherResources(src, bundle, location, linkingList) "r-other-resources";
-                } "r-other-data-call";
-        } "r-other-resource-data";
+            src.item where(linkId='location-widget') then {
+                src -> bundle.entry as entry,
+                    entry.resource = create("Location") as location then {
+                        src -> bundle.entry as entry,
+                        entry.resource = create("List") as linkingList
+                            then ExtractOtherResources(src, bundle, location, linkingList, groupId) "r-other-resources";
+                    } "r-other-data-call";
+            } "r-other-resource-data";
+
+        } "rule_group_id_generation";
 }
 
 group ExtractOtherResources(source src: QuestionnaireResponse,
     target bundle: Bundle,
     target gpsLocation : Location,
-    target linkingList : List) {
+    target linkingList : List,
+    target groupId : String) {
 
         // SETS GPS-Location-Data
 
-        src -> gpsLocation.id = uuid(),
-            gpsLocation.status = 'active',
+        src -> gpsLocation.id = uuid() as locationId then {
+            src -> linkingList.subject = create('Reference') as reference then {
+                src -> reference.reference = evaluate(src, 'Location/' + locationId ) "r-ll-subject";
+            } "r-locationId-referredTo-list-subj";
+        } "r-gps-locationId";
+
+        src -> gpsLocation.status = 'active',
             gpsLocation.mode = 'instance',
             gpsLocation.description = 'GPS Coordinates for Household Registration' "r_gps_type_data";
 
@@ -106,7 +114,38 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
 
         src -> linkingList.id = uuid(),
             linkingList.status = 'current',
-            linkingList.title = 'ABC Household' "r-link-t";
+            linkingList.title = 'ABC Household' "r-linking-list-data";
+
+        src -> linkingList.identifier = create('Identifier') as linkingListIdentifier then {
+            src -> linkingListIdentifier.value = uuid() "rule_ll_identifier_value";
+            src -> linkingListIdentifier.use = "official" "rule_ll_identifier_use";
+        } "rule_ll_identifier";
+
+        src -> linkingList.title = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "r-ll-title";
+
+        src -> linkingList.code = create('CodeableConcept') as ll_code then {
+            src -> ll_code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://smartregister.org/' "r_ll_code_coding_system";
+                src -> coding.code = 'hh_location_link' "r_ll_code_coding_code";
+                src -> coding.display = 'Household Location Reference' "r_ll_code_coding_display";
+            } "r_ll_code_coding";
+            src -> ll_code.text = 'Household Location Reference' "r_ll_code-text";
+        } "r_ll_code";
+
+        src -> linkingList.entry = create("List_Entry") as entry then {
+            src -> entry.flag = create('CodeableConcept') as flag then {
+                 src -> flag.coding = create('Coding') as coding then {
+                     src -> coding.system = 'http://smartregister.org/' "r_flag_coding_system";
+                     src -> coding.code = 'household' "r_flag_coding_code";
+                     src -> coding.display = 'Household Location Reference' "r_flag_coding_display";
+                 } "r_flag_coding";
+                 src -> flag.text = 'Household Location Reference' "r_flag-text";
+            } "r_flag";
+            src -> entry.date = evaluate(src, now()) "r_entry_date";
+            src -> entry.item = create('Reference') as reference then {
+                src -> reference.reference = evaluate(src, 'Group/' + groupId ) "r_entry_item_ref_ref";
+            } "r_entry_item_ref";
+        } "r_entry";
 }
 
 group ExtractHouseholdCode(source src : Group, target concept: CodeableConcept) {
