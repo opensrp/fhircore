@@ -16,24 +16,25 @@
 
 package org.smartregister.fhircore.engine.rulesengine.services
 
+import android.Manifest
+import android.content.Context
 import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getAccurateLocation
+import org.smartregister.fhircore.engine.util.location.PermissionUtils
 
-object LocationService {
+class LocationService(
+  @ApplicationContext val context: Context,
+) {
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private var locationEnabled: Boolean = false
   private var retrievedGPSLocation: Location? = null
-
-  fun init(fusedLocationProviderClient: FusedLocationProviderClient, isLocationEnabled: Boolean) {
-    locationEnabled = isLocationEnabled
-    fusedLocationClient = fusedLocationProviderClient
-  }
 
   fun calculateDistanceByProvidedLocations(
     destination: Location,
@@ -45,8 +46,9 @@ object LocationService {
 
   fun calculateDistanceByGpsLocation(location: Resource): String? {
     val currentLocation = generateLocation(location)
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     CoroutineScope(Dispatchers.IO).launch {
-      if (locationEnabled) {
+      if (hasLocationPermissions()) {
         retrievedGPSLocation = getAccurateLocation(fusedLocationClient)
       }
     }
@@ -76,20 +78,37 @@ object LocationService {
   }
 
   private fun formatDistance(distanceInMeters: Float): String {
-    return if (distanceInMeters < 1000) {
+    return if (distanceInMeters < METERS_IN_A_KILOMETER) {
       String.format("%.2f mtrs", distanceInMeters)
     } else {
-      val distanceInKilometers = distanceInMeters / 1000.0
+      val distanceInKilometers = distanceInMeters / METERS_IN_A_KILOMETER
       String.format("%.2f km", distanceInKilometers)
     }
   }
 
   @VisibleForTesting
   fun calculateGpsLocation(): Location {
-    // For testing purposes, return a predefined static location
     return Location("StaticTestLocation").apply {
       latitude = 37.7749
       longitude = -122.4194
-    } // Adjust the expected result based on your distance calculation
+    }
+  }
+
+  private fun hasLocationPermissions(): Boolean {
+    return PermissionUtils.checkPermissions(
+      context,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
+  }
+
+  companion object {
+    fun create(context: Context): LocationService {
+      return LocationService(context)
+    }
+
+    const val METERS_IN_A_KILOMETER = 1000
   }
 }

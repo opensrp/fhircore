@@ -35,17 +35,14 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -67,6 +64,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -197,15 +195,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private fun setupLocationServices() {
-    if (appMainViewModel.applicationConfiguration.enableLocation) {
-      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-      if (!LocationUtils.isLocationEnabled(this)) {
-        openLocationServicesSettings()
-      }
+    if (!LocationUtils.isLocationEnabled(this)) {
+      openLocationServicesSettings()
+    }
 
-      if (!hasLocationPermissions()) {
-        launchLocationPermissionsDialog()
-      }
+    if (!hasLocationPermissions()) {
+      launchLocationPermissionsDialog()
     }
   }
 
@@ -223,7 +218,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     activityResultLauncher =
       PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
         if (resultCode == RESULT_OK || hasLocationPermissions()) {
-          LocationService.init(fusedLocationClient, true)
+          Timber.d("Location or permissions successfully enabled")
         }
       }
 
@@ -244,8 +239,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     locationPermissionLauncher =
       PermissionUtils.getLocationPermissionLauncher(
         this,
-        onFineLocationPermissionGranted = { LocationService.init(fusedLocationClient, true) },
-        onCoarseLocationPermissionGranted = { LocationService.init(fusedLocationClient, true) },
+        onFineLocationPermissionGranted = {},
+        onCoarseLocationPermissionGranted = {},
         onLocationPermissionDenied = {
           Toast.makeText(
               this,

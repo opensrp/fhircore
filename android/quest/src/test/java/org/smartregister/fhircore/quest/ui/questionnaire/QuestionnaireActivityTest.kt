@@ -38,8 +38,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -68,6 +66,8 @@ import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -210,7 +210,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.enableLocation } returns true
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true
@@ -229,7 +229,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.enableLocation } returns true
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns false
@@ -250,7 +250,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     val viewModel = mockk<QuestionnaireViewModel>()
     val activity = spyk(QuestionnaireActivity())
     val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.enableLocation } returns true
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
     every { LocationServices.getFusedLocationProviderClient(activity) } returns
       fusedLocationProviderClient
     every { LocationUtils.isLocationEnabled(activity) } returns true

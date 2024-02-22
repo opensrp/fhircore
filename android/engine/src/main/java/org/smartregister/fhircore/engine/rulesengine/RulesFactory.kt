@@ -71,6 +71,7 @@ constructor(
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
+  val locationService = LocationService.create(context)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -88,7 +89,7 @@ constructor(
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
-        put(LOCATION_SERVICE, LocationService)
+        put(LOCATION_SERVICE, locationService)
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {

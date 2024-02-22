@@ -128,7 +128,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   fun setupLocationServices() {
-    if (viewModel.applicationConfiguration.enableLocation) {
+    if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
