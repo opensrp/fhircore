@@ -133,7 +133,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
-
           // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
