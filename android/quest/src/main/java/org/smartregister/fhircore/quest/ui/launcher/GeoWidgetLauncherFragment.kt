@@ -61,19 +61,7 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
     super.onCreate(savedInstanceState)
     geoWidgetConfiguration = geoWidgetConfiguration()
   }
-  private fun setUpToolbar(): Toolbar {
-    return Toolbar(requireContext()).apply {
-      popupTheme = org.smartregister.fhircore.engine.R.style.AppTheme
-      visibility = View.VISIBLE
-      navigationIcon =
-        ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
-      layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
-      setBackgroundColor(ContextCompat.getColor(requireContext(), org.smartregister.fhircore.engine.R.color.colorPrimary))
-      setNavigationOnClickListener {
-        activity?.onBackPressedDispatcher?.onBackPressed()
-      }
-    }
-  }
+
   private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
     configurationRegistry.retrieveConfiguration(
       ConfigType.GeoWidget,
