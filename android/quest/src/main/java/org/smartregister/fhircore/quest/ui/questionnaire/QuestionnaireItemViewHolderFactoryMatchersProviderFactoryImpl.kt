@@ -42,8 +42,7 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   object OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl :
     QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
 
-    private const val BARCODE_URL =
-      "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
+    private const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
     private const val BARCODE_NAME = "barcode"
 
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
