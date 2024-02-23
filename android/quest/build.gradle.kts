@@ -1,9 +1,6 @@
-buildscript {
-    apply(from = "../jacoco.gradle.kts")
-    apply(from = "../properties.gradle.kts")
-}
-
 plugins {
+    `fhir-properties`
+    `fhir-jacoco-report`
     id("com.android.application")
     id("kotlin-android")
     id("kotlin-kapt")
@@ -26,7 +23,7 @@ android {
     compileSdk = Deps.sdk_versions.compile_sdk
 
     dataBinding {
-        isEnabled = true
+        enable = true
     }
 
     defaultConfig {
@@ -72,7 +69,7 @@ android {
 //            }
         }
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += listOf("META-INF/ASL-2.0.txt", "META-INF/LGPL-3.0.txt", "license.html", "readme.html", "META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/LICENSE.txt", "META-INF/license.txt", "META-INF/license.html", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/NOTICE.txt", "META-INF/NOTICE.md", "META-INF/notice.txt", "META-INF/ASL2.0", "META-INF/ASL-2.0.txt", "META-INF/LGPL-3.0.txt", "META-INF/sun-jaxb.episode", "META-INF/*.kotlin_module", "META-INF/AL2.0", "META-INF/LGPL2.1")
         }
@@ -104,28 +101,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
-//            all {
-//
-//                testLogging {
-//                    // set options for log level LIFECYCLE
-//                    events "failed"
-//                    exceptionFormat "full"
-//
-//                    // set options for log level DEBUG
-//                    debug {
-//                        events "started", "skipped", "failed"
-//                        exceptionFormat "full"
-//                    }
-//
-//                    // remove standard output/error logging from --info builds
-//                    // by assigning only "failed" and "skipped" events
-//                    info.events = ["failed", "skipped"]
-//                }
-//
-//                beforeTest { testDescriptor ->
-//                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
-//                }
-//            }
         }
     }
 

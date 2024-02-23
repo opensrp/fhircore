@@ -1,10 +1,7 @@
-import Dependencies.removeIncompatibleDependencies
 //import DependenciesKt
-buildscript {
-    apply(from = "../jacoco.gradle.kts")
-}
 
 plugins {
+    `fhir-jacoco-report`
     id("com.android.library")
     id("kotlin-android")
     id("kotlin-kapt")
@@ -62,12 +59,11 @@ android {
             exclude(group = "xml-apis")
         }
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += listOf("license.html", "readme.html", "META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/LICENSE.txt", "META-INF/license.txt", "META-INF/license.html", "META-INF/LICENSE.md", "META-INF/NOTICE", "META-INF/NOTICE.txt", "META-INF/NOTICE.md", "META-INF/notice.txt", "META-INF/ASL2.0", "META-INF/ASL-2.0.txt", "META-INF/LGPL-3.0.txt", "META-INF/sun-jaxb.episode", "META-INF/*.kotlin_module")
         }
     }
-
 
     testOptions {
         execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -76,30 +72,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
-//            all {
-//                testLogging {
-//                    // set options for log level LIFECYCLE
-//                    events = "failed"
-//                    exceptionFormat = "full"
-//
-//                    // set options for log level DEBUG
-//                    debug {
-//                        events = listOf("started", "skipped", "failed")
-//                        exceptionFormat = "full"
-//                    }
-//
-//
-//                    // remove standard output/error logging from --info builds
-//                    // by assigning only "failed" and "skipped" events
-//                    info.events = listOf("failed", "skipped")
-//                }
-
-//                minHeapSize = "4608m"
-//                maxHeapSize = "4608m"
-//                beforeTest { testDescriptor ->
-//                    println "${testDescriptor.className} > ${testDescriptor.name} STARTED"
-//                }
-//            }
         }
     }
 
