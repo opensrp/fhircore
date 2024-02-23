@@ -53,7 +53,6 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -225,31 +224,11 @@ constructor(
           context = context,
         )
 
-      val locationLinkIdAnswer =
-        questionnaireConfig.linkIds
-          ?.find { it.type == LinkIdType.LOCATION }
-          ?.linkId
-          ?.let {
-            currentQuestionnaireResponse
-              .find(
-                it,
-              )
-              ?.answerFirstRep
-              ?.value
-          }
-      val relatedEntityLocationCode =
-        when (locationLinkIdAnswer) {
-          is Reference -> locationLinkIdAnswer.reference.extractLogicalIdUuid()
-          is StringType -> locationLinkIdAnswer.value.extractLogicalIdUuid()
-          else -> null
-        }
-
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
         questionnaireResponse = currentQuestionnaireResponse,
-        relatedEntityLocationCode = relatedEntityLocationCode,
         context = context,
       )
 
@@ -274,7 +253,6 @@ constructor(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
-            relatedEntityLocationCode = relatedEntityLocationCode,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -308,7 +286,6 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse,
-    relatedEntityLocationCode: String?,
     context: Context,
   ) {
     val extractionDate = Date()
@@ -389,11 +366,7 @@ constructor(
         }
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        this.applyRelatedEntityLocationMetaTag(
-          relatedEntityLocationCode,
-          questionnaireConfig,
-          context,
-        )
+        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context)
 
         defaultRepository.addOrUpdate(true, resource = this)
 
@@ -428,7 +401,6 @@ constructor(
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-        relatedEntityLocationCode,
         questionnaireConfig,
         context,
       )
@@ -437,7 +409,6 @@ constructor(
   }
 
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
-    relatedEntityLocationCode: String?,
     questionnaireConfig: QuestionnaireConfig,
     context: Context,
   ) {
@@ -449,17 +420,13 @@ constructor(
             it.groupIdentifier.extractLogicalIdUuid(),
           )
             as Group?
-        if (group != null && !relatedEntityLocationCode.isNullOrEmpty()) {
+        if (group != null) {
           val system =
             context.getString(
               org.smartregister.fhircore.engine.R.string
                 .sync_strategy_related_entity_location_system,
             )
-          group.meta.tag
-            .filter { coding ->
-              coding.system == system && coding.code == relatedEntityLocationCode
-            }
-            .forEach { coding -> this.meta.addTag(coding) }
+          group.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
         }
       }
     }
@@ -749,7 +716,6 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
-    relatedEntityLocationCode: String?,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
@@ -758,7 +724,6 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
-            relatedEntityLocationCode = relatedEntityLocationCode,
             generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }
