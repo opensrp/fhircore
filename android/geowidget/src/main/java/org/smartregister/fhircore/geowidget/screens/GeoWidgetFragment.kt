@@ -109,7 +109,7 @@ class GeoWidgetFragment : Fragment() {
     private fun setUpMapView(): KujakuMapView {
         return KujakuMapView(requireActivity()).apply {
             id = R.id.kujaku_widget
-            val builder = Style.Builder().fromUri("asset://base-layer-switcher-style.json")
+            val builder = Style.Builder().fromUri("asset://fhircore_style.json")
             getMapAsync { mapboxMap ->
                 mapboxMap.setStyle(builder) { style ->
                     geoJsonSource = style.getSourceAs("quest-data-set")

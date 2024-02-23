@@ -38,6 +38,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import timber.log.Timber
 import kotlin.math.ceil
 
 @HiltViewModel
@@ -81,6 +82,7 @@ constructor(
   }
 
     private fun addLocationToFlow(location: GeoWidgetLocation) {
+        Timber.i("Location position lat: ${location.position?.latitude} and long: ${location.position?.longitude}")
         _locationsFlow.value = _locationsFlow.value + location
     }
 

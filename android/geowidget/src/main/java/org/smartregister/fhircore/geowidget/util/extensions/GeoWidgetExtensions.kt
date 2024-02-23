@@ -27,8 +27,7 @@ fun GeoWidgetLocation.getGeoJsonGeometry(): JSONObject {
   val geometry = JSONObject()
 
   geometry.put("type", "Point")
-  geometry.put("coordinates", JSONArray(arrayOf(position.latitude, position.longitude)))
-
+  geometry.put("coordinates", JSONArray(arrayOf(position.longitude, position.latitude)))
   return geometry
 }
 

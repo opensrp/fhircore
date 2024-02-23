@@ -83,7 +83,7 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     geoWidgetLauncherViewModel.retrieveLocations()
-    val toolbar = setUpToolbar()
+
 
     geoWidgetFragment = GeoWidgetFragment.builder()
       .setUseGpsOnAddingLocation(false)
@@ -106,7 +106,7 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
     if (savedInstanceState == null) {
       addGeoWidgetFragment()
     }
-    (view.rootView as? FrameLayout?)?.addView(toolbar)
+
     setLocationFromDbCollector()
     setOnQuestionnaireSubmissionListener()
   }
