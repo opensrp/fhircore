@@ -21,6 +21,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -67,6 +69,19 @@ class GeoWidgetFragment : Fragment() {
     private var geoJsonSource: GeoJsonSource? = null
     private var featureCollection: FeatureCollection? = null
 
+    private fun setUpToolbar(): Toolbar {
+        return Toolbar(requireContext()).apply {
+            popupTheme = org.smartregister.fhircore.engine.R.style.AppTheme
+            visibility = View.VISIBLE
+            navigationIcon =
+                ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+            setBackgroundColor(ContextCompat.getColor(requireContext(), org.smartregister.fhircore.engine.R.color.colorPrimary))
+            setNavigationOnClickListener {
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -96,12 +111,12 @@ class GeoWidgetFragment : Fragment() {
     }
 
     private fun setupViews(): LinearLayout {
-        //val toolbar = setUpToolbar()
+        val toolbar = setUpToolbar()
         mapView = setUpMapView()
 
         return LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            //addView(toolbar)
+            addView(toolbar)
             addView(mapView)
         }
     }
