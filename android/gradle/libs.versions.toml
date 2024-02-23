@@ -11,6 +11,7 @@ compressor = "3.0.1"
 constraintlayout = "2.1.4"
 constraintlayout-compose = "1.0.1"
 contrib-barcode = "0.1.0-beta3-preview5-SNAPSHOT"
+contrib-locationwidget = "0.1.0-alpha01-lw-SNAPSHOT"
 converter-gson = "2.9.0"
 core-ktx = "1.9.0"
 core-ktx-test= "1.5.0"
@@ -19,7 +20,7 @@ cql-engine = "2.4.0"
 cql-evaluator = "2.4.0"
 cql-to-elm = "2.4.0"
 dagger-hilt-compiler = "2.42"
-data-capture = "1.0.0-preview11-SNAPSHOT"
+data-capture = "1.0.0-lw-SNAPSHOT"
 desugar-jdk-libs = "1.1.5"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.0"
@@ -109,6 +110,7 @@ compressor = { group = "id.zelory", name = "compressor", version.ref = "compress
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout-compose" }
 contrib-barcode = { group = "org.smartregister", name = "contrib-barcode", version.ref = "contrib-barcode" }
+contrib-locationwidget = { group = "org.smartregister", name = "contrib-locationwidget", version.ref = "contrib-locationwidget" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "converter-gson" }
 core-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
