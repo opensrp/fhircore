@@ -716,10 +716,10 @@ constructor(
               if (BuildConfig.DEBUG) {
                 Timber.d(
                   "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                    getStringRepresentation(
-                                        resultParameterResource,
-                                    )
-                                }",
+                                        getStringRepresentation(
+                                            resultParameterResource,
+                                        )
+                                    }",
                 )
               }
             }
