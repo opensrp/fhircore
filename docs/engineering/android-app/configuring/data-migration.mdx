@@ -1,12 +1,12 @@
-# Data Migration
+# Data migration
 
 
-The main functionalities of Data Migration are:
-- Migrating data by updating resources based on a set of data queries and key-value
-- Retrieving of th latest migration version from shared preferences
-- Performing the migration only if the new version is greater than or equal to the latest migration version
+The main functionalities of data migration are:
+- Migrating data by updating resources based on a set of data queries and key-value pairs,
+- Retrieving the latest migration version from shared preferences,
+- Performing the migration only if the new version is greater than or equal to the client's latest stored migration version.
 
-The data migration configuration outlines a set of rules and operations for migrating FHIR resources , specifically `Tasks`migration. With this configuration one is able to filter the target task, read its referenced `plandef` and `rev_including` its careplans then filter for the task that lies within the careplan period and read the resulting careplan id then use it to update the `task.basedOn`.It ensures that all the resources that are being generated through structuremaps are not malformed.
+The data migration configuration outlines a set of rules and operations for migrating FHIR resources, specifically `Task` resource migration. With this configuration one is able to filter the target `Task`, read its referenced `PlanDefinition` and `rev_including` its careplans then filter for the task that lies within the careplan period and read the resulting careplan id then use it to update the `task.basedOn`. It ensures that all the resources that are being generated through `StructureMap`s are not malformed.
 
 ## Sample JSON
 ```json
@@ -86,7 +86,3 @@ createLocalChangeEntitiesAfterPurge | Flag indicating whether to create local ch
 resourceFilterExpression | Expression for filtering resources during migration | Yes |  |
 jsonPathExpression | JSON path expression for locating the value within the resource | Yes |  |
 computedValueKey | Key for the computed value to be updated | Yes | |
-
-
-
-
