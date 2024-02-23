@@ -74,7 +74,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private var currentLocation: Location? = null
+  var currentLocation: Location? = null
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
