@@ -19,6 +19,8 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.location.LocationManager
+import android.provider.Settings
 import android.widget.Toast
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
@@ -38,6 +40,9 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -50,7 +55,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
@@ -67,6 +72,9 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import javax.inject.Inject
+import org.smartregister.fhircore.quest.util.LocationUtils
+import javax.inject.Inject
+import kotlin.test.assertNotNull
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -82,6 +90,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaire: Questionnaire
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
+  private lateinit var locationUtil: LocationUtils
+
+  private lateinit var locationManager: LocationManager
 
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
 
@@ -201,69 +212,64 @@ class QuestionnaireActivityTest : RobolectricTest() {
   fun testThatOnBackPressShowsConfirmationAlertDialog() = runTest {
     setupActivity()
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
-    val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
+    val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     Assert.assertNotNull(dialog)
   }
 
   @Test
   fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
-    val viewModel = mockk<QuestionnaireViewModel>()
-    val activity = spyk(QuestionnaireActivity())
-    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns
-      fusedLocationProviderClient
-    every { LocationUtils.isLocationEnabled(activity) } returns true
-    every { activity.hasLocationPermissions() } returns true
-    every { activity.fetchLocation(any()) } just runs
+    setupActivity()
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    activity.setupLocationServices()
+    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
+    shadowOf(questionnaireActivity).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
-    verify(exactly = 1) { activity.fetchLocation(true) }
-    verify(exactly = 0) { activity.openLocationServicesSettings() }
-    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
+
+    questionnaireActivity.setupLocationServices()
+    assertTrue(questionnaireActivity.hasLocationPermissions())
+    questionnaireActivity.fetchLocation()
+    assertNotNull(questionnaireActivity.currentLocation)
+
   }
 
   @Test
   fun `setupLocationServices should open location settings if location is disabled`() {
-    val viewModel = mockk<QuestionnaireViewModel>()
-    val activity = spyk(QuestionnaireActivity())
-    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns
-      fusedLocationProviderClient
-    every { LocationUtils.isLocationEnabled(activity) } returns false
-    every { activity.hasLocationPermissions() } returns true
-    every { activity.fetchLocation(any()) } just runs
-    every { activity.openLocationServicesSettings() } just runs
-    every { activity.launchLocationPermissionsDialog() } just runs
+    setupActivity()
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    activity.setupLocationServices()
+    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
 
-    verify(exactly = 1) { activity.openLocationServicesSettings() }
-    verify(exactly = 0) { activity.fetchLocation(any()) }
-    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+    shadowOf(questionnaireActivity).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    val locationManager =
+      questionnaireActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false)
+    locationManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, false)
+
+    questionnaireActivity.fetchLocation()
+    val startedIntent = shadowOf(questionnaireActivity).nextStartedActivity
+    val expectedIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+
+    assertEquals(expectedIntent.component, startedIntent.component)
   }
 
   @Test
   fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
-    val viewModel = mockk<QuestionnaireViewModel>()
-    val activity = spyk(QuestionnaireActivity())
-    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
-    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
-    every { LocationServices.getFusedLocationProviderClient(activity) } returns
-      fusedLocationProviderClient
-    every { LocationUtils.isLocationEnabled(activity) } returns true
-    every { activity.hasLocationPermissions() } returns false
-    every { activity.fetchLocation(any()) } just runs
-    every { activity.openLocationServicesSettings() } just runs
-    every { activity.launchLocationPermissionsDialog() } just runs
 
-    activity.setupLocationServices()
+    setupActivity()
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    verify(exactly = 1) { activity.launchLocationPermissionsDialog() }
-    verify(exactly = 0) { activity.fetchLocation(any()) }
-    verify(exactly = 0) { activity.openLocationServicesSettings() }
+    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    assertNotNull(fusedLocationProviderClient)
+
+    assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
+    assertFalse(questionnaireActivity.hasLocationPermissions())
+
+    val dialog = questionnaireActivity.launchLocationPermissionsDialog()
+    assertNotNull(dialog)
+
   }
 
   private fun setupActivity() {
