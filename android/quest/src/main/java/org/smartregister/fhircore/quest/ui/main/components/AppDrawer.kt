@@ -356,6 +356,7 @@ private fun SideMenuItem(
         paddingEnd = 10,
         imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
         tint = MenuItemColor,
+        navController = rememberNavController(),
       )
       SideMenuItemText(title = title, textColor = Color.White)
     }
