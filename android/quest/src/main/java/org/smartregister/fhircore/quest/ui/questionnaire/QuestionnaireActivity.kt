@@ -19,7 +19,6 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.Context
 import android.content.Intent
 import android.location.Location
 import android.os.Bundle
@@ -78,7 +77,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
-
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -112,10 +110,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
     }
 
-    setupLocationServices()
-
-
     if (savedInstanceState == null) renderQuestionnaire()
+
+    setupLocationServices()
 
     this.onBackPressedDispatcher.addCallback(
       this,
@@ -202,21 +199,20 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     )
   }
 
-  fun fetchLocation(highAccuracy: Boolean = true, questionnaireId: String? = null, context: Context = this ) {
+  fun fetchLocation(highAccuracy: Boolean = true) {
     lifecycleScope.launch {
       try {
-//        throw Exception("Failed to get Location")
         if (highAccuracy) {
           currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
         } else {
           currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
         }
       } catch (e: Exception) {
-        Timber.e(e, "Failed to get GPS location for questionnaire with ID: $questionnaireId")
-        context.showToast(
-          "Failed to get GPS location for questionnaire with ID: $questionnaireId",
-          Toast.LENGTH_LONG
-        )
+        Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
+      } finally {
+        if (currentLocation == null) {
+          this@QuestionnaireActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
+        }
       }
     }
   }
