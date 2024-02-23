@@ -670,8 +670,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
             if (questionnaireResponseItem.answer.hasDifferentAnswerSet(calculatedAnswers)) {
               questionnaireResponseItem.answer =
                 calculatedAnswers.map {
-                  val value = it.asExpectedType(questionnaireItem.type)
-                  QuestionnaireResponseItemAnswerComponent().setValue(value)
+                  QuestionnaireResponseItemAnswerComponent().apply { value = it }
                 }
             }
           }
