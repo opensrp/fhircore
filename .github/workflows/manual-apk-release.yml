@@ -18,6 +18,7 @@ on:
       isAab:
         description: 'For Playstore release only. Generates AAB'     
         required: true
+        type: boolean
         default: false
 jobs:
    build:
