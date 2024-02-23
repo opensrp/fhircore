@@ -47,6 +47,9 @@ allprojects {
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")
     }
+     configurations.all {
+       resolutionStrategy.force("com.google.android.gms:play-services-location:19.0.1")
+     }
   }
 }
 

@@ -53,15 +53,17 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -105,6 +107,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
+  val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -121,6 +124,10 @@ constructor(
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
   val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
     get() = _questionnaireProgressStateLiveData
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
@@ -225,31 +232,11 @@ constructor(
           context = context,
         )
 
-      val locationLinkIdAnswer =
-        questionnaireConfig.linkIds
-          ?.find { it.type == LinkIdType.LOCATION }
-          ?.linkId
-          ?.let {
-            currentQuestionnaireResponse
-              .find(
-                it,
-              )
-              ?.answerFirstRep
-              ?.value
-          }
-      val relatedEntityLocationCode =
-        when (locationLinkIdAnswer) {
-          is Reference -> locationLinkIdAnswer.reference.extractLogicalIdUuid()
-          is StringType -> locationLinkIdAnswer.value.extractLogicalIdUuid()
-          else -> null
-        }
-
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
         questionnaireResponse = currentQuestionnaireResponse,
-        relatedEntityLocationCode = relatedEntityLocationCode,
         context = context,
       )
 
@@ -274,7 +261,6 @@ constructor(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
-            relatedEntityLocationCode = relatedEntityLocationCode,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -308,7 +294,6 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse,
-    relatedEntityLocationCode: String?,
     context: Context,
   ) {
     val extractionDate = Date()
@@ -389,11 +374,7 @@ constructor(
         }
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        this.applyRelatedEntityLocationMetaTag(
-          relatedEntityLocationCode,
-          questionnaireConfig,
-          context,
-        )
+        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context)
 
         defaultRepository.addOrUpdate(true, resource = this)
 
@@ -428,7 +409,6 @@ constructor(
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-        relatedEntityLocationCode,
         questionnaireConfig,
         context,
       )
@@ -437,7 +417,6 @@ constructor(
   }
 
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
-    relatedEntityLocationCode: String?,
     questionnaireConfig: QuestionnaireConfig,
     context: Context,
   ) {
@@ -449,17 +428,13 @@ constructor(
             it.groupIdentifier.extractLogicalIdUuid(),
           )
             as Group?
-        if (group != null && !relatedEntityLocationCode.isNullOrEmpty()) {
+        if (group != null) {
           val system =
             context.getString(
               org.smartregister.fhircore.engine.R.string
                 .sync_strategy_related_entity_location_system,
             )
-          group.meta.tag
-            .filter { coding ->
-              coding.system == system && coding.code == relatedEntityLocationCode
-            }
-            .forEach { coding -> this.meta.addTag(coding) }
+          group.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
         }
       }
     }
@@ -749,7 +724,6 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
-    relatedEntityLocationCode: String?,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
@@ -758,7 +732,6 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
-            relatedEntityLocationCode = relatedEntityLocationCode,
             generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }

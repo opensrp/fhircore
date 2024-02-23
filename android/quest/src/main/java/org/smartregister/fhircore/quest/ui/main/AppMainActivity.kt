@@ -16,10 +16,15 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
@@ -29,9 +34,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.gms.location.FusedLocationProviderClient
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -47,6 +52,8 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.location.LocationUtils
+import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -55,6 +62,7 @@ import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
@@ -75,6 +83,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   val appMainViewModel by viewModels<AppMainViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+  private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+  private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -85,6 +96,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setupLocationServices()
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
@@ -160,6 +172,71 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         )
       } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
     }
+  }
+
+  private fun setupLocationServices() {
+    if (!LocationUtils.isLocationEnabled(this)) {
+      openLocationServicesSettings()
+    }
+
+    if (!hasLocationPermissions()) {
+      launchLocationPermissionsDialog()
+    }
+  }
+
+  private fun hasLocationPermissions(): Boolean {
+    return PermissionUtils.checkPermissions(
+      this,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
+  }
+
+  private fun openLocationServicesSettings() {
+    activityResultLauncher =
+      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
+        if (resultCode == RESULT_OK || hasLocationPermissions()) {
+          Timber.d("Location or permissions successfully enabled")
+        }
+      }
+
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    showLocationSettingsDialog(intent)
+  }
+
+  private fun showLocationSettingsDialog(intent: Intent) {
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.location_services_disabled))
+      .setCancelable(true)
+      .setPositiveButton(getString(R.string.yes)) { _, _ -> activityResultLauncher.launch(intent) }
+      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
+      .show()
+  }
+
+  private fun launchLocationPermissionsDialog() {
+    locationPermissionLauncher =
+      PermissionUtils.getLocationPermissionLauncher(
+        this,
+        onFineLocationPermissionGranted = {},
+        onCoarseLocationPermissionGranted = {},
+        onLocationPermissionDenied = {
+          Toast.makeText(
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
+            .show()
+        },
+      )
+
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      ),
+    )
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {

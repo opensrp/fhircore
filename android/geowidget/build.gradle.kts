@@ -125,6 +125,7 @@ dependencies {
   implementation(libs.kujaku.library) {
     isTransitive = true
     exclude(group = "stax", module = "stax-api")
+    exclude(group = "com.google.android.gms", module = "play-services-location")
   }
 
   // Annotation processors

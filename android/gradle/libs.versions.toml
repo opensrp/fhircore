@@ -56,6 +56,9 @@ okhttp = "4.12.0"
 okhttp-logging-interceptor = "4.11.0"
 orchestrator = "1.4.2"
 p2p-lib = "0.6.9-SNAPSHOT"
+paging-compose = "3.2.0"
+paging-runtime-ktx = "3.2.0"
+playServicesLocation = "19.0.1"
 paging = "3.2.1"
 preference-ktx = "1.2.1"
 prettytime = "5.0.2.Final"
@@ -79,6 +82,7 @@ dagger-hilt = "2.50"
 accompanist = "0.23.1"
 jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
+google-playServicesLocation = "21.1.0"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -164,8 +168,9 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging-interceptor" }
 orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "orchestrator" }
 p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-lib" }
-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging-compose" }
+paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging-runtime-ktx" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -188,6 +193,7 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work" }
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
+gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-playServicesLocation" }
 
 [plugins]
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }

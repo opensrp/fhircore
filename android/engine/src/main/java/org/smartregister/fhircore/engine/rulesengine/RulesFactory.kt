@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
@@ -70,6 +71,7 @@ constructor(
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
+  val locationService = LocationService.create(context)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of
@@ -87,6 +89,7 @@ constructor(
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
+        put(LOCATION_SERVICE, locationService)
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {
@@ -569,6 +572,7 @@ constructor(
 
   companion object {
     private const val SERVICE = "service"
+    private const val LOCATION_SERVICE = "locationService"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
     private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"

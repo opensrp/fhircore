@@ -24,6 +24,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.db.ResourceNotFoundException
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -36,8 +38,6 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
-import javax.inject.Inject
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -54,6 +54,7 @@ import org.robolectric.Shadows
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -61,8 +62,12 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -81,6 +86,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
 
   @BindValue lateinit var defaultRepository: DefaultRepository
+
+  @BindValue
+  val configurationRegistry: ConfigurationRegistry = spyk(Faker.buildTestConfigurationRegistry())
 
   @Before
   fun setUp() {
@@ -195,6 +203,67 @@ class QuestionnaireActivityTest : RobolectricTest() {
     questionnaireActivity.onBackPressedDispatcher.onBackPressed()
     val dialog = Shadows.shadowOf(ShadowAlertDialog.getLatestAlertDialog())
     Assert.assertNotNull(dialog)
+  }
+
+  @Test
+  fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns true
+    every { activity.hasLocationPermissions() } returns true
+    every { activity.fetchLocation(any()) } just runs
+
+    activity.setupLocationServices()
+
+    verify(exactly = 1) { activity.fetchLocation(true) }
+    verify(exactly = 0) { activity.openLocationServicesSettings() }
+    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+  }
+
+  @Test
+  fun `setupLocationServices should open location settings if location is disabled`() {
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns false
+    every { activity.hasLocationPermissions() } returns true
+    every { activity.fetchLocation(any()) } just runs
+    every { activity.openLocationServicesSettings() } just runs
+    every { activity.launchLocationPermissionsDialog() } just runs
+
+    activity.setupLocationServices()
+
+    verify(exactly = 1) { activity.openLocationServicesSettings() }
+    verify(exactly = 0) { activity.fetchLocation(any()) }
+    verify(exactly = 0) { activity.launchLocationPermissionsDialog() }
+  }
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+    val viewModel = mockk<QuestionnaireViewModel>()
+    val activity = spyk(QuestionnaireActivity())
+    val fusedLocationProviderClient = mockk<FusedLocationProviderClient>()
+    every { viewModel.applicationConfiguration.logQuestionnaireLocation } returns true
+    every { LocationServices.getFusedLocationProviderClient(activity) } returns
+      fusedLocationProviderClient
+    every { LocationUtils.isLocationEnabled(activity) } returns true
+    every { activity.hasLocationPermissions() } returns false
+    every { activity.fetchLocation(any()) } just runs
+    every { activity.openLocationServicesSettings() } just runs
+    every { activity.launchLocationPermissionsDialog() } just runs
+
+    activity.setupLocationServices()
+
+    verify(exactly = 1) { activity.launchLocationPermissionsDialog() }
+    verify(exactly = 0) { activity.fetchLocation(any()) }
+    verify(exactly = 0) { activity.openLocationServicesSettings() }
   }
 
   private fun setupActivity() {
