@@ -183,28 +183,28 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             }
           }
 
-         if (questionnaireConfig.type == QuestionnaireType.EDIT) {
-           questionnaireResponse =
-             questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
-               questionnaire = questionnaire,
-               subjectId = baseResourceId?.extractLogicalIdUuid(),
-               subjectType = baseResourceType,
-               questionnaireConfig = questionnaireConfig,
-               resourceMap = getResourcesFromParamsForQR()
-             )
-               .apply { generateMissingItems(questionnaire) }
-           
-           val questionnaireResponseValid =
-             questionnaireViewModel.isQuestionnaireResponseValid(
-               questionnaire = questionnaire,
-               questionnaireResponse = questionnaireResponse,
-               context = questionnaireActivity
-             )
-           if (!questionnaireResponseValid) {
-             showToast(getString(R.string.questionnaire_response_broken))
-             finish()
-           }
-         }
+        if (questionnaireConfig.type == QuestionnaireType.EDIT) {
+          questionnaireResponse =
+            questionnaireViewModel.getQuestionnaireResponseFromDbOrPopulation(
+                questionnaire = questionnaire,
+                subjectId = baseResourceId?.extractLogicalIdUuid(),
+                subjectType = baseResourceType,
+                questionnaireConfig = questionnaireConfig,
+                resourceMap = getResourcesFromParamsForQR()
+              )
+              .apply { generateMissingItems(questionnaire) }
+
+          val questionnaireResponseValid =
+            questionnaireViewModel.isQuestionnaireResponseValid(
+              questionnaire = questionnaire,
+              questionnaireResponse = questionnaireResponse,
+              context = questionnaireActivity
+            )
+          if (!questionnaireResponseValid) {
+            showToast(getString(R.string.questionnaire_response_broken))
+            finish()
+          }
+        }
 
         // Only add the fragment once, when the activity is first created.
         if (savedInstanceState == null) renderFragment()
@@ -379,19 +379,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       if (!questionnaireConfig.type.isDefault()) {
         setQuestionnaireResponse(questionnaireResponse.encodeResourceToString())
       }
+      setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+        OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER
+      )
       questionnaireConfig.resourceIdentifier?.takeIf { it.isNotBlank() }?.let {
         val resourceId = IdType(it)
         val resourceType =
           resourceId.resourceType?.let { resourceType -> ResourceType.fromCode(resourceType) }
             ?: questionnaireConfig.resourceType ?: ResourceType.Patient
-
-        setQuestionnaireLaunchContexts(
-          listOf(
-            questionnaireViewModel
-              .defaultRepository
-              .loadResource(resourceId.idPart, resourceType)
-              .encodeResourceToString()
-          )
+        val resource =
+          questionnaireViewModel.defaultRepository.loadResource(resourceId.idPart, resourceType)
+        setQuestionnaireLaunchContextMap(
+          mapOf(resourceType.name.lowercase() to resource.encodeResourceToString())
         )
       }
     }

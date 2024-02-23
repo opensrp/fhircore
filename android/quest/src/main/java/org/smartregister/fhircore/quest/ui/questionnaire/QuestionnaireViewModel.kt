@@ -29,10 +29,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.util.Calendar
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -86,6 +82,10 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import java.util.Calendar
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 
 @HiltViewModel
 open class QuestionnaireViewModel
@@ -791,13 +791,18 @@ constructor(
     questionnaire: Questionnaire,
     populationResources: List<Resource>
   ): QuestionnaireResponse {
-    return ResourceMapper.populate(questionnaire, *populationResources.toTypedArray()).also {
-      questionnaireResponse ->
-      if (!questionnaireResponse.hasItem()) {
-        Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
-          .d("Questionnaire response has no populated answers")
+    return ResourceMapper.populate(
+        questionnaire,
+        populationResources.associateBy { it.resourceType.name.lowercase() }
+      )
+      .also { questionnaireResponse ->
+        if (!questionnaireResponse.hasItem()) {
+          Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
+            .d(
+              "Questionnaire response has no populated answers against Questionnaire=${questionnaire.logicalId}"
+            )
+        }
       }
-    }
   }
 
   /**
