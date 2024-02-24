@@ -25,7 +25,7 @@ data class PatientPagingSourceState(
   val currentPage: Int = 0,
   val loadAll: Boolean = false,
   val searchFilter: String? = null,
-  val filters: RegisterFilter? = null
+  val filters: RegisterFilter? = null,
 ) {
   val requiresFilter = filters != null
 }

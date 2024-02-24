@@ -75,7 +75,7 @@ class RegisterViewModelTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         configService = configService,
         dispatcher = coroutineTestRule.testDispatcherProvider,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
   }
 
@@ -85,7 +85,7 @@ class RegisterViewModelTest : RobolectricTest() {
       mockk {
         every { appId } returns "appId"
         every { appTitle } returns "Covax"
-      }
+      },
     )
 
     Assert.assertEquals("appId", viewModel.registerViewConfiguration.value?.appId)

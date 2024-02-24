@@ -52,7 +52,7 @@ import timber.log.Timber
 fun MeasureReportPatientsScreen(
   navController: NavController,
   measureReportViewModel: MeasureReportViewModel,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val pagingItems =
     measureReportViewModel.patientsData.collectAsState(emptyFlow()).value.collectAsLazyPagingItems()
@@ -65,17 +65,17 @@ fun MeasureReportPatientsScreen(
             measureReportViewModel.onEvent(MeasureReportEvent.OnSearchTextChanged(it))
           },
           onBackPress = { navController.popBackStack() },
-          searchTextState = measureReportViewModel.searchTextState
+          searchTextState = measureReportViewModel.searchTextState,
         )
         Text(
           color = SubtitleTextColor,
           text = stringResource(id = R.string.select_patient),
           fontSize = 14.sp,
-          modifier = modifier.wrapContentWidth().padding(16.dp)
+          modifier = modifier.wrapContentWidth().padding(16.dp),
         )
         Divider(color = DividerColor)
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn {
@@ -85,7 +85,7 @@ fun MeasureReportPatientsScreen(
             onRowClick = { patientViewData ->
               measureReportViewModel.onEvent(MeasureReportEvent.OnPatientSelected(patientViewData))
               navController.popBackStack()
-            }
+            },
           )
           Divider(color = DividerColor, thickness = 1.dp)
         }
@@ -100,7 +100,7 @@ fun MeasureReportPatientsScreen(
               item {
                 ErrorMessage(
                   message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-                  onClickRetry = { retry() }
+                  onClickRetry = { retry() },
                 )
               }
             }

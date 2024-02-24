@@ -19,7 +19,8 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 class QuestionnaireNotFoundException : Exception {
   constructor(
     formName: String,
-    cause: Throwable
+    cause: Throwable,
   ) : super("Questionnaire '$formName' not found", cause)
+
   constructor(formName: String) : super("Questionnaire '$formName' not found")
 }

@@ -52,11 +52,11 @@ class PatientItemMapper @Inject constructor(@ApplicationContext val context: Con
           district = inputModel.extractWithFhirPath("Patient.address.district"),
           state = inputModel.extractWithFhirPath("Patient.address.state"),
           text = inputModel.extractWithFhirPath("Patient.address.text"),
-          fullAddress = inputModel.extractAddress()
+          fullAddress = inputModel.extractAddress(),
         ),
       telecom = inputModel.extractTelecom(),
       generalPractitionerReference = inputModel.extractGeneralPractitionerReference(),
-      managingOrganizationReference = inputModel.extractManagingOrganizationReference()
+      managingOrganizationReference = inputModel.extractManagingOrganizationReference(),
     )
   }
 }

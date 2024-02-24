@@ -27,7 +27,7 @@ class HivPatientGuardianRepository
 @Inject
 constructor(
   @HivPatient private val patientDao: PatientDao,
-  private val dispatcherProvider: DispatcherProvider
+  private val dispatcherProvider: DispatcherProvider,
 ) {
 
   suspend fun loadPatient(patientId: String) =

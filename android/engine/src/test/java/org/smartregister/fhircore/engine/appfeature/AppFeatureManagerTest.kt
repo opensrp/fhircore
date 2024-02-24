@@ -31,7 +31,6 @@ class AppFeatureManagerTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-
     appFeatureManager = AppFeatureManager(Faker.buildTestConfigurationRegistry())
   }
 
@@ -68,7 +67,7 @@ class AppFeatureManagerTest : RobolectricTest() {
     appFeatureManager.loadAndActivateFeatures()
     Assert.assertEquals(
       1,
-      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size
+      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement).size,
     )
   }
 

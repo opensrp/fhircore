@@ -53,12 +53,14 @@ class PatientRegisterListTest : RobolectricTest() {
 
       composeRule.onAllNodesWithTag(PATIENT_BIO).assertCountEquals(2)
 
-      composeRule.onAllNodesWithTag(PATIENT_BIO, true)[0]
+      composeRule
+        .onAllNodesWithTag(PATIENT_BIO, true)[0]
         .assertHasClickAction()
         .assert(hasAnyChild(hasText("John Doe, 27y")))
         .assert(hasAnyChild(hasText("Male")))
 
-      composeRule.onAllNodesWithTag(PATIENT_BIO, true)[1]
+      composeRule
+        .onAllNodesWithTag(PATIENT_BIO, true)[1]
         .assertHasClickAction()
         .assert(hasAnyChild(hasText("Jane Doe, 20y")))
         .assert(hasAnyChild(hasText("Female")))
@@ -83,7 +85,7 @@ class PatientRegisterListTest : RobolectricTest() {
             Assert.assertEquals(OpenPatientProfile, i)
 
             clickedItemList.add(p)
-          }
+          },
         )
       }
 

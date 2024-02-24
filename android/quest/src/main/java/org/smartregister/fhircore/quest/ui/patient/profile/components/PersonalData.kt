@@ -47,7 +47,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 fun PersonalData(
   patientProfileViewData: ProfileViewData.PatientProfileViewData,
   modifier: Modifier = Modifier,
-  color: androidx.compose.ui.graphics.Color = MaterialTheme.colors.background
+  color: androidx.compose.ui.graphics.Color = MaterialTheme.colors.background,
 ) {
   Card(elevation = 3.dp, modifier = modifier.fillMaxWidth(), backgroundColor = color) {
     Column(modifier = modifier.padding(16.dp)) {
@@ -56,14 +56,14 @@ fun PersonalData(
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
       )
       if (patientProfileViewData.status != null) {
         Text(
           text = patientProfileViewData.status,
           color = StatusTextColor,
           fontSize = 18.sp,
-          modifier = modifier.padding(vertical = 10.dp)
+          modifier = modifier.padding(vertical = 10.dp),
         )
       }
       if (patientProfileViewData.identifier != null) {
@@ -72,7 +72,7 @@ fun PersonalData(
             R.string.id,
             patientProfileViewData.identifier.ifEmpty {
               stringResource(R.string.identifier_unassigned)
-            }
+            },
           )
         if (patientProfileViewData.showIdentifierInProfile) {
           idKeyValue =
@@ -81,14 +81,14 @@ fun PersonalData(
               patientProfileViewData.identifierKey,
               patientProfileViewData.identifier.ifEmpty {
                 stringResource(R.string.identifier_unassigned)
-              }
+              },
             )
           Text(
             text = idKeyValue,
             color = StatusTextColor,
             fontSize = 18.sp,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
           )
         }
       }
@@ -96,7 +96,7 @@ fun PersonalData(
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier =
-          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor)
+          modifier.clip(RoundedCornerShape(size = 8.dp)).background(PersonalDataBackgroundColor),
       ) {
         OtherDetailsItem(title = stringResource(R.string.sex), value = patientProfileViewData.sex)
         OtherDetailsItem(title = stringResource(R.string.age), value = patientProfileViewData.age)
@@ -124,7 +124,7 @@ fun PersonalDataPreview() {
       sex = "Female",
       age = "48y",
       dob = "08 Dec",
-      identifier = "123455"
+      identifier = "123455",
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }
@@ -142,7 +142,7 @@ fun PersonalDataPreviewWithARTNumber() {
       dob = "08 Dec",
       identifier = "123455",
       identifierKey = "HCC Number",
-      showIdentifierInProfile = true
+      showIdentifierInProfile = true,
     )
   PersonalData(patientProfileViewData = patientProfileData)
 }

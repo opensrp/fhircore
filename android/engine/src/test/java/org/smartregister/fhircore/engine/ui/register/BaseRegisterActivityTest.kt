@@ -94,8 +94,11 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   @BindValue var tokenAuthenticator: TokenAuthenticator = mockk()
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
+
   @BindValue @JvmField val accountAuthenticator = mockk<AccountAuthenticator>()
+
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -134,7 +137,6 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testViewSetup() {
-
     // Main Fragment is displayed
     Assert.assertTrue(testRegisterActivity.supportFragmentManager.fragments.isNotEmpty())
     val findFragmentByTag: Fragment? =
@@ -180,12 +182,12 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         showNewClientButton = true,
         showSideMenu = true,
         showBottomMenu = false,
-        registrationForm = "patient-registration"
+        registrationForm = "patient-registration",
       )
     testRegisterActivity.configureViews(registerViewConfiguration)
     Assert.assertEquals(
       registerViewConfiguration.appTitle,
-      testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString()
+      testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString(),
     )
 
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
@@ -196,43 +198,43 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     // DrawerMenu button is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.btnDrawerMenu.visibility
+      registerActivityBinding.toolbarLayout.btnDrawerMenu.visibility,
     )
 
     // TopToolbarSection is visible
     Assert.assertEquals(
       View.GONE,
-      registerActivityBinding.toolbarLayout.topToolbarSection.visibility
+      registerActivityBinding.toolbarLayout.topToolbarSection.visibility,
     )
 
     // MiddleToolbarSection is gone
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.middleToolbarSection.visibility
+      registerActivityBinding.toolbarLayout.middleToolbarSection.visibility,
     )
 
     // New button is visible, text also updated
     Assert.assertEquals(
       registerViewConfiguration.newClientButtonText,
-      registerActivityBinding.btnRegisterNewClient.text
+      registerActivityBinding.btnRegisterNewClient.text,
     )
 
     // Search bar is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.editTextSearch.visibility
+      registerActivityBinding.toolbarLayout.editTextSearch.visibility,
     )
 
     // Due button is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.btnShowOverdue.visibility
+      registerActivityBinding.toolbarLayout.btnShowOverdue.visibility,
     )
 
     // Scan QR Code button is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.btnScanBarcode.visibility
+      registerActivityBinding.toolbarLayout.btnScanBarcode.visibility,
     )
 
     // BottomNavigation is gone
@@ -256,12 +258,12 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         showNewClientButton = true,
         showSideMenu = false,
         showBottomMenu = false,
-        registrationForm = "patient-registration"
+        registrationForm = "patient-registration",
       )
     testRegisterActivity.configureViews(registerViewConfiguration)
     Assert.assertEquals(
       registerViewConfiguration.appTitle,
-      testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString()
+      testRegisterActivity.drawerMenuHeaderBinding.tvNavHeader.text.toString(),
     )
 
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
@@ -275,37 +277,37 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     // TopToolbarSection is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.topToolbarSection.visibility
+      registerActivityBinding.toolbarLayout.topToolbarSection.visibility,
     )
 
     // MiddleToolbarSection is gone
     Assert.assertEquals(
       View.GONE,
-      registerActivityBinding.toolbarLayout.middleToolbarSection.visibility
+      registerActivityBinding.toolbarLayout.middleToolbarSection.visibility,
     )
 
     // New button is visible, text also updated
     Assert.assertEquals(
       registerViewConfiguration.newClientButtonText,
-      registerActivityBinding.btnRegisterNewClient.text
+      registerActivityBinding.btnRegisterNewClient.text,
     )
 
     // Search bar is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.editTextSearch.visibility
+      registerActivityBinding.toolbarLayout.editTextSearch.visibility,
     )
 
     // Due button is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.btnShowOverdue.visibility
+      registerActivityBinding.toolbarLayout.btnShowOverdue.visibility,
     )
 
     // Scan QR Code button is visible
     Assert.assertEquals(
       View.VISIBLE,
-      registerActivityBinding.toolbarLayout.btnScanBarcode.visibility
+      registerActivityBinding.toolbarLayout.btnScanBarcode.visibility,
     )
 
     // BottomNavigation is gone
@@ -328,7 +330,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       showNewClientButton = true,
       showSideMenu = true,
       showBottomMenu = false,
-      registrationForm = "patient-registration"
+      registrationForm = "patient-registration",
     )
 
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
@@ -359,7 +361,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       showNewClientButton = true,
       showSideMenu = true,
       showBottomMenu = false,
-      registrationForm = "patient-registration"
+      registrationForm = "patient-registration",
     )
 
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
@@ -384,7 +386,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.syncing_in_progress),
-      registerActivityBinding.tvLastSyncTimestamp.text.toString()
+      registerActivityBinding.tvLastSyncTimestamp.text.toString(),
     )
     Assert.assertNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
@@ -395,7 +397,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     testRegisterActivity.registerActivityBinding.containerProgressSync.performClick()
     Assert.assertEquals(
       View.VISIBLE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
+      testRegisterActivity.registerActivityBinding.progressSync.visibility,
     )
     testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
   }
@@ -410,7 +412,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(View.VISIBLE, registerActivityBinding.progressSync.visibility)
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.syncing_in_progress),
-      registerActivityBinding.tvLastSyncTimestamp.text.toString()
+      registerActivityBinding.tvLastSyncTimestamp.text.toString(),
     )
     Assert.assertNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertFalse(registerActivityBinding.containerProgressSync.hasOnClickListeners())
@@ -439,8 +441,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       currentDateTime.asString(),
       testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
         SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-        null
-      )
+        null,
+      ),
     )
   }
 
@@ -467,8 +469,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       lastDateTimestamp.asString(),
       testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
         SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-        null
-      )
+        null,
+      ),
     )
   }
 
@@ -477,14 +479,14 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
     testRegisterActivity.onSync(
       SyncJobStatus.Glitch(
-        listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception")))
-      )
+        listOf(ResourceSyncException(ResourceType.Patient, Exception("I am a bad exception"))),
+      ),
     )
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     val syncStatus =
       testRegisterActivity.registerViewModel.sharedPreferencesHelper.read(
         SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-        testRegisterActivity.getString(R.string.syncing_retry)
+        testRegisterActivity.getString(R.string.syncing_retry),
       )
     Assert.assertEquals(syncStatus, registerActivityBinding.tvLastSyncTimestamp.text.toString())
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
@@ -515,7 +517,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val logoutMenuItem = RoboMenuItem(R.id.menu_item_logout)
     testRegisterActivity.onNavigationItemSelected(logoutMenuItem)
     Assert.assertFalse(
-      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START),
     )
     verify(exactly = 1) { accountAuthenticator.logout(any()) }
   }
@@ -525,7 +527,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     val clientsMenuItem = RoboMenuItem(R.id.menu_item_clients)
     testRegisterActivity.onNavigationItemSelected(clientsMenuItem)
     Assert.assertFalse(
-      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START),
     )
   }
 
@@ -538,7 +540,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   fun testLastSyncTimestamp_isWrongDate_throws_illegalArgumentException() {
     testRegisterActivity.registerViewModel.lastSyncTimestamp.value = "2021-12-15"
     Assert.assertTrue(
-      testRegisterActivity.registerActivityBinding.tvLastSyncTimestamp.text.isEmpty()
+      testRegisterActivity.registerActivityBinding.tvLastSyncTimestamp.text.isEmpty(),
     )
   }
 
@@ -556,17 +558,17 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       tag = TestFragment.TAG + 2,
       isRegisterFragment = false,
       isFilterVisible = false,
-      toolbarTitle = null
+      toolbarTitle = null,
     )
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
 
     Assert.assertFalse(
-      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners(),
     )
 
     Assert.assertEquals(
       testRegisterActivity.getString(R.string.clients),
-      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString(),
     )
   }
 
@@ -577,17 +579,17 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
       tag = TestFragment.TAG + 2,
       isRegisterFragment = false,
       isFilterVisible = false,
-      toolbarTitle = toolbarTitle
+      toolbarTitle = toolbarTitle,
     )
     val registerActivityBinding = testRegisterActivity.registerActivityBinding
 
     Assert.assertFalse(
-      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners()
+      registerActivityBinding.toolbarLayout.registerFilterTextview.hasOnClickListeners(),
     )
 
     Assert.assertEquals(
       toolbarTitle,
-      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString()
+      registerActivityBinding.toolbarLayout.registerFilterTextview.text.toString(),
     )
   }
 
@@ -610,8 +612,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         listOf(
           mockk {
             every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-          }
-        )
+          },
+        ),
       )
 
     handleSyncFailed(glitchState)
@@ -622,8 +624,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         listOf(
           mockk {
             every { exception } returns mockk<HttpException> { every { code() } returns 401 }
-          }
-        )
+          },
+        ),
       )
 
     handleSyncFailed(failedState)
@@ -637,17 +639,17 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
               mockk<InterruptedIOException> {
                 every { message } returns "java.io.InterruptedIOException: timeout"
               }
-          }
-        )
+          },
+        ),
       )
 
     handleSyncFailed(glitchStateInterruptedIOException)
     Assert.assertEquals(
       View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
+      testRegisterActivity.registerActivityBinding.progressSync.visibility,
     )
     Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background,
     )
 
     val glitchStateUnknownHostException =
@@ -659,32 +661,32 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
                 every { message } returns
                   "java.net.UnknownHostException: Unable to resolve host fhir.labs.smartregister.org: No address associated with hostname"
               }
-          }
-        )
+          },
+        ),
       )
 
     handleSyncFailed(glitchStateUnknownHostException)
     Assert.assertEquals(
       View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
+      testRegisterActivity.registerActivityBinding.progressSync.visibility,
     )
     Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background,
     )
 
     handleSyncFailed(SyncJobStatus.Glitch(listOf()))
     Assert.assertFalse(
-      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START)
+      testRegisterActivity.registerActivityBinding.drawerLayout.isDrawerOpen(GravityCompat.START),
     )
     Assert.assertEquals(
       View.GONE,
-      testRegisterActivity.registerActivityBinding.progressSync.visibility
+      testRegisterActivity.registerActivityBinding.progressSync.visibility,
     )
     Assert.assertNotNull(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.background
+      testRegisterActivity.registerActivityBinding.containerProgressSync.background,
     )
     Assert.assertTrue(
-      testRegisterActivity.registerActivityBinding.containerProgressSync.hasOnClickListeners()
+      testRegisterActivity.registerActivityBinding.containerProgressSync.hasOnClickListeners(),
     )
   }
 
@@ -692,7 +694,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.callInstanceMethod<Any>(
       testRegisterActivity,
       "handleSyncFailed",
-      ReflectionHelpers.ClassParameter(SyncJobStatus::class.java, state)
+      ReflectionHelpers.ClassParameter(SyncJobStatus::class.java, state),
     )
   }
 
@@ -713,14 +715,14 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
           titleResource = R.string.clients,
           iconResource = ContextCompat.getDrawable(this, R.drawable.ic_menu)!!,
           count = 10,
-          countMethod = { 10L }
-        )
+          countMethod = { 10L },
+        ),
       )
 
     override fun supportedFragments() =
       mapOf(
         Pair(TestFragment.TAG + 1, TestFragment(1)),
-        Pair(TestFragment.TAG + 2, TestFragment(2))
+        Pair(TestFragment.TAG + 2, TestFragment(2)),
       )
 
     override fun registersList() =
@@ -732,7 +734,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
     override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
-      savedInstanceState: Bundle?
+      savedInstanceState: Bundle?,
     ): View {
       val composeView = ComposeView(requireContext())
       composeView.setContent { Text(text = "Hello Fragment: $number") }
@@ -745,7 +747,8 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
   }
 
   enum class TestConfigClassification : ConfigClassification {
-    PATIENT_REGISTER;
+    PATIENT_REGISTER,
+    ;
 
     override val classification: String = name.lowercase()
   }

@@ -40,17 +40,17 @@ constructor(
   @ApplicationContext val context: Context,
   override val fhirEngine: FhirEngine,
   override val dataMapper: PatientTaskItemMapper,
-  private val dispatcherProvider: DispatcherProvider
+  private val dispatcherProvider: DispatcherProvider,
 ) : RegisterRepository<PatientTask, PatientTaskItem> {
 
   /*
   TODO: Use the logged in user's practitionerId in line 55 and 67
    https://github.com/opensrp/fhircore/issues/1075
-  */
+   */
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
-    loadAll: Boolean
+    loadAll: Boolean,
   ): List<PatientTaskItem> {
     return withContext(dispatcherProvider.io()) {
       val tasks =
@@ -58,12 +58,14 @@ constructor(
           filterByResourceTypeId(Task.OWNER, ResourceType.Practitioner, "6744")
         }
 
-      tasks.map { it.resource }.map { task ->
-        val patientId = task.`for`.reference.replace("Patient/", "")
-        val patient = fhirEngine.get<Patient>(patientId)
+      tasks
+        .map { it.resource }
+        .map { task ->
+          val patientId = task.`for`.reference.replace("Patient/", "")
+          val patient = fhirEngine.get<Patient>(patientId)
 
-        dataMapper.transformInputToOutputModel(PatientTask(patient, task))
-      }
+          dataMapper.transformInputToOutputModel(PatientTask(patient, task))
+        }
     }
   }
 

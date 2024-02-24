@@ -40,7 +40,7 @@ object Deps {
         const val retrofit = "2.7.2"
         const val robolectric = "4.9.2"
         const val room = "2.4.2"
-        const val spotless = "5.11.0"
+        const val spotless = "6.25.0"
         const val truth = "1.0.1"
         const val work = "2.7.1"
         const val json_tools = "1.13"

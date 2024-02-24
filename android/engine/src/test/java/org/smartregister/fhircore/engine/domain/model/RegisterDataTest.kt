@@ -137,13 +137,14 @@ class RegisterDataTest : RobolectricTest() {
           practitioners =
             listOf(
               Reference().setReference("reference/Key1"),
-              Reference().setReference("reference/Key2")
+              Reference().setReference("reference/Key2"),
             ),
           chwAssigned = "reference/Key",
           phoneContacts = emptyList(),
-          healthStatus = HealthStatus.EXPOSED_INFANT
+          healthStatus = HealthStatus.EXPOSED_INFANT,
         )
-      HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
+      HealthModule.HOME_TRACING,
+      HealthModule.PHONE_TRACING, ->
         RegisterData.TracingRegisterData(
           logicalId = "logicalId",
           name = "testName",
@@ -152,7 +153,7 @@ class RegisterDataTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT,
           isBreastfeeding = false,
           isPregnant = false,
-          attempts = 0
+          attempts = 0,
         )
       HealthModule.APPOINTMENT ->
         RegisterData.AppointmentRegisterData(
@@ -163,7 +164,7 @@ class RegisterDataTest : RobolectricTest() {
           gender = Enumerations.AdministrativeGender.MALE,
           healthStatus = HealthStatus.EXPOSED_INFANT,
           isBreastfeeding = false,
-          isPregnant = false
+          isPregnant = false,
         )
       HealthModule.ANC ->
         RegisterData.AncRegisterData(
@@ -173,7 +174,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          visitStatus = VisitStatus.DUE,
         )
       HealthModule.FAMILY ->
         RegisterData.FamilyRegisterData(
@@ -181,7 +182,7 @@ class RegisterDataTest : RobolectricTest() {
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.FAMILY_PLANNING ->
         RegisterData.FamilyRegisterData(
@@ -189,7 +190,7 @@ class RegisterDataTest : RobolectricTest() {
           name = "testName",
           identifier = "testIdentifier()",
           address = "testAddress",
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.RDT ->
         RegisterData.AncRegisterData(
@@ -199,7 +200,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          visitStatus = VisitStatus.DUE,
         )
       HealthModule.PNC ->
         RegisterData.AncRegisterData(
@@ -209,7 +210,7 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          visitStatus = VisitStatus.DUE,
         )
       HealthModule.CHILD ->
         RegisterData.AncRegisterData(
@@ -219,14 +220,14 @@ class RegisterDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          visitStatus = VisitStatus.DUE
+          visitStatus = VisitStatus.DUE,
         )
       HealthModule.DEFAULT ->
         RegisterData.DefaultRegisterData(
           logicalId = "logicalId",
           name = "testName",
           age = "5y",
-          gender = Enumerations.AdministrativeGender.MALE
+          gender = Enumerations.AdministrativeGender.MALE,
         )
     }
   }

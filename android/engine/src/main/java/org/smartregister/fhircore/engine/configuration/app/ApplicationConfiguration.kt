@@ -36,7 +36,7 @@ data class ApplicationConfiguration(
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
   var taskOrderFilterTagViaMetaCodingSystem: String =
     DEFAULT_TASK_ORDER_FILTER_TAG_META_CODING_SYSTEM,
-  var taskFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM
+  var taskFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM,
 ) : Configuration
 
 /**
@@ -49,7 +49,7 @@ data class ApplicationConfiguration(
  * @param applicationName Sets the application display name
  * @param appLogoIconResourceFile Sets the application logo thumb icon, this must be png file inside
  * @param patientTypeFilterTagViaMetaCodingSystem sets code in Patient meta, and will use for
- * filtering patient
+ *   filtering patient
  * @param count Sets the application maximum records when downloading resource drawable folder
  */
 fun applicationConfigurationOf(
@@ -63,7 +63,7 @@ fun applicationConfigurationOf(
   appLogoIconResourceFile: String = "",
   patientTypeFilterTagViaMetaCodingSystem: String = "",
   count: String = ConfigurationRegistry.DEFAULT_COUNT,
-  taskFilterTagViaMetaCodingSystem: String = ""
+  taskFilterTagViaMetaCodingSystem: String = "",
 ): ApplicationConfiguration =
   ApplicationConfiguration(
     appId = appId,
@@ -76,5 +76,5 @@ fun applicationConfigurationOf(
     appLogoIconResourceFile = appLogoIconResourceFile,
     patientTypeFilterTagViaMetaCodingSystem = patientTypeFilterTagViaMetaCodingSystem,
     count = count,
-    taskFilterTagViaMetaCodingSystem = taskFilterTagViaMetaCodingSystem
+    taskFilterTagViaMetaCodingSystem = taskFilterTagViaMetaCodingSystem,
   )

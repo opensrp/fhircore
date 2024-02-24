@@ -49,7 +49,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val tasks: List<Task> = listOf(),
     val visits: List<Encounter> = listOf(),
     val forms: List<QuestionnaireConfig> = listOf(),
-    val responses: List<QuestionnaireResponse> = listOf()
+    val responses: List<QuestionnaireResponse> = listOf(),
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class FamilyProfileData(
@@ -61,7 +61,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val head: FamilyMemberProfileData? = null,
     val members: List<FamilyMemberProfileData>,
     val services: List<CarePlan> = listOf(),
-    val tasks: List<Task> = listOf()
+    val tasks: List<Task> = listOf(),
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class AncProfileData(
@@ -77,7 +77,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val flags: List<Flag> = listOf(),
     val services: List<CarePlan> = listOf(),
     val tasks: List<Task> = listOf(),
-    val visits: List<Encounter> = listOf()
+    val visits: List<Encounter> = listOf(),
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class HivProfileData(
@@ -103,7 +103,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val otherPatients: List<Resource> = listOf(),
     val guardians: List<Guardian> = emptyList(),
     val observations: List<Observation> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList()
+    val practitioners: List<Practitioner> = emptyList(),
   ) : ProfileData(logicalId = logicalId, name = name)
 
   data class TracingProfileData(
@@ -127,6 +127,6 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val showIdentifierInProfile: Boolean = false,
     val conditions: List<Condition> = emptyList(),
     val guardians: List<Guardian> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList()
+    val practitioners: List<Practitioner> = emptyList(),
   ) : ProfileData(logicalId = logicalId, name = name)
 }

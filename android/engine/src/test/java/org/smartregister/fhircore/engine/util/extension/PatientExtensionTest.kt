@@ -150,7 +150,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "active"
           this.code.addCoding().display = "preGnant"
-        }
+        },
       )
 
     Assert.assertTrue(conditions.hasActivePregnancy())
@@ -169,7 +169,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "inactive"
           this.code.addCoding().display = "preGnant"
-        }
+        },
       )
 
     Assert.assertFalse(conditions.hasActivePregnancy())
@@ -188,7 +188,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "active"
           this.code.addCoding().display = "pregnant"
-        }
+        },
       )
 
     Assert.assertNotNull(conditions.pregnancyCondition())
@@ -202,7 +202,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "active"
           this.code.addCoding().display = "breastfeeding"
-        }
+        },
       )
 
     Assert.assertTrue(conditions.activelyBreastfeeding())
@@ -216,7 +216,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "active"
           this.code.addCoding().display = "pregnant"
-        }
+        },
       )
 
     Assert.assertFalse(conditions.activelyBreastfeeding())
@@ -230,7 +230,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "inactive"
           this.code.addCoding().display = "breastfeeding"
-        }
+        },
       )
 
     Assert.assertFalse(conditions.activelyBreastfeeding())
@@ -244,7 +244,7 @@ class PatientExtensionTest : RobolectricTest() {
           this.clinicalStatus.addCoding().code = "L123"
           this.clinicalStatus.addCoding().code = "active"
           this.code.addCoding().display = "OCD"
-        }
+        },
       )
 
     Assert.assertNotNull(conditions.pregnancyCondition())
@@ -365,7 +365,7 @@ class PatientExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
       }
 
@@ -381,7 +381,7 @@ class PatientExtensionTest : RobolectricTest() {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"), StringType("Tom"))
-            }
+            },
           )
       }
 
@@ -409,7 +409,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.male),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -419,7 +419,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.female),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -431,7 +431,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       applicationContext.getString(R.string.other),
-      patient.extractGender(applicationContext)
+      patient.extractGender(applicationContext),
     )
   }
 
@@ -441,7 +441,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     Assert.assertEquals(
       (ApplicationProvider.getApplicationContext() as Application).getString(R.string.unknown),
-      patient.extractGender(ApplicationProvider.getApplicationContext())
+      patient.extractGender(ApplicationProvider.getApplicationContext()),
     )
   }
 
@@ -495,7 +495,7 @@ class PatientExtensionTest : RobolectricTest() {
         Immunization().apply {
           occurrence = DateTimeType(calendar1YearAgo.time)
           protocolAppliedFirstRep.doseNumberPositiveIntType.value = 1
-        }
+        },
       )
 
     Assert.assertEquals(DateTimeType(timeNow).toDisplay(), Patient().getLastSeen(immunizations))
@@ -510,14 +510,14 @@ class PatientExtensionTest : RobolectricTest() {
             system = "https://d-tree.org"
             code = "exposed-infant"
             display = "Exposed Infant"
-          }
+          },
         )
       }
 
     Assert.assertNotNull(patient.extractHealthStatusFromMeta("https://d-tree.org"))
     Assert.assertEquals(
       HealthStatus.EXPOSED_INFANT,
-      patient.extractHealthStatusFromMeta("https://d-tree.org")
+      patient.extractHealthStatusFromMeta("https://d-tree.org"),
     )
   }
 
@@ -530,7 +530,7 @@ class PatientExtensionTest : RobolectricTest() {
             system = "https://d-tree.org"
             code = "exposed-infant"
             display = "Exposed Infant"
-          }
+          },
         )
       }
 
@@ -548,7 +548,7 @@ class PatientExtensionTest : RobolectricTest() {
         Identifier().apply {
           this.use = Identifier.IdentifierUse.SECONDARY
           this.value = secondaryValue
-        }
+        },
       )
     }
     Assert.assertEquals(secondaryValue, patient.extractSecondaryIdentifier())

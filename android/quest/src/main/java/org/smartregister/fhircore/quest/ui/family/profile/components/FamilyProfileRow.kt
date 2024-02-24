@@ -58,7 +58,7 @@ fun FamilyProfileRow(
   familyMemberViewState: FamilyMemberViewState,
   onFamilyMemberClick: (String) -> Unit,
   onTaskClick: (String, String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -68,18 +68,18 @@ fun FamilyProfileRow(
         .clickable { onFamilyMemberClick(familyMemberViewState.patientId) }
         .wrapContentHeight()
         .fillMaxWidth()
-        .padding(16.dp)
+        .padding(16.dp),
   ) {
     // Only display title and no tasks if tasks is empty
     if (familyMemberViewState.memberTasks.isEmpty()) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
       ) {
         FamilyProfileTitleText(
           familyMemberViewState = familyMemberViewState,
-          modifier = modifier.weight(0.6f)
+          modifier = modifier.weight(0.6f),
         )
         Text(
           text = stringResource(R.string.no_tasks),
@@ -87,7 +87,7 @@ fun FamilyProfileRow(
           fontStyle = FontStyle.Italic,
           fontSize = 18.sp,
           textAlign = TextAlign.Center,
-          modifier = modifier.weight(0.4f)
+          modifier = modifier.weight(0.4f),
         )
       }
     } else {
@@ -99,7 +99,7 @@ fun FamilyProfileRow(
           color = Color.DarkGray.copy(alpha = 0.7f),
           maxLines = 2,
           overflow = TextOverflow.Ellipsis,
-          modifier = modifier.padding(bottom = 4.dp)
+          modifier = modifier.padding(bottom = 4.dp),
         )
         if (familyMemberViewState.showAtRisk) {
           Text(
@@ -115,14 +115,13 @@ fun FamilyProfileRow(
           modifier = modifier.size(20.dp).padding(2.4.dp),
           painter = painterResource(id = familyMemberViewState.memberIcon),
           contentDescription = null,
-          tint = Color.Unspecified
+          tint = Color.Unspecified,
         )
       }
 
       // Display family members tasks
       Column(modifier = modifier.weight(0.4f)) {
-        familyMemberViewState
-          .memberTasks
+        familyMemberViewState.memberTasks
           .filter { it.taskStatus == Task.TaskStatus.READY }
           .take(3)
           .forEach {
@@ -133,19 +132,20 @@ fun FamilyProfileRow(
                   backgroundColor = it.colorCode.copy(alpha = 0.1f),
                   contentColor = it.colorCode.copy(alpha = 0.8f),
                 ),
-              modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth()
+              modifier = modifier.padding(vertical = 2.2.dp).fillMaxWidth(),
             ) {
               Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.Start,
               ) {
                 Icon(
                   imageVector =
-                    if (it.taskStatus == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                    else Icons.Filled.Add,
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) {
+                      Icons.Filled.Check
+                    } else Icons.Filled.Add,
                   contentDescription = null,
                   tint =
-                    if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode
+                    if (it.taskStatus == Task.TaskStatus.COMPLETED) SuccessColor else it.colorCode,
                 )
                 Text(text = it.task, color = it.colorCode.copy(alpha = 0.9f))
               }
@@ -159,19 +159,19 @@ fun FamilyProfileRow(
 @Composable
 private fun FamilyProfileTitleText(
   familyMemberViewState: FamilyMemberViewState,
-  modifier: Modifier
+  modifier: Modifier,
 ) {
   Text(
     text =
       listOf(
           familyMemberViewState.name,
           familyMemberViewState.gender.uppercase().first().toString(),
-          familyMemberViewState.age
+          familyMemberViewState.age,
         )
         .joinToString(", "),
     fontSize = 18.sp,
     color = Color.Black.copy(alpha = 0.7f),
-    modifier = modifier.padding(bottom = 4.dp)
+    modifier = modifier.padding(bottom = 4.dp),
   )
 }
 
@@ -187,14 +187,14 @@ fun FamilyProfileRowPreviewWithAtRisk() {
         age = 37.toString(),
         statuses =
           listOf(
-            "Family Head, Malaria, Family Planning, Another Condition that I cannot explain here right now"
+            "Family Head, Malaria, Family Planning, Another Condition that I cannot explain here right now",
           ),
         showAtRisk = true,
         memberIcon = R.drawable.ic_pregnant,
-        memberTasks = membersTasks()
+        memberTasks = membersTasks(),
       ),
     onFamilyMemberClick = {},
-    onTaskClick = { _, _ -> }
+    onTaskClick = { _, _ -> },
   )
 }
 
@@ -211,10 +211,10 @@ fun FamilyProfileRowPreviewWithoutAtRisk() {
         statuses = listOf("Family Head"),
         showAtRisk = false,
         memberIcon = R.drawable.ic_pregnant,
-        memberTasks = membersTasks().take(1)
+        memberTasks = membersTasks().take(1),
       ),
     onFamilyMemberClick = {},
-    onTaskClick = { _, _ -> }
+    onTaskClick = { _, _ -> },
   )
 }
 
@@ -229,10 +229,10 @@ fun FamilyProfileRowPreviewWithNoTasks() {
         gender = "Male",
         age = 37.toString(),
         statuses = emptyList(),
-        memberTasks = emptyList()
+        memberTasks = emptyList(),
       ),
     onFamilyMemberClick = {},
-    onTaskClick = { _, _ -> }
+    onTaskClick = { _, _ -> },
   )
 }
 
@@ -244,20 +244,20 @@ private fun membersTasks() =
       taskFormId = "t12991",
       task = "Malaria Follow-up",
       taskStatus = Task.TaskStatus.COMPLETED,
-      colorCode = DefaultColor
+      colorCode = DefaultColor,
     ),
     FamilyMemberTask(
       taskId = "1124",
       taskFormId = "t12991",
       task = "Bednet",
       taskStatus = Task.TaskStatus.FAILED,
-      colorCode = DangerColor
+      colorCode = DangerColor,
     ),
     FamilyMemberTask(
       taskId = "1125",
       taskFormId = "t12991",
       task = "Family Planning",
       taskStatus = Task.TaskStatus.READY,
-      colorCode = InfoColor
-    )
+      colorCode = InfoColor,
+    ),
   )

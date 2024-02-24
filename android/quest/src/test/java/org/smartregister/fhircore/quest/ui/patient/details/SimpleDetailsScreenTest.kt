@@ -54,6 +54,7 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
 class SimpleDetailsScreenTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 30) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
@@ -74,7 +75,7 @@ class SimpleDetailsScreenTest : RobolectricTest() {
         mockk(),
         mockk(),
         mockk(),
-        mockk()
+        mockk(),
       )
 
     viewModel = spyk(SimpleDetailsViewModel(patientRepository = patientRepository))
@@ -92,7 +93,7 @@ class SimpleDetailsScreenTest : RobolectricTest() {
       .onNodeWithTag(DETAILS_TOOLBAR_TITLE)
       .assertTextEquals(
         ApplicationProvider.getApplicationContext<HiltTestApplication>()
-          .getString(R.string.test_results)
+          .getString(R.string.test_results),
       )
     composeRule.onNodeWithTag(DETAILS_TOOLBAR_BACK_ARROW).assertHasClickAction()
   }

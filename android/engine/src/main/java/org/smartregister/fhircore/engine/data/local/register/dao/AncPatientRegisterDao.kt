@@ -55,13 +55,13 @@ constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DefaultDispatcherProvider,
 ) : RegisterDao {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
     val pregnancies =
       fhirEngine
@@ -69,23 +69,24 @@ constructor(
           getRegisterDataFilters().forEach { filterBy(it) }
           sort(Patient.NAME, Order.ASCENDING)
           count =
-            if (loadAll) countRegisterData(appFeatureName).toInt()
-            else PaginationConstant.DEFAULT_PAGE_SIZE
+            if (loadAll) {
+              countRegisterData(appFeatureName).toInt()
+            } else PaginationConstant.DEFAULT_PAGE_SIZE
           from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
         }
         .map { it.resource }
         .distinctBy { it.subject.reference }
 
     val patients =
-      pregnancies.map { fhirEngine.get<Patient>(it.subject.extractId()) }.sortedBy {
-        it.nameFirstRep.family
-      }
+      pregnancies
+        .map { fhirEngine.get<Patient>(it.subject.extractId()) }
+        .sortedBy { it.nameFirstRep.family }
 
     return patients.map { patient ->
       val carePlans =
         defaultRepository.searchResourceFor<CarePlan>(
           subjectId = patient.logicalId,
-          subjectParam = CarePlan.SUBJECT
+          subjectParam = CarePlan.SUBJECT,
         )
 
       RegisterData.AncRegisterData(
@@ -98,7 +99,7 @@ constructor(
         visitStatus = getVisitStatus(carePlans),
         servicesDue = carePlans.sumOf { it.milestonesDue().size },
         servicesOverdue = carePlans.sumOf { it.milestonesOverdue().size },
-        familyName = if (patient.hasName()) patient.nameFirstRep.family else null
+        familyName = if (patient.hasName()) patient.nameFirstRep.family else null,
       )
     }
   }
@@ -108,7 +109,7 @@ constructor(
     val carePlans =
       defaultRepository.searchResourceFor<CarePlan>(
         subjectId = patient.logicalId,
-        subjectParam = CarePlan.SUBJECT
+        subjectParam = CarePlan.SUBJECT,
       )
 
     return ProfileData.AncProfileData(
@@ -124,23 +125,23 @@ constructor(
       tasks =
         defaultRepository.searchResourceFor(
           subjectId = patient.logicalId,
-          subjectParam = Task.SUBJECT
+          subjectParam = Task.SUBJECT,
         ),
       conditions =
         defaultRepository.searchResourceFor(
           subjectId = patient.logicalId,
-          subjectParam = Condition.SUBJECT
+          subjectParam = Condition.SUBJECT,
         ),
       flags =
         defaultRepository.searchResourceFor(
           subjectId = patient.logicalId,
-          subjectParam = Flag.SUBJECT
+          subjectParam = Flag.SUBJECT,
         ),
       visits =
         defaultRepository.searchResourceFor(
           subjectId = patient.logicalId,
-          subjectParam = Encounter.SUBJECT
-        )
+          subjectParam = Encounter.SUBJECT,
+        ),
     )
   }
 
@@ -149,8 +150,9 @@ constructor(
 
   private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
     var visitStatus = VisitStatus.PLANNED
-    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) visitStatus = VisitStatus.OVERDUE
-    else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
+    if (carePlans.any { it.milestonesOverdue().isNotEmpty() }) {
+      visitStatus = VisitStatus.OVERDUE
+    } else if (carePlans.any { it.milestonesDue().isNotEmpty() }) visitStatus = VisitStatus.DUE
 
     return visitStatus
   }

@@ -54,28 +54,25 @@ class BaseRegisterFragmentTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
 
     val allRegisterData: MutableStateFlow<Flow<PagingData<Patient>>> = MutableStateFlow(emptyFlow())
 
-    registerDataViewModel =
-      mockk {
-        every { registerData } returns allRegisterData
-        every { showResultsCount } returns MutableLiveData(false)
-        every { showLoader } returns MutableLiveData(false)
-        every { currentPage() } returns 1
-        every { countPages() } returns 1
-        every { filterRegisterData(any(), any(), any()) } returns Unit
-        every { reloadCurrentPageData(refreshTotalRecordsCount = true) } just runs
-      }
+    registerDataViewModel = mockk {
+      every { registerData } returns allRegisterData
+      every { showResultsCount } returns MutableLiveData(false)
+      every { showLoader } returns MutableLiveData(false)
+      every { currentPage() } returns 1
+      every { countPages() } returns 1
+      every { filterRegisterData(any(), any(), any()) } returns Unit
+      every { reloadCurrentPageData(refreshTotalRecordsCount = true) } just runs
+    }
     registerFragment.registerDataViewModel = registerDataViewModel
     every { registerFragment.registerViewModel } returns mockk(relaxed = true)
   }
 
   @Test
   fun testOnViewCreatedConfiguresLiveDataObservationsCorrectly() {
-
     every { registerFragment.registerViewModel.lastSyncTimestamp } returns mockk(relaxed = true)
     every { registerFragment.registerViewModel.lastSyncTimestamp.observe(any(), any()) } just runs
 
@@ -130,7 +127,7 @@ class BaseRegisterFragmentTest : RobolectricTest() {
     override fun performFilter(
       registerFilterType: RegisterFilterType,
       data: patientB,
-      value: Any
+      value: Any,
     ): Boolean = true
   }
 }

@@ -67,7 +67,7 @@ fun HomeScreen(
   val patientRegistrationLauncher =
     rememberLauncherForActivityResult(
       contract = ActivityResultContracts.StartActivityForResult(),
-      onResult = {}
+      onResult = {},
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
   val refreshKey by appMainViewModel.refreshHash
@@ -108,7 +108,7 @@ fun HomeScreen(
                 contentDescription = "Search",
               )
             }
-          }
+          },
         )
         SyncStatusBar(
           syncState = syncState,
@@ -116,18 +116,21 @@ fun HomeScreen(
       }
     },
     bottomBar = {
-      if (!appState.isInitialSync)
+      if (!appState.isInitialSync) {
         Button(
           onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
-          modifier = Modifier.fillMaxWidth()
-        ) { Text(text = appState.registrationButton) }
-    }
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text(text = appState.registrationButton)
+        }
+      }
+    },
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues)) {
       Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         val count by homeViewModel.patientCount
         Text(text = "Patients: $count")
@@ -161,21 +164,25 @@ fun AppScreenBody(syncState: SyncJobStatus?, sync: () -> Unit) {
   Row() {
     Button(
       onClick = sync,
-      enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started)
+      enabled = !(syncState is SyncJobStatus.InProgress || syncState is SyncJobStatus.Started),
     ) {
       when (syncState) {
-        is SyncJobStatus.InProgress, is SyncJobStatus.Started -> {
+        is SyncJobStatus.InProgress,
+        is SyncJobStatus.Started, -> {
           Text(
             text =
-              if (syncState is SyncJobStatus.Started) stringResource(R.string.syncing_initiated)
-              else
-                "${(syncState as SyncJobStatus.InProgress).syncOperation.name.lowercase()}ing...",
+              if (syncState is SyncJobStatus.Started) {
+                stringResource(R.string.syncing_initiated)
+              } else {
+                "${(syncState as SyncJobStatus.InProgress).syncOperation.name.lowercase()}ing..."
+              },
           )
         }
         is SyncJobStatus.Finished -> {
           Text(text = "Sync (finished)")
         }
-        is SyncJobStatus.Glitch, is SyncJobStatus.Failed -> {
+        is SyncJobStatus.Glitch,
+        is SyncJobStatus.Failed, -> {
           Text(text = "Sync (failed)")
         }
         else -> {

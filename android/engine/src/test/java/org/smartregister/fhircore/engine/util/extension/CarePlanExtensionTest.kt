@@ -31,24 +31,24 @@ class CarePlanExtensionTest {
     val noPeriodScheduled =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
-        activityStatus = CarePlan.CarePlanActivityStatus.SCHEDULED
+        activityStatus = CarePlan.CarePlanActivityStatus.SCHEDULED,
       )
     val noPeriodNotStarted =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
-        activityStatus = CarePlan.CarePlanActivityStatus.NOTSTARTED
+        activityStatus = CarePlan.CarePlanActivityStatus.NOTSTARTED,
       )
     val startDatePassedWithScheduled =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.SCHEDULED,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
     val startDatePassedWithNotStarted =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.NOTSTARTED,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
 
     assertTrue(noPeriodScheduled.activityFirstRep.due())
@@ -63,30 +63,30 @@ class CarePlanExtensionTest {
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.INPROGRESS,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
     val cancelled =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
-        activityStatus = CarePlan.CarePlanActivityStatus.CANCELLED
+        activityStatus = CarePlan.CarePlanActivityStatus.CANCELLED,
       )
     val completed =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.COMPLETED,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
     val onhold =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.ONHOLD,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
     val stopped =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
         activityStatus = CarePlan.CarePlanActivityStatus.STOPPED,
-        activityPeriod = Period().apply { start = pastDate(1) }
+        activityPeriod = Period().apply { start = pastDate(1) },
       )
 
     assertFalse(inprogress.activityFirstRep.due())
@@ -106,7 +106,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertTrue(inRange.activityFirstRep.due())
@@ -122,7 +122,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(2)
             end = pastDate(1)
-          }
+          },
       )
 
     assertFalse(inRange.activityFirstRep.due())
@@ -138,7 +138,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = futureDate(1)
             end = futureDate(2)
-          }
+          },
       )
 
     assertFalse(inRange.activityFirstRep.due())
@@ -154,7 +154,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertFalse(completed.activityFirstRep.overdue())
@@ -165,7 +165,7 @@ class CarePlanExtensionTest {
     val scheduled =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
-        activityStatus = CarePlan.CarePlanActivityStatus.SCHEDULED
+        activityStatus = CarePlan.CarePlanActivityStatus.SCHEDULED,
       )
 
     assertFalse(scheduled.activityFirstRep.overdue())
@@ -181,7 +181,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertFalse(scheduled.activityFirstRep.overdue())
@@ -197,7 +197,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(2)
             end = pastDate(1)
-          }
+          },
       )
 
     assertTrue(scheduled.activityFirstRep.overdue())
@@ -213,7 +213,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = futureDate(1)
             end = futureDate(2)
-          }
+          },
       )
 
     assertFalse(scheduled.activityFirstRep.overdue())
@@ -238,7 +238,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertTrue(carePlan.due())
@@ -250,7 +250,7 @@ class CarePlanExtensionTest {
     val revoked =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.REVOKED,
-        careplanPeriod = Period().apply { start = pastDate(1) }
+        careplanPeriod = Period().apply { start = pastDate(1) },
       )
     val onhold =
       buildCarePlan(
@@ -259,7 +259,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertFalse(completed.due())
@@ -276,7 +276,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(2)
             end = pastDate(1)
-          }
+          },
       )
 
     assertFalse(passed.due())
@@ -291,7 +291,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = futureDate(1)
             end = futureDate(2)
-          }
+          },
       )
 
     assertFalse(future.due())
@@ -303,7 +303,7 @@ class CarePlanExtensionTest {
     val revoked =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.REVOKED,
-        careplanPeriod = Period().apply { pastDate(1) }
+        careplanPeriod = Period().apply { pastDate(1) },
       )
     val onhold =
       buildCarePlan(
@@ -312,7 +312,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(2)
             end = pastDate(1)
-          }
+          },
       )
 
     assertFalse(completed.overdue())
@@ -326,7 +326,7 @@ class CarePlanExtensionTest {
     val started =
       buildCarePlan(
         careplanStatus = CarePlan.CarePlanStatus.ACTIVE,
-        careplanPeriod = Period().apply { start = pastDate(1) }
+        careplanPeriod = Period().apply { start = pastDate(1) },
       )
     val inRange =
       buildCarePlan(
@@ -335,7 +335,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(1)
             end = futureDate(1)
-          }
+          },
       )
 
     assertFalse(noPeriod.overdue())
@@ -352,7 +352,7 @@ class CarePlanExtensionTest {
           Period().apply {
             start = pastDate(2)
             end = pastDate(1)
-          }
+          },
       )
 
     assertTrue(passed.overdue())
@@ -449,7 +449,7 @@ class CarePlanExtensionTest {
     careplanStatus: CarePlan.CarePlanStatus,
     careplanPeriod: Period? = null,
     activityPeriod: Period? = null,
-    activityStatus: CarePlan.CarePlanActivityStatus? = null
+    activityStatus: CarePlan.CarePlanActivityStatus? = null,
   ): CarePlan {
     return CarePlan().apply {
       this.status = careplanStatus

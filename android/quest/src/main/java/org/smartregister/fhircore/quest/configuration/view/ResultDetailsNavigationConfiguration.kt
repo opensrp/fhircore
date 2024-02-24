@@ -32,5 +32,5 @@ data class TestDetailsNavigationAction(val form: String, val readOnly: Boolean) 
 data class ResultDetailsNavigationConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val navigationOptions: List<NavigationOption> = listOf()
+  val navigationOptions: List<NavigationOption> = listOf(),
 ) : Configuration

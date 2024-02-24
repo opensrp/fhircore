@@ -36,44 +36,46 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 @Composable
 fun BottomScreenSection(
   navController: NavHostController,
-  mainNavigationScreens: List<MainNavigationScreen>
+  mainNavigationScreens: List<MainNavigationScreen>,
 ) {
   BottomNavigation(backgroundColor = Color.White, contentColor = Color.Black) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    mainNavigationScreens.filter { it.showInBottomNav }.forEach { navigationScreen ->
-      if (navigationScreen.titleResource != null) {
-        BottomNavigationItem(
-          icon = {
-            navigationScreen.iconResource?.let {
-              Icon(
-                painter = painterResource(id = it),
-                contentDescription = stringResource(navigationScreen.titleResource)
-              )
-            }
-          },
-          label = {
-            Text(
-              text = stringResource(navigationScreen.titleResource),
-              fontSize = 12.sp,
-            )
-          },
-          selectedContentColor = BlueTextColor,
-          unselectedContentColor = Color.Black.copy(0.5f),
-          alwaysShowLabel = true,
-          selected = currentRoute == navigationScreen.route,
-          onClick = {
-            navController.navigate(navigationScreen.route) {
-              navController.graph.startDestinationRoute?.let { screen_route ->
-                popUpTo(screen_route) { saveState = true }
+    mainNavigationScreens
+      .filter { it.showInBottomNav }
+      .forEach { navigationScreen ->
+        if (navigationScreen.titleResource != null) {
+          BottomNavigationItem(
+            icon = {
+              navigationScreen.iconResource?.let {
+                Icon(
+                  painter = painterResource(id = it),
+                  contentDescription = stringResource(navigationScreen.titleResource),
+                )
               }
-              launchSingleTop = true
-              restoreState = false
-            }
-          }
-        )
+            },
+            label = {
+              Text(
+                text = stringResource(navigationScreen.titleResource),
+                fontSize = 12.sp,
+              )
+            },
+            selectedContentColor = BlueTextColor,
+            unselectedContentColor = Color.Black.copy(0.5f),
+            alwaysShowLabel = true,
+            selected = currentRoute == navigationScreen.route,
+            onClick = {
+              navController.navigate(navigationScreen.route) {
+                navController.graph.startDestinationRoute?.let { screen_route ->
+                  popUpTo(screen_route) { saveState = true }
+                }
+                launchSingleTop = true
+                restoreState = false
+              }
+            },
+          )
+        }
       }
-    }
   }
 }
 
@@ -86,7 +88,7 @@ fun BottomScreenSectionPreview() {
       MainNavigationScreen.Home,
       MainNavigationScreen.Tasks,
       MainNavigationScreen.Reports,
-      MainNavigationScreen.Settings
+      MainNavigationScreen.Settings,
     )
 
   BottomScreenSection(navController = navController, mainNavigationScreens = navigationScreens)

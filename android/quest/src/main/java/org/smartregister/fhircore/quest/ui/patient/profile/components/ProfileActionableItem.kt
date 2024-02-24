@@ -66,14 +66,15 @@ fun ProfileActionableItem(
   Row(
     modifier = modifier.fillMaxWidth().padding(16.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     if (patientProfileRowItem.title.isEmpty() && patientProfileRowItem.subtitle.isEmpty()) {
       ActionButton(patientProfileRowItem, modifier = modifier.fillMaxWidth(1f), onActionClick)
     } else {
       Row(verticalAlignment = Alignment.CenterVertically) {
-        if (patientProfileRowItem.profileViewSection ==
-            PatientProfileViewSection.UPCOMING_SERVICES && patientProfileRowItem.startIcon != null
+        if (
+          patientProfileRowItem.profileViewSection == PatientProfileViewSection.UPCOMING_SERVICES &&
+            patientProfileRowItem.startIcon != null
         ) {
           Box(
             contentAlignment = Alignment.Center,
@@ -84,7 +85,7 @@ fun ProfileActionableItem(
                 .background(
                   patientProfileRowItem.startIconBackgroundColor ?: DefaultColor.copy(alpha = 0.3f),
                 )
-                .padding(8.dp)
+                .padding(8.dp),
           ) {
             Image(
               painter = painterResource(patientProfileRowItem.startIcon),
@@ -92,9 +93,10 @@ fun ProfileActionableItem(
               contentScale = ContentScale.FillBounds,
               colorFilter =
                 ColorFilter.tint(
-                  if (patientProfileRowItem.startIconBackgroundColor != null) Color.White
-                  else Color.Black.copy(alpha = 0.5f)
-                )
+                  if (patientProfileRowItem.startIconBackgroundColor != null) {
+                    Color.White
+                  } else Color.Black.copy(alpha = 0.5f),
+                ),
             )
           }
         }
@@ -113,9 +115,10 @@ fun ProfileActionableItem(
 private fun ActionButton(
   patientProfileRowItem: PatientProfileRowItem,
   modifier: Modifier,
-  onActionClick: (String, String) -> Unit
+  onActionClick: (String, String) -> Unit,
 ) {
-  if (patientProfileRowItem.profileViewSection == PatientProfileViewSection.TASKS &&
+  if (
+    patientProfileRowItem.profileViewSection == PatientProfileViewSection.TASKS &&
       patientProfileRowItem.actionButtonColor != null &&
       patientProfileRowItem.actionButtonText != null
   ) {
@@ -130,13 +133,13 @@ private fun ActionButton(
         ButtonDefaults.buttonColors(
           backgroundColor = patientProfileRowItem.actionButtonColor.copy(alpha = 0.2f),
           contentColor = patientProfileRowItem.actionButtonColor,
-        )
+        ),
     ) {
       Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
           imageVector = patientProfileRowItem.actionButtonIcon,
           contentDescription = null,
-          tint = patientProfileRowItem.actionIconColor ?: patientProfileRowItem.actionButtonColor
+          tint = patientProfileRowItem.actionIconColor ?: patientProfileRowItem.actionButtonColor,
         )
         Text(text = patientProfileRowItem.actionButtonText)
       }
@@ -145,7 +148,7 @@ private fun ActionButton(
     Icon(
       imageVector = Icons.Outlined.ChevronRight,
       contentDescription = null,
-      tint = DefaultColor.copy(0.7f)
+      tint = DefaultColor.copy(0.7f),
     )
   }
 }
@@ -156,10 +159,11 @@ private fun TitleRow(patientProfileRowItem: PatientProfileRowItem, modifier: Mod
     Text(
       text = patientProfileRowItem.title,
       fontWeight = FontWeight.SemiBold,
-      modifier = modifier.padding(end = 8.dp)
+      modifier = modifier.padding(end = 8.dp),
     )
-    if (patientProfileRowItem.titleIcon != null)
+    if (patientProfileRowItem.titleIcon != null) {
       Image(painter = painterResource(patientProfileRowItem.titleIcon), contentDescription = null)
+    }
   }
 }
 
@@ -170,10 +174,10 @@ private fun SubtitleRow(patientProfileRowItem: PatientProfileRowItem, modifier: 
       text = patientProfileRowItem.subtitle,
       color = StatusTextColor,
       fontSize = 12.sp,
-      modifier = modifier.padding(end = 8.dp)
+      modifier = modifier.padding(end = 8.dp),
     )
     if (patientProfileRowItem.showDot) Separator()
-    if (patientProfileRowItem.subtitleStatus != null)
+    if (patientProfileRowItem.subtitleStatus != null) {
       Text(
         text = patientProfileRowItem.subtitleStatus,
         color = patientProfileRowItem.subtitleStatusColor ?: StatusTextColor,
@@ -181,13 +185,15 @@ private fun SubtitleRow(patientProfileRowItem: PatientProfileRowItem, modifier: 
           modifier
             .clip(RoundedCornerShape(6.dp))
             .background(
-              if (patientProfileRowItem.showDot) Color.Transparent
-              else
+              if (patientProfileRowItem.showDot) {
+                Color.Transparent
+              } else
                 patientProfileRowItem.subtitleStatusColor?.copy(alpha = 0.2f)
-                  ?: StatusTextColor.copy(alpha = 0.2f)
+                  ?: StatusTextColor.copy(alpha = 0.2f),
             )
-            .padding(4.dp)
+            .padding(4.dp),
       )
+    }
   }
 }
 
@@ -203,9 +209,9 @@ fun ProfileActionableItemForTasksPreview() {
         subtitle = "due date",
         profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = InfoColor,
-        actionButtonText = "ANC visit"
+        actionButtonText = "ANC visit",
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -216,9 +222,9 @@ fun ProfileActionableItemForTasksPreview() {
         subtitle = "due date",
         profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = OverdueColor,
-        actionButtonText = "Malaria medicine"
+        actionButtonText = "Malaria medicine",
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }
@@ -235,9 +241,9 @@ fun ProfileActionableItemForVisitPreview() {
         subtitle = "",
         profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = InfoColor,
-        actionButtonText = "ANC visit"
+        actionButtonText = "ANC visit",
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -248,9 +254,9 @@ fun ProfileActionableItemForVisitPreview() {
         subtitle = "",
         profileViewSection = PatientProfileViewSection.TASKS,
         actionButtonColor = OverdueColor,
-        actionButtonText = "Malaria medicine"
+        actionButtonText = "Malaria medicine",
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }
@@ -264,9 +270,9 @@ fun ProfileActionableItemForAncCardPreview() {
         id = "1",
         title = "Granuloma Annulare",
         subtitle = "23 weeks (EDD: 20-Jun-2021)",
-        profileViewSection = PatientProfileViewSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -276,9 +282,9 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "111/80",
         subtitleStatus = "at risk",
         subtitleStatusColor = WarningColor,
-        profileViewSection = PatientProfileViewSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -288,9 +294,9 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "186",
         subtitleStatus = "danger",
         subtitleStatusColor = DangerColor,
-        profileViewSection = PatientProfileViewSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -300,9 +306,9 @@ fun ProfileActionableItemForAncCardPreview() {
         subtitle = "+ 6.7kg",
         subtitleStatus = "good",
         subtitleStatusColor = DefaultColor,
-        profileViewSection = PatientProfileViewSection.SERVICE_CARD
+        profileViewSection = PatientProfileViewSection.SERVICE_CARD,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }
@@ -316,9 +322,9 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
         id = "1",
         title = "Diarrhoea",
         subtitle = "Stomach ache, with painful running stomach",
-        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -326,9 +332,9 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
         id = "2",
         title = "Malaria",
         subtitle = "High temperatures and loss of appetite, long sleepless nights",
-        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -336,9 +342,9 @@ fun ProfileActionableItemForMedicalHistoryPreview() {
         id = "3",
         title = "Health issue",
         subtitle = "Description of symptoms",
-        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+        profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }
@@ -355,9 +361,9 @@ fun ProfileActionableItemForTestResultsPreview() {
         subtitleStatus = "Hb: 2.2",
         profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
-        showAngleRightIcon = true
+        showAngleRightIcon = true,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -368,9 +374,9 @@ fun ProfileActionableItemForTestResultsPreview() {
         subtitleStatus = "Hb: 9.0",
         profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
-        showAngleRightIcon = true
+        showAngleRightIcon = true,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -381,9 +387,9 @@ fun ProfileActionableItemForTestResultsPreview() {
         subtitleStatus = "Hb: 2.0",
         profileViewSection = PatientProfileViewSection.TEST_RESULTS,
         showDot = true,
-        showAngleRightIcon = true
+        showAngleRightIcon = true,
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }
@@ -399,9 +405,9 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
         subtitle = "22-May-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.gm_calendar_today_24,
-        startIconBackgroundColor = WarningColor.copy(alpha = 0.7f)
+        startIconBackgroundColor = WarningColor.copy(alpha = 0.7f),
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -411,9 +417,9 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
         subtitle = "25-Aug-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.ic_households,
-        startIconBackgroundColor = DangerColor.copy(alpha = 0.6f)
+        startIconBackgroundColor = DangerColor.copy(alpha = 0.6f),
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
     Divider()
     ProfileActionableItem(
@@ -423,9 +429,9 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
         subtitle = "03-Sept-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
         startIcon = R.drawable.ic_needle,
-        startIconBackgroundColor = InfoColor.copy(alpha = 0.5f)
+        startIconBackgroundColor = InfoColor.copy(alpha = 0.5f),
       ),
-      onActionClick = { _, _ -> }
+      onActionClick = { _, _ -> },
     )
   }
 }

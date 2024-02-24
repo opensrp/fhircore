@@ -57,7 +57,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       confirmButtonListener = { confirmCalled.add(true) },
       neutralButtonText = R.string.questionnaire_alert_ack_button_title,
       neutralButtonListener = { neutralCalled.add(true) },
-      options = arrayOf(AlertDialogListItem("a", "A"), AlertDialogListItem("b", "B"))
+      options = arrayOf(AlertDialogListItem("a", "A"), AlertDialogListItem("b", "B")),
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -67,7 +67,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       getString(R.string.questionnaire_alert_invalid_message),
       getString(R.string.questionnaire_alert_invalid_title),
-      getString(R.string.questionnaire_alert_confirm_button_title)
+      getString(R.string.questionnaire_alert_confirm_button_title),
     )
 
     Assert.assertEquals(2, alertDialog.listView.count)
@@ -80,7 +80,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_ack_button_title),
-      neutralButton.text
+      neutralButton.text,
     )
 
     // TODO: test click
@@ -100,7 +100,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.form_progress_message),
-      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      dialog.view.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     Assert.assertEquals(View.VISIBLE, dialog.view.findViewById<View>(R.id.pr_circular)!!.visibility)
@@ -119,7 +119,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       message = R.string.form_progress_message,
       title = R.string.questionnaire_alert_invalid_title,
       confirmButtonListener = {},
-      confirmButtonText = R.string.done
+      confirmButtonText = R.string.done,
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -129,7 +129,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       getString(R.string.form_progress_message),
       getString(R.string.questionnaire_alert_invalid_title),
-      getString(R.string.done)
+      getString(R.string.done),
     )
 
     // test an additional cancel or neutral button in confirm alert
@@ -137,7 +137,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     Assert.assertEquals(View.VISIBLE, neutralButton.visibility)
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_neutral_button_title),
-      neutralButton.text
+      neutralButton.text,
     )
   }
 
@@ -146,7 +146,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     AlertDialogue.showErrorAlert(
       context = context,
       message = R.string.error_saving_form,
-      title = R.string.default_app_title
+      title = R.string.default_app_title,
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -155,7 +155,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       getString(R.string.error_saving_form),
       getString(R.string.default_app_title),
-      getString(R.string.questionnaire_alert_ack_button_title)
+      getString(R.string.questionnaire_alert_ack_button_title),
     )
   }
 
@@ -165,7 +165,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       context = context,
       message = "Here is the complete info",
       title = "Info title",
-      confirmButtonText = R.string.done
+      confirmButtonText = R.string.done,
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -174,7 +174,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
       dialog,
       "Here is the complete info",
       "Info title",
-      getString(R.string.done)
+      getString(R.string.done),
     )
   }
 
@@ -186,7 +186,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
         max = Date(),
         title = "Date title",
         confirmButtonText = "Date confirm",
-        confirmButtonListener = {}
+        confirmButtonListener = {},
       )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -206,7 +206,7 @@ class AlertDialogueTest : ActivityRobolectricTest() {
     dialog: ShadowAlertDialog,
     message: String,
     title: String,
-    confirmButtonTitle: String
+    confirmButtonTitle: String,
   ) {
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realAlertDialog")
 

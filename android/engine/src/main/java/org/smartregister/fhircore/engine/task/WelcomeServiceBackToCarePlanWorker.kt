@@ -52,7 +52,7 @@ class WelcomeServiceBackToCarePlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
@@ -81,14 +81,14 @@ constructor(
             Task.STATUS,
             { value = of(Task.TaskStatus.READY.toCode()) },
             { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-            operation = Operation.OR
+            operation = Operation.OR,
           )
           filter(
             Task.PERIOD,
             {
               value = of(DateTimeType.now())
               prefix = ParamPrefixEnum.GREATERTHAN
-            }
+            },
           )
         }
         .map { it.resource }
@@ -96,47 +96,48 @@ constructor(
         .filter {
           it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
             it.executionPeriod.hasStart() &&
-            it.executionPeriod
-              .start
+            it.executionPeriod.start
               .before(Date())
               .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
         }
 
-    interruptedTreatmentTasks.groupBy { it.`for`.reference }.forEach { (t, u) ->
-      val patientId = IdType(t).idPart
-      val patient = fhirEngine.get<Patient>(patientId)
-      val carePlan = patient.activeCarePlan() ?: return@forEach
-      val carePlanHasWelcomeService =
-        carePlan.activity.any { act ->
-          act.detail.code.coding.any { it.code == WELCOME_SERVICE_QUESTIONNAIRE_ID }
+    interruptedTreatmentTasks
+      .groupBy { it.`for`.reference }
+      .forEach { (t, u) ->
+        val patientId = IdType(t).idPart
+        val patient = fhirEngine.get<Patient>(patientId)
+        val carePlan = patient.activeCarePlan() ?: return@forEach
+        val carePlanHasWelcomeService =
+          carePlan.activity.any { act ->
+            act.detail.code.coding.any { it.code == WELCOME_SERVICE_QUESTIONNAIRE_ID }
+          }
+        if (carePlanHasWelcomeService) return@forEach
+
+        carePlan.apply {
+          val taskId = UUID.randomUUID().toString()
+          val taskDescription = "Welcome Service"
+
+          val task = welcomeServiceTask(taskId, taskDescription, patient)
+          addActivity().apply {
+            addOutcomeReference(task.asReference().apply { display = taskDescription })
+
+            detail =
+              CarePlan.CarePlanActivityDetailComponent().apply {
+                status = CarePlan.CarePlanActivityStatus.INPROGRESS
+                kind = CarePlan.CarePlanActivityKind.TASK
+                description = taskDescription
+                code =
+                  CodeableConcept(
+                    Coding("https://d-tree.org", WELCOME_SERVICE_QUESTIONNAIRE_ID, taskDescription),
+                  )
+                scheduled = period.copy().apply { start = DateTimeType.now().value }
+                addPerformer(author)
+              }
+          }
+          fhirEngine.create(task)
+          fhirEngine.update(this)
         }
-      if (carePlanHasWelcomeService) return@forEach
-
-      carePlan.apply {
-        val taskId = UUID.randomUUID().toString()
-        val taskDescription = "Welcome Service"
-
-        val task = welcomeServiceTask(taskId, taskDescription, patient)
-        addActivity().apply {
-          addOutcomeReference(task.asReference().apply { display = taskDescription })
-
-          detail =
-            CarePlan.CarePlanActivityDetailComponent().apply {
-              status = CarePlan.CarePlanActivityStatus.INPROGRESS
-              kind = CarePlan.CarePlanActivityKind.TASK
-              description = taskDescription
-              code =
-                CodeableConcept(
-                  Coding("https://d-tree.org", WELCOME_SERVICE_QUESTIONNAIRE_ID, taskDescription)
-                )
-              scheduled = period.copy().apply { start = DateTimeType.now().value }
-              addPerformer(author)
-            }
-        }
-        fhirEngine.create(task)
-        fhirEngine.update(this)
       }
-    }
   }
 
   private suspend fun Patient.activeCarePlan() =
@@ -163,7 +164,7 @@ constructor(
         phoneTracingCoding,
         homeTracingCoding,
         phoneTracingCoding.copy().apply { system = "http://snomed.info/sct" },
-        homeTracingCoding.copy().apply { system = "http://snomed.info/sct" }
+        homeTracingCoding.copy().apply { system = "http://snomed.info/sct" },
       )
   }
 }
@@ -171,7 +172,7 @@ constructor(
 internal fun CarePlan.welcomeServiceTask(
   taskId: String,
   taskDescription: String,
-  patient: Patient
+  patient: Patient,
 ) =
   Task().apply {
     status = Task.TaskStatus.READY
@@ -189,7 +190,7 @@ internal fun CarePlan.welcomeServiceTask(
       Identifier().apply {
         value = taskId
         use = Identifier.IdentifierUse.OFFICIAL
-      }
+      },
     )
     id = taskId
     meta =
@@ -198,7 +199,7 @@ internal fun CarePlan.welcomeServiceTask(
           Coding().apply {
             system = "https://d-tree.org"
             code = "clinic-visit-task-order-11"
-          }
+          },
         )
     reasonReference =
       Reference().apply {

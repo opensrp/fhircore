@@ -52,7 +52,7 @@ fun MeasureReportIndividualResultView(
   patientViewData: MeasureReportPatientViewData,
   isMatchedIndicator: Boolean = true,
   indicatorStatus: String = "",
-  indicatorDescription: String = ""
+  indicatorDescription: String = "",
 ) {
   Box(
     modifier =
@@ -60,49 +60,49 @@ fun MeasureReportIndividualResultView(
         .clip(RoundedCornerShape(15.dp))
         .background(color = colorResource(id = R.color.white))
         .wrapContentWidth(),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
   ) {
     Column(
       modifier = Modifier.wrapContentWidth().padding(16.dp),
       verticalArrangement = Arrangement.Center,
-      horizontalAlignment = Alignment.Start
+      horizontalAlignment = Alignment.Start,
     ) {
       Text(
         color = SubtitleTextColor,
         text = patientViewData.personalDetails(),
         fontSize = 16.sp,
-        modifier = Modifier.wrapContentWidth()
+        modifier = Modifier.wrapContentWidth(),
       )
       Spacer(modifier = Modifier.height(12.dp))
       Divider(color = DividerColor)
       Spacer(modifier = Modifier.height(12.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         if (isMatchedIndicator) {
           Image(
             painter = painterResource(id = R.drawable.ic_check),
             contentDescription = null,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
+            modifier = modifier.wrapContentWidth().requiredHeight(40.dp),
           )
         } else {
           Image(
             painter = painterResource(id = R.drawable.ic_stalled),
             contentDescription = null,
-            modifier = modifier.wrapContentWidth().requiredHeight(40.dp)
+            modifier = modifier.wrapContentWidth().requiredHeight(40.dp),
           )
         }
         Column(
           modifier = Modifier.wrapContentWidth().padding(horizontal = 16.dp, vertical = 4.dp),
           verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.Start
+          horizontalAlignment = Alignment.Start,
         ) {
           Text(
             text = indicatorStatus,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.wrapContentWidth()
+            modifier = Modifier.wrapContentWidth(),
           )
           Spacer(modifier = Modifier.height(4.dp))
           if (indicatorDescription.isNotEmpty()) {
@@ -110,7 +110,7 @@ fun MeasureReportIndividualResultView(
               color = SubtitleTextColor,
               text = indicatorDescription,
               fontSize = 14.sp,
-              modifier = modifier.wrapContentWidth()
+              modifier = modifier.wrapContentWidth(),
             )
           }
         }
@@ -129,10 +129,10 @@ private fun MeasureReportIndividualResultViewPreview() {
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",
-        logicalId = "12444"
+        logicalId = "12444",
       ),
     isMatchedIndicator = true,
     indicatorStatus = "True",
-    indicatorDescription = ""
+    indicatorDescription = "",
   )
 }

@@ -76,7 +76,7 @@ class HivRegisterDao
 constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : RegisterDao, PatientDao {
 
   private val code = defaultRepository.sharedPreferencesHelper.organisationCode()
@@ -96,15 +96,16 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
     val patients =
       fhirEngine.search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
         sort(Patient.NAME, Order.ASCENDING)
         count =
-          if (loadAll) countRegisterData(appFeatureName).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
+          if (loadAll) {
+            countRegisterData(appFeatureName).toInt()
+          } else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
@@ -118,7 +119,7 @@ constructor(
   override suspend fun searchByName(
     nameQuery: String,
     currentPage: Int,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
     val patients =
       fhirEngine.search<Patient> {
@@ -127,22 +128,24 @@ constructor(
           {
             modifier = StringFilterModifier.CONTAINS
             value = nameQuery
-          }
+          },
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
         operation = Operation.OR
         sort(Patient.NAME, Order.ASCENDING)
       }
 
-    return patients.map { it.resource }.mapNotNull { patient ->
-      if (isValidPatient(patient)) {
-        val transFormedPatient = transformPatientToHivRegisterData(patient)
-        if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
-          return@mapNotNull transFormedPatient
+    return patients
+      .map { it.resource }
+      .mapNotNull { patient ->
+        if (isValidPatient(patient)) {
+          val transFormedPatient = transformPatientToHivRegisterData(patient)
+          if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
+            return@mapNotNull transFormedPatient
+          }
         }
+        return@mapNotNull null
       }
-      return@mapNotNull null
-    }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
@@ -177,15 +180,15 @@ constructor(
                   ?: Double.MAX_VALUE
               },
               // tasks with no clinicVisitOrder, would be sorted with Task#description
-              { it.description }
-            )
+              { it.description },
+            ),
           ),
       services = patient.activeCarePlans(),
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
       observations = patient.observations(),
-      practitioners = patient.practitioners()
+      practitioners = patient.practitioners(),
     )
   }
 
@@ -211,7 +214,7 @@ constructor(
       .plus(
         patient.guardians().filterIsInstance<RelatedPerson>().map {
           transformRelatedPersonToHivRegisterData(it)
-        }
+        },
       )
 
   private fun transformRelatedPersonToHivRegisterData(person: RelatedPerson) =
@@ -264,10 +267,10 @@ constructor(
       chwAssigned = patient.extractGeneralPractitionerReference(),
       healthStatus =
         patient.extractHealthStatusFromMeta(
-          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
       isPregnant = defaultRepository.isPatientPregnant(patient),
-      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient)
+      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
     )
 
   internal suspend fun Patient.activeConditions() =
@@ -276,34 +279,40 @@ constructor(
     }
 
   internal suspend fun Patient.observations() =
-    defaultRepository.searchResourceFor<Observation>(
+    defaultRepository
+      .searchResourceFor<Observation>(
         subjectId = this.logicalId,
         subjectParam = Observation.SUBJECT,
-        subjectType = ResourceType.Patient
+        subjectType = ResourceType.Patient,
       )
       .also {
         return if (it.isNullOrEmpty().not()) {
-          it.sortedByDescending { it.effectiveDateTimeType.value }.distinctBy {
-            it.code.coding.last().code
-          }
-        } else emptyList()
+          it
+            .sortedByDescending { it.effectiveDateTimeType.value }
+            .distinctBy { it.code.coding.last().code }
+        } else {
+          emptyList()
+        }
       }
 
   internal suspend fun Patient.activeTasks(): List<Task> {
-    return this.activeCarePlans().flatMap { it.activity }.flatMap {
-      it.outcomeReference
-        .filter { outcomeRef -> outcomeRef.reference.startsWith(ResourceType.Task.name) }
-        .map { reference ->
-          val task = defaultRepository.loadResource(reference) as Task
-          task.apply {
-            if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED &&
-                status != Task.TaskStatus.COMPLETED
-            ) {
-              status = Task.TaskStatus.COMPLETED
+    return this.activeCarePlans()
+      .flatMap { it.activity }
+      .flatMap {
+        it.outcomeReference
+          .filter { outcomeRef -> outcomeRef.reference.startsWith(ResourceType.Task.name) }
+          .map { reference ->
+            val task = defaultRepository.loadResource(reference) as Task
+            task.apply {
+              if (
+                it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED &&
+                  status != Task.TaskStatus.COMPLETED
+              ) {
+                status = Task.TaskStatus.COMPLETED
+              }
             }
           }
-        }
-    }
+      }
   }
 
   internal suspend fun Patient.activeCarePlans() =
@@ -313,7 +322,7 @@ constructor(
     defaultRepository.searchResourceFor<CarePlan>(
       subjectId = patientId,
       subjectType = ResourceType.Patient,
-      subjectParam = CarePlan.SUBJECT
+      subjectParam = CarePlan.SUBJECT,
     )
 
   internal suspend fun Patient.practitioners(): List<Practitioner> {
@@ -343,7 +352,7 @@ constructor(
       defaultRepository.searchResourceFor<Patient>(
         subjectId = patientId,
         subjectType = ResourceType.Patient,
-        subjectParam = Patient.LINK
+        subjectParam = Patient.LINK,
       )
 
     for (item in filteredItems) {
@@ -355,7 +364,7 @@ constructor(
   internal fun Patient.isValidChildContact(): Boolean {
     val healthStatus =
       this.extractHealthStatusFromMeta(
-        getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+        getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
       )
 
     if (healthStatus == HealthStatus.CHILD_CONTACT || healthStatus == HealthStatus.EXPOSED_INFANT) {
@@ -373,7 +382,7 @@ constructor(
       .filter {
         (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name).or(
           it.type == Patient.LinkType.REFER &&
-            it.other.referenceElement.resourceType == ResourceType.Patient.name
+            it.other.referenceElement.resourceType == ResourceType.Patient.name,
         )
       }
       .map { defaultRepository.loadResource(it.other) }
@@ -394,7 +403,6 @@ constructor(
   }
 
   suspend fun transformChildrenPatientToRegisterData(patients: List<Patient>): List<RegisterData> {
-
     return patients
       .filter(this::isValidPatient)
       .map { patient ->
@@ -412,10 +420,10 @@ constructor(
           chwAssigned = patient.extractGeneralPractitionerReference(),
           healthStatus =
             patient.extractHealthStatusFromMeta(
-              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
             ),
           isPregnant = defaultRepository.isPatientPregnant(patient),
-          isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient)
+          isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
         )
       }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
@@ -437,7 +445,7 @@ suspend fun DefaultRepository.patientConditions(patientId: String) =
   searchResourceFor<Condition>(
     subjectId = patientId,
     subjectParam = Condition.SUBJECT,
-    subjectType = ResourceType.Patient
+    subjectType = ResourceType.Patient,
   )
 
 suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =

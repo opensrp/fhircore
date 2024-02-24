@@ -50,10 +50,10 @@ constructor(
             Pair(NavigationArg.PATIENT_ID, patientId),
             Pair(NavigationArg.TRACING_ID, event.historyId),
             Pair(NavigationArg.TRACING_ENCOUNTER_ID, event.encounterId),
-            Pair(NavigationArg.SCREEN_TITLE, event.title)
+            Pair(NavigationArg.SCREEN_TITLE, event.title),
           )
         event.navController.navigate(
-          route = MainNavigationScreen.TracingHistoryDetails.route + urlParams
+          route = MainNavigationScreen.TracingHistoryDetails.route + urlParams,
         )
       }
     }
@@ -63,7 +63,7 @@ constructor(
     paginateData.value =
       createPager(
           pageSize = DEFAULT_PAGE_SIZE,
-          block = { currentPage -> repository.getTracingOutcomes(currentPage, tracingId) }
+          block = { currentPage -> repository.getTracingOutcomes(currentPage, tracingId) },
         )
         .flow
         .cachedIn(viewModelScope)

@@ -32,13 +32,12 @@ import org.smartregister.fhircore.quest.ui.report.measure.screens.ReportTypeSele
 
 fun NavGraphBuilder.measureReportNavigationGraph(
   navController: NavController,
-  measureReportViewModel: MeasureReportViewModel
+  measureReportViewModel: MeasureReportViewModel,
 ) {
   navigation(
     startDestination = MeasureReportNavigationScreen.MeasureReportList.route,
-    route = MainNavigationScreen.Reports.route
+    route = MainNavigationScreen.Reports.route,
   ) {
-
     // Display list of supported measures for reporting
     composable(MeasureReportNavigationScreen.MeasureReportList.route) {
       MeasureReportListScreen(
@@ -46,9 +45,9 @@ fun NavGraphBuilder.measureReportNavigationGraph(
         dataList = measureReportViewModel.reportMeasuresList(),
         onReportMeasureClicked = { measureReportRowData ->
           measureReportViewModel.onEvent(
-            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController)
+            MeasureReportEvent.OnSelectMeasure(measureReportRowData, navController),
           )
-        }
+        },
       )
     }
     // Choose report type; for either individual or population
@@ -61,14 +60,14 @@ fun NavGraphBuilder.measureReportNavigationGraph(
           navArgument(NavigationArg.SCREEN_TITLE) {
             type = NavType.StringType
             defaultValue = ""
-          }
-        )
+          },
+        ),
     ) { stackEntry ->
       val screenTitle: String = stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
       ReportTypeSelectorScreen(
         screenTitle = screenTitle,
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
 
@@ -76,7 +75,7 @@ fun NavGraphBuilder.measureReportNavigationGraph(
     composable(MeasureReportNavigationScreen.PatientsList.route) {
       MeasureReportPatientsScreen(
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
 
@@ -84,7 +83,7 @@ fun NavGraphBuilder.measureReportNavigationGraph(
     composable(MeasureReportNavigationScreen.MeasureReportResult.route) {
       MeasureReportResultScreen(
         navController = navController,
-        measureReportViewModel = measureReportViewModel
+        measureReportViewModel = measureReportViewModel,
       )
     }
   }

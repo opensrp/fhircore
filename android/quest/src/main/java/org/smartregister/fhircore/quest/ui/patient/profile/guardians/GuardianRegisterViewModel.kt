@@ -44,7 +44,7 @@ constructor(
   savedStateHandle: SavedStateHandle,
   syncBroadcaster: SyncBroadcaster,
   val repository: HivPatientGuardianRepository,
-  val registerViewDataMapper: RegisterViewDataMapper
+  val registerViewDataMapper: RegisterViewDataMapper,
 ) : ViewModel() {
 
   // Get your argument from the SavedStateHandle
@@ -63,12 +63,13 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncState) {
           when (state) {
-            is SyncState.Finished, is SyncState.Failed -> loadData()
+            is SyncState.Finished,
+            is SyncState.Failed, -> loadData()
             else -> {}
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
     loadData()
   }
@@ -83,13 +84,13 @@ constructor(
           .map {
             GuardianPatientRegisterData(
               viewData = registerViewDataMapper.transformInputToOutputModel(it),
-              profileNavRoute = getRoute(it)
+              profileNavRoute = getRoute(it),
             )
           }
       _guardianUiDetails.value =
         GuardianUiState(
           patientFirstName = patient.extractFirstName(),
-          registerViewData = guardiansRegisterViewData
+          registerViewData = guardiansRegisterViewData,
         )
     }
   }
@@ -98,14 +99,14 @@ constructor(
     val commonNavArgs =
       listOf(
         Pair(NavigationArg.FEATURE, appFeatureName),
-        Pair(NavigationArg.HEALTH_MODULE, healthModule)
+        Pair(NavigationArg.HEALTH_MODULE, healthModule),
       )
 
     val navArgs =
       commonNavArgs +
         Pair(
           NavigationArg.ON_ART,
-          (registerData.healthStatus != HealthStatus.NOT_ON_ART).toString()
+          (registerData.healthStatus != HealthStatus.NOT_ON_ART).toString(),
         )
     val urlParams = NavigationArg.bindArgumentsOf(*navArgs.toTypedArray())
 

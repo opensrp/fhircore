@@ -38,7 +38,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
       SECURE_STORAGE_FILE_NAME,
       getMasterKey(),
       EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
     )
 
   private fun getMasterKey() =
@@ -55,7 +55,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
             salt = Base64.getEncoder().encodeToString(randomSaltBytes),
             passwordHash = password.toPasswordHash(randomSaltBytes),
           )
-          .encodeJson()
+          .encodeJson(),
       )
     }
   }

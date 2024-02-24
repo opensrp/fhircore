@@ -41,7 +41,9 @@ import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 class PatientRegisterActivity : BaseRegisterActivity() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
+
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,14 +52,14 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     val registerViewConfiguration =
       configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_REGISTER,
-        questJsonSpecificationProvider.getJson()
+        questJsonSpecificationProvider.getJson(),
       )
     configureViews(registerViewConfiguration)
   }
 
   override fun onBottomNavigationOptionItemSelected(
     item: MenuItem,
-    viewConfiguration: RegisterViewConfiguration
+    viewConfiguration: RegisterViewConfiguration,
   ): Boolean {
     viewConfiguration.bottomNavigationOptions?.forEach { navigationOption ->
       if (item.itemId == navigationOption.id.hashCode()) {
@@ -67,14 +69,14 @@ class PatientRegisterActivity : BaseRegisterActivity() {
               action.tag,
               action.isRegisterFragment,
               action.isFilterVisible,
-              action.toolbarTitle
+              action.toolbarTitle,
             )
           }
           is QuestionnaireDataDetailsNavigationAction -> {
             startActivity(
               Intent(this, QuestionnaireDataDetailActivity::class.java).apply {
                 putExtra(CLASSIFICATION_ARG, action.classification)
-              }
+              },
             )
           }
         }
@@ -89,7 +91,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
     mapOf(
       Pair(PatientRegisterFragment.TAG, PatientRegisterFragment()),
       Pair(PatientTaskFragment.TAG, PatientTaskFragment()),
-      Pair(UserProfileFragment.TAG, UserProfileFragment())
+      Pair(UserProfileFragment.TAG, UserProfileFragment()),
     )
 
   override fun registersList(): List<RegisterItem> =
@@ -97,7 +99,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
       RegisterItem(
         uniqueTag = PatientRegisterFragment.TAG,
         title = getString(R.string.clients),
-        isSelected = true
-      )
+        isSelected = true,
+      ),
     )
 }

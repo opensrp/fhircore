@@ -57,7 +57,7 @@ fun PatientRegisterScreen(
   screenTitle: String,
   openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
-  patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel()
+  patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
   val firstTimeSyncState = patientRegisterViewModel.firstTimeSyncState.collectAsState()
@@ -77,11 +77,11 @@ fun PatientRegisterScreen(
           if (patientId != null) {
             patientRegisterViewModel.syncBroadcaster.runSync()
             patientRegisterViewModel.onEvent(
-              PatientRegisterEvent.OpenProfile(patientId, navController)
+              PatientRegisterEvent.OpenProfile(patientId, navController),
             )
           }
         }
-      }
+      },
     )
   val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
 
@@ -96,10 +96,12 @@ fun PatientRegisterScreen(
         searchText = searchText,
         onSearchTextChanged = { searchText ->
           patientRegisterViewModel.onEvent(
-            PatientRegisterEvent.SearchRegister(searchText = searchText)
+            PatientRegisterEvent.SearchRegister(searchText = searchText),
           )
-        }
-      ) { openDrawer(true) }
+        },
+      ) {
+        openDrawer(true)
+      }
     },
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
@@ -116,36 +118,38 @@ fun PatientRegisterScreen(
             },
             nextButtonClickListener = {
               patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage)
-            }
+            },
           )
           // TODO activate this button action via config; now only activated for family register
-          if (patientRegisterViewModel.isAppFeatureHousehold() ||
+          if (
+            patientRegisterViewModel.isAppFeatureHousehold() ||
               patientRegisterViewModel.isRegisterFormViaSettingExists()
           ) {
             Button(
               modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
               onClick = {
                 patientRegistrationLauncher.launch(
-                  patientRegisterViewModel.patientRegisterQuestionnaireIntent(context)
+                  patientRegisterViewModel.patientRegisterQuestionnaireIntent(context),
                 )
                 //
                 // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
               },
-              enabled = !firstTimeSync
+              enabled = !firstTimeSync,
             ) {
               Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
             }
           }
         }
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      if (firstTimeSync)
+      if (firstTimeSync) {
         LoaderDialog(
           modifier = modifier,
-          syncProgressStateFlow = patientRegisterViewModel.syncProgressStateFlow
+          syncProgressStateFlow = patientRegisterViewModel.syncProgressStateFlow,
         )
+      }
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
       if (searchText.isNotEmpty()) {
@@ -158,16 +162,16 @@ fun PatientRegisterScreen(
         state = rememberSwipeRefreshState(isRefreshing),
         onRefresh = { patientRegisterViewModel.refresh() },
         //        indicator = { _, _ -> }
-        ) {
+      ) {
         RegisterList(
           modifier = iModifier,
           pagingItems = pagingItems,
           onRowClick = { patientId: String ->
             patientRegisterViewModel.onEvent(
-              PatientRegisterEvent.OpenProfile(patientId, navController)
+              PatientRegisterEvent.OpenProfile(patientId, navController),
             )
           },
-          progressMessage = patientRegisterViewModel.progressMessage()
+          progressMessage = patientRegisterViewModel.progressMessage(),
         )
       }
     }

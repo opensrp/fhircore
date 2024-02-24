@@ -46,7 +46,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           logicalId = inputModel.logicalId,
           title = listOf(inputModel.name, inputModel.age).joinToString(", "),
           subtitle = inputModel.gender.translateGender(context).capitalizeFirstLetter(),
-          registerType = RegisterData.DefaultRegisterData::class
+          registerType = RegisterData.DefaultRegisterData::class,
         )
       is RegisterData.FamilyRegisterData -> {
         val serviceText =
@@ -74,7 +74,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
                     it.age.toInt() <= 5 -> R.drawable.ic_kids
                     else -> R.drawable.ic_users
                   },
-                logicalId = it.logicalId
+                logicalId = it.logicalId,
               )
             },
           serviceText = serviceText,
@@ -82,7 +82,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           serviceButtonBorderColor = BlueTextColor,
           showDivider = true,
           showServiceButton = !serviceText.isNullOrEmpty(),
-          registerType = RegisterData.FamilyRegisterData::class
+          registerType = RegisterData.FamilyRegisterData::class,
         )
       }
       is RegisterData.AncRegisterData ->
@@ -97,7 +97,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
             if (inputModel.servicesOverdue == 0) BlueTextColor else OverdueDarkRedColor,
           serviceText = context.getString(R.string.anc_visit),
           showServiceButton = inputModel.servicesOverdue != 0 || inputModel.servicesDue != 0,
-          registerType = RegisterData.AncRegisterData::class
+          registerType = RegisterData.AncRegisterData::class,
         )
       is RegisterData.HivRegisterData ->
         RegisterViewData(
@@ -105,11 +105,14 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           title = inputModel.name,
           subtitle = "${inputModel.age}, ${inputModel.healthStatus.display}",
           registerType = inputModel::class,
-          identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
-              ?: "",
+          identifier =
+            inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it } ?: "",
           serviceButtonBackgroundColor =
-            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) MaleBlueColor
-            else FemalePinkColor,
+            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) {
+              MaleBlueColor
+            } else {
+              FemalePinkColor
+            },
           serviceTextIcon =
             when {
               inputModel.isBreastfeeding -> R.drawable.ic_person_breastfeeding_solid
@@ -121,7 +124,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               inputModel.gender == Enumerations.AdministrativeGender.FEMALE ->
                 R.drawable.baseline_woman_24
               else -> null
-            }
+            },
         )
       is RegisterData.AppointmentRegisterData ->
         RegisterViewData(
@@ -129,11 +132,14 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           title = inputModel.name,
           subtitle = "${inputModel.reasons.joinToString()}, ${inputModel.age}",
           registerType = RegisterData.AppointmentRegisterData::class,
-          identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
-              ?: "",
+          identifier =
+            inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it } ?: "",
           serviceButtonBackgroundColor =
-            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) MaleBlueColor
-            else FemalePinkColor,
+            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) {
+              MaleBlueColor
+            } else {
+              FemalePinkColor
+            },
           serviceTextIcon =
             when {
               inputModel.isBreastfeeding -> R.drawable.ic_person_breastfeeding_solid
@@ -145,7 +151,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               inputModel.gender == Enumerations.AdministrativeGender.FEMALE ->
                 R.drawable.baseline_woman_24
               else -> null
-            }
+            },
         )
       is RegisterData.TracingRegisterData ->
         RegisterViewData(
@@ -154,11 +160,14 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           subtitle =
             "${inputModel.attempts} attempt${if (inputModel.attempts > 1) "s" else ""}, ${inputModel.reasons.joinToString(" + ")}",
           registerType = inputModel::class,
-          identifier = inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it }
-              ?: "",
+          identifier =
+            inputModel.identifier?.let { if (it.length > 6) it.substring(0..5) else it } ?: "",
           serviceButtonBackgroundColor =
-            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) MaleBlueColor
-            else FemalePinkColor,
+            if (inputModel.gender == Enumerations.AdministrativeGender.MALE) {
+              MaleBlueColor
+            } else {
+              FemalePinkColor
+            },
           serviceTextIcon =
             when {
               inputModel.isBreastfeeding -> R.drawable.ic_person_breastfeeding_solid
@@ -170,7 +179,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               inputModel.gender == Enumerations.AdministrativeGender.FEMALE ->
                 R.drawable.baseline_woman_24
               else -> null
-            }
+            },
         )
       else -> throw UnsupportedOperationException()
     }

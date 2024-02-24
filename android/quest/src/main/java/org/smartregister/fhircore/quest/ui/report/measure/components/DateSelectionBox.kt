@@ -57,25 +57,25 @@ fun DateSelectionBox(
   endDate: String = "",
   showDateRangePicker: Boolean = true,
   dateRange: MutableState<Pair<Long, Long>>,
-  onDateRangeSelected: (Pair<Long, Long>) -> Unit
+  onDateRangeSelected: (Pair<Long, Long>) -> Unit,
 ) {
   val context = LocalContext.current
 
   Column(
     modifier = modifier.wrapContentWidth(),
     verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.Start
+    horizontalAlignment = Alignment.Start,
   ) {
     Text(
       text = stringResource(id = R.string.date_range),
       fontWeight = FontWeight.Bold,
       fontSize = 18.sp,
-      modifier = modifier.wrapContentWidth()
+      modifier = modifier.wrapContentWidth(),
     )
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceAround,
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       DateRangeItem(text = startDate)
       Text("-", fontSize = 18.sp, modifier = modifier.padding(horizontal = 8.dp))
@@ -90,10 +90,10 @@ fun DateSelectionBox(
                 showDateRangePicker(
                   context = context,
                   dateRange = dateRange,
-                  onDateRangeSelected = onDateRangeSelected
+                  onDateRangeSelected = onDateRangeSelected,
                 )
               }
-              .padding(8.dp)
+              .padding(8.dp),
         )
       }
     }
@@ -103,7 +103,7 @@ fun DateSelectionBox(
 fun showDateRangePicker(
   context: Context,
   dateRange: MutableState<Pair<Long, Long>>,
-  onDateRangeSelected: (Pair<Long, Long>) -> Unit
+  onDateRangeSelected: (Pair<Long, Long>) -> Unit,
 ) {
   val constraintsBuilder =
     CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build()
@@ -133,6 +133,6 @@ private fun DateRangeSelectedPreview() {
     startDate = "Start date",
     endDate = "End date",
     onDateRangeSelected = {},
-    dateRange = dateRange
+    dateRange = dateRange,
   )
 }

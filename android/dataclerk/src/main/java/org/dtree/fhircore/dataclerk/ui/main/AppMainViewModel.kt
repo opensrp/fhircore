@@ -54,7 +54,7 @@ constructor(
   private val configurationRegistry: ConfigurationRegistry,
   private val sharedPreferencesHelper: SharedPreferencesHelper,
   private val secureSharedPreference: SecureSharedPreference,
-  private val dataStore: AppDataStore
+  private val dataStore: AppDataStore,
 ) : ViewModel() {
 
   private val patientRegisterConfiguration: RegisterViewConfiguration by lazy {
@@ -77,7 +77,7 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         isInitialSync = syncBroadcaster.isInitialSync(),
-        registrationButton = patientRegisterConfiguration.newClientButtonText
+        registrationButton = patientRegisterConfiguration.newClientButtonText,
       )
   }
 
@@ -86,7 +86,7 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!,
       )
       .displayName
 
@@ -110,9 +110,9 @@ constructor(
                     text = if (isArtClient) "client-already-on-art" else "exposed-infant"
                     addCoding(artCode)
                   }
-              }
+              },
             ),
-        )
+        ),
       )
   }
 
@@ -122,18 +122,19 @@ constructor(
       when (event) {
         is AppMainEvent.UpdateSyncState -> {
           when (event.state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed, -> {
               val lastSyncTime = event.lastSyncTime ?: (retrieveLastSyncTimestamp() ?: "")
               appMainUiState.value =
                 appMainUiState.value.copy(
                   lastSyncTime = lastSyncTime,
-                  isInitialSync = lastSyncTime.isEmpty()
+                  isInitialSync = lastSyncTime.isEmpty(),
                 )
             }
             else ->
               appMainUiState.value =
                 appMainUiState.value.copy(
-                  lastSyncTime = event.lastSyncTime ?: appMainUiState.value.lastSyncTime
+                  lastSyncTime = event.lastSyncTime ?: appMainUiState.value.lastSyncTime,
                 )
           }
         }
@@ -149,12 +150,11 @@ constructor(
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      formatLastSyncTimestamp(timestamp)
+      formatLastSyncTimestamp(timestamp),
     )
   }
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
-
     val syncTimestampFormatter =
       SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
         timeZone = TimeZone.getDefault()

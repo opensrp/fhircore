@@ -34,7 +34,7 @@ sealed class PatientProfileEvent {
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,
-    val menuId: Int
+    val menuId: Int,
   ) : PatientProfileEvent()
 
   data class OpenChildProfile(val patientId: String, val navController: NavHostController) :

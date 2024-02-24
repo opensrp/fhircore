@@ -27,7 +27,7 @@ interface RegisterRepository {
     currentPage: Int,
     loadAll: Boolean = false,
     appFeatureName: String? = null,
-    healthModule: HealthModule = HealthModule.DEFAULT
+    healthModule: HealthModule = HealthModule.DEFAULT,
   ): List<RegisterData>
 
   suspend fun loadRegisterFiltered(
@@ -35,29 +35,30 @@ interface RegisterRepository {
     loadAll: Boolean = false,
     appFeatureName: String? = null,
     healthModule: HealthModule,
-    filters: RegisterFilter
+    filters: RegisterFilter,
   ): List<RegisterData>
 
   suspend fun countRegisterFiltered(
     appFeatureName: String? = null,
     healthModule: HealthModule,
-    filters: RegisterFilter
+    filters: RegisterFilter,
   ): Long
+
   suspend fun countRegisterData(
     appFeatureName: String? = null,
-    healthModule: HealthModule = HealthModule.DEFAULT
+    healthModule: HealthModule = HealthModule.DEFAULT,
   ): Long
 
   suspend fun loadPatientProfileData(
     appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT,
-    patientId: String
+    patientId: String,
   ): ProfileData?
 
   suspend fun searchByName(
     nameQuery: String,
     currentPage: Int,
     appFeatureName: String?,
-    healthModule: HealthModule
+    healthModule: HealthModule,
   ): List<RegisterData>
 }

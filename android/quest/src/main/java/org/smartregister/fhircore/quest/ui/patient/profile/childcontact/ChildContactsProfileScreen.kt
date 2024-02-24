@@ -49,14 +49,12 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 fun ChildContactsProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
 ) {
-
   val profileViewData = patientProfileViewModel.patientProfileViewData.value
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
-    patientProfileViewModel
-      .paginatedChildrenRegisterData
+    patientProfileViewModel.paginatedChildrenRegisterData
       .collectAsState(emptyFlow())
       .value
       .collectAsLazyPagingItems()
@@ -71,9 +69,9 @@ fun ChildContactsProfileScreen(
           IconButton(onClick = { navController.popBackStack() }) {
             Icon(Icons.Filled.ArrowBack, null)
           }
-        }
+        },
       )
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.background(PatientProfileSectionsBackgroundColor)) {
@@ -82,9 +80,9 @@ fun ChildContactsProfileScreen(
           pagingItems = pagingItems,
           onRowClick = { patientId: String ->
             patientProfileViewModel.onEvent(
-              PatientProfileEvent.OpenChildProfile(patientId, navController)
+              PatientProfileEvent.OpenChildProfile(patientId, navController),
             )
-          }
+          },
         )
       }
     }

@@ -56,7 +56,7 @@ class NetworkModule {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -76,14 +76,14 @@ class NetworkModule {
             request.addHeader(AUTHORIZATION, "Bearer $accessToken")
           }
           chain.proceed(request.build())
-        }
+        },
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -109,7 +109,7 @@ class NetworkModule {
   fun provideAuthRetrofit(
     @NoAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -123,7 +123,7 @@ class NetworkModule {
   fun provideKeycloakRetrofit(
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    json: Json
+    json: Json,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -137,7 +137,7 @@ class NetworkModule {
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
-    parser: IParser
+    parser: IParser,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)

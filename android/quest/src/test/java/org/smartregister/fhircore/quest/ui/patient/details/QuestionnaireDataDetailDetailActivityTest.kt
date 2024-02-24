@@ -51,7 +51,9 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue val patientRepository: PatientRepository = mockk()
+
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
+
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @BindValue
@@ -79,7 +81,7 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
       Intent().apply {
         this.putExtra(
           QuestionnaireDataDetailActivity.CLASSIFICATION_ARG,
-          "CONTROL_TEST_DETAILS_VIEW"
+          "CONTROL_TEST_DETAILS_VIEW",
         )
       }
     questDetailActivityController =
@@ -102,7 +104,7 @@ class QuestionnaireDataDetailDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
     questDetailActivity.viewModel.onFormItemClickListener(
-      QuestionnaireConfig(form = "test-form", title = "Title", identifier = "1234")
+      QuestionnaireConfig(form = "test-form", title = "Title", identifier = "1234"),
     )
 
     val expectedIntent = Intent(questDetailActivity, QuestionnaireActivity::class.java)

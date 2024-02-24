@@ -48,7 +48,7 @@ class PinViewTest : RobolectricTest() {
         fullEditValue = "123",
         isCursorVisible = false,
         isDotted = false,
-        showError = true
+        showError = true,
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW_CELL).assertExists()

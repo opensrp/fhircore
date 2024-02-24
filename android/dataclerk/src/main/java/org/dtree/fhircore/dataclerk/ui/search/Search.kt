@@ -68,18 +68,19 @@ import org.dtree.fhircore.dataclerk.ui.home.PatientItemCard
 @Composable
 fun SearchScreen(
   navHostController: NavHostController,
-  viewModel: SearchViewModel = hiltViewModel()
+  viewModel: SearchViewModel = hiltViewModel(),
 ) {
-  val userSearchModelState by viewModel.userSearchModelState.collectAsState(
-    initial = SearchModelState.Empty
-  )
+  val userSearchModelState by
+    viewModel.userSearchModelState.collectAsState(
+      initial = SearchModelState.Empty,
+    )
   SearchBarUI(
     searchText = userSearchModelState.searchText,
     placeholderText = "Search Patients",
     onSearchTextChanged = { viewModel.onSearchChanged(it) },
     onClearClick = { viewModel.onClearClick() },
     onNavigateBack = { navHostController.popBackStack() },
-    matchesFound = userSearchModelState.patients.isNotEmpty()
+    matchesFound = userSearchModelState.patients.isNotEmpty(),
   ) {
     LazyColumn(
       verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -88,7 +89,7 @@ fun SearchScreen(
       items(items = userSearchModelState.patients) { patient ->
         PatientItemCard(
           patient,
-          onClick = { navHostController.navigate("patient/${patient.resourceId}") }
+          onClick = { navHostController.navigate("patient/${patient.resourceId}") },
         )
       }
     }
@@ -104,9 +105,8 @@ fun SearchBarUI(
   onClearClick: () -> Unit = {},
   onNavigateBack: () -> Unit = {},
   matchesFound: Boolean,
-  results: (@Composable() () -> Unit) = {}
+  results: (@Composable() () -> Unit) = {},
 ) {
-
   Box {
     Column(modifier = Modifier.fillMaxSize()) {
       SearchBar(searchText, placeholderText, onSearchTextChanged, onClearClick, onNavigateBack)
@@ -132,7 +132,7 @@ fun SearchBar(
   placeholderText: String = "",
   onSearchTextChanged: (String) -> Unit = {},
   onClearClick: () -> Unit = {},
-  onNavigateBack: () -> Unit = {}
+  onNavigateBack: () -> Unit = {},
 ) {
   var showClearButton by remember { mutableStateOf(false) }
   val keyboardController = LocalSoftwareKeyboardController.current
@@ -160,7 +160,7 @@ fun SearchBar(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             containerColor = Color.Transparent,
-            cursorColor = LocalContentColor.current.copy(alpha = LocalContentAlpha.current)
+            cursorColor = LocalContentColor.current.copy(alpha = LocalContentAlpha.current),
           ),
         trailingIcon = {
           AnimatedVisibility(visible = showClearButton, enter = fadeIn(), exit = fadeOut()) {
@@ -174,7 +174,7 @@ fun SearchBar(
         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() }),
       )
-    }
+    },
   )
 
   LaunchedEffect(Unit) { focusRequester.requestFocus() }
@@ -182,10 +182,11 @@ fun SearchBar(
 
 @Composable
 fun NoSearchResults() {
-
   Column(
     modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.Center,
-    horizontalAlignment = CenterHorizontally
-  ) { Text("No matches found") }
+    horizontalAlignment = CenterHorizontally,
+  ) {
+    Text("No matches found")
+  }
 }

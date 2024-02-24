@@ -21,7 +21,7 @@ import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 data class SearchModelState(
   val searchText: String = "",
   val patients: List<PatientItem> = arrayListOf(),
-  val showProgressBar: Boolean = false
+  val showProgressBar: Boolean = false,
 ) {
 
   companion object {

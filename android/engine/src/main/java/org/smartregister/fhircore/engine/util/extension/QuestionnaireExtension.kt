@@ -36,9 +36,9 @@ fun Questionnaire.isExtractionCandidate() =
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 
 fun Questionnaire.cqfLibraryIds() =
-  this.extension.filter { it.url.contains("cqf-library") }.mapNotNull {
-    it.value?.asStringValue()?.replace("Library/", "")
-  }
+  this.extension
+    .filter { it.url.contains("cqf-library") }
+    .mapNotNull { it.value?.asStringValue()?.replace("Library/", "") }
 
 fun QuestionnaireResponse.findSubject(bundle: Bundle) =
   IdType(this.subject.reference).let { subject ->
@@ -52,14 +52,14 @@ fun Questionnaire.find(linkId: String): Questionnaire.QuestionnaireItemComponent
 }
 
 fun QuestionnaireResponse.find(
-  linkId: String
+  linkId: String,
 ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
   return item.find(linkId, null)
 }
 
 fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
   linkId: String,
-  default: QuestionnaireResponse.QuestionnaireResponseItemComponent?
+  default: QuestionnaireResponse.QuestionnaireResponseItemComponent?,
 ): QuestionnaireResponse.QuestionnaireResponseItemComponent? {
   var result = default
   run loop@{
@@ -81,12 +81,12 @@ fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.find(
 enum class FieldType {
   DEFINITION,
   LINK_ID,
-  TYPE
+  TYPE,
 }
 
 fun Questionnaire.find(
   fieldType: FieldType,
-  value: String
+  value: String,
 ): List<Questionnaire.QuestionnaireItemComponent> {
   val result = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
   item.find(fieldType, value, result)
@@ -96,7 +96,7 @@ fun Questionnaire.find(
 fun List<Questionnaire.QuestionnaireItemComponent>.find(
   fieldType: FieldType,
   value: String,
-  target: MutableList<Questionnaire.QuestionnaireItemComponent>
+  target: MutableList<Questionnaire.QuestionnaireItemComponent>,
 ) {
   forEach {
     when (fieldType) {
@@ -124,16 +124,17 @@ fun List<Questionnaire.QuestionnaireItemComponent>.find(
 /** To ensure multiple linkId only when they have answers, otherwise only have one distinct */
 fun QuestionnaireResponse.distinctifyLinkId() {
   fun distinctLinkId(
-    itemComponents: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+    itemComponents: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ): List<QuestionnaireResponse.QuestionnaireResponseItemComponent> {
     return itemComponents
       .groupBy { it.linkId }
       .flatMap {
-        it.value.filter(QuestionnaireResponse.QuestionnaireResponseItemComponent::hasAnswer)
+        it.value
+          .filter(QuestionnaireResponse.QuestionnaireResponseItemComponent::hasAnswer)
           .ifEmpty {
             it.value.distinctBy { elem ->
               elem.item.joinToString(
-                transform = QuestionnaireResponse.QuestionnaireResponseItemComponent::getLinkId
+                transform = QuestionnaireResponse.QuestionnaireResponseItemComponent::getLinkId,
               )
             }
           }

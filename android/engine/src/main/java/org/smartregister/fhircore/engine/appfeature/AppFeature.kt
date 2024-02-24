@@ -23,7 +23,10 @@ package org.smartregister.fhircore.engine.appfeature
  */
 sealed class AppFeature(val name: String) {
   object InAppReporting : AppFeature(name = "InAppReporting")
+
   object PatientManagement : AppFeature(name = "PatientManagement")
+
   object HouseholdManagement : AppFeature(name = "HouseholdManagement")
+
   object DeviceToDeviceSync : AppFeature(name = "DeviceToDeviceSync")
 }

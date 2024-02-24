@@ -128,7 +128,7 @@ class FileUtilTest {
           "src" +
           File.separator +
           File.separator +
-          "test/resources/cql/libraryevaluator/"
+          "test/resources/cql/libraryevaluator/",
       )
 
     val fileListString = FileUtil.readFileFromInternalStorage(context, "library.json", "")

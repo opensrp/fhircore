@@ -26,7 +26,8 @@ interface AppointmentFilterOption : FilterOption
 
 enum class PatientAssignment : AppointmentFilterOption {
   ALL_PATIENTS,
-  MY_PATIENTS;
+  MY_PATIENTS,
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
@@ -38,7 +39,8 @@ enum class PatientCategory : AppointmentFilterOption {
   EXPOSED_INFANT,
   CHILD_CONTACT,
   PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY,
-  SEXUAL_CONTACT;
+  SEXUAL_CONTACT,
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
@@ -52,8 +54,8 @@ enum class Reason(val patientCategory: Array<PatientCategory>) : AppointmentFilt
     arrayOf(
       PatientCategory.CHILD_CONTACT,
       PatientCategory.SEXUAL_CONTACT,
-      PatientCategory.PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY
-    )
+      PatientCategory.PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY,
+    ),
   ),
   INDEX_CASE_TESTING(arrayOf(PatientCategory.ART_CLIENT)),
   MILESTONE_HIV_TEST(arrayOf(PatientCategory.EXPOSED_INFANT)),
@@ -62,7 +64,8 @@ enum class Reason(val patientCategory: Array<PatientCategory>) : AppointmentFilt
   ROUTINE_VISIT(arrayOf(PatientCategory.EXPOSED_INFANT)),
   VIRAL_LOAD_COLLECTION(arrayOf(PatientCategory.ART_CLIENT)),
   WELCOME_SERVICE(arrayOf(PatientCategory.ART_CLIENT)),
-  WELCOME_SERVICE_FOLLOW_UP(arrayOf(PatientCategory.ART_CLIENT));
+  WELCOME_SERVICE_FOLLOW_UP(arrayOf(PatientCategory.ART_CLIENT)),
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }

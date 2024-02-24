@@ -47,9 +47,9 @@ class BasePagingSource<V : Any>(private val block: suspend (Int) -> List<V>) :
 fun <V : Any> createPager(
   pageSize: Int,
   enablePlaceholders: Boolean = false,
-  block: suspend (Int) -> List<V>
+  block: suspend (Int) -> List<V>,
 ): Pager<Int, V> =
   Pager(
     config = PagingConfig(enablePlaceholders = enablePlaceholders, pageSize = pageSize),
-    pagingSourceFactory = { BasePagingSource(block) }
+    pagingSourceFactory = { BasePagingSource(block) },
   )

@@ -41,7 +41,7 @@ constructor(
   val sharedPreferences: SharedPreferencesHelper,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
-  val app: Application
+  val app: Application,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -129,7 +129,6 @@ constructor(
   }
 
   fun onPinChanged(newPin: String) {
-
     if (newPin.length == PIN_INPUT_MAX_THRESHOLD) {
       val pinMatched = newPin.equals(savedPin, false)
       enableSetPin.value = true

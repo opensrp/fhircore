@@ -53,7 +53,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   suspend fun generateCarePlan(
     planDefinitionId: String,
     subject: Resource,
-    data: Bundle? = null
+    data: Bundle? = null,
   ): CarePlan? {
     return generateCarePlan(fhirEngine.get(planDefinitionId), subject, data)
   }
@@ -61,7 +61,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   suspend fun generateCarePlan(
     planDefinition: PlanDefinition,
     subject: Resource,
-    data: Bundle? = null
+    data: Bundle? = null,
   ): CarePlan? {
     val output =
       CarePlan().apply {
@@ -72,16 +72,19 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
     planDefinition.action.forEach { action ->
       val input = Bundle().apply { entry.addAll(data?.entry ?: listOf()) }
 
-      if (action.condition.all {
-          if (it.kind != PlanDefinition.ActionConditionKind.APPLICABILITY)
+      if (
+        action.condition.all {
+          if (it.kind != PlanDefinition.ActionConditionKind.APPLICABILITY) {
             throw UnsupportedOperationException(
-              "PlanDefinition.action.kind=${it.kind} not supported"
+              "PlanDefinition.action.kind=${it.kind} not supported",
             )
+          }
 
-          if (it.expression.language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode())
+          if (it.expression.language != Expression.ExpressionLanguage.TEXT_FHIRPATH.toCode()) {
             throw UnsupportedOperationException(
-              "PlanDefinition.expression.language=${it.expression.language} not supported"
+              "PlanDefinition.expression.language=${it.expression.language} not supported",
             )
+          }
 
           fhirPathEngine.evaluateToBoolean(input, null, subject, it.expression.expression)
         }
@@ -92,7 +95,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
               Parameters.ParametersParameterComponent().apply {
                 this.name = CarePlan.SP_SUBJECT
                 this.resource = subject
-              }
+              },
             )
 
             addParameter(
@@ -100,7 +103,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
                 this.name = PlanDefinition.SP_DEFINITION
                 this.resource =
                   planDefinition.contained.first { it.id == action.definitionCanonicalType.value }
-              }
+              },
             )
           }
 
@@ -109,22 +112,24 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           transformSupportServices.simpleWorkerContext,
           source,
           structureMap,
-          output
+          output,
         )
       }
     }
 
     if (!output.hasActivity()) return null
 
-    return output.also { Timber.d(it.encodeResourceToString()) }.also { careplan ->
-      // save embedded resources inside as independent entries, clear embedded and save careplan
-      val dependents = careplan.contained.map { it.copy() }
+    return output
+      .also { Timber.d(it.encodeResourceToString()) }
+      .also { careplan ->
+        // save embedded resources inside as independent entries, clear embedded and save careplan
+        val dependents = careplan.contained.map { it.copy() }
 
-      careplan.contained.clear()
-      fhirEngine.create(careplan)
+        careplan.contained.clear()
+        fhirEngine.create(careplan)
 
-      dependents.forEach { fhirEngine.create(it) }
-    }
+        dependents.forEach { fhirEngine.create(it) }
+      }
   }
 
   suspend fun completeTask(id: String, encounterStatus: EncounterStatus?) {
@@ -137,9 +142,8 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       update(task)
       if (task.status == Task.TaskStatus.COMPLETED) {
         val carePlans =
-          search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }.map {
-            it.resource
-          }
+          search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }
+            .map { it.resource }
         var carePlanToUpdate: CarePlan? = null
         carePlans.forEach { carePlan ->
           for ((index, value) in carePlan.activity.withIndex()) {
@@ -170,7 +174,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
       EncounterStatus.INPROGRESS,
       EncounterStatus.CANCELLED,
       EncounterStatus.ENTEREDINERROR,
-      EncounterStatus.NULL -> Task.TaskStatus.fromCode(encounterStatus.toCode())
+      EncounterStatus.NULL, -> Task.TaskStatus.fromCode(encounterStatus.toCode())
       else -> Task.TaskStatus.COMPLETED
     }
   }

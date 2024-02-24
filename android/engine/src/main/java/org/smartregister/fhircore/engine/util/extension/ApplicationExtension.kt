@@ -50,15 +50,15 @@ fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<Stri
 
   data.entries.forEach { it.value?.let { v -> json = json.replace(it.key, v) } }
 
-  return if (Resource::class.java.isAssignableFrom(clazz))
+  return if (Resource::class.java.isAssignableFrom(clazz)) {
     FhirContext.forR4Cached().newJsonParser().parseResource(json) as T
-  else Gson().fromJson(json, clazz)
+  } else Gson().fromJson(json, clazz)
 }
 
 suspend fun FhirEngine.searchActivePatients(
   query: String,
   pageNumber: Int,
-  loadAll: Boolean = false
+  loadAll: Boolean = false,
 ) =
   this.search<Patient> {
     filter(Patient.ACTIVE, { value = of(true) })
@@ -68,13 +68,14 @@ suspend fun FhirEngine.searchActivePatients(
         {
           modifier = StringFilterModifier.CONTAINS
           value = query.trim()
-        }
+        },
       )
     }
     sort(Patient.NAME, Order.ASCENDING)
     count =
-      if (loadAll) this@searchActivePatients.countActivePatients().toInt()
-      else PaginationConstant.DEFAULT_PAGE_SIZE
+      if (loadAll) {
+        this@searchActivePatients.countActivePatients().toInt()
+      } else PaginationConstant.DEFAULT_PAGE_SIZE
     from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
   }
 
@@ -83,8 +84,7 @@ suspend fun FhirEngine.countActivePatients(): Long =
 
 suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson>? {
   return try {
-    this@loadRelatedPersons
-      .search<RelatedPerson> {
+    this@loadRelatedPersons.search<RelatedPerson> {
         apply { filter(RelatedPerson.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
       }
       .map { it.resource }
@@ -95,8 +95,7 @@ suspend fun FhirEngine.loadRelatedPersons(patientId: String): List<RelatedPerson
 
 suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immunization>? {
   return try {
-    this@loadPatientImmunizations
-      .search<Immunization> {
+    this@loadPatientImmunizations.search<Immunization> {
         filter(Immunization.PATIENT, { value = "Patient/$patientId" })
         apply { filter(Immunization.PATIENT, { value = "Patient/$patientId" }) }.getQuery()
       }
@@ -110,7 +109,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
   context: Context,
   sharedPreferencesHelper: SharedPreferencesHelper,
   fhirOperator: FhirOperator,
-  resourcesBundlePath: String
+  resourcesBundlePath: String,
 ) =
   try {
     val jsonParser = FhirContext.forR4().newJsonParser()
@@ -127,7 +126,7 @@ suspend fun FhirEngine.loadCqlLibraryBundle(
             create(entry.resource)
             sharedPreferencesHelper.write(
               SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
-              savedResources.plus(",").plus(resourcesBundlePath)
+              savedResources.plus(",").plus(resourcesBundlePath),
             )
           }
         }

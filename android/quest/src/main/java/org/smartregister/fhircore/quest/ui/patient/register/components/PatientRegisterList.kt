@@ -39,7 +39,7 @@ import org.smartregister.fhircore.quest.ui.patient.register.PatientRowClickListe
 fun PatientRegisterList(
   pagingItems: LazyPagingItems<PatientItem>,
   modifier: Modifier = Modifier,
-  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit
+  clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
 ) {
   LazyColumn {
     items(pagingItems, key = { it.id }) {
@@ -83,7 +83,7 @@ fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
             name = "John Doe",
             gender = "M",
             age = "27y",
-            displayAddress = "Nairobi"
+            displayAddress = "Nairobi",
           ),
           PatientItem(
             id = "my-test-id2",
@@ -91,10 +91,10 @@ fun dummyPatientPagingList(): LazyPagingItems<PatientItem> {
             name = "Jane Doe",
             gender = "F",
             age = "20y",
-            displayAddress = "Nairobi"
-          )
-        )
-      )
+            displayAddress = "Nairobi",
+          ),
+        ),
+      ),
     )
   return listFlow.collectAsLazyPagingItems()
 }

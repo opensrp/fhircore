@@ -42,5 +42,5 @@ data class RegisterViewData(
   val showDivider: Boolean = false,
   val showServiceButton: Boolean = true,
   val registerType: KClass<out RegisterData> = RegisterData.DefaultRegisterData::class,
-  val identifier: String = ""
+  val identifier: String = "",
 )

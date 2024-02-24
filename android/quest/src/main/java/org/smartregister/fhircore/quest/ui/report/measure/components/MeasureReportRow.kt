@@ -51,7 +51,7 @@ fun MeasureReportRowPreview() {
       id = "fid",
       title = "4+ ANC Contacts ",
       description = "Pregnant women with at least four ANC Contacts",
-      reportType = "4"
+      reportType = "4",
     )
   MeasureReportRow(measureReportRowData = measureReportRowData, onRowClick = {})
 }
@@ -60,29 +60,29 @@ fun MeasureReportRowPreview() {
 fun MeasureReportRow(
   measureReportRowData: MeasureReportRowData,
   onRowClick: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.clickable { onRowClick() }.fillMaxWidth().height(IntrinsicSize.Min)
+    modifier = modifier.clickable { onRowClick() }.fillMaxWidth().height(IntrinsicSize.Min),
   ) {
     Column(modifier = modifier.padding(16.dp).weight(0.70f)) {
       Text(
         text = measureReportRowData.title,
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
+        modifier = modifier.wrapContentWidth(),
       )
       Spacer(modifier = modifier.height(8.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         Text(
           color = SubtitleTextColor,
           text = measureReportRowData.description,
           fontSize = 14.sp,
-          modifier = modifier.wrapContentWidth()
+          modifier = modifier.wrapContentWidth(),
         )
       }
     }
@@ -90,7 +90,7 @@ fun MeasureReportRow(
       painter = painterResource(id = R.drawable.ic_forward_arrow),
       contentDescription = "",
       colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
-      modifier = Modifier.padding(end = 12.dp)
+      modifier = Modifier.padding(end = 12.dp),
     )
   }
 }

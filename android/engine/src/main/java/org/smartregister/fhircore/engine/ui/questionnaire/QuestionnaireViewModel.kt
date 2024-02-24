@@ -110,7 +110,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
-  var tracer: PerformanceReporter
+  var tracer: PerformanceReporter,
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
@@ -158,7 +158,7 @@ constructor(
   suspend fun getQuestionnaireConfigPair(
     context: Context,
     formName: String,
-    type: QuestionnaireType
+    type: QuestionnaireType,
   ): Pair<QuestionnaireConfig, Questionnaire> {
     return try {
       val config = getQuestionnaireConfig(formName, context)
@@ -172,7 +172,7 @@ constructor(
         QuestionnaireConfig(
           form = questionnaire.name ?: "",
           title = questionnaire.title ?: "",
-          identifier = questionnaire.logicalId
+          identifier = questionnaire.logicalId,
         )
       Pair(questionnaireConfig, questionnaire)
     }
@@ -182,7 +182,7 @@ constructor(
     return kotlin
       .runCatching {
         configurationRegistry.retrieveConfiguration<FormConfiguration>(
-          AppConfigClassification.FORMS
+          AppConfigClassification.FORMS,
         )
       }
       .getOrNull()
@@ -190,14 +190,14 @@ constructor(
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(
-    context: Context
+    context: Context,
   ): List<QuestionnaireConfig>? =
     kotlin
       .runCatching {
         withContext(dispatcherProvider.io()) {
           AssetUtil.decodeAsset<List<QuestionnaireConfig>>(
             fileName = QuestionnaireActivity.FORM_CONFIGURATIONS,
-            context = context
+            context = context,
           )
         }
       }
@@ -216,10 +216,11 @@ constructor(
       val organizationRef =
         Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
-      if (resource is Patient && !resource.hasManagingOrganization())
+      if (resource is Patient && !resource.hasManagingOrganization()) {
         resource.managingOrganization = organizationRef
-      else if (resource is Group && !resource.hasManagingEntity())
+      } else if (resource is Group && !resource.hasManagingEntity()) {
         resource.managingEntity = organizationRef
+      }
     }
   }
 
@@ -227,18 +228,20 @@ constructor(
     practitionerId?.let {
       val practitionerRef = it.asReference(ResourceType.Practitioner)
 
-      if (resource is Encounter)
+      if (resource is Encounter) {
         resource.participant =
           arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef }
+            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
           )
-      else if (resource is Patient)
+      } else if (resource is Patient) {
         if (resource.hasGeneralPractitioner()) {
-          if (!resource.generalPractitioner.contains(practitionerRef))
+          if (!resource.generalPractitioner.contains(practitionerRef)) {
             resource.addGeneralPractitioner(practitionerRef)
+          }
         } else {
           resource.generalPractitioner = arrayListOf(practitionerRef)
         }
+      }
     }
   }
 
@@ -249,7 +252,7 @@ constructor(
           Group.GroupMemberComponent().apply {
             entity =
               Reference().apply { reference = "${ResourceType.Patient.name}/${resource.logicalId}" }
-          }
+          },
         )
       } else {
         this.managingEntity =
@@ -267,7 +270,7 @@ constructor(
     groupResourceId: String? = null,
     questionnaireResponse: QuestionnaireResponse,
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
-    questionnaire: Questionnaire
+    questionnaire: Questionnaire,
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       tracer.startTrace(QUESTIONNAIRE_TRACE)
@@ -284,23 +287,25 @@ constructor(
               appendOrganizationInfo(bundleEntry.resource)
             }
             // if it is new registration set response subject
-            if (resourceId == null)
+            if (resourceId == null) {
               questionnaireResponse.subject = bundleEntry.resource.asReference()
+            }
           }
           if (questionnaireConfig.setPractitionerDetails) {
             appendPractitionerInfo(bundleEntry.resource)
           }
 
-          if (questionnaireType != QuestionnaireType.EDIT &&
+          if (
+            questionnaireType != QuestionnaireType.EDIT &&
               bundleEntry.resource.resourceType.isIn(
                 ResourceType.Patient,
-                ResourceType.RelatedPerson
+                ResourceType.RelatedPerson,
               )
           ) {
             groupResourceId?.let {
               appendPatientsAndRelatedPersonsToGroups(
                 resource = bundleEntry.resource,
-                groupResourceId = it
+                groupResourceId = it,
               )
             }
           }
@@ -312,9 +317,9 @@ constructor(
           // for edit mode replace client and resource subject ids.
           // Ideally ResourceMapper should allow this internally via structure-map
           if (questionnaireType.isEditMode()) {
-            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group))
+            if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
               bundleEntry.resource.id = questionnaireResponse.subject.extractId()
-            else {
+            } else {
               bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
               bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
             }
@@ -323,7 +328,8 @@ constructor(
 
           if (bundleEntry.resource is Encounter) extras.add(bundleEntry.resource)
 
-          if ((bundleEntry.resource is CarePlan || bundleEntry.resource is Patient) &&
+          if (
+            (bundleEntry.resource is CarePlan || bundleEntry.resource is Patient) &&
               bundleEntry.resource.meta.tag.isNotEmpty()
           ) {
             carePlanAndPatientMetaExtraction(bundleEntry.resource)
@@ -332,9 +338,11 @@ constructor(
 
         if (questionnaire.experimental) {
           Timber.w(
-            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+            "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data",
           )
-        } else saveBundleResources(bundle)
+        } else {
+          saveBundleResources(bundle)
+        }
 
         if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           questionnaireResponse.retainMetadata(editQuestionnaireResponse!!)
@@ -366,6 +374,7 @@ constructor(
     try {
       /** Get a FHIR [Resource] in the local storage. */
       var resource = fhirEngine.get(source.resourceType, source.id)
+
       /** Increment [Resource.meta] versionId of [source]. */
       val versionId = resource.meta.versionId.toInt().plus(1).toString()
       /** Append passed [Resource.meta] to the [source]. */
@@ -406,7 +415,7 @@ constructor(
   suspend fun extractCqlOutput(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    bundle: Bundle?
+    bundle: Bundle?,
   ) {
     withContext(Dispatchers.Default) {
       val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
@@ -414,9 +423,11 @@ constructor(
         .cqfLibraryIds()
         .map {
           val patient =
-            if (questionnaireResponse.hasSubject())
+            if (questionnaireResponse.hasSubject()) {
               loadPatient(questionnaireResponse.subject.extractId())
-            else null
+            } else {
+              null
+            }
           libraryEvaluatorProvider.get().runCqlLibrary(it, patient, data, defaultRepository)
         }
         .forEach { output ->
@@ -432,7 +443,7 @@ constructor(
   fun handleQuestionnaireResponseSubject(
     resourceId: String?,
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
   ) {
     val subjectType = questionnaire.subjectType.firstOrNull()?.code ?: ResourceType.Patient.name
     questionnaireResponse.subject =
@@ -445,11 +456,11 @@ constructor(
 
   suspend fun saveQuestionnaireResponse(
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
   ) {
     if (questionnaire.experimental) {
       Timber.w(
-        "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data"
+        "${questionnaire.name}(${questionnaire.logicalId}) is experimental and not save any data",
       )
       return
     }
@@ -463,9 +474,9 @@ constructor(
       questionnaireResponse.authored = Date()
     }
 
-    questionnaire.useContext.filter { it.hasValueCodeableConcept() }.forEach {
-      it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) }
-    }
+    questionnaire.useContext
+      .filter { it.hasValueCodeableConcept() }
+      .forEach { it.valueCodeableConcept.coding.forEach { questionnaireResponse.meta.addTag(it) } }
 
     defaultRepository.addOrUpdate(true, questionnaireResponse)
   }
@@ -473,17 +484,16 @@ constructor(
   suspend fun performExtraction(
     context: Context,
     questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
   ): Bundle {
-
     return ResourceMapper.extract(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       StructureMapExtractionContext(
         context = context,
         transformSupportServices = transformSupportServices,
-        structureMapProvider = retrieveStructureMapProvider()
-      )
+        structureMapProvider = retrieveStructureMapProvider(),
+      ),
     )
   }
 
@@ -495,10 +505,9 @@ constructor(
 
   fun retrieveStructureMapProvider(): (suspend (String, IWorkerContext) -> StructureMap?) {
     if (structureMapProvider == null) {
-      structureMapProvider =
-        { structureMapUrl: String, _: IWorkerContext ->
-          fetchStructureMap(structureMapUrl)
-        }
+      structureMapProvider = { structureMapUrl: String, _: IWorkerContext ->
+        fetchStructureMap(structureMapUrl)
+      }
     }
 
     return structureMapProvider!!
@@ -531,8 +540,8 @@ constructor(
           it.hasStart() &&
           it.start.after(
             Date.from(
-              LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30)
-            )
+              LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().minusSeconds(30),
+            ),
           )
       }
   }
@@ -545,7 +554,7 @@ constructor(
           filter(
             CarePlan.STATUS,
             { value = of(CarePlan.CarePlanStatus.COMPLETED.toCoding()) },
-            operation = Operation.OR
+            operation = Operation.OR,
           )
         }
         .map { it.resource }
@@ -595,20 +604,20 @@ constructor(
             {
               value =
                 of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "225368008", null)))
-            }
+            },
           )
           filter(
             Task.STATUS,
             { value = of(Task.TaskStatus.READY.toCode()) },
             { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-            operation = Operation.OR
+            operation = Operation.OR,
           )
           filter(
             Task.PERIOD,
             {
               value = of(DateTimeType.now())
               prefix = ParamPrefixEnum.GREATERTHAN
-            }
+            },
           )
         }
         .map { it.resource }
@@ -635,7 +644,7 @@ constructor(
 
   fun getPopulationResourcesFromIntent(
     intent: Intent,
-    questionnaireLogicalId: String
+    questionnaireLogicalId: String,
   ): List<Resource> {
     val resourcesList = mutableListOf<Resource>()
 
@@ -657,7 +666,7 @@ constructor(
 
   open suspend fun getPopulationResources(
     intent: Intent,
-    questionnaireLogicalId: String
+    questionnaireLogicalId: String,
   ): Array<Resource> {
     val resourcesList =
       getPopulationResourcesFromIntent(intent, questionnaireLogicalId).toMutableList()
@@ -671,13 +680,12 @@ constructor(
                 value = logicalId
                 use = Identifier.IdentifierUse.OFFICIAL
                 system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-              }
+              },
             )
         }
 
         resourcesList.add(this)
-      }
-        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+      } ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
       val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
       if (bundleIndex != -1) {
@@ -697,7 +705,7 @@ constructor(
           currentBundle.addEntry(
             Bundle.BundleEntryComponent().setResource(bundle).apply {
               id = TracingHelpers.tracingBundleId
-            }
+            },
           )
         }
 
@@ -728,7 +736,7 @@ constructor(
 
   suspend fun generateQuestionnaireResponse(
     questionnaire: Questionnaire,
-    intent: Intent
+    intent: Intent,
   ): QuestionnaireResponse {
     val resources = getPopulationResources(intent, questionnaire.logicalId)
     val questResponse = ResourceMapper.populate(questionnaire, *resources)

@@ -59,7 +59,7 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
       val encounter = patientRepository.loadEncounter(encounterId)
       val config =
         patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
-          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW
+          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW,
         )
 
       val dataItem = DetailsViewItem()
@@ -95,14 +95,14 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
    * scale this when needed. Has data sorted by date in descending order
    */
   suspend fun getDataMap(
-    encounter: Encounter
+    encounter: Encounter,
   ): MutableMap<Enumerations.ResourceType, List<Resource>> {
     return mutableMapOf(
       Enumerations.ResourceType.PATIENT to listOf(getPatient(encounter)),
       Enumerations.ResourceType.CONDITION to patientRepository.getCondition(encounter, null),
       Enumerations.ResourceType.OBSERVATION to patientRepository.getObservation(encounter, null),
       Enumerations.ResourceType.MEDICATIONREQUEST to
-        patientRepository.getMedicationRequest(encounter, null)
+        patientRepository.getMedicationRequest(encounter, null),
     )
   }
 

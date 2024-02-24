@@ -142,7 +142,7 @@ fun QuestionnaireResponse.generateMissingItems(questionnaire: Questionnaire) =
   questionnaire.item.generateMissingItems(this.item)
 
 fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
-  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  qrItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
 ) {
   this.forEachIndexed { index, qItem ->
     // generate complete hierarchy if response item missing otherwise check for nested items
@@ -151,6 +151,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
     } else qItem.item.generateMissingItems(qrItems[index].item)
   }
 }
+
 /**
  * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
  * [readOnly] is true. This also generates the correct FHIRPath population expression for each
@@ -165,12 +166,12 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
       item.readOnly = readOnly
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').answer.item",
-        readOnly
+        readOnly,
       )
     } else {
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').item",
-        readOnly
+        readOnly,
       )
     }
   }
@@ -195,8 +196,9 @@ fun QuestionnaireResponse.retainMetadata(questionnaireResponse: QuestionnaireRes
 }
 
 fun QuestionnaireResponse.assertSubject() {
-  if (!this.hasSubject() || !this.subject.hasReference())
+  if (!this.hasSubject() || !this.subject.hasReference()) {
     throw IllegalStateException("QuestionnaireResponse must have a subject reference assigned")
+  }
 }
 
 fun QuestionnaireResponse.getEncounterId(): String? {
@@ -282,10 +284,8 @@ fun ArrayList<Resource>.asCarePlanDomainResource(): ArrayList<CarePlan> {
  * A function that extracts only the UUID part of a resource logicalId.
  *
  * Examples:
- *
  * 1. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/2" returns
- * "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
- *
+ *    "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")

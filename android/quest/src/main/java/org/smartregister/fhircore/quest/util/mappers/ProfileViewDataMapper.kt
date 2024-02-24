@@ -62,7 +62,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           sex = inputModel.gender.translateGender(context),
           age = inputModel.age,
           dob = inputModel.birthdate.formatDob(),
-          identifier = inputModel.identifier
+          identifier = inputModel.identifier,
         )
       is ProfileData.HivProfileData ->
         ProfileViewData.PatientProfileViewData(
@@ -99,17 +99,19 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 // it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
-                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
+                  if (it.status == Task.TaskStatus.COMPLETED) {
+                    Icons.Filled.Check
+                  } else Icons.Filled.Add,
                 actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
+                  if (it.status == Task.TaskStatus.COMPLETED) {
+                    SuccessColor
+                  } else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
-                subtitleStatus = it.status.name
+                subtitleStatus = it.status.name,
               )
             },
-          practitioners = inputModel.practitioners
+          practitioners = inputModel.practitioners,
         )
       is ProfileData.DefaultProfileData ->
         ProfileViewData.PatientProfileViewData(
@@ -124,19 +126,23 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
               PatientProfileRowItem(
                 id = it.logicalId,
                 actionFormId =
-                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                  if (it.status == Task.TaskStatus.READY && it.hasReasonReference()) {
                     it.reasonReference.extractId()
-                  else null,
+                  } else {
+                    null
+                  },
                 title = it.description,
                 subtitle =
                   context.getString(R.string.due_on, it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
-                  if (it.status == Task.TaskStatus.COMPLETED) Icons.Filled.Check
-                  else Icons.Filled.Add,
+                  if (it.status == Task.TaskStatus.COMPLETED) {
+                    Icons.Filled.Check
+                  } else Icons.Filled.Add,
                 actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) SuccessColor
-                  else it.status.retrieveColorCode(),
+                  if (it.status == Task.TaskStatus.COMPLETED) {
+                    SuccessColor
+                  } else it.status.retrieveColorCode(),
                 actionButtonColor = it.status.retrieveColorCode(),
                 actionButtonText = it.description,
               )
@@ -157,8 +163,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                 gender = memberProfileData.gender.translateGender(context),
                 name = memberProfileData.name,
                 memberTasks =
-                  memberProfileData
-                    .tasks
+                  memberProfileData.tasks
                     .filter { it.status == Task.TaskStatus.READY }
                     .take(DEFAULT_TASKS_COUNT)
                     .map {
@@ -168,13 +173,15 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
                         taskStatus = it.status,
                         colorCode = it.status.retrieveColorCode(),
                         taskFormId =
-                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference())
+                          if (it.status == Task.TaskStatus.READY && it.hasReasonReference()) {
                             it.reasonReference.extractId()
-                          else null
+                          } else {
+                            null
+                          },
                       )
-                    }
+                    },
               )
-            }
+            },
         )
       is ProfileData.TracingProfileData ->
         ProfileViewData.TracingProfileData(
@@ -196,7 +203,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           guardians = inputModel.guardians,
           practitioners = inputModel.practitioners,
           conditions = inputModel.conditions,
-          tracingTasks = inputModel.tasks
+          tracingTasks = inputModel.tasks,
         )
     }
   }
@@ -213,8 +220,9 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
   fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
       HealthStatus.EXPOSED_INFANT -> "HCC Number"
-      HealthStatus.CHILD_CONTACT, HealthStatus.SEXUAL_CONTACT, HealthStatus.COMMUNITY_POSITIVE ->
-        "HTS Number"
+      HealthStatus.CHILD_CONTACT,
+      HealthStatus.SEXUAL_CONTACT,
+      HealthStatus.COMMUNITY_POSITIVE, -> "HTS Number"
       else -> "ART Number"
     }
 

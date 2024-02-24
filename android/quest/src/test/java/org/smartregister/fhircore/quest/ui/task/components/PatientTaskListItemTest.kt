@@ -40,7 +40,7 @@ class PatientTaskListItemTest : RobolectricTest() {
           // Imitate row click action by doing nothing
           return { _: PatientTaskListenerIntent, _: PatientTaskItem -> }
         }
-      }
+      },
     )
 
   @Test
@@ -53,14 +53,14 @@ class PatientTaskListItemTest : RobolectricTest() {
         birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
         address = "Nairobi",
         description = "Sick Visit",
-        overdue = true
+        overdue = true,
       )
     composeRule.setContent {
       PatientTaskRow(
         patientItem = patientTaskItem,
         useLabel = true,
         clickListener = listenerObjectSpy.onRowClick(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
@@ -90,14 +90,14 @@ class PatientTaskListItemTest : RobolectricTest() {
         birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
         address = "Nairobi",
         description = "Sick Visit",
-        overdue = false
+        overdue = false,
       )
     composeRule.setContent {
       PatientTaskRow(
         patientItem = patientTaskItem,
         useLabel = true,
         clickListener = listenerObjectSpy.onRowClick(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
@@ -125,14 +125,14 @@ class PatientTaskListItemTest : RobolectricTest() {
         birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
         address = "Nairobi",
         description = "Sick Visit",
-        overdue = true
+        overdue = true,
       )
     composeRule.setContent {
       PatientTaskRow(
         patientItem = patientTaskItem,
         useLabel = false,
         clickListener = listenerObjectSpy.onRowClick(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
@@ -166,12 +166,12 @@ class PatientTaskListItemTest : RobolectricTest() {
             birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
-            overdue = false
+            overdue = false,
           ),
         useLabel = false,
         displaySelectContentOnly = true,
         clickListener = listenerObjectSpy.onRowClick(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 

@@ -62,7 +62,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 @Composable
 fun MeasureReportResultScreen(
   navController: NavController,
-  measureReportViewModel: MeasureReportViewModel
+  measureReportViewModel: MeasureReportViewModel,
 ) {
   val uiState = measureReportViewModel.reportTypeSelectorUiState.value
 
@@ -77,7 +77,7 @@ fun MeasureReportResultScreen(
     startDate = uiState.startDate,
     measureReportIndividualResult = measureReportViewModel.measureReportIndividualResult.value,
     measureReportPopulationResult = measureReportViewModel.measureReportPopulationResults.value,
-    patientViewData = uiState.patientViewData
+    patientViewData = uiState.patientViewData,
   )
 }
 
@@ -91,7 +91,7 @@ fun MeasureReportResultPage(
   patientViewData: MeasureReportPatientViewData?,
   measureReportIndividualResult: MeasureReportIndividualResult?,
   measureReportPopulationResult: List<MeasureReportPopulationResult>?,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Scaffold(
     topBar = {
@@ -103,13 +103,13 @@ fun MeasureReportResultPage(
           }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) {
     Column(
       modifier =
-        modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxSize()
+        modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxSize(),
     ) {
       Column(modifier = modifier.padding(16.dp)) {
         Box(
@@ -119,21 +119,22 @@ fun MeasureReportResultPage(
               .background(color = colorResource(id = R.color.light_gray_background))
               .padding(12.dp)
               .wrapContentWidth(),
-          contentAlignment = Alignment.Center
+          contentAlignment = Alignment.Center,
         ) {
-          if (measureReportRowData != null)
+          if (measureReportRowData != null) {
             Text(
               text = measureReportRowData.description,
               textAlign = TextAlign.Start,
-              fontSize = 16.sp
+              fontSize = 16.sp,
             )
+          }
         }
         Spacer(modifier = modifier.height(16.dp))
 
         // Display date range e.g. 1 Apr, 2020 - 28 Apr, 2022
         Row(
           horizontalArrangement = Arrangement.SpaceAround,
-          verticalAlignment = Alignment.CenterVertically
+          verticalAlignment = Alignment.CenterVertically,
         ) {
           DateRangeItem(text = startDate, showBackground = false)
           Text("-", fontSize = 18.sp, modifier = modifier.padding(horizontal = 8.dp))
@@ -147,7 +148,7 @@ fun MeasureReportResultPage(
             patientViewData = patientViewData,
             isMatchedIndicator = measureReportIndividualResult.isMatchedIndicator,
             indicatorStatus = measureReportIndividualResult.status,
-            indicatorDescription = measureReportIndividualResult.description
+            indicatorDescription = measureReportIndividualResult.description,
           )
         }
         if (measureReportPopulationResult != null) {
@@ -168,7 +169,7 @@ private fun MeasureReportResultScreenForIndividualPreview() {
     measureReportRowData =
       MeasureReportRowData(
         title = "First ANC",
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview",
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
@@ -177,11 +178,11 @@ private fun MeasureReportResultScreenForIndividualPreview() {
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",
-        logicalId = "1920192"
+        logicalId = "1920192",
       ),
     measureReportIndividualResult =
       MeasureReportIndividualResult(status = "True", isMatchedIndicator = true, description = ""),
-    null
+    null,
   )
 }
 
@@ -198,7 +199,7 @@ private fun MeasureReportResultScreenForPopulationPreview() {
     navController = rememberNavController(),
     measureReportRowData =
       MeasureReportRowData(
-        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview"
+        description = "Description For Preview, i.e 4+ Anc women etc, 2 lines text in preview",
       ),
     startDate = "25 Nov, 2021",
     endDate = "29 Nov, 2021",
@@ -207,19 +208,19 @@ private fun MeasureReportResultScreenForPopulationPreview() {
         name = "Jacky Coughlin",
         gender = "F",
         age = "27",
-        logicalId = "1902912"
+        logicalId = "1902912",
       ),
     measureReportIndividualResult = null,
     measureReportPopulationResult =
       listOf(
         MeasureReportPopulationResult(
           title = "Age Range",
-          listOf(testResultItem1, testResultItem2)
+          listOf(testResultItem1, testResultItem2),
         ),
         MeasureReportPopulationResult(
           title = "Education Level",
-          listOf(testResultItem1, testResultItem2)
-        )
-      )
+          listOf(testResultItem1, testResultItem2),
+        ),
+      ),
   )
 }

@@ -52,7 +52,7 @@ constructor(
 
   private val syncConfig by lazy {
     configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-      AppConfigClassification.SYNC
+      AppConfigClassification.SYNC,
     )
   }
 
@@ -75,7 +75,7 @@ constructor(
           super.onStop(owner)
           deregisterSyncListener(onSyncListener)
         }
-      }
+      },
     )
   }
 
@@ -85,8 +85,9 @@ constructor(
    */
   fun deregisterSyncListener(onSyncListener: OnSyncListener) {
     val removed = _onSyncListeners.removeIf { it.get() == onSyncListener }
-    if (removed)
+    if (removed) {
       Timber.w("De-registered ${onSyncListener::class.simpleName} from receiving sync state...")
+    }
   }
 
   /** Retrieve registry sync params */
@@ -97,52 +98,55 @@ constructor(
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
+        AppConfigClassification.APPLICATION,
       )
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name // e.g. organization
-      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-      val paramExpression = sp.expression
-      val expressionValue =
-        when (paramName) {
-          ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-          ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
-          ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.count
-          else -> null
-        }?.let {
-          // replace the evaluated value into expression for complex expressions
-          // e.g. #organization -> 123
-          // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
-        }
+    syncConfig.resource.parameter
+      .map { it.resource as SearchParameter }
+      .forEach { sp ->
+        val paramName = sp.name // e.g. organization
+        val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
+        val paramExpression = sp.expression
+        val expressionValue =
+          when (paramName) {
+            ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
+            ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+            ConfigurationRegistry.ID -> paramExpression
+            ConfigurationRegistry.COUNT -> appConfig.count
+            else -> null
+          }?.let {
+            // replace the evaluated value into expression for complex expressions
+            // e.g. #organization -> 123
+            // e.g. patient.organization eq #organization -> patient.organization eq 123
+            paramExpression.replace(paramLiteral, it)
+          }
 
-      // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
-      sp.base.forEach { base ->
-        val resourceType = ResourceType.fromCode(base.code)
-        val pair = pairs.find { it.first == resourceType }
-        if (pair == null) {
-          pairs.add(
-            Pair(
-              resourceType,
-              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
+        // for each entity in base create and add param map
+        // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
+        // ],..]
+        sp.base.forEach { base ->
+          val resourceType = ResourceType.fromCode(base.code)
+          val pair = pairs.find { it.first == resourceType }
+          if (pair == null) {
+            pairs.add(
+              Pair(
+                resourceType,
+                expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf(),
+              ),
             )
-          )
-        } else {
-          expressionValue?.let {
-            // add another parameter if there is a matching resource type
-            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
-            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-            val index = pairs.indexOfFirst { it.first == resourceType }
-            pairs.set(index, Pair(resourceType, updatedPair))
+          } else {
+            expressionValue?.let {
+              // add another parameter if there is a matching resource type
+              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
+              val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+              val index = pairs.indexOfFirst { it.first == resourceType }
+              pairs.set(index, Pair(resourceType, updatedPair))
+            }
           }
         }
       }
-    }
 
     Timber.i("SYNC CONFIG $pairs")
 

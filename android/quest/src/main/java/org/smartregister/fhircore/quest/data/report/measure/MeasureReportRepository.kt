@@ -36,7 +36,7 @@ constructor(
   val fhirEngine: FhirEngine,
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
-  val ancPatientRegisterDao: AncPatientRegisterDao
+  val ancPatientRegisterDao: AncPatientRegisterDao,
 ) : PagingSource<Int, MeasureReportRowData>() {
 
   override fun getRefreshKey(state: PagingState<Int, MeasureReportRowData>): Int? {
@@ -59,7 +59,7 @@ constructor(
     return ancPatientRegisterDao.loadRegisterData(
       currentPage = currentPage,
       loadAll = true,
-      AppFeature.PatientManagement.name
+      AppFeature.PatientManagement.name,
     )
   }
 

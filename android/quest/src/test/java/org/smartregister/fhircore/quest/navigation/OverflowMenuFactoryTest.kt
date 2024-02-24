@@ -94,7 +94,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
 
     val uiProfileBiologicalParentContact =
       overflowMenuFactory.retrieveOverflowMenuItems(
-        OverflowMenuHost.BIOLOGICAL_PARENT_CONTACT_PROFILE
+        OverflowMenuHost.BIOLOGICAL_PARENT_CONTACT_PROFILE,
       )
     Assert.assertNotNull(uiProfileBiologicalParentContact)
     Assert.assertEquals(5, uiProfileBiologicalParentContact.size)
@@ -103,7 +103,8 @@ class OverflowMenuFactoryTest : RobolectricTest() {
   @Test
   fun `client_visit menu items should be hidden for new diagnosed and art clients`() {
     val newlyDiagnosedClientVisitMenuItem =
-      overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
+      overflowMenuFactory
+        .retrieveOverflowMenuItems(OverflowMenuHost.NEWLY_DIAGNOSED_PROFILE)
         .first { it.id == R.id.client_visit }
     val artClientClientVisitMenuItem =
       overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.ART_CLIENT_PROFILE).first {
@@ -121,7 +122,7 @@ class OverflowMenuFactoryTest : RobolectricTest() {
         .first()
     Assert.assertEquals(
       OverflowMenuItem(R.id.client_visit, R.string.client_visit).apply { hidden = true },
-      firstMenuItem
+      firstMenuItem,
     )
   }
 

@@ -27,5 +27,5 @@ enum class HealthModule {
   HOME_TRACING,
   PHONE_TRACING,
   APPOINTMENT,
-  DEFAULT
+  DEFAULT,
 }

@@ -66,8 +66,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelHiv() {
     val dto = buildProfileData(HealthModule.HIV)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.PatientProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto)
+        as ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -87,8 +87,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelHomeTracing() {
     val dto = buildProfileData(HealthModule.HOME_TRACING)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.PatientProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto)
+        as ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -103,8 +103,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelAnc() {
     val dto = buildProfileData(HealthModule.ANC)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.PatientProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto)
+        as ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -121,8 +121,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelFamily() {
     val dto = buildProfileData(HealthModule.FAMILY)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.FamilyProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto)
+        as ProfileViewData.FamilyProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName Family", name)
@@ -136,8 +136,8 @@ class ProfileViewDataMapperTest : RobolectricTest() {
   fun testMapToDomainModelDefault() {
     val dto = buildProfileData(HealthModule.DEFAULT)
     val profileViewDataHiv =
-      profileViewDataMapper.transformInputToOutputModel(dto) as
-        ProfileViewData.PatientProfileViewData
+      profileViewDataMapper.transformInputToOutputModel(dto)
+        as ProfileViewData.PatientProfileViewData
     with(profileViewDataHiv) {
       Assert.assertEquals("logicalId", logicalId)
       Assert.assertEquals("testName", name)
@@ -178,9 +178,10 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT,
           services = buildCarePlanServices(),
           tasks = emptyList(),
-          showIdentifierInProfile = true
+          showIdentifierInProfile = true,
         )
-      HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
+      HealthModule.HOME_TRACING,
+      HealthModule.PHONE_TRACING, ->
         ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
@@ -188,7 +189,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
         )
       HealthModule.APPOINTMENT ->
         ProfileData.DefaultProfileData(
@@ -198,7 +199,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(
@@ -214,7 +215,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
       HealthModule.FAMILY ->
         ProfileData.FamilyProfileData(
@@ -225,7 +226,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.FAMILY_PLANNING ->
         ProfileData.FamilyProfileData(
@@ -236,7 +237,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.RDT ->
         ProfileData.FamilyProfileData(
@@ -247,7 +248,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.PNC ->
         ProfileData.FamilyProfileData(
@@ -258,7 +259,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.CHILD ->
         ProfileData.AncProfileData(
@@ -274,7 +275,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
       HealthModule.DEFAULT ->
         ProfileData.DefaultProfileData(
@@ -289,7 +290,7 @@ class ProfileViewDataMapperTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
     }
   }

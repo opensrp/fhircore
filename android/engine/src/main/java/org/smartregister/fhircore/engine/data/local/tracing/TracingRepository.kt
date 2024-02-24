@@ -44,7 +44,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
   suspend fun getTracingHistory(
     currentPage: Int,
     loadAll: Boolean,
-    patientId: String
+    patientId: String,
   ): List<TracingHistory> {
     val list =
       fhirEngine.search<ListResource> {
@@ -54,17 +54,19 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return list.map { it.resource }.map {
-      val data = getTracingHistoryFromList(it)
+    return list
+      .map { it.resource }
+      .map {
+        val data = getTracingHistoryFromList(it)
 
-      TracingHistory(
-        historyId = data.historyId,
-        startDate = data.startDate,
-        endDate = data.endDate,
-        numberOfAttempts = data.numberOfAttempts,
-        isActive = data.isActive
-      )
-    }
+        TracingHistory(
+          historyId = data.historyId,
+          startDate = data.startDate,
+          endDate = data.endDate,
+          numberOfAttempts = data.numberOfAttempts,
+          isActive = data.isActive,
+        )
+      }
   }
 
   suspend fun getTracingOutcomes(currentPage: Int, historyId: String): List<TracingOutcome> {
@@ -92,7 +94,9 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         val fromIndex: Int = ((currentPage + 1) - 1) * pageSize
         if (size <= fromIndex) {
           mutableListOf()
-        } else subList(fromIndex, (fromIndex + pageSize).coerceAtMost(this.size))
+        } else {
+          subList(fromIndex, (fromIndex + pageSize).coerceAtMost(this.size))
+        }
       }
 
     var phoneTracingCounter = 1
@@ -153,7 +157,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
             value =
               of(CodeableConcept(Coding("https://d-tree.org", "tracing-outcome-unconducted", "")))
           },
-          operation = Operation.OR
+          operation = Operation.OR,
         )
       }
     outcomeObs
@@ -182,9 +186,9 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
                   Coding(
                     "https://d-tree.org",
                     "phone-tracing-outcome-date-of-agreed-appointment",
-                    ""
-                  )
-                )
+                    "",
+                  ),
+                ),
               )
           },
           {
@@ -194,12 +198,12 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
                   Coding(
                     "https://d-tree.org",
                     "home-tracing-outcome-date-of-agreed-appointment",
-                    ""
-                  )
-                )
+                    "",
+                  ),
+                ),
               )
           },
-          operation = Operation.OR
+          operation = Operation.OR,
         )
       }
     dateObs
@@ -245,7 +249,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         lastAttempt = null,
         numberOfAttempts = 0,
         outcome = "",
-        reasons = listOf()
+        reasons = listOf(),
       )
   }
 
@@ -256,14 +260,13 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         lastAttempt = null,
         numberOfAttempts = 0,
         outcome = "",
-        reasons = listOf()
+        reasons = listOf(),
       )
   }
 
   private suspend fun toTracingAttempt(list: ListResource): TracingAttempt {
     var lastAttempt: Encounter? = null
-    list
-      .entry
+    list.entry
       .map { it.item }
       .filter { it.referenceElement.resourceType == ResourceType.Encounter.name }
       .forEach { ref ->
@@ -289,8 +292,8 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
                     Coding().apply {
                       system = "https://d-tree.org"
                       code = "tracing-outcome-conducted"
-                    }
-                  )
+                    },
+                  ),
                 )
             },
             {
@@ -300,11 +303,11 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
                     Coding().apply {
                       system = "https://d-tree.org"
                       code = "tracing-outcome-unconducted"
-                    }
-                  )
+                    },
+                  ),
                 )
             },
-            operation = Operation.OR
+            operation = Operation.OR,
           )
           count = 1
         }
@@ -315,21 +318,19 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
         ?.map { it.resource }
         ?.firstOrNull { it.hasValueCodeableConcept() }
         ?.valueCodeableConcept
-        ?.text
-        ?: ""
+        ?.text ?: ""
 
     val attempts =
-      list.orderedBy.coding.filter { coding -> coding.code.all { it.isDigit() } }.maxOfOrNull {
-        it.code.toInt()
-      }
-        ?: list.title.substringAfterLast("_").toIntOrNull() ?: 0
+      list.orderedBy.coding
+        .filter { coding -> coding.code.all { it.isDigit() } }
+        .maxOfOrNull { it.code.toInt() } ?: list.title.substringAfterLast("_").toIntOrNull() ?: 0
 
     return TracingAttempt(
       numberOfAttempts = attempts,
       lastAttempt = lastAttempt?.period?.start,
       outcome = outcome,
       reasons = listOf(),
-      historyId = list.logicalId
+      historyId = list.logicalId,
     )
   }
 
@@ -349,7 +350,6 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
           resource.reasonCode?.codingFirstRep?.display?.let { reasons.add(it) }
           tasks.add(resource)
         } else if (resource is Encounter) {
-
           if (lastAttempt == null) {
             lastAttempt = resource
           } else if (lastAttempt?.period?.start != null) {

@@ -51,7 +51,9 @@ class ListDataDetailViewModelTest : RobolectricTest() {
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   @BindValue val patientRepository: PatientRepository = mockk()
+
   @BindValue val defaultRepository: DefaultRepository = mockk()
+
   @BindValue val libraryEvaluator: LibraryEvaluator = spyk()
 
   private val patientId = "5583145"
@@ -70,7 +72,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         patientItemMapper = patientItemMapper,
         libraryEvaluatorProvider = { libraryEvaluator },
-        fhirEngine = fhirEngine
+        fhirEngine = fhirEngine,
       )
   }
 
@@ -78,7 +80,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
   fun testGetDemographicsShouldFetchPatient() {
     listDataDetailViewModel.getDemographicsWithAdditionalData(
       patientId,
-      mockk { every { valuePrefix } returns "" }
+      mockk { every { valuePrefix } returns "" },
     )
     val patient = listDataDetailViewModel.patientItem.value
     Assert.assertNotNull(patient)
@@ -121,11 +123,11 @@ class ListDataDetailViewModelTest : RobolectricTest() {
     Assert.assertEquals(2, listDataDetailViewModel.questionnaireConfigs.value!!.size)
     Assert.assertEquals(
       "12345",
-      listDataDetailViewModel.questionnaireConfigs.value!!.first().identifier
+      listDataDetailViewModel.questionnaireConfigs.value!!.first().identifier,
     )
     Assert.assertEquals(
       "67890",
-      listDataDetailViewModel.questionnaireConfigs.value!!.last().identifier
+      listDataDetailViewModel.questionnaireConfigs.value!!.last().identifier,
     )
   }
 
@@ -138,8 +140,8 @@ class ListDataDetailViewModelTest : RobolectricTest() {
             Questionnaire().apply {
               name = "Sample name"
               title = "Sample title"
-            }
-          )
+            },
+          ),
       )
 
     Assert.assertEquals("Sample name", result)
@@ -156,8 +158,8 @@ class ListDataDetailViewModelTest : RobolectricTest() {
             Questionnaire().apply {
               name = null
               title = "Sample title"
-            }
-          )
+            },
+          ),
       )
 
     Assert.assertEquals("Sample title", result)
@@ -175,8 +177,8 @@ class ListDataDetailViewModelTest : RobolectricTest() {
               id = "1234"
               name = null
               title = null
-            }
-          )
+            },
+          ),
       )
 
     Assert.assertEquals("1234", result)
@@ -193,7 +195,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili"))
-              }
+              },
             )
           }
 
@@ -204,7 +206,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili2"))
-              }
+              },
             )
           }
       }
@@ -212,13 +214,13 @@ class ListDataDetailViewModelTest : RobolectricTest() {
     Locale.setDefault(Locale.forLanguageTag("en"))
     Assert.assertEquals(
       "Registration",
-      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire)),
     )
 
     Locale.setDefault(Locale.forLanguageTag("sw"))
     Assert.assertEquals(
       "Sajili",
-      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire)),
     )
   }
 
@@ -233,7 +235,7 @@ class ListDataDetailViewModelTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili"))
-              }
+              },
             )
           }
       }
@@ -241,13 +243,13 @@ class ListDataDetailViewModelTest : RobolectricTest() {
     Locale.setDefault(Locale.forLanguageTag("en"))
     Assert.assertEquals(
       "Registration",
-      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire)),
     )
 
     Locale.setDefault(Locale.forLanguageTag("sw"))
     Assert.assertEquals(
       "Sajili",
-      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire))
+      listDataDetailViewModel.fetchResultItemLabel(Pair(QuestionnaireResponse(), questionnaire)),
     )
   }
 }

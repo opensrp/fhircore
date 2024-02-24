@@ -65,7 +65,7 @@ sealed class ProfileViewData(
     val addressPhysicalLocator: String = "",
     val phoneContacts: List<String> = emptyList(),
     val observations: List<Observation> = emptyList(),
-    val practitioners: List<Practitioner> = emptyList()
+    val practitioners: List<Practitioner> = emptyList(),
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
       carePlans.isNotEmpty() &&
@@ -90,7 +90,7 @@ sealed class ProfileViewData(
     override val name: String = "",
     val address: String = "",
     val age: String = "",
-    val familyMemberViewStates: List<FamilyMemberViewState> = emptyList()
+    val familyMemberViewStates: List<FamilyMemberViewState> = emptyList(),
   ) : ProfileViewData(logicalId = logicalId, name = name)
 
   data class TracingProfileData(

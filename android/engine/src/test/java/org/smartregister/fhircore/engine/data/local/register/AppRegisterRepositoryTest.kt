@@ -68,9 +68,12 @@ class AppRegisterRepositoryTest : RobolectricTest() {
   private val dispatcherProvider: DefaultDispatcherProvider = mockk()
   private val registerDaoFactory: RegisterDaoFactory = mockk()
   private val tracer: PerformanceReporter = FakePerformanceReporter()
+
   @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @Inject lateinit var configService: ConfigService
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -82,7 +85,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
         configurationRegistry,
         registerDaoFactory,
         configService,
-        tracer
+        tracer,
       )
     mockkConstructor(DefaultRepository::class)
     mockkStatic("kotlinx.coroutines.DispatchersKt")
@@ -210,14 +213,14 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       false,
       null,
       healthModule,
-      AppointmentRegisterFilter(today, true, null, null)
+      AppointmentRegisterFilter(today, true, null, null),
     )
     coVerify {
       appointmentRegisterDao.loadRegisterFiltered(
         1,
         false,
         null,
-        AppointmentRegisterFilter(today, true, null, null)
+        AppointmentRegisterFilter(today, true, null, null),
       )
     }
   }
@@ -238,14 +241,14 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       false,
       null,
       healthModule,
-      TracingRegisterFilter(true, null, null, null)
+      TracingRegisterFilter(true, null, null, null),
     )
     coVerify {
       phoneTracingRegisterDao.loadRegisterFiltered(
         1,
         false,
         null,
-        TracingRegisterFilter(true, null, null, null)
+        TracingRegisterFilter(true, null, null, null),
       )
     }
   }
@@ -265,7 +268,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       repository.loadRegisterFiltered(
         0,
         healthModule = healthModule,
-        filters = AppointmentRegisterFilter(today, true, null, null)
+        filters = AppointmentRegisterFilter(today, true, null, null),
       )
     Assert.assertTrue(data.isEmpty())
     coVerify(exactly = 0) {
@@ -273,7 +276,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
         1,
         false,
         null,
-        AppointmentRegisterFilter(today, true, null, null)
+        AppointmentRegisterFilter(today, true, null, null),
       )
     }
   }
@@ -291,12 +294,12 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     repository.countRegisterFiltered(
       null,
       healthModule,
-      TracingRegisterFilter(true, null, null, null)
+      TracingRegisterFilter(true, null, null, null),
     )
     coVerify {
       homeTracingRegisterDao.countRegisterFiltered(
         null,
-        TracingRegisterFilter(true, null, null, null)
+        TracingRegisterFilter(true, null, null, null),
       )
     }
   }
@@ -315,12 +318,12 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     repository.countRegisterFiltered(
       null,
       healthModule,
-      AppointmentRegisterFilter(today, true, null, null)
+      AppointmentRegisterFilter(today, true, null, null),
     )
     coVerify {
       appointmentRegisterDao.countRegisterFiltered(
         null,
-        AppointmentRegisterFilter(today, true, null, null)
+        AppointmentRegisterFilter(today, true, null, null),
       )
     }
   }

@@ -69,7 +69,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DefaultDispatcherProvider,
   val measureReportRepository: MeasureReportRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
 ) : ViewModel() {
 
   private val dateRangeDateFormatter = SimpleDateFormat(DATE_RANGE_DATE_FORMAT, Locale.getDefault())
@@ -102,7 +102,7 @@ constructor(
   private val loggedInPractitioner by lazy {
     sharedPreferencesHelper.read<PractitionerDetails>(
       key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      decodeWithGson = true
+      decodeWithGson = true,
     )
   }
 
@@ -113,7 +113,7 @@ constructor(
   private fun defaultDateRangeState() =
     androidx.core.util.Pair(
       MaterialDatePicker.thisMonthInUtcMilliseconds(),
-      MaterialDatePicker.todayInUtcMilliseconds()
+      MaterialDatePicker.todayInUtcMilliseconds(),
     )
 
   fun reportMeasuresList(): Flow<PagingData<MeasureReportRowData>> =
@@ -127,9 +127,11 @@ constructor(
         event.navController.navigate(
           MeasureReportNavigationScreen.ReportTypeSelector.route +
             NavigationArg.bindArgumentsOf(
-              Pair(NavigationArg.SCREEN_TITLE, event.measureReportRowData.title)
-            )
-        ) { launchSingleTop = true }
+              Pair(NavigationArg.SCREEN_TITLE, event.measureReportRowData.title),
+            ),
+        ) {
+          launchSingleTop = true
+        }
       }
       is MeasureReportEvent.GenerateReport -> evaluateMeasure(event.context, event.navController)
       is MeasureReportEvent.OnDateRangeSelected -> {
@@ -138,7 +140,7 @@ constructor(
         reportTypeSelectorUiState.value =
           reportTypeSelectorUiState.value.copy(
             startDate = dateRangeDateFormatter.format(Date(dateRange.value.first)),
-            endDate = dateRangeDateFormatter.format(Date(dateRange.value.second))
+            endDate = dateRangeDateFormatter.format(Date(dateRange.value.second)),
           )
       }
       is MeasureReportEvent.OnReportTypeChanged -> {
@@ -173,14 +175,14 @@ constructor(
         config =
           PagingConfig(
             pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
-            initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE
+            initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE,
           ),
         pagingSourceFactory = {
           MeasureReportPatientsPagingSource(
             measureReportRepository,
-            measureReportPatientViewDataMapper
+            measureReportPatientViewDataMapper,
           )
-        }
+        },
       )
       .flow
 
@@ -195,11 +197,11 @@ constructor(
       // Retrieve and parse dates from this format (16 Nov, 2020) to this (2020-11-16)
       val startDateFormatted =
         measureReportDateFormatter.format(
-          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.startDate)!!
+          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.startDate)!!,
         )
       val endDateFormatted =
         measureReportDateFormatter.format(
-          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.endDate)!!
+          dateRangeDateFormatter.parse(reportTypeSelectorUiState.value.endDate)!!,
         )
 
       viewModelScope.launch {
@@ -213,7 +215,7 @@ constructor(
                 context = context,
                 fhirOperator = fhirOperator.get(),
                 sharedPreferencesHelper = sharedPreferencesHelper,
-                resourcesBundlePath = measureResourceBundleUrl
+                resourcesBundlePath = measureResourceBundleUrl,
               )
             }
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
@@ -228,7 +230,7 @@ constructor(
                       reportType = SUBJECT,
                       subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
                       practitioner = loggedInPractitioner?.id,
-                      lastReceivedOn = null // Non-null value not supported yet
+                      lastReceivedOn = null, // Non-null value not supported yet
                     )
                 }
 
@@ -237,11 +239,11 @@ constructor(
                   measureReport.group.first().population.find { it.id == NUMERATOR }
                 measureReportIndividualResult.value =
                   MeasureReportIndividualResult(
-                    status = if (population != null && population.count > 0) "True" else "False"
+                    status = if (population != null && population.count > 0) "True" else "False",
                   )
               }
-            } else if (reportTypeSelectorUiState.value.patientViewData == null &&
-                !individualEvaluation
+            } else if (
+              reportTypeSelectorUiState.value.patientViewData == null && !individualEvaluation
             ) {
               evaluatePopulationMeasure(measureUrl, startDateFormatted, endDateFormatted)
             }
@@ -261,7 +263,7 @@ constructor(
   private suspend fun evaluatePopulationMeasure(
     measureUrl: String,
     startDateFormatted: String,
-    endDateFormatted: String
+    endDateFormatted: String,
   ) {
     val measureReport =
       withContext(dispatcherProvider.io()) {
@@ -274,7 +276,7 @@ constructor(
             reportType = POPULATION,
             subject = null,
             practitioner = loggedInPractitioner?.id,
-            lastReceivedOn = null // Non-null value not supported yet
+            lastReceivedOn = null, // Non-null value not supported yet
           )
       }
 
@@ -287,35 +289,37 @@ constructor(
   }
 
   fun formatPopulationMeasureReport(
-    measureReport: MeasureReport
+    measureReport: MeasureReport,
   ): List<MeasureReportPopulationResult> {
     return measureReport.group.flatMap { reportGroup: MeasureReport.MeasureReportGroupComponent ->
       reportGroup.stratifier.map { stratifier ->
         val resultItems: List<MeasureReportIndividualResult> =
-          stratifier.stratum.filter { it.hasValue() }.map { stratifierComponent ->
-            val text =
-              when {
-                stratifierComponent.value.hasText() -> stratifierComponent.value.text
-                stratifierComponent.value.hasCoding() ->
-                  stratifierComponent.value.coding.last().display
-                else -> ""
-              }
+          stratifier.stratum
+            .filter { it.hasValue() }
+            .map { stratifierComponent ->
+              val text =
+                when {
+                  stratifierComponent.value.hasText() -> stratifierComponent.value.text
+                  stratifierComponent.value.hasCoding() ->
+                    stratifierComponent.value.coding.last().display
+                  else -> ""
+                }
 
-            val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
-            val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
+              val numerator = stratifierComponent.findPopulation(NUMERATOR)?.count ?: 0
+              val denominator = stratifierComponent.findPopulation(DENOMINATOR)?.count ?: 0
 
-            val percentage =
-              ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
-            val count = "$numerator/$denominator"
-            MeasureReportIndividualResult(
-              title = text,
-              percentage = percentage.toString(),
-              count = count
-            )
-          }
+              val percentage =
+                ceil((numerator / if (denominator == 0) 1 else denominator) * 100.0).toInt()
+              val count = "$numerator/$denominator"
+              MeasureReportIndividualResult(
+                title = text,
+                percentage = percentage.toString(),
+                count = count,
+              )
+            }
         MeasureReportPopulationResult(
           title = stratifier.id.replace("-", " ").uppercase(Locale.getDefault()),
-          dataList = resultItems
+          dataList = resultItems,
         )
       }
     }
@@ -323,7 +327,7 @@ constructor(
 
   // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
   private fun MeasureReport.StratifierGroupComponent.findPopulation(
-    id: String
+    id: String,
   ): MeasureReport.StratifierGroupPopulationComponent? {
     return this.population.find { it.hasId() && it.id.equals(id, ignoreCase = true) }
   }

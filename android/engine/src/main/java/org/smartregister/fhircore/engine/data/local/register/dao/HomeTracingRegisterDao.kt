@@ -35,7 +35,7 @@ constructor(
   defaultRepository: DefaultRepository,
   configurationRegistry: ConfigurationRegistry,
   dispatcherProvider: DefaultDispatcherProvider,
-  sharedPreferencesHelper: SharedPreferencesHelper
+  sharedPreferencesHelper: SharedPreferencesHelper,
 ) :
   TracingRegisterDao(
     fhirEngine,
@@ -43,7 +43,7 @@ constructor(
     tracingRepository,
     configurationRegistry,
     dispatcherProvider,
-    sharedPreferencesHelper
+    sharedPreferencesHelper,
   ) {
 
   override val tracingCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")

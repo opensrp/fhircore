@@ -32,13 +32,13 @@ sealed class TracingProfileEvent {
   data class OpenTracingOutcomeScreen(
     val navController: NavHostController,
     val context: Context,
-    val historyId: String
+    val historyId: String,
   ) : TracingProfileEvent()
 
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,
-    val menuId: Int
+    val menuId: Int,
   ) : TracingProfileEvent()
 
   data class CallPhoneNumber(

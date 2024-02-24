@@ -42,7 +42,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 class RegisterDataViewModel<I : Any, O : Any>(
   application: Application,
   val registerRepository: RegisterRepository<I, O>,
-  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
+  val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider(),
 ) : AndroidViewModel(application) {
 
   private val _registerViewConfiguration = MutableLiveData(RegisterViewConfiguration())
@@ -89,7 +89,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   fun filterRegisterData(
     registerFilterType: RegisterFilterType,
     filterValue: Any,
-    registerFilter: (RegisterFilterType, O, Any) -> Boolean
+    registerFilter: (RegisterFilterType, O, Any) -> Boolean,
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       registerData.value =
@@ -117,7 +117,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
             this.loadAll = loadAll
             this.currentPage = currentPage
           }
-        }
+        },
       )
       .flow
 
@@ -140,8 +140,7 @@ class RegisterDataViewModel<I : Any, O : Any>(
   fun countPages() =
     _totalRecordsCount.value?.toDouble()?.div(PaginationConstant.DEFAULT_PAGE_SIZE.toLong())?.let {
       ceil(it).toInt()
-    }
-      ?: 1
+    } ?: 1
 
   fun showResultsCount(showResultsCount: Boolean) {
     this._showResultsCount.postValue(showResultsCount)

@@ -36,6 +36,7 @@ class SearchViewModel @Inject constructor(private val dataStore: AppDataStore) :
     combine(searchText, showProgressBar, matchedPatients) { text, progress, patients ->
       SearchModelState(searchText = text, patients = patients, showProgressBar = progress)
     }
+
   fun onSearchChanged(text: String) {
     Timber.e(text)
     searchText.value = text

@@ -55,12 +55,12 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> Unit) {
   Card(
     onClick = { onItemClick(data.logicalId) },
-    modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min)
+    modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
   ) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.fillMaxWidth().padding(16.dp).height(IntrinsicSize.Min)
+      modifier = Modifier.fillMaxWidth().padding(16.dp).height(IntrinsicSize.Min),
     ) {
       Box(
         modifier =
@@ -72,28 +72,28 @@ fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> U
           modifier = Modifier.width(48.dp),
           textAlign = TextAlign.Center,
           overflow = TextOverflow.Visible,
-          style = MaterialTheme.typography.caption
+          style = MaterialTheme.typography.caption,
         )
       }
 
       Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.weight(1f).padding(8.dp)
+        modifier = Modifier.weight(1f).padding(8.dp),
       ) {
         Text(
           text = data.title,
           style = MaterialTheme.typography.h6,
           textAlign = TextAlign.Center,
           maxLines = 2,
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
         )
         Text(
           text = data.subtitle!!,
           style = MaterialTheme.typography.caption,
           textAlign = TextAlign.Center,
           maxLines = 1,
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
         )
       }
 
@@ -101,13 +101,13 @@ fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> U
         modifier =
           Modifier.size(48.dp)
             .background(color = data.serviceButtonBackgroundColor, shape = CircleShape),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
       ) {
         if (data.serviceTextIcon != null) {
           Image(
             painterResource(id = data.serviceTextIcon),
             contentDescription = "ART",
-            Modifier.size(36.dp)
+            Modifier.size(36.dp),
           )
         }
       }
@@ -130,7 +130,7 @@ fun PreviewHivFemalePatientRegisterRowItem() {
         serviceButtonBackgroundColor = FemalePinkColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
-    onItemClick = {}
+    onItemClick = {},
   )
 }
 
@@ -149,7 +149,7 @@ fun PreviewHivMalePatientRegisterRowItem() {
         serviceButtonBackgroundColor = MaleBlueColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
-    onItemClick = {}
+    onItemClick = {},
   )
 }
 
@@ -168,7 +168,7 @@ fun PreviewHivExposedInfantPatientRegisterRowItem() {
         serviceButtonBackgroundColor = MaleBlueColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
-    onItemClick = {}
+    onItemClick = {},
   )
 }
 
@@ -187,7 +187,7 @@ fun PreviewHivFemalePregnantPatientRegisterRowItem() {
         serviceButtonBackgroundColor = FemalePinkColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
-    onItemClick = {}
+    onItemClick = {},
   )
 }
 
@@ -206,6 +206,6 @@ fun PreviewHivFemaleBreastfeedingPatientRegisterRowItem() {
         serviceButtonBackgroundColor = FemalePinkColor,
         registerType = RegisterData.HivRegisterData::class,
       ),
-    onItemClick = {}
+    onItemClick = {},
   )
 }

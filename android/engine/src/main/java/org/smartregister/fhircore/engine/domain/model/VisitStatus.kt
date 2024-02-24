@@ -19,5 +19,5 @@ package org.smartregister.fhircore.engine.domain.model
 enum class VisitStatus {
   DUE,
   OVERDUE,
-  PLANNED
+  PLANNED,
 }

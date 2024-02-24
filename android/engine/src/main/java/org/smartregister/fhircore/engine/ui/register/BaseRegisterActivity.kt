@@ -154,7 +154,8 @@ abstract class BaseRegisterActivity :
 
   private fun BaseRegisterActivityBinding.updateSyncStatus(state: SyncJobStatus) {
     when (state) {
-      is SyncJobStatus.Started, is SyncJobStatus.InProgress -> {
+      is SyncJobStatus.Started,
+      is SyncJobStatus.InProgress, -> {
         progressSync.show()
         tvLastSyncTimestamp.text = getString(R.string.syncing_in_progress)
         containerProgressSync.apply {
@@ -162,13 +163,14 @@ abstract class BaseRegisterActivity :
           setOnClickListener(null)
         }
       }
-      is SyncJobStatus.Finished, is SyncJobStatus.Failed -> setLastSyncTimestamp(state)
+      is SyncJobStatus.Finished,
+      is SyncJobStatus.Failed, -> setLastSyncTimestamp(state)
       is SyncJobStatus.Glitch -> {
         progressSync.hide()
         val lastSyncTimestamp =
           sharedPreferencesHelper.read(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            getString(R.string.syncing_retry)
+            getString(R.string.syncing_retry),
           )
         tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
         containerProgressSync.apply {
@@ -244,14 +246,14 @@ abstract class BaseRegisterActivity :
               this.getDrawable(R.drawable.ic_search),
               null,
               null,
-              null
+              null,
             )
           } else {
             setCompoundDrawablesWithIntrinsicBounds(
               null,
               null,
               getDrawable(R.drawable.ic_cancel),
-              null
+              null,
             )
             this.addOnDrawableClickListener(DrawablePosition.DRAWABLE_RIGHT) {
               editable?.clear()
@@ -265,23 +267,23 @@ abstract class BaseRegisterActivity :
               charSequence: CharSequence?,
               start: Int,
               count: Int,
-              after: Int
+              after: Int,
             ) {}
 
             override fun onTextChanged(
               charSequence: CharSequence?,
               start: Int,
               before: Int,
-              count: Int
+              count: Int,
             ) {}
 
             override fun afterTextChanged(editable: Editable?) {
               registerViewModel.updateFilterValue(
                 RegisterFilterType.SEARCH_FILTER,
-                if (editable.isNullOrEmpty()) null else editable.toString()
+                if (editable.isNullOrEmpty()) null else editable.toString(),
               )
             }
-          }
+          },
         )
       }
     }
@@ -354,7 +356,8 @@ abstract class BaseRegisterActivity :
     val menu = registerActivityBinding.navView.menu
 
     sideMenuOptions().forEach { menuOption ->
-      menu.add(R.id.menu_group_clients, menuOption.itemId, Menu.NONE, menuOption.titleResource)
+      menu
+        .add(R.id.menu_group_clients, menuOption.itemId, Menu.NONE, menuOption.titleResource)
         .apply {
           icon = menuOption.iconResource
           actionView = layoutInflater.inflate(R.layout.drawable_menu_item_layout, null, false)
@@ -374,14 +377,15 @@ abstract class BaseRegisterActivity :
       R.id.menu_group_empty,
       R.id.menu_group_empty_item_id,
       2,
-      ""
+      "",
     ) // Hack to add last menu divider
   }
 
   private fun manipulateDrawer(open: Boolean = false) {
     with(registerActivityBinding) {
-      if (open) drawerLayout.openDrawer(GravityCompat.START)
-      else drawerLayout.closeDrawer(GravityCompat.START)
+      if (open) {
+        drawerLayout.openDrawer(GravityCompat.START)
+      } else drawerLayout.closeDrawer(GravityCompat.START)
     }
   }
 
@@ -392,7 +396,8 @@ abstract class BaseRegisterActivity :
         showToast(getString(R.string.syncing))
         registerActivityBinding.updateSyncStatus(state)
       }
-      is SyncJobStatus.Failed, is SyncJobStatus.Glitch -> {
+      is SyncJobStatus.Failed,
+      is SyncJobStatus.Glitch, -> {
         handleSyncFailed(state)
       }
       is SyncJobStatus.Finished -> {
@@ -404,7 +409,7 @@ abstract class BaseRegisterActivity :
       }
       is SyncJobStatus.InProgress -> {
         Timber.d(
-          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%",
         )
         registerActivityBinding.updateSyncStatus(state)
       }
@@ -512,11 +517,11 @@ abstract class BaseRegisterActivity :
     tag: String,
     isRegisterFragment: Boolean = true,
     isFilterVisible: Boolean = true,
-    toolbarTitle: String? = null
+    toolbarTitle: String? = null,
   ) {
     registerActivityBinding.btnRegisterNewClient.toggleVisibility(
       tag == mainFragmentTag() &&
-        registerViewModel.registerViewConfiguration.value!!.showNewClientButton
+        registerViewModel.registerViewConfiguration.value!!.showNewClientButton,
     )
     if (supportedFragments.isEmpty() && !supportedFragments.containsKey(tag)) {
       throw IllegalAccessException("No fragment exists with the tag $tag")
@@ -541,7 +546,7 @@ abstract class BaseRegisterActivity :
           null,
           null,
           this.getDrawable(R.drawable.ic_dropdown_arrow),
-          null
+          null,
         )
         setOnClickListener {
           supportFragmentManager.commitNow { remove(navigationBottomSheet) }
@@ -578,16 +583,15 @@ abstract class BaseRegisterActivity :
    * BottomNavigation
    */
   open fun bottomNavigationMenuOptions(
-    viewConfiguration: RegisterViewConfiguration
+    viewConfiguration: RegisterViewConfiguration,
   ): List<NavigationMenuOption> {
     return viewConfiguration.bottomNavigationOptions?.map {
       NavigationMenuOption(
         id = it.id.hashCode(),
         title = it.title,
-        iconResource = getDrawable(it.icon)
+        iconResource = getDrawable(it.icon),
       )
-    }
-      ?: emptyList()
+    } ?: emptyList()
   }
 
   /**
@@ -605,7 +609,7 @@ abstract class BaseRegisterActivity :
 
   open fun onBottomNavigationOptionItemSelected(
     item: MenuItem,
-    viewConfiguration: RegisterViewConfiguration
+    viewConfiguration: RegisterViewConfiguration,
   ): Boolean = true
 
   open fun registerClient(clientIdentifier: String? = null) {
@@ -614,9 +618,9 @@ abstract class BaseRegisterActivity :
         .putExtras(
           QuestionnaireActivity.intentArgs(
             clientIdentifier = clientIdentifier,
-            formName = registerViewModel.registerViewConfiguration.value?.registrationForm!!
-          )
-        )
+            formName = registerViewModel.registerViewConfiguration.value?.registrationForm!!,
+          ),
+        ),
     )
   }
 
@@ -667,12 +671,13 @@ abstract class BaseRegisterActivity :
         onBarcodeResult(barcode, view)
 
         liveBarcodeScanningFragment.onDestroy()
-      }
+      },
     )
   }
 
   private fun launchBarcodeReader(requestPermissionLauncher: ActivityResultLauncher<String>) {
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+    if (
+      ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
         PackageManager.PERMISSION_GRANTED
     ) {
       liveBarcodeScanningFragment.show(this.supportFragmentManager, "LiveBarcodeScanningFragment")
@@ -690,7 +695,7 @@ abstract class BaseRegisterActivity :
         Toast.makeText(
             this,
             "Camera permissions are needed to launch barcode reader!",
-            Toast.LENGTH_LONG
+            Toast.LENGTH_LONG,
           )
           .show()
       }
@@ -700,7 +705,6 @@ abstract class BaseRegisterActivity :
   open fun onBarcodeResult(barcode: String, view: View) {}
 
   private fun handleSyncFailed(state: SyncJobStatus) {
-
     val exceptions =
       when (state) {
         is SyncJobStatus.Glitch -> if (state.exceptions != null) state.exceptions else emptyList()
@@ -708,15 +712,16 @@ abstract class BaseRegisterActivity :
         else -> listOf()
       }
 
-    if (exceptions.map { it.exception }.filterIsInstance<HttpException>().firstOrNull()?.code() ==
-        401
+    if (
+      exceptions.map { it.exception }.filterIsInstance<HttpException>().firstOrNull()?.code() == 401
     ) {
       showToast(getString(R.string.session_expired))
       accountAuthenticator.logout { launchActivityWithNoBackStackHistory<LoginActivity>() }
     } else {
-      if (exceptions.map { it.exception }.any {
-          it is InterruptedIOException || it is UnknownHostException
-        }
+      if (
+        exceptions
+          .map { it.exception }
+          .any { it is InterruptedIOException || it is UnknownHostException }
       ) {
         showToast(getString(R.string.sync_failed))
       }

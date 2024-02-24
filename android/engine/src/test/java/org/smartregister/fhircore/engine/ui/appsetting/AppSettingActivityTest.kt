@@ -47,10 +47,15 @@ class AppSettingActivityTest : RobolectricTest() {
 
   val context: Context =
     ApplicationProvider.getApplicationContext<Context>().apply { setTheme(R.style.AppTheme) }
+
   @Inject lateinit var gson: Gson
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @BindValue val secureSharedPreference = mockk<SecureSharedPreference>()
+
   @BindValue val accountAuthenticator = mockk<AccountAuthenticator>()
+
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   private lateinit var appSettingActivityActivity: AppSettingActivity
@@ -74,11 +79,14 @@ class AppSettingActivityTest : RobolectricTest() {
 
     Assert.assertEquals(
       false,
-      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false),
     )
     Assert.assertEquals(
       null,
-      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      appSettingActivityActivity.sharedPreferencesHelper.read(
+        SharedPreferenceKey.APP_ID.name,
+        null,
+      ),
     )
     Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
@@ -90,11 +98,14 @@ class AppSettingActivityTest : RobolectricTest() {
 
     Assert.assertEquals(
       false,
-      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false),
     )
     Assert.assertEquals(
       "default",
-      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      appSettingActivityActivity.sharedPreferencesHelper.read(
+        SharedPreferenceKey.APP_ID.name,
+        null,
+      ),
     )
     Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
@@ -107,11 +118,14 @@ class AppSettingActivityTest : RobolectricTest() {
 
     Assert.assertEquals(
       true,
-      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false),
     )
     Assert.assertEquals(
       "default",
-      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      appSettingActivityActivity.sharedPreferencesHelper.read(
+        SharedPreferenceKey.APP_ID.name,
+        null,
+      ),
     )
     Assert.assertEquals(true, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }
@@ -124,11 +138,14 @@ class AppSettingActivityTest : RobolectricTest() {
 
     Assert.assertEquals(
       true,
-      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false)
+      appSettingActivityActivity.sharedPreferencesHelper.read(IS_LOGGED_IN, false),
     )
     Assert.assertEquals(
       "default",
-      appSettingActivityActivity.sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)
+      appSettingActivityActivity.sharedPreferencesHelper.read(
+        SharedPreferenceKey.APP_ID.name,
+        null,
+      ),
     )
     Assert.assertEquals(false, appSettingActivityActivity.accountAuthenticator.hasActiveSession())
   }

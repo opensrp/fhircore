@@ -88,30 +88,36 @@ fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
     navigationIcon = {
       IconButton(
         onClick = { questPatientDetailViewModel.onBackPressed(true) },
-        Modifier.testTag(TOOLBAR_BACK_ARROW)
-      ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
+        Modifier.testTag(TOOLBAR_BACK_ARROW),
+      ) {
+        Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+      }
     },
     actions = {
       // show only if patient info exists
       patientItem?.let {
         IconButton(
           onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON)
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+          modifier = Modifier.testTag(TOOLBAR_MENU_BUTTON),
+        ) {
+          Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+        }
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
-          Modifier.testTag(TOOLBAR_MENU)
+          Modifier.testTag(TOOLBAR_MENU),
         ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
               questPatientDetailViewModel.onMenuItemClickListener(R.string.edit_patient_info)
-            }
-          ) { Text(text = stringResource(id = R.string.edit_patient_info)) }
+            },
+          ) {
+            Text(text = stringResource(id = R.string.edit_patient_info))
+          }
         }
       }
-    }
+    },
   )
 }
 
@@ -125,7 +131,7 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
         .fillMaxWidth()
         .padding(12.dp)
         .clickable { questPatientDetailViewModel.onTestResultItemClickListener(testResult) }
-        .testTag(RESULT_ITEM)
+        .testTag(RESULT_ITEM),
   ) {
     Column(verticalArrangement = Arrangement.Center) {
       testResult.data.forEach { dataList ->
@@ -136,11 +142,13 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
                 text = it,
                 color =
                   Color(
-                    android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000")
+                    android.graphics.Color.parseColor(item.properties?.label?.color ?: "#000000"),
                   ),
                 fontSize = item.properties?.label?.textSize?.sp ?: 17.sp,
                 fontWeight =
-                  FontWeight(item.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
+                  FontWeight(
+                    item.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight,
+                  ),
               )
             }
 
@@ -148,12 +156,12 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
               text = (item.valuePrefix ?: "") + item.value + (item.valuePostfix ?: ""),
               color =
                 Color(
-                  android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000")
+                  android.graphics.Color.parseColor(item.properties?.value?.color ?: "#000000"),
                 ),
               fontSize = item.properties?.value?.textSize?.sp ?: 17.sp,
               textAlign = TextAlign.Start,
               fontWeight =
-                FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+                FontWeight(item.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight),
             )
 
             // add separator between items if item value itself is not supposed to act as label i.e.
@@ -164,26 +172,29 @@ fun ResultItem(testResult: QuestResultItem, questPatientDetailViewModel: ListDat
       }
     }
 
-    if (questPatientDetailViewModel.patientDetailsViewConfiguration.value?.dataRowClickable == true)
+    if (
+      questPatientDetailViewModel.patientDetailsViewConfiguration.value?.dataRowClickable == true
+    ) {
       Image(
         painter = painterResource(id = R.drawable.ic_forward_arrow),
         contentDescription = "",
-        colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray))
+        colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
       )
+    }
   }
 }
 
 @Composable
 fun FormItem(
   questionnaireConfig: QuestionnaireConfig,
-  questPatientDetailViewModel: ListDataDetailViewModel
+  questPatientDetailViewModel: ListDataDetailViewModel,
 ) {
   Card(
     backgroundColor = colorResource(id = R.color.cornflower_blue),
     modifier =
       Modifier.fillMaxWidth()
         .clickable { questPatientDetailViewModel.onFormItemClickListener(questionnaireConfig) }
-        .testTag(FORM_ITEM)
+        .testTag(FORM_ITEM),
   ) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(6.dp)) {
       Text(
@@ -198,8 +209,10 @@ fun FormItem(
 
 @Composable
 fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewModel) {
-  val viewConfiguration by questPatientDetailViewModel.patientDetailsViewConfiguration
-    .observeAsState(dataDetailsListViewConfigurationOf())
+  val viewConfiguration by
+    questPatientDetailViewModel.patientDetailsViewConfiguration.observeAsState(
+      dataDetailsListViewConfigurationOf(),
+    )
   val patientItem by questPatientDetailViewModel.patientItem.observeAsState(null)
   val forms by questPatientDetailViewModel.questionnaireConfigs.observeAsState(null)
   val testResults by questPatientDetailViewModel.testResults.observeAsState(null)
@@ -211,7 +224,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
         modifier =
           Modifier.fillMaxWidth()
             .background(color = colorResource(id = R.color.colorPrimary))
-            .padding(12.dp)
+            .padding(12.dp),
       ) {
         patientItem?.let {
           Text(
@@ -219,7 +232,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
             color = colorResource(id = R.color.white),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.testTag(PATIENT_NAME)
+            modifier = Modifier.testTag(PATIENT_NAME),
           )
         }
 
@@ -231,10 +244,10 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
                 text = label,
                 color =
                   Color(
-                    android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                    android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000"),
                   ),
                 fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
-                modifier = Modifier.wrapContentWidth()
+                modifier = Modifier.wrapContentWidth(),
               )
             }
 
@@ -243,7 +256,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
               color =
                 Color(android.graphics.Color.parseColor(it.properties?.value?.color ?: "#000000")),
               fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
-              modifier = Modifier.wrapContentWidth()
+              modifier = Modifier.wrapContentWidth(),
             )
           }
         }
@@ -254,13 +267,13 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
         modifier =
           Modifier.fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(start = 12.dp, end = 12.dp)
+            .padding(start = 12.dp, end = 12.dp),
       ) {
         Spacer(Modifier.height(24.dp))
         Card(
           elevation = 3.dp,
           backgroundColor = colorResource(id = R.color.white),
-          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM)
+          modifier = Modifier.fillMaxWidth().testTag(FORM_CONTAINER_ITEM),
         ) {
           Column(modifier = Modifier.padding(16.dp)) {
             forms?.let { allForms ->
@@ -270,8 +283,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
                   Spacer(Modifier.height(16.dp))
                 }
               }
-            }
-              ?: Text(text = stringResource(id = R.string.loading_forms))
+            } ?: Text(text = stringResource(id = R.string.loading_forms))
           }
         }
 
@@ -282,11 +294,11 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
           text = "${viewConfiguration.contentTitle} (${testResults?.size?.toString() ?: ""})",
           color = colorResource(id = R.color.grayText),
           fontSize = 16.sp,
-          fontWeight = FontWeight.Bold
+          fontWeight = FontWeight.Bold,
         )
         Card(
           elevation = 4.dp,
-          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM)
+          modifier = Modifier.fillMaxWidth().padding(top = 12.dp).testTag(RESULT_CONTAINER_ITEM),
         ) {
           Column {
             testResults?.let {
@@ -299,7 +311,7 @@ fun QuestPatientDetailScreen(questPatientDetailViewModel: ListDataDetailViewMode
             }
               ?: Text(
                 text = stringResource(id = R.string.loading_responses),
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
               )
           }
         }

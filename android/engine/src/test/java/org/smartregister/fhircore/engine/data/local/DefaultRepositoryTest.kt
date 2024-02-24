@@ -73,11 +73,14 @@ import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 class DefaultRepositoryTest : RobolectricTest() {
 
   private val dispatcherProvider = spyk(DefaultDispatcherProvider())
+
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @OptIn(ExperimentalCoroutinesApi::class)
   @get:Rule(order = 2)
   var coroutineRule = CoroutineTestRule()
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
   @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
 
   private val configService: ConfigService = mockk()
@@ -87,6 +90,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     hiltRule.inject()
     every { configService.provideResourceTags(any()) } returns listOf()
   }
+
   @Test
   fun `addOrUpdate() should call fhirEngine#update when resource exists`() {
     val patientId = "15672-9234"
@@ -101,14 +105,14 @@ class DefaultRepositoryTest : RobolectricTest() {
             Address().apply {
               city = "Lahore"
               country = "Pakistan"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Salman"))
               family = "Ali"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
       }
@@ -125,7 +129,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     // Call the function under test
@@ -166,7 +170,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.loadRelatedPersons(patientId) }
@@ -188,7 +192,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.loadPatientImmunizations(patientId) }
@@ -208,7 +212,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.loadQuestionnaireResponses("1234", Questionnaire()) }
@@ -231,7 +235,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.save(resource) }
@@ -257,7 +261,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
@@ -279,7 +283,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     val result = defaultRepository.searchCompositionByIdentifier("appId")
@@ -300,7 +304,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     val result = defaultRepository.getBinary("111")
@@ -325,7 +329,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         dispatcherProvider = coroutineRule.testDispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
 
     runBlocking { defaultRepository.addOrUpdate(resource = resource) }
@@ -337,55 +341,55 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun `searchQuestionnaireConfig should call FhirEngine#Search and return QuestionnaireConfig with correct fields`() =
-      runTest {
-    val fhirEngine = mockk<FhirEngine>()
-    val questionnaire1 =
-      Questionnaire().apply {
-        id = "1"
-        name = "questionnaire1"
-        title = "Questionnaire 1"
-      }
-    val questionnaire2 =
-      Questionnaire().apply {
-        id = "2"
-        name = "questionnaire2"
-        title = "Questionnaire 2"
-      }
-
-    coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
-      {
-        val searchArg = firstArg<Search>()
-        when (searchArg.type) {
-          ResourceType.Questionnaire ->
-            listOf(questionnaire1, questionnaire2).map {
-              SearchResult(it, included = null, revIncluded = null)
-            }
-          else -> emptyList()
+    runTest {
+      val fhirEngine = mockk<FhirEngine>()
+      val questionnaire1 =
+        Questionnaire().apply {
+          id = "1"
+          name = "questionnaire1"
+          title = "Questionnaire 1"
         }
+      val questionnaire2 =
+        Questionnaire().apply {
+          id = "2"
+          name = "questionnaire2"
+          title = "Questionnaire 2"
+        }
+
+      coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
+        {
+          val searchArg = firstArg<Search>()
+          when (searchArg.type) {
+            ResourceType.Questionnaire ->
+              listOf(questionnaire1, questionnaire2).map {
+                SearchResult(it, included = null, revIncluded = null)
+              }
+            else -> emptyList()
+          }
+        }
+
+      val defaultRepository =
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          configService = configService,
+        )
+      val questionnaireConfigs = defaultRepository.searchQuestionnaireConfig(listOf())
+      Assert.assertEquals(2, questionnaireConfigs.size)
+      val questionnaireConfig1 = questionnaireConfigs[0]
+      val questionnaireConfig2 = questionnaireConfigs[1]
+      with(questionnaireConfig1) {
+        Assert.assertEquals("questionnaire1", form)
+        Assert.assertEquals("Questionnaire 1", title)
+        Assert.assertEquals("1", identifier)
       }
 
-    val defaultRepository =
-      DefaultRepository(
-        fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = configurationRegistry,
-        configService = configService
-      )
-    val questionnaireConfigs = defaultRepository.searchQuestionnaireConfig(listOf())
-    Assert.assertEquals(2, questionnaireConfigs.size)
-    val questionnaireConfig1 = questionnaireConfigs[0]
-    val questionnaireConfig2 = questionnaireConfigs[1]
-    with(questionnaireConfig1) {
-      Assert.assertEquals("questionnaire1", form)
-      Assert.assertEquals("Questionnaire 1", title)
-      Assert.assertEquals("1", identifier)
+      with(questionnaireConfig2) {
+        Assert.assertEquals("questionnaire2", form)
+        Assert.assertEquals("Questionnaire 2", title)
+        Assert.assertEquals("2", identifier)
+      }
     }
-
-    with(questionnaireConfig2) {
-      Assert.assertEquals("questionnaire2", form)
-      Assert.assertEquals("Questionnaire 2", title)
-      Assert.assertEquals("2", identifier)
-    }
-  }
 }

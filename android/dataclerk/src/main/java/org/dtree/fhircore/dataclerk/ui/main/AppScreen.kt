@@ -33,7 +33,7 @@ import org.smartregister.fhircore.engine.ui.settings.SettingsScreen
 fun AppScreen(
   appMainViewModel: AppMainViewModel,
   homeViewModel: HomeViewModel = hiltViewModel(),
-  sync: () -> Unit
+  sync: () -> Unit,
 ) {
   val navController = rememberNavController()
   NavHost(navController = navController, startDestination = "home") {
@@ -43,13 +43,17 @@ fun AppScreen(
         homeViewModel = homeViewModel,
         navController = navController,
         sync = sync,
-        search = { navController.navigate("search") }
-      ) { navController.navigate("patient/${it.resourceId}") }
+        search = { navController.navigate("search") },
+      ) {
+        navController.navigate("patient/${it.resourceId}")
+      }
     }
     composable(
       "patient/{patientId}",
-      arguments = listOf(navArgument("patientId") { type = NavType.StringType })
-    ) { PatientScreen(navController, appMainViewModel = appMainViewModel) }
+      arguments = listOf(navArgument("patientId") { type = NavType.StringType }),
+    ) {
+      PatientScreen(navController, appMainViewModel = appMainViewModel)
+    }
 
     composable("search") { SearchScreen(navHostController = navController) }
     composable("info") { SettingsScreen(navController = navController) }

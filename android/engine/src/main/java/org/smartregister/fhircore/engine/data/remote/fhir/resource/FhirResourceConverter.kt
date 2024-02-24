@@ -28,7 +28,7 @@ class FhirConverterFactory(private val parser: IParser) : Converter.Factory() {
   override fun responseBodyConverter(
     type: Type,
     annotations: Array<Annotation>,
-    retrofit: Retrofit
+    retrofit: Retrofit,
   ): Converter<ResponseBody, *> {
     return FhirConverter(parser)
   }

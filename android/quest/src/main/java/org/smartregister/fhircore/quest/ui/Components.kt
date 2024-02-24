@@ -42,7 +42,7 @@ fun LocalDatePickerDialog(
   datePickerTag: String,
   selectedDate: Date,
   onDatePicked: (Date) -> Unit,
-  onDateCancel: () -> Unit
+  onDateCancel: () -> Unit,
 ) {
   val datePicker = MaterialDatePicker.Builder.datePicker().setSelection(selectedDate.time).build()
 
@@ -61,7 +61,7 @@ typealias Text = String
 fun <T : FilterOption> LocalExposedDropdownMenuBox(
   selectedItem: T,
   options: Iterable<T>,
-  onItemSelected: (T) -> Unit
+  onItemSelected: (T) -> Unit,
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   var isExpanded by remember { mutableStateOf(false) }
@@ -69,7 +69,7 @@ fun <T : FilterOption> LocalExposedDropdownMenuBox(
   ExposedDropdownMenuBox(
     expanded = isExpanded,
     onExpandedChange = { isExpanded = !isExpanded },
-    modifier = Modifier.fillMaxWidth()
+    modifier = Modifier.fillMaxWidth(),
   ) {
     OutlinedTextField(
       value = selectedItem.text(),
@@ -82,7 +82,7 @@ fun <T : FilterOption> LocalExposedDropdownMenuBox(
       maxLines = 1,
       singleLine = true,
       modifier = Modifier.fillMaxWidth(),
-      interactionSource = interactionSource
+      interactionSource = interactionSource,
     )
 
     ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = { isExpanded = false }) {
@@ -91,8 +91,10 @@ fun <T : FilterOption> LocalExposedDropdownMenuBox(
           onClick = {
             onItemSelected(it)
             isExpanded = false
-          }
-        ) { Text(text = it.text()) }
+          },
+        ) {
+          Text(text = it.text())
+        }
       }
     }
   }

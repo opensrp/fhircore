@@ -44,8 +44,11 @@ constructor(fhirEngine: FhirEngine, dispatcherProvider: DispatcherProvider) :
           jsonParser.parseResource(resourceClassType(type), jsonArray.get(it).toString())
         addOrUpdate(resource = resource)
         maxLastUpdated =
-          (if (resource.meta.lastUpdated.time > maxLastUpdated) resource.meta.lastUpdated.time
-          else maxLastUpdated)
+          (if (resource.meta.lastUpdated.time > maxLastUpdated) {
+            resource.meta.lastUpdated.time
+          } else {
+            maxLastUpdated
+          })
         Timber.e("Received ${resource.resourceType} with id = ${resource.logicalId}")
       }
     }

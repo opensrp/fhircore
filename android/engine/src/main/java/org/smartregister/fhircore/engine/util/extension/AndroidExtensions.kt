@@ -113,7 +113,7 @@ fun Context.isDeviceOnline(): Boolean {
       NetworkCapabilities.TRANSPORT_ETHERNET,
       NetworkCapabilities.TRANSPORT_CELLULAR,
       NetworkCapabilities.TRANSPORT_WIFI,
-      NetworkCapabilities.TRANSPORT_VPN
+      NetworkCapabilities.TRANSPORT_VPN,
     )
 
   return transports.any { capabilities.hasTransport(it) }
@@ -126,7 +126,7 @@ fun Context.isDeviceOnline(): Boolean {
  */
 inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
   finishLauncherActivity: Boolean = true,
-  bundle: Bundle = bundleOf()
+  bundle: Bundle = bundleOf(),
 ) {
   startActivity(
     Intent(this, A::class.java).apply {
@@ -134,7 +134,7 @@ inline fun <reified A : Activity> Activity.launchActivityWithNoBackStackHistory(
       addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
       addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
       putExtras(bundle)
-    }
+    },
   )
   if (finishLauncherActivity) finish()
 }

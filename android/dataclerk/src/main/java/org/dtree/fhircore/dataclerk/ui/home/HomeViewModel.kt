@@ -38,16 +38,18 @@ class HomeViewModel @Inject constructor(private val dataStore: AppDataStore) : V
   val patientCount = mutableStateOf(0L)
   var patientsPaging: MutableStateFlow<Flow<PagingData<PatientItem>>> =
     MutableStateFlow(emptyFlow())
+
   init {
     refresh()
   }
+
   private fun getPatients() =
     Pager(
         config =
           PagingConfig(
             pageSize = 20,
           ),
-        pagingSourceFactory = { PatientPagingSource(dataStore) }
+        pagingSourceFactory = { PatientPagingSource(dataStore) },
       )
       .flow
       .cachedIn(viewModelScope)

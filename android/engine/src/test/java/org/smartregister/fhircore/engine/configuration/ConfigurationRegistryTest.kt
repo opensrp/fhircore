@@ -55,6 +55,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   val context = ApplicationProvider.getApplicationContext<Context>()
+
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
   private val testAppId = "default"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
@@ -88,7 +89,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
     Assert.assertTrue(configurationRegistry.workflowPointsMap.containsKey("default|application"))
     Assert.assertFalse(
-      configurationRegistry.workflowPointsMap.containsKey("default|family-registration")
+      configurationRegistry.workflowPointsMap.containsKey("default|family-registration"),
     )
   }
 
@@ -96,7 +97,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveConfigurationShouldReturnLoginViewConfiguration() {
     val retrievedConfiguration =
       configurationRegistry.retrieveConfiguration<LoginViewConfiguration>(
-        AppConfigClassification.LOGIN
+        AppConfigClassification.LOGIN,
       )
 
     Assert.assertTrue(configurationRegistry.workflowPointsMap.isNotEmpty())
@@ -205,7 +206,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     advanceUntilIdle()
     coVerify {
       fhirResourceDataSource.loadData(
-        withArg { Assert.assertTrue(it.startsWith("Questionnaire", ignoreCase = true)) }
+        withArg { Assert.assertTrue(it.startsWith("Questionnaire", ignoreCase = true)) },
       )
     }
   }

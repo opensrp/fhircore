@@ -60,7 +60,7 @@ fun CircularPercentageIndicator(
         .clip(CircleShape)
         .background(Color.Transparent)
         .testTag(CIRCULAR_PERCENTAGE_INDICATOR),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.Center,
   ) {
     Canvas(
       onDraw = {
@@ -68,7 +68,7 @@ fun CircularPercentageIndicator(
           Brush.linearGradient(colors = listOf(Color.LightGray, Color.LightGray)),
           radius = size.width / 2,
           center = center,
-          style = Stroke(width = size.width * 0.075f)
+          style = Stroke(width = size.width * 0.075f),
         )
       },
       modifier = modifier.fillMaxSize().testTag(CIRCULAR_CANVAS_CIRCLE_TAG),
@@ -77,7 +77,7 @@ fun CircularPercentageIndicator(
       progress = percentage.toFloat() / 100,
       modifier = modifier.fillMaxSize(),
       strokeWidth = 2.4.dp,
-      color = ProgressBarBlueColor
+      color = ProgressBarBlueColor,
     )
     Text(
       text =
@@ -88,7 +88,7 @@ fun CircularPercentageIndicator(
           append(stringResource(R.string.percentage))
         },
       textAlign = TextAlign.Center,
-      modifier = Modifier.testTag(CIRCULAR_PERCENTAGE_TEXT_TAG)
+      modifier = Modifier.testTag(CIRCULAR_PERCENTAGE_TEXT_TAG),
     )
   }
 }

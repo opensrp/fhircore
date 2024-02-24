@@ -43,8 +43,11 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 class AppSettingActivity : AppCompatActivity() {
 
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var libraryEvaluatorProvider: Provider<LibraryEvaluator>
   private val appSettingViewModel: AppSettingViewModel by viewModels()
 
@@ -78,7 +81,7 @@ class AppSettingActivity : AppCompatActivity() {
             onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
             fetchConfiguration = appSettingViewModel::fetchConfigurations,
             showProgressBar = showProgressBar,
-            error = error
+            error = error,
           )
         }
       }

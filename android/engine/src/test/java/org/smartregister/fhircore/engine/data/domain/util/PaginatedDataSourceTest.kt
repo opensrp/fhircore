@@ -43,8 +43,8 @@ class PaginatedDataSourceTest : RobolectricTest() {
   fun testLoadDataFromRepository() = runBlocking {
     coEvery { registerRepository.loadData(any(), any(), any()) } returns listOf("data")
     val result =
-      paginatedDataSource.load(PagingSource.LoadParams.Refresh(1, 1, true)) as
-        PagingSource.LoadResult.Page<String, String>
+      paginatedDataSource.load(PagingSource.LoadParams.Refresh(1, 1, true))
+        as PagingSource.LoadResult.Page<String, String>
 
     assertEquals(1, result.data.size)
     assertEquals("data", result.data[0])
@@ -56,7 +56,7 @@ class PaginatedDataSourceTest : RobolectricTest() {
   fun testGetRefreshKeyShouldReturnAnchorPosition() {
     assertEquals(
       10,
-      paginatedDataSource.getRefreshKey(mockk { every { anchorPosition } returns 10 })
+      paginatedDataSource.getRefreshKey(mockk { every { anchorPosition } returns 10 }),
     )
   }
 }

@@ -100,7 +100,7 @@ class PatientRepositoryTest : RobolectricTest() {
         fhirEngine,
         patientItemMapper,
         coroutineTestRule.testDispatcherProvider,
-        configurationRegistry
+        configurationRegistry,
       )
   }
 
@@ -110,7 +110,7 @@ class PatientRepositoryTest : RobolectricTest() {
       key = "abc",
       filterType = Enumerations.SearchParamType.STRING,
       valueString = "cde",
-      valueType = Enumerations.DataType.CODEABLECONCEPT
+      valueType = Enumerations.DataType.CODEABLECONCEPT,
     )
 
   @Test
@@ -149,8 +149,8 @@ class PatientRepositoryTest : RobolectricTest() {
           SearchResult(
             buildPatient("1234", "Doe", "John", 1, Enumerations.AdministrativeGender.FEMALE),
             included = null,
-            revIncluded = null
-          )
+            revIncluded = null,
+          ),
         )
       coEvery { fhirEngine.count(any()) } returns 1
 
@@ -199,7 +199,7 @@ class PatientRepositoryTest : RobolectricTest() {
               questionnaire = "Questionnaire/1"
             },
             included = null,
-            revIncluded = null
+            revIncluded = null,
           ),
           SearchResult(
             QuestionnaireResponse().apply {
@@ -207,8 +207,8 @@ class PatientRepositoryTest : RobolectricTest() {
               questionnaire = "Questionnaire/2"
             },
             included = null,
-            revIncluded = null
-          )
+            revIncluded = null,
+          ),
         )
 
       val results =
@@ -216,7 +216,7 @@ class PatientRepositoryTest : RobolectricTest() {
           "1",
           ResourceType.Patient,
           listOf(QuestionnaireConfig("quest", "form", "title", "1")),
-          dataDetailsListViewConfigurationOf()
+          dataDetailsListViewConfigurationOf(),
         )
 
       Assert.assertEquals("First Questionnaire", results[0].data[0][0].value)
@@ -238,7 +238,7 @@ class PatientRepositoryTest : RobolectricTest() {
 
       val questionnaire =
         repository.getQuestionnaire(
-          QuestionnaireResponse().apply { questionnaire = "Questionnaire/1" }
+          QuestionnaireResponse().apply { questionnaire = "Questionnaire/1" },
         )
 
       Assert.assertEquals("1", questionnaire.id)
@@ -286,8 +286,8 @@ class PatientRepositoryTest : RobolectricTest() {
               title = "G6PD Test"
             },
             included = null,
-            revIncluded = null
-          )
+            revIncluded = null,
+          ),
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -303,7 +303,7 @@ class PatientRepositoryTest : RobolectricTest() {
     coroutineTestRule.runBlockingTest {
       coEvery { fhirEngine.search<Questionnaire>(any<Search>()) } returns
         listOf(
-          SearchResult(Questionnaire().apply { id = "1234" }, included = null, revIncluded = null)
+          SearchResult(Questionnaire().apply { id = "1234" }, included = null, revIncluded = null),
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -325,8 +325,8 @@ class PatientRepositoryTest : RobolectricTest() {
               name = "Form name"
             },
             included = null,
-            revIncluded = null
-          )
+            revIncluded = null,
+          ),
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -347,8 +347,8 @@ class PatientRepositoryTest : RobolectricTest() {
               title = "Form name"
             },
             included = null,
-            revIncluded = null
-          )
+            revIncluded = null,
+          ),
         )
 
       val results = repository.fetchTestForms(searchFilter())
@@ -386,14 +386,14 @@ class PatientRepositoryTest : RobolectricTest() {
         appId = quest.appId,
         classification = quest.classification,
         contentTitle = quest.contentTitle,
-        dynamicRows = quest.dynamicRows
+        dynamicRows = quest.dynamicRows,
       )
 
     val data = runBlocking {
       repository.getResultItem(
         questionnaire,
         questionnaireResponse,
-        patientDetailsViewConfiguration
+        patientDetailsViewConfiguration,
       )
     }
     with(data.data[0]) {
@@ -424,7 +424,7 @@ class PatientRepositoryTest : RobolectricTest() {
           {
             value =
               of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "9024005", null)))
-          }
+          },
         )
       }
     } returns getConditions()
@@ -437,7 +437,7 @@ class PatientRepositoryTest : RobolectricTest() {
           {
             value =
               of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "259695003", null)))
-          }
+          },
         )
       }
     } returns getObservations()
@@ -467,14 +467,14 @@ class PatientRepositoryTest : RobolectricTest() {
         classification = g6pd.classification,
         contentTitle = g6pd.contentTitle,
         valuePrefix = g6pd.valuePrefix,
-        dynamicRows = g6pd.dynamicRows
+        dynamicRows = g6pd.dynamicRows,
       )
 
     val data = runBlocking {
       repository.getResultItem(
         questionnaire,
         questionnaireResponse,
-        patientDetailsViewConfiguration
+        patientDetailsViewConfiguration,
       )
     }
 
@@ -497,6 +497,7 @@ class PatientRepositoryTest : RobolectricTest() {
       Assert.assertEquals(FontWeight.NORMAL, this[1].properties?.label?.fontWeight)
     }
   }
+
   private fun getEncounter() = Encounter().apply { id = "1" }
 
   private fun getObservations(): List<SearchResult<Observation>> {
@@ -513,7 +514,7 @@ class PatientRepositoryTest : RobolectricTest() {
             }
         },
         included = null,
-        revIncluded = null
+        revIncluded = null,
       ),
       SearchResult(
         Observation().apply {
@@ -527,8 +528,8 @@ class PatientRepositoryTest : RobolectricTest() {
             }
         },
         included = null,
-        revIncluded = null
-      )
+        revIncluded = null,
+      ),
     )
   }
 
@@ -545,7 +546,7 @@ class PatientRepositoryTest : RobolectricTest() {
                   system = "http://snomed.info/sct"
                   code = "9024005"
                 }
-              }
+              },
             )
           code =
             CodeableConcept().apply {
@@ -557,8 +558,8 @@ class PatientRepositoryTest : RobolectricTest() {
             }
         },
         included = null,
-        revIncluded = null
-      )
+        revIncluded = null,
+      ),
     )
   }
 
@@ -570,7 +571,7 @@ class PatientRepositoryTest : RobolectricTest() {
     val result =
       repository.getCondition(
         Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
+        filterOf("code", "Code", Properties()),
       )
 
     coVerify { fhirEngine.search<Condition>(any<Search>()) }
@@ -586,7 +587,7 @@ class PatientRepositoryTest : RobolectricTest() {
     val result =
       repository.getObservation(
         Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
+        filterOf("code", "Code", Properties()),
       )
 
     coVerify { fhirEngine.search<Observation>(any<Search>()) }
@@ -598,13 +599,13 @@ class PatientRepositoryTest : RobolectricTest() {
   fun testGetMedicationRequestShouldReturnValidMedicationRequest() = runBlockingTest {
     coEvery { fhirEngine.search<MedicationRequest>(any<Search>()) } returns
       listOf(
-        SearchResult(MedicationRequest().apply { id = "mr1" }, included = null, revIncluded = null)
+        SearchResult(MedicationRequest().apply { id = "mr1" }, included = null, revIncluded = null),
       )
 
     val result =
       repository.getMedicationRequest(
         Encounter().apply { id = "123" },
-        filterOf("code", "Code", Properties())
+        filterOf("code", "Code", Properties()),
       )
 
     coVerify { fhirEngine.search<MedicationRequest>(any<Search>()) }
@@ -623,7 +624,7 @@ class PatientRepositoryTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili"))
-              }
+              },
             )
           }
 
@@ -634,7 +635,7 @@ class PatientRepositoryTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili2"))
-              }
+              },
             )
           }
       }
@@ -657,7 +658,7 @@ class PatientRepositoryTest : RobolectricTest() {
                 url = "http://hl7.org/fhir/StructureDefinition/translation"
                 addExtension("lang", StringType("sw"))
                 addExtension("content", StringType("Sajili"))
-              }
+              },
             )
           }
       }

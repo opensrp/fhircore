@@ -33,6 +33,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 @OptIn(ExperimentalCoroutinesApi::class)
 class InfoCardTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+
   @get:Rule(order = 2) val composeRule = createComposeRule()
 
   private val settingsViewModel = mockk<SettingsViewModel>()

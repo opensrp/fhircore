@@ -54,7 +54,7 @@ const val LOADER_DIALOG_SYNC_PROGRESS_STATE_TEXT_TAG = "loaderDialogSyncProgress
 fun LoaderDialog(
   modifier: Modifier = Modifier,
   dialogMessage: String = stringResource(id = R.string.syncing),
-  syncProgressStateFlow: StateFlow<String> = MutableStateFlow("")
+  syncProgressStateFlow: StateFlow<String> = MutableStateFlow(""),
 ) {
   val openDialog = remember { mutableStateOf(true) }
   val syncProgressState = syncProgressStateFlow.collectAsState()
@@ -63,22 +63,22 @@ fun LoaderDialog(
   if (openDialog.value) {
     Dialog(
       onDismissRequest = { openDialog.value = true },
-      properties = DialogProperties(dismissOnBackPress = true)
+      properties = DialogProperties(dismissOnBackPress = true),
     ) {
       Box(Modifier.size(240.dp, 180.dp)) {
         Column(
           modifier = modifier.padding(8.dp),
           verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally
+          horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Surface(
             color = Color.Black.copy(alpha = 0.56f),
             modifier = modifier.fillMaxSize(),
-            shape = RoundedCornerShape(8)
+            shape = RoundedCornerShape(8),
           ) {
             Column(
               verticalArrangement = Arrangement.Center,
-              horizontalAlignment = Alignment.CenterHorizontally
+              horizontalAlignment = Alignment.CenterHorizontally,
             ) {
               CircularProgressIndicator(
                 color = Color.White,
@@ -90,7 +90,7 @@ fun LoaderDialog(
                 text = dialogMessage,
                 style = MaterialTheme.typography.h5,
                 color = Color.White,
-                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(8.dp)
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(8.dp),
               )
 
               if (syncProgressStateText.isNotBlank()) {

@@ -47,8 +47,11 @@ import org.smartregister.fhircore.engine.util.AppDataStore
 @HiltAndroidTest
 class AppSyncWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var fhirEngine: FhirEngine
+
   @BindValue val dataStore: AppDataStore = mockk()
+
   @BindValue val syncParamsManager: SyncListenerManager = mockk()
   private lateinit var appSyncWorker: AppSyncWorker
 
@@ -64,10 +67,10 @@ class AppSyncWorkerTest : RobolectricTest() {
             override fun createWorker(
               appContext: Context,
               workerClassName: String,
-              workerParameters: WorkerParameters
+              workerParameters: WorkerParameters,
             ): ListenableWorker =
               AppSyncWorker(appContext, workerParameters, syncParamsManager, fhirEngine, dataStore)
-          }
+          },
         )
         .build()
   }

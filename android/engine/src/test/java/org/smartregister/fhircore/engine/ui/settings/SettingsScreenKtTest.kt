@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 class SettingsScreenKtTest : RobolectricTest() {
 
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+
   @get:Rule(order = 2) val composeRule = createComposeRule()
 
   private val appContext = ApplicationProvider.getApplicationContext<Context>()

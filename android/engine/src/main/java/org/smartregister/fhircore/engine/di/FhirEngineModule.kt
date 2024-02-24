@@ -46,7 +46,7 @@ class FhirEngineModule {
   fun provideFhirEngine(
     @ApplicationContext context: Context,
     tokenAuthenticator: TokenAuthenticator,
-    configService: ConfigService
+    configService: ConfigService,
   ): FhirEngine {
     FhirEngineProvider.init(
       FhirEngineConfiguration(
@@ -56,9 +56,9 @@ class FhirEngineModule {
           baseUrl = configService.provideAuthConfiguration().fhirServerBaseUrl,
           authenticator = tokenAuthenticator,
           networkConfiguration =
-            NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION)
-        )
-      )
+            NetworkConfiguration(TIMEOUT_DURATION, TIMEOUT_DURATION, TIMEOUT_DURATION),
+        ),
+      ),
     )
 
     return FhirEngineProvider.getInstance(context)

@@ -37,7 +37,6 @@ import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
@@ -77,7 +76,9 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 class TracingRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
   @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
@@ -88,9 +89,11 @@ class TracingRegisterDaoTest : RobolectricTest() {
   private lateinit var defaultRepository: DefaultRepository
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var tracingRegisterDao: TracingRegisterDao
+
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var configService: ConfigService
+
   @Before
   fun setUp() {
     hiltRule.inject()
@@ -101,8 +104,8 @@ class TracingRegisterDaoTest : RobolectricTest() {
           dispatcherProvider = coroutineRule.testDispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
-          configService = configService
-        )
+          configService = configService,
+        ),
       )
     coEvery { configurationRegistry.retrieveDataFilterConfiguration(any()) } returns emptyList()
 
@@ -117,7 +120,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
   }
 
@@ -158,7 +161,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "linkage"
-            }
+            },
           )
       }
 
@@ -192,7 +195,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
         "jane",
         16,
         gender = Enumerations.AdministrativeGender.FEMALE,
-        patientType = "community-positive"
+        patientType = "community-positive",
       )
     val patient2 = Faker.buildPatient("patient2", "doe", "jimmy", 1, patientType = "exposed-infant")
     val task1 =
@@ -207,7 +210,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -215,7 +218,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "miss-routine"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -231,7 +234,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -239,7 +242,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "dual-referral"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -255,7 +258,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -263,7 +266,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "hvl"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -276,13 +279,13 @@ class TracingRegisterDaoTest : RobolectricTest() {
             listOf(
               SearchResult(patient0, included = null, revIncluded = null),
               SearchResult(patient1, included = null, revIncluded = null),
-              SearchResult(patient2, included = null, revIncluded = null)
+              SearchResult(patient2, included = null, revIncluded = null),
             )
           ResourceType.Task ->
             listOf(
               SearchResult(task1, included = null, revIncluded = null),
               SearchResult(task2, included = null, revIncluded = null),
-              SearchResult(task3, included = null, revIncluded = null)
+              SearchResult(task3, included = null, revIncluded = null),
             )
           else -> emptyList()
         }
@@ -297,9 +300,9 @@ class TracingRegisterDaoTest : RobolectricTest() {
             isAssignedToMe = false,
             patientCategory = null,
             reasonCode = "hvl",
-            age = TracingAgeFilterEnum.ZERO_TO_2
-          )
-      )
+            age = TracingAgeFilterEnum.ZERO_TO_2,
+          ),
+      ),
     )
     Assert.assertEquals(
       1,
@@ -310,9 +313,9 @@ class TracingRegisterDaoTest : RobolectricTest() {
             isAssignedToMe = false,
             patientCategory = null,
             reasonCode = "dual-referral",
-            age = TracingAgeFilterEnum.ZERO_TO_18
-          )
-      )
+            age = TracingAgeFilterEnum.ZERO_TO_18,
+          ),
+      ),
     )
     Assert.assertEquals(
       1,
@@ -323,9 +326,9 @@ class TracingRegisterDaoTest : RobolectricTest() {
             isAssignedToMe = false,
             patientCategory = null,
             reasonCode = "miss-routine",
-            age = TracingAgeFilterEnum.`18_PLUS`
-          )
-      )
+            age = TracingAgeFilterEnum.PLUS_18,
+          ),
+      ),
     )
   }
 
@@ -340,7 +343,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
         "jane",
         16,
         gender = Enumerations.AdministrativeGender.FEMALE,
-        patientType = "community-positive"
+        patientType = "community-positive",
       )
     val task0 =
       Task().apply {
@@ -355,7 +358,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -363,7 +366,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "miss-routine"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -380,7 +383,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -388,7 +391,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "dual-referral"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -407,7 +410,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://d-tree.org"
               code = "home-tracing-outcome"
-            }
+            },
           )
         subject = patient0.asReference()
         period = Period().apply { start = Date() }
@@ -443,7 +446,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
               Coding().apply {
                 system = "https://d-tree.org"
                 code = "1"
-              }
+              },
             )
             .apply { text = "1" }
         subject = patient0.asReference()
@@ -453,7 +456,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-task"
-                }
+                },
               )
               .apply { text = task0.referenceValue() }
           item = task0.asReference()
@@ -471,12 +474,12 @@ class TracingRegisterDaoTest : RobolectricTest() {
           searchObj.type == ResourceType.Patient ->
             listOf(
               SearchResult(patient0, included = null, revIncluded = null),
-              SearchResult(patient1, included = null, revIncluded = null)
+              SearchResult(patient1, included = null, revIncluded = null),
             )
           searchObj.type == ResourceType.Task ->
             listOf(
               SearchResult(task0, included = null, revIncluded = null),
-              SearchResult(task1, included = null, revIncluded = null)
+              SearchResult(task1, included = null, revIncluded = null),
             )
           searchObj.type == ResourceType.Condition -> emptyList()
           searchObj.type == ResourceType.List ->
@@ -499,8 +502,8 @@ class TracingRegisterDaoTest : RobolectricTest() {
             isAssignedToMe = false,
             patientCategory = null,
             reasonCode = null,
-            age = null
-          )
+            age = null,
+          ),
       )
 
     Assert.assertEquals(2, data.size)
@@ -550,7 +553,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -558,7 +561,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
             Coding().apply {
               system = "https://dtree.org"
               code = "hvl"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -596,8 +599,8 @@ class TracingRegisterDaoTest : RobolectricTest() {
     coEvery { fhirEngine.get(ResourceType.Practitioner, practitioner.logicalId) } returns
       practitioner
     val profileData =
-      tracingRegisterDao.loadProfileData(appFeatureName = null, resourceId = patient0.logicalId) as
-        ProfileData.TracingProfileData
+      tracingRegisterDao.loadProfileData(appFeatureName = null, resourceId = patient0.logicalId)
+        as ProfileData.TracingProfileData
     Assert.assertNotNull(profileData)
     Assert.assertEquals(patient0.logicalId, profileData.logicalId)
     Assert.assertEquals("123456432", profileData.identifier)

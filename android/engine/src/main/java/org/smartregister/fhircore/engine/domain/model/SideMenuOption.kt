@@ -26,7 +26,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
  * @property titleResource Android translatable string resource used as the menu option title
  * @property count Gets the current count for the menu item. Default is 0
  * @property showCount Show clients count against the menu option queries for resources other than
- * Patient
+ *   Patient
  */
 @Stable
 data class SideMenuOption(

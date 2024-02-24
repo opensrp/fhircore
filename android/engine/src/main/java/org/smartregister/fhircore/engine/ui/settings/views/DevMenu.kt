@@ -38,22 +38,25 @@ fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
   val scope = rememberCoroutineScope()
   Column(
     verticalArrangement = Arrangement.spacedBy(6.dp),
-    modifier = Modifier.padding(16.dp).fillMaxWidth()
+    modifier = Modifier.padding(16.dp).fillMaxWidth(),
   ) {
     Button(
       modifier = Modifier.fillMaxWidth(),
       onClick =
-        @ExcludeFromJacocoGeneratedReport
-        {
+        @ExcludeFromJacocoGeneratedReport {
           scope.launch @ExcludeFromJacocoGeneratedReport { viewModel.createResourceReport(context) }
-        }
-    ) { Text(text = "Export Report Resources") }
+        },
+    ) {
+      Text(text = "Export Report Resources")
+    }
     Button(modifier = Modifier.fillMaxWidth(), onClick = viewRes) {
       Text(text = "View Report Resources")
     }
     Button(
       modifier = Modifier.fillMaxWidth(),
-      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() }
-    ) { Text(text = "Test Fetch") }
+      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() },
+    ) {
+      Text(text = "Test Fetch")
+    }
   }
 }

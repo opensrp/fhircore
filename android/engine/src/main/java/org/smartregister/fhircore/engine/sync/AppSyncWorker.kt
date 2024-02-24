@@ -38,7 +38,7 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   private val syncListenerManager: SyncListenerManager,
   val engine: FhirEngine,
-  val dataStore: AppDataStore
+  val dataStore: AppDataStore,
 ) : FhirSyncWorker(appContext, workerParams) {
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
@@ -52,11 +52,12 @@ constructor(
 
           override suspend fun saveLastUpdatedTimestamp(
             resourceType: ResourceType,
-            timestamp: String?
+            timestamp: String?,
           ) {
             timestamp?.let { dataStore.saveLastUpdatedTimestamp(resourceType, timestamp) }
           }
-        }
+        },
     )
+
   override fun getFhirEngine(): FhirEngine = engine
 }

@@ -24,10 +24,11 @@ import android.graphics.drawable.Drawable
  * @property iconResource Android drawable resource used as icon for menu option
  * @property count The current count for the menu item. Default is 0
  * @property showCount Show clients count against the menu option queries for resources other than
- * Patient
+ *   Patient
  * @property countMethod High order function used to return count for the menu option. Defaults to
- * returning -1. -1 is used to determine whether to count active patients or not. Override to
- * provide custom count implementation for instance calling a view model method to perform the count
+ *   returning -1. -1 is used to determine whether to count active patients or not. Override to
+ *   provide custom count implementation for instance calling a view model method to perform the
+ *   count
  */
 data class SideMenuOption(
   val itemId: Int,
@@ -35,5 +36,5 @@ data class SideMenuOption(
   val iconResource: Drawable,
   var count: Long = 0,
   val showCount: Boolean = true,
-  val countMethod: () -> Long = { -1 }
+  val countMethod: () -> Long = { -1 },
 )

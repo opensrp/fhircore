@@ -33,7 +33,7 @@ class FhirPathDataExtractorTest : RobolectricTest() {
   private val expressions =
     mapOf(
       Pair(patientDeceased, "Patient.deceased.exists()"),
-      Pair(familyName, "Patient.name.family & ' Family'")
+      Pair(familyName, "Patient.name.family & ' Family'"),
     )
 
   @Test

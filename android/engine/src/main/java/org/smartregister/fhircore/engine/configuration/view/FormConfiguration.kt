@@ -26,12 +26,12 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 class FormConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val forms: List<QuestionnaireConfig> = listOf()
+  val forms: List<QuestionnaireConfig> = listOf(),
 ) : Configuration
 
 @Stable
 fun formConfigurationOf(
   appId: String = "",
   classification: String = "form",
-  forms: List<QuestionnaireConfig> = listOf()
+  forms: List<QuestionnaireConfig> = listOf(),
 ) = FormConfiguration(appId = appId, classification = classification, forms = forms)

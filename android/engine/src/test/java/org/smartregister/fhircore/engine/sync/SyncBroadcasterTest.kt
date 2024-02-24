@@ -111,7 +111,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         tracer = tracer,
         tokenAuthenticator = tokenAuthenticator,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        appContext = mockk(relaxed = true)
+        appContext = mockk(relaxed = true),
       )
   }
 
@@ -138,10 +138,10 @@ class SyncBroadcasterTest : RobolectricTest() {
         listOf(),
         workDataOf(
           "StateType" to SyncJobStatus.Started::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Started())
+          "State" to gson.toJson(SyncJobStatus.Started()),
         ),
         0,
-        0
+        0,
       )
     val inProgressInfo =
       WorkInfo(
@@ -151,10 +151,10 @@ class SyncBroadcasterTest : RobolectricTest() {
         listOf(),
         workDataOf(
           "StateType" to SyncJobStatus.Finished::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Finished())
+          "State" to gson.toJson(SyncJobStatus.Finished()),
         ),
         0,
-        0
+        0,
       )
 
     every { workManager.getWorkInfosForUniqueWorkLiveData(any()) } answers
@@ -165,7 +165,7 @@ class SyncBroadcasterTest : RobolectricTest() {
             uniqueWorkName.startsWith(AppSyncWorker::class.java.name) ->
               listOf(workInfo, inProgressInfo)
             else -> emptyList()
-          }
+          },
         )
       }
 
@@ -218,7 +218,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         appContext = context,
         tracer = FakePerformanceReporter(),
         tokenAuthenticator = tokenAuthenticator,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =
@@ -231,7 +231,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     syncStatus as SyncJobStatus.Failed
     Assert.assertEquals(
       context.getString(R.string.unable_to_sync),
-      syncStatus.exceptions.first().exception.message
+      syncStatus.exceptions.first().exception.message,
     )
     job.cancel()
   }
@@ -254,7 +254,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         appContext = context,
         tracer = FakePerformanceReporter(),
         tokenAuthenticator = tokenAuthenticatorAlt,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
     val collectedSyncStatusList = mutableListOf<SyncJobStatus>()
     val job =
@@ -267,7 +267,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     syncStatus as SyncJobStatus.Failed
     Assert.assertEquals(
       context.getString(R.string.sync_authentication_error),
-      syncStatus.exceptions.first().exception.message
+      syncStatus.exceptions.first().exception.message,
     )
     job.cancel()
   }

@@ -93,22 +93,22 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
       testComposeRegisterFragment.performFilter(
         registerFilterType = RegisterFilterType.SEARCH_FILTER,
         data = "2",
-        value = 2
-      )
+        value = 2,
+      ),
     )
     Assert.assertTrue(
       testComposeRegisterFragment.performFilter(
         registerFilterType = RegisterFilterType.OVERDUE_FILTER,
         data = "50",
-        value = 51
-      )
+        value = 51,
+      ),
     )
     Assert.assertFalse(
       testComposeRegisterFragment.performFilter(
         registerFilterType = RegisterFilterType.OVERDUE_FILTER,
         data = "50",
-        value = 50
-      )
+        value = 50,
+      ),
     )
   }
 
@@ -137,7 +137,7 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
     override fun performFilter(
       registerFilterType: RegisterFilterType,
       data: String,
-      value: Any
+      value: Any,
     ): Boolean =
       when (registerFilterType) {
         RegisterFilterType.SEARCH_FILTER -> data == value.toString()
@@ -163,7 +163,7 @@ class ComposeRegisterFragmentTest : RobolectricTest() {
                 ErrorMessage(
                   message = loadStateError.error.localizedMessage!!,
                   modifier = Modifier.fillParentMaxSize(),
-                  onClickRetry = { retry() }
+                  onClickRetry = { retry() },
                 )
               }
             }

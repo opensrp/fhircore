@@ -45,7 +45,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
         useLabel = true,
         showHeader = false,
         showFooter = false,
-        primaryFilter = null
+        primaryFilter = null,
       )
     Assert.assertEquals("anc", registerViewConfiguration.appId)
     Assert.assertEquals("appTitle", registerViewConfiguration.appTitle)
@@ -107,7 +107,7 @@ class RegisterViewConfigurationTest : RobolectricTest() {
           showBottomMenu = false,
           useLabel = true,
           showHeader = false,
-          showFooter = false
+          showFooter = false,
         )
     Assert.assertEquals("anc", registerViewConfigurationOf.appId)
     Assert.assertEquals("clasification", registerViewConfigurationOf.classification)

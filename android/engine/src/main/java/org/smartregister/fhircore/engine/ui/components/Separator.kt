@@ -41,7 +41,7 @@ fun Separator(modifier: Modifier = Modifier, showSeparator: Boolean = true) {
           .testTag(SEPARATOR_TAG)
           .clip(CircleShape)
           .size(2.6.dp)
-          .background(color = SubtitleTextColor)
+          .background(color = SubtitleTextColor),
     )
     Spacer(modifier = modifier.width(4.dp))
   }

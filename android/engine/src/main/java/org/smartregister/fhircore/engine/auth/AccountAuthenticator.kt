@@ -42,12 +42,12 @@ constructor(
   @ApplicationContext val context: Context,
   val accountManager: AccountManager,
   val tokenAuthenticator: TokenAuthenticator,
-  val secureSharedPreference: SecureSharedPreference
+  val secureSharedPreference: SecureSharedPreference,
 ) : AbstractAccountAuthenticator(context) {
 
   override fun editProperties(
     response: AccountAuthenticatorResponse?,
-    accountType: String?
+    accountType: String?,
   ): Bundle = bundleOf()
 
   override fun addAccount(
@@ -55,7 +55,7 @@ constructor(
     accountType: String?,
     authTokenType: String?,
     requiredFeatures: Array<out String>?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     val intent = loginIntent(accountType, authTokenType, response)
     return bundleOf(AccountManager.KEY_INTENT to intent)
@@ -64,7 +64,7 @@ constructor(
   override fun confirmCredentials(
     response: AccountAuthenticatorResponse?,
     account: Account?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     return bundleOf()
   }
@@ -73,7 +73,7 @@ constructor(
     response: AccountAuthenticatorResponse?,
     account: Account,
     authTokenType: String?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle {
     var authToken = accountManager.peekAuthToken(account, authTokenType)
 
@@ -96,7 +96,7 @@ constructor(
       return bundleOf(
         AccountManager.KEY_ACCOUNT_NAME to account.name,
         AccountManager.KEY_ACCOUNT_TYPE to account.type,
-        AccountManager.KEY_AUTHTOKEN to authToken
+        AccountManager.KEY_AUTHTOKEN to authToken,
       )
     }
 
@@ -108,7 +108,7 @@ constructor(
   private fun loginIntent(
     accountType: String?,
     authTokenType: String?,
-    response: AccountAuthenticatorResponse?
+    response: AccountAuthenticatorResponse?,
   ): Intent {
     return Intent(context, LoginActivity::class.java).apply {
       putExtra(ACCOUNT_TYPE, accountType)
@@ -128,19 +128,20 @@ constructor(
     response: AccountAuthenticatorResponse?,
     account: Account?,
     authTokenType: String?,
-    options: Bundle?
+    options: Bundle?,
   ): Bundle = bundleOf()
 
   override fun hasFeatures(
     response: AccountAuthenticatorResponse?,
     account: Account?,
-    features: Array<out String>?
+    features: Array<out String>?,
   ): Bundle = bundleOf()
 
   fun logout(onLogout: () -> Unit) {
-    tokenAuthenticator.logout().onSuccess { loggedOut -> if (loggedOut) onLogout() }.onFailure {
-      onLogout()
-    }
+    tokenAuthenticator
+      .logout()
+      .onSuccess { loggedOut -> if (loggedOut) onLogout() }
+      .onFailure { onLogout() }
   }
 
   fun logoutLocal(): Boolean {
@@ -148,7 +149,7 @@ constructor(
     if (account != null) {
       accountManager.invalidateAuthToken(
         account.type,
-        accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE)
+        accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
       )
       return true
     }
@@ -174,7 +175,7 @@ constructor(
   private fun confirmAccount(
     account: Account,
     callback: AccountManagerCallback<Bundle>,
-    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler)
+    errorHandler: Handler = Handler(Looper.getMainLooper(), DefaultErrorHandler),
   ) {
     accountManager.confirmCredentials(account, Bundle(), null, callback, errorHandler)
   }
@@ -189,7 +190,7 @@ constructor(
             loginIntent.flags += Intent.FLAG_ACTIVITY_SINGLE_TOP
             onResult(loginIntent)
           }
-        }
+        },
       )
     }
   }
@@ -220,7 +221,7 @@ constructor(
               onValidTokenMissing(logInIntent)
             }
           },
-          Handler(Looper.getMainLooper(), DefaultErrorHandler)
+          Handler(Looper.getMainLooper(), DefaultErrorHandler),
         )
       }
     }

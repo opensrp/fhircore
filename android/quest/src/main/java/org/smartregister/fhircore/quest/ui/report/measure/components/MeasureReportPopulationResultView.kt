@@ -60,14 +60,14 @@ private fun PopulationResultCard(
           .clip(RoundedCornerShape(8.dp))
           .background(color = colorResource(id = R.color.white))
           .padding(16.dp)
-          .fillMaxWidth()
+          .fillMaxWidth(),
     ) {
       Column {
         Text(
           text = resultItem.title.uppercase(),
           color = colorResource(id = R.color.darkGrayText),
           fontSize = 16.sp,
-          modifier = modifier.wrapContentWidth()
+          modifier = modifier.wrapContentWidth(),
         )
         Divider(color = DividerColor, modifier = modifier.padding(vertical = 20.dp))
         resultItem.dataList.forEach { item -> PopulationResultItem(item) }
@@ -84,11 +84,11 @@ private fun PopulationResultItem(
   Row(
     modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       CircularPercentageIndicator(percentage = measureReportIndividualResult.percentage)
 
@@ -103,19 +103,19 @@ private fun PopulationResultItem(
     Column(
       modifier = modifier.wrapContentWidth(),
       verticalArrangement = Arrangement.SpaceBetween,
-      horizontalAlignment = Alignment.CenterHorizontally
+      horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
         text = "${measureReportIndividualResult.percentage}%",
         fontSize = 16.sp,
         fontWeight = FontWeight.Normal,
-        modifier = modifier.wrapContentWidth()
+        modifier = modifier.wrapContentWidth(),
       )
       Text(
         text = measureReportIndividualResult.count,
         fontSize = 16.sp,
         color = colorResource(id = R.color.darkGrayText),
-        modifier = modifier.wrapContentWidth()
+        modifier = modifier.wrapContentWidth(),
       )
     }
   }

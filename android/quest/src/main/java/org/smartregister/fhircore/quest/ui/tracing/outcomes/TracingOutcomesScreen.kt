@@ -37,7 +37,7 @@ import org.smartregister.fhircore.quest.ui.tracing.components.TracingDataScaffol
 @Composable
 fun TracingOutcomesScreen(
   navController: NavHostController,
-  viewModel: TracingOutcomesViewModel = hiltViewModel()
+  viewModel: TracingOutcomesViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
   TracingDataScaffoldList(
@@ -52,11 +52,11 @@ fun TracingOutcomesScreen(
             navController = navController,
             historyId = it.historyId,
             encounterId = it.encounterId,
-            title = it.title
-          )
+            title = it.title,
+          ),
         )
       }
-    }
+    },
   )
 }
 

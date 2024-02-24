@@ -26,7 +26,7 @@ data class ProfileData(
   val organisations: List<FieldData> = listOf(),
   val careTeams: List<FieldData> = listOf(),
   val isUserValid: Boolean,
-  val practitionerDetails: PractitionerDetails?
+  val practitionerDetails: PractitionerDetails?,
 )
 
 @ExcludeFromJacocoGeneratedReport data class FieldData(val id: String, val value: String)

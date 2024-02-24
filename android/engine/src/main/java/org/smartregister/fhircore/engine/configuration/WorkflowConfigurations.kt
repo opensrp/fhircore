@@ -24,7 +24,7 @@ import org.hl7.fhir.r4.model.Resource
 data class ApplicationWorkflow(
   val appId: String,
   val title: String,
-  val mapping: List<WorkflowPoint>
+  val mapping: List<WorkflowPoint>,
 )
 
 @Serializable
@@ -32,5 +32,5 @@ data class WorkflowPoint(
   val workflowPoint: String,
   @Contextual val resource: Resource,
   val classification: String,
-  val description: String
+  val description: String,
 )

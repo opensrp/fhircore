@@ -31,13 +31,13 @@ class TaskExtensionTest {
         Coding().apply {
           system = "https://d-tree.org"
           code = "clinic-visit-task-order-3"
-        }
+        },
       )
       this.meta.addTag(
         Coding().apply {
           system = "https://d-tree.org"
           code = "guardian-visit"
-        }
+        },
       )
       this.reasonReference = Reference("Questionnaire/testtask1")
     }
@@ -50,7 +50,7 @@ class TaskExtensionTest {
         Coding().apply {
           system = "https://d-tree.org"
           code = "clinic-visit-task-order-1"
-        }
+        },
       )
       this.reasonReference = Reference("Questionnaire/testtask2")
     }
@@ -80,7 +80,7 @@ class TaskExtensionTest {
           Coding().apply {
             system = systemTag
             code = "clinic-visit-task-order-NAN"
-          }
+          },
         )
       }
     Assert.assertNull(task.clinicVisitOrder(systemTag))
@@ -95,7 +95,7 @@ class TaskExtensionTest {
           Coding().apply {
             system = systemTag
             code = "clinic-visit-task-order-34.2"
-          }
+          },
         )
       }
     Assert.assertEquals(34.2, task.clinicVisitOrder(systemTag))
@@ -110,7 +110,7 @@ class TaskExtensionTest {
           Coding().apply {
             system = systemTag
             code = "CLINIC_VISIT-TASK-ORDER_48.1"
-          }
+          },
         )
       }
     Assert.assertEquals(48.1, task.clinicVisitOrder(systemTag))

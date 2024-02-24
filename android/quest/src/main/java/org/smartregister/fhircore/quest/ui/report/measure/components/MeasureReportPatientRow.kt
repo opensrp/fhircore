@@ -41,7 +41,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportPatientVie
 fun MeasureReportPatientRow(
   measureReportPatientViewData: MeasureReportPatientViewData,
   onRowClick: (MeasureReportPatientViewData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -49,24 +49,24 @@ fun MeasureReportPatientRow(
     modifier =
       modifier.fillMaxWidth().height(IntrinsicSize.Min).clickable {
         onRowClick(measureReportPatientViewData)
-      }
+      },
   ) {
     Column(
       modifier =
-        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
+        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
       Text(
         text =
           listOf(
               measureReportPatientViewData.name,
               measureReportPatientViewData.gender,
-              measureReportPatientViewData.age
+              measureReportPatientViewData.age,
             )
             .joinToString(", "),
         fontSize = 18.sp,
         modifier = modifier.wrapContentWidth(),
         maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        overflow = TextOverflow.Ellipsis,
       )
       Spacer(modifier = modifier.height(8.dp))
       if (measureReportPatientViewData.family != null) {
@@ -76,7 +76,7 @@ fun MeasureReportPatientRow(
           fontSize = 14.sp,
           modifier = modifier.wrapContentWidth(),
           maxLines = 1,
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
         )
       }
     }
@@ -93,8 +93,8 @@ private fun MeasureReportPatientRowPreview() {
         name = "John Jared",
         gender = "M",
         age = "56",
-        family = "Oduor"
+        family = "Oduor",
       ),
-    onRowClick = {}
+    onRowClick = {},
   )
 }

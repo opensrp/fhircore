@@ -88,7 +88,7 @@ class HivPatientQuestionnaireActivity : QuestionnaireActivity() {
       neutralButtonListener = { dialog ->
         viewModel.discard()
         dialog.dismiss()
-      }
+      },
     )
   }
 

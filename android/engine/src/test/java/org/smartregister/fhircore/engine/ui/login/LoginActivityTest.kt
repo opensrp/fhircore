@@ -74,9 +74,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginActivity: LoginActivity
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
+
   @OptIn(ExperimentalCoroutinesApi::class)
   @get:Rule(order = 2)
   val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue val repository: DefaultRepository = mockk()
@@ -94,7 +96,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginService: LoginService
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
   private val fhirResourceService = mockk<FhirResourceService>()
   private val keycloakService = mockk<KeycloakService>()
@@ -123,8 +127,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          fhirResourceDataSource = fhirResourceDataSource
-        )
+          fhirResourceDataSource = fhirResourceDataSource,
+        ),
       )
 
     loginActivity =
@@ -159,7 +163,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -176,7 +180,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -185,7 +189,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
           .create()
           .resume()
-          .get()
+          .get(),
       )
     loginActivity.configurationRegistry = configurationRegistry
     loginActivity.configurationRegistry.appId = "default"
@@ -210,7 +214,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -219,7 +223,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
           .create()
           .resume()
-          .get()
+          .get(),
       )
     loginActivity.configurationRegistry = configurationRegistry
     loginActivity.configurationRegistry.appId = "default"

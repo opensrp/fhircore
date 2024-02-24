@@ -35,7 +35,7 @@ data class ActionSwitchFragment(
   val tag: String,
   val isRegisterFragment: Boolean,
   val isFilterVisible: Boolean,
-  val toolbarTitle: String?
+  val toolbarTitle: String?,
 ) : NavigationAction
 
 @Serializable

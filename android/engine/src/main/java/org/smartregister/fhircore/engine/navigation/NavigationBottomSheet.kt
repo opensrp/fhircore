@@ -33,7 +33,7 @@ class NavigationBottomSheet(private val itemListener: (String) -> Unit) :
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
-    savedInstanceState: Bundle?
+    savedInstanceState: Bundle?,
   ): View {
     return ComposeView(requireContext()).apply {
       setContent {

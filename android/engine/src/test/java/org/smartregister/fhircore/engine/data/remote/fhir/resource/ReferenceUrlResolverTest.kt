@@ -61,8 +61,8 @@ class ReferenceUrlResolverTest : RobolectricTest() {
     Assert.assertEquals(
       binary,
       referenceUrlResolver.resolveBinaryResource(
-        "https://fhir-server.org/Binary/sample-binary-image"
-      )
+        "https://fhir-server.org/Binary/sample-binary-image",
+      ),
     )
   }
 
@@ -84,16 +84,17 @@ class ReferenceUrlResolverTest : RobolectricTest() {
           override fun contentType(): MediaType? = null
 
           override fun source(): BufferedSource = mockk()
-        }
+        },
       )
 
     val mockResponse = Response.success<ResponseBody?>(mockResponseBody)
 
     every { mockResponseBody.byteStream() } returns
       (ByteArrayInputStream(
-        "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7".toByteArray(
-          Charset.forName("UTF-8")
-        )
+        "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+          .toByteArray(
+            Charset.forName("UTF-8"),
+          ),
       ))
     val callResponse = mockk<Call<ResponseBody?>>()
     every { callResponse.execute() } returns mockResponse

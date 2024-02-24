@@ -63,10 +63,11 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val sharedPreferencesHelper =
     SharedPreferencesHelper(
       ApplicationProvider.getApplicationContext(),
-      GsonBuilder().setLenient().create()
+      GsonBuilder().setLenient().create(),
     )
 
   private val configService = mockk<ConfigService>()
+
   @ExperimentalCoroutinesApi
   private val appSettingViewModel =
     spyk(
@@ -75,8 +76,8 @@ class AppSettingViewModelTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
-      )
+        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+      ),
     )
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
 
@@ -132,8 +133,8 @@ class AppSettingViewModelTest : RobolectricTest() {
       HttpException(
         Response.error<ResponseBody>(
           500,
-          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
-        )
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+        ),
       )
     fhirResourceDataSource.getResource(ArgumentMatchers.anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
@@ -142,7 +143,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -160,7 +161,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -177,7 +178,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -196,7 +197,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     every { context.getString(R.string.error_loading_config_general) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -213,7 +214,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }

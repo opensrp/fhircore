@@ -58,7 +58,7 @@ constructor(
   val overflowMenuFactory: OverflowMenuFactory,
   val registerRepository: AppRegisterRepository,
   val profileViewDataMapper: ProfileViewDataMapper,
-  val dispatcherProvider: DefaultDispatcherProvider
+  val dispatcherProvider: DefaultDispatcherProvider,
 ) : ViewModel() {
 
   val familyId = savedStateHandle.get<String>(NavigationArg.PATIENT_ID)
@@ -67,8 +67,8 @@ constructor(
     mutableStateOf(
       FamilyProfileUiState(
         overflowMenuItems =
-          overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE)
-      )
+          overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.FAMILY_PROFILE),
+      ),
     )
 
   val familyMemberProfileData: MutableState<ProfileViewData.FamilyProfileViewData> =
@@ -79,14 +79,15 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed, -> {
               fetchFamilyProfileData()
             }
             else -> {}
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
 
     fetchFamilyProfileData()
@@ -98,7 +99,7 @@ constructor(
         QuestionnaireActivity.launchQuestionnaire(
           event.context,
           questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
-          groupIdentifier = event.familyId
+          groupIdentifier = event.familyId,
         )
       is FamilyProfileEvent.OpenMemberProfile -> {
         val urlParams =
@@ -107,7 +108,7 @@ constructor(
             // TODO depending on client type, use relevant health module to load the correct content
             Pair(NavigationArg.HEALTH_MODULE, HealthModule.DEFAULT),
             Pair(NavigationArg.PATIENT_ID, event.patientId),
-            Pair(NavigationArg.FAMILY_ID, event.familyId)
+            Pair(NavigationArg.FAMILY_ID, event.familyId),
           )
         event.navController.navigate(route = MainNavigationScreen.PatientProfile.route + urlParams)
       }
@@ -116,7 +117,7 @@ constructor(
           event.context as Activity,
           questionnaireId = event.taskFormId,
           clientIdentifier = event.patientId,
-          backReference = event.taskId.asReference(ResourceType.Task).reference
+          backReference = event.taskId.asReference(ResourceType.Task).reference,
         )
       is FamilyProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
@@ -125,21 +126,21 @@ constructor(
               event.context,
               questionnaireId = FAMILY_REGISTRATION_FORM,
               clientIdentifier = event.familyId,
-              questionnaireType = QuestionnaireType.EDIT
+              questionnaireType = QuestionnaireType.EDIT,
             )
           R.id.remove_family ->
             RemoveFamilyQuestionnaireActivity.launchQuestionnaire(
               event.context,
               questionnaireId = REMOVE_FAMILY_FORM,
-              clientIdentifier = event.familyId
+              clientIdentifier = event.familyId,
             )
         }
       }
       is FamilyProfileEvent.FetchMemberTasks -> {
-        /*TODO fetch tasks for this member*/
+        // TODO fetch tasks for this member
       }
       FamilyProfileEvent.RoutineVisit -> {
-        /*TODO Implement family routine visit*/
+        // TODO Implement family routine visit
       }
     }
   }
@@ -147,22 +148,23 @@ constructor(
   fun fetchFamilyProfileData() {
     viewModelScope.launch(dispatcherProvider.io()) {
       if (!familyId.isNullOrEmpty()) {
-        registerRepository.loadPatientProfileData(
+        registerRepository
+          .loadPatientProfileData(
             AppFeature.HouseholdManagement.name,
             HealthModule.FAMILY,
-            familyId
+            familyId,
           )
           ?.let {
             familyMemberProfileData.value =
-              profileViewDataMapper.transformInputToOutputModel(it) as
-                ProfileViewData.FamilyProfileViewData
+              profileViewDataMapper.transformInputToOutputModel(it)
+                as ProfileViewData.FamilyProfileViewData
           }
       }
     }
   }
 
   fun filterEligibleFamilyHeadMembers(
-    profileViewData: ProfileViewData.FamilyProfileViewData
+    profileViewData: ProfileViewData.FamilyProfileViewData,
   ): EligibleFamilyHeadMember {
     val listOfFamilies =
       profileViewData.familyMemberViewStates.filter { it.birthDate!!.yearsPassed() > 15 }
@@ -173,7 +175,7 @@ constructor(
     withContext(dispatcherProvider.io()) {
       registerRepository.registerDaoFactory.familyRegisterDao.changeFamilyHead(
         newFamilyHead = newFamilyHead,
-        oldFamilyHead = oldFamilyHead
+        oldFamilyHead = oldFamilyHead,
       )
     }
   }

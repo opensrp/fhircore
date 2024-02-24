@@ -22,7 +22,7 @@ data class OverflowMenuItem(
   val id: Int,
   val titleResource: Int,
   val confirmAction: Boolean = false,
-  val titleColor: Color = Color.Black.copy(alpha = 0.7f)
+  val titleColor: Color = Color.Black.copy(alpha = 0.7f),
 ) {
   var hidden: Boolean = false
 }

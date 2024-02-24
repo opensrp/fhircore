@@ -32,7 +32,7 @@ data class PatientItem(
   val telecom: List<String>? = null,
   val address: AddressData? = null,
   val generalPractitionerReference: String = "",
-  val managingOrganizationReference: String = ""
+  val managingOrganizationReference: String = "",
 )
 
 @Stable
@@ -42,7 +42,7 @@ data class AdditionalData(
   var valuePrefix: String? = null,
   var valuePostfix: String? = null,
   var lastDateAdded: String? = null,
-  val properties: Properties? = null
+  val properties: Properties? = null,
 )
 
 @Stable
@@ -50,7 +50,7 @@ data class AddressData(
   val district: String = "",
   val state: String = "",
   val text: String = "",
-  val fullAddress: String = ""
+  val fullAddress: String = "",
 )
 
 fun PatientItem.genderFull(): String {
@@ -64,18 +64,18 @@ fun PatientItem.genderFull(): String {
 @Stable
 data class QuestResultItem(
   val source: Pair<QuestionnaireResponseItem, QuestionnaireItem>,
-  val data: List<List<AdditionalData>>
+  val data: List<List<AdditionalData>>,
 )
 
 data class QuestionnaireResponseItem(
   val logicalId: String,
   val authored: Date? = null,
   val encounterId: String?,
-  val questionnaireResponseString: String
+  val questionnaireResponseString: String,
 )
 
 data class QuestionnaireItem(
   val logicalId: String? = null,
   val name: String? = null,
-  val title: String? = null
+  val title: String? = null,
 )

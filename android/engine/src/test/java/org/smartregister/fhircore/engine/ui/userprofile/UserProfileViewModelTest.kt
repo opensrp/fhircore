@@ -95,7 +95,7 @@ class UserProfileViewModelTest : RobolectricTest() {
         appContext = context,
         tracer = mockk(),
         tokenAuthenticator = tokenAuthenticator,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
     userProfileViewModel =
       UserProfileViewModel(
@@ -103,7 +103,7 @@ class UserProfileViewModelTest : RobolectricTest() {
         accountAuthenticator,
         secureSharedPreference,
         sharedPreferencesHelper,
-        configurationRegistry
+        configurationRegistry,
       )
   }
 

@@ -45,7 +45,7 @@ data class RegisterViewConfiguration(
   val showHeader: Boolean = true,
   val showFooter: Boolean = true,
   val primaryFilter: SearchFilter? = null,
-  val bottomNavigationOptions: List<NavigationOption>? = null
+  val bottomNavigationOptions: List<NavigationOption>? = null,
 ) : Configuration
 
 /**
@@ -88,7 +88,7 @@ fun Context.registerViewConfigurationOf(
   useLabel: Boolean = true,
   showHeader: Boolean = true,
   showFooter: Boolean = true,
-  bottomNavigationOptions: List<NavigationOption>? = null
+  bottomNavigationOptions: List<NavigationOption>? = null,
 ): RegisterViewConfiguration {
   return RegisterViewConfiguration(
     appId = appId,
@@ -108,6 +108,6 @@ fun Context.registerViewConfigurationOf(
     useLabel = useLabel,
     showHeader = showHeader,
     showFooter = showFooter,
-    bottomNavigationOptions = bottomNavigationOptions
+    bottomNavigationOptions = bottomNavigationOptions,
   )
 }

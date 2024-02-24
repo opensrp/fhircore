@@ -26,7 +26,7 @@ data class ImmunizationProfileViewConfiguration(
   override val appId: String = "",
   override val classification: String = "",
   val showScanBarcode: Boolean = false,
-  val showReportAdverseEvent: Boolean = true
+  val showReportAdverseEvent: Boolean = true,
 ) : Configuration
 
 /**
@@ -38,11 +38,11 @@ fun immunizationProfileViewConfigurationsOf(
   appId: String = "",
   classification: String = "immunization-profile",
   showScanBarcode: Boolean = false,
-  showReportAdverseEvent: Boolean = false
+  showReportAdverseEvent: Boolean = false,
 ) =
   ImmunizationProfileViewConfiguration(
     appId = appId,
     classification = classification,
     showScanBarcode = showScanBarcode,
-    showReportAdverseEvent = showReportAdverseEvent
+    showReportAdverseEvent = showReportAdverseEvent,
   )

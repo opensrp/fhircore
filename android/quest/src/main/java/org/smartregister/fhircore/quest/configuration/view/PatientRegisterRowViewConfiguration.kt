@@ -29,7 +29,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class PatientRegisterRowViewConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val filters: List<Filter>? = null
+  val filters: List<Filter>? = null,
 ) : Configuration
 
 @Stable
@@ -45,7 +45,7 @@ data class Filter(
   val valueCoding: Code? = null,
   val valueString: String? = null,
   val dynamicColors: List<DynamicColor>? = null,
-  val properties: Properties? = null
+  val properties: Properties? = null,
 )
 
 @Stable
@@ -55,7 +55,7 @@ data class QuestionnaireItemFilter(
   val label: String? = null,
   val index: Int? = null,
   val dynamicColors: List<DynamicColor>? = null,
-  val properties: Properties? = null
+  val properties: Properties? = null,
 )
 
 @Stable
@@ -73,7 +73,7 @@ data class Properties(
   val label: Property? = null,
   val value: Property? = null,
   val valueFormatter: Map<String, String>? = null,
-  val labelDirection: Direction = Direction.LEFT
+  val labelDirection: Direction = Direction.LEFT,
 )
 
 @Stable
@@ -81,7 +81,7 @@ data class Properties(
 data class Property(
   val color: String? = null,
   val textSize: Int? = null,
-  val fontWeight: FontWeight? = FontWeight.NORMAL
+  val fontWeight: FontWeight? = FontWeight.NORMAL,
 )
 
 @Stable @Serializable data class DynamicColor(val valueEqual: String, val useColor: String)
@@ -89,5 +89,5 @@ data class Property(
 enum class FontWeight(val weight: Int) {
   LIGHT(300),
   NORMAL(400),
-  BOLD(700)
+  BOLD(700),
 }

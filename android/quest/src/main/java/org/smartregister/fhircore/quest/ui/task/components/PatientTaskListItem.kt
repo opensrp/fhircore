@@ -78,28 +78,28 @@ fun PatientTaskRow(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.testTag(ROW_PATIENT_TASK).fillMaxWidth().height(IntrinsicSize.Min)
+    modifier = modifier.testTag(ROW_PATIENT_TASK).fillMaxWidth().height(IntrinsicSize.Min),
   ) {
     Column(
       modifier =
-        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp)
+        modifier.wrapContentWidth(Alignment.Start).padding(horizontal = 16.dp, vertical = 16.dp),
     ) {
       Text(
         text = titleText,
         fontSize = 18.sp,
-        modifier = modifier.testTag(TEXT_TITLE).wrapContentWidth()
+        modifier = modifier.testTag(TEXT_TITLE).wrapContentWidth(),
       )
       Spacer(modifier = modifier.height(8.dp))
       Row(
         horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         if (useLabel) {
           Text(
             color = SubtitleTextColor,
             text = subTitleText,
             fontSize = 14.sp,
-            modifier = modifier.testTag(TEXT_SUBTITLE_ADDRESS).wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_ADDRESS).wrapContentWidth(),
           )
           Separator(modifier = modifier, showSeparator = patientItem.id.isNotEmpty())
           if (patientItem.id.isNotEmpty()) {
@@ -107,27 +107,27 @@ fun PatientTaskRow(
               color = SubtitleTextColor,
               text = stringResource(R.string.hash_sign) + patientItem.id,
               fontSize = 14.sp,
-              modifier = modifier.testTag(TEXT_SUBTITLE_ID).wrapContentWidth()
+              modifier = modifier.testTag(TEXT_SUBTITLE_ID).wrapContentWidth(),
             )
           }
         } else {
           Image(
             painter = painterResource(id = R.drawable.ic_walk),
             contentDescription = null,
-            modifier = modifier.testTag(ICON_SUBTITLE).padding(end = 4.dp)
+            modifier = modifier.testTag(ICON_SUBTITLE).padding(end = 4.dp),
           )
           Text(
             color = SubtitleTextColor,
             text = stringResource(R.string.sample_distance),
             fontSize = 14.sp,
-            modifier = modifier.testTag(TEXT_SUBTITLE_DISTANCE).wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_DISTANCE).wrapContentWidth(),
           )
           Separator(modifier = modifier, showSeparator = patientItem.description.isNotEmpty())
           Text(
             color = SubtitleTextColor,
             text = patientItem.description,
             fontSize = 14.sp,
-            modifier = modifier.testTag(TEXT_SUBTITLE_DESCRIPTION).wrapContentWidth()
+            modifier = modifier.testTag(TEXT_SUBTITLE_DESCRIPTION).wrapContentWidth(),
           )
         }
       }
@@ -137,14 +137,14 @@ fun PatientTaskRow(
         modifier =
           modifier.testTag(LABEL_MAIN).wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
         patientItem = patientItem,
-        clickListener = clickListener
+        clickListener = clickListener,
       )
     } else {
       TaskIcon(
         modifier =
           modifier.testTag(ICON_MAIN).wrapContentWidth(Alignment.End).padding(horizontal = 16.dp),
         patientItem = patientItem,
-        clickListener = clickListener
+        clickListener = clickListener,
       )
     }
   }
@@ -154,7 +154,7 @@ fun PatientTaskRow(
 fun TaskIcon(
   patientItem: PatientTaskItem,
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
-  modifier: Modifier
+  modifier: Modifier,
 ) {
   val iconId = if (patientItem.overdue) R.drawable.ic_overdue else R.drawable.ic_due
   Image(painter = painterResource(id = iconId), contentDescription = null, modifier = modifier)
@@ -164,7 +164,7 @@ fun TaskIcon(
 fun TaskLabel(
   patientItem: PatientTaskItem,
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
-  modifier: Modifier
+  modifier: Modifier,
 ) {
   val textColor = if (patientItem.overdue) OverdueDarkRedColor else BlueTextColor
   val bgColor = if (patientItem.overdue) OverdueLightColor else DueLightColor
@@ -180,6 +180,6 @@ fun TaskLabel(
         .clip(RoundedCornerShape(2.8.dp))
         .wrapContentWidth()
         .background(color = bgColor)
-        .padding(4.8.dp)
+        .padding(4.8.dp),
   )
 }

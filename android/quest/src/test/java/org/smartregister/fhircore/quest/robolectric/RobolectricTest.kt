@@ -103,8 +103,11 @@ abstract class RobolectricTest {
   fun IBaseResource.convertToString(trimTime: Boolean) =
     FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
-      if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
-      else it
+      if (trimTime) {
+        it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+      } else {
+        it
+      }
     }
 
   fun String.replaceTimePart() =
@@ -133,7 +136,7 @@ abstract class RobolectricTest {
     scu: StructureMapUtilities,
     structureMapJson: String,
     responseJson: String,
-    sourceGroup: String
+    sourceGroup: String,
   ): Bundle {
     val map = scu.parse(structureMapJson, sourceGroup)
 
@@ -145,9 +148,9 @@ abstract class RobolectricTest {
 
     val source = iParser.parseResource(QuestionnaireResponse::class.java, responseJson)
 
-    kotlin.runCatching { scu.transform(scu.worker(), source, map, targetResource) }.onFailure {
-      println(it.stackTraceToString())
-    }
+    kotlin
+      .runCatching { scu.transform(scu.worker(), source, map, targetResource) }
+      .onFailure { println(it.stackTraceToString()) }
 
     println(iParser.encodeResourceToString(targetResource))
 

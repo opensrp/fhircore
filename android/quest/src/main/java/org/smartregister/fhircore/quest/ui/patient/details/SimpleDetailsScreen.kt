@@ -83,9 +83,11 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
         navigationIcon = {
           IconButton(
             onClick = { dataProvider.onBackPressed(true) },
-            Modifier.testTag(DETAILS_TOOLBAR_BACK_ARROW)
-          ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
-        }
+            Modifier.testTag(DETAILS_TOOLBAR_BACK_ARROW),
+          ) {
+            Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow")
+          }
+        },
       )
 
       Column(modifier = Modifier.padding(5.dp).testTag(DETAILS_DATA_ROWS)) {
@@ -96,7 +98,9 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
                 r.cells.forEach { c ->
                   if (c.filter.properties?.labelDirection == Direction.UP) {
                     Column(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
-                  } else Row(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
+                  } else {
+                    Row(modifier = Modifier.weight(1f).padding(5.dp)) { DetailsViewCell(c) }
+                  }
                 }
               }
 
@@ -104,7 +108,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
               if (r.cells.size == 0) {
                 Divider(
                   color = colorResource(id = R.color.white_smoke),
-                  modifier = Modifier.padding(2.dp)
+                  modifier = Modifier.padding(2.dp),
                 )
               }
             }
@@ -115,7 +119,7 @@ fun SimpleDetailsScreen(dataProvider: SimpleDetailsDataProvider) {
       Column(
         modifier = Modifier.padding(20.dp).fillMaxWidth().fillMaxHeight(),
         verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Button(onClick = { dataProvider.onBackPressed(true) }) {
           Text(text = stringResource(R.string.done), fontSize = 20.sp)
@@ -136,7 +140,7 @@ fun DetailsViewCell(cell: DetailsViewItemCell) {
       this.properties?.value,
       cell.value,
       this.dynamicColors,
-      this.properties?.valueFormatter
+      this.properties?.valueFormatter,
     )
   }
 }
@@ -147,7 +151,7 @@ fun TextView(
   property: Property?,
   value: Base?,
   colors: List<DynamicColor>?,
-  valueFormatter: Map<String, String>?
+  valueFormatter: Map<String, String>?,
 ) {
   val valueStr = value.valueToString()
   val dynamicColor = getColor(valueStr, colors)
@@ -180,10 +184,12 @@ fun emptyView() {
       object : SimpleDetailsDataProvider {
 
         override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+
         override fun onBackPressed(back: Boolean) {}
+
         override val detailsViewItem: LiveData<DetailsViewItem>
           get() = MutableLiveData(null)
-      }
+      },
   )
 }
 
@@ -195,14 +201,14 @@ fun simpleDetailsScreenView1() {
     Properties(
       labelDirection = Direction.UP,
       label = Property(color = "FF888888", textSize = 15),
-      value = Property(textSize = 30)
+      value = Property(textSize = 30),
     )
 
   val row3Props =
     Properties(
       labelDirection = Direction.UP,
       label = Property(color = "FF888888", textSize = 15),
-      value = Property(textSize = 40)
+      value = Property(textSize = 40),
     )
 
   val row4Props =
@@ -211,15 +217,15 @@ fun simpleDetailsScreenView1() {
       valueFormatter =
         mapOf(
           "Dynamic Value 1" to "Dynamic value 1 with a different text with value One",
-          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two"
-        )
+          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two",
+        ),
     )
 
   val row5Props =
     Properties(
       labelDirection = Direction.UP,
       label = Property(color = "FF888888", textSize = 15),
-      value = Property(textSize = 40)
+      value = Property(textSize = 40),
     )
 
   val row6Props =
@@ -228,14 +234,16 @@ fun simpleDetailsScreenView1() {
       valueFormatter =
         mapOf(
           "Dynamic Value 1" to "Another Dynamic value 1 having a different sample text",
-          "Dynamic Value 2" to "Another Dynamic value 2 having a different sample text"
-        )
+          "Dynamic Value 2" to "Another Dynamic value 2 having a different sample text",
+        ),
     )
 
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
       override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+
       override fun onBackPressed(back: Boolean) {}
+
       override val detailsViewItem: LiveData<DetailsViewItem>
         get() =
           MutableLiveData(
@@ -248,13 +256,13 @@ fun simpleDetailsScreenView1() {
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Val 1"),
-                          filterOf("key 1", "Sample Label 1", row1Props)
+                          filterOf("key 1", "Sample Label 1", row1Props),
                         ),
                         DetailsViewItemCell(
                           StringType("Val 2"),
-                          filterOf("key 2", "Sample Label Two", row1Props)
-                        )
-                      )
+                          filterOf("key 2", "Sample Label Two", row1Props),
+                        ),
+                      ),
                   ),
                   // section 2
                   DetailsViewItemRow(),
@@ -263,18 +271,18 @@ fun simpleDetailsScreenView1() {
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Value of Yellow"),
-                          filterOf("key 1", "Label 1", row3Props)
-                        )
-                      )
+                          filterOf("key 1", "Label 1", row3Props),
+                        ),
+                      ),
                   ),
                   DetailsViewItemRow(
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Dynamic Value 1"),
-                          filterOf("key 1", "What is the value of Label", row4Props)
-                        )
-                      )
+                          filterOf("key 1", "What is the value of Label", row4Props),
+                        ),
+                      ),
                   ),
                   // section 3
                   DetailsViewItemRow(
@@ -282,23 +290,23 @@ fun simpleDetailsScreenView1() {
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Value of Gray"),
-                          filterOf("key 1", "My test label with long text", row5Props)
-                        )
-                      )
+                          filterOf("key 1", "My test label with long text", row5Props),
+                        ),
+                      ),
                   ),
                   DetailsViewItemRow(
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Dynamic Value 1"),
-                          filterOf("key 1", "Here is the long value of line", row6Props)
-                        )
-                      )
-                  )
-                )
-            )
+                          filterOf("key 1", "Here is the long value of line", row6Props),
+                        ),
+                      ),
+                  ),
+                ),
+            ),
           )
-    }
+    },
   )
 }
 
@@ -313,7 +321,7 @@ fun simpleDetailsScreenView2() {
     Properties(
       labelDirection = Direction.UP,
       label = Property(color = "FF08F00F", textSize = 15),
-      value = Property(textSize = 40)
+      value = Property(textSize = 40),
     )
 
   val row4Props =
@@ -322,14 +330,16 @@ fun simpleDetailsScreenView2() {
       valueFormatter =
         mapOf(
           "Dynamic Value 1" to "Dynamic value 1 with a different text with value One",
-          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two"
-        )
+          "Dynamic Value 2" to "Dynamic value 2 with a different text with value Two",
+        ),
     )
 
   SimpleDetailsScreen(
     object : SimpleDetailsDataProvider {
       override val onBackPressClicked: LiveData<Boolean> = MutableLiveData(true)
+
       override fun onBackPressed(back: Boolean) {}
+
       override val detailsViewItem: LiveData<DetailsViewItem>
         get() =
           MutableLiveData(
@@ -342,13 +352,13 @@ fun simpleDetailsScreenView2() {
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Val 1"),
-                          filterOf("key 1", "Sample Label 1", row1Props)
+                          filterOf("key 1", "Sample Label 1", row1Props),
                         ),
                         DetailsViewItemCell(
                           StringType("Val 2"),
-                          filterOf("key 2", "Sample Label Two", row1Props)
-                        )
-                      )
+                          filterOf("key 2", "Sample Label Two", row1Props),
+                        ),
+                      ),
                   ),
                   DetailsViewItemRow(),
                   DetailsViewItemRow(
@@ -356,23 +366,23 @@ fun simpleDetailsScreenView2() {
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Value of Magenta"),
-                          filterOf("key 1", "Label 1", row3Props)
-                        )
-                      )
+                          filterOf("key 1", "Label 1", row3Props),
+                        ),
+                      ),
                   ),
                   DetailsViewItemRow(
                     cells =
                       mutableListOf(
                         DetailsViewItemCell(
                           StringType("Dynamic Value 2"),
-                          filterOf("key 1", "What is the value of Label", row4Props)
-                        )
-                      )
-                  )
-                )
-            )
+                          filterOf("key 1", "What is the value of Label", row4Props),
+                        ),
+                      ),
+                  ),
+                ),
+            ),
           )
-    }
+    },
   )
 }
 
@@ -388,6 +398,6 @@ fun filterOf(key: String, label: String, properties: Properties): Filter {
         DynamicColor("Value of Yellow", "FFFFFF00"),
       ),
     valueType = Enumerations.DataType.CODING,
-    valueCoding = Code("sys", "cod", "disp")
+    valueCoding = Code("sys", "cod", "disp"),
   )
 }

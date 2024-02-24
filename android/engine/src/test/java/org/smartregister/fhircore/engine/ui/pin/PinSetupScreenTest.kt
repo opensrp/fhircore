@@ -50,10 +50,13 @@ class PinSetupScreenTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
+
         fun onPinConfirmed() {}
+
         fun onMenuSettingsClicked() {}
+
         fun onMenuLoginClicked(value: String) {}
-      }
+      },
     )
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
@@ -62,12 +65,11 @@ class PinSetupScreenTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel =
-      mockk {
-        every { appName } returns "anc"
-        every { pin } returns MutableLiveData("1234")
-        every { enableSetPin } returns MutableLiveData(false)
-      }
+    pinViewModel = mockk {
+      every { appName } returns "anc"
+      every { pin } returns MutableLiveData("1234")
+      every { enableSetPin } returns MutableLiveData(false)
+    }
   }
 
   @Test
@@ -89,7 +91,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = false,
-        inputPin = ""
+        inputPin = "",
       )
     }
 
@@ -123,7 +125,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = false,
-        inputPin = ""
+        inputPin = "",
       )
     }
 
@@ -157,7 +159,7 @@ class PinSetupScreenTest : RobolectricTest() {
           listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP)
         },
         setPinEnabled = true,
-        inputPin = "0000"
+        inputPin = "0000",
       )
     }
 

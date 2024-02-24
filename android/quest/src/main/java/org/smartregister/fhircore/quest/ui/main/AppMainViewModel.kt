@@ -66,7 +66,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
   val configService: ConfigService,
-  val appFeatureManager: AppFeatureManager
+  val appFeatureManager: AppFeatureManager,
 ) : ViewModel() {
 
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
@@ -89,7 +89,7 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
-        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting)
+        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting),
       )
   }
 
@@ -136,13 +136,13 @@ constructor(
         when (event.state) {
           // Update register count when sync completes
           is SyncJobStatus.Finished,
-          is SyncJobStatus.Failed -> {
+          is SyncJobStatus.Failed, -> {
             // Notify subscribers to refresh views after sync
             updateRefreshState()
             appMainUiState.value =
               appMainUiState.value.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
-                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions()
+                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
               )
           }
           else ->
@@ -165,12 +165,11 @@ constructor(
 
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!,
       )
       .displayName
 
   fun formatLastSyncTimestamp(timestamp: OffsetDateTime): String {
-
     val syncTimestampFormatter =
       SimpleDateFormat(SYNC_TIMESTAMP_INPUT_FORMAT, Locale.getDefault()).apply {
         timeZone = TimeZone.getDefault()
@@ -185,7 +184,7 @@ constructor(
   fun updateLastSyncTimestamp(timestamp: OffsetDateTime) {
     sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-      formatLastSyncTimestamp(timestamp)
+      formatLastSyncTimestamp(timestamp),
     )
   }
 

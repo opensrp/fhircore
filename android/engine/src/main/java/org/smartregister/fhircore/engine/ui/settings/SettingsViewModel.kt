@@ -78,16 +78,18 @@ constructor(
       profileData.value = DataLoadState.Loading
 
       var practitionerName: String? = null
-      sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
+      sharedPreferences
+        .read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
         ?.let {
           val practitioner = fhirEngine.get(ResourceType.Practitioner, it) as Practitioner
           practitionerName = practitioner.nameFirstRep.nameAsSingleString
         }
 
       val organizationIds =
-        sharedPreferences.read<List<String>>(
+        sharedPreferences
+          .read<List<String>>(
             key = ResourceType.Organization.name,
-            decodeWithGson = true
+            decodeWithGson = true,
           )
           ?.map {
             val resource = (fhirEngine.get(ResourceType.Organization, it) as Organization)
@@ -95,9 +97,10 @@ constructor(
           }
 
       val locationIds =
-        sharedPreferences.read<List<String>>(
+        sharedPreferences
+          .read<List<String>>(
             key = ResourceType.Location.name,
-            decodeWithGson = true
+            decodeWithGson = true,
           )
           ?.map {
             val resource = (fhirEngine.get(ResourceType.Location, it) as Location)
@@ -105,9 +108,10 @@ constructor(
           }
 
       val careTeamIds =
-        sharedPreferences.read<List<String>>(
+        sharedPreferences
+          .read<List<String>>(
             key = ResourceType.CareTeam.name,
-            decodeWithGson = true
+            decodeWithGson = true,
           )
           ?.map {
             val resource = (fhirEngine.get(ResourceType.CareTeam, it) as CareTeam)
@@ -124,8 +128,8 @@ constructor(
             locations = locationIds ?: listOf(),
             careTeams = careTeamIds ?: listOf(),
             isUserValid = isValid,
-            practitionerDetails = null
-          )
+            practitionerDetails = null,
+          ),
         )
     } catch (e: Exception) {
       profileData.value = DataLoadState.Error(e)
@@ -138,14 +142,14 @@ constructor(
 
   fun logoutUser(context: Context) {
     onLogout.postValue(true)
-    accountAuthenticator.logout @ExcludeFromJacocoGeneratedReport
-    {
+    accountAuthenticator.logout @ExcludeFromJacocoGeneratedReport {
       context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
     }
   }
 
   fun retrieveUsername(): String? =
-    sharedPreferences.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    sharedPreferences
+      .read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
       ?.nameFirstRep
       ?.nameAsSingleString
 

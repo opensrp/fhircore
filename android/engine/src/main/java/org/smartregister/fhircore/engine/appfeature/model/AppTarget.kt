@@ -18,5 +18,5 @@ package org.smartregister.fhircore.engine.appfeature.model
 
 enum class AppTarget {
   CHW,
-  HF
+  HF,
 }

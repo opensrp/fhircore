@@ -37,14 +37,17 @@ fun InfoBoxItem(title: String, value: String, modifier: Modifier = Modifier) {
       text = title,
       modifier.padding(bottom = 4.dp, end = 8.dp),
       color = StatusTextColor,
-      fontSize = 18.sp
+      fontSize = 18.sp,
     )
     Text(text = value, fontSize = 18.sp)
   }
 }
 
 @Composable
-fun OutlineCard(modifier: Modifier = Modifier, content: (@Composable() () -> Unit)) {
+fun OutlineCard(
+  modifier: Modifier = Modifier,
+  content: (@Composable() () -> Unit),
+) {
   Card(
     elevation = 0.dp,
     shape = RoundedCornerShape(12.dp),

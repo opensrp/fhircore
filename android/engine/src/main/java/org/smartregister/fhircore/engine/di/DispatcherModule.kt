@@ -29,6 +29,6 @@ abstract class DispatcherModule {
 
   @Binds
   abstract fun bindDefaultDispatcherProvider(
-    defaultDispatcherProvider: DefaultDispatcherProvider
+    defaultDispatcherProvider: DefaultDispatcherProvider,
   ): DispatcherProvider
 }

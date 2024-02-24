@@ -25,21 +25,20 @@ import org.smartregister.fhircore.engine.util.ListenerIntent
 /**
  * Subclass of [ListAdapter] that is used to provide an adapter class for the RecyclerView.
  *
- * @property onItemClicked Listener called when a row item is clicked. As many elements of the row
- * can be clicked, [ListenerIntent] is used to differentiate the actions to be performed.
- * Additionally, [Data] is passed when the listener is called. when implementing
- * [onCreateViewHolder] remember to bind the data to the view as tag for ease of use.
- *
  * @param dataDiffCallback Subclass of [DataDiffCallback] that is used to compare list row [Data]
+ * @property onItemClicked Listener called when a row item is clicked. As many elements of the row
+ *   can be clicked, [ListenerIntent] is used to differentiate the actions to be performed.
+ *   Additionally, [Data] is passed when the listener is called. when implementing
+ *   [onCreateViewHolder] remember to bind the data to the view as tag for ease of use.
  */
 abstract class BaseRecyclerListViewAdapter<Data : Any>(
   val onItemClicked: (ListenerIntent, Data) -> Unit,
-  val dataDiffCallback: DataDiffCallback<Data>
+  val dataDiffCallback: DataDiffCallback<Data>,
 ) : ListAdapter<Data, BaseRecyclerViewHolder<Data>>(dataDiffCallback) {
 
   abstract override fun onCreateViewHolder(
     parent: ViewGroup,
-    viewType: Int
+    viewType: Int,
   ): BaseRecyclerViewHolder<Data>
 
   override fun onBindViewHolder(holder: BaseRecyclerViewHolder<Data>, position: Int) {

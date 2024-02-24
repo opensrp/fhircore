@@ -43,19 +43,19 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
   override fun navigateToDetails(uniqueIdentifier: String) {
     startActivity(
       Intent(requireActivity(), QuestPatientDetailActivity::class.java)
-        .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier)
+        .putExtra(QUESTIONNAIRE_ARG_PATIENT_KEY, uniqueIdentifier),
     )
   }
 
   @Composable
   override fun ConstructRegisterList(
     pagingItems: LazyPagingItems<PatientItem>,
-    modifier: Modifier
+    modifier: Modifier,
   ) {
     PatientRegisterList(
       pagingItems = pagingItems,
       modifier = modifier,
-      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) },
     )
   }
 
@@ -74,18 +74,18 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
    * @param registerFilterType the filter type
    * @param data the data that will be filtered
    * @param value the query
-   *
    * @return true if the data should be filtered
    */
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientItem,
-    value: Any
+    value: Any,
   ): Boolean {
     return when (registerFilterType) {
       RegisterFilterType.SEARCH_FILTER -> {
-        if (value is String && value.isEmpty()) return true
-        else
+        if (value is String && value.isEmpty()) {
+          return true
+        } else
           data.name.contains(value.toString(), ignoreCase = true) ||
             data.identifier.contentEquals(value.toString()) ||
             data.id == value.toString()
@@ -98,10 +98,11 @@ class PatientRegisterFragment : ComposeRegisterFragment<Patient, PatientItem>() 
     val registerDataViewModel =
       RegisterDataViewModel(
         application = requireActivity().application,
-        registerRepository = patientRepository
+        registerRepository = patientRepository,
       )
     return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
-      registerDataViewModel::class.java]
+      registerDataViewModel::class.java,
+    ]
   }
 
   companion object {

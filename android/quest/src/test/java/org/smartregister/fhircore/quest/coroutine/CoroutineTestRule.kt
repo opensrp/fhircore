@@ -34,8 +34,11 @@ class CoroutineTestRule(val testDispatcher: TestCoroutineDispatcher = TestCorout
   val testDispatcherProvider =
     object : DispatcherProvider {
       override fun default() = testDispatcher
+
       override fun io() = testDispatcher
+
       override fun main() = testDispatcher
+
       override fun unconfined() = testDispatcher
     }
 

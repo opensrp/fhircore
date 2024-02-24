@@ -25,7 +25,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     override val logicalId: String,
     override val name: String,
     val gender: Enumerations.AdministrativeGender,
-    val age: String
+    val age: String,
   ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyRegisterData(
@@ -37,7 +37,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val members: List<FamilyMemberRegisterData> = emptyList(),
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,
-    val lastSeen: String? = null
+    val lastSeen: String? = null,
   ) : RegisterData(logicalId = logicalId, name = name)
 
   data class FamilyMemberRegisterData(
@@ -51,7 +51,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val pregnant: Boolean = false,
     val deathDate: Date? = null,
     val servicesDue: Int? = null,
-    val servicesOverdue: Int? = null
+    val servicesOverdue: Int? = null,
   ) : RegisterData(logicalId = logicalId, name = name)
 
   data class AncRegisterData(
@@ -64,7 +64,7 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val visitStatus: VisitStatus,
     val servicesDue: Int? = null,
     val servicesOverdue: Int? = null,
-    val familyName: String? = null
+    val familyName: String? = null,
   ) : RegisterData(logicalId = logicalId, name = name)
 
   data class HivRegisterData(
@@ -108,6 +108,6 @@ sealed class RegisterData(open val logicalId: String, open val name: String) {
     val attempts: Int,
     val lastAttemptDate: Date? = null,
     val firstAdded: Date? = null, // date first assigned to tracing register
-    val reasons: List<String> = emptyList()
+    val reasons: List<String> = emptyList(),
   ) : RegisterData(logicalId = logicalId, name = name)
 }

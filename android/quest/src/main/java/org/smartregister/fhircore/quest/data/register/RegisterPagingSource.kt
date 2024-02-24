@@ -25,11 +25,11 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [RegisterRepository] function for loading data to the paging source.
+ *   [RegisterRepository] function for loading data to the paging source.
  */
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
-  private val registerViewDataMapper: RegisterViewDataMapper
+  private val registerViewDataMapper: RegisterViewDataMapper,
 ) : PagingSource<Int, RegisterViewData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
@@ -55,21 +55,21 @@ class RegisterPagingSource(
             currentPage = currentPage,
             appFeatureName = _patientPagingSourceState.appFeatureName,
             healthModule = _patientPagingSourceState.healthModule,
-            nameQuery = _patientPagingSourceState.searchFilter!!
+            nameQuery = _patientPagingSourceState.searchFilter!!,
           )
         } else if (_patientPagingSourceState.requiresFilter) {
           registerRepository.loadRegisterFiltered(
             currentPage = currentPage,
             appFeatureName = _patientPagingSourceState.appFeatureName,
             healthModule = _patientPagingSourceState.healthModule,
-            filters = _patientPagingSourceState.filters!!
+            filters = _patientPagingSourceState.filters!!,
           )
         } else {
           registerRepository.loadRegisterData(
             currentPage = currentPage,
             appFeatureName = _patientPagingSourceState.appFeatureName,
             healthModule = _patientPagingSourceState.healthModule,
-            loadAll = _patientPagingSourceState.loadAll
+            loadAll = _patientPagingSourceState.loadAll,
           )
         }
 

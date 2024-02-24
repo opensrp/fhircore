@@ -23,7 +23,7 @@ import org.smartregister.fhircore.quest.configuration.view.Filter
 @Stable
 data class DetailsViewItem(
   var label: String = "",
-  val rows: MutableList<DetailsViewItemRow> = mutableListOf()
+  val rows: MutableList<DetailsViewItemRow> = mutableListOf(),
 )
 
 @Stable

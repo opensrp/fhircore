@@ -31,7 +31,7 @@ constructor(
   val hivRegisterDao: HivRegisterDao,
   val appointmentRegisterDao: AppointmentRegisterDao,
   val homeTracingRegisterDao: HomeTracingRegisterDao,
-  val phoneTracingRegisterDao: PhoneTracingRegisterDao
+  val phoneTracingRegisterDao: PhoneTracingRegisterDao,
 ) {
 
   val registerDaoMap: Map<HealthModule, RegisterDao> by lazy {
@@ -42,7 +42,7 @@ constructor(
       Pair(HealthModule.HOME_TRACING, homeTracingRegisterDao),
       Pair(HealthModule.PHONE_TRACING, phoneTracingRegisterDao),
       Pair(HealthModule.APPOINTMENT, appointmentRegisterDao),
-      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao)
+      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao),
     )
   }
 }

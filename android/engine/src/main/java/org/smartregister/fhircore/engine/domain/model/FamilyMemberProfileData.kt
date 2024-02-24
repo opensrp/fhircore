@@ -36,5 +36,5 @@ data class FamilyMemberProfileData(
   val conditions: List<Condition> = listOf(),
   val flags: List<Flag> = listOf(),
   val services: List<CarePlan> = listOf(),
-  val tasks: List<Task> = listOf()
+  val tasks: List<Task> = listOf(),
 )

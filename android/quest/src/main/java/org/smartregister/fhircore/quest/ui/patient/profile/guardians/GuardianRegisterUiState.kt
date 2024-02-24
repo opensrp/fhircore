@@ -22,10 +22,10 @@ typealias GuardianProfileNavRoute = String
 
 data class GuardianUiState(
   val patientFirstName: String,
-  val registerViewData: List<GuardianPatientRegisterData>
+  val registerViewData: List<GuardianPatientRegisterData>,
 )
 
 data class GuardianPatientRegisterData(
   val profileNavRoute: GuardianProfileNavRoute,
-  val viewData: RegisterViewData
+  val viewData: RegisterViewData,
 )

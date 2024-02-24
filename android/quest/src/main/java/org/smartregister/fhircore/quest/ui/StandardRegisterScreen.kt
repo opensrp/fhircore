@@ -67,9 +67,8 @@ fun PageRegisterScreen(
   screenTitle: String,
   navController: NavHostController,
   registerViewModel: StandardRegisterViewModel,
-  filterNavClickAction: () -> Unit
+  filterNavClickAction: () -> Unit,
 ) {
-
   val context = LocalContext.current
   val searchTextState = registerViewModel.searchText.collectAsState()
   val searchText by remember { searchTextState }
@@ -88,7 +87,7 @@ fun PageRegisterScreen(
           registerViewModel.onEvent(StandardRegisterEvent.SearchRegister(searchText = searchText))
         },
         onNavIconClick = { navController.popBackStack() },
-        onFilterIconClick = filterNavClickAction
+        onFilterIconClick = filterNavClickAction,
       )
     },
     bottomBar = {
@@ -105,11 +104,11 @@ fun PageRegisterScreen(
             },
             nextButtonClickListener = {
               registerViewModel.onEvent(StandardRegisterEvent.MoveToNextPage)
-            }
+            },
           )
         }
       }
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       // Only show counter during search
@@ -124,14 +123,14 @@ fun PageRegisterScreen(
         state = rememberSwipeRefreshState(isRefreshing),
         onRefresh = { registerViewModel.refresh() },
         //        indicator = { _, _ -> }
-        ) {
+      ) {
         RegisterList(
           modifier = iModifier,
           pagingItems = pagingItems,
           onRowClick = { patientId: String ->
             registerViewModel.onEvent(StandardRegisterEvent.OpenProfile(patientId, navController))
           },
-          progressMessage = registerViewModel.progressMessage()
+          progressMessage = registerViewModel.progressMessage(),
         )
       }
     }
@@ -145,12 +144,12 @@ fun TopSection(
   searchText: String,
   onSearchTextChanged: (String) -> Unit,
   onNavIconClick: () -> Unit,
-  onFilterIconClick: () -> Unit = {}
+  onFilterIconClick: () -> Unit = {},
 ) {
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp)
+      modifier = modifier.padding(vertical = 8.dp),
     ) {
       IconButton(onClick = onNavIconClick) {
         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
@@ -181,11 +180,12 @@ fun TopSection(
           .background(Color.White),
       leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = "Search") },
       trailingIcon = {
-        if (searchText.isNotEmpty())
+        if (searchText.isNotEmpty()) {
           IconButton(onClick = { onSearchTextChanged("") }) {
             Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear", tint = Color.Gray)
           }
-      }
+        }
+      },
     )
   }
 }
@@ -198,6 +198,6 @@ fun PreviewTopSection() {
     searchText = "Search \u2026",
     onSearchTextChanged = {},
     onNavIconClick = {},
-    onFilterIconClick = {}
+    onFilterIconClick = {},
   )
 }

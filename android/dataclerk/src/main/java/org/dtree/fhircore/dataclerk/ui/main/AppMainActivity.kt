@@ -42,8 +42,10 @@ import timber.log.Timber
 class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   private val appMainViewModel by viewModels<AppMainViewModel>()
   private val homeViewModel by viewModels<HomeViewModel>()
+
   @Inject lateinit var syncBroadcaster: SyncBroadcaster
   var lastSyncState: SyncJobStatus? = null
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -70,7 +72,7 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       }
       is SyncJobStatus.InProgress -> {
         Timber.d(
-          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%",
         )
         appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
       }
@@ -79,11 +81,12 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(
           (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
             it.exception.message.toString()
-          }
+          },
         )
       }
       is SyncJobStatus.Failed -> {
-        if (!state?.exceptions.isNullOrEmpty() &&
+        if (
+          !state?.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
           if (lastSyncState !is SyncJobStatus.Failed) {
@@ -100,13 +103,15 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           AppMainEvent.UpdateSyncState(
             state,
             lastSyncTime =
-              if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+              if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty()) {
                 getString(
                   org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
-                  appMainViewModel.retrieveLastSyncTimestamp()
+                  appMainViewModel.retrieveLastSyncTimestamp(),
                 )
-              else null
-          )
+              } else {
+                null
+              },
+          ),
         )
       }
       is SyncJobStatus.Finished -> {
@@ -119,9 +124,9 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
               state,
               getString(
                 org.smartregister.fhircore.engine.R.string.last_sync_timestamp,
-                formatLastSyncTimestamp(state.timestamp)
-              )
-            )
+                formatLastSyncTimestamp(state.timestamp),
+              ),
+            ),
           )
           updateLastSyncTimestamp(state.timestamp)
         }
@@ -134,9 +139,10 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
-    if (resultCode == Activity.RESULT_OK)
+    if (resultCode == Activity.RESULT_OK) {
       data?.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
         appMainViewModel.onTaskComplete()
       }
+    }
   }
 }

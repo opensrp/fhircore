@@ -47,12 +47,13 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.PATIENT_ID, patientId),
-            Pair(NavigationArg.TRACING_ID, event.historyId)
+            Pair(NavigationArg.TRACING_ID, event.historyId),
           )
         event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
       }
     }
   }
+
   override fun paginateRegisterDataFlow(page: Int): Flow<PagingData<TracingHistory>> {
     paginateData.value =
       createPager(
@@ -61,9 +62,9 @@ constructor(
             repository.getTracingHistory(
               currentPage = currentPage,
               loadAll = false,
-              patientId = patientId
+              patientId = patientId,
             )
-          }
+          },
         )
         .flow
         .cachedIn(viewModelScope)

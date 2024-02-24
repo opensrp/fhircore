@@ -31,7 +31,7 @@ import org.smartregister.fhircore.engine.configuration.view.asCoding
 fun Search.filterByResourceTypeId(
   reference: ReferenceClientParam,
   resourceType: ResourceType,
-  resourceId: String
+  resourceId: String,
 ) {
   filter(reference, { value = "${resourceType.name}/$resourceId" })
 }
@@ -39,7 +39,7 @@ fun Search.filterByResourceTypeId(
 fun Search.filterByResourceTypeId(
   token: TokenClientParam,
   resourceType: ResourceType,
-  resourceId: String
+  resourceId: String,
 ) {
   filter(token, { value = of("${resourceType.name}/$resourceId") })
 }
@@ -51,7 +51,7 @@ fun Search.filterByPatientName(name: String?) {
       {
         modifier = StringFilterModifier.CONTAINS
         value = name.trim()
-      }
+      },
     )
   }
 }
@@ -86,7 +86,7 @@ fun Search.filterString(filter: SearchFilter) {
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
           this.value = filter.valueString!!
-        }
+        },
       )
     Enumerations.DataType.BOOLEAN ->
       filter(
@@ -94,7 +94,7 @@ fun Search.filterString(filter: SearchFilter) {
         {
           this.modifier = StringFilterModifier.MATCHES_EXACTLY
           this.value = filter.valueBoolean.toString()
-        }
+        },
       )
     else ->
       throw UnsupportedOperationException("SDK does not support value type ${filter.valueType}")

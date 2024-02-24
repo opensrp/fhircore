@@ -40,7 +40,7 @@ class ErrorMessageKtTest : RobolectricTest() {
         fun onRetry() {
           // Imitate any retry functionality by doing nothing
         }
-      }
+      },
     )
 
   @Before

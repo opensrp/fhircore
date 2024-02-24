@@ -56,7 +56,7 @@ const val PATIENT_BIO = "patientBio"
 fun PatientRow(
   patientItem: PatientItem,
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,12 +69,12 @@ fun PatientRow(
           .clickable { clickListener(OpenPatientProfile, patientItem) }
           .padding(15.dp)
           .weight(0.65f)
-          .testTag(PATIENT_BIO)
+          .testTag(PATIENT_BIO),
     ) {
       Text(
         text = "${patientItem.name}, ${patientItem.age}",
         fontSize = 18.sp,
-        modifier = modifier.wrapContentWidth()
+        modifier = modifier.wrapContentWidth(),
       )
       Spacer(modifier = modifier.height(8.dp))
       Row {
@@ -82,7 +82,7 @@ fun PatientRow(
           color = SubtitleTextColor,
           text = patientItem.genderFull(),
           fontSize = 16.sp,
-          modifier = modifier.wrapContentWidth()
+          modifier = modifier.wrapContentWidth(),
         )
         Column {
           patientItem.additionalData?.forEach {
@@ -92,12 +92,14 @@ fun PatientRow(
                   text = label,
                   color =
                     Color(
-                      android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000")
+                      android.graphics.Color.parseColor(it.properties?.label?.color ?: "#000000"),
                     ),
                   fontSize = it.properties?.label?.textSize?.sp ?: 16.sp,
                   modifier = modifier.wrapContentWidth(),
                   fontWeight =
-                    FontWeight(it.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight)
+                    FontWeight(
+                      it.properties?.label?.fontWeight?.weight ?: FontWeight.Normal.weight,
+                    ),
                 )
               }
 
@@ -106,7 +108,7 @@ fun PatientRow(
                 fontSize = it.properties?.value?.textSize?.sp ?: 16.sp,
                 modifier = modifier.wrapContentWidth(),
                 fontWeight =
-                  FontWeight(it.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight)
+                  FontWeight(it.properties?.value?.fontWeight?.weight ?: FontWeight.Normal.weight),
               )
             }
           }
@@ -124,7 +126,7 @@ fun PreviewPatientRow() {
     PatientRow(
       patientItem = PatientItem("1", "1", "Rickey Ron", "M", "32y", ""),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White)
+      modifier = Modifier.background(Color.White),
     )
   }
 }
@@ -151,13 +153,13 @@ fun PreviewPatientRowWithG6PDNormalStatus() {
               properties =
                 Properties(
                   label = Property(color = "#FF0000", textSize = 16),
-                  value = Property(color = "#00a000", textSize = 16)
-                )
-            )
-          )
+                  value = Property(color = "#00a000", textSize = 16),
+                ),
+            ),
+          ),
         ),
       clickListener = { listenerIntent, data -> },
-      modifier = Modifier.background(Color.White)
+      modifier = Modifier.background(Color.White),
     )
   }
 }

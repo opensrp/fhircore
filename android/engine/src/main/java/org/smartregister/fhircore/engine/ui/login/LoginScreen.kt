@@ -101,10 +101,10 @@ const val APP_LOGO_TAG = "appLogoTag"
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(loginViewModel: LoginViewModel) {
-
-  val viewConfiguration by loginViewModel.loginViewConfiguration.observeAsState(
-    loginViewConfigurationOf()
-  )
+  val viewConfiguration by
+    loginViewModel.loginViewConfiguration.observeAsState(
+      loginViewConfigurationOf(),
+    )
   val loadingConfig by loginViewModel.loadingConfig.observeAsState(true)
   val username by loginViewModel.username.observeAsState("")
   val password by loginViewModel.password.observeAsState("")
@@ -161,12 +161,12 @@ fun LoginPage(
         .fillMaxSize()
         .scrollable(orientation = Orientation.Vertical, state = rememberScrollState()),
     color = backgroundColor,
-    contentColor = contentColorFor(backgroundColor = contentColor)
+    contentColor = contentColorFor(backgroundColor = contentColor),
   ) {
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
         forgotPassword = forgotPassword,
-        onDismissDialog = { showForgotPasswordDialog = false }
+        onDismissDialog = { showForgotPasswordDialog = false },
       )
     }
     Column(
@@ -200,13 +200,13 @@ fun LoginPage(
               .wrapContentWidth()
               .padding(vertical = 8.dp)
               .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG)
+              .testTag(APP_NAME_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(40.dp))
         Text(
           text = stringResource(R.string.username),
           color = contentColor,
-          modifier = modifier.padding(vertical = 8.dp)
+          modifier = modifier.padding(vertical = 8.dp),
         )
         OutlinedTextField(
           colors = TextFieldDefaults.outlinedTextFieldColors(textColor = contentColor),
@@ -226,13 +226,13 @@ fun LoginPage(
               .padding(vertical = 4.dp)
               .background(color = textFieldBackgroundColor)
               .testTag(USERNAME_FIELD_TAG),
-          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+          keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
             text = stringResource(R.string.password),
             color = contentColor,
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp)
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp),
           )
           Text(
             text = stringResource(R.string.forgot_password),
@@ -241,7 +241,7 @@ fun LoginPage(
             modifier =
               modifier.wrapContentWidth().padding(vertical = 8.dp).clickable {
                 showForgotPasswordDialog = !showForgotPasswordDialog
-              }
+              },
           )
         }
         OutlinedTextField(
@@ -272,7 +272,7 @@ fun LoginPage(
             IconButton(onClick = { showPassword = !showPassword }) {
               Icon(imageVector = image, "", tint = contentColor)
             }
-          }
+          },
         )
         Spacer(modifier = modifier.height(10.dp))
         Text(
@@ -283,23 +283,23 @@ fun LoginPage(
               LoginErrorState.UNKNOWN_HOST ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.login_call_fail_error_message)
+                  stringResource(R.string.login_call_fail_error_message),
                 )
               LoginErrorState.INVALID_CREDENTIALS ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.invalid_login_credentials)
+                  stringResource(R.string.invalid_login_credentials),
                 )
               null -> ""
               LoginErrorState.MULTI_USER_LOGIN_ATTEMPT ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.multi_user_login_attempt)
+                  stringResource(R.string.multi_user_login_attempt),
                 )
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details)
+                  stringResource(R.string.error_fetching_user_details),
                 )
             },
           modifier =
@@ -307,7 +307,7 @@ fun LoginPage(
               .wrapContentWidth()
               .padding(0.dp)
               .align(Alignment.Start)
-              .testTag(LOGIN_ERROR_TEXT_TAG)
+              .testTag(LOGIN_ERROR_TEXT_TAG),
         )
         Spacer(modifier = modifier.height(30.dp))
         Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
@@ -317,15 +317,15 @@ fun LoginPage(
               ButtonDefaults.buttonColors(
                 backgroundColor = LoginButtonColor,
                 disabledBackgroundColor =
-                  if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray
+                  if (viewConfiguration.darkMode) LoginFieldBackgroundColor else Color.LightGray,
               ),
             onClick = onLoginButtonClicked,
-            modifier = modifier.fillMaxWidth().testTag(LOGIN_BUTTON_TAG)
+            modifier = modifier.fillMaxWidth().testTag(LOGIN_BUTTON_TAG),
           ) {
             Text(
               color = Color.White,
               text = stringResource(id = R.string.login_text),
-              modifier = modifier.padding(8.dp)
+              modifier = modifier.padding(8.dp),
             )
           }
           if (showProgressBar) {
@@ -336,25 +336,25 @@ fun LoginPage(
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.Bottom,
       ) {
         Column {
           Text(
             color = contentColor,
             text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start)
+            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
           )
           Image(
             painter = painterResource(id = R.drawable.ic_opensrp_logo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp)
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
           )
         }
         Text(
           color = contentColor,
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER)
+          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
         )
       }
     }
@@ -365,7 +365,7 @@ fun LoginPage(
 fun ForgotPasswordDialog(
   forgotPassword: () -> Unit,
   onDismissDialog: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   AlertDialog(
     onDismissRequest = onDismissDialog,
@@ -373,7 +373,7 @@ fun ForgotPasswordDialog(
       Text(
         text = stringResource(R.string.forgot_password_title),
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
       )
     },
     text = {
@@ -382,11 +382,11 @@ fun ForgotPasswordDialog(
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
@@ -395,10 +395,10 @@ fun ForgotPasswordDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPassword()
-            }
+            },
         )
       }
-    }
+    },
   )
 }
 
@@ -407,8 +407,10 @@ fun LoginScreenLoadingConfig() {
   Column(
     modifier = Modifier.fillMaxSize(),
     verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.CenterHorizontally
-  ) { CircularProgressBar(text = stringResource(id = R.string.loading)) }
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    CircularProgressBar(text = stringResource(id = R.string.loading))
+  }
 }
 
 @Preview(showBackground = true)
@@ -422,7 +424,7 @@ fun LoginScreenPreview() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
   )
 }
 
@@ -437,7 +439,7 @@ fun LoginScreenPreviewDarkMode() {
     password = "",
     onPasswordChanged = {},
     forgotPassword = {},
-    onLoginButtonClicked = {}
+    onLoginButtonClicked = {},
   )
 }
 

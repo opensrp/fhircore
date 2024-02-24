@@ -38,7 +38,9 @@ import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 class PinSetupActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
@@ -79,7 +81,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
-      }
+      },
     )
     finish()
   }
@@ -92,7 +94,7 @@ class PinSetupActivity : BaseMultiLanguageActivity() {
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
-      }
+      },
     )
     finish()
   }

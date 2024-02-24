@@ -37,9 +37,11 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 @HiltAndroidTest
 internal class SharedPreferencesHelperTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var gson: Gson
 
   @Before
@@ -106,8 +108,9 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", questionnaireConfig, encodeWithGson = false)
     Assert.assertEquals(
       questionnaireConfig.identifier,
-      sharedPreferencesHelper.read<QuestionnaireConfig>("object", decodeWithGson = false)
-        ?.identifier
+      sharedPreferencesHelper
+        .read<QuestionnaireConfig>("object", decodeWithGson = false)
+        ?.identifier,
     )
   }
 
@@ -117,7 +120,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
     sharedPreferencesHelper.write("object", practitioner, encodeWithGson = true)
     Assert.assertEquals(
       practitioner.id,
-      sharedPreferencesHelper.read<Practitioner>("object", decodeWithGson = true)?.id
+      sharedPreferencesHelper.read<Practitioner>("object", decodeWithGson = true)?.id,
     )
   }
 
@@ -146,7 +149,7 @@ internal class SharedPreferencesHelperTest : RobolectricTest() {
 
     sharedPreferencesHelper.write(
       USER_INFO_SHARED_PREFERENCE_KEY,
-      UserInfo(keycloakUuid = "1244").encodeJson()
+      UserInfo(keycloakUuid = "1244").encodeJson(),
     )
     Assert.assertNotNull(sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY))
   }

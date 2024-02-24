@@ -42,14 +42,15 @@ object NavigationArg {
         type = NavType.EnumType(HealthModule::class.java)
         nullable = false
         defaultValue = healthModule
-      }
+      },
     )
 
   /** Create route paths */
   fun routePathsOf(includeCommonArgs: Boolean = false, vararg navArg: String): String =
     "?" +
-      if (includeCommonArgs) listOf(FEATURE, HEALTH_MODULE).plus(navArg).joinByAmpersand()
-      else navArg.toList().joinByAmpersand()
+      if (includeCommonArgs) {
+        listOf(FEATURE, HEALTH_MODULE).plus(navArg).joinByAmpersand()
+      } else navArg.toList().joinByAmpersand()
 
   private fun List<String>.joinByAmpersand() = this.joinToString("&") { "$it={$it}" }
 

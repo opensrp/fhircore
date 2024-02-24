@@ -41,7 +41,7 @@ class QuestionnaireExtensionTest : RobolectricTest() {
             setValue(CanonicalType("test"))
           }
         }
-        .isExtractionCandidate()
+        .isExtractionCandidate(),
     )
 
     Assert.assertTrue(
@@ -52,7 +52,7 @@ class QuestionnaireExtensionTest : RobolectricTest() {
               "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-itemExtractionContext"
           }
         }
-        .isExtractionCandidate()
+        .isExtractionCandidate(),
     )
   }
 
@@ -70,7 +70,7 @@ class QuestionnaireExtensionTest : RobolectricTest() {
           }
         }
         .cqfLibraryIds()
-        .first()
+        .first(),
     )
 
     Assert.assertEquals(
@@ -83,13 +83,12 @@ class QuestionnaireExtensionTest : RobolectricTest() {
           }
         }
         .cqfLibraryIds()
-        .first()
+        .first(),
     )
   }
 
   @Test
   fun testShouldFindMatchingItems() {
-
     val questionnaire =
       Questionnaire().apply {
         addItem().apply {
@@ -117,7 +116,6 @@ class QuestionnaireExtensionTest : RobolectricTest() {
 
   @Test
   fun testShouldFindMatchingItemsByFieldType() {
-
     val questionnaire =
       Questionnaire().apply {
         id = "12345"
@@ -135,7 +133,7 @@ class QuestionnaireExtensionTest : RobolectricTest() {
             Questionnaire.QuestionnaireItemComponent().apply {
               type = Questionnaire.QuestionnaireItemType.DATE
               linkId = "q3-date"
-            }
+            },
           )
       }
 

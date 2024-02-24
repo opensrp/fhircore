@@ -68,7 +68,7 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
         item {
           ErrorMessage(
             message = state.error.also { Timber.e(it) }.localizedMessage!!,
-            onClickRetry = { patients.retry() }
+            onClickRetry = { patients.retry() },
           )
         }
       }
@@ -92,7 +92,7 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
         item {
           ErrorMessage(
             message = state.error.also { Timber.e(it) }.localizedMessage!!,
-            onClickRetry = { patients.retry() }
+            onClickRetry = { patients.retry() },
           )
         }
       }
@@ -120,25 +120,25 @@ fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
     Column(Modifier.padding(Constants.defaultCardPadding).fillMaxWidth()) {
       Text(
         text = patient.name,
-        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
       )
       Row(
         Modifier.fillMaxWidth().padding(top = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         Box(
           modifier =
             Modifier.background(
                 color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
               )
-              .padding(8.dp)
+              .padding(8.dp),
         ) {
           Text(
             text = "Id: #${patient.id}",
             style =
-              MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onPrimary)
+              MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onPrimary),
           )
         }
         Text(text = getFormattedAge(patient, LocalContext.current.resources))

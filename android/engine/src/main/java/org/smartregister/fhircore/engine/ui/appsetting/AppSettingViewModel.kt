@@ -51,7 +51,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   private val _appId = MutableLiveData("")
@@ -113,8 +113,7 @@ constructor(
         val composition = data.resource as Composition
         defaultRepository.save(composition)
 
-        composition
-          .section
+        composition.section
           .groupBy { it.focus.reference.split("/")[0] }
           .entries
           .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
@@ -132,9 +131,9 @@ constructor(
         _error.postValue(context.getString(R.string.error_loading_config_no_internet))
         showProgressBar.postValue(false)
       } catch (httpException: HttpException) {
-        if ((400..503).contains(httpException.response()!!.code()))
+        if ((400..503).contains(httpException.response()!!.code())) {
           _error.postValue(context.getString(R.string.error_loading_config_general))
-        else _error.postValue(context.getString(R.string.error_loading_config_http_error))
+        } else _error.postValue(context.getString(R.string.error_loading_config_http_error))
         showProgressBar.postValue(false)
       } catch (e: Exception) {
         _error.postValue(context.getString(R.string.error_loading_config_http_error))

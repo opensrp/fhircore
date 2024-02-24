@@ -29,7 +29,7 @@ class AuthConfigurationTest {
         fhirServerBaseUrl = "https://fhir.sample.org/",
         clientId = "fhir client",
         clientSecret = "client secret",
-        accountType = "openid"
+        accountType = "openid",
       )
     Assert.assertEquals("https://keycloak-sampleorg", authConfiguration.oauthServerBaseUrl)
     Assert.assertEquals("https://fhir.sample.org/", authConfiguration.fhirServerBaseUrl)

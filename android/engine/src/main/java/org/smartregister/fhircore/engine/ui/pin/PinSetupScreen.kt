@@ -64,7 +64,6 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 
 @Composable
 fun PinSetupScreen(viewModel: PinViewModel) {
-
   val inputPin by viewModel.pin.observeAsState(initial = "")
   val enableSetPin by viewModel.enableSetPin.observeAsState(initial = false)
 
@@ -87,9 +86,8 @@ fun PinSetupPage(
   setPinEnabled: Boolean = false,
   onPinConfirmed: () -> Unit,
   onMenuSettingClicked: () -> Unit,
-  onMenuLoginClicked: () -> Unit
+  onMenuLoginClicked: () -> Unit,
 ) {
-
   var showMenu by remember { mutableStateOf(false) }
 
   Surface(color = colorResource(id = R.color.white_slightly_opaque)) {
@@ -100,43 +98,49 @@ fun PinSetupPage(
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
+            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON),
           )
         }
       },
       actions = {
         IconButton(
           onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON),
+        ) {
+          Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+        }
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
-          Modifier.testTag(PIN_TOOLBAR_MENU)
+          Modifier.testTag(PIN_TOOLBAR_MENU),
         ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
               onMenuSettingClicked()
             },
-            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_SETTINGS)
-          ) { Text(text = stringResource(id = R.string.settings)) }
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_SETTINGS),
+          ) {
+            Text(text = stringResource(id = R.string.settings))
+          }
           DropdownMenuItem(
             onClick = {
               showMenu = false
               onMenuLoginClicked()
             },
-            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN),
+          ) {
+            Text(text = stringResource(id = R.string.pin_menu_login))
+          }
         }
-      }
+      },
     )
 
     Column(
       modifier =
         Modifier.fillMaxSize()
           .padding(horizontal = 16.dp, vertical = 70.dp)
-          .wrapContentWidth(Alignment.CenterHorizontally)
+          .wrapContentWidth(Alignment.CenterHorizontally),
     ) {
       Image(
         painter = painterResource(id = R.drawable.ic_app_logo),
@@ -154,7 +158,7 @@ fun PinSetupPage(
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        modifier = modifier.padding(top = 20.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(top = 20.dp).align(Alignment.CenterHorizontally),
       )
 
       Text(
@@ -163,24 +167,26 @@ fun PinSetupPage(
         fontWeight = FontWeight.Normal,
         fontSize = 18.sp,
         modifier =
-          modifier.padding(horizontal = 16.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
+          modifier
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .align(Alignment.CenterHorizontally),
       )
 
       PinView(
         pinInputLength = PIN_INPUT_MAX_THRESHOLD,
         onPinChanged = onPinChanged,
-        inputPin = inputPin
+        inputPin = inputPin,
       )
 
       Button(
         enabled = setPinEnabled,
         onClick = onPinConfirmed,
-        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(PIN_SET_PIN_CONFIRM_BUTTON)
+        modifier = Modifier.fillMaxWidth().padding(top = 30.dp).testTag(PIN_SET_PIN_CONFIRM_BUTTON),
       ) {
         Text(
           color = Color.White,
           text = stringResource(id = R.string.set_pin),
-          modifier = Modifier.padding(8.dp)
+          modifier = Modifier.padding(8.dp),
         )
       }
     }
@@ -197,7 +203,7 @@ fun PinSetupPreview() {
     inputPin = "",
     setPinEnabled = false,
     onMenuSettingClicked = {},
-    onMenuLoginClicked = {}
+    onMenuLoginClicked = {},
   )
 }
 
@@ -211,6 +217,6 @@ fun PinSetupFilledPreview() {
     inputPin = "1234",
     setPinEnabled = true,
     onMenuSettingClicked = {},
-    onMenuLoginClicked = {}
+    onMenuLoginClicked = {},
   )
 }

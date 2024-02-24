@@ -28,15 +28,17 @@ class PinViewConfiguration(
   val applicationName: String = "",
   val appLogoIconResourceFile: String = "",
   val enablePin: Boolean = false,
-  val showLogo: Boolean = true
+  val showLogo: Boolean = true,
 ) : Configuration
+
 /**
  * A function providing a DSL for configuring [PinViewConfiguration]. The configurations provided by
  * this method are used on the register calling this method
+ *
  * @param appId Set unique identifier for this configuration
  * @param applicationName Set the application name
  * @param appLogoIconResourceFile Sets the application logo thumb icon, this must be png file inside
- * drawable folder
+ *   drawable folder
  * @param enablePin provides PIN login feature
  * @param showLogo Show login logo for the app otherwise
  */
@@ -55,5 +57,5 @@ fun pinViewConfigurationOf(
     applicationName = applicationName,
     appLogoIconResourceFile = appLogoIconResourceFile,
     showLogo = showLogo,
-    enablePin = enablePin
+    enablePin = enablePin,
   )

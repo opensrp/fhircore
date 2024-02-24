@@ -77,13 +77,13 @@ constructor(
   override val fhirEngine: FhirEngine,
   override val dataMapper: PatientItemMapper,
   private val dispatcherProvider: DispatcherProvider,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : RegisterRepository<Patient, PatientItem> {
 
   override suspend fun loadData(
     query: String,
     pageNumber: Int,
-    loadAll: Boolean
+    loadAll: Boolean,
   ): List<PatientItem> {
     return withContext(dispatcherProvider.io()) {
       val patients =
@@ -95,7 +95,7 @@ constructor(
               {
                 modifier = StringFilterModifier.CONTAINS
                 value = query.trim()
-              }
+              },
             )
           }
           sort(Patient.NAME, Order.ASCENDING)
@@ -103,12 +103,14 @@ constructor(
           from = pageNumber * PaginationConstant.DEFAULT_PAGE_SIZE
         }
 
-      patients.map { it.resource }.map {
-        val patientItem = dataMapper.transformInputToOutputModel(it)
-        patientItem.additionalData =
-          loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
-        patientItem
-      }
+      patients
+        .map { it.resource }
+        .map {
+          val patientItem = dataMapper.transformInputToOutputModel(it)
+          patientItem.additionalData =
+            loadAdditionalData(patientItem.id, configurationRegistry, fhirEngine)
+          patientItem
+        }
     }
   }
 
@@ -122,7 +124,7 @@ constructor(
     subjectId: String,
     subjectType: ResourceType,
     forms: List<QuestionnaireConfig>,
-    config: DataDetailsListViewConfiguration
+    config: DataDetailsListViewConfiguration,
   ): List<QuestResultItem> {
     return withContext(dispatcherProvider.io()) {
       val testResults = mutableListOf<QuestResultItem>()
@@ -142,7 +144,7 @@ constructor(
   suspend fun getResultItem(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
-    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration,
   ): QuestResultItem {
     val data: MutableList<List<AdditionalData>> = mutableListOf()
 
@@ -151,12 +153,11 @@ constructor(
         data.add(
           listOf(
             AdditionalData(value = fetchResultItemLabel(questionnaire)),
-            AdditionalData(value = " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""})")
-          )
+            AdditionalData(value = " (${questionnaireResponse.authored?.asDdMmmYyyy() ?: ""})"),
+          ),
         )
       }
       else -> {
-
         val reference =
           questionnaireResponse.getEncounterId()?.let { loadEncounter(it) } ?: questionnaireResponse
 
@@ -183,8 +184,8 @@ constructor(
                 value = value.valueToString(),
                 valuePrefix = filter.valuePrefix,
                 valuePostfix = filter.valuePostfix,
-                properties = filter.properties
-              )
+                properties = filter.properties,
+              ),
             )
           }
           data.add(additionalDataList)
@@ -192,33 +193,34 @@ constructor(
       }
     }
 
-    patientDetailsViewConfiguration.questionnaireFieldsFilter.groupBy { it.index }.forEach {
-      it
-        .value
-        .mapNotNull { f ->
-          questionnaireResponse.find(f.key)?.let {
-            AdditionalData(
-              label = f.label ?: it.asLabel(),
-              value = it.answerFirstRep.value.valueToString()
-            )
+    patientDetailsViewConfiguration.questionnaireFieldsFilter
+      .groupBy { it.index }
+      .forEach {
+        it.value
+          .mapNotNull { f ->
+            questionnaireResponse.find(f.key)?.let {
+              AdditionalData(
+                label = f.label ?: it.asLabel(),
+                value = it.answerFirstRep.value.valueToString(),
+              )
+            }
           }
-        }
-        .takeIf { it.isNotEmpty() }
-        ?.run { data.add(it.key ?: data.size, this) }
-    }
+          .takeIf { it.isNotEmpty() }
+          ?.run { data.add(it.key ?: data.size, this) }
+      }
 
     val questSourceQRItem =
       QuestionnaireResponseItem(
         logicalId = questionnaireResponse.logicalId,
         authored = questionnaireResponse.authored,
         encounterId = questionnaireResponse.getEncounterId(),
-        questionnaireResponseString = questionnaireResponse.encodeResourceToString()
+        questionnaireResponseString = questionnaireResponse.encodeResourceToString(),
       )
     val questSourceQuestionnaireItem =
       QuestionnaireItem(
         logicalId = questionnaire.logicalId,
         name = questionnaire.name,
-        title = questionnaire.title
+        title = questionnaire.title,
       )
 
     return QuestResultItem(Pair(questSourceQRItem, questSourceQuestionnaireItem), data)
@@ -226,11 +228,11 @@ constructor(
 
   suspend fun getCondition(reference: Resource, filter: Filter?) =
     getSearchResults<Condition>(
-      reference.referenceValue(),
-      reference.referenceParamForCondition(),
-      filter,
-      fhirEngine
-    )
+        reference.referenceValue(),
+        reference.referenceParamForCondition(),
+        filter,
+        fhirEngine,
+      )
       .sortedByDescending {
         if (it.hasOnsetDateTimeType()) it.onsetDateTimeType.value else it.recordedDate
       }
@@ -238,11 +240,11 @@ constructor(
 
   suspend fun getObservation(reference: Resource, filter: Filter?) =
     getSearchResults<Observation>(
-      reference.referenceValue(),
-      reference.referenceParamForObservation(),
-      filter,
-      fhirEngine
-    )
+        reference.referenceValue(),
+        reference.referenceParamForObservation(),
+        filter,
+        fhirEngine,
+      )
       .sortedByDescending {
         if (it.hasEffectiveDateTimeType()) it.effectiveDateTimeType.value else it.meta.lastUpdated
       }
@@ -250,17 +252,18 @@ constructor(
 
   suspend fun getMedicationRequest(reference: Resource, filter: Filter?) =
     getSearchResults<MedicationRequest>(
-      reference.referenceValue(),
-      MedicationRequest.ENCOUNTER,
-      filter,
-      fhirEngine
-    )
+        reference.referenceValue(),
+        MedicationRequest.ENCOUNTER,
+        filter,
+        fhirEngine,
+      )
       .sortedByDescending { it.authoredOn }
       .sortedByDescending { it.logicalId }
 
   fun fetchResultItemLabel(questionnaire: Questionnaire): String {
     return questionnaire.titleElement.getLocalizedText()
-      ?: questionnaire.nameElement.getLocalizedText() ?: questionnaire.logicalId
+      ?: questionnaire.nameElement.getLocalizedText()
+      ?: questionnaire.logicalId
   }
 
   suspend fun getQuestionnaire(questionnaireResponse: QuestionnaireResponse): Questionnaire {
@@ -268,8 +271,8 @@ constructor(
       questionnaireResponse.questionnaire.isNullOrBlank() -> {
         Timber.e(
           Exception(
-            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
-          )
+            "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null",
+          ),
         )
         Questionnaire()
       }
@@ -282,8 +285,8 @@ constructor(
           else -> {
             Timber.e(
               Exception(
-                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null"
-              )
+                "Cannot open QuestionnaireResponse because QuestionnaireResponse.questionnaire is null",
+              ),
             )
             Questionnaire()
           }
@@ -301,7 +304,7 @@ constructor(
   private suspend fun searchQuestionnaireResponses(
     subjectId: String,
     subjectType: ResourceType,
-    forms: List<QuestionnaireConfig>
+    forms: List<QuestionnaireConfig>,
   ): List<QuestionnaireResponse> =
     mutableListOf<QuestionnaireResponse>().also { result ->
       forms.forEach {
@@ -311,10 +314,10 @@ constructor(
               filter(QuestionnaireResponse.SUBJECT, { value = "${subjectType.name}/$subjectId" })
               filter(
                 QuestionnaireResponse.QUESTIONNAIRE,
-                { value = "Questionnaire/${it.identifier}" }
+                { value = "Questionnaire/${it.identifier}" },
               )
             }
-            .map { it.resource }
+            .map { it.resource },
         )
       }
     }
@@ -325,18 +328,22 @@ constructor(
         fhirEngine.search<Questionnaire> {
           filter(
             Questionnaire.CONTEXT,
-            { value = of(CodeableConcept().apply { addCoding(filter.valueCoding!!.asCoding()) }) }
+            { value = of(CodeableConcept().apply { addCoding(filter.valueCoding!!.asCoding()) }) },
           )
         }
 
-      result.map { it.resource }.map {
-        QuestionnaireConfig(
-          form = it.nameElement.getLocalizedText() ?: it.logicalId,
-          title = it.titleElement.getLocalizedText()
-              ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-          identifier = it.logicalId
-        )
-      }
+      result
+        .map { it.resource }
+        .map {
+          QuestionnaireConfig(
+            form = it.nameElement.getLocalizedText() ?: it.logicalId,
+            title =
+              it.titleElement.getLocalizedText()
+                ?: it.nameElement.getLocalizedText()
+                ?: it.logicalId,
+            identifier = it.logicalId,
+          )
+        }
     }
 
   suspend fun fetchDemographicsWithAdditionalData(patientId: String): PatientItem {

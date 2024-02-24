@@ -61,8 +61,10 @@ fun InfoCard(viewModel: SettingsViewModel) {
       Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
-      ) { CircularProgressIndicator(Modifier.testTag("ProgressBarItem")) }
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        CircularProgressIndicator(Modifier.testTag("ProgressBarItem"))
+      }
     is DataLoadState.Error -> Column { Text(text = "Something went wrong while fetching data..") }
     is DataLoadState.Success -> {
       val data = (state as DataLoadState.Success<ProfileData>).data
@@ -71,21 +73,21 @@ fun InfoCard(viewModel: SettingsViewModel) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
           Box(
             modifier = Modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
           ) {
             Text(
               text = username.first().uppercase(),
               textAlign = TextAlign.Center,
               fontWeight = FontWeight.Bold,
               fontSize = 28.sp,
-              color = BlueTextColor
+              color = BlueTextColor,
             )
           }
           Text(
             text = username.capitalize(Locale.current),
             fontSize = 22.sp,
             modifier = Modifier.padding(vertical = 22.dp),
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
           )
         }
       }

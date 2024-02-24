@@ -44,7 +44,9 @@ fun List<HumanName>.canonicalName(): String {
     (humanName.given + humanName.family).filterNotNull().joinToString(" ") {
       it.toString().trim().capitalizeFirstLetter()
     }
-  } else ""
+  } else {
+    ""
+  }
 }
 
 fun Patient.extractName(): String {
@@ -56,7 +58,9 @@ fun List<HumanName>.familyName(): String {
   val humanName = this.firstOrNull()
   return if (humanName != null) {
     humanName.family?.capitalizeFirstLetter()?.plus(" Family") ?: ""
-  } else ""
+  } else {
+    ""
+  }
 }
 
 fun Patient.extractFamilyName(): String {
@@ -68,7 +72,9 @@ fun List<HumanName>.givenName(): String {
   val humanName = this.firstOrNull()
   return if (humanName != null) {
     humanName.given?.toString()?.trim('[')?.trim(']')?.capitalizeFirstLetter() ?: ""
-  } else ""
+  } else {
+    ""
+  }
 }
 
 fun Patient.extractGivenName(): String {
@@ -87,7 +93,9 @@ fun Patient.extractGender(context: Context): String? =
       AdministrativeGender.UNKNOWN -> context.getString(R.string.unknown)
       AdministrativeGender.NULL -> ""
     }
-  } else null
+  } else {
+    null
+  }
 
 fun Patient.extractAge(): String {
   if (!hasBirthDate()) return ""
@@ -116,16 +124,24 @@ fun getAgeStringFromDays(days: Long): String {
   } else if (days >= DAYS_IN_YEAR) {
     if (elapsedMonths > 0) {
       "$elapseYearsString $elapseMonthsString"
-    } else elapseYearsString
+    } else {
+      elapseYearsString
+    }
   } else if (days >= DAYS_IN_MONTH) {
     if (elapsedWeeks > 0) {
       "$elapseMonthsString $elapseWeeksString"
-    } else elapseMonthsString
+    } else {
+      elapseMonthsString
+    }
   } else if (days >= DAYS_IN_WEEK) {
     if (elapsedDays > 0) {
       "$elapseWeeksString $elapseDaysString"
-    } else elapseWeeksString
-  } else elapseDaysString
+    } else {
+      elapseWeeksString
+    }
+  } else {
+    elapseDaysString
+  }
 }
 
 fun Patient.atRisk() =
@@ -135,14 +151,15 @@ fun Patient.getLastSeen(immunizations: List<Immunization>): String {
   return immunizations
     .maxByOrNull { it.protocolAppliedFirstRep.doseNumberPositiveIntType.value }
     ?.occurrenceDateTimeType
-    ?.toDisplay()
-    ?: this.meta?.lastUpdated.lastSeenFormat()
+    ?.toDisplay() ?: this.meta?.lastUpdated.lastSeenFormat()
 }
 
 fun Date?.lastSeenFormat(): String {
   return if (this != null) {
     SimpleDateFormat("MM-dd-yyyy", Locale.ENGLISH).run { format(this@lastSeenFormat) }
-  } else ""
+  } else {
+    ""
+  }
 }
 
 fun Address.canonical(): String {
@@ -208,9 +225,10 @@ fun List<Condition>.hasActivePregnancy() =
     // is active and any of the display / text in code is pregnant
     val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
-      condition.code.coding.map { it.display }.plus(condition.code.text).any {
-        it.contentEquals("pregnant", true)
-      }
+      condition.code.coding
+        .map { it.display }
+        .plus(condition.code.text)
+        .any { it.contentEquals("pregnant", true) }
 
     active && pregnancy
   }
@@ -219,9 +237,10 @@ fun List<Condition>.activelyBreastfeeding() =
   this.any { condition ->
     val active = condition.clinicalStatus.coding.any { it.code == "active" }
     val pregnancy =
-      condition.code.coding.map { it.display }.plus(condition.code.text).any {
-        it.contentEquals("breastfeeding", true)
-      }
+      condition.code.coding
+        .map { it.display }
+        .plus(condition.code.text)
+        .any { it.contentEquals("breastfeeding", true) }
 
     active && pregnancy
   }
@@ -229,11 +248,14 @@ fun List<Condition>.activelyBreastfeeding() =
 fun List<Condition>.pregnancyCondition(): Condition {
   var pregnancyCondition = Condition()
   this.forEach { condition ->
-    if (condition.code.coding.map { it.display }.plus(condition.code.text).any {
-        it.contentEquals("pregnant", true)
-      }
-    )
+    if (
+      condition.code.coding
+        .map { it.display }
+        .plus(condition.code.text)
+        .any { it.contentEquals("pregnant", true) }
+    ) {
       pregnancyCondition = condition
+    }
   }
 
   return pregnancyCondition
@@ -254,16 +276,19 @@ fun Patient.extractSecondaryIdentifier(): String? {
 }
 
 fun Patient.extractOfficialIdentifier(): String? =
-  if (this.hasIdentifier())
+  if (this.hasIdentifier()) {
     this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
-  else null
+  } else {
+    null
+  }
 
 fun Coding.toHealthStatus(): HealthStatus {
   return try {
     HealthStatus.valueOf(this.code.uppercase(Locale.getDefault()).replace("-", "_")).apply {
       this@apply.display =
         when (this@apply) {
-          HealthStatus.NEWLY_DIAGNOSED_CLIENT, HealthStatus.CLIENT_ALREADY_ON_ART -> "ART Client"
+          HealthStatus.NEWLY_DIAGNOSED_CLIENT,
+          HealthStatus.CLIENT_ALREADY_ON_ART, -> "ART Client"
           HealthStatus.COMMUNITY_POSITIVE -> "No Conf Test"
           else -> this@toHealthStatus.display
         }

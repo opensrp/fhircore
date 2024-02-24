@@ -79,11 +79,11 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
             override fun createWorker(
               appContext: Context,
               workerClassName: String,
-              workerParameters: WorkerParameters
+              workerParameters: WorkerParameters,
             ): ListenableWorker {
               return WelcomeServiceBackToCarePlanWorker(appContext, workerParameters, fhirEngine)
             }
-          }
+          },
         )
         .build()
   }
@@ -109,7 +109,7 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
             Coding().apply {
               system = "https://d-tree.org"
               code = WelcomeServiceBackToCarePlanWorker.INTERRUPTED_TREAT_CODE
-            }
+            },
           )
         executionPeriod = Period().apply { start = Date() }
         `for` = patient0.asReference()
@@ -142,7 +142,7 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
       1,
       carePlanActivity.detail.code.coding.count {
         it.code == WelcomeServiceBackToCarePlanWorker.WELCOME_SERVICE_QUESTIONNAIRE_ID
-      }
+      },
     )
     coVerify {
       fhirEngine.create(
@@ -150,10 +150,10 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
           it as Task
           Assert.assertEquals(
             it.logicalId,
-            IdType(carePlanActivity.outcomeReference.first().reference).idPart
+            IdType(carePlanActivity.outcomeReference.first().reference).idPart,
           )
           Assert.assertEquals("Welcome Service", carePlanActivity.outcomeReference.first().display)
-        }
+        },
       )
     }
   }
@@ -169,7 +169,7 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
             Coding().apply {
               system = "https://d-tree.org"
               code = WelcomeServiceBackToCarePlanWorker.INTERRUPTED_TREAT_CODE
-            }
+            },
           )
         executionPeriod = Period().apply { start = Date() }
         `for` = patient0.asReference()
@@ -197,8 +197,8 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
                   Coding(
                     "https://d-tree.org",
                     WelcomeServiceBackToCarePlanWorker.WELCOME_SERVICE_QUESTIONNAIRE_ID,
-                    taskDescription
-                  )
+                    taskDescription,
+                  ),
                 )
               scheduled = period.copy().apply { start = DateTimeType.now().value }
               addPerformer(author)
@@ -229,7 +229,7 @@ class WelcomeServiceBackToCarePlanWorkerTest : RobolectricTest() {
         act.detail.code.coding.any {
           it.code == WelcomeServiceBackToCarePlanWorker.WELCOME_SERVICE_QUESTIONNAIRE_ID
         }
-      }
+      },
     )
     Assert.assertEquals(ListenableWorker.Result.success(), result)
     coVerify(exactly = 0) { fhirEngine.create(any()) }

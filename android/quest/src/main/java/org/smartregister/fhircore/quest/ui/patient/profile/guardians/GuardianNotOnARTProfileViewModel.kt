@@ -49,7 +49,7 @@ constructor(
   syncBroadcaster: SyncBroadcaster,
   val overflowMenuFactory: OverflowMenuFactory,
   val profileViewDataMapper: ProfileViewDataMapper,
-  val repository: HivPatientGuardianRepository
+  val repository: HivPatientGuardianRepository,
 ) : ViewModel() {
   // Get your argument from the SavedStateHandle
   private val guardianId: String = savedStateHandle[NavigationArg.PATIENT_ID]!!
@@ -68,12 +68,13 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> getProfileData()
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed, -> getProfileData()
             else -> {}
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
     getProfileData()
   }
@@ -82,8 +83,8 @@ constructor(
     viewModelScope.launch {
       repository.loadGuardianNotOnARTProfile(guardianId).let {
         profileViewData.value =
-          profileViewDataMapper.transformInputToOutputModel(it) as
-            ProfileViewData.PatientProfileViewData
+          profileViewDataMapper.transformInputToOutputModel(it)
+            as ProfileViewData.PatientProfileViewData
       }
       guardianResource = repository.loadRelatedPerson(guardianId)
       patientId = IdType(guardianResource?.patient?.reference).idPart
@@ -98,7 +99,7 @@ constructor(
           questionnaireId = FORM.EDIT_PROFILE,
           clientIdentifier = patientId,
           populationResources =
-            if (guardianResource != null) arrayListOf(guardianResource!!) else null
+            if (guardianResource != null) arrayListOf(guardianResource!!) else null,
         )
       R.id.remove_hiv_patient ->
         QuestionnaireActivity.launchQuestionnaire(
@@ -106,7 +107,7 @@ constructor(
           questionnaireId = FORM.REMOVE_PERSON,
           clientIdentifier = patientId,
           populationResources =
-            if (guardianResource != null) arrayListOf(guardianResource!!) else null
+            if (guardianResource != null) arrayListOf(guardianResource!!) else null,
         )
     }
   }
