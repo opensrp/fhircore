@@ -124,6 +124,8 @@ configurations {
 }
 
 dependencies {
+  implementation(libs.play.services.tasks)
+  implementation(libs.gms.play.services.location)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Library dependencies

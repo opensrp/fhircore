@@ -24,6 +24,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -35,6 +36,8 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
+import junit.framework.TestCase
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -197,5 +200,16 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testStartForResult() {
     val resultLauncher = appMainActivity.startForResult
     Assert.assertNotNull(resultLauncher)
+  }
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(appMainActivity)
+    assertNotNull(fusedLocationProviderClient)
+    TestCase.assertFalse(appMainActivity.hasLocationPermissions())
+
+    val dialog = appMainActivity.launchLocationPermissionsDialog()
+    assertNotNull(dialog)
   }
 }

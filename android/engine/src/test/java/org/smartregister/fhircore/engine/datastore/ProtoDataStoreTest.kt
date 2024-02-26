@@ -21,6 +21,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import java.time.Instant
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -29,6 +30,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
 import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinates
 
 @HiltAndroidTest
 internal class ProtoDataStoreTest : RobolectricTest() {
@@ -81,6 +83,25 @@ internal class ProtoDataStoreTest : RobolectricTest() {
     runTest {
       protoDataStore.writeUserInfo(valueToWrite)
       protoDataStore.userInfo.map { assert(it == valueToWrite) }
+    }
+  }
+
+  @Test
+  fun testReadLocationCoordinates() {
+    val expectedPreferencesValue = LocationCoordinates()
+    runTest {
+      protoDataStore.locationCoordinates.map { dataStoreValue ->
+        assert(dataStoreValue == expectedPreferencesValue)
+      }
+    }
+  }
+
+  @Test
+  fun testWriteLocationCoordinates() {
+    val valueToWrite = LocationCoordinates(37.7749, -122.4194, 0.0, Instant.now())
+    runTest {
+      protoDataStore.writeLocationCoordinates(valueToWrite)
+      protoDataStore.locationCoordinates.map { assert(it == valueToWrite) }
     }
   }
 }

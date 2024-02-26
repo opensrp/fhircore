@@ -16,10 +16,15 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
+import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
@@ -47,6 +52,8 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.location.LocationUtils
+import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
@@ -78,6 +85,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
+  private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+  private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -88,6 +97,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    setupLocationServices()
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
     val topMenuConfigId =
@@ -180,6 +190,71 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         )
       } else Timber.e("QuestionnaireConfig & QuestionnaireResponse are both null")
     }
+  }
+
+  private fun setupLocationServices() {
+    if (!LocationUtils.isLocationEnabled(this)) {
+      openLocationServicesSettings()
+    }
+
+    if (!hasLocationPermissions()) {
+      launchLocationPermissionsDialog()
+    }
+  }
+
+  fun hasLocationPermissions(): Boolean {
+    return PermissionUtils.checkPermissions(
+      this,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
+  }
+
+  private fun openLocationServicesSettings() {
+    activityResultLauncher =
+      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
+        if (resultCode == RESULT_OK || hasLocationPermissions()) {
+          Timber.d("Location or permissions successfully enabled")
+        }
+      }
+
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    showLocationSettingsDialog(intent)
+  }
+
+  private fun showLocationSettingsDialog(intent: Intent) {
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.location_services_disabled))
+      .setCancelable(true)
+      .setPositiveButton(getString(R.string.yes)) { _, _ -> activityResultLauncher.launch(intent) }
+      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
+      .show()
+  }
+
+  fun launchLocationPermissionsDialog() {
+    locationPermissionLauncher =
+      PermissionUtils.getLocationPermissionLauncher(
+        this,
+        onFineLocationPermissionGranted = {},
+        onCoarseLocationPermissionGranted = {},
+        onLocationPermissionDenied = {
+          Toast.makeText(
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
+            .show()
+        },
+      )
+
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      ),
+    )
   }
 
   override fun onSync(syncJobStatus: SyncJobStatus) {

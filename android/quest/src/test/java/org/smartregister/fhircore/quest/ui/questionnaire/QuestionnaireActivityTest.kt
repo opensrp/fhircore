@@ -26,7 +26,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -40,9 +39,12 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
+import kotlin.test.assertNotNull
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -67,13 +69,10 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.util.LocationUtils
-import javax.inject.Inject
-import kotlin.test.assertNotNull
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -219,9 +218,11 @@ class QuestionnaireActivityTest : RobolectricTest() {
     setupActivity()
     assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
     assertNotNull(fusedLocationProviderClient)
-    shadowOf(questionnaireActivity).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    shadowOf(questionnaireActivity)
+      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
     assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
 
@@ -229,7 +230,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
     assertTrue(questionnaireActivity.hasLocationPermissions())
     questionnaireActivity.fetchLocation()
     assertNotNull(questionnaireActivity.currentLocation)
-
   }
 
   @Test
@@ -237,10 +237,12 @@ class QuestionnaireActivityTest : RobolectricTest() {
     setupActivity()
     assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
     assertNotNull(fusedLocationProviderClient)
 
-    shadowOf(questionnaireActivity).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
+    shadowOf(questionnaireActivity)
+      .grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
     val locationManager =
       questionnaireActivity.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, false)
@@ -255,11 +257,11 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
   @Test
   fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
-
     setupActivity()
     assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(questionnaireActivity)
     assertNotNull(fusedLocationProviderClient)
 
     assertTrue(LocationUtils.isLocationEnabled(questionnaireActivity))
@@ -267,7 +269,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
 
     val dialog = questionnaireActivity.launchLocationPermissionsDialog()
     assertNotNull(dialog)
-
   }
 
   private fun setupActivity() {
