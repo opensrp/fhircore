@@ -430,14 +430,13 @@ constructor(
       }
     if (resourceIdPair != null) {
       val (resourceType, resourceId) = resourceIdPair
-      val group =
-        loadResource(resourceType = resourceType, resourceIdentifier = resourceId) as Group?
-      if (group != null) {
+      val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
+      if (resource != null) {
         val system =
           context.getString(
             org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
           )
-        group.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
+        resource.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
       }
     }
   }
