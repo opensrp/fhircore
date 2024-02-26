@@ -43,7 +43,7 @@ jobs:
         run: ./gradlew :engine:spotlessCheck
         working-directory: android
 
-      # - name: Run Engine unit tests with Gradle 
+      # - name: Run Engine unit tests with Gradle
       #   run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace 
       #   working-directory: android
 
