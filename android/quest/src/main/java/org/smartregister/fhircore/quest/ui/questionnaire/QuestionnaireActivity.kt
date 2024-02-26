@@ -105,7 +105,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private var baseResourceType: ResourceType? = null
   private var alertDialog: AlertDialog? = null
   private lateinit var fusedLocationClient: FusedLocationProviderClient
-  private var currLocation: Location? = null
+  private var currentLocation: Location? = null
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
@@ -213,6 +213,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           updateViews()
           fragment.whenStarted { loadProgress.dismiss() }
         }
+
+        setupLocationServices()
+
       }
     }
   }
@@ -295,12 +298,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
+          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
         } else {
-          currLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
+          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
         }
       } catch (e: Exception) {
-        Timber.e(e, "Failed to get GPS location")
+        Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
+      } finally {
+        if (currentLocation == null) {
+          this@QuestionnaireActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
+        }
       }
     }
   }
@@ -514,9 +521,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       return
     }
 
-    if (currLocation != null) {
+    if (currentLocation != null) {
       questionnaireResponse.contained.add(
-        ResourceUtils.createLocationResource(gpsLocation = currLocation),
+        ResourceUtils.createLocationResource(gpsLocation = currentLocation),
       )
     }
 
