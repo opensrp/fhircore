@@ -219,7 +219,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
     setupActivity()
     assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
 
-    val fusedLocationProviderClient =  LocationServices.getFusedLocationProviderClient(questionnaireActivity)
+    val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(questionnaireActivity)
     assertNotNull(fusedLocationProviderClient)
     shadowOf(questionnaireActivity).grantPermissions(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
