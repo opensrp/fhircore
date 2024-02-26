@@ -16,10 +16,14 @@
 
 package org.smartregister.fhircore.quest.util
 
+import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -28,24 +32,24 @@ import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.robolectric.Robolectric
+import org.robolectric.android.controller.ActivityController
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-class LocationUtilsTest {
-  private lateinit var context: Context
+class LocationUtilsTest: RobolectricTest() {
   private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-
+  private val activityController: ActivityController<HiltActivityForTest> = Robolectric.buildActivity( HiltActivityForTest::class.java )
+  private lateinit var context: HiltActivityForTest
   @Before
   fun setUp() {
-    context = mockk(relaxed = true)
-    fusedLocationProviderClient = mockk(relaxed = true)
-    mockkObject(LocationUtils)
+    context = activityController.create().resume().get()
   }
 
   @Test
   fun `test isLocationEnabled when GPS provider is enabled`() {
-    val locationManager = mockk<LocationManager>()
-    every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-    every { locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) } returns true
-    every { locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) } returns false
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    locationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true)
 
     val result = LocationUtils.isLocationEnabled(context)
 
@@ -54,15 +58,30 @@ class LocationUtilsTest {
 
   @Test
   fun `test isLocationEnabled when Network provider is enabled`() {
-    val locationManager = mockk<LocationManager>()
-    every { context.getSystemService(Context.LOCATION_SERVICE) } returns locationManager
-    every { locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) } returns false
-    every { locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) } returns true
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    locationManager.setTestProviderEnabled(LocationManager.NETWORK_PROVIDER, true)
 
     val result = LocationUtils.isLocationEnabled(context)
 
     assert(result)
   }
+  
+//  @Test
+//  fun `test getAccurateLocation`() = runBlocking {
+//    val location = Location("").apply {
+//      latitude = 36.0
+//      longitude = 1.0
+//    }
+//    fusedLocationProviderClient.setMockLocation(location)
+//
+//    val testDispatcher = this.coroutineContext
+//
+//
+//    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, testDispatcher)
+//
+//    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
+//    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
+//  }
 
   @Test
   fun `test getAccurateLocation`() = runBlocking {
