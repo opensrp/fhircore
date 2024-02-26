@@ -1,0 +1,59 @@
+# Tagging Resources
+
+OpenSRP2 uses `meta.tag` to add additional information to resources for filtering during sycronization and analysis.
+
+All tags have the system prefix `https://smartregister.org/` and a system suffix based on the type of codes that they manage.
+
+## Description of Tags
+
+The `meta.tag` field is set to a `code`. We require the `system` and `code` fields to be complete to properly use the tag and rely on the `display` field for a human readable description, although we do not surface this information to any app users.
+
+In the FHIR specification the `system` field is the defined as the terminology service that defines the code. Our tagging interprets that as defining a sub-terminology relevant for the specific tags purpose. For example, in the `app-version` tag the `"https://smartregister.org/app-version"` system defines the set of app version `code`s that are considered valid `app-version`s.
+
+The tags we currently set are shown below.
+
+System Suffix|Display|Purpose
+---|---|---
+`app-version`|Application Version|This is the application version as defined in the compiled app.
+`care-team-tag-id`|Practitioner CareTeam|This is the CareTeam linked to the Practitioner that is logged into the app when the resource is created.
+`practitioner-tag-id`|Practitioner|This is the Practitioner that is logged into the app when the resource is created.
+`location-tag-id`|Practitioner Location|This is the Location linked to the Organization of the Practitioner that is logged into the app when the resource is created.
+`organisation-tag-id`|Practitioner Organization|This is the Organization linked to the Practitioner that is logged into the app when the resource is created.
+`related-entity-location-tag-id`|Related Entity Location|"Entity" here is a `Patient`, `Group`, Point of Service (as a `Location` resource), or other organizing unit, and this stores the ID of a `Location` resource (or the resource itself if it is a `Location`) lnked to that entity.
+
+## Example Tags
+
+Below is an example of the above tags as it would appear in the JSON serialization of a FHIR resource.
+
+```json
+    {
+      "system": "https://smartregister.org/app-version",
+      "code": "1.1.0-sidBunda",
+      "display": "Application Version"
+    },
+    {
+      "system": "https://smartregister.org/care-team-tag-id",
+      "code": "47d68cac-306f-4b75-9704-b4ed48b24f76",
+      "display": "Practitioner CareTeam"
+    },
+    {
+      "system": "https://smartregister.org/practitioner-tag-id",
+      "code": "9db48504-9f63-411b-b61e-28351d7af5e8",
+      "display": "Practitioner"
+    },
+    {
+      "system": "https://smartregister.org/location-tag-id",
+      "code": "Not defined",
+      "display": "Practitioner Location"
+    },
+    {
+      "system": "https://smartregister.org/organisation-tag-id",
+      "code": "ca7d3362-8048-4fa0-8fdd-6da33423cc6b",
+      "display": "Practitioner Organization"
+    },
+    {
+      "system": "https://smartregister.org/related-entity-location-tag-id",
+      "code": "33f45e09-f96e-41d3-9916-fb96455a4cb2",
+      "display": "Related Entity Location"
+    }
+```

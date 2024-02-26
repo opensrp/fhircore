@@ -42,6 +42,7 @@ data class NavigationMenuConfig(
 data class ImageConfig(
   val type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
+  val color: String? = null,
   @Contextual var decodedBitmap: Bitmap? = null,
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
