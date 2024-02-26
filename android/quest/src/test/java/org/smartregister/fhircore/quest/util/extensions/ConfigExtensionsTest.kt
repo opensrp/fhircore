@@ -16,11 +16,12 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.content.ContextCompat.startActivity
+import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -46,6 +47,8 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -513,5 +516,33 @@ class ConfigExtensionsTest : RobolectricTest() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap())
+  }
+
+  @Test
+  fun testShowToastWhenAnImageWithActionParamsIsPressed() {
+    val context = mockk<Context>(relaxed = true)
+    val navController = NavController(context)
+    val mockClipboardManager = mockk<ClipboardManager>()
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.COPY_TEXT.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "copyText",
+              paramType = ActionParameterType.PARAMDATA,
+              value = "https://my-url",
+            ),
+          ),
+      )
+    val text = "Link ${clickAction.params.first().value} copied successfully"
+    every { context.getSystemService(Context.CLIPBOARD_SERVICE) } returns mockClipboardManager
+    every {
+      context.getString(R.string.copy_text_success_message, clickAction.params.first().value)
+    } returns text
+    every { mockClipboardManager.setPrimaryClip(any()) } returns Unit
+    listOf(clickAction).handleClickEvent(navController, resourceData, context = context)
+    verify { context.showToast(text, Toast.LENGTH_LONG) }
   }
 }
