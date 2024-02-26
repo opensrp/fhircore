@@ -31,7 +31,8 @@ There can only be one instance of application configuration for the entire appli
     ],
     "loginConfig": {
         "showLogo": true,
-        "enablePin": true
+        "enablePin": true,
+        "showAppTitle" : true,
         "logoHeight" : 120,
         "logoWidth" : 140
     },
@@ -69,4 +70,5 @@ loginConfig.showLogo | Display logo in login page | Yes | `true` |
 loginConfig.enablePin | Request user for pin after login; to be used for subsequent logins | No | `false` |
 loginConfig.logoHeight | Set the maximum height a logo can have | No | 120 |
 loginConfig.logoWidth | Set the maximum width a logo can have | No | 140 |
+loginConfig.showAppTitle | Toggle App title in LoginScreen visibility | No | true |
 deviceToDeviceSync.resourcesToSync | Types of resource to be synced from one device to another during peer connection | No | `false` |
