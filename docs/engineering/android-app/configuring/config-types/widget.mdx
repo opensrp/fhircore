@@ -112,7 +112,7 @@ resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes
 conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
 sortConfig | Configuration used for sorting LIST widget resource | no | |
 
-<img src="docs/engineering/android-app/image/listui.png" width="250"/>
+<img src="static/img/listui.png" width="250"/>
 
 ## How to use COMPOUND_TEXT
 Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
@@ -162,7 +162,7 @@ primaryTextActions | The list of actions associated with the primary text. If th
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
 
-<img src="docs/engineering/android-app/image/text_with_no_sec_preview.png" width="250"/><img src="docs/engineering/android-app/image/text_with_sec_preview.png" width="250"/>
+<img src="static/img/text_with_no_sec_preview.png" width="250"/><img src="static/img/text_with_sec_preview.png" width="250"/>
 
 ## How to use BUTTON
 Defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
@@ -236,7 +236,7 @@ On top of the above properties, you need to add  Image config properties see a `
 ```
  The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
 
- <img src="docs/engineering/android-app/image/button_view_ui.png" width="250"/> <img src="docs/engineering/android-app/image/medium_small_button_ui.png" width="250"/> <img src="docs/engineering/android-app/image/small_button_ui.png" width="250"/>
+ <img src="static/img/button_view_ui.png" width="250"/> <img src="static/img/medium_small_button_ui.png" width="250"/> <img src="static/img/small_button_ui.png" width="250"/>
 
 ## SERVICE_CARD widgets
 Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
@@ -331,7 +331,7 @@ below.
   "serviceMemberIcons": "@{serviceMemberIcons}"
 }
 ```
-<img src="docs/engineering/android-app/image/service_card_ui.png" width="250"/>
+<img src="static/img/service_card_ui.png" width="250"/>
 
 ## COLUMN widgets
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
@@ -378,7 +378,7 @@ wrapContent| A boolean value that represents whether the column should wrap its 
 arrangement | An enum value that represents the vertical arrangement of the child views of the column | | Null|
 children | A list of ViewProperties objects that represents the child views of the column | | emptyList()|
 
-<img src="docs/engineering/android-app/image/column_ui.png" width="250"/>
+<img src="static/img/column_ui.png" width="250"/>
 
 ## IMAGE widget
 Displays icons or images.
@@ -409,7 +409,7 @@ imageConfig | The property that points to the actual image. It can either point 
 padding | Determines whether the view should fill its parent's width | | false |
 shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
 
-<img src="docs/engineering/android-app/image/image_ui.png" width="250"/>
+<img src="static/img/image_ui.png" width="250"/>
 
 ## ROW widgets
 The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
@@ -466,7 +466,7 @@ arrangement |  Specifies the arrangement of the children views within the row. |
 wrapContent |  If set to true, the row's width and height will adjust to wrap its content tightly. | | false |
 children |   A list of **ViewProperties** objects representing the children views within the row. | | emptyList()|
 
-<img src="docs/engineering/android-app/image/row_ui.png" width="250"/>
+<img src="static/img/row_ui.png" width="250"/>
 
 ## VIEW Widget
 Defines the hierarchical stucture of views to be rendered. It contains various properties that define its appearance and behavior.
@@ -531,7 +531,7 @@ fillMaxHeight | It indicates whether the view should attempt to occupy the maxim
 clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
 visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
 
-<img src="docs/engineering/android-app/image/view_ui.png" width="250"/>
+<img src="static/img/view_ui.png" width="250"/>
 
 ### Divider Widget
 
@@ -560,7 +560,7 @@ backgroundColor | The background color of the view, specified as a string in the
 visible | A string value that determines whether the view should be visible | No| true |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
 
-<img src="docs/engineering/android-app/image/divider_ui.png" width="250"/>
+<img src="static/img/divider_ui.png" width="250"/>
 
 ## Spacer Widget
 
