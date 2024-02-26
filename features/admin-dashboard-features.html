@@ -3,20 +3,221 @@
 <head>
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.0.0">
-<title data-rh="true">Admin Dashboard Features | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/features/admin-dashboard-features"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Admin Dashboard Features | OpenSRP Documentation"><meta data-rh="true" name="description" content="Create practitioners"><meta data-rh="true" property="og:description" content="Create practitioners"><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/features/admin-dashboard-features"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/features/admin-dashboard-features" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/features/admin-dashboard-features" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.6faaae7e.css">
-<script src="/assets/js/runtime~main.19d28def.js" defer="defer"></script>
+<title data-rh="true">Admin Dashboard Features | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/features/admin-dashboard-features"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Admin Dashboard Features | OpenSRP Documentation"><meta data-rh="true" name="description" content="This guide outlines the steps to follow to manage Users, Care Team, Organization and Locations on OpenSRP. The platform is named FHIR Web and interacts with the Keycloak and HAPI FHIR servers."><meta data-rh="true" property="og:description" content="This guide outlines the steps to follow to manage Users, Care Team, Organization and Locations on OpenSRP. The platform is named FHIR Web and interacts with the Keycloak and HAPI FHIR servers."><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/features/admin-dashboard-features"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/features/admin-dashboard-features" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/features/admin-dashboard-features" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.6faaae7e.css">
+<script src="/assets/js/runtime~main.dfbb5c88.js" defer="defer"></script>
 <script src="/assets/js/main.6f075cfb.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
 <script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/opensrp-logo.png" alt="OpenSRP Documentation" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/opensrp-logo.png" alt="OpenSRP Documentation" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">Docs</b></a></div><div class="navbar__items navbar__items--right"><a href="https://opensrp.io/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Home</a><a href="https://opensrp.io/about/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">About</a><a class="navbar__item navbar__link nav-active" href="/">Docs</a><a href="https://opensrp.io/screenshots/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Screenshots</a><a href="https://opensrp.io/impact/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Impact</a><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/">Overview</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/project-information">Project Information</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--active">FEATURES</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/features/app-features">App Features</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/features/admin-dashboard-features">Admin Dashboard Features</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/features/supported-health-domains">Supported Domains</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/features/design">Design</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link">ENGINEERING</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="true" tabindex="0" href="/engineering/android-app">Android App</a><button aria-label="Collapse sidebar category &#x27;Android App&#x27;" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/android-app/developer-setup">Developer setup</a><button aria-label="Expand sidebar category &#x27;Developer setup&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/engineering/android-app/automated-releases">Releases</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/android-app/configuring">Configuring</a><button aria-label="Expand sidebar category &#x27;Configuring&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/android-app/datastore">Data storage</a><button aria-label="Expand sidebar category &#x27;Data storage&#x27;" type="button" class="clean-btn menu__caret"></button></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/backend">Backend</a><button aria-label="Expand sidebar category &#x27;Backend&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/writing-fhir">Writing FHIR</a><button aria-label="Expand sidebar category &#x27;Writing FHIR&#x27;" type="button" class="clean-btn menu__caret"></button></div></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">FEATURES</span><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Admin Dashboard Features</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><h1>Admin Dashboard Features</h1>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="create-practitioners">Create practitioners<a href="#create-practitioners" class="hash-link" aria-label="Direct link to Create practitioners" title="Direct link to Create practitioners">​</a></h3>
-<p>Enroll practitioners to use OpenSRP by capturing basic details such as name and username, then assigning roles and access permissions.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="manage-locations">Manage locations<a href="#manage-locations" class="hash-link" aria-label="Direct link to Manage locations" title="Direct link to Manage locations">​</a></h3>
-<p>Add and edit locations based on the health system&#x27;s prebuilt location hierarchy (the hierarchy is defined when the dashboard is initially set up and is not editable). Locations include name, the parent location, status (active or inactive), and type (jurisdiction or building).</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="manage-care-teams">Manage care teams<a href="#manage-care-teams" class="hash-link" aria-label="Direct link to Manage care teams" title="Direct link to Manage care teams">​</a></h3>
-<p>A care team is a collection of practitioners that conduct similar activities. OpenSRP Admin Dashboard allows the ability to create a care team, add teams to an organization, mark the care team as active or inactive, and add practitioners to a care team.</p>
-<p>It is required to assign care teams to locations. We assign caregiving practitioners to care teams, these care teams are assigned a managing organization. The Organization is the team. Organizations are then assigned to locations.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="manage-and-assign-teams">Manage and assign teams<a href="#manage-and-assign-teams" class="hash-link" aria-label="Direct link to Manage and assign teams" title="Direct link to Manage and assign teams">​</a></h3>
-<p>Practitioners work at locations such as health facilities. Team assignment ensures navigation through the hierarchy of a country to the location where a team is to be assigned and assigning a team to a location.</p></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="theme-doc-footer-edit-meta-row row"><div class="col"><a href="https://github.com/opensrp/fhircore/tree/main/docs/docs/features/admin-dashboard-features/readme.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_vwxv"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/features/app-features"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">App Features</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/features/supported-health-domains"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Supported Domains</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#create-practitioners" class="table-of-contents__link toc-highlight">Create practitioners</a></li><li><a href="#manage-locations" class="table-of-contents__link toc-highlight">Manage locations</a></li><li><a href="#manage-care-teams" class="table-of-contents__link toc-highlight">Manage care teams</a></li><li><a href="#manage-and-assign-teams" class="table-of-contents__link toc-highlight">Manage and assign teams</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title"></div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://opensrp.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">OpenSRP<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://ona.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">Ona<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 Ona Systems</div></div></div></footer></div>
+<p>This guide outlines the steps to follow to manage Users, Care Team, Organization and Locations on OpenSRP. The platform is named FHIR Web and interacts with the Keycloak and HAPI FHIR servers.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="prerequisites">Prerequisites<a href="#prerequisites" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites">​</a></h3>
+<p>To navigate through this user guide, you are required to have admin access to the admin portal. In addition, you will need to understand how the different entities tie to each other. Below is a summary.</p>
+<p>A user represents anyone who will interact with the FHIR SDK-based App or FHIR Web. A user is assigned permission through roles defined in Keycloak which maintains all user authentication. Keycloak defines permissions in the form of roles that can be assigned to a user based on the activities they are expected to carry out. Due to the long list of roles, FHIR Web presents the option to create user groups, which represent a collection of roles that can be assigned to a user.</p>
+<p>A user who is expected to interact with the health workflows, is assigned to a care team. A care team is then assigned to an organization (also known as a team). The organization is then assigned to a location which is the lowest point in the hierarchy that a user is expected to interact in while fulfilling the health workflows.
+The steps laid out below ensure a user is able to interact with the</p>
+<ol>
+<li>Create/add the complete list of users</li>
+<li>Create the location hierarchy</li>
+<li>Create Organizations/teams</li>
+<li>Create Careteams</li>
+<li>Assign the Organization to a location which is the lowest point in the hierarchy that a user is expected to interact</li>
+<li>Assign the created careteam to the respective Organization</li>
+<li>Assign Users to the careteam</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="access-to-admin-portal-opensrp-2-web-portal">Access to Admin portal (OpenSRP 2 web portal)<a href="#access-to-admin-portal-opensrp-2-web-portal" class="hash-link" aria-label="Direct link to Access to Admin portal (OpenSRP 2 web portal)" title="Direct link to Access to Admin portal (OpenSRP 2 web portal)">​</a></h3>
+<ol>
+<li>Access the OpenSRP 2 web portal through the url:
+a. Production - <a href="https://web.fhir.ProjectName-srp.health.go.ug/" target="_blank" rel="noopener noreferrer">https://web.fhir.ProjectName-srp.health.go.ug/</a>
+b. Preview/training - <a href="https://web.ProjectName-preview.smartregister.org/" target="_blank" rel="noopener noreferrer">https://web.ProjectName-preview.smartregister.org/</a></li>
+<li>This will load the login page as shown below.</li>
+</ol>
+<p><img loading="lazy" alt="authentication" src="/assets/images/0-463a274ccfaca6949bcefd12bdee0dcc.jpg" width="620" height="477" class="img_ev3q"></p>
+<ol start="3">
+<li>Enter your login credentials (Username and Password) and click ‘Sign in’. A landing page will appear as shown below.</li>
+<li>The landing page has the following features</li>
+</ol>
+<p><img loading="lazy" alt="dashboard" src="/assets/images/1-86d18e6afec47e8806e3356a70712a97.jpg" width="2048" height="937" class="img_ev3q"></p>
+<ol>
+<li>Side menu: A collection of menus that facilitate the user to conduct management activities.</li>
+<li>Users Management: allows you to manage users, user groups and user roles</li>
+<li>Locations Management: allows you to manage location units and location unit groups</li>
+<li>Care Teams Management:  helps the users create CareTeam to be used to administer the different services in the FHIR Core apps.</li>
+<li>Team Management: helps the users create teams (organization) to be used to administer the different services in the FHIR Core apps.</li>
+<li>Patients Management: helps the users to view the patient registered on App and synced to the server.</li>
+<li>Main landing page: has shortcuts to the side menu items.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="user-management">User Management<a href="#user-management" class="hash-link" aria-label="Direct link to User Management" title="Direct link to User Management">​</a></h3>
+<p>The OpenSRP web provides the ability to create users, user groups and assign users to user groups. User groups allows categorization of users with common user roles, by default there are two user groups; Provider user group which refers to clinicians whose main role is to collect immunization data on the mobile application while the Super User group refers to users who have all the privileges such as managing  users, teams and locations.</p>
+<p><img loading="lazy" alt="user-management" src="/assets/images/2-e29ab47b5c936cb74187754d986d871a.jpg" width="630" height="1050" class="img_ev3q"></p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-create-a-user-group">How to create a user group<a href="#how-to-create-a-user-group" class="hash-link" aria-label="Direct link to How to create a user group" title="Direct link to How to create a user group">​</a></h3>
+<ol>
+<li>Click on the ‘User group ’ menu item or on the main landing page</li>
+<li>This will load a page with a list of existing user groups.</li>
+</ol>
+<p><img loading="lazy" alt="user-group" src="/assets/images/3-db17aea8c45c5eda00ad2743c2ed086b.jpg" width="1444" height="687" class="img_ev3q"></p>
+<ol start="3">
+<li>Click on the ‘New user group’ button on the top right side of the screen.</li>
+<li>This will load a form that allows you to enter the user group name.</li>
+</ol>
+<p><img loading="lazy" alt="new-user-group" src="/assets/images/4-c490be72b3f58fe797940c2104d564a5.jpg" width="1415" height="386" class="img_ev3q"></p>
+<p>Fields with Asterisks are a must to fill.
+5. Click ‘Save.</p>
+<p>To complete the process of creation of the user group, you will need to assign user roles. To do this, follow the steps below</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-assignunassign-roles">How to assign/unassign roles<a href="#how-to-assignunassign-roles" class="hash-link" aria-label="Direct link to How to assign/unassign roles" title="Direct link to How to assign/unassign roles">​</a></h3>
+<ol>
+<li>Click on the ‘User group ’ menu item or on the main landing page</li>
+<li>This will load a page with a list of existing user groups.</li>
+</ol>
+<p><img loading="lazy" alt="user-roles" src="/assets/images/5-db17aea8c45c5eda00ad2743c2ed086b.jpg" width="1444" height="687" class="img_ev3q"></p>
+<ol start="3">
+<li>Click on the ‘Edit’ link.</li>
+<li>This will load a screen that allows you to assign roles to the user group. The screen has the following sections
+a. Lists the available roles
+b. Lists the selected roles to be assigned.
+c. Lists the roles already assigned.</li>
+</ol>
+<p><img loading="lazy" alt="edit-user-group" src="/assets/images/6-48c48796f3e3a51911f3f92ebca67119.jpg" width="1387" height="597" class="img_ev3q"></p>
+<ol start="5">
+<li>To assign a user role, tick the box next to the preferred user roles, click on the button with an arrow pointing to the right .This will update section 2 with the selected roles. Then click ‘save’ to effect the changes.</li>
+<li>To un-assign roles from the user group tick the box next to the roles to be unassigned then click on the button with an arrow pointing to the left, then click ‘save’.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-create-a-user">How to create a user<a href="#how-to-create-a-user" class="hash-link" aria-label="Direct link to How to create a user" title="Direct link to How to create a user">​</a></h3>
+<ol>
+<li>Click on the ‘User Management ’ menu item or on the main landing page</li>
+<li>This will load a page with a list of existing users.</li>
+</ol>
+<p><img loading="lazy" alt="create-user" src="/assets/images/7-a90680669eb4e87df80b9917d4c282d3.jpg" width="1425" height="731" class="img_ev3q"></p>
+<ol start="3">
+<li>Click on the ‘Add user’ button on the top right of the screen.</li>
+<li>This will load a form that allows you to enter the user details.
+Fields with Asterisks are a must to fill.</li>
+</ol>
+<p><img loading="lazy" alt="add-user" src="/assets/images/8-abd90e2cabd1d81a7f68e42043fccc1b.jpg" width="1128" height="785" class="img_ev3q"></p>
+<ol start="5">
+<li>To assign the user to a particular user group, click on the ‘Group’ field and select the user groups.</li>
+<li>Click ‘Save.</li>
+<li>You will then need to create credentials for the created user, to do this click on the three dots located beside a particular user.</li>
+</ol>
+<p><img loading="lazy" alt="user-management" src="/assets/images/9-a90680669eb4e87df80b9917d4c282d3.jpg" width="1425" height="731" class="img_ev3q"></p>
+<ol start="8">
+<li>Click on ‘Credentials’ link from the pop up.</li>
+<li>Enter the user credentials on the form that appears</li>
+</ol>
+<p><img loading="lazy" alt="user-credentials" src="/assets/images/10-6f77b4e5291c59341f96915e5a9eb10b.jpg" width="1141" height="420" class="img_ev3q"></p>
+<ol start="10">
+<li>Click ‘set password’</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-update-users-detail">How to update User’s detail<a href="#how-to-update-users-detail" class="hash-link" aria-label="Direct link to How to update User’s detail" title="Direct link to How to update User’s detail">​</a></h3>
+<ol>
+<li>Click on the ‘User management’ menu item or on the main landing page</li>
+<li>This will load a page with a list of existing Users.</li>
+</ol>
+<p><img loading="lazy" alt="user-management" src="/assets/images/11-a90680669eb4e87df80b9917d4c282d3.jpg" width="1425" height="731" class="img_ev3q"></p>
+<ol start="3">
+<li>Click on the ‘Edit’ link on the particular user you would like to update.</li>
+<li>This will load a form that allows you to update the user’s details.
+Fields with Asterisks are a must to fill.</li>
+</ol>
+<p><img loading="lazy" alt="edit-user" src="/assets/images/12-305bf3a1304790f6f949b32b98763118.jpg" width="1158" height="860" class="img_ev3q"></p>
+<ol start="5">
+<li>Click ‘Save.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="location-management">Location Management<a href="#location-management" class="hash-link" aria-label="Direct link to Location Management" title="Direct link to Location Management">​</a></h3>
+<p>This piece of functionality helps the users create locations and add any parent locations for each location. This package is based on the location resource in FHIR. A location hierarchy is defined by assigning parent locations. If a parent is not selected then the location is taken as a root location in the hierarchy.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-create-a-location-unit">How to create a Location unit<a href="#how-to-create-a-location-unit" class="hash-link" aria-label="Direct link to How to create a Location unit" title="Direct link to How to create a Location unit">​</a></h3>
+<p>You can access this page by clicking on the location management menu on the sidebar then, clicking on the location unit menu. This will load a page with a list of existing location units.s. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="location-unit-management" src="/assets/images/13-5048645fe4cf72bd6c04ebf6718534b9.jpg" width="1552" height="976" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Add location Unit’ button on the top right of the screen.</li>
+<li>This will load a form that allows you to enter the location unit details. The fields are described as follows.  Fields with Asterisks are a must to fill.</li>
+<li>Click ‘Save.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-update-a-location-unit">How to update a Location unit<a href="#how-to-update-a-location-unit" class="hash-link" aria-label="Direct link to How to update a Location unit" title="Direct link to How to update a Location unit">​</a></h3>
+<p>You can access this page by clicking on the location management menu on the sidebar then, click on the location unit menu. This will load a page with a list of existing location units.s. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="location-unit-management" src="/assets/images/14-7cc3702ed5cbba7d2e21181ca8c6a1d9.jpg" width="896" height="386" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Edit’ link.</li>
+<li>This will load a form that allows you to update the location unit group details. Fields with Asterisks are a must to fill.</li>
+</ol>
+<p><img loading="lazy" alt="update-location" src="/assets/images/15-be027a8902a4e9483e563e44f444090b.jpg" width="1557" height="966" class="img_ev3q"></p>
+<ol start="3">
+<li>Click ‘Save.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="care-team-management">Care Team Management<a href="#care-team-management" class="hash-link" aria-label="Direct link to Care Team Management" title="Direct link to Care Team Management">​</a></h3>
+<p>This piece of functionality helps the users create CareTeam to be used to administer the different services in the FHIR Core apps.</p>
+<ol>
+<li>This package also allows the different practitioners  to be added to the CareTeam</li>
+<li>This package also allows the different groups to be added to the CareTeam</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-update-a-location-unit-1">How to update a Location unit<a href="#how-to-update-a-location-unit-1" class="hash-link" aria-label="Direct link to How to update a Location unit" title="Direct link to How to update a Location unit">​</a></h3>
+<p>You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="fhir-care-team" src="/assets/images/16-27d5df3862e59523ce13d144103ad388.jpg" width="1573" height="973" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Create CareTeam’ button on the top right of the screen.</li>
+<li>This will load a form that allows you to enter the CareTeam’s details. Fields with Asterisks are a must to fill.</li>
+</ol>
+<p><img loading="lazy" alt="create-care-team" src="/assets/images/17-d8f3cf5bb4fc9b016973cdcdf505131d.jpg" width="1516" height="534" class="img_ev3q"></p>
+<ol start="3">
+<li>To assign a Practitioner to that particular CareTeam, click on the ‘Participant’ field and select the practitioners.</li>
+<li>To assign a Group to that particular CareTeam, click on the ‘Subject’ field and select the groups.</li>
+<li>Click ‘Save&#x27;.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-update-careteams-detail">How to update CareTeam’s detail<a href="#how-to-update-careteams-detail" class="hash-link" aria-label="Direct link to How to update CareTeam’s detail" title="Direct link to How to update CareTeam’s detail">​</a></h3>
+<p>You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="update-care-team" src="/assets/images/18-a9af9a9d800aa8589b192eea1acde7a2.jpg" width="1520" height="518" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Edit’ link on the particular CareTeam you would like to update.</li>
+</ol>
+<p><img loading="lazy" alt="update-team" src="/assets/images/19-c922c0810cb386b3d7595895dc4c4bfa.jpg" width="916" height="327" class="img_ev3q"></p>
+<ol start="2">
+<li>This will load a form that allows you to update the CareTeam’s details. Fields with Asterisks are a must to fill.</li>
+<li>Click ‘Save.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="team-management">Team Management<a href="#team-management" class="hash-link" aria-label="Direct link to Team Management" title="Direct link to Team Management">​</a></h3>
+<p>The FHIR web team(organization) management package provides the ability to perform the following functions.</p>
+<ol>
+<li>Creating teams (organization).
+a. Assign users to teams (organization).</li>
+<li>Assigning teams (organization) to locations.</li>
+</ol>
+<p>Teams (organization) - This piece of functionality helps the users create teams (organization) to be used to administer the different services in the FHIR Core apps. This package also allows the different users to be added to the teams (organization).</p>
+<p>Team assignment - This piece of functionality helps the users assign a location to the teams (organization).</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="teams">Teams<a href="#teams" class="hash-link" aria-label="Direct link to Teams" title="Direct link to Teams">​</a></h3>
+<p>You can access this page by clicking on the team (organization) management menu on the sidebar then, clicking on the teams&#x27;(organization) menu. This will load a page with a list of existing Teams (organization). Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="teams" src="/assets/images/20-3f63a2a0392ed1d31f2238525d0f31f9.jpg" width="906" height="336" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Create Team’ button on the top right of the screen.</li>
+<li>This will load a form that allows you to enter the Team’s (organization) details. Fields with Asterisks are a must to fill.</li>
+</ol>
+<p><img loading="lazy" alt="create-team" src="/assets/images/21-a11df1e6a9e6e75b635a0b619983c794.jpg" width="827" height="397" class="img_ev3q"></p>
+<ol start="3">
+<li>To assign users to that particular team, click on the ‘Team Members’ field and select the users.</li>
+<li>Click ‘Save.</li>
+<li>To complete the Teams creation process, you will need to assign the team (organization) to a specific location as outlined in the next section.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="how-to-update-teams-detail">How to update Team’s detail<a href="#how-to-update-teams-detail" class="hash-link" aria-label="Direct link to How to update Team’s detail" title="Direct link to How to update Team’s detail">​</a></h3>
+<p>You can access this page by clicking on the team(organization) management menu on the sidebar then, clicking on the teams&#x27; menu. This will load a page with a list of existing Teams. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="update-team" src="/assets/images/22-3f63a2a0392ed1d31f2238525d0f31f9.jpg" width="906" height="336" class="img_ev3q"></p>
+<ol>
+<li>Click on the ‘Edit’ link on the particular Team you would like to update.</li>
+</ol>
+<p><img loading="lazy" alt="edit-team" src="/assets/images/23-c922c0810cb386b3d7595895dc4c4bfa.jpg" width="916" height="327" class="img_ev3q"></p>
+<ol start="2">
+<li>This will load a form that allows you to update the team’s details. Fields with Asterisks are a must to fill.</li>
+<li>Click ‘Save.</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="team-organization-assignment">Team (organization) Assignment<a href="#team-organization-assignment" class="hash-link" aria-label="Direct link to Team (organization) Assignment" title="Direct link to Team (organization) Assignment">​</a></h3>
+<p>NB: Before proceeding with the steps below ensure you have locations uploaded in the system.</p>
+<p>How to assign/ unassign Teams to locations
+You can access this page by clicking on the team(organization) management menu on the sidebar then, clicking on the team assignment menu. This will load a page with a list of existing locations. Below is a sample of how the page would look like.</p>
+<p><img loading="lazy" alt="team-assignment" src="/assets/images/24-cb6d22e86dbc80dca5fe45c91eafad3a.jpg" width="907" height="337" class="img_ev3q"></p>
+<ol>
+<li>Search for the location on the search field, a list of results will appear, click on the preferred location from the results. The location will be updated on the section on the right.</li>
+<li>Click on the ‘Edit’ link, a page will appear as shown below that allows you to assign the teams. Select the preferred teams to assign to the location.</li>
+</ol>
+<p><img loading="lazy" alt="assign-team" src="/assets/images/25-57e05f1687750cf4d1434653ce6792c9.jpg" width="899" height="381" class="img_ev3q"></p>
+<ol start="3">
+<li>To unassign a team from a location, follow the same process as on the above page click on the teams who would wish to remove.</li>
+</ol></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="theme-doc-footer-edit-meta-row row"><div class="col"><a href="https://github.com/opensrp/fhircore/tree/main/docs/docs/features/admin-dashboard-features/readme.mdx" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_vwxv"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/features/app-features"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">App Features</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/features/supported-health-domains"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Supported Domains</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#prerequisites" class="table-of-contents__link toc-highlight">Prerequisites</a></li><li><a href="#access-to-admin-portal-opensrp-2-web-portal" class="table-of-contents__link toc-highlight">Access to Admin portal (OpenSRP 2 web portal)</a></li><li><a href="#user-management" class="table-of-contents__link toc-highlight">User Management</a></li><li><a href="#how-to-create-a-user-group" class="table-of-contents__link toc-highlight">How to create a user group</a></li><li><a href="#how-to-assignunassign-roles" class="table-of-contents__link toc-highlight">How to assign/unassign roles</a></li><li><a href="#how-to-create-a-user" class="table-of-contents__link toc-highlight">How to create a user</a></li><li><a href="#how-to-update-users-detail" class="table-of-contents__link toc-highlight">How to update User’s detail</a></li><li><a href="#location-management" class="table-of-contents__link toc-highlight">Location Management</a></li><li><a href="#how-to-create-a-location-unit" class="table-of-contents__link toc-highlight">How to create a Location unit</a></li><li><a href="#how-to-update-a-location-unit" class="table-of-contents__link toc-highlight">How to update a Location unit</a></li><li><a href="#care-team-management" class="table-of-contents__link toc-highlight">Care Team Management</a></li><li><a href="#how-to-update-a-location-unit-1" class="table-of-contents__link toc-highlight">How to update a Location unit</a></li><li><a href="#how-to-update-careteams-detail" class="table-of-contents__link toc-highlight">How to update CareTeam’s detail</a></li><li><a href="#team-management" class="table-of-contents__link toc-highlight">Team Management</a></li><li><a href="#teams" class="table-of-contents__link toc-highlight">Teams</a></li><li><a href="#how-to-update-teams-detail" class="table-of-contents__link toc-highlight">How to update Team’s detail</a></li><li><a href="#team-organization-assignment" class="table-of-contents__link toc-highlight">Team (organization) Assignment</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title"></div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://opensrp.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">OpenSRP<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://ona.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">Ona<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 Ona Systems</div></div></div></footer></div>
 </body>
 </html>
