@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
@@ -62,10 +63,12 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
@@ -203,7 +206,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
+          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
         } else {
           currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
         }

@@ -31,6 +31,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import kotlin.coroutines.CoroutineContext
 
 object LocationUtils {
 
@@ -43,9 +44,9 @@ object LocationUtils {
 
   @SuppressLint("MissingPermission")
   suspend fun getAccurateLocation(
-    fusedLocationClient: FusedLocationProviderClient,
+    fusedLocationClient: FusedLocationProviderClient, coroutineContext: CoroutineContext
   ): Location? {
-    return withContext(Dispatchers.IO) {
+    return withContext(coroutineContext) {
       suspendCoroutine<Location> { continuation ->
         fusedLocationClient
           .getCurrentLocation(
