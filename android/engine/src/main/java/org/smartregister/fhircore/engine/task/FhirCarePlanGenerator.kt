@@ -211,7 +211,19 @@ constructor(
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
 
-            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+            val existingAppId =
+              sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+
+            val structureMap =
+              if (
+                existingAppId != null &&
+                existingAppId.trim().endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true)
+              ) {
+                configurationRegistry.retrieveResourceFromConfigMap<StructureMap>(
+                  resourceId = IdType(action.transform).idPart
+                )
+              } else
+                fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
               source,
