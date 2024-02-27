@@ -92,7 +92,7 @@ fun Toolbar(questPatientDetailViewModel: ListDataDetailViewModel) {
       ) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back arrow") }
     },
     actions = {
-      // show only if patient info exists
+      // show only if patient info exists 
       patientItem?.let {
         IconButton(
           onClick = { showMenu = !showMenu },
