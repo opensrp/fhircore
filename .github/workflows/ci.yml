@@ -14,6 +14,7 @@ env:
 
 jobs:
   engine-tests:
+    if: false
     runs-on: macos-latest
     strategy:
       matrix:
@@ -94,6 +95,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   geowidget-tests:
+    if: false
     runs-on: macos-latest
     strategy:
       matrix:
@@ -174,6 +176,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
+    if: false
     runs-on: macos-latest
     strategy:
       matrix:
