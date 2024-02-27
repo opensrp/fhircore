@@ -36,6 +36,9 @@ import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Date
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -91,9 +94,6 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
-import java.util.Date
-import java.util.UUID
-import javax.inject.Inject
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -107,9 +107,8 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
-
 
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -119,8 +118,8 @@ constructor(
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
-        .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-        ?.extractLogicalIdUuid()
+      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+      ?.extractLogicalIdUuid()
   }
 
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
@@ -133,72 +132,68 @@ constructor(
    */
   @SuppressLint("SuspiciousIndentation")
   suspend fun retrieveQuestionnaire(
-      questionnaireConfig: QuestionnaireConfig,
-      actionParameters: List<ActionParameter>?,
+    questionnaireConfig: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>?,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
 
     // Compute questionnaire config rules and add extra questionnaire params to action parameters
     val questionnaireComputedValues =
-        questionnaireConfig.configRules?.let {
-          resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
-        } ?: emptyMap()
+      questionnaireConfig.configRules?.let {
+        resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
+      } ?: emptyMap()
 
     val allActionParameters =
-        actionParameters?.plus(
-            questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
-                ?: emptyList(),
-        )
+      actionParameters?.plus(
+        questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
+          ?: emptyList(),
+      )
 
-
-      val existingAppId =
-          sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    val existingAppId =
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
     val questionnaire =
-      if (existingAppId != null && existingAppId.trim().endsWith(DEBUG_SUFFIX, ignoreCase = true))
-          configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(resourceId = questionnaireConfig.id)
-      else
-        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+      if (existingAppId != null && existingAppId.trim().endsWith(DEBUG_SUFFIX, ignoreCase = true)) {
+        configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+          resourceId = questionnaireConfig.id
+        )
+      } else defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
 
-      questionnaire?.apply {
-          if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-              item.prepareQuestionsForReadingOrEditing(
-                  readOnly = questionnaireConfig.isReadOnly(),
-                  readOnlyLinkIds =
-                  questionnaireConfig.readOnlyLinkIds
-                      ?: questionnaireConfig.linkIds
-                          ?.filter { it.type == LinkIdType.READ_ONLY }
-                          ?.map { it.linkId },
-              )
-          }
+    questionnaire?.apply {
+      if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
+        item.prepareQuestionsForReadingOrEditing(
+          readOnly = questionnaireConfig.isReadOnly(),
+          readOnlyLinkIds =
+            questionnaireConfig.readOnlyLinkIds
+              ?: questionnaireConfig.linkIds
+                ?.filter { it.type == LinkIdType.READ_ONLY }
+                ?.map { it.linkId },
+        )
+      }
 
-          // Pre-populate questionnaire items with configured values
-          allActionParameters
-              ?.filter {
-                  (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty())
-              }
-              ?.let { actionParam ->
-                  item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
-              }
+      // Pre-populate questionnaire items with configured values
+      allActionParameters
+        ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
+        ?.let { actionParam ->
+          item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
+        }
 
-          // Set barcode to the configured linkId default: "patient-barcode"
-          if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-              (questionnaireConfig.barcodeLinkId
-                  ?: questionnaireConfig.linkIds
-                      ?.firstOrNull { it.type == LinkIdType.BARCODE }
-                      ?.linkId)
-                  ?.let { barcodeLinkId ->
-                      find(barcodeLinkId)?.apply {
-                          initial =
-                              mutableListOf(
-                                  Questionnaire.QuestionnaireItemInitialComponent()
-                                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-                              ) // TODO should this be resource identifier or OpenSrp unique ID?
-                          readOnly = true
-                      }
-                  }
+      // Set barcode to the configured linkId default: "patient-barcode"
+      if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+        (questionnaireConfig.barcodeLinkId
+            ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+          ?.let { barcodeLinkId ->
+            find(barcodeLinkId)?.apply {
+              initial =
+                mutableListOf(
+                  Questionnaire.QuestionnaireItemInitialComponent()
+                    .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                ) // TODO should this be resource identifier or OpenSrp unique ID?
+              readOnly = true
+            }
           }
       }
+    }
 
     return questionnaire
   }
@@ -213,20 +208,20 @@ constructor(
    * resources to in-active (close) that are related to the current [QuestionnaireResponse.subject]
    */
   fun handleQuestionnaireSubmission(
-      questionnaire: Questionnaire,
-      currentQuestionnaireResponse: QuestionnaireResponse,
-      questionnaireConfig: QuestionnaireConfig,
-      actionParameters: List<ActionParameter>,
-      context: Context,
-      onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
+    questionnaire: Questionnaire,
+    currentQuestionnaireResponse: QuestionnaireResponse,
+    questionnaireConfig: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>,
+    context: Context,
+    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
-          validateQuestionnaireResponse(
-              questionnaire = questionnaire,
-              questionnaireResponse = currentQuestionnaireResponse,
-              context = context,
-          )
+        validateQuestionnaireResponse(
+          questionnaire = questionnaire,
+          questionnaireResponse = currentQuestionnaireResponse,
+          context = context,
+        )
 
       if (questionnaireConfig.saveQuestionnaireResponse && !questionnaireResponseValid) {
         Timber.e("Invalid questionnaire response")
@@ -238,57 +233,57 @@ constructor(
       currentQuestionnaireResponse.processMetadata(questionnaire, questionnaireConfig, context)
 
       val bundle =
-          performExtraction(
-              extractByStructureMap = questionnaire.extractByStructureMap(),
-              questionnaire = questionnaire,
-              questionnaireResponse = currentQuestionnaireResponse,
-              context = context,
-          )
-
-      saveExtractedResources(
-          bundle = bundle,
+        performExtraction(
+          extractByStructureMap = questionnaire.extractByStructureMap(),
           questionnaire = questionnaire,
-          questionnaireConfig = questionnaireConfig,
           questionnaireResponse = currentQuestionnaireResponse,
           context = context,
+        )
+
+      saveExtractedResources(
+        bundle = bundle,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = currentQuestionnaireResponse,
+        context = context,
       )
 
       updateResourcesLastUpdatedProperty(actionParameters)
 
       // Important to load subject resource to retrieve ID (as reference) correctly
       val subjectIdType: IdType? =
-          if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
-            null
-          } else {
-            IdType(currentQuestionnaireResponse.subject.reference)
-          }
+        if (currentQuestionnaireResponse.subject.reference.isNullOrEmpty()) {
+          null
+        } else {
+          IdType(currentQuestionnaireResponse.subject.reference)
+        }
 
       if (subjectIdType != null) {
         val subject =
-            loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
+          loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
 
         if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
           generateCarePlan(
-              subject = subject,
-              bundle = newBundle,
-              questionnaireConfig = questionnaireConfig,
+            subject = subject,
+            bundle = newBundle,
+            questionnaireConfig = questionnaireConfig,
           )
 
           withContext(dispatcherProvider.io()) {
             executeCql(
-                subject = subject,
-                bundle = newBundle,
-                questionnaire = questionnaire,
-                questionnaireConfig = questionnaireConfig,
+              subject = subject,
+              bundle = newBundle,
+              questionnaire = questionnaire,
+              questionnaireConfig = questionnaireConfig,
             )
           }
 
           fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-              questionnaireConfig = questionnaireConfig,
-              subject = subject,
-              bundle = newBundle,
+            questionnaireConfig = questionnaireConfig,
+            subject = subject,
+            bundle = newBundle,
           )
         }
       }
@@ -296,81 +291,85 @@ constructor(
       softDeleteResources(questionnaireConfig)
 
       val idTypes =
-          bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
-              ?: emptyList()
+        bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
+          ?: emptyList()
       onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
     }
   }
 
   suspend fun saveExtractedResources(
-      bundle: Bundle,
-      questionnaire: Questionnaire,
-      questionnaireConfig: QuestionnaireConfig,
-      questionnaireResponse: QuestionnaireResponse,
-      context: Context,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
   ) {
     val extractionDate = Date()
 
     // Create a ListResource to store the references for generated resources
     val listResource =
-        ListResource().apply {
-          id = UUID.randomUUID().toString()
-          status = ListResource.ListStatus.CURRENT
-          mode = ListResource.ListMode.WORKING
-          title = CONTAINED_LIST_TITLE
-          date = extractionDate
-        }
+      ListResource().apply {
+        id = UUID.randomUUID().toString()
+        status = ListResource.ListStatus.CURRENT
+        mode = ListResource.ListMode.WORKING
+        title = CONTAINED_LIST_TITLE
+        date = extractionDate
+      }
 
     val subjectType = questionnaireSubjectType(questionnaire, questionnaireConfig)
 
     val previouslyExtractedResources =
-        retrievePreviouslyExtractedResources(
-            questionnaireConfig = questionnaireConfig,
-            subjectType = subjectType,
-            questionnaire = questionnaire,
-        )
+      retrievePreviouslyExtractedResources(
+        questionnaireConfig = questionnaireConfig,
+        subjectType = subjectType,
+        questionnaire = questionnaire,
+      )
 
     val extractedResourceUniquePropertyExpressionsMap =
-        questionnaireConfig.extractedResourceUniquePropertyExpressions?.associateBy {
-          it.resourceType
-        } ?: emptyMap()
+      questionnaireConfig.extractedResourceUniquePropertyExpressions?.associateBy {
+        it.resourceType
+      } ?: emptyMap()
 
     bundle.entry?.forEach { bundleEntryComponent ->
       bundleEntryComponent.resource?.run {
         applyResourceMetadata(questionnaireConfig, questionnaireResponse, context)
-        if (questionnaireResponse.subject.reference.isNullOrEmpty() &&
+        if (
+          questionnaireResponse.subject.reference.isNullOrEmpty() &&
             subjectType != null &&
             resourceType == subjectType &&
-            logicalId.isNotEmpty()) {
+            logicalId.isNotEmpty()
+        ) {
           questionnaireResponse.subject = this.logicalId.asReference(subjectType)
         }
         if (questionnaireConfig.isEditable()) {
           if (resourceType == subjectType) {
             this.id = questionnaireResponse.subject.extractId()
-          } else if (extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-              previouslyExtractedResources.containsKey(resourceType)) {
+          } else if (
+            extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
+              previouslyExtractedResources.containsKey(resourceType)
+          ) {
             val fhirPathExpression =
-                extractedResourceUniquePropertyExpressionsMap
-                    .getValue(resourceType)
-                    .fhirPathExpression
+              extractedResourceUniquePropertyExpressionsMap
+                .getValue(resourceType)
+                .fhirPathExpression
 
             val currentResourceIdentifier =
-                fhirPathDataExtractor.extractValue(
-                    base = this,
-                    expression = fhirPathExpression,
-                )
+              fhirPathDataExtractor.extractValue(
+                base = this,
+                expression = fhirPathExpression,
+              )
 
             // Search for resource with property value matching extracted value
             val resource =
-                previouslyExtractedResources.getValue(resourceType).find {
-                  val extractedValue =
-                      fhirPathDataExtractor.extractValue(
-                          base = it,
-                          expression = fhirPathExpression,
-                      )
-                  extractedValue.isNotEmpty() &&
-                      extractedValue.equals(currentResourceIdentifier, true)
-                }
+              previouslyExtractedResources.getValue(resourceType).find {
+                val extractedValue =
+                  fhirPathDataExtractor.extractValue(
+                    base = it,
+                    expression = fhirPathExpression,
+                  )
+                extractedValue.isNotEmpty() &&
+                  extractedValue.equals(currentResourceIdentifier, true)
+              }
 
             // Found match use the id on current resource; override identifiers for RelatedPerson
             if (resource != null) {
@@ -388,23 +387,23 @@ constructor(
         defaultRepository.addOrUpdate(true, resource = this)
 
         updateGroupManagingEntity(
-            resource = this,
-            groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
-            managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
+          resource = this,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+          managingEntityRelationshipCode = questionnaireConfig.managingEntityRelationshipCode,
         )
         addMemberToGroup(
-            resource = this,
-            memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
-            groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
+          resource = this,
+          memberResourceType = questionnaireConfig.groupResource?.memberResourceType,
+          groupIdentifier = questionnaireConfig.groupResource?.groupIdentifier,
         )
 
         // Track ids for resources in ListResource added to the QuestionnaireResponse.contained
         val listEntryComponent =
-            ListEntryComponent().apply {
-              deleted = false
-              date = extractionDate
-              item = asReference()
-            }
+          ListEntryComponent().apply {
+            deleted = false
+            date = extractionDate
+            item = asReference()
+          }
         listResource.addEntry(listEntryComponent)
       }
     }
@@ -412,35 +411,37 @@ constructor(
     // Reference extracted resources in QR then save it if subject exists
     questionnaireResponse.apply { addContained(listResource) }
 
-    if (!questionnaireResponse.subject.reference.isNullOrEmpty() &&
-        questionnaireConfig.saveQuestionnaireResponse) {
+    if (
+      !questionnaireResponse.subject.reference.isNullOrEmpty() &&
+        questionnaireConfig.saveQuestionnaireResponse
+    ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-          questionnaireConfig,
-          context,
+        questionnaireConfig,
+        context,
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
   }
 
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
-      questionnaireConfig: QuestionnaireConfig,
-      context: Context,
+    questionnaireConfig: QuestionnaireConfig,
+    context: Context,
   ) {
     questionnaireConfig.groupResource?.let {
       if (it.groupIdentifier.isNotEmpty() && !it.removeGroup && !it.removeMember) {
         val group =
-            loadResource(
-                ResourceType.Group,
-                it.groupIdentifier.extractLogicalIdUuid(),
-            )
-                as Group?
+          loadResource(
+            ResourceType.Group,
+            it.groupIdentifier.extractLogicalIdUuid(),
+          )
+            as Group?
         if (group != null) {
           val system =
-              context.getString(
-                  org.smartregister.fhircore.engine.R.string
-                      .sync_strategy_related_entity_location_system,
-              )
+            context.getString(
+              org.smartregister.fhircore.engine.R.string
+                .sync_strategy_related_entity_location_system,
+            )
           group.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
         }
       }
@@ -448,51 +449,53 @@ constructor(
   }
 
   private suspend fun retrievePreviouslyExtractedResources(
-      questionnaireConfig: QuestionnaireConfig,
-      subjectType: ResourceType?,
-      questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    subjectType: ResourceType?,
+    questionnaire: Questionnaire,
   ): MutableMap<ResourceType, MutableList<Resource>> {
     val referencedResources = mutableMapOf<ResourceType, MutableList<Resource>>()
-    if (questionnaireConfig.isEditable() &&
+    if (
+      questionnaireConfig.isEditable() &&
         !questionnaireConfig.resourceIdentifier.isNullOrEmpty() &&
-        subjectType != null) {
+        subjectType != null
+    ) {
       searchLatestQuestionnaireResponse(
-              resourceId = questionnaireConfig.resourceIdentifier!!,
-              resourceType = questionnaireConfig.resourceType ?: subjectType,
-              questionnaireId = questionnaire.logicalId,
-          )
-          ?.contained
-          ?.asSequence()
-          ?.filterIsInstance<ListResource>()
-          ?.filter { it.title.equals(CONTAINED_LIST_TITLE, true) }
-          ?.flatMap { it.entry }
-          ?.forEach {
-            val idType = IdType(it.item.reference)
-            val resource = loadResource(ResourceType.fromCode(idType.resourceType), idType.idPart)
-            if (resource != null) {
-              referencedResources.getOrPut(resource.resourceType) { mutableListOf() }.add(resource)
-            }
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          resourceType = questionnaireConfig.resourceType ?: subjectType,
+          questionnaireId = questionnaire.logicalId,
+        )
+        ?.contained
+        ?.asSequence()
+        ?.filterIsInstance<ListResource>()
+        ?.filter { it.title.equals(CONTAINED_LIST_TITLE, true) }
+        ?.flatMap { it.entry }
+        ?.forEach {
+          val idType = IdType(it.item.reference)
+          val resource = loadResource(ResourceType.fromCode(idType.resourceType), idType.idPart)
+          if (resource != null) {
+            referencedResources.getOrPut(resource.resourceType) { mutableListOf() }.add(resource)
           }
+        }
     }
     return referencedResources
   }
 
   private fun Bundle.copyBundle(currentQuestionnaireResponse: QuestionnaireResponse): Bundle =
-      this.copy().apply {
-        addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
-      }
+    this.copy().apply {
+      addEntry(Bundle.BundleEntryComponent().apply { resource = currentQuestionnaireResponse })
+    }
 
   private fun QuestionnaireResponse.processMetadata(
-      questionnaire: Questionnaire,
-      questionnaireConfig: QuestionnaireConfig,
-      context: Context,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    context: Context,
   ) {
     status = QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED
     authored = Date()
 
     questionnaire.useContext
-        .filter { it.hasValueCodeableConcept() }
-        .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
+      .filter { it.hasValueCodeableConcept() }
+      .forEach { it.valueCodeableConcept.coding.forEach { coding -> this.meta.addTag(coding) } }
     applyResourceMetadata(questionnaireConfig, this, context)
     setQuestionnaire("${questionnaire.resourceType}/${questionnaire.logicalId}")
 
@@ -505,26 +508,26 @@ constructor(
   }
 
   private fun questionnaireSubjectType(
-      questionnaire: Questionnaire,
-      questionnaireConfig: QuestionnaireConfig,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
   ): ResourceType? {
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     return questionnaireConfig.resourceType
-        ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+      ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
   }
 
   private fun Resource?.applyResourceMetadata(
-      questionnaireConfig: QuestionnaireConfig,
-      questionnaireResponse: QuestionnaireResponse,
-      context: Context,
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
   ) =
-      this?.apply {
-        appendOrganizationInfo(authenticatedOrganizationIds)
-        appendPractitionerInfo(practitionerId)
-        appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
-        updateLastUpdated()
-        generateMissingId()
-      }
+    this?.apply {
+      appendOrganizationInfo(authenticatedOrganizationIds)
+      appendPractitionerInfo(practitionerId)
+      appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
+      updateLastUpdated()
+      generateMissingId()
+    }
 
   /**
    * Perform StructureMap or Definition based definition. The result of this function returns a
@@ -532,53 +535,52 @@ constructor(
    * operation otherwise returns null if an exception is encountered.
    */
   suspend fun performExtraction(
-      extractByStructureMap: Boolean,
-      questionnaire: Questionnaire,
-      questionnaireResponse: QuestionnaireResponse,
-      context: Context,
+    extractByStructureMap: Boolean,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
   ): Bundle =
-      kotlin
-          .runCatching {
-            if (extractByStructureMap) {
-              ResourceMapper.extract(
-                  questionnaire = questionnaire,
-                  questionnaireResponse = questionnaireResponse,
-                  structureMapExtractionContext =
-                      StructureMapExtractionContext(
-                          context = context,
-                          transformSupportServices = transformSupportServices,
-                          structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
-                            structureMapUrl?.substringAfterLast("/")?.let {
-                              defaultRepository.loadResource(it)
-                            }
-                          },
-                      ),
-              )
-            } else {
-              ResourceMapper.extract(
-                  questionnaire = questionnaire,
-                  questionnaireResponse = questionnaireResponse,
-              )
-            }
+    kotlin
+      .runCatching {
+        if (extractByStructureMap) {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+            structureMapExtractionContext =
+              StructureMapExtractionContext(
+                context = context,
+                transformSupportServices = transformSupportServices,
+                structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
+                  structureMapUrl?.substringAfterLast("/")?.let {
+                    defaultRepository.loadResource(it)
+                  }
+                },
+              ),
+          )
+        } else {
+          ResourceMapper.extract(
+            questionnaire = questionnaire,
+            questionnaireResponse = questionnaireResponse,
+          )
+        }
+      }
+      .onFailure { exception ->
+        Timber.e(exception)
+        viewModelScope.launch(dispatcherProvider.main()) {
+          if (exception is NullPointerException && exception.message!!.contains("StructureMap")) {
+            context.showToast(
+              context.getString(R.string.structure_map_missing_message),
+              Toast.LENGTH_LONG,
+            )
+          } else {
+            context.showToast(
+              context.getString(R.string.structuremap_failed, questionnaire.name),
+              Toast.LENGTH_LONG,
+            )
           }
-          .onFailure { exception ->
-            Timber.e(exception)
-            viewModelScope.launch(dispatcherProvider.main()) {
-              if (exception is NullPointerException &&
-                  exception.message!!.contains("StructureMap")) {
-                context.showToast(
-                    context.getString(R.string.structure_map_missing_message),
-                    Toast.LENGTH_LONG,
-                )
-              } else {
-                context.showToast(
-                    context.getString(R.string.structuremap_failed, questionnaire.name),
-                    Toast.LENGTH_LONG,
-                )
-              }
-            }
-          }
-          .getOrDefault(Bundle())
+        }
+      }
+      .getOrDefault(Bundle())
 
   /**
    * This function saves [QuestionnaireResponse] as draft if any of the [QuestionnaireResponse.item]
@@ -587,9 +589,9 @@ constructor(
   fun saveDraftQuestionnaire(questionnaireResponse: QuestionnaireResponse) {
     viewModelScope.launch {
       val questionnaireHasAnswer =
-          questionnaireResponse.item.any {
-            it.answer.any { answerComponent -> answerComponent.hasValue() }
-          }
+        questionnaireResponse.item.any {
+          it.answer.any { answerComponent -> answerComponent.hasValue() }
+        }
       if (questionnaireHasAnswer) {
         questionnaireResponse.status = QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS
         defaultRepository.addOrUpdate(addMandatoryTags = true, resource = questionnaireResponse)
@@ -605,9 +607,9 @@ constructor(
    */
   suspend fun updateResourcesLastUpdatedProperty(actionParameters: List<ActionParameter>?) {
     val updateOnEditParams =
-        actionParameters?.filter {
-          it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT && it.value.isNotEmpty()
-        }
+      actionParameters?.filter {
+        it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT && it.value.isNotEmpty()
+      }
 
     updateOnEditParams?.forEach { param ->
       try {
@@ -619,7 +621,7 @@ constructor(
             val valueResourceType = param.value.substringBefore("/")
             val valueResourceId = param.value.substringAfter("/")
             addOrUpdate(
-                resource = loadResource(valueResourceId, ResourceType.valueOf(valueResourceType)),
+              resource = loadResource(valueResourceId, ResourceType.valueOf(valueResourceType)),
             )
           }
         }
@@ -627,7 +629,7 @@ constructor(
         Timber.e("Unable to update resource's _lastUpdated", resourceNotFoundException)
       } catch (illegalArgumentException: IllegalArgumentException) {
         Timber.e(
-            "No enum constant org.hl7.fhir.r4.model.ResourceType.${param.value.substringBefore("/")}",
+          "No enum constant org.hl7.fhir.r4.model.ResourceType.${param.value.substringBefore("/")}",
         )
       }
     }
@@ -639,12 +641,12 @@ constructor(
    * optional on [Questionnaire] fields)
    */
   fun validateQuestionnaireResponse(
-      questionnaire: Questionnaire,
-      questionnaireResponse: QuestionnaireResponse,
-      context: Context,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    context: Context,
   ): Boolean {
     val validQuestionnaireResponseItems =
-        ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
     val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
     val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
 
@@ -658,21 +660,21 @@ constructor(
     }
 
     return QuestionnaireResponseValidator.validateQuestionnaireResponse(
-            questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
-            questionnaireResponse =
-                QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
-            context = context,
-        )
-        .values
-        .flatten()
-        .all { it is Valid || it is NotValidated }
+        questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
+        questionnaireResponse =
+          QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
+        context = context,
+      )
+      .values
+      .flatten()
+      .all { it is Valid || it is NotValidated }
   }
 
   suspend fun executeCql(
-      subject: Resource,
-      bundle: Bundle,
-      questionnaire: Questionnaire,
-      questionnaireConfig: QuestionnaireConfig? = null,
+    subject: Resource,
+    bundle: Bundle,
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig? = null,
   ) {
     questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
@@ -680,89 +682,90 @@ constructor(
     }
 
     val libraryFilters =
-        questionnaire.cqfLibraryUrls().map {
-          val apply: TokenParamFilterCriterion.() -> Unit = {
-            value = of(it.extractLogicalIdUuid())
-          }
-          apply
-        }
+      questionnaire.cqfLibraryUrls().map {
+        val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.extractLogicalIdUuid()) }
+        apply
+      }
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-          .search<Library> { filter(Resource.RES_ID, *libraryFilters.toTypedArray()) }
-          .forEach { librarySearchResult ->
-            val result: Parameters =
-                fhirOperator.evaluateLibrary(
-                    librarySearchResult.resource.url,
-                    subject.asReference().reference,
-                    null,
-                    bundle,
-                    null,
-                ) as Parameters
+        .search<Library> { filter(Resource.RES_ID, *libraryFilters.toTypedArray()) }
+        .forEach { librarySearchResult ->
+          val result: Parameters =
+            fhirOperator.evaluateLibrary(
+              librarySearchResult.resource.url,
+              subject.asReference().reference,
+              null,
+              bundle,
+              null,
+            ) as Parameters
 
-            result.parameter.mapNotNull { cqlResultParameterComponent ->
-              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-                  resultParameterResource ->
-                if (cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                    resultParameterResource.isResource) {
-                  defaultRepository.create(true, resultParameterResource as Resource)
-                }
+          result.parameter.mapNotNull { cqlResultParameterComponent ->
+            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+              resultParameterResource ->
+              if (
+                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                  resultParameterResource.isResource
+              ) {
+                defaultRepository.create(true, resultParameterResource as Resource)
+              }
 
-                if (BuildConfig.DEBUG) {
-                  Timber.d(
-                      "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
-                  )
-                }
+              if (BuildConfig.DEBUG) {
+                Timber.d(
+                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
+                )
               }
             }
           }
+        }
     }
   }
 
   private fun getStringRepresentation(base: Base): String =
-      if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
+    if (base.isResource) parser.encodeResourceToString(base as Resource) else base.toString()
 
   /**
    * This function generates CarePlans for the [QuestionnaireResponse.subject] using the configured
    * [QuestionnaireConfig.planDefinitions]
    */
   suspend fun generateCarePlan(
-      subject: Resource,
-      bundle: Bundle,
-      questionnaireConfig: QuestionnaireConfig,
+    subject: Resource,
+    bundle: Bundle,
+    questionnaireConfig: QuestionnaireConfig,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
-          .runCatching {
-            fhirCarePlanGenerator.generateOrUpdateCarePlan(
-                planDefinitionId = planId,
-                subject = subject,
-                data = bundle,
-                generateCarePlanWithWorkflowApi =
-                    questionnaireConfig.generateCarePlanWithWorkflowApi,
-            )
-          }
-          .onFailure { Timber.e(it) }
+        .runCatching {
+          fhirCarePlanGenerator.generateOrUpdateCarePlan(
+            planDefinitionId = planId,
+            subject = subject,
+            data = bundle,
+            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
+          )
+        }
+        .onFailure { Timber.e(it) }
     }
   }
 
   /** Update the [Group.managingEntity] */
   private suspend fun updateGroupManagingEntity(
-      resource: Resource,
-      groupIdentifier: String?,
-      managingEntityRelationshipCode: String?,
+    resource: Resource,
+    groupIdentifier: String?,
+    managingEntityRelationshipCode: String?,
   ) {
     // Load the group from the database to get the updated Resource always.
     val group =
-        groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
-            as Group?
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group?
 
-    if (group != null &&
+    if (
+      group != null &&
         resource is RelatedPerson &&
         !resource.relationshipFirstRep.codingFirstRep.code.isNullOrEmpty() &&
-        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode) {
+        resource.relationshipFirstRep.codingFirstRep.code == managingEntityRelationshipCode
+    ) {
       defaultRepository.addOrUpdate(
-          resource = group.apply { managingEntity = resource.asReference() },
+        resource = group.apply { managingEntity = resource.asReference() },
       )
     }
   }
@@ -773,14 +776,14 @@ constructor(
    * member of itself.
    */
   suspend fun addMemberToGroup(
-      resource: Resource,
-      memberResourceType: ResourceType?,
-      groupIdentifier: String?,
+    resource: Resource,
+    memberResourceType: ResourceType?,
+    groupIdentifier: String?,
   ) {
     // Load the Group resource from the database to get the updated one
     val group =
-        groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
-            as Group? ?: return
+      groupIdentifier?.extractLogicalIdUuid()?.let { loadResource(ResourceType.Group, it) }
+        as Group? ?: return
 
     val reference = resource.asReference()
     val member = group.member.find { it.entity.reference.equals(reference.reference, true) }
@@ -788,7 +791,8 @@ constructor(
     // Cannot add Group as member of itself; Cannot not duplicate existing members
     if (resource.logicalId == group.logicalId || member != null) return
 
-    if (resource.resourceType.isIn(
+    if (
+      resource.resourceType.isIn(
         ResourceType.CareTeam,
         ResourceType.Device,
         ResourceType.Group,
@@ -799,7 +803,8 @@ constructor(
         ResourceType.Practitioner,
         ResourceType.PractitionerRole,
         ResourceType.Specimen,
-    ) && resource.resourceType == memberResourceType) {
+      ) && resource.resourceType == memberResourceType
+    ) {
       group.addMember(Group.GroupMemberComponent().apply { entity = reference })
       defaultRepository.addOrUpdate(resource = group)
     }
@@ -812,26 +817,28 @@ constructor(
   fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
-          groupId = questionnaireConfig.groupResource!!.groupIdentifier,
-          removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
-          deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
+        groupId = questionnaireConfig.groupResource!!.groupIdentifier,
+        removeGroup = questionnaireConfig.groupResource?.removeGroup ?: false,
+        deactivateMembers = questionnaireConfig.groupResource!!.deactivateMembers,
       )
       removeGroupMember(
-          memberId = questionnaireConfig.resourceIdentifier,
-          removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
-          groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
-          memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
+        memberId = questionnaireConfig.resourceIdentifier,
+        removeMember = questionnaireConfig.groupResource?.removeMember ?: false,
+        groupIdentifier = questionnaireConfig.groupResource!!.groupIdentifier,
+        memberResourceType = questionnaireConfig.groupResource!!.memberResourceType,
       )
     }
 
-    if (questionnaireConfig.removeResource == true &&
+    if (
+      questionnaireConfig.removeResource == true &&
         questionnaireConfig.resourceType != null &&
-        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty()
+    ) {
       viewModelScope.launch {
         defaultRepository.delete(
-            resourceType = questionnaireConfig.resourceType!!,
-            resourceId = questionnaireConfig.resourceIdentifier!!,
-            softDelete = true,
+          resourceType = questionnaireConfig.resourceType!!,
+          resourceId = questionnaireConfig.resourceIdentifier!!,
+          softDelete = true,
         )
       }
     }
@@ -842,9 +849,9 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroup(
-              groupId = groupId,
-              isDeactivateMembers = deactivateMembers,
-              configComputedRuleValues = emptyMap(),
+            groupId = groupId,
+            isDeactivateMembers = deactivateMembers,
+            configComputedRuleValues = emptyMap(),
           )
         } catch (exception: Exception) {
           Timber.e(exception)
@@ -854,19 +861,19 @@ constructor(
   }
 
   private fun removeGroupMember(
-      memberId: String?,
-      groupIdentifier: String?,
-      memberResourceType: ResourceType?,
-      removeMember: Boolean,
+    memberId: String?,
+    groupIdentifier: String?,
+    memberResourceType: ResourceType?,
+    removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
       viewModelScope.launch(dispatcherProvider.io()) {
         try {
           defaultRepository.removeGroupMember(
-              memberId = memberId,
-              groupId = groupIdentifier,
-              groupMemberResourceType = memberResourceType,
-              configComputedRuleValues = emptyMap(),
+            memberId = memberId,
+            groupId = groupIdentifier,
+            groupMemberResourceType = memberResourceType,
+            configComputedRuleValues = emptyMap(),
           )
         } catch (exception: Exception) {
           Timber.e(exception)
@@ -881,18 +888,18 @@ constructor(
    * Returns null if non is found.
    */
   suspend fun searchLatestQuestionnaireResponse(
-      resourceId: String,
-      resourceType: ResourceType,
-      questionnaireId: String,
+    resourceId: String,
+    resourceType: ResourceType,
+    questionnaireId: String,
   ): QuestionnaireResponse? {
     val search =
-        Search(ResourceType.QuestionnaireResponse).apply {
-          filter(QuestionnaireResponse.SUBJECT, { value = "$resourceType/$resourceId" })
-          filter(
-              QuestionnaireResponse.QUESTIONNAIRE,
-              { value = "${ResourceType.Questionnaire}/$questionnaireId" },
-          )
-        }
+      Search(ResourceType.QuestionnaireResponse).apply {
+        filter(QuestionnaireResponse.SUBJECT, { value = "$resourceType/$resourceId" })
+        filter(
+          QuestionnaireResponse.QUESTIONNAIRE,
+          { value = "${ResourceType.Questionnaire}/$questionnaireId" },
+        )
+      }
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
@@ -906,27 +913,27 @@ constructor(
    */
   suspend fun retrievePopulationResources(actionParameters: List<ActionParameter>): List<Resource> {
     return actionParameters
-        .filter {
-          it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-              it.resourceType != null &&
-              it.value.isNotEmpty()
+      .filter {
+        it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+          it.resourceType != null &&
+          it.value.isNotEmpty()
+      }
+      .mapNotNull {
+        try {
+          loadResource(it.resourceType!!, it.value)
+        } catch (resourceNotFoundException: ResourceNotFoundException) {
+          null
         }
-        .mapNotNull {
-          try {
-            loadResource(it.resourceType!!, it.value)
-          } catch (resourceNotFoundException: ResourceNotFoundException) {
-            null
-          }
-        }
+      }
   }
 
   /** Load [Resource] of type [ResourceType] for the provided [resourceIdentifier] */
   suspend fun loadResource(resourceType: ResourceType, resourceIdentifier: String): Resource? =
-      try {
-        defaultRepository.loadResource(resourceIdentifier, resourceType)
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        null
-      }
+    try {
+      defaultRepository.loadResource(resourceIdentifier, resourceType)
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      null
+    }
 
   /** Update the current progress state of the questionnaire. */
   fun setProgressState(questionnaireState: QuestionnaireProgressState) {

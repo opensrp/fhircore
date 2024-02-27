@@ -142,13 +142,16 @@ constructor(
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
-  inline fun <reified T : Resource> retrieveResourceFromConfigMap(resourceId: String): T? {
 
-      val loadedResource = configsJsonMap.getOrDefault(resourceId, null)
-     return if (loadedResource != null)
-        loadedResource.decodeResourceFromString() as T
-      else null
+  inline fun <reified T : Resource> retrieveResourceFromConfigMap(resourceId: String): T? {
+    val loadedResource = configsJsonMap.getOrDefault(resourceId, null)
+    return if (loadedResource != null) {
+      loadedResource.decodeResourceFromString() as T
+    } else {
+      null
+    }
   }
+
   inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
     configsJsonMap.values
       .filter {

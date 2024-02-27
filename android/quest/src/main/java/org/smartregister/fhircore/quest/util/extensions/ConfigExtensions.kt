@@ -198,4 +198,3 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
     ?.associate { it.key to it.value } ?: emptyMap()
-

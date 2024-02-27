@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.task
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
-import androidx.lifecycle.MutableLiveData
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
@@ -46,7 +45,6 @@ import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.PlanDefinition
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StructureMap
@@ -56,7 +54,6 @@ import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.Timing.UnitsOfTime
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
-import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -88,7 +85,7 @@ constructor(
   val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferenceKey: SharedPreferenceKey,
- val sharedPreferencesHelper: SharedPreferencesHelper,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
 ) {
   private val structureMapUtilities by lazy {
@@ -101,17 +98,18 @@ constructor(
     data: Bundle = Bundle(),
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
-
-
     val existingAppId =
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
     val planDefinition =
-      if (existingAppId != null && existingAppId.trim().endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true))
-
-        configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(resourceId = planDefinitionId)
-    else
-      defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
+      if (
+        existingAppId != null &&
+          existingAppId.trim().endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true)
+      ) {
+        configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(
+          resourceId = planDefinitionId
+        )
+      } else defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
     return planDefinition?.let {
       generateOrUpdateCarePlan(
         planDefinition = it,
@@ -121,7 +119,6 @@ constructor(
       )
     }
   }
-
 
   suspend fun generateOrUpdateCarePlan(
     planDefinition: PlanDefinition,
