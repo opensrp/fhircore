@@ -87,7 +87,6 @@ jobs:
            run: |
              flavorCapitalized=$(echo ${{ github.event.inputs.flavor }} | sed 's/.*/\u&/')
              buildTypeCapitalized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\u&/')
-             idCapitalized=$(echo ${{ $flavorCapitalized }}${{ $buildTypeCapitalized }}))
              echo "::set-output name=idCapitalized::$flavorCapitalized$buildTypeCapitalized" 
              
          - name: Generate AAB (Android App Bundle) file
