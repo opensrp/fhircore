@@ -16,7 +16,8 @@ on:
           - Release
       flavor:
         description: 'APK flavor e.g. sidBunda'
-        default: 'sidBunda'     
+        type: string
+        default: "sidBunda"     
         required: true
       isAab:
         description: 'Generate as AAB (Playstore release only)'     
