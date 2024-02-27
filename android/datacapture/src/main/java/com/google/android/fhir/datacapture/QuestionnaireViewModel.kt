@@ -382,8 +382,7 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
       if (isReferenced) isLoadingNextPage.value = true
 
-      viewModelScope.launch(Dispatchers.IO) {
-        updateDependentQuestionnaireResponseItems(questionnaireItem, questionnaireResponseItem, currentPageIndexFlow.value ?: -1)
+        updateDependentQuestionnaireResponseItems(questionnaireItem, questionnaireResponseItem)
         pages = getQuestionnairePages()
         isLoadingNextPage.value = false
         modificationCount.update { it + 1 }
@@ -629,7 +628,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
               updateDependentQuestionnaireResponseItems(
                 qItem,
                 questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-                -1,
               )
             }
             pages = getQuestionnairePages()
@@ -648,13 +646,11 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
   private suspend fun updateDependentQuestionnaireResponseItems(
     questionnaireItem: QuestionnaireItemComponent,
     updatedQuestionnaireResponseItem: QuestionnaireResponseItemComponent?,
-    currentPageIndex: Int,
   ) {
     expressionEvaluator
       .evaluateCalculatedExpressions(
         questionnaireItem,
         updatedQuestionnaireResponseItem,
-        currentPageIndex,
       )
       .forEach { (questionnaireItem, calculatedAnswers) ->
         // update all response item with updated values

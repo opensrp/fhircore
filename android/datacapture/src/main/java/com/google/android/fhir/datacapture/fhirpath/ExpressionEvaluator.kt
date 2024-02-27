@@ -135,14 +135,8 @@ internal class ExpressionEvaluator(
   suspend fun evaluateCalculatedExpressions(
     questionnaireItem: QuestionnaireItemComponent,
     updatedQuestionnaireResponseItemComponent: QuestionnaireResponseItemComponent?,
-    currentPageIndex: Int = -1,
   ): List<ItemToAnswersPair> {
-    val questionnaireItems = if (currentPageIndex == -1 || !questionnaire.isPaginated) {
-      questionnaire.item
-    } else {
-      questionnaire.item[currentPageIndex].item
-    }
-    return questionnaireItems
+    return questionnaire.item
       .flattened()
       .filter { item ->
         // Condition 1. item is calculable
