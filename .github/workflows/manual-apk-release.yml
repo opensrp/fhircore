@@ -91,7 +91,7 @@ jobs:
              
          - name: Generate AAB (Android App Bundle) file
            if: ${{ github.event.inputs.isAab }}
-           run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+           run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} --stacktrace
            working-directory: android
            
          - name: Upload AAB file to tag assets
@@ -106,7 +106,7 @@ jobs:
          
          - name: Generate APK (Android App PacKage) file
            if: ${{ github.event.inputs.isAab != true }}
-           run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+           run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} --stacktrace
            working-directory: android
            
          - name: Test APK file generation
