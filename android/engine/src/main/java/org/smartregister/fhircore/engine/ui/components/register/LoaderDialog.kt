@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ const val LOADER_DIALOG_PROGRESS_MSG_TAG = "loaderDialogProgressMsgTag"
 @Composable
 fun LoaderDialog(
   modifier: Modifier = Modifier,
-  dialogMessage: String = stringResource(id = R.string.syncing),
+  dialogMessage: String,
   percentageProgressFlow: Flow<Int> = flowOf(0),
-  isSyncUploadFlow: Flow<Boolean> = flowOf(false),
+  showPercentageProgress: Boolean = false,
 ) {
   val currentPercentage = percentageProgressFlow.collectAsState(0).value
   val openDialog = remember { mutableStateOf(true) }
@@ -90,22 +90,12 @@ fun LoaderDialog(
                 Text(
                   fontSize = 16.sp,
                   color = Color.White,
-                  text =
-                    if (dialogMessage == stringResource(id = R.string.syncing)) {
-                      stringResource(
-                        id =
-                          if (isSyncUploadFlow.collectAsState(initial = false).value) {
-                            R.string.syncing_up
-                          } else R.string.syncing_down,
-                      )
-                    } else {
-                      dialogMessage
-                    },
+                  text = dialogMessage,
                   modifier =
                     modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )
 
-                if (dialogMessage == stringResource(id = R.string.syncing)) {
+                if (showPercentageProgress) {
                   Text(
                     fontSize = 15.sp,
                     color = Color.White,
@@ -129,6 +119,6 @@ fun LoaderDialog(
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-fun LoaderPreview() {
-  LoaderDialog()
+fun LoaderDialogPreview() {
+  LoaderDialog(dialogMessage = stringResource(id = R.string.syncing))
 }

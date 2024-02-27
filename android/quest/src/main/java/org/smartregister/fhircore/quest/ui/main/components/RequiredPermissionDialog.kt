@@ -64,14 +64,14 @@ fun RequiredPermissionDialog(
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(org.smartregister.fhircore.engine.R.string.cancel),
                     modifier = modifier
                         .padding(horizontal = 10.dp)
                         .clickable { onDismissDialog() },
                 )
                 Text(
                     color = MaterialTheme.colors.primary,
-                    text = stringResource(R.string.settings).uppercase(),
+                    text = stringResource(org.smartregister.fhircore.engine.R.string.settings).uppercase(),
                     modifier =
                     modifier
                         .padding(horizontal = 10.dp)

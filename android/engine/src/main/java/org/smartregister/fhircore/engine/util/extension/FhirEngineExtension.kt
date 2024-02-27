@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +51,6 @@ suspend fun FhirEngine.loadLibraryAtPath(fhirOperator: FhirOperator, path: Strin
   val library =
     runCatching { get<Library>(IdType(path).idPart) }.getOrNull()
       ?: search<Library> { filter(Library.URL, { value = path }) }.map { it.resource }.firstOrNull()
-
-  library?.let {
-    fhirOperator.loadLib(it)
-    it.relatedArtifact.forEach { loadLibraryAtPath(fhirOperator, it) }
-  }
 }
 
 suspend fun FhirEngine.loadLibraryAtPath(

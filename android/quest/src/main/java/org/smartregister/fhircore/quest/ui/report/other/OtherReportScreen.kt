@@ -131,7 +131,7 @@ fun OtherReportScreen(
           .background(MaterialTheme.colors.primary)
           .fillMaxWidth()) {
           TopAppBar(
-            title = { Text(text = stringResource(R.string.reports)) },
+            title = { Text(text = stringResource(org.smartregister.fhircore.engine.R.string.reports)) },
             navigationIcon = {
               IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Filled.ArrowBack, null)
@@ -239,10 +239,7 @@ fun DateRangePickerUi(
 ) {
   DateRangePicker(state,
     modifier = Modifier,
-    dateFormatter = DatePickerFormatter("yy MM dd", "yy MM dd", "yy MM dd"),
-    dateValidator = { timeInMillis ->
-      timeInMillis < Calendar.getInstance().timeInMillis
-    },
+    dateFormatter = remember { DatePickerDefaults.dateFormatter("yy MM dd", "yy MM dd", "yy MM dd") },
     title = {
       Text(text = "Select date range to filter the report", modifier = Modifier
         .padding(16.dp))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.StringClientParam
@@ -49,7 +48,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
 ) {
 
-  protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  protected val jsonParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
   open fun getDataTypes(): TreeSet<DataType> {
     val appRegistry =

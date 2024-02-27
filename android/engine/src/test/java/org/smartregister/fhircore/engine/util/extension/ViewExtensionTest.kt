@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,9 +84,18 @@ class ViewExtensionTest : RobolectricTest() {
     mockkStatic(ContextCompat::getDrawable)
     val view = View(ApplicationProvider.getApplicationContext())
 
-    Assert.assertNotNull(view.getDrawable(R.drawable.camera_flash))
+    Assert.assertNotNull(
+      view.getDrawable(
+        com.google.android.fhir.datacapture.contrib.views.barcode.R.drawable.camera_flash,
+      ),
+    )
 
-    verify { ContextCompat.getDrawable(view.context, R.drawable.camera_flash) }
+    verify {
+      ContextCompat.getDrawable(
+        view.context,
+        com.google.android.fhir.datacapture.contrib.views.barcode.R.drawable.camera_flash,
+      )
+    }
     unmockkStatic(ContextCompat::getDrawable)
   }
 }

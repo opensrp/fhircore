@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,24 +99,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateGlitch() {
-    val viewModel = appMainActivity.appMainViewModel
-    val timestamp = "2022-05-19"
-    viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
-
-    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
-    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-
-    appMainActivity.onSync(syncJobStatus)
-
-    // Timestamp last sync timestamp not updated
-    Assert.assertEquals(
-      initialTimestamp,
-      viewModel.appMainUiState.value.lastSyncTime,
-    )
-  }
-
-  @Test
   fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
@@ -139,13 +121,13 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun testOnSyncWithSyncStateFinished() {
+  fun testOnSyncWithSyncStateSucceded() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = SyncJobStatus.Finished()
-    appMainActivity.onSync(stateFinished)
+    val stateSucceded = SyncJobStatus.Succeeded()
+    appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
       viewModel.retrieveLastSyncTimestamp(),
     )
   }

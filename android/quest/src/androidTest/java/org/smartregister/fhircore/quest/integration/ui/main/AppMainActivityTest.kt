@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,7 @@ import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.every
-import io.mockk.mockk
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -102,10 +101,8 @@ class AppMainActivityTest {
 
   @Test
   fun navigationToProfileFragmentShouldShowProfileScreen() {
-    val patientResourceConfig =
-      mockk<ResourceConfig> { every { resource } returns ResourceType.Patient }
-    val resourceConfig =
-      mockk<FhirResourceConfig> { every { baseResource } returns patientResourceConfig }
+    val patientResourceConfig = ResourceConfig(resource = ResourceType.Patient)
+    val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
 
     composeTestRule.activityRule.scenario.onActivity {
       it.navHostFragment.navController.navigate(

@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="sync">Manual Sync</string>
     <string name="language">Language</string>
     <string name="logout_as_user">Log out as </string>
@@ -76,7 +76,7 @@
     <string name="forgot_password_title">Forgot Password!</string>
     <string name="more">More</string>
     <string name="call_supervisor">Please call your supervisor at %1$s</string>
-    <string name="cancel">CANCEL</string>
+    <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="dial_number">DIAL NUMBER</string>
     <string name="register">Register</string>
     <string name="visits">Visits</string>
@@ -136,10 +136,12 @@
     <string name="sync_strategy_location_system" translatable="false">https://smartregister.org/location-tag-id</string>
     <string name="sync_strategy_organization_system" translatable="false">https://smartregister.org/organisation-tag-id</string>
     <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
-    <string name="sync_strategy_careteam_display">Practitioner CareTeam</string>
-    <string name="sync_strategy_location_display">Practitioner Location</string>
-    <string name="sync_strategy_organization_display">Practitioner Organization</string>
-    <string name="sync_strategy_practitioner_display">Practitioner</string>
+    <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/related-entity-location-tag-id</string>
+    <string name="sync_strategy_related_entity_location_display" translatable="false">Related Entity Location</string>
+    <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
+    <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
+    <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
+    <string name="sync_strategy_practitioner_display" translatable="false">Practitioner</string>
     <string name="year">Year</string>
     <string name="month">Month</string>
     <string name="weeks">Week(s)</string>
@@ -147,7 +149,7 @@
     <string name="initializing">Initializing settings &#8230;</string>
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
-    <string name="error_occurred">Something went wrong...</string>
+    <string name="error_occurred">Something went wrong…</string>
     <string name="insights">Insights</string>
     <string name="contact_help">"Contact help"</string>
     <string name="offline_map">"Offline Maps"</string>
@@ -175,4 +177,8 @@
     <string name="os_version">OS Version</string>
     <string name="device_date">Date</string>
     <string name="device">Device</string>
+    <string name="ok">OK</string>
+    <string name="add">ADD</string>
+    <string name="data_migration_started">Started data migration from version %1$d</string>
+    <string name="data_migration_completed">Application data migrated to version %1$d</string>
 </resources>

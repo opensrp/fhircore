@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import androidx.work.WorkerParameters
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.plusMonths
@@ -72,6 +74,10 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var parser: IParser
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var defaultRepository: DefaultRepository
 
@@ -106,12 +112,13 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = mockk(),
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
+          parser = parser,
         ),
       )
 
@@ -262,7 +269,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
         workerParams = workerParameters,
         defaultRepository = defaultRepository,
         fhirResourceUtil = fhirResourceUtil,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
       )
     }
   }

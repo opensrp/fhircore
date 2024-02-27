@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,7 +167,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         } else {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          showToast(
+            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       schedulePeriodicJobs()
@@ -206,8 +209,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       val extractedResourceIds =
         activityResult.data?.serializable(
           QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
-        ) as List<IdType>?
-          ?: emptyList()
+        ) as List<IdType>? ?: emptyList()
       val questionnaireConfig =
         activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
@@ -228,8 +230,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Glitch,
-      is SyncJobStatus.Finished,
+      is SyncJobStatus.Succeeded,
       is SyncJobStatus.Failed, -> {
         appMainViewModel.run {
           onEvent(
@@ -238,13 +239,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
-        }
-        if (syncJobStatus is SyncJobStatus.Glitch) {
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
-          } catch (nullPointerException: NullPointerException) {
-            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
-          }
         }
       }
       else -> {

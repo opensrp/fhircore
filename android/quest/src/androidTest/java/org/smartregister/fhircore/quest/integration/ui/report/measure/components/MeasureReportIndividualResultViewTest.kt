@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,12 +69,7 @@ class MeasureReportIndividualResultViewTest {
   private fun initComposable(isMatchedIndicator: Boolean) {
     scenario.onActivity { activity ->
       activity.setContent {
-        AppTheme {
-          MeasureReportIndividualResultView(
-            subjectViewData = subjectViewData,
-            isMatchedIndicator = isMatchedIndicator,
-          )
-        }
+        AppTheme { MeasureReportIndividualResultView(subjectViewData = subjectViewData) }
       }
     }
   }

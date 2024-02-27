@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.di
 import android.accounts.AccountManager
 import android.content.Context
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.workflow.FhirOperator
@@ -35,7 +34,7 @@ import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class, WorkManagerModule::class])
+@Module
 class CoreModule {
 
   @Singleton
@@ -61,10 +60,19 @@ class CoreModule {
   fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
     KnowledgeManager.create(context)
 
-  @Singleton @Provides fun provideFhirContext() = FhirContext.forCached(FhirVersionEnum.R4)
+  @Singleton @Provides fun provideFhirContext(): FhirContext = FhirContext.forR4Cached()!!
 
   @Singleton
   @Provides
-  fun provideFhirOperator(fhirEngine: FhirEngine): FhirOperator =
-    FhirOperator(fhirContext = FhirContext.forCached(FhirVersionEnum.R4), fhirEngine = fhirEngine)
+  fun provideFhirOperator(
+    @ApplicationContext context: Context,
+    fhirContext: FhirContext,
+    fhirEngine: FhirEngine,
+    knowledgeManager: KnowledgeManager,
+  ): FhirOperator =
+    FhirOperator.Builder(context)
+      .fhirEngine(fhirEngine)
+      .fhirContext(fhirContext)
+      .knowledgeManager(knowledgeManager)
+      .build()
 }

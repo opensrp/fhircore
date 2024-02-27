@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ constructor(
       if (!refreshToken.isNullOrEmpty()) {
         authToken =
           try {
-            tokenAuthenticator.refreshToken(refreshToken)
+            tokenAuthenticator.refreshToken(account, refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
             // any form of exception will unset token to empty, thereby forcing re-login

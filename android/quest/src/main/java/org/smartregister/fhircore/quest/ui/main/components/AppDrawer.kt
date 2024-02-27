@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,7 +226,7 @@ private fun NavBottomSection(
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
       imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-      title = stringResource(R.string.sync),
+      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
       endText = appUiState.lastSyncTime,
       showEndText = true,
       endTextColor = SubtitleTextColor,
@@ -249,7 +249,7 @@ private fun OtherPatientsItem(
     imageConfig = navigationConfiguration.bottomSheetRegisters?.menuIconConfig,
     title =
       navigationConfiguration.bottomSheetRegisters?.display!!.ifEmpty {
-        stringResource(R.string.other_patients)
+        stringResource(org.smartregister.fhircore.engine.R.string.other_patients)
       },
     endText = "",
     showEndText = false,
@@ -263,7 +263,7 @@ private fun OtherPatientsItem(
         navController = navController,
         title =
           if (navigationConfiguration.bottomSheetRegisters?.display.isNullOrEmpty()) {
-            context.getString(R.string.other_patients)
+            context.getString(org.smartregister.fhircore.engine.R.string.other_patients)
           } else {
             navigationConfiguration.bottomSheetRegisters?.display
           },
@@ -344,8 +344,9 @@ private fun MenuActionButton(
       Spacer(modifier.width(16.dp))
       Text(
         modifier = modifier.testTag(MENU_BUTTON_TEXT_TEST_TAG),
-        text = navigationConfiguration.menuActionButton?.display?.uppercase()
-            ?: stringResource(id = R.string.register_new_client),
+        text =
+          navigationConfiguration.menuActionButton?.display?.uppercase()
+            ?: stringResource(id = org.smartregister.fhircore.engine.R.string.register_new_client),
         color = MenuActionButtonTextColor,
         fontSize = 18.sp,
       )
@@ -387,7 +388,7 @@ private fun SideMenuItem(
         if (hasSubRegister) {
           Crossfade(targetState = subItemsVisible, label = "") { isVisible ->
             Icon(
-              painterResource(id = if (isVisible) R.drawable.ic_arrow_up else R.drawable.ic_arrow_down),
+              painterResource(id = if (isVisible) org.smartregister.fhircore.engine.R.drawable.ic_arrow_up else org.smartregister.fhircore.engine.R.drawable.ic_arrow_down),
               contentDescription = "Show or Hide",
               tint = MenuItemColor,
               modifier = Modifier.size(35.dp).padding(end = 10.dp).clickable {
@@ -400,6 +401,7 @@ private fun SideMenuItem(
             paddingEnd = 10,
             imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
             tint = MenuItemColor,
+        navController = rememberNavController(),
           )
         }
         SideMenuItemText(title = title, textColor = Color.White)

@@ -108,7 +108,8 @@
     <string name="error_populating_questionnaire">Error populating some questionnaire fields. Invalid QuestionnaireResponse.</string>
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
-    <string name="clear_all">Clear All</string>
+    <string name="clear_all">Clear All</string>    
+    <string name="copy_text_success_message">Link %1$s copied successfully</string>
     <string name="required_permission_title">Permission required!</string>
     <string name="required_permission_message">Below permissions are required to be allowed to use this app.\n\n %s \n</string>
     <string name="default_notification_channel_id">quest_notification_channel_id</string>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,13 +54,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
@@ -126,9 +126,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
           } else {
             AlertDialogue.showConfirmAlert(
               context = requireActivity(),
-              message = R.string.application_alert_back_pressed_message,
+              message = org.smartregister.fhircore.quest.R.string.application_alert_back_pressed_message,
               confirmButtonListener = { requireActivity().finish() },
-              confirmButtonText = R.string.application_alert_confirm_button_title,
+              confirmButtonText = org.smartregister.fhircore.quest.R.string.application_alert_confirm_button_title,
             )
           }
         }
@@ -153,7 +153,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsState(emptyFlow())
               .value
               .collectAsLazyPagingItems()
-
           // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
@@ -233,7 +232,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
       is SyncJobStatus.InProgress ->
         emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -305,9 +304,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
         eventBus.events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             }
           }
           .launchIn(lifecycleScope)

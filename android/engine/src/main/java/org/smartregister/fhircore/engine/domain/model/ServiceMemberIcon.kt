@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,4 +35,18 @@ enum class ServiceMemberIcon(val icon: Int) {
   @JsonNames("baby_boy", "BabyBoy") BABY_BOY(R.drawable.ic_baby_boy),
   @JsonNames("baby_girl", "BabyGirl") BABY_GIRL(R.drawable.ic_baby_girl),
   @JsonNames("sick_child", "SickChild") SICK_CHILD(R.drawable.ic_sick_child),
+  @JsonNames("men_service_point", "MenServicePoint")
+  MEN_SERVICE_POINT(R.drawable.ic_men_service_point),
+  @JsonNames("bsd_service_point", "BSDServicePoint")
+  BSD_SERVICE_POINT(R.drawable.ic_bsd_service_point),
+  @JsonNames("hospital", "Hospital") HOSPITAL(R.drawable.ic_hospital),
+  @JsonNames("csb_service_point", "CSBServicePoint")
+  CSB_SERVICE_POINT(R.drawable.ic_csb_service_point),
+  @JsonNames("epp_service_point", "EPPServicePoint")
+  EPP_SERVICE_POINT(R.drawable.ic_epp_service_point),
+  @JsonNames("ngo_partner", "NgoPartner") NGO_PARTNER(R.drawable.ic_ngo_partner),
+  @JsonNames("site_communautaire", "siteCommunautaire")
+  SITE_COMMUNAUTAIRE(R.drawable.ic_site_communautaire),
+  @JsonNames("warehouse", "Warehouse") WAREHOUSE(R.drawable.ic_warehouse),
+  @JsonNames("water_point", "WaterPoint") WATER_POINT(R.drawable.ic_water_point),
 }

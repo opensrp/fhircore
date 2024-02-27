@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
@@ -34,6 +38,8 @@ import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
@@ -45,9 +51,11 @@ fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
+  context: Context? = null,
 ) {
   val onClickAction =
     this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
@@ -174,6 +182,17 @@ fun List<ActionConfig>.handleClickEvent(
         intent.data = Uri.parse("tel:$patientPhoneNumber")
         ContextCompat.startActivity(navController.context, intent, null)
       }
+      ApplicationWorkflow.COPY_TEXT -> {
+        val copyTextActionParameter = interpolatedParams.first()
+        val clipboardManager =
+          context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText(null, copyTextActionParameter.value)
+        clipboardManager.setPrimaryClip(clipData)
+        context.showToast(
+          context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
+          Toast.LENGTH_LONG,
+        )
+      }
       else -> return
     }
   }
@@ -198,5 +217,4 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
-    ?.associate { it.key to it.value }
-    ?: emptyMap()
+    ?.associate { it.key to it.value } ?: emptyMap()

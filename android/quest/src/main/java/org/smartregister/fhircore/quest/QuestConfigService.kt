@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.ConfigService.Companion.APP_VERSION
 import org.smartregister.fhircore.engine.sync.ResourceTag
 
 @Singleton
@@ -45,32 +46,56 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
         type = ResourceType.CareTeam.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_careteam_system)
-            display = context.getString(R.string.sync_strategy_careteam_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_system,
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_display,
+              )
           },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_location_system)
-            display = context.getString(R.string.sync_strategy_location_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_system,
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_display,
+              )
           },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_organization_system)
-            display = context.getString(R.string.sync_strategy_organization_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_system,
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_display,
+              )
           },
       ),
       ResourceTag(
         type = ResourceType.Practitioner.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_practitioner_system)
-            display = context.getString(R.string.sync_strategy_practitioner_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_system,
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_display,
+              )
           },
       ),
       ResourceTag(
@@ -84,11 +109,5 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
       ),
     )
 
-  override fun provideConfigurationSyncPageSize(): String {
-    return BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
-  }
-
-  companion object {
-    private const val APP_VERSION = "AppVersion"
-  }
+  override fun provideConfigurationSyncPageSize(): String = BuildConfig.CONFIGURATION_SYNC_PAGE_SIZE
 }
