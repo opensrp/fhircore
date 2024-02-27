@@ -217,6 +217,10 @@ class QuestionnaireActivityTest : RobolectricTest() {
   fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
     setupActivity()
     assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5e0c26edb (Add location service with Preference feature.)
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
     assertNotNull(fusedLocationProviderClient)
