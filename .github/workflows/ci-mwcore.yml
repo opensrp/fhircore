@@ -43,18 +43,19 @@ jobs:
         run: ./gradlew :engine:spotlessCheck
         working-directory: android
 
-      # - name: Run Engine unit tests with Gradle
-      #   run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace 
-      #   working-directory: android
+      - name: Run Engine unit tests with Gradle
+        run: ./gradlew :engine:clean && ./gradlew :engine:jacocoTestReport -x :engine:testReleaseUnitTest --stacktrace 
+        working-directory: android
 
-      # - name: Upload Engine Test Report to codecov 
-      #   uses: codecov/codecov-action@v3 
-      #   with:
-      #     working-directory: android
-      #     flags: engine
-      #     files: engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
-      #     fail_ci_if_error: true
-      #     verbose: true
+      - name: Upload Engine Test Report to codecov 
+        uses: codecov/codecov-action@v3 
+        with:
+          working-directory: android
+          flags: engine
+          files: engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+          verbose: true
+          dry_run: true
 
   quest-tests:
     runs-on: macos-latest
@@ -83,15 +84,16 @@ jobs:
         run: ./gradlew :quest:spotlessCheck
         working-directory: android
 
-      # - name: Run Quest unit tests with Gradle
-      #   run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportMwcoreDebug -x :quest:testMwcoreReleaseUnitTest --stacktrace
-      #   working-directory: android
+      - name: Run Quest unit tests with Gradle
+        run: ./gradlew :quest:clean && ./gradlew :quest:jacocoTestReportMwcoreDebug -x :quest:testMwcoreReleaseUnitTest --stacktrace
+        working-directory: android
 
-      # - name: Upload Quest Test Report to codecov
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     working-directory: android
-      #     flags: quest
-      #     files: quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
-      #     fail_ci_if_error: false
-      #     verbose: true
+      - name: Upload Quest Test Report to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          working-directory: android
+          flags: quest
+          files: quest/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+          verbose: true
+          dry_run: true
