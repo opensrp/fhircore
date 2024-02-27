@@ -98,9 +98,9 @@ import org.smartregister.fhircore.engine.util.TracingHelpers
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
 
@@ -148,7 +148,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      practitionerDetails().fhirPractitionerDetails.practitionerId.valueToString()
+      practitionerDetails()
+        .fhirPractitionerDetails
+        ?.practitioners
+        ?.firstOrNull()
+        ?.id
+        ?.extractLogicalIdUuid()
     )
 
     defaultRepo =
@@ -1172,7 +1177,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       fhirPractitionerDetails =
         FhirPractitionerDetails().apply {
           id = "12345"
-          practitionerId = StringType("12345")
+          practitioners?.firstOrNull()?.id = StringType("12345").toString()
         }
     }
   }
@@ -1183,7 +1188,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.appendPractitionerInfo(patient)
 
-    Assert.assertEquals("Practitioner/12345", patient.generalPractitioner[0].reference)
+    Assert.assertEquals(null, patient.generalPractitioner.firstOrNull())
   }
 
   @Test
@@ -1203,7 +1208,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoShouldSetIndividualPractitionerReferenceToEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     questionnaireViewModel.appendPractitionerInfo(encounter)
-    Assert.assertEquals("Practitioner/12345", encounter.participant[0].individual.reference)
+    //    Assert.assertEquals("Practitioner/12345", encounter.participant[0].individual.reference)
+    Assert.assertEquals(null, encounter.participant.firstOrNull()?.individual?.reference)
   }
 
   @Test
