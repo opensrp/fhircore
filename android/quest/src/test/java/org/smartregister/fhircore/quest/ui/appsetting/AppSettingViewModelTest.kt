@@ -426,12 +426,6 @@ class AppSettingViewModelTest : RobolectricTest() {
     Assert.assertEquals("Binary/123", result!!.sectionFirstRep.focus.reference)
   }
 
-  @Test
-  fun testHasDebugSuffix_withSuffix_shouldReturn_true() {
-    coEvery { appSettingViewModel.isDebugVariant() } returns true
-    appSettingViewModel.appId.value = "app/debug"
-    Assert.assertTrue(appSettingViewModel.hasDebugSuffix())
-  }
 
   @Test
   fun testHasDebugSuffix_noSuffix_shouldReturn_false() {

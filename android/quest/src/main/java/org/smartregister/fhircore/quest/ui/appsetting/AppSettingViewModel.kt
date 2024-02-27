@@ -213,9 +213,9 @@ constructor(
   }
 
   fun hasDebugSuffix(): Boolean =
-    appId.value?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && isDebugVariant()
+    appId.value?.trim()?.endsWith(DEBUG_SUFFIX, ignoreCase = true) == true && BuildConfig.DEBUG
 
-  @VisibleForTesting fun isDebugVariant() = BuildConfig.DEBUG
+
 
   private fun generateRequestBundle(resourceType: String, idList: List<String>): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
