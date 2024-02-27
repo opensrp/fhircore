@@ -44,7 +44,6 @@ import com.google.android.fhir.datacapture.extensions.isPaginated
 import com.google.android.fhir.datacapture.extensions.isExpressionReferencedBy
 import com.google.android.fhir.datacapture.extensions.isEnableWhenReferencedBy
 import com.google.android.fhir.datacapture.extensions.isHelpCode
-import com.google.android.fhir.datacapture.extensions.isVariableReferencedBy
 import com.google.android.fhir.datacapture.extensions.localizedTextSpanned
 import com.google.android.fhir.datacapture.extensions.packRepeatedGroups
 import com.google.android.fhir.datacapture.extensions.questionnaireLaunchContexts
@@ -53,7 +52,6 @@ import com.google.android.fhir.datacapture.extensions.unpackRepeatedGroups
 import com.google.android.fhir.datacapture.extensions.validateLaunchContextExtensions
 import com.google.android.fhir.datacapture.extensions.zipByLinkId
 import com.google.android.fhir.datacapture.fhirpath.ExpressionEvaluator
-import com.google.android.fhir.datacapture.mapping.asExpectedType
 import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseItemValidator
@@ -367,28 +365,28 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       }
       modifiedQuestionnaireResponseItemSet.add(questionnaireResponseItem)
 
-      var isReferenced = false
-      kotlin.run {
-        isReferenced = questionnaireItem.isVariableReferencedBy(questionnaire)
-        if (isReferenced) return@run
-
-        questionnaire.item.flattened().forEach { item ->
-          isReferenced = questionnaireItem.isEnableWhenReferencedBy(item)
+      viewModelScope.launch(Dispatchers.IO) {
+        var isReferenced = false
+        kotlin.run {
+          isReferenced = questionnaireItem.isExpressionReferencedBy(questionnaire)
           if (isReferenced) return@run
 
-          isReferenced = questionnaireItem.isExpressionReferencedBy(item)
-          if (isReferenced) return@run
+          questionnaire.item.flattened().forEach { item ->
+            isReferenced = questionnaireItem.isEnableWhenReferencedBy(item)
+            if (isReferenced) return@run
+
+            isReferenced = questionnaireItem.isExpressionReferencedBy(item)
+            if (isReferenced) return@run
+          }
         }
-      }
-      if (isReferenced) isLoadingNextPage.value = true
+        if (isReferenced) isLoadingNextPage.value = true
+        modificationCount.update { it + 1 }
 
         updateDependentQuestionnaireResponseItems(questionnaireItem, questionnaireResponseItem)
         pages = getQuestionnairePages()
         isLoadingNextPage.value = false
         modificationCount.update { it + 1 }
       }
-
-      modificationCount.update { it + 1 }
     }
 
   private val expressionEvaluator: ExpressionEvaluator =

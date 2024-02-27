@@ -673,6 +673,10 @@ internal val Questionnaire.QuestionnaireItemComponent.calculatedExpression: Expr
 internal val Questionnaire.QuestionnaireItemComponent.expressionBasedExtensions
   get() = this.extension.filter { it.value is Expression }
 
+/** Returns list of extensions whose value is of type [Expression] */
+internal val Questionnaire.expressionBasedExtensions
+  get() = this.extension.filter { it.value is Expression }
+
 /**
  * Whether [item] has any expression directly referencing the current questionnaire item by link ID
  * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
@@ -689,6 +693,17 @@ internal fun Questionnaire.QuestionnaireItemComponent.isExpressionReferencedBy(
       .contains(Regex(".*linkId='${this.linkId}'.*"))
   }
 
+internal fun Questionnaire.QuestionnaireItemComponent.isExpressionReferencedBy(
+  questionnaire: Questionnaire,
+) =
+  questionnaire.expressionBasedExtensions.any {
+    it
+      .castToExpression(it.value)
+      .expression
+      .replace(" ", "")
+      .contains(Regex(".*linkId='${this.linkId}'.*"))
+  }
+
 /**
  * Whether [item] has any expression directly referencing the current questionnaire item by link ID
  * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
@@ -698,33 +713,6 @@ internal fun Questionnaire.QuestionnaireItemComponent.isEnableWhenReferencedBy(
   item: Questionnaire.QuestionnaireItemComponent,
 ) =
   item.enableWhen.any { it.question == this.linkId }
-
-/**
- * Whether [item] has any expression directly referencing the current questionnaire item by link ID
- * (e.g. if [item] has an expression `%resource.item.where(linkId='this-question')` where
- * `this-question` is the link ID of the current questionnaire item).
- */
-internal fun Questionnaire.QuestionnaireItemComponent.isVariableReferencedBy(
-  questionnaire: Questionnaire,
-): Boolean {
-  val expressionBasedExtensions = questionnaire.item.flattened()
-    .asSequence()
-    .flatMap { it.expressionBasedExtensions }
-    .filter { it.url == EXTENSION_ENABLE_WHEN_EXPRESSION_URL }
-    .map { it.value as Expression }
-    .toList()
-
-  val regex = Regex(".*linkId='$linkId'.*")
-  return questionnaire.variableExpressions.any { variableExpression ->
-    val isVariableReferenced = regex.containsMatchIn(variableExpression.expression.replace(" ", ""))
-    if (!isVariableReferenced) return@any false
-
-    // check if variable is used in other expression based extensions
-    expressionBasedExtensions.any { expressionBasedExtension ->
-      expressionBasedExtension.expression.replace(" ", "").contains("%${variableExpression.name}")
-    }
-  }
-}
 
 internal val Questionnaire.QuestionnaireItemComponent.answerExpression: Expression?
   get() =
