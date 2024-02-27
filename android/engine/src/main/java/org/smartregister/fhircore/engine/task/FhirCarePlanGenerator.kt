@@ -84,7 +84,6 @@ constructor(
   val fhirResourceUtil: FhirResourceUtil,
   val workflowCarePlanGenerator: WorkflowCarePlanGenerator,
   val configurationRegistry: ConfigurationRegistry,
-  val sharedPreferenceKey: SharedPreferenceKey,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
 ) {

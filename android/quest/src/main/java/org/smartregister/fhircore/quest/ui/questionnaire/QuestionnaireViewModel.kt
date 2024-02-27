@@ -115,7 +115,6 @@ constructor(
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
   }
-  private lateinit var questionnaireConfig: QuestionnaireConfig
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
