@@ -1,6 +1,7 @@
 name: Manual APK Release
 run-name: Generating a FHIR Core Release APK 🚀
 on: 
+   push:
    workflow_dispatch:
     inputs:
       buildType:
@@ -13,10 +14,11 @@ on:
           - DebugNonProxy
           - Release
       flavor:
-        description: 'APK flavor e.g. sidBunda'     
+        description: 'APK flavor e.g. sidBunda'
+        default: 'sidBunda'     
         required: true
       isAab:
-        description: 'For Playstore release only. Generates AAB'     
+        description: 'Generate as AAB (Playstore release only)'     
         required: true
         type: boolean
         default: false
@@ -83,12 +85,14 @@ jobs:
          - id: product-flavor
            name: Generate Product Flavor identifier
            run: |
-             id=$(echo ${{ github.event.inputs.flavor }}${{ github.event.inputs.buildType }} | tr [:upper:] [:lower:])
-             echo "::set-output name=id::$id"   
+             flavorCapitalized=$(echo ${{ github.event.inputs.flavor }} | sed 's/.*/\u&/')
+             buildTypeCapitalized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\u&/')
+             idCapitalized=$(echo ${{ $flavorCapitalized }}${{ $buildTypeCapitalized }}))
+             echo "::set-output name=idCapitalized::$flavorCapitalized$buildTypeCapitalized" 
              
          - name: Generate AAB (Android App Bundle) file
            if: ${{ github.event.inputs.isAab }}
-           run: ./gradlew :quest:bundle${{github.event.inputs.flavor}}${{github.event.inputs.buildType}} -x :quest:test${{github.event.inputs.flavor}}${{github.event.inputs.buildType}}DebugUnitTest --stacktrace
+           run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
            working-directory: android
            
          - name: Upload AAB file to tag assets
@@ -96,17 +100,17 @@ jobs:
            uses: svenstaro/upload-release-action@v2
            with:
              repo_token: ${{ secrets.GITHUB_TOKEN }}
-             file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
+             file: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}/release/quest-${{ github.event.inputs.flavor }}-release.aab
              asset_name: "$tag.aab"
              tag: ${{ github.ref }}
              overwrite: true
          
          - name: Generate APK (Android App PacKage) file
            if: ${{ github.event.inputs.isAab != true }}
-           run: ./gradlew :quest:assemble${{github.event.inputs.flavor}}${{github.event.inputs.buildType}} -x :quest:test${{github.event.inputs.flavor}}${{github.event.inputs.buildType}}DebugUnitTest --stacktrace
+           run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
            working-directory: android
            
          - name: Test APK file generation
            run: |
-               ls -lha android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk --stacktrace
+               ls -lha android/quest/build/outputs/apk/${{ github.event.inputs.flavor }}/release/quest-${{ github.event.inputs.flavor }}-release.apk --stacktrace
        
