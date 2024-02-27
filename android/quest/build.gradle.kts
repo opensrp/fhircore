@@ -317,6 +317,12 @@ android {
       versionNameSuffix = "-eusm"
       manifestPlaceholders["appLabel"] = "EUSM"
     }
+    create("demoEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".demoEir"
+      versionNameSuffix = "-demoEir"
+      manifestPlaceholders["appLabel"] = "OpenSRP EIR"
+    }
   }
 
   applicationVariants.all {
