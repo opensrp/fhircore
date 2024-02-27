@@ -512,18 +512,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           "Can't call goToPreviousPage() if no preceding page is enabled"
         }
         currentPageIndexFlow.value = previousPageIndex
-
-        viewModelScope.launch {
-          questionnaire.item[currentPageIndexFlow.value!!].item.flattened()
-            .filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
-            updateDependentQuestionnaireResponseItems(
-              qItem,
-              questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-              currentPageIndexFlow.value!!,
-            )
-          }
-          modificationCount.update { it + 1 }
-        }
       }
       else -> {
         Timber.w("Previous questions and submitted answers cannot be viewed or edited.")
@@ -543,18 +531,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
             }
           check(nextPageIndex != -1) { "Can't call goToNextPage() if no following page is enabled" }
           currentPageIndexFlow.value = nextPageIndex
-
-          viewModelScope.launch {
-            questionnaire.item[currentPageIndexFlow.value!!].item.flattened()
-              .filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
-              updateDependentQuestionnaireResponseItems(
-                qItem,
-                questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-                currentPageIndexFlow.value!!,
-              )
-            }
-            modificationCount.update { it + 1 }
-          }
         }
       }
       EntryMode.RANDOM -> {
@@ -566,18 +542,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
             }
           check(nextPageIndex != -1) { "Can't call goToNextPage() if no following page is enabled" }
           currentPageIndexFlow.value = nextPageIndex
-
-        viewModelScope.launch {
-          questionnaire.item[currentPageIndexFlow.value!!].item.flattened()
-            .filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
-            updateDependentQuestionnaireResponseItems(
-              qItem,
-              questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
-              currentPageIndexFlow.value!!,
-            )
-          }
-          modificationCount.update { it + 1 }
-        }
       }
     }
   }
