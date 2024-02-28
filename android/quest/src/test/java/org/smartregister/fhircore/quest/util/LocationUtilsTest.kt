@@ -16,19 +16,13 @@
 
 package org.smartregister.fhircore.quest.util
 
-import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.mockkObject
-import kotlin.test.assertEquals
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -36,6 +30,8 @@ import org.robolectric.Robolectric
 import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.test.assertEquals
 
 class LocationUtilsTest: RobolectricTest() {
   private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -66,42 +62,47 @@ class LocationUtilsTest: RobolectricTest() {
     assert(result)
   }
   
-//  @Test
-//  fun `test getAccurateLocation`() = runBlocking {
-//    val location = Location("").apply {
-//      latitude = 36.0
-//      longitude = 1.0
-//    }
-//    fusedLocationProviderClient.setMockLocation(location)
-//
-//    val testDispatcher = this.coroutineContext
-//
-//
-//    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, testDispatcher)
-//
-//    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
-//    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
-//  }
-
   @Test
   fun `test getAccurateLocation`() = runBlocking {
-    val location = mockk<Location>()
+    val location = Location("").apply {
+      latitude = 36.0
+      longitude = 1.0
+    }
+    fusedLocationProviderClient.setMockLocation(location)
 
-    coEvery { LocationUtils.getAccurateLocation(fusedLocationProviderClient) } returns location
+    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
 
-    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient)
-
-    assertEquals(location, result)
+    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
+    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
   }
 
   @Test
   fun `test getApproximateLocation`() = runBlocking {
-    val location = mockk<Location>()
+    val location = Location("").apply {
+      latitude = 36.0
+      longitude = 1.0
+    }
+    fusedLocationProviderClient.setMockLocation(location)
 
-    coEvery { LocationUtils.getApproximateLocation(fusedLocationProviderClient) } returns location
+    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
+    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
+    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
+  }
 
-    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient)
+  @Test
+  fun `test getAccurateLocation with cancellation`() = runBlocking {
+    val job = launch {
+      delay(500)
+      coroutineContext.cancel()
+    }
 
-    assertEquals(location, result)
+    val result = runCatching {
+      LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
+    }
+
+    assertEquals(true, result.isFailure)
+    assertEquals(true, result.exceptionOrNull() is CancellationException)
+
+    job.join()
   }
 }

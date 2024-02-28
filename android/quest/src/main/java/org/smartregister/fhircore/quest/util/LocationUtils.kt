@@ -76,9 +76,9 @@ object LocationUtils {
 
   @SuppressLint("MissingPermission")
   suspend fun getApproximateLocation(
-    fusedLocationClient: FusedLocationProviderClient,
+    fusedLocationClient: FusedLocationProviderClient, coroutineContext: CoroutineContext
   ): Location? {
-    return withContext(Dispatchers.IO) {
+    return withContext(coroutineContext) {
       suspendCoroutine<Location> { continuation ->
         fusedLocationClient
           .getCurrentLocation(
