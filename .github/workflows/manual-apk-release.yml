@@ -36,7 +36,6 @@ jobs:
            with:
               url: https://vault.onalabs.org
               token: ${{ secrets.VAULT_TOKEN }}
-              # caCertificate: ${{ secrets.VAULT_CA_CERT }}
               tlsSkipVerify: true
               secrets: |
                 kv-v2-fhircore/data/fhircore_apk_credentials KEYSTORE_ALIAS | KEYSTORE_ALIAS;
@@ -44,12 +43,6 @@ jobs:
                 kv-v2-fhircore/data/fhircore_apk_credentials KEYSTORE_PASSWORD | KEYSTORE_PASSWORD;
                 kv-v2-fhircore/data/fhircore_apk_credentials KEY_PASSWORD | KEY_PASSWORD;
                 kv-v2-fhircore/data/fhircore_apk_credentials LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
-         - name: Test secret from Vault
-           id: test-secret
-           run: |
-              touch secrets.json
-              echo '${{ toJson(steps.import-secrets.outputs)}}' >> secrets.json
-              cat secrets.json
 
          - name: Decode & Generate Keystore file
            run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
@@ -90,12 +83,12 @@ jobs:
              echo "::set-output name=idCapitalized::$flavorCapitalized$buildTypeCapitalized" 
              
          - name: Generate AAB (Android App Bundle) file
-           if: ${{ github.event.inputs.isAab }}
+           if: $(echo ${{ github.event.inputs.isAab }})
            run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} --stacktrace
            working-directory: android
            
          - name: Upload AAB file to tag assets
-           if: ${{ github.event.inputs.isAab }}
+           if: $(echo ${{ github.event.inputs.isAab }})
            uses: svenstaro/upload-release-action@v2
            with:
              repo_token: ${{ secrets.GITHUB_TOKEN }}

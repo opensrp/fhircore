@@ -12,7 +12,6 @@ plugins {
   id("de.mannodermaus.android-junit5")
   id("dagger.hilt.android.plugin")
   id("androidx.navigation.safeargs")
-  id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -32,10 +31,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {
-      enableUnitTestCoverage = true
-      enableAndroidTestCoverage = true
-    }
+    getByName("debug") { enableUnitTestCoverage = true }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))

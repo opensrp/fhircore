@@ -21,7 +21,6 @@ plugins {
   id("androidx.navigation.safeargs")
   id("org.sonarqube") version "3.5.0.2730"
   id("io.sentry.android.gradle") version "3.5.0"
-  id("org.jetbrains.kotlin.android")
 }
 
 sonar {
@@ -99,10 +98,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") {
-      enableUnitTestCoverage = true
-      enableAndroidTestCoverage = true
-    }
+    getByName("debug") { enableUnitTestCoverage = true }
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
