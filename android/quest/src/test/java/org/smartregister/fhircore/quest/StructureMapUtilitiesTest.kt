@@ -257,7 +257,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
-
+    println("sm-"+iParser.encodeToString(structureMap))
     Assert.assertNotNull(mapString)
   }
 
@@ -504,5 +504,81 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertEquals(2, targetResource.entry.size)
     Assert.assertEquals("Patient", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `perform family extraction via gps location`() {
+    val registrationQuestionnaireResponseString: String =
+      "content/general/family/questionnaire-response-gps.json".readFile()
+    val registrationStructureMap = "content/general/family/family-registration-gps.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap =
+      structureMapUtilities.parse(registrationStructureMap, "eCHIS Family Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        registrationQuestionnaireResponseString,
+      )
+
+    println("sm"+iParser.encodeToString(structureMap))
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+    println("bundle-$targetResource")
+    println("data"+iParser.encodeToString(targetResource))
+    Assert.assertEquals(3, targetResource.entry.size)
+    println("group-$targetResource" + iParser.encodeToString(targetResource.entry[0].resource))
+    println("location-$targetResource" + iParser.encodeToString(targetResource.entry[1].resource))
+    println("list-$targetResource" + iParser.encodeToString(targetResource.entry[2].resource))
+    Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Location", targetResource.entry[1].resource.resourceType.toString())
+    Assert.assertEquals("List", targetResource.entry[2].resource.resourceType.toString())
+  }
+
+  @Test
+  fun `remove family member extraction via gps location`() {
+    val registrationQuestionnaireResponseString: String =
+      "content/general/remove-member/questionnaire-response-gps.json".readFile()
+    val registrationStructureMap = "content/general/remove-member/sm-remove-member-gps.map".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap =
+      structureMapUtilities.parse(registrationStructureMap, "eCHIS Family Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(
+        QuestionnaireResponse::class.java,
+        registrationQuestionnaireResponseString,
+      )
+
+    println("sm"+iParser.encodeToString(structureMap))
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+    println("bundle-$targetResource")
+    println("data"+iParser.encodeToString(targetResource))
+    Assert.assertEquals(8, targetResource.entry.size)
+    println("group-$targetResource" + iParser.encodeToString(targetResource.entry[0].resource))
+    println("location-$targetResource" + iParser.encodeToString(targetResource.entry[6].resource))
+    println("list-$targetResource" + iParser.encodeToString(targetResource.entry[7].resource))
+    Assert.assertEquals("Encounter", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Location", targetResource.entry[6].resource.resourceType.toString())
+    Assert.assertEquals("List", targetResource.entry[7].resource.resourceType.toString())
   }
 }

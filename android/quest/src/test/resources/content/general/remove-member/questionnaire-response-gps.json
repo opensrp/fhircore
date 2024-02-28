@@ -1,0 +1,465 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "945f21b1-d74d-416f-86b6-971bb765a6e3",
+  "meta": {
+    "lastUpdated": "2023-04-18T17:31:58.962+03:00",
+    "tag": [
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "urn:oid:2.16.578.1.12.4.1.1.8655"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146934",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "54842",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146872",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/",
+        "code": "146871",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Encounter",
+      "id": "6ec531ed-7ff1-4f7e-b147-5a31b846b13e",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "status": "finished",
+      "class": {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "HH"
+      },
+      "serviceType": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/service-type",
+            "code": "85"
+          }
+        ]
+      },
+      "participant": [
+        {
+          "individual": {
+            "reference": "Practitioner/146871"
+          }
+        }
+      ],
+      "serviceProvider": {
+        "reference": "Organization/146872"
+      }
+    },
+    {
+      "resourceType": "Patient",
+      "id": "09c7db7b-8356-42d1-bfba-721253db3c91",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "active": false,
+      "generalPractitioner": [
+        {
+          "reference": "Practitioner/146871"
+        }
+      ],
+      "managingOrganization": {
+        "reference": "Organization/146872"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "8815a5ec-0db0-4240-bc83-218019befd1a",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://ona.io/codes",
+            "code": "death-date"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/6ec531ed-7ff1-4f7e-b147-5a31b846b13e"
+      },
+      "effectiveDateTime": "2023-04-18T17:31:58+03:00",
+      "valueString": "2023-04-18 00:00:00"
+    },
+    {
+      "resourceType": "Observation",
+      "id": "d4937f33-88a6-4d9c-8090-8dbc46d43cb6",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://ona.io/codes",
+            "code": "cause-of-death"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/6ec531ed-7ff1-4f7e-b147-5a31b846b13e"
+      },
+      "effectiveDateTime": "2023-04-18T17:31:58+03:00",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "code": "natural-death"
+          }
+        ],
+        "text": "Cause of Death"
+      }
+    },
+    {
+      "resourceType": "Observation",
+      "id": "d4a175c8-fc44-456a-b01b-9b6f05b8d963",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        }
+      ],
+      "code": {
+        "coding": [
+          {
+            "system": "http://ona.io/codes",
+            "code": "death-reported"
+          }
+        ]
+      },
+      "encounter": {
+        "reference": "Encounter/6ec531ed-7ff1-4f7e-b147-5a31b846b13e"
+      },
+      "effectiveDateTime": "2023-04-18T17:31:58+03:00",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "code": "yes"
+          }
+        ],
+        "text": "Death Reported to Registrar"
+      }
+    },
+    {
+      "resourceType": "Patient",
+      "id": "31b414a9-de4e-4b47-bf0a-a992e76fb45f",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "0.2.1-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146934",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "54842",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146872",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/",
+            "code": "146871",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "active": false,
+      "deceasedBoolean": true,
+      "generalPractitioner": [
+        {
+          "reference": "Practitioner/146871"
+        }
+      ],
+      "managingOrganization": {
+        "reference": "Organization/146872"
+      }
+    }
+  ],
+  "questionnaire": "Questionnaire/0abd7a07-d2ea-405f-9413-a6fd52c23ef1",
+  "status": "completed",
+  "subject": {
+    "reference": "Patient/86e9a91d-56e8-4abb-ac43-39787f23909d"
+  },
+  "authored": "2023-04-18T17:31:57+03:00",
+  "item": [
+    {
+      "linkId": "3f0ef1ae-c27a-4d37-db91-006db5d1fba1",
+      "text": "Date of Death",
+      "answer": [
+        {
+          "valueDate": "2023-04-18"
+        }
+      ]
+    },
+    {
+      "linkId": "b054c8ea-e110-4408-fef1-9867e30adad2",
+      "text": "Cause of death",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "85810a22-64c5-4aa7-897e-f45f3ab39a39",
+            "system": "urn:uuid:a4b7bd58-233b-4e65-dc88-ed81e3fe4703",
+            "code": "natural-death",
+            "display": "Natural death"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "464e4c81-b684-4d3d-eec7-aab02014a4d0",
+      "text": "Has the death been reported to the Area Registration Officer?",
+      "answer": [
+        {
+          "valueCoding": {
+            "id": "8f48fcb2-15aa-47fb-d064-0976e7c8f880",
+            "system": "urn:uuid:6548ed5b-2ec7-4e75-8091-b9c5ccf12a69",
+            "code": "yes",
+            "display": "Yes"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "patient-birthdate"
+    },
+    {
+      "linkId": "patient-id"
+    },
+    {
+      "linkId": "location-widget",
+      "text": "Location Widget",
+      "item": [
+        {
+          "linkId": "latitude",
+          "text": "Latitude",
+          "answer": [
+            {
+              "valueDecimal": 24.8808488
+            }
+          ]
+        },
+        {
+          "linkId": "longitude",
+          "text": "Longitude",
+          "answer": [
+            {
+              "valueDecimal": 67.0424254
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
