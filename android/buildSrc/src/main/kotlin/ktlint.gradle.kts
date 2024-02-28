@@ -1,3 +1,10 @@
+import org.gradle.api.tasks.JavaExec
+import org.gradle.kotlin.dsl.creating
+import org.gradle.kotlin.dsl.provideDelegate
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.registering
+import org.gradle.language.base.plugins.LifecycleBasePlugin
+
 val ktlint by configurations.creating
 
 val ktlintCheck by tasks.registering(JavaExec::class) {
