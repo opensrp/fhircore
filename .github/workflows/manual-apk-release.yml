@@ -41,11 +41,6 @@ jobs:
                 kv-v2-fhircore/data/opensrp-shared KEYSTORE_FILE | KEYSTORE_FILE;
                 kv-v2-fhircore/data/opensrp-shared KEYSTORE_PROPERTIES_FILE | KEYSTORE_PROPERTIES_FILE;
                 kv-v2-fhircore/data/${{ github.event.inputs.flavor }} LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
-
-         - name: Decode & Generate Keystore file
-           run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
-           env:
-             ENCODED_KEYSTORE: ${{ secrets.KEYSTORE_FILE }}   
    
          - name: Checkout 🛎️
            uses: actions/checkout@v2
@@ -65,13 +60,18 @@ jobs:
            run: echo $LOCAL_PROPERTIES | base64 -di > local.properties
            working-directory: android
            env:
-             LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES_FILE }} 
+             LOCAL_PROPERTIES: ${{ steps.import-secrets.outputs.LOCAL_PROPERTIES_FILE }} 
+           
+         - name: Decode & Generate Keystore file
+           run: echo $ENCODED_KEYSTORE | base64 -di > "${HOME}"/fhircore.keystore.jks
+           env:
+             ENCODED_KEYSTORE: ${{ steps.import-secrets.outputs.KEYSTORE_FILE }}  
    
          - name: Decode & Generate keystore.properties file
            run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
            working-directory: android
            env:
-             KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES_FILE }}
+             KEYSTORE_PROPERTIES: ${{ steps.import-secrets.outputs.KEYSTORE_PROPERTIES_FILE }} 
 
          - id: product-flavor
            name: Generate Product Flavor identifier
