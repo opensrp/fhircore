@@ -1,0 +1,275 @@
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/eefd4bb9-00f6-492a-bc77-a54c2fa1347a" = 'RemoveHouseholdMember'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Bundle" as target
+
+group RemoveHouseholdMember(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.id = uuid() "r_bundle_id";
+    src->bundle.type = "collection" "r_bundle_type";
+    src then ExtractEncounter(src, bundle) "r_bundle_entry_ext_enc";
+}
+
+group ExtractEncounter(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.entry as entry,
+    entry.resource = create("Encounter") as encounter then {
+        src->encounter.id = uuid() as locationLinkResourceId then {
+            src->encounter.status = "finished" "r_enc_status";
+            src->encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","home health") "r_enc_class";
+            src->encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "85","Death Service Information") "r_enc_ser_type";
+
+            src then ExtractObservations(src, bundle, encounter) "r_enc_ext_cnd_call";
+
+            src.item where(linkId='location-widget') then {
+                src -> bundle.entry as entry,
+                    entry.resource = create("Location") as location then {
+                        src -> bundle.entry as entry,
+                        entry.resource = create("List") as linkingList
+                            then ExtractOtherResources(src, bundle, location, linkingList, locationLinkResourceId) "r-other-resources";
+                    } "r-other-data-call";
+            } "r-other-resource-data";
+        }"r_enc_id";
+    } "r_bundle_entry_enc";
+}
+
+group ExtractOtherResources(source src: QuestionnaireResponse,
+    target bundle: Bundle,
+    target gpsLocation : Location,
+    target linkingList : List,
+    target locationLinkResourceId : String) {
+
+        // SETS GPS-Location-Data
+
+        src -> gpsLocation.id = uuid() as locationId then {
+            src -> linkingList.subject = create('Reference') as reference then {
+                src -> reference.reference = evaluate(src, 'Location/' + locationId ) "r-ll-subject";
+            } "r-locationId-referredTo-list-subj";
+        } "r-gps-locationId";
+
+        src -> gpsLocation.status = 'active',
+            gpsLocation.mode = 'instance',
+            gpsLocation.description = 'GPS Coordinates for Remove Member' "r_gps_type_data";
+
+        src -> gpsLocation.address = create('Address') as gpsAddress then {
+            src -> gpsAddress.type = 'physical' "r-address-type";
+            src -> gpsAddress.use = 'home' "r-address-use";
+            src -> gpsAddress.text = 'Patient Residence for Remove Patient' "r-address-char-location";
+       } "r-gps-address";
+
+        src -> gpsLocation.type = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'https://fhir-ru.github.io/v3/ServiceDeliveryLocationRoleType/vs.html' "r_gps_type_coding_system";
+                src -> coding.code = 'PTRES' "r_gps_type_c_coding_code";
+                src -> coding.display = 'Patient Residence' "r_gps_type_c_coding_display";
+            } "r_gps_type_c_coding";
+            src -> code.text = 'Patient Residence' "r_gps_type-text";
+        } "r_gps_location_type";
+
+        src -> gpsLocation.physicalType = create('CodeableConcept') as code then {
+            src -> code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://terminology.hl7.org/CodeSystem/location-physical-type' "r_gps_physicalType_coding_system";
+                src -> coding.code = 'ho' "r_gps_physicalType_c_coding_code";
+                src -> coding.display = 'House' "r_gps_physicalType_c_coding_display";
+            } "r_gps_physicalType_c_coding";
+            src -> code.text = 'House' "r_gps_physicalType-text";
+        } "r_gps_location_physicalType";
+
+        src.item as locationWidgetItem where(linkId='location-widget') then {
+            src -> gpsLocation.position = create("Location_Position") as position then {
+                 src -> position.altitude = '0.0' "r-position-default-alt";
+                 locationWidgetItem.item as itemLatitude where(linkId='latitude') then {
+                    src -> position.latitude = evaluate(src, itemLatitude.answer.value) "r-position-latitude";
+                } "r-latitude-item";
+                locationWidgetItem.item as itemLongitude where(linkId='longitude') then {
+                    src -> position.longitude = evaluate(src, itemLongitude.answer.value) "r-position-longitude";
+                } "r-longitude-item";
+            } "r_position_data";
+        } "r-loc-lat-lng";
+
+        // SETS LINKING LIST DATA
+
+        src -> linkingList.id = uuid(),
+            linkingList.status = 'current',
+            linkingList.title = 'ABC Household' "r-linking-list-data";
+
+        src -> linkingList.identifier = create('Identifier') as linkingListIdentifier then {
+            src -> linkingListIdentifier.value = uuid() "rule_ll_identifier_value";
+            src -> linkingListIdentifier.use = "official" "rule_ll_identifier_use";
+        } "rule_ll_identifier";
+
+        src -> linkingList.title = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "r-ll-title";
+
+        src -> linkingList.code = create('CodeableConcept') as ll_code then {
+            src -> ll_code.coding = create('Coding') as coding then {
+                src -> coding.system = 'http://smartregister.org/' "r_ll_code_coding_system";
+                src -> coding.code = 'hh_location_link' "r_ll_code_coding_code";
+                src -> coding.display = 'Household Location Reference' "r_ll_code_coding_display";
+            } "r_ll_code_coding";
+            src -> ll_code.text = 'Household Location Reference for Remove Patient' "r_ll_code-text";
+        } "r_ll_code";
+
+        src -> linkingList.entry = create("List_Entry") as entry then {
+            src -> entry.flag = create('CodeableConcept') as flag then {
+                 src -> flag.coding = create('Coding') as coding then {
+                     src -> coding.system = 'http://smartregister.org/' "r_flag_coding_system";
+                     src -> coding.code = 'household' "r_flag_coding_code";
+                     src -> coding.display = 'Household Location Reference' "r_flag_coding_display";
+                 } "r_flag_coding";
+                 src -> flag.text = 'Household Location Reference' "r_flag-text";
+            } "r_flag";
+            src -> entry.date = evaluate(src, now()) "r_entry_date";
+            src -> entry.item = create('Reference') as reference then {
+                src -> reference.reference = evaluate(src, 'Paitent/' + locationLinkResourceId ) "r_entry_item_ref_ref";
+            } "r_entry_item_ref";
+        } "r_entry";
+}
+
+group ExtractObservations(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src then
+        SetPatientActiveAsFalseSoftDelete(src, bundle),
+        ExtractDateOfDeath(src, bundle, encounter),
+        ExtractCauseOfDeath(src, bundle, encounter),
+        ExtractPlaceOfDeath(src, bundle, encounter),
+        ExtractDeathReported(src, bundle, encounter),
+        SetPatientAsDeceased(src,bundle) "r_ext_cnd";
+}
+
+group ExtractDateOfDeath(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+        src.item as item where(linkId = "3f0ef1ae-c27a-4d37-db91-006db5d1fba1") then {
+                src->bundle.entry as entry,
+                entry.resource = create("Observation") as obs then {
+                    src -> obs.id = uuid() "r_item_date_of_death_id";
+
+                    src -> obs.code = cc("http://ona.io/codes", "death-date", "Date of Death") "r_item_date_of_death_obs_code";
+
+                    src -> obs.value = evaluate(item, $this.answer.value.toString() + ' 00:00:00') "r_item_date_of_death_obs_value";
+
+                    src->obs.subject = create("Reference")as ref then {
+                        src->ref.reference = evaluate(src, $this.item.where(linkId = "patient-id").answer.value) "r_item_date_of_death_obs_ref_ref";
+                    } "r_item_date_of_death_obs_ref";
+
+                    src -> obs.encounter = reference(encounter) "r_item_date_of_death_obs_enc";
+
+                    src -> obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history", "Social History") "r_item_date_of_death_obs_cat";
+
+                    src -> obs.effective = evaluate(src, now()) "r_item_date_of_death_obs_eff";
+                }
+                "r_item_date_of_death_obs";
+            }
+            "r_item_date_of_death";
+}
+
+
+group ExtractCauseOfDeath(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src.item as item where(linkId = "b054c8ea-e110-4408-fef1-9867e30adad2") then {
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid() "r_item_cause_of_death_id";
+
+            src -> obs.code = cc("http://ona.io/codes", "cause-of-death", "Cause Of Death") "r_item_cause_of_death_obs_code";
+
+            src -> obs.value = create("CodeableConcept")as codeableConcept then {
+                src -> codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_item_cause_of_death_value_cc_coding";
+                src -> codeableConcept.text = 'Cause of Death' "r_item_cause_of_death_display";
+            } "r_item_cause_of_death_obs_value";
+
+            src->obs.subject = create("Reference")as ref then {
+                src->ref.reference = evaluate(src, $this.item.where(linkId = "patient-id").answer.value) "r_item_cause_of_death_obs_ref_ref";
+            } "r_item_cause_of_death_obs_ref";
+
+            src->obs.encounter = reference(encounter) "r_item_cause_of_death_obs_enc";
+
+            src->obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history", "Social History") "r_item_cause_of_death_obs_cat";
+
+            src->obs.effective = evaluate(src, now()) "r_item_cause_of_death_obs_eff";
+        }
+        "r_item_cause_of_death_obs";
+    }
+    "r_item_cause_of_death";
+}
+
+group ExtractPlaceOfDeath(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+     src.item as item where(linkId = "0f1c2680-505a-468d-e16b-73811b95b758") then {
+         src->bundle.entry as entry,
+         entry.resource = create("Observation") as obs then {
+             src->obs.id = uuid() "r_item_place_of_death_id";
+
+             src -> obs.code = cc("http://ona.io/codes", "place-of-death", "Place Of Death") "r_item_place_of_death_obs_code";
+
+             src -> obs.value = create("CodeableConcept")as codeableConcept then {
+                 src -> codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_item_place_of_death_value_cc_coding";
+                 src -> codeableConcept.text = 'Cause of Death' "r_item_place_of_death_display";
+             } "r_item_place_of_death_obs_value";
+
+             src->obs.subject = create("Reference")as ref then {
+                 src->ref.reference = evaluate(src, $this.item.where(linkId = "patient-id").answer.value) "r_item_place_of_death_obs_ref_ref";
+             } "r_item_place_of_death_obs_ref";
+
+             src->obs.encounter = reference(encounter) "r_item_place_of_death_obs_enc";
+
+             src->obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history", "Social History") "r_item_place_of_death_obs_cat";
+
+             src->obs.effective = evaluate(src, now()) "r_item_place_of_death_obs_eff";
+         }
+         "r_item_place_of_death_obs";
+     }
+     "r_item_place_of_death";
+ }
+
+group ExtractDeathReported(source src: QuestionnaireResponse, target bundle: Bundle, target encounter: Encounter) {
+    src.item as item where(linkId = "464e4c81-b684-4d3d-eec7-aab02014a4d0") then {
+        src->bundle.entry as entry,
+        entry.resource = create("Observation") as obs then {
+            src->obs.id = uuid() "r_item_death_reported_id";
+
+            src -> obs.code = cc("http://ona.io/codes", "death-reported", "Death Reported to Registrar") "r_item_death_reported_obs_code";
+
+            src -> obs.value = create("CodeableConcept")as codeableConcept then {
+                src -> codeableConcept.coding = evaluate(item, $this.answer.value.code) "r_item_death_reported_value_cc_coding";
+                src -> codeableConcept.text = 'Death Reported to Registrar' "r_item_death_reported_display";
+            } "r_item_death_reported_obs_value";
+
+            src->obs.subject = create("Reference")as ref then {
+                src->ref.reference = evaluate(src, $this.item.where(linkId = "patient-id").answer.value) "r_item_death_reported_obs_ref_ref";
+            } "r_item_death_reported_obs_ref";
+
+            src->obs.encounter = reference(encounter) "r_item_death_reported_obs_enc";
+
+            src->obs.category = cc("http://terminology.hl7.org/CodeSystem/observation-category", "social-history", "Social History") "r_item_death_reported_obs_cat";
+
+            src->obs.effective = evaluate(src, now()) "r_item_death_reported_obs_eff";
+        }
+        "r_item_death_reported_obs";
+    }
+    "r_item_death_reported";
+}
+
+group SetPatientActiveAsFalseSoftDelete(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src.item as item where(linkId = "patient-id") then {
+            src->bundle.entry as entry,
+            entry.resource = create("Patient") as patient then {
+                src->patient.id = create("id") as patient_id then {
+                    src->patient_id.value = evaluate(item, $this.answer.value) "r_item_patient_id_patient_set_pat_id";
+                }
+                "r_item_patient_id_patient_create_pat_id";
+
+                src -> patient.active = false "r_item_patient_id_patient_active";
+            }
+            "r_item_patient_id_patient";
+        }
+        "r_item_patient_id";
+}
+
+group SetPatientAsDeceased(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src.item as item where(linkId = "patient-id") then {
+        src->bundle.entry as entry,
+        entry.resource = create("Patient") as patient then {
+        src->patient.id = create("id") as patient_id then {
+            src -> patient_id.value = evaluate(item, $this.answer.value) "r_item_patient_id_patient_set_pat_id";
+        }  "r_item_patient_id_patient_create_pat_id";
+        src -> patient.deceased =  true "r_item_patient_deceasedBoolean_value";
+        src -> patient.active = false "r_item_patient_id_patient_active";
+    }
+    "r_item_patient_id";
+}
+"r_item_patient_id_patient";
+}

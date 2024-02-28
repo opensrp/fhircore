@@ -63,7 +63,7 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
     target bundle: Bundle,
     target gpsLocation : Location,
     target linkingList : List,
-    target groupId : String) {
+    target locationLinkResourceId : String) {
 
         // SETS GPS-Location-Data
 
@@ -148,7 +148,7 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
             } "r_flag";
             src -> entry.date = evaluate(src, now()) "r_entry_date";
             src -> entry.item = create('Reference') as reference then {
-                src -> reference.reference = evaluate(src, 'Group/' + groupId ) "r_entry_item_ref_ref";
+                src -> reference.reference = evaluate(src, 'Group/' + locationLinkResourceId ) "r_entry_item_ref_ref";
             } "r_entry_item_ref";
         } "r_entry";
 }
