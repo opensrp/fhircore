@@ -60,7 +60,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.DEBUG_SUFFIX
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -152,7 +151,7 @@ constructor(
     val questionnaire =
       if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
-          resourceId = questionnaireConfig.id
+          resourceId = questionnaireConfig.id,
         )
       } else defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
 
@@ -416,7 +415,7 @@ constructor(
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
         questionnaireConfig,
         context,
-        subjectType
+        subjectType,
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
@@ -433,8 +432,8 @@ constructor(
           Pair(subjectType, questionnaireConfig.resourceIdentifier!!)
         }
         !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty() &&
-                questionnaireConfig.groupResource?.removeGroup != true &&
-                questionnaireConfig.groupResource?.removeMember != true -> {
+          questionnaireConfig.groupResource?.removeGroup != true &&
+          questionnaireConfig.groupResource?.removeMember != true -> {
           Pair(ResourceType.Group, questionnaireConfig.groupResource!!.groupIdentifier)
         }
         else -> null
