@@ -27,6 +27,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -70,8 +72,6 @@ import org.smartregister.fhircore.quest.ui.report.measure.models.ReportRangeSele
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
-import java.util.Calendar
-import java.util.Date
 
 @HiltViewModel
 class ProfileViewModel
@@ -131,9 +131,13 @@ constructor(
     if (resourceId.isNotEmpty()) {
       val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val monthDateRange = profileConfigs.monthWiseFilterStartDate?.let {
-        Pair(dateRange.value.first ?: Date().firstDayOfMonth().time, dateRange.value.second ?: Date().lastDayOfMonth().time)
-      } ?: defaultDateRangeState()
+      val monthDateRange =
+        profileConfigs.monthWiseFilterStartDate?.let {
+          Pair(
+            dateRange.value.first ?: Date().firstDayOfMonth().time,
+            dateRange.value.second ?: Date().lastDayOfMonth().time,
+          )
+        } ?: defaultDateRangeState()
 
       val repositoryResourceData =
         registerRepository.loadProfileData(
@@ -141,12 +145,20 @@ constructor(
           resourceId,
           fhirResourceConfig,
           paramsList,
-          startDateFormatted = monthDateRange.first?.let { Date(monthDateRange.first!!).formatDate(
-            SDF_YYYY_MM_DD
-          ) },
-          endDateFormatted = monthDateRange.second?.let { Date(monthDateRange.second!!).formatDate(
-            SDF_YYYY_MM_DD
-          ) },
+          startDateFormatted =
+            monthDateRange.first?.let {
+              Date(monthDateRange.first!!)
+                .formatDate(
+                  SDF_YYYY_MM_DD,
+                )
+            },
+          endDateFormatted =
+            monthDateRange.second?.let {
+              Date(monthDateRange.second!!)
+                .formatDate(
+                  SDF_YYYY_MM_DD,
+                )
+            },
         )
 
       val resourceData =
@@ -180,22 +192,22 @@ constructor(
           listProperties = listProperties,
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
-          listResourceDataStateMap = listResourceDataStateMap
+          listResourceDataStateMap = listResourceDataStateMap,
         )
       }
     }
   }
 
   fun getMonthFilterRange(): Map<String, List<ReportRangeSelectionData>> {
-    val startDate = profileUiState.value.profileConfiguration?.monthWiseFilterStartDate?.parseDate(SDF_YYYY_MM_DD) ?: "2023-01-01".parseDate(SDF_YYYY_MM_DD)
+    val startDate =
+      profileUiState.value.profileConfiguration?.monthWiseFilterStartDate?.parseDate(SDF_YYYY_MM_DD)
+        ?: "2023-01-01".parseDate(SDF_YYYY_MM_DD)
 
     val yearMonths = mutableListOf<ReportRangeSelectionData>()
     val endDate = Calendar.getInstance().time.formatDate(SDF_YYYY_MM_DD).parseDate(SDF_YYYY_MM_DD)
     var lastDate = endDate?.firstDayOfMonth()
 
-    while (
-      lastDate!!.after(startDate)
-    ) {
+    while (lastDate!!.after(startDate)) {
       yearMonths.add(
         ReportRangeSelectionData(
           lastDate.formatDate(SDF_MMMM),

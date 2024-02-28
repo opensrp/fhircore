@@ -534,7 +534,7 @@ constructor(
       relatedResourceWrapper = relatedResourceWrapper,
       configComputedRuleValues = configComputedRuleValues,
       startDateFormatted,
-      endDateFormatted
+      endDateFormatted,
     )
 
     return relatedResourceWrapper
@@ -637,8 +637,16 @@ constructor(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            if(!startDateFormatted.isNullOrEmpty() && !endDateFormatted.isNullOrEmpty() && resourceConfig.dataQueries?.isNotEmpty() == true) {
-              (this as Search).applyMonthWiseFilters(startDateFormatted, endDateFormatted, resourceConfig.dataQueries.first().paramName)
+            if (
+              !startDateFormatted.isNullOrEmpty() &&
+                !endDateFormatted.isNullOrEmpty() &&
+                resourceConfig.dataQueries?.isNotEmpty() == true
+            ) {
+              (this as Search).applyMonthWiseFilters(
+                startDateFormatted,
+                endDateFormatted,
+                resourceConfig.dataQueries.first().paramName,
+              )
               (this as Search).sort(resourceConfig.sortConfigs)
             } else {
               (this as Search).applyConfiguredSortAndFilters(
@@ -655,8 +663,16 @@ constructor(
             resourceConfig.resource,
             ReferenceClientParam(resourceConfig.searchParameter),
           ) {
-            if(!startDateFormatted.isNullOrEmpty() && !endDateFormatted.isNullOrEmpty() && resourceConfig.dataQueries?.isNotEmpty() == true) {
-              (this as Search).applyMonthWiseFilters(startDateFormatted, endDateFormatted, resourceConfig.dataQueries.first().paramName)
+            if (
+              !startDateFormatted.isNullOrEmpty() &&
+                !endDateFormatted.isNullOrEmpty() &&
+                resourceConfig.dataQueries?.isNotEmpty() == true
+            ) {
+              (this as Search).applyMonthWiseFilters(
+                startDateFormatted,
+                endDateFormatted,
+                resourceConfig.dataQueries.first().paramName,
+              )
               (this as Search).sort(resourceConfig.sortConfigs)
             } else {
               (this as Search).applyConfiguredSortAndFilters(
@@ -835,7 +851,11 @@ constructor(
     }
   }
 
-  private fun Search.applyMonthWiseFilters(startDateFormatted: String, endDateFormatted: String, paramName: String) {
+  private fun Search.applyMonthWiseFilters(
+    startDateFormatted: String,
+    endDateFormatted: String,
+    paramName: String,
+  ) {
     this.filter(
       DateClientParam(paramName),
       {
@@ -846,7 +866,7 @@ constructor(
         value = of(DateTimeType(endDateFormatted))
         prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
       },
-      operation = Operation.AND
+      operation = Operation.AND,
     )
   }
 

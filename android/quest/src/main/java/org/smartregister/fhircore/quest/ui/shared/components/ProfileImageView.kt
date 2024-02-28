@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -51,19 +50,20 @@ fun ImageView(
 ) {
   when (profileImageViewProperties.type) {
     ICON_TYPE_LOCAL -> {
-      LocalContext.current.retrieveResourceId(profileImageViewProperties.reference)?.let { drawableId ->
+      LocalContext.current.retrieveResourceId(profileImageViewProperties.reference)?.let {
+        drawableId ->
         Image(
           modifier =
-          modifier
-            .testTag(IMAGE_VIEW_LOCAL_IMAGE_TEST_TAG)
-            .width(Dp(profileImageViewProperties.width))
-            .height(Dp(profileImageViewProperties.height))
-            .border(
-              BorderStroke(1.dp, profileImageViewProperties.borderColor.parseColor()),
-              CircleShape
-            )
-            .clip(CircleShape)
-            .padding(10.dp),
+            modifier
+              .testTag(IMAGE_VIEW_LOCAL_IMAGE_TEST_TAG)
+              .width(Dp(profileImageViewProperties.width))
+              .height(Dp(profileImageViewProperties.height))
+              .border(
+                BorderStroke(1.dp, profileImageViewProperties.borderColor.parseColor()),
+                CircleShape,
+              )
+              .clip(CircleShape)
+              .padding(10.dp),
           painter = painterResource(id = drawableId),
           colorFilter = ColorFilter.tint(profileImageViewProperties.color.parseColor()),
           contentDescription = IMAGE_VIEW_LOCAL_IMAGE_TEST_TAG,
@@ -74,13 +74,13 @@ fun ImageView(
       if (profileImageViewProperties.decodedBitmap != null) {
         Image(
           modifier =
-          modifier
-            .testTag(IMAGE_VIEW_REMOTE_IMAGE_TEST_TAG)
-            .padding(10.dp)
-            .width(Dp(profileImageViewProperties.width))
-            .height(Dp(profileImageViewProperties.height)),
+            modifier
+              .testTag(IMAGE_VIEW_REMOTE_IMAGE_TEST_TAG)
+              .padding(10.dp)
+              .width(Dp(profileImageViewProperties.width))
+              .height(Dp(profileImageViewProperties.height)),
           bitmap = profileImageViewProperties.decodedBitmap!!.asImageBitmap(),
-          contentDescription = IMAGE_VIEW_REMOTE_IMAGE_TEST_TAG
+          contentDescription = IMAGE_VIEW_REMOTE_IMAGE_TEST_TAG,
         )
       }
   }
@@ -90,10 +90,11 @@ fun ImageView(
 @Composable
 private fun LocalImageViewPreview() {
   ImageView(
-    profileImageViewProperties = ProfileImageViewProperties(
-      height = 80f,
-      width = 80f,
-      reference = "ic_households"
-    )
+    profileImageViewProperties =
+      ProfileImageViewProperties(
+        height = 80f,
+        width = 80f,
+        reference = "ic_households",
+      ),
   )
 }

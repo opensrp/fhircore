@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,51 +41,50 @@ const val REQUIRED_PERMISSION_DIALOG = "requiredPermissionDialog"
 
 @Composable
 fun RequiredPermissionDialog(
-    context: Context,
-    permissions: String,
-    onDismissDialog: () -> Unit,
-    modifier: Modifier = Modifier,
+  context: Context,
+  permissions: String,
+  onDismissDialog: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismissDialog,
-        title = {
-            Text(
-                text = stringResource(R.string.required_permission_title),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-            )
-        },
-        text = { Text(text = stringResource(R.string.required_permission_message, permissions), fontSize = 16.sp) },
-        buttons = {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                Text(
-                    text = stringResource(org.smartregister.fhircore.engine.R.string.cancel),
-                    modifier = modifier
-                        .padding(horizontal = 10.dp)
-                        .clickable { onDismissDialog() },
-                )
-                Text(
-                    color = MaterialTheme.colors.primary,
-                    text = stringResource(org.smartregister.fhircore.engine.R.string.settings).uppercase(),
-                    modifier =
-                    modifier
-                        .padding(horizontal = 10.dp)
-                        .clickable {
-                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                                context.startActivity(this)
-                            }
+  AlertDialog(
+    onDismissRequest = onDismissDialog,
+    title = {
+      Text(
+        text = stringResource(R.string.required_permission_title),
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp,
+      )
+    },
+    text = {
+      Text(
+        text = stringResource(R.string.required_permission_message, permissions),
+        fontSize = 16.sp,
+      )
+    },
+    buttons = {
+      Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        horizontalArrangement = Arrangement.End,
+      ) {
+        Text(
+          text = stringResource(org.smartregister.fhircore.engine.R.string.cancel),
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
+        )
+        Text(
+          color = MaterialTheme.colors.primary,
+          text = stringResource(org.smartregister.fhircore.engine.R.string.settings).uppercase(),
+          modifier =
+            modifier.padding(horizontal = 10.dp).clickable {
+              Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+                context.startActivity(this)
+              }
 
-                            onDismissDialog()
-                        },
-                )
-            }
-        },
-        modifier = Modifier.testTag(REQUIRED_PERMISSION_DIALOG),
-    )
+              onDismissDialog()
+            },
+        )
+      }
+    },
+    modifier = Modifier.testTag(REQUIRED_PERMISSION_DIALOG),
+  )
 }

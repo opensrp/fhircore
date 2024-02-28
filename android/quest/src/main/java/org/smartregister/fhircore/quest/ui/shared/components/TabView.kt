@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.*
+import androidx.compose.material.ScrollableTabRow
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,10 +39,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.pager.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.pagerTabIndicatorOffset
+import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.view.*
+import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -53,28 +61,25 @@ fun TabView(
   resourceData: ResourceData,
   navController: NavController,
   selectedTabIndex: Int? = null,
-  tabChangedEvent: ((Int) -> Unit)? = null
+  tabChangedEvent: ((Int) -> Unit)? = null,
 ) {
-  val pagerState = rememberPagerState(initialPage = selectedTabIndex ?: viewProperties.selectedTabIndex)
+  val pagerState =
+    rememberPagerState(initialPage = selectedTabIndex ?: viewProperties.selectedTabIndex)
 
   LaunchedEffect(pagerState) {
-    snapshotFlow { pagerState.currentPage }.collect { page ->
-      tabChangedEvent?.let { it(page) }
-    }
+    snapshotFlow { pagerState.currentPage }.collect { page -> tabChangedEvent?.let { it(page) } }
   }
 
   Column(
-    modifier = modifier
-      .fillMaxSize()
-      .background(viewProperties.tabBackgroundColor.parseColor())) {
-
-    //tabs header
+    modifier = modifier.fillMaxSize().background(viewProperties.tabBackgroundColor.parseColor()),
+  ) {
+    // tabs header
     Tabs(
       pagerState = pagerState,
       viewProperties = viewProperties,
     )
 
-    //tabs content
+    // tabs content
     TabContents(
       pagerState = pagerState,
       viewProperties = viewProperties,
@@ -88,11 +93,11 @@ fun TabView(
 @Composable
 fun Tabs(
   pagerState: PagerState,
-  viewProperties: TabViewProperties
+  viewProperties: TabViewProperties,
 ) {
   val scope = rememberCoroutineScope()
 
-  if(viewProperties.tabs.size > 3) {
+  if (viewProperties.tabs.size > 3) {
     ScrollableTabRow(
       selectedTabIndex = pagerState.currentPage,
       edgePadding = 10.dp,
@@ -102,23 +107,20 @@ fun Tabs(
           height = 5.dp,
           color = viewProperties.tabIndicatorColor.parseColor(),
         )
-      }
+      },
     ) {
       viewProperties.tabs.forEachIndexed { index, _ ->
         Tab(
           selected = pagerState.currentPage == index,
-          onClick = {
-            scope.launch {
-              pagerState.animateScrollToPage(index)
-            }
-          },
+          onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
           text = {
             Text(
               viewProperties.tabs[index],
               color = if (pagerState.currentPage == index) Color.White else Color.LightGray,
-              fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
+              fontWeight =
+                if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal,
             )
-          }
+          },
         )
       }
     }
@@ -131,23 +133,20 @@ fun Tabs(
           height = 5.dp,
           color = viewProperties.tabIndicatorColor.parseColor(),
         )
-      }
+      },
     ) {
       viewProperties.tabs.forEachIndexed { index, _ ->
         Tab(
           selected = pagerState.currentPage == index,
-          onClick = {
-            scope.launch {
-              pagerState.animateScrollToPage(index)
-            }
-          },
+          onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
           text = {
             Text(
               viewProperties.tabs[index],
               color = if (pagerState.currentPage == index) Color.White else Color.LightGray,
-              fontWeight = if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal
+              fontWeight =
+                if (pagerState.currentPage == index) FontWeight.Bold else FontWeight.Normal,
             )
-          }
+          },
         )
       }
     }
@@ -160,24 +159,24 @@ fun TabContents(
   pagerState: PagerState,
   viewProperties: TabViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   HorizontalPager(
     verticalAlignment = Alignment.Top,
     count = viewProperties.tabs.size,
     state = pagerState,
-    userScrollEnabled = false
+    userScrollEnabled = false,
   ) { pageIndex ->
-    if(viewProperties.contentScrollable) {
+    if (viewProperties.contentScrollable) {
       LazyColumn(
         state = rememberLazyListState(),
-        contentPadding = PaddingValues(bottom = 20.dp)
+        contentPadding = PaddingValues(bottom = 20.dp),
       ) {
         item(key = resourceData.baseResourceId) {
           ViewRenderer(
             viewProperties = listOf(viewProperties.tabContents[pageIndex]),
             resourceData = resourceData,
-            navController = navController
+            navController = navController,
           )
         }
       }
@@ -185,7 +184,7 @@ fun TabContents(
       ViewRenderer(
         viewProperties = listOf(viewProperties.tabContents[pageIndex]),
         resourceData = resourceData,
-        navController = navController
+        navController = navController,
       )
     }
   }
@@ -195,37 +194,40 @@ fun TabContents(
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun TabViewPreview() {
-  val pagerState = rememberPagerState(
-    initialPage = 0,
-  )
+  val pagerState =
+    rememberPagerState(
+      initialPage = 0,
+    )
 
-  val viewProperties = TabViewProperties(
-    viewType = ViewType.TABS,
-    tabs = listOf("Tab1", "Tab2", "Tab3"),
-    tabContents = listOf(
-      CompoundTextProperties(
-        primaryText = "Tab1",
-        primaryTextColor = "#000000",
-      ),
-      CompoundTextProperties(
-        primaryText = "Tab2",
-        primaryTextColor = "#000000",
-      ),
-      CompoundTextProperties(
-        primaryText = "Tab3",
-        primaryTextColor = "#000000",
-      ),
-    ),
-  )
+  val viewProperties =
+    TabViewProperties(
+      viewType = ViewType.TABS,
+      tabs = listOf("Tab1", "Tab2", "Tab3"),
+      tabContents =
+        listOf(
+          CompoundTextProperties(
+            primaryText = "Tab1",
+            primaryTextColor = "#000000",
+          ),
+          CompoundTextProperties(
+            primaryText = "Tab2",
+            primaryTextColor = "#000000",
+          ),
+          CompoundTextProperties(
+            primaryText = "Tab3",
+            primaryTextColor = "#000000",
+          ),
+        ),
+    )
 
   Column(modifier = Modifier.fillMaxWidth()) {
-    //tabs header
+    // tabs header
     Tabs(
       pagerState = pagerState,
       viewProperties = viewProperties,
     )
 
-    //tabs content
+    // tabs content
     TabContents(
       pagerState = pagerState,
       viewProperties = viewProperties,

@@ -63,7 +63,8 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 @ExperimentalMaterialApi
-open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, PermissionHandler, OnSyncListener {
+open class AppMainActivity :
+  BaseMultiLanguageActivity(), QuestionnaireHandler, PermissionHandler, OnSyncListener {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
@@ -90,13 +91,14 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
 
   override val startForPermissionsResult =
-    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissionResults ->
-      if(permissionResults.containsValue(false)) {
+    registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+      permissionResults ->
+      if (permissionResults.containsValue(false)) {
         val requiredPermissions = arrayListOf<String>()
         val deniedPermissions = arrayListOf<String>()
 
         permissionResults.keys.map {
-          if(permissionResults[it] == false) {
+          if (permissionResults[it] == false) {
             if (shouldShowRequestPermissionRationale(it)) {
               requiredPermissions.add(it)
             } else {
@@ -105,12 +107,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           }
         }
 
-        if(requiredPermissions.isNotEmpty()) {
+        if (requiredPermissions.isNotEmpty()) {
           handlePermissions(this@AppMainActivity, requiredPermissions)
-        } else if(deniedPermissions.isNotEmpty()) {
-          val permissions = deniedPermissions
-            .map { getPermissionInfo(this@AppMainActivity, it) }
-            .joinToString("\n") { "• $it" }
+        } else if (deniedPermissions.isNotEmpty()) {
+          val permissions =
+            deniedPermissions
+              .map { getPermissionInfo(this@AppMainActivity, it) }
+              .joinToString("\n") { "• $it" }
 
           appMainViewModel.onEvent(AppMainEvent.ShowPermissionDialog(permissions))
         }
@@ -176,7 +179,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       schedulePeriodicJobs()
     }
 
-    //Request Permissions
+    // Request Permissions
     if (appMainViewModel.applicationConfiguration.requiredPermissions.isNotEmpty()) {
       appMainViewModel.applicationConfiguration.requiredPermissions
         .filter { Build.VERSION.SDK_INT in it.minSdkInt..it.maxSdkInt }
@@ -249,7 +252,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun handlePermissions(context: Context, permissions: List<String>?) {
     val requestedPermissions = permissions ?: retrievePermissions(context)
-    if(needPermissionRequest(context, requestedPermissions)) {
+    if (needPermissionRequest(context, requestedPermissions)) {
       launchPermissionRequest(requestedPermissions)
     } else {
       onGrantedPermissions()
@@ -257,8 +260,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   override fun onGrantedPermissions() {
-    appMainViewModel.run {
-      schedulePeriodicJobsForNotification()
-    }
+    appMainViewModel.run { schedulePeriodicJobsForNotification() }
   }
 }

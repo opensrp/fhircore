@@ -119,16 +119,16 @@ class RegisterFragment : Fragment(), OnSyncListener {
         }
 
         BackHandler {
-          if(scaffoldState.drawerState.isOpen) {
-            scope.launch {
-              scaffoldState.drawerState.close()
-            }
+          if (scaffoldState.drawerState.isOpen) {
+            scope.launch { scaffoldState.drawerState.close() }
           } else {
             AlertDialogue.showConfirmAlert(
               context = requireActivity(),
-              message = org.smartregister.fhircore.quest.R.string.application_alert_back_pressed_message,
+              message =
+                org.smartregister.fhircore.quest.R.string.application_alert_back_pressed_message,
               confirmButtonListener = { requireActivity().finish() },
-              confirmButtonText = org.smartregister.fhircore.quest.R.string.application_alert_confirm_button_title,
+              confirmButtonText =
+                org.smartregister.fhircore.quest.R.string.application_alert_confirm_button_title,
             )
           }
         }
@@ -181,17 +181,21 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier
-              .padding(innerPadding)
-              .testTag(REGISTER_SCREEN_BOX_TAG)) {
-
-              if(!appMainViewModel.permissionConfirmationDialogMessage.observeAsState("").value.isNullOrEmpty()) {
+            Box(
+              modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG),
+            ) {
+              if (
+                !appMainViewModel.permissionConfirmationDialogMessage
+                  .observeAsState("")
+                  .value
+                  .isNullOrEmpty()
+              ) {
                 RequiredPermissionDialog(
                   context = context,
                   permissions = appMainViewModel.permissionConfirmationDialogMessage.value!!,
                   onDismissDialog = {
                     appMainViewModel.onEvent(AppMainEvent.ShowPermissionDialog(""))
-                  }
+                  },
                 )
               }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,18 +81,19 @@ class NotificationFragment : Fragment() {
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
           ) { innerPadding ->
-            Box(modifier = Modifier
-              .padding(innerPadding)
-              .testTag(NOTIFICATION_SCREEN_BOX_TAG)) {
-
-              if(registerViewModel.notificationDialogData.observeAsState(mapOf()).value.isNotEmpty()) {
+            Box(
+              modifier = Modifier.padding(innerPadding).testTag(NOTIFICATION_SCREEN_BOX_TAG),
+            ) {
+              if (
+                registerViewModel.notificationDialogData.observeAsState(mapOf()).value.isNotEmpty()
+              ) {
                 val data = registerViewModel.notificationDialogData.value!!
                 NotificationDialog(
                   title = data["notificationTitle"] as String,
                   description = data["notificationDescription"] as String,
                   onDismissDialog = {
                     registerViewModel.onEvent(NotificationEvent.ShowNotification())
-                  }
+                  },
                 )
               }
 

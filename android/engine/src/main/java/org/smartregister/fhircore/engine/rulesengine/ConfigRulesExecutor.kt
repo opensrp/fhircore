@@ -36,9 +36,11 @@ import timber.log.Timber
  * incorrect results when rules are fired. Use the [ResourceDataRulesExecutor] in the same coroutine
  * context of the caller.
  */
-class ConfigRulesExecutor @Inject constructor(
+class ConfigRulesExecutor
+@Inject
+constructor(
   val configurationRegistry: ConfigurationRegistry,
-  val fhirPathDataExtractor: FhirPathDataExtractor
+  val fhirPathDataExtractor: FhirPathDataExtractor,
 ) : RulesListener() {
 
   private val rulesEngineService = RulesEngineService()
@@ -64,7 +66,9 @@ class ConfigRulesExecutor @Inject constructor(
 
   inner class RulesEngineService {
     fun retrievePractitionerLocationId(): String {
-      return configurationRegistry.sharedPreferencesHelper.read<List<String>>(ResourceType.Location.name)?.first() ?: ""
+      return configurationRegistry.sharedPreferencesHelper
+        .read<List<String>>(ResourceType.Location.name)
+        ?.first() ?: ""
     }
   }
 

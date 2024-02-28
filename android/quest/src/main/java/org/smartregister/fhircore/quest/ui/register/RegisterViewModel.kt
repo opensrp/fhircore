@@ -284,21 +284,22 @@ constructor(
     dataQueries: List<DataQuery>?,
     qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ) =
-    dataQueries?.map {
-      val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
-      it.filterCriteria.forEach { filterCriterionConfig ->
-        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
-        answerComponent?.answer?.forEach { itemAnswerComponent ->
-          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
-          if (criterion != null) newFilterCriteria.add(criterion)
+    dataQueries
+      ?.map {
+        val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
+        it.filterCriteria.forEach { filterCriterionConfig ->
+          val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+          answerComponent?.answer?.forEach { itemAnswerComponent ->
+            val criterion =
+              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+            if (criterion != null) newFilterCriteria.add(criterion)
+          }
         }
+        it.copy(
+          filterCriteria = newFilterCriteria,
+        )
       }
-      it.copy(
-        filterCriteria = newFilterCriteria,
-      )
-    }?.filter {
-      it.filterCriteria.isNotEmpty()
-    }
+      ?.filter { it.filterCriteria.isNotEmpty() }
 
   private fun convertAnswerToFilterCriterion(
     answerComponent: QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent,
@@ -410,24 +411,30 @@ constructor(
       viewModelScope.launch(dispatcherProvider.io()) {
         val currentRegisterConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
 
-        val resourceData = currentRegisterConfiguration.configRules?.let {
-          val computedValuesMap = resourceDataRulesExecutor.computeResourceDataRules(
-            ruleConfigs = it,
-            repositoryResourceData = null,
-            params = paramsMap,
-          )
+        val resourceData =
+          currentRegisterConfiguration.configRules?.let {
+            val computedValuesMap =
+              resourceDataRulesExecutor.computeResourceDataRules(
+                ruleConfigs = it,
+                repositoryResourceData = null,
+                params = paramsMap,
+              )
 
-          ResourceData(
-            baseResourceId = "",
-            baseResourceType = ResourceType.Location,
-            computedValuesMap = computedValuesMap
-          )
-        }
+            ResourceData(
+              baseResourceId = "",
+              baseResourceType = ResourceType.Location,
+              computedValuesMap = computedValuesMap,
+            )
+          }
 
         currentRegisterConfiguration.registerNotification?.let {
           val actionConfig = it.first()
           actionConfig.id?.let { notificationId ->
-            _unreadNotificationsCount.longValue = registerRepository.countRegisterData(registerId = notificationId, fhirResourceConfig = actionConfig.resourceConfig)
+            _unreadNotificationsCount.longValue =
+              registerRepository.countRegisterData(
+                registerId = notificationId,
+                fhirResourceConfig = actionConfig.resourceConfig,
+              )
           }
         }
 

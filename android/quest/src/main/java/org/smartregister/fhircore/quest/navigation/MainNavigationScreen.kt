@@ -41,7 +41,12 @@ sealed class MainNavigationScreen(
     )
 
   object OtherReports :
-    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, org.smartregister.fhircore.quest.R.id.otherReportFragment, true)
+    MainNavigationScreen(
+      R.string.reports,
+      R.drawable.ic_reports,
+      org.smartregister.fhircore.quest.R.id.otherReportFragment,
+      true,
+    )
 
   object Settings :
     MainNavigationScreen(
@@ -52,7 +57,10 @@ sealed class MainNavigationScreen(
     )
 
   object Notifications :
-    MainNavigationScreen(titleResource = R.string.notification, route = org.smartregister.fhircore.quest.R.id.notificationFragment)
+    MainNavigationScreen(
+      titleResource = R.string.notification,
+      route = org.smartregister.fhircore.quest.R.id.notificationFragment,
+    )
 
   object Profile :
     MainNavigationScreen(

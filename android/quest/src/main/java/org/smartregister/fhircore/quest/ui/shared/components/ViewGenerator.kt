@@ -42,17 +42,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
-import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.DividerProperties
-import org.smartregister.fhircore.engine.configuration.view.ProfileImageViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperties
+import org.smartregister.fhircore.engine.configuration.view.ProfileImageViewProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -244,7 +244,7 @@ fun GenerateView(
           modifier = modifier,
           viewProperties = properties as TabViewProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
       ViewType.PERSONAL_DATA ->
         PersonalDataView(
@@ -258,7 +258,7 @@ fun GenerateView(
       ViewType.IMAGE_VIEW ->
         ImageView(
           modifier = modifier,
-          profileImageViewProperties = properties as ProfileImageViewProperties
+          profileImageViewProperties = properties as ProfileImageViewProperties,
         )
       ViewType.BORDER ->
         DividerView(modifier = modifier, dividerProperties = properties as DividerProperties)

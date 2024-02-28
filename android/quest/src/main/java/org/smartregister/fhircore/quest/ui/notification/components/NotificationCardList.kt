@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2024 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.quest.ui.notification.components
 
 import androidx.compose.foundation.clickable
@@ -36,80 +52,79 @@ const val NOTIFICATION_CARD_LIST_TEST_TAG = "NotificationCardListTestTag"
  */
 @Composable
 fun NotificationCardList(
-    modifier: Modifier = Modifier,
-    registerCardConfig: RegisterCardConfig,
-    pagingItems: LazyPagingItems<ResourceData>,
-    navController: NavController,
-    lazyListState: LazyListState,
-    onEvent: (NotificationEvent) -> Unit,
-    registerUiState: NotificationUiState,
-    currentPage: MutableState<Int>,
-    showPagination: Boolean = false,
+  modifier: Modifier = Modifier,
+  registerCardConfig: RegisterCardConfig,
+  pagingItems: LazyPagingItems<ResourceData>,
+  navController: NavController,
+  lazyListState: LazyListState,
+  onEvent: (NotificationEvent) -> Unit,
+  registerUiState: NotificationUiState,
+  currentPage: MutableState<Int>,
+  showPagination: Boolean = false,
 ) {
-    LazyColumn(modifier = modifier.testTag(NOTIFICATION_CARD_LIST_TEST_TAG), state = lazyListState) {
-        items(
-            count = pagingItems.itemCount,
-            key = pagingItems.itemKey { it.baseResourceId },
-            contentType = pagingItems.itemContentType(),
-        ) { index ->
-            // Register card UI rendered dynamically should be wrapped in a column
-            val data = pagingItems[index]!!
-            Column(modifier = modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable {
-                        onEvent(
-                            NotificationEvent.ShowNotification(
-                                data = data.computedValuesMap,
-                                id = data.baseResourceId
-                            )
-                        )
-                    }
-            ) {
-                ViewRenderer(
-                    viewProperties = registerCardConfig.views,
-                    resourceData = data,
-                    navController = navController,
-                )
-            }
-            Divider(color = DividerColor, thickness = 1.dp)
-        }
-        pagingItems.apply {
-            when {
-                loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
-                loadState.append is LoadState.Loading -> item { CircularProgressBar() }
-                loadState.refresh is LoadState.Error -> {
-                    val loadStateError = pagingItems.loadState.refresh as LoadState.Error
-                    item {
-                        ErrorMessage(
-                            message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-                            onClickRetry = { retry() },
-                        )
-                    }
-                }
-
-                loadState.append is LoadState.Error -> {
-                    val error = pagingItems.loadState.append as LoadState.Error
-                    item {
-                        ErrorMessage(
-                            message = error.error.localizedMessage!!,
-                            onClickRetry = { retry() })
-                    }
-                }
-            }
-        }
-
-        // Register pagination
-        item {
-            if (pagingItems.itemCount > 0 && showPagination) {
-                RegisterFooter(
-                    resultCount = pagingItems.itemCount,
-                    currentPage = currentPage.value.plus(1),
-                    pagesCount = registerUiState.pagesCount,
-                    previousButtonClickListener = { onEvent(NotificationEvent.MoveToPreviousPage) },
-                    nextButtonClickListener = { onEvent(NotificationEvent.MoveToNextPage) },
-                )
-            }
-        }
+  LazyColumn(modifier = modifier.testTag(NOTIFICATION_CARD_LIST_TEST_TAG), state = lazyListState) {
+    items(
+      count = pagingItems.itemCount,
+      key = pagingItems.itemKey { it.baseResourceId },
+      contentType = pagingItems.itemContentType(),
+    ) { index ->
+      // Register card UI rendered dynamically should be wrapped in a column
+      val data = pagingItems[index]!!
+      Column(
+        modifier =
+          modifier.fillMaxWidth().padding(horizontal = 16.dp).clickable {
+            onEvent(
+              NotificationEvent.ShowNotification(
+                data = data.computedValuesMap,
+                id = data.baseResourceId,
+              ),
+            )
+          },
+      ) {
+        ViewRenderer(
+          viewProperties = registerCardConfig.views,
+          resourceData = data,
+          navController = navController,
+        )
+      }
+      Divider(color = DividerColor, thickness = 1.dp)
     }
+    pagingItems.apply {
+      when {
+        loadState.refresh is LoadState.Loading -> item { CircularProgressBar() }
+        loadState.append is LoadState.Loading -> item { CircularProgressBar() }
+        loadState.refresh is LoadState.Error -> {
+          val loadStateError = pagingItems.loadState.refresh as LoadState.Error
+          item {
+            ErrorMessage(
+              message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
+              onClickRetry = { retry() },
+            )
+          }
+        }
+        loadState.append is LoadState.Error -> {
+          val error = pagingItems.loadState.append as LoadState.Error
+          item {
+            ErrorMessage(
+              message = error.error.localizedMessage!!,
+              onClickRetry = { retry() },
+            )
+          }
+        }
+      }
+    }
+
+    // Register pagination
+    item {
+      if (pagingItems.itemCount > 0 && showPagination) {
+        RegisterFooter(
+          resultCount = pagingItems.itemCount,
+          currentPage = currentPage.value.plus(1),
+          pagesCount = registerUiState.pagesCount,
+          previousButtonClickListener = { onEvent(NotificationEvent.MoveToPreviousPage) },
+          nextButtonClickListener = { onEvent(NotificationEvent.MoveToNextPage) },
+        )
+      }
+    }
+  }
 }

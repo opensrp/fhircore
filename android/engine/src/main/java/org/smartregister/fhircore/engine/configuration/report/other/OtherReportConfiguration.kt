@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021-2024 Ona Systems, Inc
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.smartregister.fhircore.engine.configuration.report.other
 
 import kotlinx.serialization.Serializable
@@ -10,12 +26,12 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class OtherReportConfiguration(
-    override var appId: String,
-    override var configType: String = ConfigType.MeasureReport.name,
-    val id: String,
-    val showDateFilter: Boolean = true,
-    val tabBar: TabViewProperties? = null,
-    val reports: List<ReportConfiguration> = emptyList(),
-    val resources: List<ResourceConfig> = emptyList(),
-    val rules: List<RuleConfig> = emptyList(),
+  override var appId: String,
+  override var configType: String = ConfigType.MeasureReport.name,
+  val id: String,
+  val showDateFilter: Boolean = true,
+  val tabBar: TabViewProperties? = null,
+  val reports: List<ReportConfiguration> = emptyList(),
+  val resources: List<ResourceConfig> = emptyList(),
+  val rules: List<RuleConfig> = emptyList(),
 ) : Configuration()

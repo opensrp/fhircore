@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.DatePickerFormatter
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DateRangePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.util.Pair
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
+import java.util.Date
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
@@ -71,8 +70,6 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.DROPDOWN_MENU_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.TabView
-import java.util.Calendar
-import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class, ExperimentalPagerApi::class)
 @Composable
@@ -84,10 +81,11 @@ fun OtherReportScreen(
   initialDateRange: Pair<Long?, Long?>,
 ) {
   val currentSelectedDateState = remember { mutableStateOf(initialDateRange) }
-  val state = rememberDateRangePickerState(
-    initialSelectedStartDateMillis = currentSelectedDateState.value.first,
-    initialSelectedEndDateMillis = currentSelectedDateState.value.second,
-  )
+  val state =
+    rememberDateRangePickerState(
+      initialSelectedStartDateMillis = currentSelectedDateState.value.first,
+      initialSelectedEndDateMillis = currentSelectedDateState.value.second,
+    )
   val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
   val coroutineScope = rememberCoroutineScope()
 
@@ -99,39 +97,38 @@ fun OtherReportScreen(
     sheetState = bottomSheetState,
     sheetContent = {
       Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .height(600.dp)
-          .background(Color.White)
+        modifier = Modifier.fillMaxWidth().height(600.dp).background(Color.White),
       ) {
         DateRangePickerUi(
           state,
           onDateRangeSelected = {
-            coroutineScope.launch {
-              bottomSheetState.hide()
-            }
+            coroutineScope.launch { bottomSheetState.hide() }
 
-            if(currentSelectedDateState.value.first != state.selectedStartDateMillis ||
-              currentSelectedDateState.value.second != state.selectedEndDateMillis) {
+            if (
+              currentSelectedDateState.value.first != state.selectedStartDateMillis ||
+                currentSelectedDateState.value.second != state.selectedEndDateMillis
+            ) {
               currentSelectedDateState.value =
                 Pair(state.selectedStartDateMillis, state.selectedEndDateMillis)
 
               onEvent(
-                OtherReportEvent.OnDateRangeSelected(currentSelectedDateState.value)
+                OtherReportEvent.OnDateRangeSelected(currentSelectedDateState.value),
               )
             }
-          }
+          },
         )
       }
-    }
+    },
   ) {
     Scaffold(
       topBar = {
-        Column(modifier = modifier
-          .background(MaterialTheme.colors.primary)
-          .fillMaxWidth()) {
+        Column(
+          modifier = modifier.background(MaterialTheme.colors.primary).fillMaxWidth(),
+        ) {
           TopAppBar(
-            title = { Text(text = stringResource(org.smartregister.fhircore.engine.R.string.reports)) },
+            title = {
+              Text(text = stringResource(org.smartregister.fhircore.engine.R.string.reports))
+            },
             navigationIcon = {
               IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Filled.ArrowBack, null)
@@ -141,70 +138,72 @@ fun OtherReportScreen(
             backgroundColor = MaterialTheme.colors.primary,
             elevation = 0.dp,
             actions = {
-              if(otherReportUiState.otherReportConfiguration?.showDateFilter == true) {
+              if (otherReportUiState.otherReportConfiguration?.showDateFilter == true) {
                 IconButton(
                   onClick = {
                     state.setSelection(
                       startDateMillis = currentSelectedDateState.value.first,
-                      endDateMillis = currentSelectedDateState.value.second
+                      endDateMillis = currentSelectedDateState.value.second,
                     )
-                    coroutineScope.launch {
-                      bottomSheetState.show()
-                    }
+                    coroutineScope.launch { bottomSheetState.show() }
                   },
                   modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
                 ) {
                   Icon(
                     imageVector = Icons.Outlined.CalendarMonth,
                     contentDescription = null,
-                    tint = Color.White
+                    tint = Color.White,
                   )
                 }
               }
-            }
+            },
           )
-          if(currentSelectedDateState.value.first != null && currentSelectedDateState.value.second != null) {
+          if (
+            currentSelectedDateState.value.first != null &&
+              currentSelectedDateState.value.second != null
+          ) {
             Row(
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp),
+              modifier =
+                Modifier.fillMaxWidth()
+                  .padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp),
               verticalAlignment = Alignment.CenterVertically,
               horizontalArrangement = Arrangement.SpaceAround,
             ) {
-              currentSelectedDateState.value.first?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }?.let {
-                  Text(text = it, color = Color.White)
-                }
+              currentSelectedDateState.value.first
+                ?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
+                ?.let { Text(text = it, color = Color.White) }
 
-                Text(text = " ~ ", color = Color.White)
+              Text(text = " ~ ", color = Color.White)
 
-              currentSelectedDateState.value.second?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }?.let {
-                  Text(text = it, color = Color.White)
-                }
+              currentSelectedDateState.value.second
+                ?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
+                ?.let { Text(text = it, color = Color.White) }
 
-                IconButton(
-                  onClick = {
-                    currentSelectedDateState.value = Pair(null, null)
-                    onEvent(
-                      OtherReportEvent.OnDateRangeSelected(currentSelectedDateState.value)
-                    )
-                  }
-                ) {
-                  Icon(imageVector = Icons.Default.ClearAll, tint = Color.White, contentDescription = "Clear")
-                }
+              IconButton(
+                onClick = {
+                  currentSelectedDateState.value = Pair(null, null)
+                  onEvent(
+                    OtherReportEvent.OnDateRangeSelected(currentSelectedDateState.value),
+                  )
+                },
+              ) {
+                Icon(
+                  imageVector = Icons.Default.ClearAll,
+                  tint = Color.White,
+                  contentDescription = "Clear",
+                )
+              }
             }
           }
         }
       },
     ) { innerPadding ->
-      Box(modifier = modifier
-        .background(Color.White)
-        .fillMaxSize()
-        .padding(innerPadding)) {
+      Box(
+        modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding),
+      ) {
         if (otherReportUiState.showDataLoadProgressIndicator) {
           CircularProgressIndicator(
-            modifier = modifier
-              .align(Alignment.Center)
-              .size(24.dp),
+            modifier = modifier.align(Alignment.Center).size(24.dp),
             strokeWidth = 1.8.dp,
             color = MaterialTheme.colors.primary,
           )
@@ -213,17 +212,18 @@ fun OtherReportScreen(
         if (otherReportUiState.otherReportConfiguration?.tabBar != null) {
           TabView(
             modifier = modifier,
-            viewProperties = otherReportUiState.otherReportConfiguration.tabBar as TabViewProperties,
-            resourceData = otherReportUiState.resourceData ?: ResourceData(
-              "",
-              ResourceType.MeasureReport,
-              emptyMap()
-            ),
+            viewProperties =
+              otherReportUiState.otherReportConfiguration.tabBar as TabViewProperties,
+            resourceData =
+              otherReportUiState.resourceData
+                ?: ResourceData(
+                  "",
+                  ResourceType.MeasureReport,
+                  emptyMap(),
+                ),
             navController = navController,
             selectedTabIndex = selectedPageState.value,
-            tabChangedEvent = { index ->
-              selectedPageState.value = index
-            }
+            tabChangedEvent = { index -> selectedPageState.value = index },
           )
         }
       }
@@ -237,41 +237,43 @@ fun DateRangePickerUi(
   state: DateRangePickerState,
   onDateRangeSelected: () -> Unit,
 ) {
-  DateRangePicker(state,
+  DateRangePicker(
+    state,
     modifier = Modifier,
-    dateFormatter = remember { DatePickerDefaults.dateFormatter("yy MM dd", "yy MM dd", "yy MM dd") },
+    dateFormatter =
+      remember { DatePickerDefaults.dateFormatter("yy MM dd", "yy MM dd", "yy MM dd") },
     title = {
-      Text(text = "Select date range to filter the report", modifier = Modifier
-        .padding(16.dp))
+      Text(
+        text = "Select date range to filter the report",
+        modifier = Modifier.padding(16.dp),
+      )
     },
     headline = {
       Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         Box(Modifier.weight(1f)) {
-          (if(state.selectedStartDateMillis != null)
-            state.selectedStartDateMillis?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
-          else "Start Date")?.let {
-            Text(text = it, modifier = Modifier.align(Alignment.Center))
-          }
+          (if (state.selectedStartDateMillis != null) {
+              state.selectedStartDateMillis?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
+            } else {
+              "Start Date"
+            })
+            ?.let { Text(text = it, modifier = Modifier.align(Alignment.Center)) }
         }
-        Box(Modifier.weight(0.2f)) {
-          Text(text = " ~ ")
-        }
+        Box(Modifier.weight(0.2f)) { Text(text = " ~ ") }
         Box(Modifier.weight(1f)) {
-          (if(state.selectedEndDateMillis != null)
-            state.selectedEndDateMillis?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
-          else "End Date")?.let {
-            Text(text = it, modifier = Modifier.align(Alignment.Center))
-          }
+          (if (state.selectedEndDateMillis != null) {
+              state.selectedEndDateMillis?.let { Date(it).formatDate(SDF_D_MMM_YYYY_WITH_COMA) }
+            } else {
+              "End Date"
+            })
+            ?.let { Text(text = it, modifier = Modifier.align(Alignment.Center)) }
         }
         Box(Modifier.weight(0.2f)) {
           IconButton(
             onClick = onDateRangeSelected,
-            enabled = state.selectedStartDateMillis != null && state.selectedEndDateMillis != null
+            enabled = state.selectedStartDateMillis != null && state.selectedEndDateMillis != null,
           ) {
             Icon(imageVector = Icons.Default.DoneAll, contentDescription = "Done")
           }
@@ -279,20 +281,21 @@ fun DateRangePickerUi(
       }
     },
     showModeToggle = true,
-    colors = DatePickerDefaults.colors(
-      containerColor = Color.Blue,
-      titleContentColor = Color.Black,
-      headlineContentColor = Color.Black,
-      weekdayContentColor = Color.Black,
-      subheadContentColor = Color.Black,
-      yearContentColor = Color.Green,
-      currentYearContentColor = Color.Red,
-      selectedYearContainerColor = Color.Red,
-      disabledDayContentColor = Color.Gray,
-      todayDateBorderColor = Color.Blue,
-      dayInSelectionRangeContainerColor = Color.LightGray,
-      dayInSelectionRangeContentColor = Color.White,
-      selectedDayContainerColor = Color.Black
-    )
+    colors =
+      DatePickerDefaults.colors(
+        containerColor = Color.Blue,
+        titleContentColor = Color.Black,
+        headlineContentColor = Color.Black,
+        weekdayContentColor = Color.Black,
+        subheadContentColor = Color.Black,
+        yearContentColor = Color.Green,
+        currentYearContentColor = Color.Red,
+        selectedYearContainerColor = Color.Red,
+        disabledDayContentColor = Color.Gray,
+        todayDateBorderColor = Color.Blue,
+        dayInSelectionRangeContainerColor = Color.LightGray,
+        dayInSelectionRangeContentColor = Color.White,
+        selectedDayContainerColor = Color.Black,
+      ),
   )
 }

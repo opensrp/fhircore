@@ -71,13 +71,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.util.Pair
 import androidx.navigation.NavController
+import java.util.Date
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
-import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.TabViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.TopBarConfig
@@ -98,7 +99,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.TabView
 import org.smartregister.fhircore.quest.ui.shared.components.ViewRenderer
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.isScrollingDown
-import java.util.Date
 
 const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
@@ -117,7 +117,9 @@ fun ProfileScreen(
   onEvent: (ProfileEvent) -> Unit,
   monthFilterRange: Map<String, List<ReportRangeSelectionData>>,
 ) {
-  val currentSelectedDateState = remember { mutableStateOf(Pair(Date().firstDayOfMonth().time, Date().lastDayOfMonth().time)) }
+  val currentSelectedDateState = remember {
+    mutableStateOf(Pair(Date().firstDayOfMonth().time, Date().lastDayOfMonth().time))
+  }
   val bottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
   val coroutineScope = rememberCoroutineScope()
 
@@ -133,23 +135,21 @@ fun ProfileScreen(
     sheetState = bottomSheetState,
     sheetContent = {
       Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(Color.White)
+        modifier = Modifier.fillMaxWidth().background(Color.White),
       ) {
         FixedMonthYearListing(
           onMonthSelected = {
-            coroutineScope.launch {
-              bottomSheetState.hide()
-            }
+            coroutineScope.launch { bottomSheetState.hide() }
 
-            if(currentSelectedDateState.value.first != it?.firstDayOfMonth()?.time ||
-              currentSelectedDateState.value.second != it?.lastDayOfMonth()?.time) {
+            if (
+              currentSelectedDateState.value.first != it?.firstDayOfMonth()?.time ||
+                currentSelectedDateState.value.second != it?.lastDayOfMonth()?.time
+            ) {
               currentSelectedDateState.value =
                 Pair(it?.firstDayOfMonth()?.time, it?.lastDayOfMonth()?.time)
 
               onEvent(
-                ProfileEvent.OnDateRangeSelected(currentSelectedDateState.value)
+                ProfileEvent.OnDateRangeSelected(currentSelectedDateState.value),
               )
             }
           },
@@ -205,16 +205,14 @@ fun ProfileScreen(
     ) { innerPadding ->
       Box(
         modifier =
-        modifier
-          .background(profileUiState.profileConfiguration?.contentBackgroundColor.parseColor())
-          .fillMaxSize()
-          .padding(innerPadding),
+          modifier
+            .background(profileUiState.profileConfiguration?.contentBackgroundColor.parseColor())
+            .fillMaxSize()
+            .padding(innerPadding),
       ) {
         if (profileUiState.showDataLoadProgressIndicator) {
           CircularProgressIndicator(
-            modifier = modifier
-              .align(Alignment.Center)
-              .size(24.dp),
+            modifier = modifier.align(Alignment.Center).size(24.dp),
             strokeWidth = 1.8.dp,
             color = MaterialTheme.colors.primary,
           )
@@ -224,33 +222,33 @@ fun ProfileScreen(
           TabView(
             modifier = modifier,
             viewProperties = profileUiState.profileConfiguration.tabBar as TabViewProperties,
-            resourceData = profileUiState.resourceData
-              ?: ResourceData("", ResourceType.Patient, emptyMap()),
-            navController = navController
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            navController = navController,
           )
         }
 
         LazyColumn(
           state = lazyListState,
           modifier =
-          Modifier.padding(
-            bottom =
-            if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-              PADDING_BOTTOM_WITH_FAB.dp
-            } else PADDING_BOTTOM_WITHOUT_FAB.dp,
-          ),
+            Modifier.padding(
+              bottom =
+                if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                  PADDING_BOTTOM_WITH_FAB.dp
+                } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+            ),
         ) {
-          if(profileUiState.profileConfiguration?.monthWiseFilterStartDate != null) {
+          if (profileUiState.profileConfiguration?.monthWiseFilterStartDate != null) {
             item {
               Card(
                 elevation = 5.dp,
                 backgroundColor = "#FF69B4".parseColor(),
                 modifier =
-                modifier
-                  .padding(16.dp)
-                  .fillMaxWidth()
-                  .align(Alignment.Center)
-                  .clip(RoundedCornerShape(6.dp)),
+                  modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+                    .clip(RoundedCornerShape(6.dp)),
               ) {
                 Row(
                   modifier = modifier.padding(16.dp),
@@ -260,11 +258,8 @@ fun ProfileScreen(
                   Icon(
                     painterResource(id = R.drawable.ic_chevron_right),
                     contentDescription = stringResource(R.string.select_month),
-                    modifier = Modifier.clickable {
-                      coroutineScope.launch {
-                        bottomSheetState.show()
-                      }
-                    }
+                    modifier =
+                      Modifier.clickable { coroutineScope.launch { bottomSheetState.show() } },
                   )
                 }
               }
@@ -295,9 +290,9 @@ fun CustomProfileTopAppBar(
 ) {
   val topBarConfig = remember { profileUiState.profileConfiguration?.topAppBar ?: TopBarConfig() }
 
-  Column(modifier = modifier
-    .fillMaxWidth()
-    .background(MaterialTheme.colors.primary)) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
     SimpleTopAppBar(
       modifier = modifier,
       navController = navController,
@@ -417,9 +412,10 @@ private fun ProfileTopAppBarMenuAction(
   navController: NavController,
   modifier: Modifier = Modifier,
 ) {
-  val overflowMenuItems = profileUiState.profileConfiguration?.overFlowMenuItems?.map {
-    it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
-  }
+  val overflowMenuItems =
+    profileUiState.profileConfiguration?.overFlowMenuItems?.map {
+      it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+    }
 
   if (!overflowMenuItems.isNullOrEmpty() && overflowMenuItems.any { it.visible.toBoolean() }) {
     var showOverflowMenu by remember { mutableStateOf(false) }
@@ -452,18 +448,16 @@ private fun ProfileTopAppBarMenuAction(
           },
           contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
           modifier =
-          modifier
-            .fillMaxWidth()
-            .background(
-              color =
-              if (overflowMenuItemConfig.confirmAction) {
-                overflowMenuItemConfig.backgroundColor
-                  .parseColor()
-                  .copy(alpha = 0.1f)
-              } else {
-                Color.Transparent
-              },
-            ),
+            modifier
+              .fillMaxWidth()
+              .background(
+                color =
+                  if (overflowMenuItemConfig.confirmAction) {
+                    overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
+                  } else {
+                    Color.Transparent
+                  },
+              ),
         ) {
           Row {
             Image(

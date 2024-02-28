@@ -64,16 +64,15 @@ class NetworkModule {
   fun provideAuthOkHttpClient() =
     OkHttpClient.Builder()
       .addInterceptor(
-        HttpLoggingInterceptor {
-          Timber.d(it)
-        }.apply {
-          level =
-            if (BuildConfig.DEBUG) {
-              HttpLoggingInterceptor.Level.BODY
-            } else HttpLoggingInterceptor.Level.BASIC
-          redactHeader(AUTHORIZATION)
-          redactHeader(COOKIE)
-        },
+        HttpLoggingInterceptor { Timber.d(it) }
+          .apply {
+            level =
+              if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+              } else HttpLoggingInterceptor.Level.BASIC
+            redactHeader(AUTHORIZATION)
+            redactHeader(COOKIE)
+          },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -145,16 +144,15 @@ class NetworkModule {
         },
       )
       .addInterceptor(
-        HttpLoggingInterceptor {
-          Timber.d(it)
-        }.apply {
-          level =
-            if (BuildConfig.DEBUG) {
-              HttpLoggingInterceptor.Level.BODY
-            } else HttpLoggingInterceptor.Level.BASIC
-          redactHeader(AUTHORIZATION)
-          redactHeader(COOKIE)
-        },
+        HttpLoggingInterceptor { Timber.d(it) }
+          .apply {
+            level =
+              if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+              } else HttpLoggingInterceptor.Level.BASIC
+            redactHeader(AUTHORIZATION)
+            redactHeader(COOKIE)
+          },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)

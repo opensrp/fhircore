@@ -137,9 +137,9 @@ fun TopScreenSection(
               modifier
                 .clickable { onClick(ToolbarClickEvent.FilterData) }
                 .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-            )
-          }
+          )
         }
+      }
 
       if (isNotificationIconEnabled) {
         BadgedBox(
@@ -148,7 +148,10 @@ fun TopScreenSection(
             if (unreadNotificationsCount != null && unreadNotificationsCount > 0) {
               Badge {
                 Text(
-                  text = if (unreadNotificationsCount > 99) "99+" else unreadNotificationsCount.toString(),
+                  text =
+                    if (unreadNotificationsCount > 99) {
+                      "99+"
+                    } else unreadNotificationsCount.toString(),
                   overflow = TextOverflow.Clip,
                   maxLines = 1,
                 )
@@ -161,9 +164,9 @@ fun TopScreenSection(
             contentDescription = NOTIFICATION,
             tint = Color.White,
             modifier =
-            modifier
-              .clickable { onClick(ToolbarClickEvent.ShowNotification) }
-              .testTag(TOP_ROW_NOTIFICATION_ICON_TEST_TAG),
+              modifier
+                .clickable { onClick(ToolbarClickEvent.ShowNotification) }
+                .testTag(TOP_ROW_NOTIFICATION_ICON_TEST_TAG),
           )
         }
       }

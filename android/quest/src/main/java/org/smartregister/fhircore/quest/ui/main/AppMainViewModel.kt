@@ -65,8 +65,8 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
 import org.smartregister.fhircore.engine.task.FhirMonthlyEddNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirMonthlyStockBalanceGeneratorWorker
-import org.smartregister.fhircore.engine.task.FhirStockOutNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirResourceExpireWorker
+import org.smartregister.fhircore.engine.task.FhirStockOutNotifierWorker
 import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -214,7 +214,6 @@ constructor(
           )
         event.navController.navigate(MainNavigationScreen.Profile.route, args)
       }
-
       is AppMainEvent.ShowPermissionDialog -> {
         permissionConfirmationDialogMessage.postValue(event.permissions)
       }
@@ -373,7 +372,10 @@ constructor(
     }
   }
 
-  /** This function is used to schedule tasks that are intended to run periodically to trigger notification*/
+  /**
+   * This function is used to schedule tasks that are intended to run periodically to trigger
+   * notification
+   */
   fun schedulePeriodicJobsForNotification() {
     workManager.run {
       schedulePeriodically<FhirAncFollowUpNotifierWorker>(

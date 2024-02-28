@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import java.util.Locale
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -80,7 +81,6 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
-import java.util.Locale
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -149,7 +149,12 @@ fun AppDrawer(
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,
-            endText = String.format(Locale.getDefault(), "%d", appUiState.registerCountMap[navigationMenu.id] ?: 0),
+            endText =
+              String.format(
+                Locale.getDefault(),
+                "%d",
+                appUiState.registerCountMap[navigationMenu.id] ?: 0,
+              ),
             showEndText = navigationMenu.showCount,
             hasSubRegister = navigationMenu.subRegisters.isNotEmpty(),
             subRegisters = {
@@ -157,16 +162,24 @@ fun AppDrawer(
                 SideMenuItem(
                   imageConfig = navigationSubMenu.menuIconConfig ?: navigationMenu.menuIconConfig,
                   title = navigationSubMenu.display,
-                  endText = String.format(Locale.getDefault(), "%d", appUiState.registerCountMap[navigationSubMenu.id] ?: 0),
+                  endText =
+                    String.format(
+                      Locale.getDefault(),
+                      "%d",
+                      appUiState.registerCountMap[navigationSubMenu.id] ?: 0,
+                    ),
                   showEndText = navigationSubMenu.showCount,
                 ) {
                   openDrawer(false)
                   onSideMenuClick(
-                    AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navigationSubMenu),
+                    AppMainEvent.TriggerWorkflow(
+                      navController = navController,
+                      navMenu = navigationSubMenu,
+                    ),
                   )
                 }
               }
-            }
+            },
           ) {
             openDrawer(false)
             onSideMenuClick(
@@ -194,7 +207,12 @@ fun AppDrawer(
           SideMenuItem(
             imageConfig = navigationMenu.menuIconConfig,
             title = navigationMenu.display,
-            endText = String.format(Locale.getDefault(), "%d", appUiState.registerCountMap[navigationMenu.id] ?: 0),
+            endText =
+              String.format(
+                Locale.getDefault(),
+                "%d",
+                appUiState.registerCountMap[navigationMenu.id] ?: 0,
+              ),
             showEndText = navigationMenu.showCount,
           ) {
             openDrawer(false)
@@ -218,10 +236,10 @@ private fun NavBottomSection(
   val context = LocalContext.current
   Box(
     modifier =
-    modifier
-      .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-      .background(SideMenuBottomItemDarkColor)
-      .padding(horizontal = 16.dp, vertical = 4.dp),
+      modifier
+        .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
+        .background(SideMenuBottomItemDarkColor)
+        .padding(horizontal = 16.dp, vertical = 4.dp),
   ) {
     SideMenuItem(
       modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
@@ -282,11 +300,11 @@ private fun NavTopSection(
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-    modifier
-      .fillMaxWidth()
-      .background(SideMenuTopItemDarkColor)
-      .padding(horizontal = 16.dp)
-      .testTag(NAV_TOP_SECTION_TEST_TAG),
+      modifier
+        .fillMaxWidth()
+        .background(SideMenuTopItemDarkColor)
+        .padding(horizontal = 16.dp)
+        .testTag(NAV_TOP_SECTION_TEST_TAG),
   ) {
     Text(
       text = appUiState.appTitle,
@@ -319,20 +337,17 @@ private fun MenuActionButton(
   ) {
     Row(
       modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable {
-          navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
-        }
-        .padding(16.dp)
-        .testTag(MENU_BUTTON_TEST_TAG),
+        modifier
+          .fillMaxWidth()
+          .clickable {
+            navigationConfiguration.menuActionButton?.actions?.handleClickEvent(navController)
+          }
+          .padding(16.dp)
+          .testTag(MENU_BUTTON_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Box(
-        modifier
-          .background(MenuActionButtonTextColor)
-          .size(16.dp)
-          .clip(RoundedCornerShape(2.dp)),
+        modifier.background(MenuActionButtonTextColor).size(16.dp).clip(RoundedCornerShape(2.dp)),
         contentAlignment = Alignment.Center,
       ) {
         Icon(
@@ -373,27 +388,31 @@ private fun SideMenuItem(
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable { onSideMenuClick() }
-        .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+        modifier
+          .fillMaxWidth()
+          .clickable { onSideMenuClick() }
+          .testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Row(
-        modifier = modifier
-          .testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG)
-          .padding(vertical = 16.dp),
+        modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         if (hasSubRegister) {
           Crossfade(targetState = subItemsVisible, label = "") { isVisible ->
             Icon(
-              painterResource(id = if (isVisible) org.smartregister.fhircore.engine.R.drawable.ic_arrow_up else org.smartregister.fhircore.engine.R.drawable.ic_arrow_down),
+              painterResource(
+                id =
+                  if (isVisible) {
+                    org.smartregister.fhircore.engine.R.drawable.ic_arrow_up
+                  } else org.smartregister.fhircore.engine.R.drawable.ic_arrow_down,
+              ),
               contentDescription = "Show or Hide",
               tint = MenuItemColor,
-              modifier = Modifier.size(35.dp).padding(end = 10.dp).clickable {
-                subItemsVisible = !subItemsVisible
-              }
+              modifier =
+                Modifier.size(35.dp).padding(end = 10.dp).clickable {
+                  subItemsVisible = !subItemsVisible
+                },
             )
           }
         } else {
@@ -401,7 +420,7 @@ private fun SideMenuItem(
             paddingEnd = 10,
             imageProperties = ImageProperties(imageConfig = imageConfig, size = 32),
             tint = MenuItemColor,
-        navController = rememberNavController(),
+            navController = rememberNavController(),
           )
         }
         SideMenuItemText(title = title, textColor = Color.White)
@@ -416,17 +435,13 @@ private fun SideMenuItem(
           imageVector = imageVector,
           contentDescription = null,
           tint = MenuItemColor,
-          modifier = modifier
-            .padding(0.dp)
-            .testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
+          modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
         )
       }
     }
 
     AnimatedVisibility(visible = subItemsVisible) {
-      Column(modifier = Modifier.padding(start = 30.dp)) {
-        subRegisters?.invoke()
-      }
+      Column(modifier = Modifier.padding(start = 30.dp)) { subRegisters?.invoke() }
     }
   }
 }
@@ -474,37 +489,40 @@ fun AppDrawerPreview() {
 fun AppDrawerWithSubMenuPreview() {
   AppDrawer(
     appUiState =
-    appMainUiStateOf(
-      appTitle = "mHealth",
-      username = "Demo",
-      lastSyncTime = "05:30 PM, Mar 3",
-      currentLanguage = "English",
-      languages = listOf(Language("en", "English"), Language("bn", "Bengali")),
-      navigationConfiguration =
-      NavigationConfiguration(
-        appId = "appId",
-        configType = ConfigType.Navigation.name,
-        staticMenu = listOf(),
-        clientRegisters = listOf(
-          NavigationMenuConfig(
-            id = "ancRegister",
-            display = "ANC Register",
-            menuIconConfig = ImageConfig(
-              type = "local",
-              reference = "ic_pregnant",
-            ),
-            subRegisters = listOf(
-              NavigationMenuConfig(
-                id = "riskyAncRegister",
-                display = "Risky and Emergency"
-              )
-            )
-          )
-        ),
-        menuActionButton =
-        NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+      appMainUiStateOf(
+        appTitle = "mHealth",
+        username = "Demo",
+        lastSyncTime = "05:30 PM, Mar 3",
+        currentLanguage = "English",
+        languages = listOf(Language("en", "English"), Language("bn", "Bengali")),
+        navigationConfiguration =
+          NavigationConfiguration(
+            appId = "appId",
+            configType = ConfigType.Navigation.name,
+            staticMenu = listOf(),
+            clientRegisters =
+              listOf(
+                NavigationMenuConfig(
+                  id = "ancRegister",
+                  display = "ANC Register",
+                  menuIconConfig =
+                    ImageConfig(
+                      type = "local",
+                      reference = "ic_pregnant",
+                    ),
+                  subRegisters =
+                    listOf(
+                      NavigationMenuConfig(
+                        id = "riskyAncRegister",
+                        display = "Risky and Emergency",
+                      ),
+                    ),
+                ),
+              ),
+            menuActionButton =
+              NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+          ),
       ),
-    ),
     navController = rememberNavController(),
     openDrawer = {},
     onSideMenuClick = {},

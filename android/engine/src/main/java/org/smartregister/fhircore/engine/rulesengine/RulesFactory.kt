@@ -139,9 +139,7 @@ constructor(
         put(SERVICE, rulesEngineService)
       }
 
-    facts.apply {
-      resourcesMap.addToFacts(this)
-    }
+    facts.apply { resourcesMap.addToFacts(this) }
 
     if (BuildConfig.DEBUG) {
       val timeToFireRules = measureTimeMillis { rulesEngine.fire(rules, facts) }
@@ -412,8 +410,8 @@ constructor(
       (INCLUSIVE_SIX_DIGIT_MINIMUM..INCLUSIVE_SIX_DIGIT_MAXIMUM).random()
 
     /**
-     * This function generates a random variable digit integer between a user defined range. It may generate
-     * duplicate outputs on subsequent function calls.
+     * This function generates a random variable digit integer between a user defined range. It may
+     * generate duplicate outputs on subsequent function calls.
      *
      * @return An Integer.
      */
@@ -605,7 +603,9 @@ constructor(
     }
 
     fun retrievePractitionerLocationId(): String {
-      return configurationRegistry.sharedPreferencesHelper.read<List<String>>(ResourceType.Location.name)?.first() ?: ""
+      return configurationRegistry.sharedPreferencesHelper
+        .read<List<String>>(ResourceType.Location.name)
+        ?.first() ?: ""
     }
   }
 

@@ -23,7 +23,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Search
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.DateTimeType
@@ -174,7 +173,7 @@ constructor(
     reportId: String,
     startDateFormatted: String?,
     endDateFormatted: String?,
-    resourceConfigs: List<ResourceConfig>?
+    resourceConfigs: List<ResourceConfig>?,
   ): Map<String, List<Resource>> {
     val reportConfiguration = retrieveOtherReportConfiguration(reportId)
     val reportResources = resourceConfigs ?: reportConfiguration.resources
@@ -183,9 +182,11 @@ constructor(
     reportResources.forEach { resourceConfig ->
       val search = Search(resourceConfig.resource)
 
-      if(!startDateFormatted.isNullOrEmpty() &&
-        !endDateFormatted.isNullOrEmpty() &&
-        resourceConfig.dataQueries?.isNotEmpty() == true) {
+      if (
+        !startDateFormatted.isNullOrEmpty() &&
+          !endDateFormatted.isNullOrEmpty() &&
+          resourceConfig.dataQueries?.isNotEmpty() == true
+      ) {
         search.filter(
           DateClientParam(resourceConfig.dataQueries.first().paramName),
           {
@@ -196,14 +197,11 @@ constructor(
             value = of(DateTimeType(endDateFormatted))
             prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
           },
-          operation = Operation.AND
+          operation = Operation.AND,
         )
       }
 
-      val resources =
-        withContext(dispatcherProvider.io()) {
-          fhirEngine.search<Resource>(search)
-        }
+      val resources = withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
 
       resourceMap[resourceConfig.resource.name] = resources.map { it.resource }
     }

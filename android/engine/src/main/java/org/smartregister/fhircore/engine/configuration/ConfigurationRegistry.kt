@@ -401,7 +401,8 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
     // Reset configurations before loading new ones
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.let { appId: String ->
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "app/debug")?.let { appId: String,
+      ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
@@ -40,7 +41,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.firstDayOfMonth
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.lastDayOfMonth
-import java.util.Date
 
 @HiltWorker
 class FhirMonthlyEddNotifierWorker
@@ -55,33 +55,35 @@ constructor(
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-
       val eddPatientDetails = getThisMonthEddPatientDetails()
 
-      if(eddPatientDetails.isNotEmpty()) {
-        val descriptionBuilder = StringBuilder()
-          .appendLine("Patients with possible EDD in this month").appendLine()
-          .append(eddPatientDetails.joinToString("\n"))
+      if (eddPatientDetails.isNotEmpty()) {
+        val descriptionBuilder =
+          StringBuilder()
+            .appendLine("Patients with possible EDD in this month")
+            .appendLine()
+            .append(eddPatientDetails.joinToString("\n"))
 
-        val notificationData = NotificationData(
-          title = "EDD Remainder",
-          description = descriptionBuilder.toString(),
-          type = "PNC",
-        )
+        val notificationData =
+          NotificationData(
+            title = "EDD Remainder",
+            description = descriptionBuilder.toString(),
+            type = "PNC",
+          )
 
         notificationManager.showNotification(notificationData)
 
-        MessageDefinition().apply {
-          status = Enumerations.PublicationStatus.ACTIVE
-          category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
-          name = gson.toJson(notificationData)
-          title = notificationData.title
-          description = notificationData.description
-          purpose = notificationData.type
-          date = Date()
-        }.run {
-          defaultRepository.addOrUpdate(resource = this)
-        }
+        MessageDefinition()
+          .apply {
+            status = Enumerations.PublicationStatus.ACTIVE
+            category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
+            name = gson.toJson(notificationData)
+            title = notificationData.title
+            description = notificationData.description
+            purpose = notificationData.type
+            date = Date()
+          }
+          .run { defaultRepository.addOrUpdate(resource = this) }
       }
 
       Result.success()
@@ -96,7 +98,15 @@ constructor(
       .search<Observation> {
         filter(
           Observation.CODE,
-          { value = of(Coding().apply { system = "http://www.snomed.org/"; code = "129019007" }) },
+          {
+            value =
+              of(
+                Coding().apply {
+                  system = "http://www.snomed.org/"
+                  code = "129019007"
+                },
+              )
+          },
         )
       }
       .map { it.resource }
@@ -105,12 +115,14 @@ constructor(
         edd >= firstDayOfMonth && edd <= lastDayOfMonth
       }
       .map { obs ->
-        val patient = defaultRepository.fhirEngine
-          .get(ResourceType.Patient, obs.subject.extractId()) as Patient
+        val patient =
+          defaultRepository.fhirEngine.get(ResourceType.Patient, obs.subject.extractId()) as Patient
 
         StringBuilder()
           .append(patient.name.first().text)
-          .append(" (").append(patient.telecomFirstRep.value).append(") ")
+          .append(" (")
+          .append(patient.telecomFirstRep.value)
+          .append(") ")
           .append(" -> ")
           .appendLine(obs.effectiveDateTimeType.value.formatDate(SDF_YYYY_MM_DD))
           .toString()

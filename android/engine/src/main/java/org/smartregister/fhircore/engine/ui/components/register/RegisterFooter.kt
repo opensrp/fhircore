@@ -33,11 +33,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Locale
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import java.util.Locale
 
 const val DEFAULT_MAX_PAGE_COUNT = 20
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
@@ -93,7 +93,13 @@ fun RegisterFooter(
       Text(
         fontSize = 14.sp,
         color = GreyTextColor,
-        text = String.format(Locale.getDefault(), stringResource(id = R.string.str_page_info), currentPage, pagesCount),
+        text =
+          String.format(
+            Locale.getDefault(),
+            stringResource(id = R.string.str_page_info),
+            currentPage,
+            pagesCount,
+          ),
         modifier =
           modifier
             .testTag(SEARCH_FOOTER_PAGINATION_TAG)

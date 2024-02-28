@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.util.Date
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
@@ -37,7 +38,6 @@ import org.smartregister.fhircore.engine.domain.notification.FhirNotificationMan
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.toCoding
-import java.util.Date
 
 @HiltWorker
 class FhirAncFollowUpNotifierWorker
@@ -52,33 +52,35 @@ constructor(
 ) : CoroutineWorker(context, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
-
       val dueAncPatientDetails = getDueAncPatientDetails()
 
-      if(dueAncPatientDetails.isNotEmpty()) {
-        val descriptionBuilder = StringBuilder()
-          .appendLine("ANC Follow Up is Due for below Patients").appendLine()
-          .append(dueAncPatientDetails.joinToString("\n"))
+      if (dueAncPatientDetails.isNotEmpty()) {
+        val descriptionBuilder =
+          StringBuilder()
+            .appendLine("ANC Follow Up is Due for below Patients")
+            .appendLine()
+            .append(dueAncPatientDetails.joinToString("\n"))
 
-        val notificationData = NotificationData(
-          title = "ANC Follow Up Remainder",
-          description = descriptionBuilder.toString(),
-          type = "ANC",
-        )
+        val notificationData =
+          NotificationData(
+            title = "ANC Follow Up Remainder",
+            description = descriptionBuilder.toString(),
+            type = "ANC",
+          )
 
         notificationManager.showNotification(notificationData)
 
-        MessageDefinition().apply {
-          status = Enumerations.PublicationStatus.ACTIVE
-          category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
-          name = gson.toJson(notificationData)
-          title = notificationData.title
-          description = notificationData.description
-          purpose = notificationData.type
-          date = Date()
-        }.run {
-          defaultRepository.addOrUpdate(resource = this)
-        }
+        MessageDefinition()
+          .apply {
+            status = Enumerations.PublicationStatus.ACTIVE
+            category = MessageDefinition.MessageSignificanceCategory.NOTIFICATION
+            name = gson.toJson(notificationData)
+            title = notificationData.title
+            description = notificationData.description
+            purpose = notificationData.type
+            date = Date()
+          }
+          .run { defaultRepository.addOrUpdate(resource = this) }
       }
 
       Result.success()
@@ -90,7 +92,15 @@ constructor(
       .search<Task> {
         filter(
           Task.GROUP_IDENTIFIER,
-          { value = of(Identifier().apply { use = Identifier.IdentifierUse.SECONDARY; value = "anc_follow_visit" }) },
+          {
+            value =
+              of(
+                Identifier().apply {
+                  use = Identifier.IdentifierUse.SECONDARY
+                  value = "anc_follow_visit"
+                },
+              )
+          },
         )
 
         filter(
@@ -100,16 +110,16 @@ constructor(
         )
       }
       .map { it.resource }
-      .filter {
-        it.executionPeriod.start.before(Date()) && it.executionPeriod.end.after(Date())
-      }
+      .filter { it.executionPeriod.start.before(Date()) && it.executionPeriod.end.after(Date()) }
       .map { task ->
-        val patient = defaultRepository.fhirEngine
-          .get(ResourceType.Patient, task.`for`.extractId()) as Patient
+        val patient =
+          defaultRepository.fhirEngine.get(ResourceType.Patient, task.`for`.extractId()) as Patient
 
         StringBuilder()
-          .append(patient.name.first().text).append(" -> ")
-          .appendLine(patient.telecomFirstRep.value).appendLine()
+          .append(patient.name.first().text)
+          .append(" -> ")
+          .appendLine(patient.telecomFirstRep.value)
+          .appendLine()
           .toString()
       }
 

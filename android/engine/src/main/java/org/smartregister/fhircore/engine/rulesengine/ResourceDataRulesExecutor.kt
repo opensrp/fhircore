@@ -141,25 +141,26 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
             relatedListResource.id ?: relatedListResource.resourceType.name,
           ] =
             if (!relatedListResource.conditionalFhirPathExpression.isNullOrEmpty()) {
-              rulesFactory.rulesEngineService.filterResources(
-                retrieveRelatedResources,
-                relatedListResource.conditionalFhirPathExpression,
-              ).let { filteredResources ->
-                val sortConfig = relatedListResource.sortConfig
+              rulesFactory.rulesEngineService
+                .filterResources(
+                  retrieveRelatedResources,
+                  relatedListResource.conditionalFhirPathExpression,
+                )
+                .let { filteredResources ->
+                  val sortConfig = relatedListResource.sortConfig
 
-                // Sort resources if sort configuration is provided
-                if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty()) {
-                  rulesFactory.rulesEngineService.sortResources(
-                    resources = filteredResources,
-                    fhirPathExpression = sortConfig.fhirPathExpression,
-                    dataType = sortConfig.dataType.name,
-                    order = sortConfig.order.name,
-                  )
-                    ?: filteredResources
-                } else {
-                  filteredResources
+                  // Sort resources if sort configuration is provided
+                  if (sortConfig != null && sortConfig.fhirPathExpression.isNotEmpty()) {
+                    rulesFactory.rulesEngineService.sortResources(
+                      resources = filteredResources,
+                      fhirPathExpression = sortConfig.fhirPathExpression,
+                      dataType = sortConfig.dataType.name,
+                      order = sortConfig.order.name,
+                    ) ?: filteredResources
+                  } else {
+                    filteredResources
+                  }
                 }
-              }
             } else {
               retrieveRelatedResources
             }

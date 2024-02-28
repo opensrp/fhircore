@@ -68,5 +68,5 @@ interface Repository {
     startDateFormatted: String?,
     endDateFormatted: String?,
     resourceConfigs: List<ResourceConfig>? = null,
-    ): Map<String, List<Resource>>
+  ): Map<String, List<Resource>>
 }
