@@ -1,9 +1,11 @@
+import org.gradle.kotlin.dsl.extra
+import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.util.Properties
-import java.io.FileNotFoundException
 
-fun Project.readProperties(file: String): Properties {
+fun readProperties(file: String): Properties {
   val properties = Properties()
   val localProperties = File(file)
   if (localProperties.isFile) {
@@ -11,8 +13,8 @@ fun Project.readProperties(file: String): Properties {
       ->
       properties.load(reader)
     }
-  } else if(file.toString().contains(File.separator)) throw FileNotFoundException("\u001B[32mFile $file not found\u001B[0m")
-  else  println("\u001B[34mFILE_NOT_FOUND_EXCEPTION: File $file not found\u001B[0m")
+  }
+  else  throw FileNotFoundException("\u001B[34mFile $file not found\u001B[0m")
 
   return properties
 }
@@ -30,7 +32,7 @@ val requiredFhirProperties =
     "OPENSRP_APP_ID"
   )
 
-val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "local.properties").toString())
+val localProperties = readProperties((project.properties["localPropertiesFile"] ?: "${rootProject.projectDir}/local.properties").toString())
 
 requiredFhirProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property, when {
@@ -43,7 +45,7 @@ requiredFhirProperties.forEach { property ->
 
 // Set required keystore properties
 val requiredKeystoreProperties = listOf("KEYSTORE_ALIAS", "KEY_PASSWORD", "KEYSTORE_PASSWORD")
-val keystoreProperties = readProperties((project.properties["keystorePropertiesFile"] ?: "keystore.properties").toString())
+val keystoreProperties = readProperties((project.properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString())
 
 requiredKeystoreProperties.forEach { property ->
   project.extra.set(property, keystoreProperties.getProperty(property,"sample_" + property))
