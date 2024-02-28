@@ -211,7 +211,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         workflowCarePlanGenerator = workflowCarePlanGenerator,
         context = context,
         configurationRegistry = configurationRegistry,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
 
     immunizationResource =
