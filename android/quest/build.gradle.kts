@@ -7,13 +7,10 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `project-properties`
+  `ktlint`
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -296,6 +293,12 @@ android {
       applicationIdSuffix = ".eusm"
       versionNameSuffix = "-eusm"
       manifestPlaceholders["appLabel"] = "EUSM"
+    }
+    create("demoEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".demoEir"
+      versionNameSuffix = "-demoEir"
+      manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
   }
 
