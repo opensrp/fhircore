@@ -273,6 +273,7 @@ fun GenerateView(
         Image(
           modifier = modifier,
           imageProperties = properties as ImageProperties,
+          tint = properties.tint?.parseColor(),
           resourceData = resourceData,
           navController = navController,
         )
