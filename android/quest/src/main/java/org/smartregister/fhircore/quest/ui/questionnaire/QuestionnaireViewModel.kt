@@ -379,7 +379,7 @@ constructor(
         }
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context)
+        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
 
         defaultRepository.addOrUpdate(true, resource = this)
 
@@ -416,6 +416,7 @@ constructor(
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
         questionnaireConfig,
         context,
+        subjectType
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
@@ -424,23 +425,29 @@ constructor(
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
     questionnaireConfig: QuestionnaireConfig,
     context: Context,
+    subjectType: ResourceType?,
   ) {
-    questionnaireConfig.groupResource?.let {
-      if (it.groupIdentifier.isNotEmpty() && !it.removeGroup && !it.removeMember) {
-        val group =
-          loadResource(
-            ResourceType.Group,
-            it.groupIdentifier.extractLogicalIdUuid(),
-          )
-            as Group?
-        if (group != null) {
-          val system =
-            context.getString(
-              org.smartregister.fhircore.engine.R.string
-                .sync_strategy_related_entity_location_system,
-            )
-          group.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
+    val resourceIdPair =
+      when {
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty() && subjectType != null -> {
+          Pair(subjectType, questionnaireConfig.resourceIdentifier!!)
         }
+        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty() &&
+                questionnaireConfig.groupResource?.removeGroup != true &&
+                questionnaireConfig.groupResource?.removeMember != true -> {
+          Pair(ResourceType.Group, questionnaireConfig.groupResource!!.groupIdentifier)
+        }
+        else -> null
+      }
+    if (resourceIdPair != null) {
+      val (resourceType, resourceId) = resourceIdPair
+      val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
+      if (resource != null) {
+        val system =
+          context.getString(
+            org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+          )
+        resource.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
       }
     }
   }

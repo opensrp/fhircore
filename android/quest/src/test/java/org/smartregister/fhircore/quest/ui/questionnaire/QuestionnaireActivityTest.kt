@@ -152,7 +152,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
       }
     mockkStatic(Toast::class)
     every { Toast.makeText(any(), any<String>(), Toast.LENGTH_LONG) } returns
-      mockk<Toast> { every { show() } just runs }
+      mockk<Toast> () { every { show() } just runs }
     setupActivity()
     advanceUntilIdle()
     verify { Toast.makeText(any(), eq(context.getString(R.string.questionnaire_not_found)), any()) }
