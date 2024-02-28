@@ -30,6 +30,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.Serializable
+import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -50,8 +52,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import timber.log.Timber
-import java.io.Serializable
-import java.util.LinkedList
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
