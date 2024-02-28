@@ -130,16 +130,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertNull(resource)
   }
 
-
   @Test
   fun testRetrieveResourceFromConfigMap() {
     val resourceId = "myResourceId"
     configRegistry.configsJsonMap[resourceId] = "ResourceData"
     val resource = configRegistry.retrieveResourceFromConfigMap<Resource>("string")
-    resource?.let {
-      assertEquals("ResourceData", resource.id)
-    }
+    resource?.let { assertEquals("ResourceData", resource.id) }
   }
+
   @Test
   fun testRetrieveResourceBundleConfigurationMissingVariantReturnsBaseResourceBundle() {
     configRegistry.configsJsonMap["strings"] = "name.title=Mr.\n" + "gender.male=Male"
