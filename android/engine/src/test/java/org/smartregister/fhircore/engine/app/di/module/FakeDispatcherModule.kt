@@ -14,26 +14,32 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.app.fakes
+package org.smartregister.fhircore.engine.app.di.module
 
-import android.content.Context
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.FhirEngineProvider
 import dagger.Module
 import dagger.Provides
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.FhirEngineModule
+import org.smartregister.fhircore.engine.app.testDispatcher
+import org.smartregister.fhircore.engine.di.DispatcherModule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @Module
-@TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
-class FakeFhirEngineModule {
+@TestInstallIn(components = [SingletonComponent::class], replaces = [DispatcherModule::class])
+class FakeDispatcherModule {
 
   @Provides
   @Singleton
-  fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return FhirEngineProvider.getInstance(context)
-  }
+  fun provideDispatcherProvider(): DispatcherProvider =
+    object : DispatcherProvider {
+
+      override fun main() = testDispatcher
+
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
 }

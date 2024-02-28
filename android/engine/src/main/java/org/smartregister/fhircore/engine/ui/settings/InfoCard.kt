@@ -47,14 +47,15 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
-fun InfoCard(viewModel: SettingsViewModel) {
-  val state by viewModel.profileData.observeAsState()
+fun InfoCard(profileData: LiveData<DataLoadState<ProfileData>>) {
+  val state by profileData.observeAsState()
 
   when (state) {
     is DataLoadState.Loading ->

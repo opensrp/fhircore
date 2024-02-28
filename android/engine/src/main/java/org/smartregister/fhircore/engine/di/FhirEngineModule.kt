@@ -38,7 +38,7 @@ import org.smartregister.fhircore.engine.di.NetworkModule.Companion.TIMEOUT_DURA
  * Provide [FhirEngine] dependency in isolation so we can replace it with a fake dependency in test
  */
 @InstallIn(SingletonComponent::class)
-@Module(includes = [CoreModule::class])
+@Module
 class FhirEngineModule {
 
   @Singleton

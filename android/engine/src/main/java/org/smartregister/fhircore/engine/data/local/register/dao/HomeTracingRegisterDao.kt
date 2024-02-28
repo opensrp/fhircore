@@ -23,7 +23,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @Singleton
@@ -34,7 +34,7 @@ constructor(
   tracingRepository: TracingRepository,
   defaultRepository: DefaultRepository,
   configurationRegistry: ConfigurationRegistry,
-  dispatcherProvider: DefaultDispatcherProvider,
+  dispatcherProvider: DispatcherProvider,
   sharedPreferencesHelper: SharedPreferencesHelper,
 ) :
   TracingRegisterDao(

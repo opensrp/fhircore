@@ -14,24 +14,9 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.coroutine
+package org.smartregister.fhircore.quest.app
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
-import org.smartregister.fhircore.quest.app.testDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 
-@ExperimentalCoroutinesApi
-class CoroutineTestRule : TestWatcher() {
-
-  override fun starting(description: Description) {
-    Dispatchers.setMain(testDispatcher)
-  }
-
-  override fun finished(description: Description) {
-    Dispatchers.resetMain()
-  }
-}
+@OptIn(ExperimentalCoroutinesApi::class) val testDispatcher = UnconfinedTestDispatcher()

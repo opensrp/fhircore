@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
@@ -90,6 +91,8 @@ internal class HivRegisterDaoTest : RobolectricTest() {
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private lateinit var hivRegisterDao: HivRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
@@ -194,7 +197,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,

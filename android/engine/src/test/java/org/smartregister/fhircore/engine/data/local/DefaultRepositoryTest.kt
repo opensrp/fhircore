@@ -36,6 +36,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runBlockingTest
@@ -61,7 +62,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
@@ -72,14 +73,14 @@ import org.smartregister.fhircore.engine.util.extension.loadRelatedPersons
 @HiltAndroidTest
 class DefaultRepositoryTest : RobolectricTest() {
 
-  private val dispatcherProvider = spyk(DefaultDispatcherProvider())
-
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @get:Rule(order = 2)
   var coroutineRule = CoroutineTestRule()
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
 
@@ -126,7 +127,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -167,7 +168,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -189,7 +190,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -209,7 +210,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -232,7 +233,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -258,7 +259,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -280,7 +281,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -301,7 +302,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -326,7 +327,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     val defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
@@ -371,7 +372,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       val defaultRepository =
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,

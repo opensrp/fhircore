@@ -32,6 +32,7 @@ import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -59,7 +60,9 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
 
-  @get:Rule(order = 10) val coroutineTestRule = CoroutineTestRule()
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @get:Rule(order = 10)
+  val coroutineTestRule = CoroutineTestRule()
 
   @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
 

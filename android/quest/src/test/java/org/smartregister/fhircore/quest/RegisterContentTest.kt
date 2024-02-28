@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
@@ -115,7 +115,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  fun testMwCorePopulationResources() = runTest {
+  fun testMwCorePopulationResources() {
     val questionnaire =
       "mwcore-registration/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
     // Patient().apply { addTags(listOf(Coding("https://www.d-tree.org", "p-category", "P
@@ -126,7 +126,7 @@ class RegisterContentTest : RobolectricTest() {
         codingList.add(Coding("https://www.d-tree.org", "p-category", "hello"))
         meta.tag.apply { addAll(codingList) }
       }
-    val result = ResourceMapper.populate(questionnaire, patient)
+    val result = runBlocking { ResourceMapper.populate(questionnaire, patient) }
     Assert.assertEquals(
       "p-category",
       result.item.first().itemFirstRep.answerFirstRep.valueCoding.code,
@@ -134,7 +134,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  fun testMwCorePopulationResources2() = runTest {
+  fun testMwCorePopulationResources2() {
     val structureMap = "mwcore-registration/patient-edit-profile-structure-map.txt".readFile()
     val response = "mwcore-registration/questionnaire-resposne.json".readFile()
 

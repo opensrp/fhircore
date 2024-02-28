@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -105,6 +106,8 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val tokenAuthenticator = mockk<TokenAuthenticator>()
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @OptIn(ExperimentalCoroutinesApi::class)
   @Before
   fun setUp() {
@@ -126,7 +129,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           fhirResourceDataSource = fhirResourceDataSource,
         ),
       )

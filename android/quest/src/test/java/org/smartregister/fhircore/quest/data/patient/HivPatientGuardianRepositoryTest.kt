@@ -16,10 +16,12 @@
 
 package org.smartregister.fhircore.quest.data.patient
 
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Patient
 import org.junit.Assert
@@ -27,19 +29,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class HivPatientGuardianRepositoryTest {
-  @get:Rule val coroutineTestRule = CoroutineTestRule()
+@HiltAndroidTest
+class HivPatientGuardianRepositoryTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val patientDao: PatientDao = mockk()
   private lateinit var hivPatientGuardianRepository: HivPatientGuardianRepository
 
   @Before
   fun setUp() {
-    hivPatientGuardianRepository =
-      HivPatientGuardianRepository(patientDao, coroutineTestRule.testDispatcherProvider)
+    hiltRule.inject()
+    hivPatientGuardianRepository = HivPatientGuardianRepository(patientDao, dispatcherProvider)
   }
 
   @Test

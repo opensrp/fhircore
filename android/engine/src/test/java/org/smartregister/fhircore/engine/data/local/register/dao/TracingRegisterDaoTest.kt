@@ -65,7 +65,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -83,9 +83,10 @@ class TracingRegisterDaoTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper = mockk<SharedPreferencesHelper>(relaxed = true)
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private val fhirEngine = mockk<FhirEngine>()
   private val tracingRepository = spyk(TracingRepository(fhirEngine))
-  private val dispatcherProvider = DefaultDispatcherProvider()
   private lateinit var defaultRepository: DefaultRepository
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var tracingRegisterDao: TracingRegisterDao
@@ -101,7 +102,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
       spyk(
         DefaultRepository(
           fhirEngine = fhirEngine,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           configService = configService,

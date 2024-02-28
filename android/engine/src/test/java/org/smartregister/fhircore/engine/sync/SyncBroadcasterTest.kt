@@ -28,6 +28,8 @@ import com.google.android.fhir.OffsetDateTimeTypeAdapter
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.just
@@ -39,6 +41,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import java.time.OffsetDateTime
 import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -50,21 +53,23 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @ExperimentalCoroutinesApi
+@HiltAndroidTest
 class SyncBroadcasterTest : RobolectricTest() {
-
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   private lateinit var syncBroadcaster: SyncBroadcaster
   private lateinit var workManager: WorkManager
   private lateinit var tokenAuthenticator: TokenAuthenticator
@@ -72,8 +77,11 @@ class SyncBroadcasterTest : RobolectricTest() {
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private lateinit var tracer: PerformanceReporter
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Before
   fun setUp() {
+    hiltRule.inject()
     val appContext = ApplicationProvider.getApplicationContext<HiltTestApplication>()
     mockkStatic(WorkManager::class)
     workManager = mockk()
@@ -107,7 +115,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         configService = mockk(),
         fhirEngine = mockk(),
         sharedSyncStatus = sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         tracer = tracer,
         tokenAuthenticator = tokenAuthenticator,
         sharedPreferencesHelper = sharedPreferencesHelper,
@@ -214,7 +222,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         configService,
         fhirEngine = mockk(),
         sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         appContext = context,
         tracer = FakePerformanceReporter(),
         tokenAuthenticator = tokenAuthenticator,
@@ -250,7 +258,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         configService,
         fhirEngine = mockk(),
         sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         appContext = context,
         tracer = FakePerformanceReporter(),
         tokenAuthenticator = tokenAuthenticatorAlt,

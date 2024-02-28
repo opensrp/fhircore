@@ -110,7 +110,7 @@ fun SettingsScreen(
               .padding(vertical = 20.dp)
               .verticalScroll(rememberScrollState()),
         ) {
-          InfoCard(viewModel = settingsViewModel)
+          InfoCard(profileData = settingsViewModel.profileData)
           Divider(color = DividerColor)
           UserProfileRow(
             icon = Icons.Rounded.Download,

@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.ui.register.RegisterViewModel
 import org.smartregister.fhircore.engine.ui.register.model.RegisterFilterType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -59,6 +60,8 @@ class RegisterViewModelTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private lateinit var viewModel: RegisterViewModel
 
   @Before
@@ -74,7 +77,7 @@ class RegisterViewModelTest : RobolectricTest() {
         fhirResourceDataSource = mockk(),
         configurationRegistry = configurationRegistry,
         configService = configService,
-        dispatcher = coroutineTestRule.testDispatcherProvider,
+        dispatcher = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
       )
   }

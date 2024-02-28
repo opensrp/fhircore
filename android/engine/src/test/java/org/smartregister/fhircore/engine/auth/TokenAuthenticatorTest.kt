@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -69,6 +70,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val oAuthService: OAuthService = mockk()
   private lateinit var tokenAuthenticator: TokenAuthenticator
   private val accountManager = mockk<AccountManager>()
@@ -85,7 +88,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -234,7 +237,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -428,7 +431,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),

@@ -27,6 +27,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -46,6 +47,7 @@ import org.smartregister.fhircore.engine.configuration.view.PinViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @HiltAndroidTest
@@ -57,6 +59,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   val context = ApplicationProvider.getApplicationContext<Context>()
 
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val testAppId = "default"
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   lateinit var configurationRegistry: ConfigurationRegistry
@@ -75,7 +79,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine,
         fhirResourceDataSource,
         sharedPreferencesHelper,
-        coroutineRule.testDispatcherProvider,
+        dispatcherProvider,
       )
     coEvery { fhirResourceDataSource.loadData(any()) } returns
       Bundle().apply { entry = mutableListOf() }

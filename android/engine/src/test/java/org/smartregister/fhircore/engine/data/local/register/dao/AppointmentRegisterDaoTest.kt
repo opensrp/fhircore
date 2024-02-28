@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -72,6 +73,8 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private lateinit var appointmentRegisterDao: AppointmentRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
@@ -88,7 +91,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         configService = configService,
