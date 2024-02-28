@@ -39,6 +39,7 @@ import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import java.util.LinkedList
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -63,7 +64,6 @@ import org.smartregister.fhircore.quest.util.LocationUtils
 import org.smartregister.fhircore.quest.util.PermissionUtils
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
@@ -206,9 +206,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
+          currentLocation =
+            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
         } else {
-          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
+          currentLocation =
+            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
         }
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
