@@ -42,11 +42,6 @@ jobs:
                 kv-v2-fhircore/data/opensrp-shared KEYSTORE_FILE | KEYSTORE_FILE;
                 kv-v2-fhircore/data/opensrp-shared KEYSTORE_PASSWORD | KEYSTORE_PASSWORD;
                 kv-v2-fhircore/data/opensrp-shared KEY_PASSWORD | KEY_PASSWORD;
-                kv-v2-fhircore/data/opensrp-shared LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
-                kv-v2-fhircore/data/${{ github.event.inputs.flavor }} KEYSTORE_ALIAS | KEYSTORE_ALIAS;
-                kv-v2-fhircore/data/${{ github.event.inputs.flavor }} KEYSTORE_FILE | KEYSTORE_FILE;
-                kv-v2-fhircore/data/${{ github.event.inputs.flavor }} KEYSTORE_PASSWORD | KEYSTORE_PASSWORD;
-                kv-v2-fhircore/data/${{ github.event.inputs.flavor }} KEY_PASSWORD | KEY_PASSWORD;
                 kv-v2-fhircore/data/${{ github.event.inputs.flavor }} LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
 
          - name: Decode & Generate Keystore file
