@@ -17,24 +17,31 @@
 package org.smartregister.fhircore.quest.util
 
 import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
-import io.mockk.every
-import io.mockk.mockk
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.android.controller.ActivityController
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
+import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
-class PermissionsUtilsTest {
-  val context = mockk<Context>()
+class PermissionsUtilsTest : RobolectricTest() {
+  private val activityController: ActivityController<HiltActivityForTest> =
+    Robolectric.buildActivity(HiltActivityForTest::class.java)
+  private lateinit var context: HiltActivityForTest
+
+  @Before
+  fun setUp() {
+    context = activityController.create().resume().get()
+  }
 
   @Test
   fun checkAllPermissionsGranted() {
     val permissions = listOf(Manifest.permission.ACCESS_FINE_LOCATION)
 
-    every { ContextCompat.checkSelfPermission(context, any()) } returns
-      PackageManager.PERMISSION_GRANTED
+    shadowOf(context).grantPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
     val result = PermissionUtils.checkPermissions(context, permissions)
 
@@ -45,8 +52,7 @@ class PermissionsUtilsTest {
   fun `checkPermissions should return false when any permission is not granted`() {
     val permissions = listOf(Manifest.permission.ACCESS_FINE_LOCATION)
 
-    every { ContextCompat.checkSelfPermission(context, any()) } returns
-      PackageManager.PERMISSION_DENIED
+    shadowOf(context).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
     val result = PermissionUtils.checkPermissions(context, permissions)
 
