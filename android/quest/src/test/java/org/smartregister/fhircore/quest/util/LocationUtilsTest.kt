@@ -20,6 +20,8 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.location.FusedLocationProviderClient
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.test.assertEquals
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -30,13 +32,13 @@ import org.robolectric.Robolectric
 import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.test.assertEquals
 
-class LocationUtilsTest: RobolectricTest() {
+class LocationUtilsTest : RobolectricTest() {
   private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-  private val activityController: ActivityController<HiltActivityForTest> = Robolectric.buildActivity( HiltActivityForTest::class.java )
+  private val activityController: ActivityController<HiltActivityForTest> =
+    Robolectric.buildActivity(HiltActivityForTest::class.java)
   private lateinit var context: HiltActivityForTest
+
   @Before
   fun setUp() {
     context = activityController.create().resume().get()
@@ -61,13 +63,14 @@ class LocationUtilsTest: RobolectricTest() {
 
     assert(result)
   }
-  
+
   @Test
   fun `test getAccurateLocation`() = runBlocking {
-    val location = Location("").apply {
-      latitude = 36.0
-      longitude = 1.0
-    }
+    val location =
+      Location("").apply {
+        latitude = 36.0
+        longitude = 1.0
+      }
     fusedLocationProviderClient.setMockLocation(location)
 
     val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
@@ -78,10 +81,11 @@ class LocationUtilsTest: RobolectricTest() {
 
   @Test
   fun `test getApproximateLocation`() = runBlocking {
-    val location = Location("").apply {
-      latitude = 36.0
-      longitude = 1.0
-    }
+    val location =
+      Location("").apply {
+        latitude = 36.0
+        longitude = 1.0
+      }
     fusedLocationProviderClient.setMockLocation(location)
 
     val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
