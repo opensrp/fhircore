@@ -32,6 +32,7 @@ jobs:
          - name: Import Secrets from Vault
            id: import-secrets
            uses: hashicorp/vault-action@v2.8.0
+           ignoreNotFound: true
            with:
               url: https://vault.onalabs.org
               token: ${{ secrets.VAULT_TOKEN }}
