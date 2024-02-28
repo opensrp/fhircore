@@ -62,6 +62,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
+import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
@@ -97,14 +98,9 @@ constructor(
     data: Bundle = Bundle(),
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
-    val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
 
     val planDefinition =
-      if (
-        existingAppId != null &&
-          existingAppId.trim().endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true)
-      ) {
+      if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(
           resourceId = planDefinitionId
         )
@@ -211,14 +207,10 @@ constructor(
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
 
-            val existingAppId =
-              sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+
 
             val structureMap =
-              if (
-                existingAppId != null &&
-                existingAppId.trim().endsWith(ConfigurationRegistry.DEBUG_SUFFIX, ignoreCase = true)
-              ) {
+              if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
                 configurationRegistry.retrieveResourceFromConfigMap<StructureMap>(
                   resourceId = IdType(action.transform).idPart
                 )
