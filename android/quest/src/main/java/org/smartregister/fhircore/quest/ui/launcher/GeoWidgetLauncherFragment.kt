@@ -17,13 +17,7 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -36,105 +30,127 @@ import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher) {
-  @Inject lateinit var eventBus: EventBus
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
-  private lateinit var geoWidgetFragment: GeoWidgetFragment
-  private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
-  private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
+    @Inject
+    lateinit var eventBus: EventBus
+    @Inject
+    lateinit var configurationRegistry: ConfigurationRegistry
+    private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
+    private lateinit var geoWidgetFragment: GeoWidgetFragment
+    private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
+    private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
 
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    geoWidgetConfiguration = geoWidgetConfiguration()
-  }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        geoWidgetConfiguration = geoWidgetConfiguration()
+    }
 
-  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      args.geoWidgetId,
-    )
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    geoWidgetLauncherViewModel.retrieveLocations()
-
-
-    geoWidgetFragment = GeoWidgetFragment.builder()
-      .setUseGpsOnAddingLocation(false)
-      .setOnAddLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-        if (geoWidgetLocation.position == null) return@setOnAddLocationListener
-        geoWidgetLauncherViewModel.launchQuestionnaireWithParams(
-          geoWidgetLocation,
-          activity?.tryUnwrapContext() as android.content.Context,
-          geoWidgetConfiguration.registrationQuestionnaire,
+    private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
+        configurationRegistry.retrieveConfiguration(
+            ConfigType.GeoWidget,
+            args.geoWidgetId,
         )
-      }
-      .setOnCancelAddingLocationListener {
 
-      }
-      .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-        // todo: open profile
-      }
-      .build()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        geoWidgetLauncherViewModel.checkSelectedLocation()
 
-    if (savedInstanceState == null) {
-      addGeoWidgetFragment()
-    }
 
-    setLocationFromDbCollector()
-    setOnQuestionnaireSubmissionListener()
-  }
-  private fun setOnQuestionnaireSubmissionListener() {
-    viewLifecycleOwner.lifecycleScope.launch {
-      repeatOnLifecycle(Lifecycle.State.STARTED) {
-        eventBus.events
-          .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(geoWidgetConfiguration.id))
-          .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              val extractedResourceIds = appEvent.questionnaireSubmission.extractedResourceIds
-              geoWidgetLauncherViewModel.onQuestionnaireSubmission(extractedResourceIds)
+        geoWidgetFragment = GeoWidgetFragment.builder()
+            .setUseGpsOnAddingLocation(false)
+            .setOnAddLocationListener { geoWidgetLocation: GeoWidgetLocation ->
+                if (geoWidgetLocation.position == null) return@setOnAddLocationListener
+                geoWidgetLauncherViewModel.launchQuestionnaireWithParams(
+                    geoWidgetLocation,
+                    activity?.tryUnwrapContext() as android.content.Context,
+                    geoWidgetConfiguration.registrationQuestionnaire,
+                )
             }
-          }
-          .launchIn(lifecycleScope)
-      }
-    }
-  }
+            .setOnCancelAddingLocationListener {
 
-  private fun setLocationFromDbCollector() {
-    viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetLauncherViewModel.locationsFlow
-        .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
-        .collect { locations ->
-          geoWidgetFragment.addLocationsToMap(locations)
+            }
+            .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
+                // todo: open profile
+            }
+            .build()
+
+        if (savedInstanceState == null) {
+            addGeoWidgetFragment()
+        }
+
+        setLocationFromDbCollector()
+        showSetLocationDialog()
+        setOnQuestionnaireSubmissionListener()
+    }
+
+    private fun setOnQuestionnaireSubmissionListener() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                eventBus.events
+                    .getFor(MainNavigationScreen.GeoWidgetLauncher.eventId(geoWidgetConfiguration.id))
+                    .onEach { appEvent ->
+                        if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+                            val extractedResourceIds =
+                                appEvent.questionnaireSubmission.extractedResourceIds
+                            geoWidgetLauncherViewModel.onQuestionnaireSubmission(
+                                extractedResourceIds
+                            )
+                        }
+                    }
+                    .launchIn(lifecycleScope)
+            }
         }
     }
-  }
 
-  private fun addGeoWidgetFragment() {
-    childFragmentManager.commit {
-      add(
-        R.id.add_geo_widget_container,
-        geoWidgetFragment,
-        GEO_WIDGET_FRAGMENT_TAG,
-      )
+    private fun setLocationFromDbCollector() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            geoWidgetLauncherViewModel.locationsFlow
+                .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+                .collect { locations ->
+                    geoWidgetFragment.addLocationsToMap(locations)
+                }
+        }
     }
-  }
 
-  companion object {
-    const val GEO_WIDGET_FRAGMENT_TAG = "geo-widget-fragment-tag"
-  }
+    private fun showSetLocationDialog() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            geoWidgetLauncherViewModel.locationDialog.observe(requireActivity()) {
+                AlertDialogue.showConfirmAlert(
+                    context = requireContext(),
+                    message = R.string.message_location_set,
+                    title = R.string.title_no_location_set,
+                    confirmButtonListener = { },
+                    confirmButtonText = R.string.positive_button_location_set,
+                )
+            }
+        }
+    }
+
+    private fun addGeoWidgetFragment() {
+        childFragmentManager.commit {
+            add(
+                R.id.add_geo_widget_container,
+                geoWidgetFragment,
+                GEO_WIDGET_FRAGMENT_TAG,
+            )
+        }
+    }
+
+    companion object {
+        const val GEO_WIDGET_FRAGMENT_TAG = "geo-widget-fragment-tag"
+    }
 }
