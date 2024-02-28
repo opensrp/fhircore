@@ -38,10 +38,8 @@ jobs:
               tlsSkipVerify: true
               ignoreNotFound: true
               secrets: |
-                kv-v2-fhircore/data/opensrp-shared KEYSTORE_ALIAS | KEYSTORE_ALIAS;
                 kv-v2-fhircore/data/opensrp-shared KEYSTORE_FILE | KEYSTORE_FILE;
-                kv-v2-fhircore/data/opensrp-shared KEYSTORE_PASSWORD | KEYSTORE_PASSWORD;
-                kv-v2-fhircore/data/opensrp-shared KEY_PASSWORD | KEY_PASSWORD;
+                kv-v2-fhircore/data/opensrp-shared KEYSTORE_PROPERTIES_FILE | KEYSTORE_PROPERTIES_FILE;
                 kv-v2-fhircore/data/${{ github.event.inputs.flavor }} LOCAL_PROPERTIES_FILE | LOCAL_PROPERTIES_FILE;
 
          - name: Decode & Generate Keystore file
@@ -73,7 +71,7 @@ jobs:
            run: echo $KEYSTORE_PROPERTIES | base64 -di > keystore.properties
            working-directory: android
            env:
-             KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_FILE }}
+             KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES_FILE }}
 
          - id: product-flavor
            name: Generate Product Flavor identifier
