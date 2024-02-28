@@ -257,7 +257,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
-
+    println("sm-"+iParser.encodeToString(structureMap))
     Assert.assertNotNull(mapString)
   }
 
