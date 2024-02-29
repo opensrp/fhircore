@@ -39,4 +39,18 @@ class BooleanExtensionTest {
 
     Assert.assertTrue(result)
   }
+
+  @Test
+  fun testAppIdExistsAndIsNotNullIsFalseWhenAppIdIsMissingDebugSuffix() {
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+
+    val mockAppId = "mockAppId${ConfigurationRegistry}"
+
+    every { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+            mockAppId
+
+    val result = appIdExistsAndIsNotNull(mockSharedPreferencesHelper)
+
+    Assert.assertFalse(result)
+  }
 }
