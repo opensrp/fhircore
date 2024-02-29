@@ -162,8 +162,8 @@ fun UserSettingInsightScreen(
           val items =
             listOf(
               stringResource(id = R.string.username) to userName,
-              stringResource(R.string.team_organization) to organizationNames,
-              stringResource(R.string.care_team) to careTeamNames,
+              stringResource(R.string.team_organization) to organizationNames.joinToString(""),
+              stringResource(R.string.care_team) to careTeamNames.joinToString(""),
               stringResource(R.string.location) to location,
             )
           InsightInfoView(

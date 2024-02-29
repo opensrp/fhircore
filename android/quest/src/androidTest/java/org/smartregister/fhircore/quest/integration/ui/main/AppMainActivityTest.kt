@@ -101,6 +101,7 @@ class AppMainActivityTest {
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
     }
 
+
     composeTestRule.onNodeWithTag(USER_SETTING_ROW_LOGOUT).assertExists()
   }
 
