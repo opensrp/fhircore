@@ -90,7 +90,7 @@ jobs:
          - name: Upload AAB Artifact
            uses: actions/upload-artifact@v4
            with:
-            name: $(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk 
+            name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk" 
             path: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}${{ steps.product-flavor.outputs.buildType }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab     
         
            
@@ -112,6 +112,6 @@ jobs:
          - name: Upload APK Artifact
            uses: actions/upload-artifact@v4
            with:
-            name: $(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk 
+            name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk" 
             path: android/quest/build/outputs/apk/${{ github.event.inputs.flavor }}/${{ steps.product-flavor.outputs.buildTypeLowerlized }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk     
         
