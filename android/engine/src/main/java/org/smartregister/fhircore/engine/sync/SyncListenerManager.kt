@@ -120,8 +120,7 @@ constructor(
           ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
           ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
           ConfigurationRegistry.ID -> paramExpression
-          //                    ConfigurationRegistry.COUNT -> appConfig.count
-          ConfigurationRegistry.COUNT -> "100"
+          ConfigurationRegistry.COUNT -> appConfig.count
           else -> null
         }?.let {
           // replace the evaluated value into expression for complex expressions
