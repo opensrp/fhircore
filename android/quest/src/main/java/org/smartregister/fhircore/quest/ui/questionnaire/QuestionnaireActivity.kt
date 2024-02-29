@@ -119,8 +119,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
 
-    setupLocationServices()
-
     questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
 
     actionParams =
