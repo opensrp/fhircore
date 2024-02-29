@@ -25,10 +25,10 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -44,8 +44,9 @@ object LocationUtils {
   @SuppressLint("MissingPermission")
   suspend fun getAccurateLocation(
     fusedLocationClient: FusedLocationProviderClient,
+    coroutineContext: CoroutineContext,
   ): Location? {
-    return withContext(Dispatchers.IO) {
+    return withContext(coroutineContext) {
       suspendCoroutine<Location> { continuation ->
         fusedLocationClient
           .getCurrentLocation(
@@ -76,8 +77,9 @@ object LocationUtils {
   @SuppressLint("MissingPermission")
   suspend fun getApproximateLocation(
     fusedLocationClient: FusedLocationProviderClient,
+    coroutineContext: CoroutineContext,
   ): Location? {
-    return withContext(Dispatchers.IO) {
+    return withContext(coroutineContext) {
       suspendCoroutine<Location> { continuation ->
         fusedLocationClient
           .getCurrentLocation(

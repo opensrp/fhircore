@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main
 
+import android.Manifest
+import android.os.Build
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -23,13 +25,15 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
 import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -70,6 +74,11 @@ class AppMainActivityTest {
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
 
+//  @get:Rule
+//  val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+//    Manifest.permission.ACCESS_FINE_LOCATION,
+//    Manifest.permission.ACCESS_COARSE_LOCATION)
+
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
@@ -81,6 +90,7 @@ class AppMainActivityTest {
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       Assert.assertEquals(
         R.id.registerFragment,
         it.navHostFragment.navController.currentDestination?.id,
@@ -92,7 +102,9 @@ class AppMainActivityTest {
 
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
+
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
     }
 
@@ -105,6 +117,7 @@ class AppMainActivityTest {
     val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
 
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(
         R.id.profileFragment,
         bundleOf(
@@ -128,6 +141,7 @@ class AppMainActivityTest {
   @Test
   fun navigationToMeasureReportFragmentShouldShowMeasureReportScreen() {
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(
         R.id.measureReportFragment,
         bundleOf(
@@ -138,5 +152,24 @@ class AppMainActivityTest {
     }
 
     composeTestRule.onNodeWithTag(SCREEN_TITLE).assertIsDisplayed()
+  }
+
+  private fun grantPermission() {
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    if (Build.VERSION.SDK_INT >= 23) {
+      val allowPermission = UiDevice.getInstance(instrumentation).findObject(
+        UiSelector().text(
+          when {
+            Build.VERSION.SDK_INT == 23 -> "Allow"
+            Build.VERSION.SDK_INT <= 28 -> "ALLOW"
+            Build.VERSION.SDK_INT == 29 -> "Allow only while using the app"
+            else -> "While using the app"
+          }
+        )
+      )
+      if (allowPermission.exists()) {
+        allowPermission.click()
+      }
+    }
   }
 }

@@ -19,23 +19,35 @@ package org.smartregister.fhircore.engine.util.location
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
+import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
-import io.mockk.coEvery
-import io.mockk.mockk
+import com.google.android.gms.location.LocationServices
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
+@HiltAndroidTest
 class LocationUtilsTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   private val activityController: ActivityController<HiltActivityForTest> =
     Robolectric.buildActivity(HiltActivityForTest::class.java)
-  private lateinit var context: HiltActivityForTest
+  private lateinit var context: Context
 
   @Before
   fun setUp() {
@@ -62,42 +74,52 @@ class LocationUtilsTest : RobolectricTest() {
     assert(result)
   }
 
-  //  @Test
-  //  fun `test getAccurateLocation`() = runBlocking {
-  //    val location = Location("").apply {
-  //      latitude = 36.0
-  //      longitude = 1.0
-  //    }
-  //    fusedLocationProviderClient.setMockLocation(location)
-  //
-  //    val testDispatcher = this.coroutineContext
-  //
-  //
-  //    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, testDispatcher)
-  //
-  //    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
-  //    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
-  //  }
-
   @Test
   fun `test getAccurateLocation`() = runBlocking {
-    val location = mockk<Location>()
+    val location =
+      Location("Test location").apply {
+        latitude = 36.0
+        longitude = 1.0
+      }
+    fusedLocationProviderClient.setMockLocation(location)
 
-    coEvery { LocationUtils.getAccurateLocation(fusedLocationProviderClient) } returns location
+    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
+    assertNotNull(result)
 
-    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient)
-
-    assertEquals(location, result)
+    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
+    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
   }
 
   @Test
   fun `test getApproximateLocation`() = runBlocking {
-    val location = mockk<Location>()
+    val location =
+      Location("").apply {
+        latitude = 36.0
+        longitude = 1.0
+      }
+    fusedLocationProviderClient.setMockLocation(location)
 
-    coEvery { LocationUtils.getApproximateLocation(fusedLocationProviderClient) } returns location
-
-    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient)
-
-    assertEquals(location, result)
+    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
+    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
+    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
   }
+
+  @Test
+  fun `test getAccurateLocation with cancellation`() = runBlocking {
+    val job = launch {
+      delay(500)
+      coroutineContext.cancel()
+    }
+
+    val result = runCatching {
+      LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
+    }
+
+    assertEquals(true, result.isFailure)
+    assertEquals(true, result.exceptionOrNull() is CancellationException)
+
+    job.join()
+  }
+
+
 }

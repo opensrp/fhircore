@@ -84,6 +84,7 @@ jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
 playServicesTasks = "18.1.0"
 google-playServicesLocation = "21.1.0"
+uiautomator = "2.3.0"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -196,6 +197,7 @@ workflow = { group = "org.smartregister", name = "workflow", version.ref = "work
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
 gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-playServicesLocation" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 
 [plugins]
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }

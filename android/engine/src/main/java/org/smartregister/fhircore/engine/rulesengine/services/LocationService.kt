@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.rulesengine.services
 
 import android.content.Context
 import android.location.Location
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
@@ -26,18 +27,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
 import org.jetbrains.annotations.VisibleForTesting
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getAccurateLocation
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getApproximateLocation
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasCoarseLocationPermissions
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasFineLocationPermissions
+import javax.inject.Inject
 
 class LocationService(
   @ApplicationContext val context: Context,
   val sharedPreferences: SharedPreferencesHelper,
 ) {
-
+  lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   fun calculateDistanceByProvidedLocations(
     destination: Location,
     currentLocation: Location,
@@ -50,13 +53,13 @@ class LocationService(
     val currentLocation = generateLocation(location)
 
     CoroutineScope(Dispatchers.IO).launch {
-      val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+      fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
       val retrievedLocation =
         if (hasFineLocationPermissions(context)) {
-          getAccurateLocation(fusedLocationClient)
+          getAccurateLocation(fusedLocationProviderClient, Dispatchers.IO)
         } else if (hasCoarseLocationPermissions(context)) {
-          getApproximateLocation(fusedLocationClient)
+          getApproximateLocation(fusedLocationProviderClient, Dispatchers.IO)
         } else {
           null
         }
@@ -113,7 +116,7 @@ class LocationService(
     }
   }
 
-  private fun writeLocation(
+  fun writeLocation(
     location: LocationCoordinates,
   ) {
     sharedPreferences.write(
@@ -127,19 +130,6 @@ class LocationService(
     return timeStamp != null && timeStamp > thirtyMinutesAgo
   }
 
-  @VisibleForTesting
-  fun calculateGpsLocation(): Location {
-    return Location("StaticTestLocation").apply {
-      latitude = 37.7749
-      longitude = -122.4194
-    }
-  }
-
-  @VisibleForTesting
-  fun writeLocationResource() {
-    val locationTest = LocationCoordinates(37.7749, -122.4194, 0.0, Instant.now())
-    writeLocation(locationTest)
-  }
 
   companion object {
     fun create(

@@ -87,9 +87,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaire: Questionnaire
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private lateinit var locationUtil: LocationUtils
-
-  private lateinit var locationManager: LocationManager
 
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
 

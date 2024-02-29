@@ -82,5 +82,6 @@
         }
       ]
     }
-  ]
+  ],
+  "logQuestionnaireLocation": true
 }

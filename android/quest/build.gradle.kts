@@ -7,13 +7,10 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `project-properties`
+  `ktlint`
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -374,6 +371,7 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
+  implementation(libs.uiautomator)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies

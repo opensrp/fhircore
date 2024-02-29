@@ -206,9 +206,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
+          currentLocation =
+            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
         } else {
-          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
+          currentLocation =
+            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
         }
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")

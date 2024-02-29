@@ -1,12 +1,9 @@
 import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `ktlint`
   id("com.android.library")
   id("kotlin-android")
   id("kotlin-kapt")

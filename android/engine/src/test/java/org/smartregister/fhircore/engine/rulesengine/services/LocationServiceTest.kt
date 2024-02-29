@@ -19,10 +19,14 @@ package org.smartregister.fhircore.engine.rulesengine.services
 import android.content.Context
 import android.location.Location
 import androidx.test.core.app.ApplicationProvider
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.VisibleForTesting
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.Assert
@@ -31,9 +35,12 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.robolectric.Robolectric
+import org.robolectric.android.controller.ActivityController
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
 @HiltAndroidTest
 class LocationServiceTest : RobolectricTest() {
@@ -42,6 +49,7 @@ class LocationServiceTest : RobolectricTest() {
   private lateinit var context: Context
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
   private lateinit var locationService: LocationService
+  private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
   @Before
   fun setup() {
@@ -74,7 +82,8 @@ class LocationServiceTest : RobolectricTest() {
 
   @Test
   fun calculateDistancesByGpsLocation_shouldReturnCorrectDistance() {
-    locationService.writeLocationResource()
+    val locationTest = LocationCoordinates(37.7749, -122.4194, 0.0, Instant.now())
+    locationService.writeLocation(locationTest)
     assertNotNull(
       sharedPreferencesHelper.read<LocationCoordinates>(
         key = SharedPreferenceKey.GEO_LOCATION.name,
