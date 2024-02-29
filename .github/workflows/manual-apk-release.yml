@@ -90,22 +90,12 @@ jobs:
            working-directory: android
          
          - name: Upload AAB Artifact
+           if: github.event.inputs.isAab == 'true' 
            uses: actions/upload-artifact@v4
            with:
-            name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk" 
+            name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab" 
             path: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}${{ steps.product-flavor.outputs.buildType }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab     
         
-           
-         - name: Upload AAB file to tag assets
-           if: github.event.inputs.isAab == 'true' 
-           uses: svenstaro/upload-release-action@v2
-           with:
-             repo_token: ${{ secrets.GITHUB_TOKEN }}
-             file: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}/${{ steps.product-flavor.outputs.buildTypeLowerlized }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab
-             asset_name: $(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab
-             tag: ${{ github.ref }}
-             overwrite: true
-         
          - name: Generate APK (Android App PacKage) file
            if: github.event.inputs.isAab == 'false' 
            run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} --stacktrace
