@@ -78,7 +78,9 @@ jobs:
            run: |
              flavorCapitalized=$(echo ${{ github.event.inputs.flavor }} | sed 's/.*/\u&/')
              buildTypeCapitalized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\u&/')
-             echo "::set-output name=idCapitalized::$flavorCapitalized$buildTypeCapitalized" 
+             buildTypeLowerlized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\l&/')
+             echo "idCapitalized=$flavorCapitalized$buildTypeCapitalized" >> $GITHUB_OUTPUT 
+             echo "buildTypeLowerlized=$buildTypeLowerlized" >> $GITHUB_OUTPUT 
              
          - name: Generate AAB (Android App Bundle) file
            if: github.event.inputs.isAab == 'true' 
@@ -90,7 +92,7 @@ jobs:
            uses: svenstaro/upload-release-action@v2
            with:
              repo_token: ${{ secrets.GITHUB_TOKEN }}
-             file: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}/release/quest-${{ github.event.inputs.flavor }}-release.aab
+             file: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}/${{ steps.product-flavor.outputs.buildTypeLowerlized }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab
              asset_name: "$tag.aab"
              tag: ${{ github.ref }}
              overwrite: true
@@ -99,8 +101,10 @@ jobs:
            if: github.event.inputs.isAab == 'false' 
            run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} --stacktrace
            working-directory: android
-           
-         - name: Test APK file generation
-           run: |
-               ls -lha android/quest/build/outputs/apk/${{ github.event.inputs.flavor }}/release/quest-${{ github.event.inputs.flavor }}-release.apk --stacktrace
-       
+         
+         - name: Archive code coverage results
+           uses: actions/upload-artifact@v4
+           with:
+            name: ${{ github.ref }}-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk 
+            path: android/quest/build/outputs/apk/${{ github.event.inputs.flavor }}/${{ steps.product-flavor.outputs.buildTypeLowerlized }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk     
+        
