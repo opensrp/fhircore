@@ -79,8 +79,10 @@ jobs:
              flavorCapitalized=$(echo ${{ github.event.inputs.flavor }} | sed 's/.*/\u&/')
              buildTypeCapitalized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\u&/')
              buildTypeLowerlized=$(echo ${{ github.event.inputs.buildType }} | sed 's/.*/\l&/')
+             branchTag=$(echo ${{ github.ref }} |  cut -d/ -f3)
              echo "idCapitalized=$flavorCapitalized$buildTypeCapitalized" >> $GITHUB_OUTPUT 
              echo "buildTypeLowerlized=$buildTypeLowerlized" >> $GITHUB_OUTPUT 
+             echo "branchTag=$branchTag" >> $GITHUB_OUTPUT 
              
          - name: Generate AAB (Android App Bundle) file
            if: github.event.inputs.isAab == 'true' 
@@ -112,6 +114,6 @@ jobs:
          - name: Upload APK Artifact
            uses: actions/upload-artifact@v4
            with:
-            name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk" 
+            name: ${{ steps.product-flavor.outputs.branchTag }}-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk 
             path: android/quest/build/outputs/apk/${{ github.event.inputs.flavor }}/${{ steps.product-flavor.outputs.buildTypeLowerlized }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk     
         
