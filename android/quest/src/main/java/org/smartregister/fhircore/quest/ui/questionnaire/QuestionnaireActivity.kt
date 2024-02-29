@@ -215,7 +215,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
 
         setupLocationServices()
-
       }
     }
   }
@@ -277,10 +276,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         onCoarseLocationPermissionGranted = { fetchLocation(false) },
         onLocationPermissionDenied = {
           Toast.makeText(
-            this,
-            getString(R.string.location_permissions_denied),
-            Toast.LENGTH_SHORT,
-          )
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
             .show()
           Timber.e("Location permissions denied")
         },
@@ -298,9 +297,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
+          currentLocation =
+            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
         } else {
-          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
+          currentLocation =
+            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
         }
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")

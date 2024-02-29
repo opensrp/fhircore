@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ object PermissionUtils {
 
   fun checkPermissions(context: Context, permissions: List<String>): Boolean {
     for (permission in permissions) {
-      if (
-        ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED
+      if (ContextCompat.checkSelfPermission(context, permission) !=
+          PackageManager.PERMISSION_GRANTED
       ) {
         return false
       }
@@ -63,8 +63,6 @@ object PermissionUtils {
   ): ActivityResultLauncher<Intent> {
     return activity.registerForActivityResult(
       ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-      onResult(result.resultCode, result.data)
-    }
+    ) { result -> onResult(result.resultCode, result.data) }
   }
 }

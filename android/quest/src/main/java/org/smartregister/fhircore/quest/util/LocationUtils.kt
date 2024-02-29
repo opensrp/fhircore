@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2024 Ona Systems, Inc
+ * Copyright 2021-2023 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,85 +25,81 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-class LocationUtils {
+object LocationUtils {
 
-  companion object {
-    fun isLocationEnabled(context: Context): Boolean {
-      val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+  fun isLocationEnabled(context: Context): Boolean {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-      return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    }
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+      locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+  }
 
-    @SuppressLint("MissingPermission")
-    suspend fun getAccurateLocation(
-      fusedLocationClient: FusedLocationProviderClient,
-    ): Location? {
-      return withContext(Dispatchers.IO) {
-        suspendCoroutine<Location> { continuation ->
-          fusedLocationClient
-            .getCurrentLocation(
-              Priority.PRIORITY_HIGH_ACCURACY,
-              object : CancellationToken() {
-                override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                  CancellationTokenSource().token
+  @SuppressLint("MissingPermission")
+  suspend fun getAccurateLocation(
+    fusedLocationClient: FusedLocationProviderClient,
+    coroutineContext: CoroutineContext,
+  ): Location? {
+    return withContext(coroutineContext) {
+      suspendCoroutine<Location> { continuation ->
+        fusedLocationClient
+          .getCurrentLocation(
+            Priority.PRIORITY_HIGH_ACCURACY,
+            object : CancellationToken() {
+              override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                CancellationTokenSource().token
 
-                override fun isCancellationRequested() = false
-              },
-            )
-            .addOnSuccessListener { location: Location? ->
-              if (location != null) {
-                Timber.d(
-                  "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
-                )
-                continuation.resume(location)
-              } else {
-                Timber.e("Failed to get accurate location")
-              }
+              override fun isCancellationRequested() = false
+            },
+          )
+          .addOnSuccessListener { location: Location? ->
+            if (location != null) {
+              Timber.d(
+                "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+              )
+              continuation.resume(location)
             }
-            .addOnFailureListener { e ->
-              Timber.e(e, "Failed to get accurate location")
-              continuation.resumeWithException(e)
-            }
-        }
+          }
+          .addOnFailureListener { e ->
+            Timber.e(e, "Failed to get accurate location")
+            continuation.resumeWithException(e)
+          }
       }
     }
+  }
 
-    @SuppressLint("MissingPermission")
-    suspend fun getApproximateLocation(
-      fusedLocationClient: FusedLocationProviderClient,
-    ): Location? {
-      return withContext(Dispatchers.IO) {
-        suspendCoroutine<Location> { continuation ->
-          fusedLocationClient
-            .getCurrentLocation(
-              Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-              object : CancellationToken() {
-                override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                  CancellationTokenSource().token
+  @SuppressLint("MissingPermission")
+  suspend fun getApproximateLocation(
+    fusedLocationClient: FusedLocationProviderClient,
+    coroutineContext: CoroutineContext,
+  ): Location? {
+    return withContext(coroutineContext) {
+      suspendCoroutine<Location> { continuation ->
+        fusedLocationClient
+          .getCurrentLocation(
+            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+            object : CancellationToken() {
+              override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+                CancellationTokenSource().token
 
-                override fun isCancellationRequested() = false
-              },
-            )
-            .addOnSuccessListener { location: Location? ->
-              if (location != null) {
-                Timber.d(
-                  "Approx location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
-                )
-                continuation.resume(location)
-              } else {
-                Timber.e("Failed to get approximate location")
-              }
+              override fun isCancellationRequested() = false
+            },
+          )
+          .addOnSuccessListener { location: Location? ->
+            if (location != null) {
+              Timber.d(
+                "Approx location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+              )
+              continuation.resume(location)
             }
-            .addOnFailureListener { e -> continuation.resumeWithException(e) }
-        }
+          }
+          .addOnFailureListener { e -> continuation.resumeWithException(e) }
       }
     }
   }
