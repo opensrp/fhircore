@@ -79,15 +79,12 @@ constructor(
   val configurationRegistry: ConfigurationRegistry
 ) : RegisterDao, PatientDao {
 
-  private val code = defaultRepository.sharedPreferencesHelper.organisationCode()
-
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
       !patient.hasDeceased() &&
       patient.hasName() &&
       patient.hasGender() &&
-      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) } &&
-      patient.belongsTo(code)
+      patient.meta.tag.none { it.code.equals(HAPI_MDM_TAG, true) }
 
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
@@ -446,8 +443,8 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
-fun SharedPreferencesHelper.organisationCode() =
-  read(ResourceType.Organization.name, null)?.filter { it.isDigit() } ?: ""
+fun SharedPreferencesHelper.locationCode() =
+  read(ResourceType.Location.name, null)?.filter { it.isDigit() } ?: ""
 
 infix fun Patient.belongsTo(code: String) =
   meta.tag.any {
