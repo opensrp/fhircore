@@ -20,9 +20,10 @@ Expressions are introduced into Questionnaires using extensions - none of the 'c
 | [candidateExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-candidateExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using candidateExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#candidateExpression) |
 
 ## Variable
-The variable expression sets a variable that is available for use in expressions within the same item and any descendant items. It has two main uses:
+The variable expression sets a variable that is available for use in expressions within the same item and any descendant items. It has three main uses:
 - It allows a complex calculation to be done once and used in multiple other places. (E.g. Determining the score for one group within the questionnaire response that will then be used in calculations on subsequent groups.)
 - It allows a calculation to be done closer to the root of the questionnaire response or at the root of the questionnaire response where there is access to more of or all the answers from the questionnaire response. The calculated value might then be used as the answer to a descendant question. (Expressions cannot access answers that are not descendants of the current node.)
+- It allows the retrieval of FHIR resources from the database when the questionnaire is opened using X-FHIR-Query. The retrieved information can then be utilized within the questionnaire through other variables or extensions that utilize expressions
 
 The content type of a variable can be pretty much anything. It can be a collection or an individual item. It can be a simple element, a complex type, a resource or even a Bundle of resources.
 The variable can be referenced by its name. Variable expressions SHALL specify a name. It is not allowed to define variable names that are already reserved by the base specification or by other variables in the questionnaire.
@@ -121,6 +122,58 @@ internal fun evaluateQuestionnaireItemVariableExpression(
     questionnaireItem: Questionnaire.QuestionnaireItemComponent,
     variablesMap: MutableMap<String, Base?> = mutableMapOf()
   ): Base?
+```
+#### Sample of retrieving resources from the database using variable expression
+```
+{
+  "resourceType": "Questionnaire",
+  "extension": [
+    {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext",
+        "extension": [
+            {
+                "url": "name",
+                "valueCoding": {
+                    "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+                    "code": "patient",
+                    "display": "Patient"
+                }
+            },
+            {
+                "url": "type",
+                "valueCode": "Patient"
+            }
+        ]
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "qrs-searched",
+            "language": "application/x-fhir-query",
+            "expression": "QuestionnaireResponse?subject={{%patient.id.replaceMatches('/_history/.*', '')}}&questionnaire=Questionnaire/54"
+        }
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "qr-resource",
+            "language": "text/fhirpath",
+            "expression": "%qrs-searched.entry.first().resource"
+        }
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "answer-1",
+            "language": "text/fhirpath",
+            "expression": "%qr-resource.item.descendants().where(linkId='1').answer.value"
+        }
+    }
+  ],
+  "item": [
+  ...
+  ]
+}
 ```
 
 ## Initial Expression
