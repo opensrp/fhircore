@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main
 
-import android.Manifest
 import android.os.Build
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
@@ -74,10 +73,10 @@ class AppMainActivityTest {
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
 
-//  @get:Rule
-//  val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-//    Manifest.permission.ACCESS_FINE_LOCATION,
-//    Manifest.permission.ACCESS_COARSE_LOCATION)
+  //  @get:Rule
+  //  val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
+  //    Manifest.permission.ACCESS_FINE_LOCATION,
+  //    Manifest.permission.ACCESS_COARSE_LOCATION)
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -102,7 +101,6 @@ class AppMainActivityTest {
 
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
-
     composeTestRule.activityRule.scenario.onActivity {
       grantPermission()
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
@@ -157,16 +155,19 @@ class AppMainActivityTest {
   private fun grantPermission() {
     val instrumentation = InstrumentationRegistry.getInstrumentation()
     if (Build.VERSION.SDK_INT >= 23) {
-      val allowPermission = UiDevice.getInstance(instrumentation).findObject(
-        UiSelector().text(
-          when {
-            Build.VERSION.SDK_INT == 23 -> "Allow"
-            Build.VERSION.SDK_INT <= 28 -> "ALLOW"
-            Build.VERSION.SDK_INT == 29 -> "Allow only while using the app"
-            else -> "While using the app"
-          }
-        )
-      )
+      val allowPermission =
+        UiDevice.getInstance(instrumentation)
+          .findObject(
+            UiSelector()
+              .text(
+                when {
+                  Build.VERSION.SDK_INT == 23 -> "Allow"
+                  Build.VERSION.SDK_INT <= 28 -> "ALLOW"
+                  Build.VERSION.SDK_INT == 29 -> "Allow only while using the app"
+                  else -> "While using the app"
+                },
+              ),
+          )
       if (allowPermission.exists()) {
         allowPermission.click()
       }

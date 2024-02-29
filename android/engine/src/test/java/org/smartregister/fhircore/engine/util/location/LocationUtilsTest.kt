@@ -19,12 +19,9 @@ package org.smartregister.fhircore.engine.util.location
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
-import androidx.test.core.app.ApplicationProvider
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -120,6 +117,4 @@ class LocationUtilsTest : RobolectricTest() {
 
     job.join()
   }
-
-
 }

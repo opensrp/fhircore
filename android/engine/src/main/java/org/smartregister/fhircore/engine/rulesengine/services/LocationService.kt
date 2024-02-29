@@ -26,21 +26,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Resource
-import org.jetbrains.annotations.VisibleForTesting
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getAccurateLocation
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getApproximateLocation
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasCoarseLocationPermissions
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasFineLocationPermissions
-import javax.inject.Inject
 
 class LocationService(
   @ApplicationContext val context: Context,
   val sharedPreferences: SharedPreferencesHelper,
 ) {
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
   fun calculateDistanceByProvidedLocations(
     destination: Location,
     currentLocation: Location,
@@ -129,7 +127,6 @@ class LocationService(
     val thirtyMinutesAgo = Instant.now().minusSeconds(1800)
     return timeStamp != null && timeStamp > thirtyMinutesAgo
   }
-
 
   companion object {
     fun create(
