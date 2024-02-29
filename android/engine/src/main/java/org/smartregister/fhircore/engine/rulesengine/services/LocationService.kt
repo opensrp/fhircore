@@ -71,7 +71,7 @@ class LocationService(
       sharedPreferences.read<LocationCoordinates>(key = SharedPreferenceKey.GEO_LOCATION.name)
 
     val generatedLocation =
-      Location("Test location").apply {
+      Location("Generated location").apply {
         if (locationTest != null && isWithinLast30Minutes(locationTest.timeStamp)) {
           longitude = locationTest.longitude!!
           latitude = locationTest.latitude!!

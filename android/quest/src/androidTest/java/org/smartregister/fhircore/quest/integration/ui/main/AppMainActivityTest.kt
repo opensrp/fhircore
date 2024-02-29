@@ -73,11 +73,6 @@ class AppMainActivityTest {
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
 
-  //  @get:Rule
-  //  val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-  //    Manifest.permission.ACCESS_FINE_LOCATION,
-  //    Manifest.permission.ACCESS_COARSE_LOCATION)
-
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 

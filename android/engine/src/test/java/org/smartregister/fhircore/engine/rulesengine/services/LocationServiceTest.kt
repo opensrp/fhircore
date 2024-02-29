@@ -19,14 +19,12 @@ package org.smartregister.fhircore.engine.rulesengine.services
 import android.content.Context
 import android.location.Location
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import java.math.BigDecimal
 import java.time.Instant
-import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
