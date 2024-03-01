@@ -94,7 +94,7 @@ jobs:
            uses: actions/upload-artifact@v4
            with:
             name: "$(echo ${{ github.ref }} |  cut -d/ -f3)-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab" 
-            path: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}${{ steps.product-flavor.outputs.buildType }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab     
+            path: android/quest/build/outputs/bundle/${{ github.event.inputs.flavor }}${{ github.event.inputs.buildType }}/quest-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.aab     
         
          - name: Generate APK (Android App PacKage) file
            if: github.event.inputs.isAab == 'false' 
@@ -102,6 +102,7 @@ jobs:
            working-directory: android
          
          - name: Upload APK Artifact
+           if: github.event.inputs.isAab == 'false' 
            uses: actions/upload-artifact@v4
            with:
             name: ${{ steps.product-flavor.outputs.branchTag }}-${{ github.event.inputs.flavor }}-${{ steps.product-flavor.outputs.buildTypeLowerlized }}.apk 
