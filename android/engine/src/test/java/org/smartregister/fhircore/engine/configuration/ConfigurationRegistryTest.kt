@@ -134,7 +134,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveResourceFromConfigMap() {
     val resourceId = "myResourceId"
     configRegistry.configsJsonMap[resourceId] = "ResourceData"
-    val resource = configRegistry.retrieveResourceFromConfigMap<Resource>("string")
+    val resource = configRegistry.retrieveResourceFromConfigMap<Resource>("resourceId")
     resource?.let { assertEquals("ResourceData", resource.id) }
   }
 

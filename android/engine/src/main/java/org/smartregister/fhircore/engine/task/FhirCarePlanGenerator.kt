@@ -100,7 +100,7 @@ constructor(
     val planDefinition =
       if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(
-          resourceId = planDefinitionId,
+          resourceId = planDefinitionId
         )
       } else defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
     return planDefinition?.let {

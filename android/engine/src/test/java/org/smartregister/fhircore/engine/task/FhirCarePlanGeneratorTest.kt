@@ -117,6 +117,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
+import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
@@ -2158,6 +2159,19 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       )
 
     assertFalse(conditionsMet)
+  }
+
+  @Test
+  fun testRetrievePlanDefinitionFromConfigMap() = runTest {
+    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val planDefinitionId = PlanDefinition().apply { id = "plan-1" }
+
+    coEvery { appIdExistsAndIsNotNull(sharedPreferencesHelper) } returns true
+
+    configurationRegistry.configsJsonMap[planDefinitionId.id] = "PlanDefinition"
+    val planDefinition =
+      configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>("PlanDef")
+    planDefinition?.let { assertEquals("PlanDefinition", planDefinition.id) }
   }
 
   @Test
