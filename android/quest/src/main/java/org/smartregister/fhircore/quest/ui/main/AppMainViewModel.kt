@@ -72,7 +72,7 @@ constructor(
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
 
   val refreshDataState: MutableState<Int> = mutableStateOf(0)
-  val taskId: MutableStateFlow<String?> = MutableStateFlow(null)
+  val completedTaskId: MutableStateFlow<String?> = MutableStateFlow(null)
 
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
@@ -194,7 +194,7 @@ constructor(
   }
 
   fun onTaskComplete(id: String?) {
-    viewModelScope.launch { id?.let { taskId.emit(it) } }
+    viewModelScope.launch { id?.let { completedTaskId.emit(it) } }
   }
 
   companion object {

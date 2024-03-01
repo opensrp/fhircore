@@ -124,7 +124,7 @@ sealed class ProfileViewData(
     val hasFinishedAttempts: Boolean =
       currentAttempt.run {
         isHomeTracing?.let {
-          val maxAttempts = if (it) 3 else 2
+          val maxAttempts = if (it) 2 else 3
           if (this != null) {
             return@run this.numberOfAttempts >= maxAttempts
           }

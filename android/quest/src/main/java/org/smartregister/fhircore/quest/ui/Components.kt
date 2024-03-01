@@ -75,9 +75,7 @@ fun <T : FilterOption> LocalExposedDropdownMenuBox(
       value = selectedItem.text(),
       onValueChange = { /* No-op */},
       readOnly = true,
-      trailingIcon = {
-        TrailingIcon(expanded = isExpanded, onIconClick = { isExpanded = !isExpanded })
-      },
+      trailingIcon = { TrailingIcon(expanded = isExpanded) },
       colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
       maxLines = 1,
       singleLine = true,

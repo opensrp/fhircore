@@ -87,7 +87,7 @@ fun PatientProfileScreen(
   val profileViewData by remember { profileViewDataState }
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = patientProfileViewModel.patientProfileUiState.value
-  val taskId by appMainViewModel.taskId.collectAsState()
+  val taskId by appMainViewModel.completedTaskId.collectAsState()
   val syncing by remember { patientProfileViewModel.isSyncing }
   val tasksId = profileViewData.tasks.map { it.actionFormId }
 

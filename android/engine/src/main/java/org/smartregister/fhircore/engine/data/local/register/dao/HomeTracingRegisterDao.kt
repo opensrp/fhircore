@@ -46,5 +46,10 @@ constructor(
     sharedPreferencesHelper
   ) {
 
-  override val tracingCoding: Coding = Coding("https://d-tree.org", "home-tracing", "Home Tracing")
+  override val tracingCoding: Coding = taskCode
+
+  companion object {
+    val taskCode: Coding =
+      Coding("https://d-tree.org/fhir/contact-tracing", "home-tracing", "Home Tracing")
+  }
 }

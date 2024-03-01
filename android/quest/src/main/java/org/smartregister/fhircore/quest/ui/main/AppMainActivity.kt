@@ -213,6 +213,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
               data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
             )
           }
+          it == "notify" -> {
+            appMainViewModel.onTaskComplete(
+              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
+            )
+          }
         }
       }
   }

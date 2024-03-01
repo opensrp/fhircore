@@ -17,11 +17,17 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.data.local.register.dao.HomeTracingRegisterDao
+import org.smartregister.fhircore.engine.data.local.register.dao.PhoneTracingRegisterDao
 
 fun Task.isHomeTracingTask(): Boolean {
-  return this.meta.tag.firstOrNull { it.`is`("https://d-tree.org", "home-tracing") } !== null
+  return this.meta.tag.firstOrNull {
+    it.`is`(HomeTracingRegisterDao.taskCode.system, HomeTracingRegisterDao.taskCode.code)
+  } !== null
 }
 
 fun Task.isPhoneTracingTask(): Boolean {
-  return this.meta.tag.firstOrNull { it.`is`("https://d-tree.org", "phone-tracing") } !== null
+  return this.meta.tag.firstOrNull {
+    it.`is`(PhoneTracingRegisterDao.taskCode.system, PhoneTracingRegisterDao.taskCode.code)
+  } !== null
 }
