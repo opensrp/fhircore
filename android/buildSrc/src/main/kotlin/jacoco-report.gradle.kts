@@ -3,7 +3,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 val isApplication = (project.name == "quest")
 val actualProjectName = if(isApplication) "opensrp" else project.name
 
-tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
+project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
   val tasksList = mutableSetOf(
     "test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
   )
@@ -13,10 +13,7 @@ tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
    * into functional tests and performance tests. Performance tests can take upto 1 hr and are not required
    * while functional tests alone will take ~40 mins and they are required.
    */
-  if (!isApplication) {
-    tasksList += "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
-  }
-  else {}
+  tasksList += "connected${if (isApplication)  actualProjectName.capitalize() else ""}DebugAndroidTest"
 
   dependsOn(
     tasksList
