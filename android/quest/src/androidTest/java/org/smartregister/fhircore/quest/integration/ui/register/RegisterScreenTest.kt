@@ -139,7 +139,7 @@ class RegisterScreenTest {
         screenTitle = "Register101",
         isFirstTimeSync = true,
         registerConfiguration =
-          configurationRegistry.retrieveConfiguration(ConfigType.Register, "childRegister"),
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "childRegisterR"),
         registerId = "register101",
         totalRecordsCount = 0,
         filteredRecordsCount = 0,
