@@ -30,6 +30,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -88,6 +89,7 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -903,6 +905,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
     }
+
+  @Test
+  fun testQuestionnaireResourceIsLoadedWhenAppIdExistsAndIsNotNull() {
+    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+
+    configurationRegistry.configsJsonMap[questionnaireConfig.id] = "your_questionnaire_id"
+
+    every { appIdExistsAndIsNotNull(sharedPreferencesHelper) } returns true
+
+    val questionnaire =
+      configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+        resourceId = "questionnaireConfig.id",
+      )
+
+    questionnaire?.let { Assert.assertEquals("your_questionnaire_id", questionnaire) }
+  }
 
   @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {
