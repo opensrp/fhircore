@@ -84,7 +84,7 @@ class AppMainActivityTest {
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      grantPermission()
+      denyPermission()
       Assert.assertEquals(
         R.id.registerFragment,
         it.navHostFragment.navController.currentDestination?.id,
@@ -97,7 +97,7 @@ class AppMainActivityTest {
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      grantPermission()
+      denyPermission()
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
     }
 
@@ -110,7 +110,7 @@ class AppMainActivityTest {
     val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
 
     composeTestRule.activityRule.scenario.onActivity {
-      grantPermission()
+      denyPermission()
       it.navHostFragment.navController.navigate(
         R.id.profileFragment,
         bundleOf(
@@ -134,7 +134,7 @@ class AppMainActivityTest {
   @Test
   fun navigationToMeasureReportFragmentShouldShowMeasureReportScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      grantPermission()
+      denyPermission()
       it.navHostFragment.navController.navigate(
         R.id.measureReportFragment,
         bundleOf(
@@ -165,6 +165,26 @@ class AppMainActivityTest {
           )
       if (allowPermission.exists()) {
         allowPermission.click()
+      }
+    }
+  }
+
+  fun denyPermission() {
+    val instrumentation = InstrumentationRegistry.getInstrumentation()
+    if (Build.VERSION.SDK_INT >= 23) {
+      val denyPermission =
+        UiDevice.getInstance(instrumentation)
+          .findObject(
+            UiSelector()
+              .text(
+                when (Build.VERSION.SDK_INT) {
+                  in 24..28 -> "DENY"
+                  else -> "Deny"
+                },
+              ),
+          )
+      if (denyPermission.exists()) {
+        denyPermission.click()
       }
     }
   }
