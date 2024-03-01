@@ -53,7 +53,6 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -225,31 +224,11 @@ constructor(
           context = context,
         )
 
-      val locationLinkIdAnswer =
-        questionnaireConfig.linkIds
-          ?.find { it.type == LinkIdType.LOCATION }
-          ?.linkId
-          ?.let {
-            currentQuestionnaireResponse
-              .find(
-                it,
-              )
-              ?.answerFirstRep
-              ?.value
-          }
-      val relatedEntityLocationCode =
-        when (locationLinkIdAnswer) {
-          is Reference -> locationLinkIdAnswer.reference.extractLogicalIdUuid()
-          is StringType -> locationLinkIdAnswer.value.extractLogicalIdUuid()
-          else -> null
-        }
-
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
         questionnaireConfig = questionnaireConfig,
         questionnaireResponse = currentQuestionnaireResponse,
-        relatedEntityLocationCode = relatedEntityLocationCode,
         context = context,
       )
 
@@ -274,7 +253,6 @@ constructor(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
-            relatedEntityLocationCode = relatedEntityLocationCode,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -308,7 +286,6 @@ constructor(
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     questionnaireResponse: QuestionnaireResponse,
-    relatedEntityLocationCode: String?,
     context: Context,
   ) {
     val extractionDate = Date()
@@ -353,7 +330,9 @@ constructor(
             this.id = questionnaireResponse.subject.extractId()
           } else if (
             extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-              previouslyExtractedResources.containsKey(resourceType)
+              previouslyExtractedResources.containsKey(
+                resourceType,
+              )
           ) {
             val fhirPathExpression =
               extractedResourceUniquePropertyExpressionsMap
@@ -389,11 +368,7 @@ constructor(
         }
 
         // Set the Group's Related Entity Location metadata tag on Resource before saving.
-        this.applyRelatedEntityLocationMetaTag(
-          relatedEntityLocationCode,
-          questionnaireConfig,
-          context,
-        )
+        this.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
 
         defaultRepository.addOrUpdate(true, resource = this)
 
@@ -428,39 +403,40 @@ constructor(
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-        relatedEntityLocationCode,
         questionnaireConfig,
         context,
+        subjectType,
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
   }
 
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
-    relatedEntityLocationCode: String?,
     questionnaireConfig: QuestionnaireConfig,
     context: Context,
+    subjectType: ResourceType?,
   ) {
-    questionnaireConfig.groupResource?.let {
-      if (it.groupIdentifier.isNotEmpty() && !it.removeGroup && !it.removeMember) {
-        val group =
-          loadResource(
-            ResourceType.Group,
-            it.groupIdentifier.extractLogicalIdUuid(),
-          )
-            as Group?
-        if (group != null && !relatedEntityLocationCode.isNullOrEmpty()) {
-          val system =
-            context.getString(
-              org.smartregister.fhircore.engine.R.string
-                .sync_strategy_related_entity_location_system,
-            )
-          group.meta.tag
-            .filter { coding ->
-              coding.system == system && coding.code == relatedEntityLocationCode
-            }
-            .forEach { coding -> this.meta.addTag(coding) }
+    val resourceIdPair =
+      when {
+        !questionnaireConfig.resourceIdentifier.isNullOrEmpty() && subjectType != null -> {
+          Pair(subjectType, questionnaireConfig.resourceIdentifier!!)
         }
+        !questionnaireConfig.groupResource?.groupIdentifier.isNullOrEmpty() &&
+          questionnaireConfig.groupResource?.removeGroup != true &&
+          questionnaireConfig.groupResource?.removeMember != true -> {
+          Pair(ResourceType.Group, questionnaireConfig.groupResource!!.groupIdentifier)
+        }
+        else -> null
+      }
+    if (resourceIdPair != null) {
+      val (resourceType, resourceId) = resourceIdPair
+      val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
+      if (resource != null) {
+        val system =
+          context.getString(
+            org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+          )
+        resource.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
       }
     }
   }
@@ -530,7 +506,11 @@ constructor(
   ): ResourceType? {
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     return questionnaireConfig.resourceType
-      ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+      ?: questionnaireSubjectType?.let {
+        ResourceType.valueOf(
+          it,
+        )
+      }
   }
 
   private fun Resource?.applyResourceMetadata(
@@ -706,7 +686,12 @@ constructor(
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-        .search<Library> { filter(Resource.RES_ID, *libraryFilters.toTypedArray()) }
+        .search<Library> {
+          filter(
+            Resource.RES_ID,
+            *libraryFilters.toTypedArray(),
+          )
+        }
         .forEach { librarySearchResult ->
           val result: Parameters =
             fhirOperator.evaluateLibrary(
@@ -729,7 +714,11 @@ constructor(
 
               if (BuildConfig.DEBUG) {
                 Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
+                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                        getStringRepresentation(
+                                            resultParameterResource,
+                                        )
+                                    }",
                 )
               }
             }
@@ -749,7 +738,6 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
-    relatedEntityLocationCode: String?,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
@@ -758,7 +746,6 @@ constructor(
             planDefinitionId = planId,
             subject = subject,
             data = bundle,
-            relatedEntityLocationCode = relatedEntityLocationCode,
             generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
           )
         }

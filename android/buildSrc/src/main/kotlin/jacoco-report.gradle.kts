@@ -3,7 +3,7 @@ import org.gradle.testing.jacoco.tasks.JacocoReport
 val isApplication = (project.name == "quest")
 val actualProjectName = if(isApplication) "opensrp" else project.name
 
-tasks.create(name = "fhircoreJacocoReport", type = JacocoReport::class) {
+project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
   val tasksList = mutableSetOf(
     "test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest", // Generates unit test coverage report
   )
