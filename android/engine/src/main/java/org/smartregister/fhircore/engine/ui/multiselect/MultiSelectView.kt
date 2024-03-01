@@ -52,7 +52,7 @@ class TreeNode<T>(
 fun <T> ColumnScope.MultiSelectView(
   treeNode: TreeNode<T>,
   selectedNodes: SnapshotStateMap<String, Boolean>,
-  depth: Int,
+  depth: Int = 0,
   content: @Composable (TreeNode<T>) -> Unit,
 ) {
   val collapsedState = remember { mutableStateOf(false) }
@@ -61,9 +61,8 @@ fun <T> ColumnScope.MultiSelectView(
     treeNode = treeNode,
     depth = depth,
     content = content,
-    collapsedState = collapsedState
+    collapsedState = collapsedState,
   )
-
   if (collapsedState.value) {
     treeNode.children?.forEach {
       MultiSelectView(
@@ -86,22 +85,18 @@ fun <T> MultiSelectCheckbox(
 ) {
   Column {
     Row(
-      modifier =
-      Modifier
-        .fillMaxWidth()
-        .padding(start = depth.dp),
+      modifier = Modifier.fillMaxWidth().padding(start = depth.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       if (!treeNode.children.isNullOrEmpty()) {
         Icon(
           imageVector =
-          if (collapsedState.value) Icons.Default.ArrowDropDown else
-            Icons.AutoMirrored.Filled.ArrowRight,
+            if (collapsedState.value) {
+              Icons.Default.ArrowDropDown
+            } else Icons.AutoMirrored.Filled.ArrowRight,
           contentDescription = null,
           tint = Color.Gray,
-          modifier = Modifier.clickable {
-            collapsedState.value = !collapsedState.value
-          }
+          modifier = Modifier.clickable { collapsedState.value = !collapsedState.value },
         )
       }
       Checkbox(
@@ -129,37 +124,54 @@ fun <T> MultiSelectCheckbox(
 fun MultiSelectViewPreview() {
   Column {
     MultiSelectView(
-      selectedNodes = SnapshotStateMap<String, Boolean>().apply { put("sampleId1.1", true) },
+      selectedNodes = SnapshotStateMap(),
       treeNode =
-      TreeNode(
-        id = "sampleId1",
-        data = "Root",
-        children =
-        listOf(
-          TreeNode(
-            id = "sampleId1.1",
-            data = "Branch 1.1",
-            children =
+        TreeNode(
+          id = "Kenya",
+          data = "Kenya",
+          children =
             listOf(
               TreeNode(
-                id = "sampleId1.1.1",
-                data = "Branch 1.1.1",
-                children = listOf(TreeNode(id = "sampleId1.1.1.1", data = "Branch 1.1.1.1")),
+                id = "nairobi",
+                data = "Nairobi",
+                children =
+                  listOf(
+                    TreeNode(
+                      id = "sampleId1",
+                      data = "Kibera - Clinic",
+                      children =
+                        listOf(
+                          TreeNode(
+                            id = "sampleId1.1",
+                            data = "Clinic Village 1",
+                            children =
+                              listOf(
+                                TreeNode(
+                                  id = "sampleId1.1.1",
+                                  data = "Sub village 1",
+                                ),
+                                TreeNode(
+                                  id = "sampleId1.1.2",
+                                  data = "Sub village 2",
+                                ),
+                              ),
+                          ),
+                          TreeNode(
+                            id = "sampleId3",
+                            data = "Clinic Village 2",
+                            children =
+                              listOf(
+                                TreeNode(id = "sampleId2.1", data = "Branch 2.1"),
+                              ),
+                          ),
+                        ),
+                    ),
+                  ),
               ),
             ),
-          ),
-          TreeNode(
-            id = "sampleId3",
-            data = "Branch 2",
-            children =
-            listOf(
-              TreeNode(id = "sampleId2.1", data = "Branch 2.1"),
-            ),
-          ),
         ),
-      ),
       depth = 0,
-      content = { treeNode -> Text(text = treeNode.data) },
+      content = { treeNode -> Column { Text(text = treeNode.data) } },
     )
   }
 }
