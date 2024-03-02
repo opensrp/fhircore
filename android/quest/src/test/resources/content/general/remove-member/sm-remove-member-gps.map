@@ -19,14 +19,14 @@ group ExtractEncounter(source src: QuestionnaireResponse, target bundle: Bundle)
 
             src then ExtractObservations(src, bundle, encounter) "r_enc_ext_cnd_call";
 
-            src.item where(linkId='location-widget') then {
+            src.contained first as locationItem where($this.ofType(Location).exists()) then {
                 src -> bundle.entry as entry,
                     entry.resource = create("Location") as location then {
                         src -> bundle.entry as entry,
                         entry.resource = create("List") as linkingList
                             then ExtractOtherResources(src, bundle, location, linkingList, locationLinkResourceId) "r-other-resources";
                     } "r-other-data-call";
-            } "r-other-resource-data";
+            } "r-loc-4m-contained";
         }"r_enc_id";
     } "r_bundle_entry_enc";
 }
@@ -73,15 +73,11 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
             src -> code.text = 'House' "r_gps_physicalType-text";
         } "r_gps_location_physicalType";
 
-        src.item as locationWidgetItem where(linkId='location-widget') then {
+        src.contained first as locationItem where($this.ofType(Location).exists()) then {
             src -> gpsLocation.position = create("Location_Position") as position then {
                  src -> position.altitude = '0.0' "r-position-default-alt";
-                 locationWidgetItem.item as itemLatitude where(linkId='latitude') then {
-                    src -> position.latitude = evaluate(src, itemLatitude.answer.value) "r-position-latitude";
-                } "r-latitude-item";
-                locationWidgetItem.item as itemLongitude where(linkId='longitude') then {
-                    src -> position.longitude = evaluate(src, itemLongitude.answer.value) "r-position-longitude";
-                } "r-longitude-item";
+                 src -> position.latitude = evaluate(src, locationItem.position.latitude) "r-position-latitude";
+                 src -> position.longitude = evaluate(src, locationItem.position.longitude) "r-position-longitude";
             } "r_position_data";
         } "r-loc-lat-lng";
 
@@ -118,7 +114,7 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
             } "r_flag";
             src -> entry.date = evaluate(src, now()) "r_entry_date";
             src -> entry.item = create('Reference') as reference then {
-                src -> reference.reference = evaluate(src, 'Paitent/' + locationLinkResourceId ) "r_entry_item_ref_ref";
+                src -> reference.reference = evaluate(src, 'Encounter/' + locationLinkResourceId ) "r_entry_item_ref_ref";
             } "r_entry_item_ref";
         } "r_entry";
 }

@@ -34,6 +34,15 @@
   },
   "contained": [
     {
+      "resourceType": "Location",
+      "id": "7a8e6f6e-9268-44f9-8b31-120bb93dfe58",
+      "position": {
+        "longitude": 34.8070642,
+        "latitude": -0.0570604,
+        "altitude": 0.0
+      }
+    },
+    {
       "resourceType": "Encounter",
       "id": "6ec531ed-7ff1-4f7e-b147-5a31b846b13e",
       "meta": {
