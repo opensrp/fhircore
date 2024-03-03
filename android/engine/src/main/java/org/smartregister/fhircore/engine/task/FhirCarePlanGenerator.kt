@@ -103,6 +103,7 @@ constructor(
           resourceId = planDefinitionId,
         )
       } else defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
+
     return planDefinition?.let {
       generateOrUpdateCarePlan(
         planDefinition = it,
