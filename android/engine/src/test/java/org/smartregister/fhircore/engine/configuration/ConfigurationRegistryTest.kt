@@ -129,13 +129,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val resource = configRegistry.retrieveResourceBundleConfiguration("nonexistent")
     Assert.assertNull(resource)
   }
-
   @Test
   fun testRetrieveResourceFromConfigMap() {
     val resourceId = "myResourceId"
-    configRegistry.configsJsonMap[resourceId] = "ResourceData"
-    val resource = configRegistry.retrieveResourceFromConfigMap<Resource>("resourceId")
-    resource?.let { assertEquals("ResourceData", resource.id) }
+
+    configRegistry.configsJsonMap[resourceId] =
+      "{\"resourceType\": \"Questionnaire\", \"id\": \"$resourceId\"}"
+
+    val resource = configRegistry.retrieveResourceFromConfigMap<Resource>(resourceId)
+    val resourceIdOnly = resource?.id?.substringAfterLast('/')
+
+    resource?.let { assertEquals("myResourceId", resourceIdOnly) }
   }
 
   @Test
