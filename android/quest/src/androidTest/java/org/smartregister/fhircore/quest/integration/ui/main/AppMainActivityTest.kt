@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main
 
-import android.os.Build
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -24,10 +23,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiSelector
 import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
@@ -148,47 +144,5 @@ class AppMainActivityTest {
     }
 
     composeTestRule.onNodeWithTag(SCREEN_TITLE).assertIsDisplayed()
-  }
-
-  private fun grantPermission() {
-    val instrumentation = InstrumentationRegistry.getInstrumentation()
-    if (Build.VERSION.SDK_INT >= 23) {
-      val allowPermission =
-        UiDevice.getInstance(instrumentation)
-          .findObject(
-            UiSelector()
-              .text(
-                when {
-                  Build.VERSION.SDK_INT == 23 -> "Allow"
-                  Build.VERSION.SDK_INT <= 28 -> "ALLOW"
-                  Build.VERSION.SDK_INT == 29 -> "Allow only while using the app"
-                  else -> "While using the app"
-                },
-              ),
-          )
-      if (allowPermission.exists()) {
-        allowPermission.click()
-      }
-    }
-  }
-
-  fun denyPermission() {
-    val instrumentation = InstrumentationRegistry.getInstrumentation()
-    if (Build.VERSION.SDK_INT >= 23) {
-      val denyPermission =
-        UiDevice.getInstance(instrumentation)
-          .findObject(
-            UiSelector()
-              .text(
-                when (Build.VERSION.SDK_INT) {
-                  in 24..28 -> "DENY"
-                  else -> "Deny"
-                },
-              ),
-          )
-      if (denyPermission.exists()) {
-        denyPermission.click()
-      }
-    }
   }
 }
