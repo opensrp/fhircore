@@ -612,3 +612,44 @@ clickable |  Indicates whether the view is clickable. If set to "true", the row 
 visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
 personalDataItems | It indicate the list of two text that is label and its corresponding display value | | List |
 
+## Card Widget
+Card are used to represent single coherent piece of content
+
+```json
+{
+   "viewType":"CARD",
+   "header":{
+      "viewType":"COMPOUND_TEXT",
+      "primaryText":"HOUSEHOLD MEMBERS",
+      "primaryTextColor":"#6F7274",
+      "fontSize":18.0,
+      "padding":16
+   },
+   "contentPadding":0,
+   "content":[
+
+   ]
+}
+```
+
+### Config properties of CARD WIDGET
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [PERSONAL_DATA]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
+content | It indicate a section where you can specify the views to be included within the card it takes list of view properties| | emptyList() |
+cornerSize | It indicate the size of card corner bend  a card should have it is in integer form | | Int |
+elevation | It indicate the size of raise a card should have it is in integer form | | Int |
+header | It indicate the heading text of the card it can only be used when it is required | | CompoundTextProperties |
+headerBackgroundColor | It specifies the header background color of the card it takes the color code as a string | | String |
+headerAction | It specifies what the header action what it supposed to perform when it is clicked | | CompoundTextProperties |
+emptyContentMessage | It specifies what message should be displayed within the card when it has no content | | String |
+contentPadding | It specifies the card content spacing | | Int |
