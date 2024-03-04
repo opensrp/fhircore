@@ -570,3 +570,45 @@ viewType | The type of widget that will be rendered in this case it is the `SPAC
 height | The height of the Spacer. | Yes | _ |
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+
+## Personal Data Widgets
+Personal data widget, defines personal data like age to it's corresponding value in a more organised way.It takes a list of mapped items as input.It contains various properties that defines its behavior.
+
+```json
+{
+   "viewType":"PERSONAL_DATA",
+   "weight":1.0,
+   "personalDataItems":[
+      {
+         "label":{
+            "viewType":"COMPOUND_TEXT",
+            "primaryText":"@{runningBalance}",
+            "primaryTextColor":"#000000",
+            "primaryTextFontWeight":"SEMI_BOLD"
+         },
+         "displayValue":{
+            "viewType":"COMPOUND_TEXT",
+            "primaryText":"Available",
+            "fontSize":14,
+            "primaryTextColor":"#000000"
+         }
+      }
+   ]
+}
+```
+
+### Config properties of PERSONAL DATA WIDGET
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [PERSONAL_DATA]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
+personalDataItems | It indicate the list of two text that is label and its corresponding display value | | List |
+
