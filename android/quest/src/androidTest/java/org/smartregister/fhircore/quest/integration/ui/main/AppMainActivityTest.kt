@@ -25,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
 import androidx.work.Configuration
@@ -69,6 +70,13 @@ class AppMainActivityTest {
     return@TestRule base
   }
 
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+    GrantPermissionRule.grant(
+      android.Manifest.permission.ACCESS_FINE_LOCATION,
+      android.Manifest.permission.ACCESS_NETWORK_STATE,
+    )
+
   @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
@@ -84,20 +92,17 @@ class AppMainActivityTest {
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      denyPermission()
       Assert.assertEquals(
         R.id.registerFragment,
         it.navHostFragment.navController.currentDestination?.id,
       )
     }
-
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
   }
 
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      denyPermission()
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
     }
 
@@ -110,7 +115,6 @@ class AppMainActivityTest {
     val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
 
     composeTestRule.activityRule.scenario.onActivity {
-      denyPermission()
       it.navHostFragment.navController.navigate(
         R.id.profileFragment,
         bundleOf(
@@ -134,7 +138,6 @@ class AppMainActivityTest {
   @Test
   fun navigationToMeasureReportFragmentShouldShowMeasureReportScreen() {
     composeTestRule.activityRule.scenario.onActivity {
-      denyPermission()
       it.navHostFragment.navController.navigate(
         R.id.measureReportFragment,
         bundleOf(

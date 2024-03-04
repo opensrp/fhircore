@@ -371,7 +371,6 @@ tasks.withType<Test> {
 configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
-  implementation(libs.uiautomator)
   coreLibraryDesugaring(libs.core.desugar)
 
   // Application dependencies
@@ -425,6 +424,8 @@ dependencies {
   // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
