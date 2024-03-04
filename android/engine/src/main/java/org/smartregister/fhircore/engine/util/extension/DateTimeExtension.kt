@@ -135,13 +135,14 @@ fun calculateAge(date: Date, context: Context, localDateNow: LocalDate = LocalDa
   return when {
     years in 1..4 ->
       context.abbreviateString(R.string.year, years) +
-              context.abbreviateString(R.string.month, months)
+        context.abbreviateString(R.string.month, months)
     years >= 5 -> context.abbreviateString(R.string.year, years)
-    months > 0 -> context.abbreviateString(R.string.month, months) +
-              context.abbreviateString(R.string.weeks, weeks)
+    months > 0 ->
+      context.abbreviateString(R.string.month, months) +
+        context.abbreviateString(R.string.weeks, weeks)
     weeks > 0 ->
       context.abbreviateString(R.string.weeks, weeks) +
-              context.abbreviateString(R.string.days, days)
+        context.abbreviateString(R.string.days, days)
     else -> "$days${context.getString(R.string.days).lowercase().abbreviate()} "
   }.trim()
 }
