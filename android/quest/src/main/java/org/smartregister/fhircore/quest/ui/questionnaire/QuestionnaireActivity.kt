@@ -395,9 +395,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             ?: questionnaireConfig.resourceType ?: ResourceType.Patient
         val resource =
           questionnaireViewModel.defaultRepository.loadResource(resourceId.idPart, resourceType)
-        setQuestionnaireLaunchContextMap(
-          mapOf(resourceType.name.lowercase() to resource.encodeResourceToString())
-        )
+        setQuestionnaireLaunchContexts(listOf(resource.encodeResourceToString()))
       }
     }
 
