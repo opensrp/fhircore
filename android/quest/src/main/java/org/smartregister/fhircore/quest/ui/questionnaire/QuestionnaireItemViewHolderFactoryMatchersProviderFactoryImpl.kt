@@ -22,6 +22,7 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderVi
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.hl7.fhir.r4.model.CodeableConcept
 
 const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
   "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
@@ -60,7 +61,26 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
         ),
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = LocationWidgetViewHolderFactory,
-          matches = LocationWidgetViewHolderFactory::matcher,
+          matches = { questionnaireItem ->
+            val codeableConcept =
+              questionnaireItem.extension
+                .firstOrNull {
+                  it.url == "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl" ||
+                    it.url ==
+                      "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
+                }
+                ?.value as
+                CodeableConcept?
+            val itemControlCode =
+              codeableConcept?.coding
+                ?.firstOrNull {
+                  it.system == "http://hl7.org/fhir/questionnaire-item-control" ||
+                    it.system == "https://github.com/google/android-fhir/questionnaire-item-control"
+                }
+                ?.code
+
+            itemControlCode == "location-widget"
+          },
         ),
       )
     }
