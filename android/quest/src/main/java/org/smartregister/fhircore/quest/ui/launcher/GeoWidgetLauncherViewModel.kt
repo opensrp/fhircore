@@ -23,8 +23,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
@@ -34,12 +36,14 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.quest.ui.register.RegisterEvent
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import timber.log.Timber
 import javax.inject.Inject
@@ -53,6 +57,9 @@ constructor(
     val dispatcherProvider: DispatcherProvider,
     val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
+
+    private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+    val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
     private val _locationsFlow: MutableStateFlow<Set<GeoWidgetLocation>> =
         MutableStateFlow(setOf())
@@ -168,4 +175,19 @@ constructor(
             )
         }
     }
+    //todo make our own events eg GeoWidgetEvent
+    fun onEvent(event: RegisterEvent) =
+        when (event) {
+
+            is RegisterEvent.SearchRegister -> {
+
+            }
+            is RegisterEvent.MoveToNextPage -> {
+
+            }
+            is RegisterEvent.MoveToPreviousPage -> {
+
+            }
+            RegisterEvent.ResetFilterRecordsCount -> {}
+        }
 }
