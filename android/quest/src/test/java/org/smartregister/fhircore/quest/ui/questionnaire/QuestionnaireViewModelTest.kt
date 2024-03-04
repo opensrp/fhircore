@@ -306,7 +306,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         questionnaireConfig = updatedQuestionnaireConfig,
         questionnaireResponse = questionnaireResponse,
         context = context,
-        relatedEntityLocationCode = relatedEntityLocationCode,
       )
     }
 
@@ -363,7 +362,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaireConfig = updatedQuestionnaireConfig,
-        relatedEntityLocationCode = relatedEntityLocationCode,
       )
 
       questionnaireViewModel.executeCql(
@@ -720,7 +718,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
     val questionnaireConfig = questionnaireConfig.copy(planDefinitions = listOf("planDefId"))
-    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig, null)
+    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig)
     coVerify {
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinitionId = "planDefId",
@@ -1076,7 +1074,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig = questionnaireConfig,
       questionnaireResponse = questionnaireResponse,
       context = context,
-      relatedEntityLocationCode = null,
     )
 
     // The Observation ID for the extracted Obs should be the same as previousObs'Id
