@@ -219,7 +219,7 @@ class GeoWidgetLauncherFragment : Fragment() {
 
     private fun setLocationFromDbCollector() {
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(2000)
+            delay(1000)
             geoWidgetLauncherViewModel.locationsFlow
                 .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
                 .collect { locations ->
