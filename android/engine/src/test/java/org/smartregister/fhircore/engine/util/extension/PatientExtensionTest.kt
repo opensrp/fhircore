@@ -261,7 +261,7 @@ class PatientExtensionTest : RobolectricTest() {
 
     val patient = Patient().apply { birthDate = calendar.time }
 
-    Assert.assertEquals("11m 4w", patient.extractAge(context))
+    Assert.assertEquals("1y", patient.extractAge(context))
   }
 
   @Test
