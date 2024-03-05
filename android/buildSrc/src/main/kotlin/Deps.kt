@@ -5,9 +5,9 @@
 
 object Deps {
     object sdk_versions {
-        const val compile_sdk = 33
+        const val compile_sdk = 34
         const val min_sdk = 26
-        const val target_sdk = 33
+        const val target_sdk = 34
     }
 
     const val build_tool_version = "30.0.3"
@@ -50,12 +50,12 @@ object Deps {
         const val joda_time = "2.10.5"
         const val timber = "4.7.1"
         const val mockk = "1.13.5"
-        const val dokka = "1.5.0"
+        const val dokka = "1.8.20"
         const val androidx_test = "2.2.0"
         const val accompanist_swiperefresh = "0.26.4-beta"
         const val compose = "1.4.3"
-        const val hiltVersion = "2.45"
-        const val hiltWorkerVersion ="1.0.0"
+        const val hiltVersion = "2.51"
+        const val hiltWorkerVersion ="1.2.0"
     }
 
     const val activity = "androidx.activity:activity:${versions.activity}"

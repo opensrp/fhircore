@@ -63,7 +63,7 @@ class DataClerkApplication : Application(), DataCaptureConfig.Provider, Configur
     return configuration as DataCaptureConfig
   }
 
-  override fun getWorkManagerConfiguration(): Configuration =
+  override val workManagerConfiguration: Configuration =
     Configuration.Builder()
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
       .setWorkerFactory(workerFactory)

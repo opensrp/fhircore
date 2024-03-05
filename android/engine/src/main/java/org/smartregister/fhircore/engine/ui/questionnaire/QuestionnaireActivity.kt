@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -123,7 +124,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       withContext(dispatcherProvider.io()) {
         tracer.traceSuspend("Questionnaire.loadQuestionnaireAndConfig") {
           loadQuestionnaireAndConfig(formName)
-          questionnaireViewModel.libraryEvaluatorProvider.get().initialize()
         }
       }
 
@@ -137,6 +137,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         fragment.whenResumed { loadProgress.dismiss() }
       }
     }
+
+    this.onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          handleBackPress()
+        }
+      },
+    )
   }
 
   fun updateViews() {
@@ -186,7 +195,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
     intent.getStringArrayListExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      questionnaireFragmentBuilder.setQuestionnaireLaunchContexts(it)
+      val launchContextMap = it.associateBy { resourceString ->
+        val resource = parser.parseResource(resourceString) as Resource
+        resource.resourceType.name.lowercase()
+      }
+      questionnaireFragmentBuilder.setQuestionnaireLaunchContextMap(launchContextMap)
     }
 
     fragment = questionnaireFragmentBuilder.build()
@@ -452,14 +465,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     return when (item.itemId) {
       android.R.id.home -> {
-        onBackPressed()
+        handleBackPress()
         true
       }
       else -> super.onOptionsItemSelected(item)
     }
   }
 
-  override fun onBackPressed() {
+  private fun handleBackPress() {
     if (questionnaireType.isReadOnly()) {
       finish()
     } else {

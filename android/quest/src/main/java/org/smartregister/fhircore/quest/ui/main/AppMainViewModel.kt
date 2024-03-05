@@ -135,7 +135,7 @@ constructor(
       is AppMainEvent.UpdateSyncState -> {
         when (event.state) {
           // Update register count when sync completes
-          is SyncJobStatus.Finished,
+          is SyncJobStatus.Succeeded,
           is SyncJobStatus.Failed, -> {
             // Notify subscribers to refresh views after sync
             updateRefreshState()

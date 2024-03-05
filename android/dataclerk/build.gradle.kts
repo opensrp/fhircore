@@ -3,10 +3,10 @@ plugins {
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
-  id("de.mannodermaus.android-junit5") version "1.9.3.0"
+  id("de.mannodermaus.android-junit5")
   id("org.jetbrains.dokka")
   id("org.jetbrains.kotlin.plugin.serialization")
-  id("dagger.hilt.android.plugin")
+  id("com.google.dagger.hilt.android")
   id("org.jetbrains.kotlin.android")
   id("com.google.firebase.firebase-perf")
   id("com.google.gms.google-services")
@@ -83,7 +83,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.8" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.9" }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -128,39 +128,37 @@ android {
     }
   }
 
-  configurations.configureEach {
-    resolutionStrategy { force("ca.uhn.hapi.fhir:org.hl7.fhir.utilities:5.5.7") }
-  }
-
   lint { abortOnError = false }
 
   testCoverage { jacocoVersion = Deps.versions.jacoco_tool }
 }
 
+configurations { all { exclude(group = "xpp3") } }
+
 dependencies {
   coreLibraryDesugaring(Deps.desugar)
   implementation(project(":engine"))
 
-  implementation("androidx.core:core-ktx:1.8.0")
-  implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
-  implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
-  implementation("androidx.activity:activity-compose:1.5.1")
+  implementation("androidx.core:core-ktx:1.12.0")
+  implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
+  implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+  implementation("androidx.activity:activity-compose:1.8.2")
 
   implementation(Deps.accompanist.swiperefresh)
 
-  implementation(platform("androidx.compose:compose-bom:2022.10.00"))
+  implementation(platform("androidx.compose:compose-bom:2024.02.01"))
   implementation("androidx.compose.ui:ui")
   implementation("androidx.compose.ui:ui-graphics")
   implementation("androidx.compose.ui:ui-tooling-preview")
   implementation("androidx.compose.material3:material3")
-  implementation("androidx.paging:paging-compose:3.2.0")
+  implementation("androidx.paging:paging-compose:3.2.1")
 
   // Hilt - Dependency Injection
   implementation("com.google.dagger:hilt-android:${Deps.versions.hiltVersion}")
   kapt("com.google.dagger:hilt-compiler:${Deps.versions.hiltVersion}")
 
   // analytics
-  implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
+  implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
 
   implementation("com.google.firebase:firebase-perf-ktx")
   implementation("com.google.firebase:firebase-crashlytics-ktx")
@@ -169,8 +167,11 @@ dependencies {
   testImplementation("junit:junit:4.13.2")
   androidTestImplementation("androidx.test.ext:junit:1.1.5")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-  androidTestImplementation(platform("androidx.compose:compose-bom:2022.10.00"))
+  androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.01"))
   androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+  testImplementation("com.google.dagger:hilt-android-testing:${Deps.versions.hiltVersion}")
+  kaptTest("com.google.dagger:hilt-compiler:${Deps.versions.hiltVersion}")
+
   debugImplementation("androidx.compose.ui:ui-tooling")
   debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

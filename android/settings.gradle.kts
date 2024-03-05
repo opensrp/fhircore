@@ -7,8 +7,6 @@ pluginManagement {
 }
 
 rootProject.name = "fhircore-android"
-//include ":anc"
-//include ":eir"
 include(":engine")
 
 include(":quest")

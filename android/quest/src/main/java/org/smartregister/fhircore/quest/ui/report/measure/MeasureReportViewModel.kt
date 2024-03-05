@@ -211,12 +211,7 @@ constructor(
             toggleProgressIndicatorVisibility(true)
 
             withContext(dispatcherProvider.io()) {
-              fhirEngine.loadCqlLibraryBundle(
-                context = context,
-                fhirOperator = fhirOperator.get(),
-                sharedPreferencesHelper = sharedPreferencesHelper,
-                resourcesBundlePath = measureResourceBundleUrl,
-              )
+              fhirEngine.loadCqlLibraryBundle(fhirOperator.get(), measureUrl)
             }
             if (reportTypeSelectorUiState.value.patientViewData != null && individualEvaluation) {
               val measureReport =
@@ -228,9 +223,8 @@ constructor(
                       start = startDateFormatted,
                       end = endDateFormatted,
                       reportType = SUBJECT,
-                      subject = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
+                      subjectId = reportTypeSelectorUiState.value.patientViewData!!.logicalId,
                       practitioner = loggedInPractitioner?.id,
-                      lastReceivedOn = null, // Non-null value not supported yet
                     )
                 }
 
@@ -274,9 +268,7 @@ constructor(
             start = startDateFormatted,
             end = endDateFormatted,
             reportType = POPULATION,
-            subject = null,
             practitioner = loggedInPractitioner?.id,
-            lastReceivedOn = null, // Non-null value not supported yet
           )
       }
 

@@ -140,6 +140,7 @@ fun AppDrawer(
         }
       }
       if (enableReports) {
+        // TODO("Measure reports not well supported, might need further work")
         SideMenuItem(
           iconResource = R.drawable.ic_reports,
           title = stringResource(R.string.reports),

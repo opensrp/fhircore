@@ -159,7 +159,7 @@ constructor(
         override fun onSync(state: SyncJobStatus) {
           when (state) {
             is SyncJobStatus.Failed,
-            is SyncJobStatus.Finished, -> {
+            is SyncJobStatus.Succeeded, -> {
               refresh()
               _firstTimeSyncState.value = false
             }

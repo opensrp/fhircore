@@ -26,7 +26,8 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.flowOf
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -42,8 +43,8 @@ fun PatientRegisterList(
   clickListener: (PatientRowClickListenerIntent, PatientItem) -> Unit,
 ) {
   LazyColumn {
-    items(pagingItems, key = { it.id }) {
-      PatientRow(it!!, clickListener, modifier = modifier)
+    items(pagingItems.itemCount, key = pagingItems.itemKey{ it.id }, contentType = pagingItems.itemContentType()) {
+      PatientRow(pagingItems[it]!!, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }
 

@@ -163,29 +163,15 @@ abstract class BaseRegisterActivity :
           setOnClickListener(null)
         }
       }
-      is SyncJobStatus.Finished,
+      is SyncJobStatus.Succeeded,
       is SyncJobStatus.Failed, -> setLastSyncTimestamp(state)
-      is SyncJobStatus.Glitch -> {
-        progressSync.hide()
-        val lastSyncTimestamp =
-          sharedPreferencesHelper.read(
-            SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-            getString(R.string.syncing_retry),
-          )
-        tvLastSyncTimestamp.text = lastSyncTimestamp?.formatSyncDate() ?: ""
-        containerProgressSync.apply {
-          background = this.getDrawable(R.drawable.ic_sync)
-          setOnClickListener { syncButtonClick() }
-        }
-      }
     }
   }
 
   private fun BaseRegisterActivityBinding.setLastSyncTimestamp(state: SyncJobStatus) {
     val syncTimestamp =
       when (state) {
-        is SyncJobStatus.Finished -> state.timestamp.asString()
-        is SyncJobStatus.Failed -> state.timestamp.asString()
+        is SyncJobStatus.Succeeded, is SyncJobStatus.Failed -> state.timestamp.asString()
         else -> ""
       }
     progressSync.hide()
@@ -396,11 +382,10 @@ abstract class BaseRegisterActivity :
         showToast(getString(R.string.syncing))
         registerActivityBinding.updateSyncStatus(state)
       }
-      is SyncJobStatus.Failed,
-      is SyncJobStatus.Glitch, -> {
+      is SyncJobStatus.Failed -> {
         handleSyncFailed(state)
       }
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         showToast(getString(R.string.sync_completed))
         registerActivityBinding.updateSyncStatus(state)
         sideMenuOptions().forEach { updateCount(it) }
@@ -707,7 +692,6 @@ abstract class BaseRegisterActivity :
   private fun handleSyncFailed(state: SyncJobStatus) {
     val exceptions =
       when (state) {
-        is SyncJobStatus.Glitch -> if (state.exceptions != null) state.exceptions else emptyList()
         is SyncJobStatus.Failed -> if (state.exceptions != null) state.exceptions else emptyList()
         else -> listOf()
       }

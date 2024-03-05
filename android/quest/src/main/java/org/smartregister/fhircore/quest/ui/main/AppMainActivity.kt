@@ -100,16 +100,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress)),
         )
       }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp()),
-        )
-        Timber.w(
-          (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
-            it.exception.message.toString()
-          },
-        )
-      }
       is SyncJobStatus.Failed -> {
         if (
           !state?.exceptions.isNullOrEmpty() &&
@@ -145,7 +135,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         Timber.w(state?.exceptions?.joinToString { it.exception.message.toString() })
         scheduleFhirBackgroundWorkers()
       }
-      is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Succeeded -> {
         showToast(getString(R.string.sync_completed))
         appMainViewModel.run {
           onEvent(

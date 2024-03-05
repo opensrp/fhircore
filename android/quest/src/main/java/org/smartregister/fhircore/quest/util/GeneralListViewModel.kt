@@ -68,7 +68,7 @@ abstract class GeneralListViewModel<T : Any>(syncBroadcaster: SyncBroadcaster) :
     val syncStateListener =
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
-          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Finished
+          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Succeeded
           if (isStateCompleted) {
             refresh()
           }

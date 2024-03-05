@@ -142,27 +142,23 @@ class SyncBroadcasterTest : RobolectricTest() {
       WorkInfo(
         UUID(0, 0),
         WorkInfo.State.SUCCEEDED,
-        Data.EMPTY,
-        listOf(),
-        workDataOf(
+        outputData = Data.EMPTY,
+        tags = emptySet(),
+        progress = workDataOf(
           "StateType" to SyncJobStatus.Started::class.java.name,
           "State" to gson.toJson(SyncJobStatus.Started()),
         ),
-        0,
-        0,
       )
     val inProgressInfo =
       WorkInfo(
         UUID(0, 0),
         WorkInfo.State.SUCCEEDED,
-        Data.EMPTY,
-        listOf(),
-        workDataOf(
-          "StateType" to SyncJobStatus.Finished::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Finished()),
+        outputData = Data.EMPTY,
+        tags = emptySet(),
+        progress = workDataOf(
+          "StateType" to SyncJobStatus.Succeeded::class.java.name,
+          "State" to gson.toJson(SyncJobStatus.Succeeded()),
         ),
-        0,
-        0,
       )
 
     every { workManager.getWorkInfosForUniqueWorkLiveData(any()) } answers
@@ -186,7 +182,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     syncBroadcaster.runSync(networkState)
 
     Assert.assertTrue(collectedSyncStatusList.first() is SyncJobStatus.Started)
-    Assert.assertTrue(collectedSyncStatusList.last() is SyncJobStatus.Finished)
+    Assert.assertTrue(collectedSyncStatusList.last() is SyncJobStatus.Succeeded)
 
     verify { tracer.startTrace(any()) }
     verify { tracer.stopTrace(any()) }

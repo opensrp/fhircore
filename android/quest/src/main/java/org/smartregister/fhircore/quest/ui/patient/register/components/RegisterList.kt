@@ -28,7 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -44,8 +45,8 @@ fun RegisterList(
   progressMessage: String = "",
 ) {
   LazyColumn(modifier = modifier) {
-    items(pagingItems, key = { it.logicalId }) {
-      RegisterRowItem(registerViewData = it!!, onRowClick = onRowClick)
+    items(pagingItems.itemCount, key = pagingItems.itemKey { it.logicalId }, contentType = pagingItems.itemContentType(),) {
+      RegisterRowItem(registerViewData = pagingItems[it]!!, onRowClick = onRowClick)
     }
     pagingItems.apply {
       when {

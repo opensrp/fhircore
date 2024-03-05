@@ -69,7 +69,6 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.di.AnalyticsModule
 import org.smartregister.fhircore.engine.di.CoreModule
 import org.smartregister.fhircore.engine.robolectric.ActivityRobolectricTest
@@ -121,7 +120,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         transformSupportServices = mockk(),
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
-        libraryEvaluatorProvider = { mockk<LibraryEvaluator>() },
         tracer = FakePerformanceReporter(),
       ),
     )
@@ -140,7 +138,6 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       }
 
     every { syncBroadcaster.runSync(any()) } just runs
-    coEvery { questionnaireViewModel.libraryEvaluatorProvider.get().initialize() } just runs
 
     val questionnaireConfig = QuestionnaireConfig("form", "title", "form-id")
     coEvery { questionnaireViewModel.getQuestionnaireConfig(any(), any()) } returns
@@ -417,7 +414,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun testOnBackPressedShouldShowAlert() {
-    questionnaireActivity.onBackPressed()
+    questionnaireActivity.onBackPressedDispatcher.onBackPressed()
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestDialog())
     val alertDialog = ReflectionHelpers.getField<AlertDialog>(dialog, "realDialog")
@@ -436,7 +433,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
     val qActivity = spyk(questionnaireActivity)
     ReflectionHelpers.setField(qActivity, "questionnaireType", QuestionnaireType.READ_ONLY)
-    qActivity.onBackPressed()
+    qActivity.onBackPressedDispatcher.onBackPressed()
 
     verify { qActivity.finish() }
   }
@@ -623,11 +620,11 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val spiedActivity = spyk(questionnaireActivity)
     val menuItem = mockk<MenuItem>()
     every { menuItem.itemId } returns android.R.id.home
-    every { spiedActivity.onBackPressed() } just runs
+    every { spiedActivity.onBackPressedDispatcher.onBackPressed() } just runs
 
     Assert.assertTrue(spiedActivity.onOptionsItemSelected(menuItem))
 
-    verify { spiedActivity.onBackPressed() }
+    verify { spiedActivity.onBackPressedDispatcher.onBackPressed() }
   }
 
   @Test

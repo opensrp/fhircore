@@ -73,7 +73,7 @@ fun PatientScreen(
   val refreshKey by appMainViewModel.refreshHash
 
   LaunchedEffect(syncState) {
-    if (syncState is SyncJobStatus.Finished) {
+    if (syncState is SyncJobStatus.Succeeded) {
       patientViewModel.fetchPatient()
     }
   }
