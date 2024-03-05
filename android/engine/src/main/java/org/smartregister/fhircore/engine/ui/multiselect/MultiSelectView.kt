@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -41,14 +40,6 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.LinkedList
-
-@Stable
-class TreeNode<T>(
-  val id: String,
-  val parentId: String?,
-  val data: T,
-  val children: List<String>? = null,
-)
 
 @Composable
 fun <T> ColumnScope.MultiSelectView(
@@ -110,12 +101,11 @@ fun <T> MultiSelectCheckbox(
       TriStateCheckbox(
         state = selectedNodes[currentTreeNode.id] ?: ToggleableState.Off,
         onClick = {
-          checked.value = !checked.value
-          selectedNodes[currentTreeNode.id] = ToggleableState(checked.value)
+          selectedNodes[currentTreeNode.id] = ToggleableState(!checked.value)
+          checked.value = selectedNodes[currentTreeNode.id] == ToggleableState.On
 
           var toggleableState: ToggleableState
           var parentId = currentTreeNode.parentId
-
           while (!parentId.isNullOrEmpty()) {
             toggleableState = ToggleableState.Indeterminate
             val parentNode = treeNodeMap[parentId]
