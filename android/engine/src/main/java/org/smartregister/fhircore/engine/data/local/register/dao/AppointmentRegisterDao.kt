@@ -16,9 +16,13 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
+import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Calendar
 import javax.inject.Inject
@@ -44,7 +48,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
@@ -65,7 +69,10 @@ constructor(
 ) : RegisterDao {
 
   private val currentPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    sharedPreferencesHelper.read(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      defaultValue = null,
+    )
   }
 
   private fun Appointment.patientRef() =
@@ -85,7 +92,6 @@ constructor(
     return fhirEngine
       .search<Appointment> {
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
-        filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
       .map { it.resource }
       .count {
@@ -116,6 +122,7 @@ constructor(
     page: Int = -1,
   ): List<Appointment> {
     filters as AppointmentRegisterFilter
+    val patientTypeFilterTag = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
     val searchResults =
       fhirEngine.search<Appointment> {
         if (!loadAll) count = PaginationConstant.DEFAULT_PAGE_SIZE
@@ -139,33 +146,36 @@ constructor(
           },
         )
 
-        //        if (filters.myPatients && currentPractititoner != null)
-        //          filter(Appointment.PRACTITIONER, { value =
-        // currentPractititoner!!.referenceValue() })
-        //
-        //        filters.patientCategory?.let {
-        //          val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
-        //            it.flatMap { healthStatus ->
-        //              val coding: Coding =
-        //                Coding().apply {
-        //                  system = "https://d-tree.org"
-        //                  code = healthStatus.name.lowercase().replace("_", "-")
-        //                }
-        //              val alternativeCoding: Coding =
-        //                Coding().apply {
-        //                  system = "https://d-tree.org"
-        //                  code = healthStatus.name.lowercase()
-        //                }
-        //
-        //              return@flatMap listOf<Coding>(coding, alternativeCoding).map<
-        //                Coding, TokenParamFilterCriterion.() -> Unit> { c -> { value = of(c) } }
-        //            }
-        //
-        //          has<Patient>(Appointment.PATIENT){
-        //            filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation =
-        // Operation.OR)
-        //          }
-        //        }
+        if (filters.myPatients && currentPractitioner != null) {
+          filter(Appointment.PRACTITIONER, { value = currentPractitioner!! })
+        }
+
+        filters.patientCategory?.let {
+          val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+            it.flatMap { healthStatus ->
+              val coding: Coding =
+                Coding().apply {
+                  system = patientTypeFilterTag
+                  code = healthStatus.name.lowercase().replace("_", "-")
+                }
+              val alternativeCoding: Coding =
+                Coding().apply {
+                  system = patientTypeFilterTag
+                  code = healthStatus.name.lowercase()
+                }
+
+              return@flatMap listOf<Coding>(coding, alternativeCoding).map<
+                Coding,
+                TokenParamFilterCriterion.() -> Unit,
+              > { c ->
+                { value = of(c) }
+              }
+            }
+
+          has<Patient>(Appointment.PATIENT) {
+            filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
+          }
+        }
 
         filters.reasonCode?.let {
           val codeableConcept =
@@ -186,7 +196,8 @@ constructor(
       .filter {
         val patientAssignmentFilter =
           !filters.myPatients ||
-            (it.practitionerRef()?.reference == currentPractitioner?.asReference()?.reference)
+            (it.practitionerRef()?.reference ==
+              currentPractitioner?.asReference(ResourceType.Practitioner)?.reference)
         val patientCategoryFilter =
           filters.patientCategory == null || (patientCategoryMatches(it, filters.patientCategory))
 
@@ -197,7 +208,8 @@ constructor(
           it.hasStart() &&
           patientAssignmentFilter &&
           patientCategoryFilter &&
-          appointmentReasonFilter
+          appointmentReasonFilter &&
+          it.patientRef() != null
       }
   }
 

@@ -55,8 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
@@ -94,7 +93,10 @@ abstract class TracingRegisterDao(
     patient.extractOfficialIdentifier() ?: HivRegisterDao.ResourceValue.BLANK
 
   private val currentPractitioner by lazy {
-    sharedPreferencesHelper.read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
+    sharedPreferencesHelper.read(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      defaultValue = null,
+    )
   }
 
   private val filtersForValidTask: BaseSearch.() -> Unit = {
@@ -125,6 +127,7 @@ abstract class TracingRegisterDao(
     page: Int = -1,
   ): List<Pair<Patient, Iterable<Task>>> {
     filters as TracingRegisterFilter
+    val filterFilter = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
     val patients: List<Patient> =
       fhirEngine
         .search<Patient> {
@@ -139,12 +142,12 @@ abstract class TracingRegisterDao(
               it.flatMap { healthStatus ->
                 val coding: Coding =
                   Coding().apply {
-                    system = "https://d-tree.org"
+                    system = filterFilter
                     code = healthStatus.name.lowercase().replace("_", "-")
                   }
                 val alternativeCoding: Coding =
                   Coding().apply {
-                    system = "https://d-tree.org"
+                    system = filterFilter
                     code = healthStatus.name.lowercase()
                   }
 
@@ -159,8 +162,11 @@ abstract class TracingRegisterDao(
             filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
           }
 
-          if (filters.isAssignedToMe) {
-            filter(Patient.GENERAL_PRACTITIONER, { value = currentPractitioner!!.referenceValue() })
+          if (filters.isAssignedToMe && currentPractitioner != null) {
+            filter(
+              Patient.GENERAL_PRACTITIONER,
+              { value = currentPractitioner?.asReference(ResourceType.Practitioner)?.reference },
+            )
           }
         }
         .map { it.resource }
@@ -310,8 +316,9 @@ abstract class TracingRegisterDao(
           .patientTypeFilterTagViaMetaCodingSystem
       val tasks = validTasks(patient)
 
-      val attempt = tracingRepository.getTracingAttempt(patient)
+      val attempt = tracingRepository.getTracingAttempt(patient, tasks)
       var dueData = getDueDate(it)
+
       if (dueData == null) {
         tasks.minOfOrNull { task -> task.authoredOn }?.let { date -> dueData = date }
       }
@@ -367,7 +374,7 @@ abstract class TracingRegisterDao(
         subjectType = ResourceType.Patient,
         subjectParam = CarePlan.SUBJECT,
       )
-      .filter { carePlan -> carePlan.status.equals(CarePlan.CarePlanStatus.ACTIVE) }
+      .filter { carePlan -> carePlan.status == CarePlan.CarePlanStatus.ACTIVE }
 
   suspend fun Patient.activeConditions() =
     defaultRepository.patientConditions(this.logicalId).filter { condition ->
@@ -377,6 +384,7 @@ abstract class TracingRegisterDao(
   suspend fun Patient.practitioners(): List<Practitioner> {
     return generalPractitioner.mapNotNull {
       try {
+        if (it.reference == null) return@mapNotNull null
         val id = it.reference.replace("Practitioner/", "")
         fhirEngine.get(ResourceType.Practitioner, id) as Practitioner
       } catch (e: Exception) {
@@ -439,6 +447,7 @@ abstract class TracingRegisterDao(
       tracingRepository
         .getTracingAttempt(list = listResource)
         .copy(reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.code })
+
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,

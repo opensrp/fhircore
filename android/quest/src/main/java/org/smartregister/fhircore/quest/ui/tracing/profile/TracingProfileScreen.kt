@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +77,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.quest.R as R2
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.tracing.components.InfoBoxItem
 import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
@@ -85,7 +87,12 @@ fun TracingProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
   viewModel: TracingProfileViewModel = hiltViewModel(),
+  appViewModel: AppMainViewModel = hiltViewModel(),
 ) {
+  val taskId by appViewModel.completedTaskId.collectAsState()
+
+  LaunchedEffect(taskId) { taskId?.let { viewModel.fetchTracingData() } }
+
   TracingProfilePage(
     navController,
     modifier = modifier,
@@ -107,6 +114,12 @@ fun TracingProfilePage(
   var showOverflowMenu by remember { mutableStateOf(false) }
   val viewState = tracingProfileViewModel.patientTracingProfileUiState.value
   val syncing by remember { tracingProfileViewModel.isSyncing }
+
+  LaunchedEffect(profileViewData) {
+    if (profileViewData.logicalId.isNotBlank() && profileViewData.hasFinishedAttempts) {
+      onBackPress()
+    }
+  }
 
   Scaffold(
     topBar = {
@@ -166,15 +179,18 @@ fun TracingProfilePage(
     },
     bottomBar = {
       Box(contentAlignment = Alignment.Center, modifier = modifier.fillMaxWidth()) {
+        val hasFinishedAttempts = profileViewData.hasFinishedAttempts
         Button(
           colors =
             ButtonDefaults.buttonColors(
               backgroundColor = LoginButtonColor,
               LoginFieldBackgroundColor,
             ),
-          enabled = !profileViewData.hasFinishedAttempts,
+          enabled = !hasFinishedAttempts,
           onClick = {
-            tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
+            if (!hasFinishedAttempts) {
+              tracingProfileViewModel.onEvent(TracingProfileEvent.LoadOutComesForm(context))
+            }
           },
           modifier = modifier.fillMaxWidth(),
         ) {
@@ -438,10 +454,9 @@ private fun TracingGuardianAddress(
       modifier = modifier.fillMaxWidth(),
     ) {
       Column(modifier = modifier.padding(horizontal = 4.dp)) {
-        TracingReasonItem(
-          title = stringResource(R2.string.guardian_relation),
-          value = guardian.relationshipFirstRep.codingFirstRep.display,
-        )
+        guardian.relationshipFirstRep?.codingFirstRep?.display?.let {
+          TracingReasonItem(title = stringResource(R2.string.guardian_relation), value = it)
+        }
         TracingReasonItem(
           title = stringResource(R2.string.guardian_phone_number, i + 1),
           value = guardian.telecomFirstRep.value,

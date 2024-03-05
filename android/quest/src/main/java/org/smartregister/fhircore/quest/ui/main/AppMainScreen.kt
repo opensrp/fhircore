@@ -197,7 +197,7 @@ private fun AppMainNavigationGraph(
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
             arguments = commonNavArgs.plus(patientIdNavArgument()),
           ) {
-            TracingProfileScreen(navController = navController)
+            TracingProfileScreen(navController = navController, appViewModel = appMainViewModel)
           }
         MainNavigationScreen.PatientGuardians ->
           composable(
