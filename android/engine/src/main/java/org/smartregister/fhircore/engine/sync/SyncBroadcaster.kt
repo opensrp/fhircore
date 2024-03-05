@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ constructor(
         // PeriodSync doesn't return state. It's enqueued instead. Finish the sync as workaround.
         if (workInfo.state == WorkInfo.State.ENQUEUED) {
           syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(SyncJobStatus.Finished())
+            onSyncListener.onSync(SyncJobStatus.Succeeded())
           }
         } else {
           val data =

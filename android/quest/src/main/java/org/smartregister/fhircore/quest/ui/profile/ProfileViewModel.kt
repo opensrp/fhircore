@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,9 +199,11 @@ constructor(
             emitSnackBarState(
               snackBarMessageConfig =
                 SnackBarMessageConfig(
-                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                  message =
+                    event.managingEntityConfig?.managingEntityReassignedMessage
                       ?: event.context.getString(R.string.reassigned_managing_entity),
-                  actionLabel = event.context.getString(R.string.ok),
+                  actionLabel =
+                    event.context.getString(org.smartregister.fhircore.engine.R.string.ok),
                 ),
             )
             refreshProfileDataLiveData.value = true
@@ -256,8 +258,7 @@ constructor(
                   expression = managingEntity.nameFhirPathExpression!!,
                 ),
             )
-          }
-          ?: emptyList()
+          } ?: emptyList()
 
       // Show error message when no group members are found
       if (eligibleManagingEntities.isEmpty()) {

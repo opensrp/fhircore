@@ -1,0 +1,23 @@
+# Storing Preferences
+
+OpenSRP2 uses the Preferences [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) and Proto DataStore to store preferences data. Primitive types are stored in the Preferences DataStore and structured types are stored in the Proto DataStore.
+
+The interfaces exposing access to these two storage options are located in `engine/datastore/PreferenceDataStore` and `engine/datastore/ProtoDataStore`.
+
+## PreferenceDataStore
+
+To register a key-value pair that you intend to store in the preferences datastore, add a key that enforces the type of data being stored and the name of the key in the Keys companion object.
+
+The `read()` method returns a flow. To observe the flow, call the function in the view model and store the resulting flow. You may then convert it to a `StateFlow` and expose it to the UI.
+
+The `write()` method can be used in the UI directly but it is preferable to expose it through a view model to follow the MVVM pattern.
+
+Both `read()` and `write()` are Generic methods.
+
+## ProtoDataStore
+
+Proto DataStore allows us to store objects in a type-safe way. For ease of adaptation, we use [Kotlinx serialization](https://kotlinlang.org/docs/serialization.html#serialize-and-deserialize-json) to allow us to use Kotlin data classes instead of Protobuf files to define the schema of the data being stored.
+
+Preferably, any objects made within fhircore with the intent of being persisted in the Proto DataStore should be annotated with `@Serializable`.
+
+You also need to register a serializer that will serialize and deserialize the object stored within a JSON file on the device. The serializers are found within `engine/datastore/serializers`.

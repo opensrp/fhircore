@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,8 +167,8 @@ fun ProfileScreen(
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
           )
         }
@@ -241,8 +241,8 @@ private fun RenderSimpleAppTopBar(
   ) {
     ViewRenderer(
       viewProperties = topBarConfig.content,
-      resourceData = profileUiState.resourceData
-          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      resourceData =
+        profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
     )
   }
@@ -355,6 +355,8 @@ private fun ProfileTopAppBarMenuAction(
             Image(
               imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
               tint = contentColor,
+              navController = navController,
+              resourceData = profileUiState.resourceData!!,
             )
             if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
             Text(text = overflowMenuItemConfig.title, color = contentColor)

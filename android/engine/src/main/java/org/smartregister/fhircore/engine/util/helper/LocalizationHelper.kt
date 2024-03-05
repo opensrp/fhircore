@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ class LocalizationHelper(val configurationRegistry: ConfigurationRegistry) {
       val bundle =
         configurationRegistry.retrieveResourceBundleConfiguration(
           getLocaleSpecificFileName(bundleName, locale),
-        )
-          ?: ResourceBundle.getBundle(bundleName, locale)
+        ) ?: ResourceBundle.getBundle(bundleName, locale)
       val lookup = mutableMapOf<String, Any>()
       bundle.keys.toList().forEach { lookup[it] = bundle.getObject(it) }
       template.interpolate(lookup, "{{", "}}")

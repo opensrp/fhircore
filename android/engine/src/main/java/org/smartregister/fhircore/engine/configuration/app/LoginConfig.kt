@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +24,7 @@ data class LoginConfig(
   val enablePin: Boolean? = false,
   val pinLength: Int = 4,
   val pinLoginMessage: String? = null,
+  val logoHeight: Int = 120,
+  val logoWidth: Int = 140,
+  val showAppTitle: Boolean = true,
 )

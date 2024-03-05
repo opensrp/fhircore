@@ -4,15 +4,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.json.JSONArray
 import org.json.JSONObject
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `project-properties`
+  `ktlint`
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -57,12 +55,13 @@ android {
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
+  namespace = "org.smartregister.fhircore.quest"
+
   defaultConfig {
     applicationId = "org.smartregister.opensrp"
     minSdk = 26
-    targetSdk = 34
-    versionCode = 7
-    versionName = "1.0.1"
+    versionCode = 10
+    versionName = "1.1.0"
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -79,6 +78,11 @@ android {
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
       "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   signingConfigs {
@@ -94,7 +98,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
     create("benchmark") {
       signingConfig = signingConfigs.getByName("debug")
       matchingFallbacks += listOf("debug")
@@ -110,7 +114,7 @@ android {
     }
   }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -141,12 +145,12 @@ android {
 
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility", "-opt-in=kotlin.RequiresOptIn")
   }
 
@@ -154,11 +158,13 @@ android {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.3" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
 
     unitTests {
@@ -167,7 +173,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = "0.8.11" }
 
   lint { abortOnError = false }
 
@@ -233,20 +239,20 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".sidBunda"
       versionNameSuffix = "-sidBunda"
-      manifestPlaceholders["appLabel"] = "Bunda ANC"
+      manifestPlaceholders["appLabel"] = "BidanKu"
     }
 
     create("sidCadre") {
       dimension = "apps"
       applicationIdSuffix = ".sidCadre"
       versionNameSuffix = "-sidCadre"
-      manifestPlaceholders["appLabel"] = "Cadre App"
+      manifestPlaceholders["appLabel"] = "KaderKu"
     }
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
       versionNameSuffix = "-sidEir"
-      manifestPlaceholders["appLabel"] = "SID EIR"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
     create("wdf") {
@@ -281,6 +287,18 @@ android {
       applicationIdSuffix = ".psi_eswatini"
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
+    }
+    create("eusm") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusm"
+      versionNameSuffix = "-eusm"
+      manifestPlaceholders["appLabel"] = "EUSM"
+    }
+    create("demoEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".demoEir"
+      versionNameSuffix = "-demoEir"
+      manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
   }
 
@@ -350,12 +368,7 @@ tasks.withType<Test> {
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
-configurations {
-  all {
-    exclude(group = "commons-logging")
-    exclude(group = "xpp3")
-  }
-}
+configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
@@ -368,25 +381,21 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
@@ -397,20 +406,24 @@ dependencies {
   //    debugImplementation(libs.leakcanary.android)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
   androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
   androidTestImplementation(libs.benchmark.junit)
   androidTestImplementation(libs.work.testing)
+  androidTestImplementation(libs.navigation.testing)
+  // Android Test dependencies
+  androidTestImplementation(libs.junit)
+  androidTestImplementation(libs.espresso.core)
+
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
@@ -434,22 +447,22 @@ task("evaluatePerformanceBenchmarkResults") {
       JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
         keys().forEach { key ->
           val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
-          val methodExpectedResults = this.getJSONObject(key)
+          val methodExpectedResults = this.getJSONObject(key.toString())
 
           methodExpectedResults.keys().forEach { expectedResultsKey ->
             resultMaxDeltaMap.put(
-              expectedResultsKey,
-              methodExpectedResults.getDouble(expectedResultsKey),
+              expectedResultsKey.toString(),
+              methodExpectedResults.getDouble(expectedResultsKey.toString()),
             )
           }
 
-          expectedResultsMap[key] = resultMaxDeltaMap
+          expectedResultsMap[key.toString()] = resultMaxDeltaMap
         }
       }
 
       // Loop through the results file updating the results
       JSONObject(FileReader(resultsFile).readText()).run {
-        getJSONArray("benchmarks").forEachIndexed { index, any ->
+        getJSONArray("benchmarks").iterator().forEach { any ->
           val benchmarkResult = any as JSONObject
           val fullName = benchmarkResult.getTestName()
           val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
@@ -495,3 +508,6 @@ fun JSONObject.getTestName(): String {
 
   return "$className#$methodName"
 }
+
+operator fun JSONArray.iterator(): Iterator<JSONObject> =
+  (0 until length()).asSequence().map { get(it) as JSONObject }.iterator()

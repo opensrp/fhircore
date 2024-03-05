@@ -1,4 +1,4 @@
-map "http://hl7.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593" = 'eCBIS Child Immunization'
+map "https://fhir.labs.smartregister.org/fhir/StructureMap/97cf9bfb-90be-4661-8810-1c60be88f593" = 'eCBIS Child Immunization'
 
 uses "http://hl7.org/fhir/StructureDefinition/Parameters" as source
 uses "http://hl7.org/fhir/StructureDefinition/CarePlan" as target
@@ -31,7 +31,7 @@ group extractTask(
                task.priority = 'routine',
                // dosage[version] does not work, hence skipping the item from given index via skip.first
                task.description = evaluate(definition, $this.product.text + ' ' + currentDose.select(sequence.toString())),
-               task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               task.for = create('Reference') as patientReference, patientReference.reference = evaluate(subject, $this.type().name + '/' + $this.id.replaceMatches('/_history/.*', '')),
                task.basedOn = reference(careplan),
                task.authoredOn = evaluate(subject, now()),
                task.requester = evaluate(subject, $this.generalPractitioner.first()),

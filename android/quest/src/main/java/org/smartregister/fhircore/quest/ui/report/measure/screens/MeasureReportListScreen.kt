@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ import androidx.navigation.NavController
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.Flow
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.report.measure.components.MeasureReportRow
 
 @Composable

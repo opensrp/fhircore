@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,38 +18,19 @@ package org.smartregister.fhircore.quest.coroutine
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import org.junit.rules.TestRule
+import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.app.testDispatcher
 
 @ExperimentalCoroutinesApi
-class CoroutineTestRule(val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()) :
-  TestRule, TestCoroutineScope by TestCoroutineScope(testDispatcher) {
+class CoroutineTestRule : TestWatcher() {
+  override fun starting(description: Description) {
+    Dispatchers.setMain(testDispatcher)
+  }
 
-  val testDispatcherProvider =
-    object : DispatcherProvider {
-      override fun default() = testDispatcher
-
-      override fun io() = testDispatcher
-
-      override fun main() = testDispatcher
-
-      override fun unconfined() = testDispatcher
-    }
-
-  override fun apply(base: Statement?, description: Description?) =
-    object : Statement() {
-      @Throws(Throwable::class)
-      override fun evaluate() {
-        Dispatchers.setMain(testDispatcher)
-        base?.evaluate()
-        Dispatchers.resetMain()
-        testDispatcher.cleanupTestCoroutines()
-      }
-    }
+  override fun finished(description: Description) {
+    Dispatchers.resetMain()
+  }
 }

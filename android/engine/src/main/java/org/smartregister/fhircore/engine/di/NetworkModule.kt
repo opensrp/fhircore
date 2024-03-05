@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverter
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -63,7 +65,10 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
@@ -90,7 +95,7 @@ class NetworkModule {
 
             openSrpApplication?.let {
               if (
-                (request.url.host == it.getFhirServerHost()) &&
+                (request.url.host == it.getFhirServerHost()?.host) &&
                   CUSTOM_ENDPOINTS.contains(resourcePath)
               ) {
                 val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()
@@ -139,7 +144,10 @@ class NetworkModule {
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
@@ -150,7 +158,12 @@ class NetworkModule {
       .retryOnConnectionFailure(false) // Avoid silent retries sometimes before token is provided
       .build()
 
-  @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
+  @Provides
+  fun provideGson(): Gson =
+    GsonBuilder()
+      .setLenient()
+      .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
+      .create()
 
   @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 

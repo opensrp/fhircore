@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
-import org.smartregister.fhircore.quest.R
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
 const val INSIGHT_UNSYNCED_DATA = "insightUnsynceData"

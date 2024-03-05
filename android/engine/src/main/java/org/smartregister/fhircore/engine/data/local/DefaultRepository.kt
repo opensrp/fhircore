@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.smartregister.fhircore.engine.data.local
 
 import androidx.annotation.VisibleForTesting
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.NumberClientParam
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -33,41 +35,51 @@ import com.google.android.fhir.search.has
 import com.google.android.fhir.search.include
 import com.google.android.fhir.search.revInclude
 import com.google.android.fhir.search.search
-import java.util.Date
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Procedure
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.ServiceRequest
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterBy
@@ -89,6 +101,7 @@ constructor(
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
   open val fhirPathDataExtractor: FhirPathDataExtractor,
+  open val parser: IParser,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -160,7 +173,7 @@ constructor(
   suspend fun createRemote(addResourceTags: Boolean = true, vararg resource: Resource) {
     return withContext(dispatcherProvider.io()) {
       preProcessResources(addResourceTags, *resource)
-      fhirEngine.createRemote(*resource)
+      fhirEngine.create(*resource, isLocalOnly = true)
     }
   }
 
@@ -439,7 +452,13 @@ constructor(
             sort(StringClientParam(sortConfig.paramName), sortConfig.order)
           else ->
             Timber.e(
-              "Unsupported data type: '${sortConfig.dataType}'. Only ${listOf(Enumerations.DataType.INTEGER, Enumerations.DataType.DATE, Enumerations.DataType.STRING)} types are supported for DB level sorting.",
+              "Unsupported data type: '${sortConfig.dataType}'. Only ${
+                                listOf(
+                                    Enumerations.DataType.INTEGER,
+                                    Enumerations.DataType.DATE,
+                                    Enumerations.DataType.STRING,
+                                )
+                            } types are supported for DB level sorting.",
             )
         }
       }
@@ -700,7 +719,11 @@ constructor(
       this.filter { !it.isRevInclude && !it.resultAsCount }
     }
 
-  suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
+  suspend fun updateResourcesRecursively(
+    resourceConfig: ResourceConfig,
+    subject: Resource,
+    eventWorkflow: EventWorkflow,
+  ) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
     val initialComputedValuesMap =
       configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
@@ -715,7 +738,9 @@ constructor(
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
       computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+        "${entry.value.toString().substringBefore("/")}/${
+                    entry.value.toString().extractLogicalIdUuid()
+                }"
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -729,9 +754,14 @@ constructor(
         )
       }
     val resources = fhirEngine.search<Resource>(search).map { it.resource }
-    resources.forEach {
+    val filteredResources =
+      filterResourcesByFhirPathExpression(
+        resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+        resources = resources,
+      )
+    filteredResources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it, resourceConfig)
+      closeResource(resource = it, eventWorkflow = eventWorkflow)
     }
 
     // recursive related resources
@@ -746,48 +776,97 @@ constructor(
       }
 
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
-      resourcesMap.value.forEach { resource ->
+      val filteredRelatedResources =
+        filterResourcesByFhirPathExpression(
+          resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+          resources = resourcesMap.value,
+        )
+
+      filteredRelatedResources.forEach { resource ->
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}",
         )
         if (filterRelatedResource(resource, resourceConfig)) {
-          closeResource(resource, resourceConfig)
+          closeResource(resource = resource, eventWorkflow = eventWorkflow)
+        }
+      }
+    }
+  }
+
+  fun filterResourcesByFhirPathExpression(
+    resourceFilterExpression: ResourceFilterExpression?,
+    resources: List<Resource>,
+  ): List<Resource> {
+    return with(resourceFilterExpression) {
+      if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
+        resources
+      } else {
+        resources.filter { resource ->
+          if (matchAll) {
+            conditionalFhirPathExpressions.all {
+              fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+            }
+          } else {
+            conditionalFhirPathExpressions.any {
+              fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+            }
+          }
         }
       }
     }
   }
 
   @VisibleForTesting
-  suspend fun closeResource(resource: Resource, resourceConfig: ResourceConfig) {
-    when (resource) {
-      is Task -> {
-        if (resource.status != Task.TaskStatus.COMPLETED) {
-          resource.status = Task.TaskStatus.CANCELLED
-          resource.lastModified = Date()
-        }
-      }
-      is CarePlan -> resource.status = CarePlan.CarePlanStatus.COMPLETED
-      is Procedure -> resource.status = Procedure.ProcedureStatus.STOPPED
-      is Condition -> {
-        resource.clinicalStatus =
-          CodeableConcept().apply {
-            coding =
-              listOf(
-                Coding().apply {
-                  system = SNOMED_SYSTEM
-                  display = PATIENT_CONDITION_RESOLVED_DISPLAY
-                  code = PATIENT_CONDITION_RESOLVED_CODE
-                },
-              )
+  suspend fun closeResource(resource: Resource, eventWorkflow: EventWorkflow) {
+    var conf: Configuration =
+      Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
+    val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
+
+    val updatedResourceDocument =
+      jsonParse.apply {
+        eventWorkflow.updateValues.forEach { updateExpression ->
+          val updateValue =
+            getJsonContent(
+              updateExpression.value,
+            )
+          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+          if (
+            updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
+          ) {
+            set(updateExpression.jsonPathExpression, updateValue)
           }
-      }
-      is ServiceRequest -> {
-        if (resource.status != ServiceRequest.ServiceRequestStatus.COMPLETED) {
-          resource.status = ServiceRequest.ServiceRequestStatus.REVOKED
+          if (
+            updateExpression.jsonPathExpression.startsWith(
+              resource.resourceType.name,
+              ignoreCase = true,
+            ) && updateExpression.value != null
+          ) {
+            set(
+              updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
+              updateValue,
+            )
+          }
         }
+      }
+
+    val resourceDefinition: Class<out IBaseResource>? =
+      FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
+
+    val updatedResource =
+      parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+    updatedResource.setId(updatedResource.idElement.idPart)
+    withContext(dispatcherProvider.io()) { fhirEngine.update(updatedResource as Resource) }
+  }
+
+  fun getJsonContent(jsonElement: JsonElement): Any? {
+    return when (jsonElement) {
+      is JsonPrimitive -> jsonElement.jsonPrimitive.content
+      is JsonObject -> jsonElement.jsonObject
+      is JsonArray -> jsonElement.jsonArray
+      else -> {
+        null
       }
     }
-    fhirEngine.update(resource)
   }
 
   /**
@@ -803,6 +882,101 @@ constructor(
           filterFhirPathExpression.value
       } == true
     }
+  }
+
+  suspend fun purge(resource: Resource, forcePurge: Boolean) {
+    try {
+      withContext(dispatcherProvider.io()) {
+        fhirEngine.purge(resource.resourceType, resource.logicalId, forcePurge)
+      }
+    } catch (resourceNotFoundException: ResourceNotFoundException) {
+      Timber.e(
+        "Purge failed -> Resource with ID ${resource.logicalId} does not exist",
+        resourceNotFoundException,
+      )
+    }
+  }
+
+  suspend fun searchResourcesRecursively(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
+    fhirResourceConfig: FhirResourceConfig,
+    secondaryResourceConfigs: List<FhirResourceConfig>?,
+    currentPage: Int? = null,
+    pageSize: Int? = null,
+    configRules: List<RuleConfig>?,
+  ): List<RepositoryResourceData> {
+    val baseResourceConfig = fhirResourceConfig.baseResource
+    val relatedResourcesConfig = fhirResourceConfig.relatedResources
+    val configComputedRuleValues = configRules.configRulesComputedValues()
+    val search =
+      Search(type = baseResourceConfig.resource).apply {
+        applyConfiguredSortAndFilters(
+          resourceConfig = baseResourceConfig,
+          filterActiveResources = filterActiveResources,
+          sortData = true,
+          configComputedRuleValues = configComputedRuleValues,
+        )
+        if (currentPage != null && pageSize != null) {
+          count = pageSize
+          from = currentPage * pageSize
+        }
+      }
+
+    val baseFhirResources =
+      kotlin
+        .runCatching {
+          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
+        }
+        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .getOrDefault(emptyList())
+
+    return baseFhirResources.map { searchResult ->
+      val retrievedRelatedResources =
+        withContext(dispatcherProvider.io()) {
+          retrieveRelatedResources(
+            resources = listOf(searchResult.resource),
+            relatedResourcesConfigs = relatedResourcesConfig,
+            relatedResourceWrapper = RelatedResourceWrapper(),
+            configComputedRuleValues = configComputedRuleValues,
+          )
+        }
+      RepositoryResourceData(
+        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
+        resource = searchResult.resource,
+        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
+        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
+        secondaryRepositoryResourceData =
+          withContext(dispatcherProvider.io()) {
+            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(
+              filterActiveResources,
+            )
+          },
+      )
+    }
+  }
+
+  protected fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
+    if (this == null) return emptyMap()
+    val configRules = configRulesExecutor.generateRules(this)
+    return configRulesExecutor.fireRules(configRules)
+  }
+
+  /** This function fetches other resources that are not linked to the base/primary resource. */
+  protected suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
+    filterActiveResources: List<ActiveResourceFilterConfig>?,
+  ): LinkedList<RepositoryResourceData> {
+    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
+    this?.forEach {
+      secondaryRepositoryResourceDataLinkedList.addAll(
+        searchResourcesRecursively(
+          fhirResourceConfig = it,
+          filterActiveResources = filterActiveResources,
+          secondaryResourceConfigs = null,
+          configRules = null,
+        ),
+      )
+    }
+    return secondaryRepositoryResourceDataLinkedList
   }
 
   /**
