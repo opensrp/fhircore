@@ -39,7 +39,7 @@ import org.smartregister.fhircore.engine.configuration.FhirConfiguration
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.register.dao.locationCode
+import org.smartregister.fhircore.engine.data.local.register.dao.organisationCode
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
@@ -223,8 +223,8 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
   val results = mutableListOf<Pair<ResourceType, Map<String, String>>>()
   resourcesTemp.addAll(pairs)
 
-  val locationSystem = context.getString(R.string.sync_strategy_location_system)
-  val locationTag = "$locationSystem|${locationCode()}"
+  val organisationSystem = context.getString(R.string.sync_strategy_organization_system)
+  val organisationTag = "$organisationSystem|${organisationCode()}"
 
   resourcesTemp.forEach {
     val resourceType = it.first
@@ -232,7 +232,7 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
         resourceType != ResourceType.Questionnaire &&
         resourceType != ResourceType.StructureMap
     ) {
-      val tags = mutableMapOf("_tag" to locationTag)
+      val tags = mutableMapOf("_tag" to organisationTag)
       it.second.entries.forEach { entry -> tags[entry.key] = entry.value }
       results.add(Pair(resourceType, tags))
     } else results.add(it)

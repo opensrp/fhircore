@@ -443,8 +443,8 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
-fun SharedPreferencesHelper.locationCode() =
-  read(ResourceType.Location.name, null)?.filter { it.isDigit() } ?: ""
+fun SharedPreferencesHelper.organisationCode() =
+  read(ResourceType.Organization.name, null)?.filter { it.isDigit() } ?: ""
 
 infix fun Patient.belongsTo(code: String) =
   meta.tag.any {
