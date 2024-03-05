@@ -696,7 +696,7 @@ constructor(
                       TYPE_REFERENCE_DELIMITER,
                     )
                   val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-                  val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
+                  val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_page&_count"
                   fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                     listEntryResourceBundle ->
                     addOrUpdate(listEntryResourceBundle.resource)
