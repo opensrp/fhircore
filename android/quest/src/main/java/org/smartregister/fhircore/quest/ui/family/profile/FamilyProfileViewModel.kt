@@ -79,7 +79,7 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished,
+            is SyncJobStatus.Succeeded,
             is SyncJobStatus.Failed, -> {
               fetchFamilyProfileData()
             }

@@ -165,7 +165,7 @@ class QuestApplication :
     ANRWatchDog().setANRListener { Timber.e(it) }.start()
   }
 
-  override fun getWorkManagerConfiguration(): Configuration =
+  override val workManagerConfiguration: Configuration =
     Configuration.Builder()
       .setMinimumLoggingLevel(android.util.Log.INFO)
       .setWorkerFactory(workerFactory)

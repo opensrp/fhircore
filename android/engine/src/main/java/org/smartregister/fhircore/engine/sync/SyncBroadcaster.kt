@@ -115,11 +115,10 @@ constructor(
   private fun traceSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Failed,
-      is SyncJobStatus.Finished, -> {
+      is SyncJobStatus.Succeeded, -> {
         tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, syncJobStatus::class.java.simpleName)
         tracer.stopTrace(SYNC_TRACE)
       }
-      is SyncJobStatus.Glitch -> tracer.incrementMetric(SYNC_TRACE, SYNC_GLITCHES_METRIC, 1)
       is SyncJobStatus.InProgress -> {}
       is SyncJobStatus.Started -> {
         tracer.startTrace(SYNC_TRACE)
@@ -134,7 +133,7 @@ constructor(
 
   /**
    * Workaround to ensure terminal SyncJobStatus, i.e SyncJobStatus.Failed and
-   * SyncJobStatus.Finished, get emitted
+   * SyncJobStatus.Succeeded, get emitted
    *
    * Gets the worker info for the [FhirSyncWorker], including outputData
    */

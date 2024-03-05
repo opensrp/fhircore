@@ -122,7 +122,7 @@ constructor(
       when (event) {
         is AppMainEvent.UpdateSyncState -> {
           when (event.state) {
-            is SyncJobStatus.Finished,
+            is SyncJobStatus.Succeeded,
             is SyncJobStatus.Failed, -> {
               val lastSyncTime = event.lastSyncTime ?: (retrieveLastSyncTimestamp() ?: "")
               appMainUiState.value =

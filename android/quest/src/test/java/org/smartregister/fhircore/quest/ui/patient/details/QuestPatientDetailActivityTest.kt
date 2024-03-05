@@ -26,8 +26,6 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -44,7 +42,6 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_ARG_FORM
@@ -65,6 +62,8 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import java.util.Date
+import javax.inject.Inject
 
 @HiltAndroidTest
 @Ignore("To be deleted test class; new test to be written after refactor")
@@ -73,8 +72,6 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue val patientRepository: PatientRepository = mockk()
-
-  @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
 
@@ -108,11 +105,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
-          patientRepository = patientRepository,
-          defaultRepository = defaultRepository,
-          patientItemMapper = patientItemMapper,
-          mockk(),
-          fhirEngine,
+            patientRepository = patientRepository,
+            defaultRepository = defaultRepository,
+            patientItemMapper = patientItemMapper,
+            fhirEngine,
         ),
       )
 

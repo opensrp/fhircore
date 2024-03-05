@@ -39,7 +39,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import javax.inject.Provider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -68,7 +67,6 @@ import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -82,7 +80,6 @@ import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
-import org.smartregister.fhircore.engine.util.extension.cqfLibraryIds
 import org.smartregister.fhircore.engine.util.extension.deleteRelatedResources
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -109,7 +106,6 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
   var tracer: PerformanceReporter,
 ) : ViewModel() {
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
@@ -356,12 +352,9 @@ constructor(
         if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
-
-        extractCqlOutput(questionnaire, questionnaireResponse, bundle)
         extractCarePlan(questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-        extractCqlOutput(questionnaire, questionnaireResponse, null)
       }
       tracer.stopTrace(QUESTIONNAIRE_TRACE)
       viewModelScope.launch(Dispatchers.Main) {
@@ -408,30 +401,6 @@ constructor(
         .onFailure {
           Timber.e(it)
           extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-        }
-    }
-  }
-
-  suspend fun extractCqlOutput(
-    questionnaire: Questionnaire,
-    questionnaireResponse: QuestionnaireResponse,
-    bundle: Bundle?,
-  ) {
-    withContext(Dispatchers.Default) {
-      val data = bundle ?: Bundle().apply { addEntry().apply { resource = questionnaireResponse } }
-      questionnaire
-        .cqfLibraryIds()
-        .map {
-          val patient =
-            if (questionnaireResponse.hasSubject()) {
-              loadPatient(questionnaireResponse.subject.extractId())
-            } else {
-              null
-            }
-          libraryEvaluatorProvider.get().runCqlLibrary(it, patient, data, defaultRepository)
-        }
-        .forEach { output ->
-          if (output.isNotEmpty()) extractionProgressMessage.postValue(output.joinToString("\n"))
         }
     }
   }
@@ -739,7 +708,7 @@ constructor(
     intent: Intent,
   ): QuestionnaireResponse {
     val resources = getPopulationResources(intent, questionnaire.logicalId)
-    val questResponse = ResourceMapper.populate(questionnaire, *resources)
+    val questResponse = ResourceMapper.populate(questionnaire, /* *resources */ emptyMap()) // FIXME("Work using launchContexts")
     questResponse.contained = resources.toList()
     questResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     return questResponse

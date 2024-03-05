@@ -63,7 +63,7 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncState) {
           when (state) {
-            is SyncState.Finished,
+            is SyncState.Succeeded,
             is SyncState.Failed, -> loadData()
             else -> {}
           }

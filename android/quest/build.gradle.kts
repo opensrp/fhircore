@@ -4,10 +4,10 @@ plugins {
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
-  id("de.mannodermaus.android-junit5") version "1.9.3.0"
+  id("de.mannodermaus.android-junit5")
   id("org.jetbrains.dokka")
   id("org.jetbrains.kotlin.plugin.serialization")
-  id("dagger.hilt.android.plugin")
+  id("com.google.dagger.hilt.android")
   id("org.jetbrains.kotlin.android")
   id("com.google.firebase.firebase-perf")
   id("com.google.gms.google-services")
@@ -108,7 +108,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.4.8" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.9" }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -173,16 +173,15 @@ android {
 
   lint { abortOnError = false }
 
-  configurations.configureEach {
-    resolutionStrategy { force("ca.uhn.hapi.fhir:org.hl7.fhir.utilities:5.5.7") }
-  }
-
   testCoverage { jacocoVersion = Deps.versions.jacoco_tool }
 }
+
+configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
   coreLibraryDesugaring(Deps.desugar)
   implementation(project(":engine"))
+
   implementation("androidx.ui:ui-foundation:0.1.0-dev14")
   implementation(Deps.accompanist.swiperefresh)
 
@@ -207,7 +206,7 @@ dependencies {
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
   // analytics
-  implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
+  implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
 
   implementation("com.google.firebase:firebase-perf-ktx")
   implementation("com.google.firebase:firebase-crashlytics-ktx")
@@ -219,13 +218,10 @@ dependencies {
 
   androidTestImplementation(Deps.atsl.ext_junit)
   androidTestImplementation(Deps.atsl.espresso)
-  val composeVersion = Deps.versions.compose
-  debugImplementation("androidx.compose.ui:ui-test-manifest:$composeVersion")
-  testImplementation("androidx.compose.ui:ui-test-junit4:$composeVersion")
+  debugImplementation("androidx.compose.ui:ui-test-manifest")
+  testImplementation("androidx.compose.ui:ui-test-junit4")
   //     debugImplementation because LeakCanary should only run in debug builds.
   //    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.7"
-
-  testImplementation("info.cqframework:cql-to-elm:1.5.6")
 }
 
 kapt { correctErrorTypes = true }

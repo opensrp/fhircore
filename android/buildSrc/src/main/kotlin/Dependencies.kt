@@ -132,7 +132,7 @@ object Dependencies {
       HapiFhir.validationDstu3Module to { version { strictly(Versions.hapiFhir) } },
       HapiFhir.validationR4Module to { version { strictly(Versions.hapiFhir) } },
       HapiFhir.validationR5Module to { version { strictly(Versions.hapiFhir) } },
-              Jackson.annotationsBase to { version { strictly(Versions.jackson) } },
+      Jackson.annotationsBase to { version { strictly(Versions.jackson) } },
       Jackson.bomBase to { version { strictly(Versions.jackson) } },
       Jackson.coreBase to { version { strictly(Versions.jacksonCore) } },
       Jackson.databindBase to { version { strictly(Versions.jackson) } },

@@ -73,7 +73,7 @@ fun HomeScreen(
   val refreshKey by appMainViewModel.refreshHash
 
   LaunchedEffect(syncState) {
-    if (syncState is SyncJobStatus.Finished) {
+    if (syncState is SyncJobStatus.Succeeded) {
       homeViewModel.refresh()
     }
   }
@@ -178,10 +178,9 @@ fun AppScreenBody(syncState: SyncJobStatus?, sync: () -> Unit) {
               },
           )
         }
-        is SyncJobStatus.Finished -> {
+        is SyncJobStatus.Succeeded -> {
           Text(text = "Sync (finished)")
         }
-        is SyncJobStatus.Glitch,
         is SyncJobStatus.Failed, -> {
           Text(text = "Sync (failed)")
         }

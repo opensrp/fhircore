@@ -22,9 +22,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.spyk
-import java.util.Locale
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -33,7 +30,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.cql.LibraryEvaluator
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 import org.smartregister.fhircore.quest.R
@@ -42,6 +38,8 @@ import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
+import java.util.Locale
+import javax.inject.Inject
 
 @HiltAndroidTest
 class ListDataDetailViewModelTest : RobolectricTest() {
@@ -53,8 +51,6 @@ class ListDataDetailViewModelTest : RobolectricTest() {
   @BindValue val patientRepository: PatientRepository = mockk()
 
   @BindValue val defaultRepository: DefaultRepository = mockk()
-
-  @BindValue val libraryEvaluator: LibraryEvaluator = spyk()
 
   private val patientId = "5583145"
 
@@ -68,11 +64,10 @@ class ListDataDetailViewModelTest : RobolectricTest() {
     Faker.initPatientRepositoryMocks(patientRepository)
     listDataDetailViewModel =
       ListDataDetailViewModel(
-        patientRepository = patientRepository,
-        defaultRepository = defaultRepository,
-        patientItemMapper = patientItemMapper,
-        libraryEvaluatorProvider = { libraryEvaluator },
-        fhirEngine = fhirEngine,
+          patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
+          patientItemMapper = patientItemMapper,
+          fhirEngine = fhirEngine,
       )
   }
 

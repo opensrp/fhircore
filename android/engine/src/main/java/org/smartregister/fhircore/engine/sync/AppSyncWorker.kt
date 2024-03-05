@@ -25,6 +25,7 @@ import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
+import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.ResourceType
@@ -58,6 +59,8 @@ constructor(
           }
         },
     )
+
+  override fun getUploadStrategy(): UploadStrategy  = UploadStrategy.AllChangesSquashedBundlePut
 
   override fun getFhirEngine(): FhirEngine = engine
 }

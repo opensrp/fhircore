@@ -105,37 +105,6 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
   }
 }
 
-suspend fun FhirEngine.loadCqlLibraryBundle(
-  context: Context,
-  sharedPreferencesHelper: SharedPreferencesHelper,
-  fhirOperator: FhirOperator,
-  resourcesBundlePath: String,
-) =
-  try {
-    val jsonParser = FhirContext.forR4().newJsonParser()
-    val savedResources =
-      sharedPreferencesHelper.read(SharedPreferencesHelper.MEASURE_RESOURCES_LOADED, "")
-
-    context.assets.open(resourcesBundlePath, AssetManager.ACCESS_RANDOM).bufferedReader().use {
-      val bundle = jsonParser.parseResource(it) as Bundle
-      bundle.entry.forEach { entry ->
-        if (entry.resource.resourceType == ResourceType.Library) {
-          fhirOperator.loadLib(entry.resource as Library)
-        } else {
-          if (!savedResources!!.contains(resourcesBundlePath)) {
-            create(entry.resource)
-            sharedPreferencesHelper.write(
-              SharedPreferencesHelper.MEASURE_RESOURCES_LOADED,
-              savedResources.plus(",").plus(resourcesBundlePath),
-            )
-          }
-        }
-      }
-    }
-  } catch (exception: Exception) {
-    Timber.e(exception)
-  }
-
 fun ConfigurationRegistry.fetchLanguages() =
   this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
     .run { this.languages }

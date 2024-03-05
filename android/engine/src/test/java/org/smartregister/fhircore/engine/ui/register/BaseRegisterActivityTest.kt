@@ -432,7 +432,7 @@ class BaseRegisterActivityTest : ActivityRobolectricTest() {
         }
       }
 
-    testRegisterActivity.onSync(SyncJobStatus.Finished())
+    testRegisterActivity.onSync(SyncJobStatus.Succeeded())
     Assert.assertEquals(View.GONE, registerActivityBinding.progressSync.visibility)
     Assert.assertNotNull(registerActivityBinding.containerProgressSync.background)
     Assert.assertTrue(registerActivityBinding.containerProgressSync.hasOnClickListeners())

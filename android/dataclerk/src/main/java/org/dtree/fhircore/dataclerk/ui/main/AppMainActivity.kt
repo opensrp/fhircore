@@ -76,14 +76,6 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         )
         appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, null))
       }
-      is SyncJobStatus.Glitch -> {
-        appMainViewModel.onEvent(AppMainEvent.UpdateSyncState(state, lastSyncTime = null))
-        Timber.w(
-          (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
-            it.exception.message.toString()
-          },
-        )
-      }
       is SyncJobStatus.Failed -> {
         if (
           !state?.exceptions.isNullOrEmpty() &&
@@ -114,8 +106,8 @@ class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           ),
         )
       }
-      is SyncJobStatus.Finished -> {
-        if (lastSyncState !is SyncJobStatus.Finished) {
+      is SyncJobStatus.Succeeded -> {
+        if (lastSyncState !is SyncJobStatus.Succeeded) {
           showToast(getString(org.smartregister.fhircore.engine.R.string.sync_completed))
         }
         appMainViewModel.run {
