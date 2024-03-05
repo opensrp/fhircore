@@ -102,6 +102,15 @@ emptyList | empty list json with a message to show in case the resource data to 
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
+weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | Rounds the corners of the view's outer edge | | 0 |
+alignment | The alignment of the view within its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | false |
+visible | A String value that determines whether the view should be visible | Yes| true |
 
 ### Config properties of nested LIST
 |Property | Description | Required | Default |
@@ -111,6 +120,8 @@ relatedResourceId | Unique identifier for the relatedResources | no but highly r
 resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
 conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
 sortConfig | Configuration used for sorting LIST widget resource | no | |
+fhirPathExpression | This is the fhir path expression of a given resource | no | |
+relatedResources | resource that is part of the base resource  | no | |
 
 ## How to use COMPOUND_TEXT
 Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
@@ -362,8 +373,8 @@ weight | A 'Float' value that represents the type of view. The weight is used to
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
 borderRadius | Rounds the corners of the view's outer edge | | 0 |
-alignment | The alignment of the view withins its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
-fillMaxWidth | Dertimines whether the view should fill its parent's width | | false |
+alignment | The alignment of the view within its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | false |
 fillMaxHeight | Determines whether the view should fill its parent's height | | false |
 clickable | Determines whether the view is clickable | | false |
 visible | A String value that determines whether the view should be visible | Yes| true |
