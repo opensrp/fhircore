@@ -68,6 +68,37 @@ class ExtendedFabTest {
   }
 
   @Test
+  fun can_initializing_extended_fab_with_null_resource_data() {
+    composeRule.setContent {
+      ExtendedFab(
+              fabActions =
+              listOf(
+                      NavigationMenuConfig(
+                              id = "test",
+                              display = "Fab Button",
+                              menuIconConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+                              actions =
+                              listOf(
+                                      ActionConfig(
+                                              trigger = ActionTrigger.ON_CLICK,
+                                              workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
+                                              questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+                                      ),
+                              ),
+                      ),
+              ),
+              resourceData = null,
+              navController = TestNavHostController(LocalContext.current),
+              lazyListState = null,
+      )
+    }
+    composeRule
+            .onNodeWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
+            .assertExists()
+            .assertIsDisplayed()
+  }
+
+  @Test
   fun testFloatingButtonIsDisplayed() {
     init()
     composeRule
