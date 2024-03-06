@@ -31,7 +31,7 @@ jobs:
           java-version: 17
 
       - name: Decode google-services.json
-        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
+        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/dataclerk/google-services.json
         env:
           ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.DATACLERK_GOOGLE_SERVICES_JSON }}
 
@@ -39,7 +39,7 @@ jobs:
         run: chmod +x gradlew
         working-directory: android
 
-      - name: Spotless check engine module
+      - name: Spotless check dataclerk module
         run: ./gradlew :dataclerk:spotlessCheck
         working-directory: android
 
