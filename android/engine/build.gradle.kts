@@ -105,7 +105,7 @@ dependencies {
   implementation("androidx.fragment:fragment-ktx:1.5.5")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("androidx.security:security-crypto:1.1.0-alpha03")
-  api("org.smartregister:fhir-common-utils:1.0.0-SNAPSHOT")
+  api("org.smartregister:fhir-common-utils:0.0.8-SNAPSHOT")
   implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
   implementation("com.squareup.okhttp3:okhttp:4.9.1")
   implementation("androidx.cardview:cardview:1.0.0")
