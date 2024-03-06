@@ -165,11 +165,12 @@ class QuestApplication :
     ANRWatchDog().setANRListener { Timber.e(it) }.start()
   }
 
-  override val workManagerConfiguration: Configuration =
-    Configuration.Builder()
-      .setMinimumLoggingLevel(android.util.Log.INFO)
-      .setWorkerFactory(workerFactory)
-      .build()
+  override val workManagerConfiguration: Configuration
+    get() =
+      Configuration.Builder()
+        .setMinimumLoggingLevel(android.util.Log.INFO)
+        .setWorkerFactory(workerFactory)
+        .build()
 
   private val globalExceptionHandler =
     Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }

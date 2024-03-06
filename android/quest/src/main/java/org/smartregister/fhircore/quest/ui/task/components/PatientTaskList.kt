@@ -45,7 +45,11 @@ fun PatientTaskList(
   clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
 ) {
   LazyColumn {
-    items(pagingItems.itemCount, key = pagingItems.itemKey{ it.id }, contentType = pagingItems.itemContentType()) {
+    items(
+      pagingItems.itemCount,
+      key = pagingItems.itemKey { it.id },
+      contentType = pagingItems.itemContentType()
+    ) {
       PatientTaskRow(pagingItems[it]!!, useLabel, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)
     }

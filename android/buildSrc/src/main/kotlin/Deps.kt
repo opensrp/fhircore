@@ -42,7 +42,7 @@ object Deps {
         const val room = "2.4.2"
         const val spotless = "6.25.0"
         const val truth = "1.0.1"
-        const val work = "2.7.1"
+        const val work = "2.9.0"
         const val json_tools = "1.13"
         const val kotlin_coveralls = "2.12.2"
         const val jacoco_tool = "0.8.11"

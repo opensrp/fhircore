@@ -181,7 +181,7 @@ fun AppScreenBody(syncState: SyncJobStatus?, sync: () -> Unit) {
         is SyncJobStatus.Succeeded -> {
           Text(text = "Sync (finished)")
         }
-        is SyncJobStatus.Failed, -> {
+        is SyncJobStatus.Failed -> {
           Text(text = "Sync (failed)")
         }
         else -> {

@@ -80,7 +80,11 @@ fun MeasureReportPatientsScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn {
-        items(pagingItems.itemCount, key = pagingItems.itemKey{ it.logicalId }, contentType = pagingItems.itemContentType()) {
+        items(
+          pagingItems.itemCount,
+          key = pagingItems.itemKey { it.logicalId },
+          contentType = pagingItems.itemContentType()
+        ) {
           MeasureReportPatientRow(
             measureReportPatientViewData = pagingItems[it]!!,
             onRowClick = { patientViewData ->

@@ -98,10 +98,10 @@ class ListDataDetailScreenTest : RobolectricTest() {
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
-            patientRepository = patientRepository,
-            defaultRepository = defaultRepository,
-            patientItemMapper = patientItemMapper,
-            fhirEngine,
+          patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
+          patientItemMapper = patientItemMapper,
+          fhirEngine,
         ),
       )
 
@@ -272,10 +272,10 @@ class ListDataDetailScreenTest : RobolectricTest() {
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
-            patientRepository = patientRepository,
-            defaultRepository = defaultRepository,
-            patientItemMapper = patientItemMapper,
-            fhirEngine,
+          patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
+          patientItemMapper = patientItemMapper,
+          fhirEngine,
         ),
       )
 
@@ -314,10 +314,10 @@ class ListDataDetailScreenTest : RobolectricTest() {
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
-            patientRepository = patientRepository,
-            defaultRepository = defaultRepository,
-            patientItemMapper = patientItemMapper,
-            fhirEngine,
+          patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
+          patientItemMapper = patientItemMapper,
+          fhirEngine,
         ),
       )
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
