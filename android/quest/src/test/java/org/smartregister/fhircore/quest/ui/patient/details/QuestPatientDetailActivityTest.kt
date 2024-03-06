@@ -26,6 +26,8 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -62,8 +64,6 @@ import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
 import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.patient.register.PatientItemMapper
-import java.util.Date
-import javax.inject.Inject
 
 @HiltAndroidTest
 @Ignore("To be deleted test class; new test to be written after refactor")
@@ -105,10 +105,10 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     questPatientDetailViewModel =
       spyk(
         ListDataDetailViewModel(
-            patientRepository = patientRepository,
-            defaultRepository = defaultRepository,
-            patientItemMapper = patientItemMapper,
-            fhirEngine,
+          patientRepository = patientRepository,
+          defaultRepository = defaultRepository,
+          patientItemMapper = patientItemMapper,
+          fhirEngine,
         ),
       )
 

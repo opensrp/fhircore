@@ -103,7 +103,7 @@ dependencies {
   implementation("androidx.fragment:fragment-ktx:1.6.2")
   api("io.jsonwebtoken:jjwt:0.9.1")
   implementation("androidx.security:security-crypto:1.1.0-alpha06")
-  api("org.smartregister:fhir-common-utils:0.0.8-SNAPSHOT"){
+  api("org.smartregister:fhir-common-utils:0.0.8-SNAPSHOT") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
@@ -114,16 +114,19 @@ dependencies {
   implementation("com.github.bumptech.glide:glide:4.16.0")
   implementation("id.zelory:compressor:3.0.1")
 
+  implementation(group = "javax.xml.stream", name = "stax-api", version="1.0-2")
   implementation(group = "xerces", name = "xercesImpl", version = "2.11.0")
   implementation(group = "com.github.java-json-tools", name = "msg-simple", version = "1.2")
 
-  implementation("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9"){
+  implementation("org.opencds.cqf.fhir:cqf-fhir-cr:3.0.0-PRE9") {
     isTransitive = true
     exclude(group = "org.codelibs", module = "xpp3")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:knowledge:0.1.0-alpha03-preview2-SNAPSHOT") { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
+  api("org.smartregister:knowledge:0.1.0-alpha03-preview2-SNAPSHOT") {
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
+  }
 
   api("org.smartregister:workflow:0.1.0-alpha04-preview6-SNAPSHOT") {
     isTransitive = true
@@ -175,17 +178,16 @@ dependencies {
   api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
   api("org.smartregister:contrib-barcode:0.1.0-beta3-preview5-SNAPSHOT") {
     isTransitive = true
+    exclude(group = "org.smartregister", module = "data-capture")
+    exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
   api("org.smartregister:data-capture:1.1.0-preview5-SNAPSHOT") {
     isTransitive = true
-    exclude(group = "org.hamcrest", module = "hamcrest-core")
-    exclude(group = "javax.xml.bind", module = "jaxb-api")
-    exclude(group = "com.sun.xml.bind", module = "jaxb-core")
-    exclude(group = "com.sun.activation", module = "javax.activation")
-    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
+    exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
@@ -193,11 +195,8 @@ dependencies {
 
   api("org.smartregister:engine:1.0.0-preview2-SNAPSHOT") {
     isTransitive = true
-    exclude(group = "org.hamcrest", module = "hamcrest-core")
-    exclude(group = "javax.xml.bind", module = "jaxb-api")
-    exclude(group = "com.sun.xml.bind", module = "jaxb-core")
-    exclude(group = "com.sun.activation", module = "javax.activation")
     exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "com.github.ben-manes.caffeine")
   }
 
   api("com.google.code.gson:gson:2.10.1")
@@ -241,7 +240,6 @@ dependencies {
   androidTestImplementation("androidx.test.espresso:espresso-core:${Deps.versions.atsl_expresso}")
   implementation(Deps.work.runtime)
   testImplementation(group = "org.json", name = "json", version = "20210307")
-
 
   debugImplementation("androidx.compose.ui:ui-test-manifest")
   testImplementation("androidx.compose.ui:ui-test-junit4:")

@@ -45,7 +45,11 @@ fun RegisterList(
   progressMessage: String = "",
 ) {
   LazyColumn(modifier = modifier) {
-    items(pagingItems.itemCount, key = pagingItems.itemKey { it.logicalId }, contentType = pagingItems.itemContentType(),) {
+    items(
+      pagingItems.itemCount,
+      key = pagingItems.itemKey { it.logicalId },
+      contentType = pagingItems.itemContentType()
+    ) {
       RegisterRowItem(registerViewData = pagingItems[it]!!, onRowClick = onRowClick)
     }
     pagingItems.apply {

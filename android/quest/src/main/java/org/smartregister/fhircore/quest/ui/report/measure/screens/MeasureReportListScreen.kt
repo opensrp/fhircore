@@ -73,8 +73,15 @@ fun MeasureReportListScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {
-        items(count = lazyReportItems.itemCount, key = lazyReportItems.itemKey { it.id }, contentType = lazyReportItems.itemContentType()) { index ->
-          MeasureReportRow(lazyReportItems[index]!!, { onReportMeasureClicked(lazyReportItems[index]!!) })
+        items(
+          count = lazyReportItems.itemCount,
+          key = lazyReportItems.itemKey { it.id },
+          contentType = lazyReportItems.itemContentType()
+        ) { index ->
+          MeasureReportRow(
+            lazyReportItems[index]!!,
+            { onReportMeasureClicked(lazyReportItems[index]!!) }
+          )
           Divider(color = DividerColor, thickness = 1.dp)
         }
 

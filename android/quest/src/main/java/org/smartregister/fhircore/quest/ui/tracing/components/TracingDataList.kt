@@ -40,7 +40,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.flow.StateFlow
@@ -102,7 +101,9 @@ fun <T : Any> TracingDataList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
       ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
-        items(pagingItems.itemCount, contentType = pagingItems.itemContentType()) { index -> pagingItems[index]?.let{content(it)} }
+        items(pagingItems.itemCount, contentType = pagingItems.itemContentType()) { index ->
+          pagingItems[index]?.let { content(it) }
+        }
         pagingItems.apply {
           if (
             itemCount <= 0 &&
