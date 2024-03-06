@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.jsonwebtoken.Jwts
 import java.net.UnknownHostException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -127,10 +128,9 @@ constructor(
         _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
       }
 
-  private suspend fun fetchPractitioner(userInfo: UserInfo?): Result<Bundle> {
+  private suspend fun fetchPractitioner(keycloakUuid: String?): Result<Bundle> {
     val endpointResult =
-      userInfo
-        ?.keycloakUuid
+      keycloakUuid
         ?.takeIf { it.isNotBlank() }
         ?.practitionerEndpointUrl()
         ?.runCatching { fhirResourceService.getResource(url = this) }
@@ -197,10 +197,13 @@ constructor(
         val accessTokenResult = fetchAccessToken(trimmedUsername, passwordAsCharArray)
         if (accessTokenResult.isFailure) return
 
-        val userInfoResult = fetchUserInfo()
-        if (userInfoResult.isFailure) return
+        if (accessTokenResult.getOrNull() == null) return
 
-        val practitionerDetailsResult = fetchPractitioner(userInfoResult.getOrNull())
+        val jwtParser = Jwts.parser()
+        val jwt = accessTokenResult.getOrNull()!!.accessToken!!.substringBeforeLast('.').plus(".")
+        val subClaim = jwtParser.parseClaimsJwt(jwt)
+        val keycloakUuid = subClaim.body["sub"].toString()
+        val practitionerDetailsResult = fetchPractitioner(keycloakUuid)
         if (practitionerDetailsResult.isFailure) return
 
         savePractitionerDetails(practitionerDetailsResult.getOrDefault(Bundle()))
