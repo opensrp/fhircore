@@ -2,9 +2,9 @@ name: CI MwCore
 
 on:
   push:
-    branches: [ mwcore-dev ]
+    branches: [mwcore-dev]
   pull_request:
-    branches: [ mwcore-dev ]
+    branches: [mwcore-dev]
 
 env:
   FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
@@ -33,7 +33,7 @@ jobs:
       - name: Decode google-services.json
         run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
         env:
-          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.MWCORE_GOOGLE_SERVICES_JSON }}
+          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.DATACLERK_GOOGLE_SERVICES_JSON }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -65,21 +65,12 @@ jobs:
         with:
           java-version: 17
 
-      - name: Decode google-services.json
-        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
-        env:
-          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.MWCORE_GOOGLE_SERVICES_JSON }}
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
 
       - name: Spotless check engine module
         run: ./gradlew :engine:spotlessCheck
-        working-directory: android
-
-      - name: Builds
-        run: ./gradlew :engine:assembleDebug
         working-directory: android
 
       # - name: Run Engine unit tests with Gradle

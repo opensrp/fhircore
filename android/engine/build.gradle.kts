@@ -105,7 +105,7 @@ dependencies {
   implementation("androidx.fragment:fragment-ktx:1.5.5")
   implementation("io.jsonwebtoken:jjwt:0.9.1")
   implementation("androidx.security:security-crypto:1.1.0-alpha03")
-  implementation("org.smartregister:fhir-common-utils:1.0.0-SNAPSHOT")
+  api("org.smartregister:fhir-common-utils:1.0.0-SNAPSHOT")
   implementation("com.squareup.okhttp3:logging-interceptor:4.9.1")
   implementation("com.squareup.okhttp3:okhttp:4.9.1")
   implementation("androidx.cardview:cardview:1.0.0")
@@ -151,7 +151,7 @@ dependencies {
   implementation("androidx.datastore:datastore-preferences:1.0.0")
 
   // P2P dependency
-  implementation("org.smartregister:p2p-lib:0.3.0-SNAPSHOT")
+  api("org.smartregister:p2p-lib:0.3.0-SNAPSHOT")
 
   // Configure Jetpack Compose
   val composeVersion = Deps.versions.compose

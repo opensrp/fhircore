@@ -184,8 +184,6 @@ dependencies {
   coreLibraryDesugaring(Deps.desugar)
   implementation(project(":engine"))
   implementation("androidx.ui:ui-foundation:0.1.0-dev14")
-  implementation("org.smartregister:p2p-lib:0.3.0-SNAPSHOT")
-  implementation("org.smartregister:fhir-common-utils:0.0.6-SNAPSHOT")
   implementation(Deps.accompanist.swiperefresh)
 
   implementation("com.github.anrwatchdog:anrwatchdog:1.4.0")
