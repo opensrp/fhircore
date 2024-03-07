@@ -36,6 +36,7 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -676,8 +677,22 @@ constructor(
      */
     val computedValuesMap = mutableMapOf<String, Any>()
     initialComputedValuesMap.forEach { entry ->
-      computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+      val valueString = entry.value.toString()
+      if ('/' in valueString) {
+        val resourceType = valueString.substringBefore('/')
+        val isResourceValid =
+          resourceType.lowercase() in ResourceType.values().map { it.name.lowercase() }
+        if (isResourceValid) {
+          computedValuesMap[entry.key] =
+            "${entry.value.toString().substringBefore("/")}/${
+              entry.value.toString().extractLogicalIdUuid()
+            }"
+        } else {
+          computedValuesMap[entry.key] = valueString
+        }
+      } else {
+        computedValuesMap[entry.key] = valueString
+      }
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
