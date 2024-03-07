@@ -73,6 +73,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
@@ -92,7 +93,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
@@ -515,6 +516,48 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromAssets() = runTest {
+    val sampleQuestionnaire = Faker.buildQuestionnaire()
+
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = sampleQuestionnaire.id,
+        resourceIdentifier = "8uhygtf6",
+      )
+
+    val mockedSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockedConfigurationRegistry = mockk<ConfigurationRegistry>()
+
+    every {
+      mockedSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    } returns "app/debug"
+    coEvery {
+      mockedConfigurationRegistry.configsJsonMap.getOrDefault(theQuestionnaireConfig.id, null)
+    } returns sampleQuestionnaire.encodeResourceToString()
+    questionnaireViewModel =
+      spyk(
+        QuestionnaireViewModel(
+          defaultRepository = defaultRepository,
+          dispatcherProvider = defaultRepository.dispatcherProvider,
+          fhirCarePlanGenerator = fhirCarePlanGenerator,
+          resourceDataRulesExecutor = resourceDataRulesExecutor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = mockedSharedPreferencesHelper,
+          fhirOperator = fhirOperator,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = mockedConfigurationRegistry,
+        ),
+      )
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = theQuestionnaireConfig,
+        actionParameters = emptyList(),
+      )
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(theQuestionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
   }
 
   @Test

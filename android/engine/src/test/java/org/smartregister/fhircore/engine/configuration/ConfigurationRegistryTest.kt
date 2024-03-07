@@ -138,6 +138,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "{\"resourceType\": \"List\", \"id\": \"$resourceId\"}"
 
     val resource = configRegistry.retrieveResourceFromConfigMap<Resource>(resourceId)
+
     val resourceIdOnly = resource?.id?.substringAfterLast('/')
 
     resource?.let { assertEquals(resourceId, resourceIdOnly) }
