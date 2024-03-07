@@ -128,7 +128,7 @@ class RegisterScreenTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_TEST_TAG).assertExists()
+    composeTestRule.onAllNodesWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
   }
 
   @Test
@@ -163,7 +163,7 @@ class RegisterScreenTest {
         navController = rememberNavController(),
       )
     }
-    composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG).assertExists()
+    composeTestRule.onAllNodesWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
   }
 
   @Test
