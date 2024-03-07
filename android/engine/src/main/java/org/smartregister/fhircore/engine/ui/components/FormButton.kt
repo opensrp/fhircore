@@ -38,19 +38,20 @@ import org.smartregister.fhircore.engine.domain.model.FormButtonData
 fun FormButton(
   formButtonData: FormButtonData,
   modifier: Modifier = Modifier,
-  onFormClick: (String, String?) -> Unit
+  onFormClick: (String, String?) -> Unit,
 ) {
   OutlinedButton(
     onClick = {
-      if (formButtonData.questionnaireId != null)
+      if (formButtonData.questionnaireId != null) {
         onFormClick(formButtonData.questionnaireId, formButtonData.backReference?.reference)
+      }
     },
     colors =
       ButtonDefaults.buttonColors(
         backgroundColor = formButtonData.color.copy(alpha = 0.1f),
-        contentColor = formButtonData.color.copy(alpha = 0.9f)
+        contentColor = formButtonData.color.copy(alpha = 0.9f),
       ),
-    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
+    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp),
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Icon(imageVector = Icons.Filled.Add, contentDescription = null)
@@ -65,23 +66,23 @@ fun PatientFormPreview() {
   Column {
     FormButton(
       formButtonData = FormButtonData("Household survey", "182912"),
-      onFormClick = { _, _ -> }
+      onFormClick = { _, _ -> },
     )
     FormButton(
       formButtonData = FormButtonData("Bednet distribution", "182212"),
-      onFormClick = { _, _ -> }
+      onFormClick = { _, _ -> },
     )
     FormButton(
       formButtonData = FormButtonData("Malaria diagnosis", "181212"),
-      onFormClick = { _, _ -> }
+      onFormClick = { _, _ -> },
     )
     FormButton(
       formButtonData = FormButtonData("Medicine treatment", "171212"),
-      onFormClick = { _, _ -> }
+      onFormClick = { _, _ -> },
     )
     FormButton(
       formButtonData = FormButtonData("G6PD test result", "171219"),
-      onFormClick = { _, _ -> }
+      onFormClick = { _, _ -> },
     )
   }
 }

@@ -20,5 +20,5 @@ import org.hl7.fhir.r4.model.MeasureReport
 
 data class MeasureReportTypeData(
   val textResource: Int,
-  val measureReportType: MeasureReport.MeasureReportType
+  val measureReportType: MeasureReport.MeasureReportType,
 )

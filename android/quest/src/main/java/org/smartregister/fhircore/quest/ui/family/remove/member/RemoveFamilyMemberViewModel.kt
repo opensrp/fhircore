@@ -31,7 +31,7 @@ class RemoveFamilyMemberViewModel
 @Inject
 constructor(
   override val repository: AppRegisterRepository,
-  val appFeatureManager: AppFeatureManager
+  val appFeatureManager: AppFeatureManager,
 ) : BaseRemoveFamilyEntityViewModel<Patient>(repository) {
 
   override fun fetch(profileId: String) {

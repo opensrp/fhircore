@@ -23,6 +23,6 @@ sealed class TracingHistoryEvent {
   data class OpenOutComesScreen(
     val navController: NavHostController,
     val context: Context,
-    val historyId: String
+    val historyId: String,
   ) : TracingHistoryEvent()
 }

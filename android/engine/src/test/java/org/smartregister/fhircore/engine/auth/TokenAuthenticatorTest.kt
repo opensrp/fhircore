@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -63,9 +64,14 @@ import retrofit2.Response
 class TokenAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
+
   @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private val oAuthService: OAuthService = mockk()
   private lateinit var tokenAuthenticator: TokenAuthenticator
   private val accountManager = mockk<AccountManager>()
@@ -82,10 +88,10 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
   }
 
@@ -109,7 +115,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun getAccountTypeEqualValueFromConfigService() {
     Assert.assertEquals(
       configService.provideAuthConfiguration().accountType,
-      tokenAuthenticator.getAccountType()
+      tokenAuthenticator.getAccountType(),
     )
   }
 
@@ -146,7 +152,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         any(),
         true,
         any(),
-        any()
+        any(),
       )
     } returns mockk()
 
@@ -160,7 +166,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         any(),
         true,
         any(),
-        any()
+        any(),
       )
     }
   }
@@ -187,7 +193,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         any<Bundle>(),
         true,
         any(),
-        any()
+        any(),
       )
     } throws OperationCanceledException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
@@ -198,7 +204,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         any<Bundle>(),
         true,
         any(),
-        any()
+        any(),
       )
     } throws IOException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
@@ -209,7 +215,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         any<Bundle>(),
         true,
         any(),
-        any()
+        any(),
       )
     } throws AuthenticatorException()
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
@@ -231,10 +237,10 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val oAuthResponse =
@@ -243,7 +249,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
 
@@ -270,7 +276,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     Assert.assertEquals(
       charArrayOf('P', '4', '5', '5', 'W', '4', '0').toPasswordHash(passwordSalt),
-      credentials?.passwordHash
+      credentials?.passwordHash,
     )
   }
 
@@ -288,7 +294,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = refreshToken,
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
     every { accountManager.accounts } returns arrayOf(account)
@@ -297,7 +303,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.setAuthToken(
         account,
         TokenAuthenticator.AUTH_TOKEN_TYPE,
-        oAuthResponse.accessToken
+        oAuthResponse.accessToken,
       )
     } just runs
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
@@ -309,7 +315,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       accountManager.setAuthToken(
         account,
         TokenAuthenticator.AUTH_TOKEN_TYPE,
-        oAuthResponse.accessToken
+        oAuthResponse.accessToken,
       )
     }
   }
@@ -347,6 +353,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
       Assert.assertEquals(Result.failure<SSLHandshakeException>(sslHandshakeException), result)
     }
   }
+
   @Test
   fun testLogout() {
     val account = Account(sampleUsername, PROVIDER)
@@ -397,7 +404,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
         refreshToken = "soRefreshingRefreshToken",
         tokenType = "",
         expiresIn = 3600,
-        scope = SCOPE
+        scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
     every { accountManager.setPassword(account, any()) } just runs
@@ -424,10 +431,10 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
-          context = context
-        )
+          context = context,
+        ),
       )
 
     val result =

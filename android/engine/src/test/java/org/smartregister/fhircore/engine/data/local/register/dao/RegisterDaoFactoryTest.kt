@@ -27,7 +27,7 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
-class OverflowMenuFactoryTest : RobolectricTest() {
+class RegisterDaoFactoryTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 

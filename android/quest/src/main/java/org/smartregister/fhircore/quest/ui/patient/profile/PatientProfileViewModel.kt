@@ -76,7 +76,7 @@ constructor(
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val profileViewDataMapper: ProfileViewDataMapper,
-  val registerViewDataMapper: RegisterViewDataMapper
+  val registerViewDataMapper: RegisterViewDataMapper,
 ) : ViewModel() {
 
   val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
@@ -91,8 +91,8 @@ constructor(
   var patientProfileUiState: MutableState<PatientProfileUiState> =
     mutableStateOf(
       PatientProfileUiState(
-        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE)
-      )
+        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.PATIENT_PROFILE),
+      ),
     )
 
   private val _patientProfileViewDataFlow =
@@ -112,7 +112,9 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed, is SyncJobStatus.Glitch -> {
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed,
+            is SyncJobStatus.Glitch, -> {
               isSyncing.value = false
               fetchPatientProfileDataWithChildren()
             }
@@ -125,7 +127,7 @@ constructor(
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
 
     fetchPatientProfileDataWithChildren()
@@ -152,9 +154,9 @@ constructor(
         PatientProfileUiState(
           overflowMenuFactory.retrieveOverflowMenuItems(
             getOverflowMenuHostByPatientType(
-              (patientProfile as ProfileData.HivProfileData).healthStatus
-            )
-          )
+              (patientProfile as ProfileData.HivProfileData).healthStatus,
+            ),
+          ),
         )
     }
   }
@@ -171,19 +173,19 @@ constructor(
           tasks =
             hivPatientProfileData.tasks.filter {
               it.isGuardianVisit(applicationConfiguration.taskFilterTagViaMetaCodingSystem)
-            }
+            },
         )
       _patientProfileViewDataFlow.value =
-        profileViewDataMapper.transformInputToOutputModel(newProfileData) as
-          ProfileViewData.PatientProfileViewData
+        profileViewDataMapper.transformInputToOutputModel(newProfileData)
+          as ProfileViewData.PatientProfileViewData
     }
   }
 
   fun undoGuardianVisitTasksFilter() {
     if (patientProfileData != null) {
       _patientProfileViewDataFlow.value =
-        profileViewDataMapper.transformInputToOutputModel(patientProfileData!!) as
-          ProfileViewData.PatientProfileViewData
+        profileViewDataMapper.transformInputToOutputModel(patientProfileData!!)
+          as ProfileViewData.PatientProfileViewData
     }
   }
 
@@ -196,10 +198,10 @@ constructor(
           event.context,
           questionnaireId = event.questionnaireId,
           clientIdentifier = patientId,
-          populationResources = profile.populationResources
+          populationResources = profile.populationResources,
         )
       is PatientProfileEvent.SeeAll -> {
-        /* TODO(View all records in this category e.g. all medical history, tasks etc) */
+        // TODO(View all records in this category e.g. all medical history, tasks etc)
       }
       is PatientProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
@@ -208,7 +210,7 @@ constructor(
               event.context,
               questionnaireId = FAMILY_MEMBER_REGISTER_FORM,
               clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.EDIT
+              questionnaireType = QuestionnaireType.EDIT,
             )
           R.id.guardian_visit -> {
             isClientVisit.value = false
@@ -222,12 +224,14 @@ constructor(
             val commonParams =
               NavigationArg.bindArgumentsOf(
                 Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
-                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV)
+                Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
               )
 
             event.navController.navigate(
-              route = "${MainNavigationScreen.PatientGuardians.route}/$patientId$commonParams"
-            ) { launchSingleTop = true }
+              route = "${MainNavigationScreen.PatientGuardians.route}/$patientId$commonParams",
+            ) {
+              launchSingleTop = true
+            }
           }
           R.id.view_family -> {
             familyId?.let {
@@ -235,10 +239,10 @@ constructor(
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.HouseholdManagement.name),
                   Pair(NavigationArg.HEALTH_MODULE, HealthModule.FAMILY),
-                  Pair(NavigationArg.PATIENT_ID, it)
+                  Pair(NavigationArg.PATIENT_ID, it),
                 )
               event.navController.navigate(
-                route = MainNavigationScreen.FamilyProfile.route + urlParams
+                route = MainNavigationScreen.FamilyProfile.route + urlParams,
               )
             }
           }
@@ -248,10 +252,10 @@ constructor(
                 NavigationArg.bindArgumentsOf(
                   Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
                   Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
-                  Pair(NavigationArg.PATIENT_ID, it)
+                  Pair(NavigationArg.PATIENT_ID, it),
                 )
               event.navController.navigate(
-                route = MainNavigationScreen.ViewChildContacts.route + urlParams
+                route = MainNavigationScreen.ViewChildContacts.route + urlParams,
               )
             }
           }
@@ -260,14 +264,14 @@ constructor(
               event.context,
               questionnaireId = REMOVE_FAMILY_FORM,
               clientIdentifier = patientId,
-              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, familyId))
+              intentBundle = bundleOf(Pair(NavigationArg.FAMILY_ID, familyId)),
             )
           R.id.record_as_anc ->
             QuestionnaireActivity.launchQuestionnaire(
               event.context,
               questionnaireId = ANC_ENROLLMENT_FORM,
               clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT
+              questionnaireType = QuestionnaireType.DEFAULT,
             )
           R.id.edit_profile ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -275,7 +279,7 @@ constructor(
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           R.id.viral_load_results ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -283,7 +287,7 @@ constructor(
               questionnaireId = VIRAL_LOAD_RESULTS_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           R.id.hiv_test_and_results ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -291,7 +295,7 @@ constructor(
               questionnaireId = HIV_TEST_AND_RESULTS_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           R.id.hiv_test_and_next_appointment ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -299,7 +303,7 @@ constructor(
               questionnaireId = HIV_TEST_AND_NEXT_APPOINTMENT_FORM,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           R.id.patient_transfer_out ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -307,7 +311,7 @@ constructor(
               questionnaireId = PATIENT_TRANSFER_OUT,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           R.id.patient_change_status ->
             QuestionnaireActivity.launchQuestionnaire(
@@ -315,7 +319,7 @@ constructor(
               questionnaireId = PATIENT_CHANGE_STATUS,
               clientIdentifier = patientId,
               questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources
+              populationResources = profile.populationResources,
             )
           else -> {}
         }
@@ -326,20 +330,20 @@ constructor(
           questionnaireId = event.taskFormId,
           clientIdentifier = patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,
-          populationResources = profile.populationResources
+          populationResources = profile.populationResources,
         )
       is PatientProfileEvent.OpenChildProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             Pair(NavigationArg.HEALTH_MODULE, healthModule),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
           )
-        if (healthModule == HealthModule.FAMILY)
+        if (healthModule == HealthModule.FAMILY) {
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
+        } else
           event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
+            route = MainNavigationScreen.PatientProfile.route + urlParams,
           )
       }
     }
@@ -379,8 +383,8 @@ constructor(
         registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
           patientProfileData = it
           _patientProfileViewDataFlow.value =
-            profileViewDataMapper.transformInputToOutputModel(it) as
-              ProfileViewData.PatientProfileViewData
+            profileViewDataMapper.transformInputToOutputModel(it)
+              as ProfileViewData.PatientProfileViewData
           refreshOverFlowMenu(healthModule = healthModule, patientProfile = it)
           paginateChildrenRegisterData(true)
           handleVisitType(isClientVisit.value)
@@ -400,19 +404,19 @@ constructor(
   private fun getPager(
     appFeatureName: String?,
     healthModule: HealthModule,
-    loadAll: Boolean = true
+    loadAll: Boolean = true,
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(
           pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
-          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE
+          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE,
         ),
       pagingSourceFactory = {
         ChildContactPagingSource(
             patientProfileViewData.value.otherPatients,
             registerRepository,
-            registerViewDataMapper
+            registerViewDataMapper,
           )
           .apply {
             setPatientPagingSourceState(
@@ -420,11 +424,11 @@ constructor(
                 appFeatureName = appFeatureName,
                 healthModule = healthModule,
                 loadAll = loadAll,
-                currentPage = 0
-              )
+                currentPage = 0,
+              ),
             )
           }
-      }
+      },
     )
 
   companion object {

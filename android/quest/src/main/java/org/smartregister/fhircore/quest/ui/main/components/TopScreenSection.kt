@@ -54,12 +54,12 @@ fun TopScreenSection(
   title: String,
   searchText: String,
   onSearchTextChanged: (String) -> Unit,
-  onTitleIconClick: () -> Unit
+  onTitleIconClick: () -> Unit,
 ) {
   Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.padding(vertical = 8.dp)
+      modifier = modifier.padding(vertical = 8.dp),
     ) {
       IconButton(onClick = onTitleIconClick) {
         Icon(Icons.Filled.Menu, contentDescription = DRAWER_MENU, tint = Color.White)
@@ -86,11 +86,12 @@ fun TopScreenSection(
           .background(Color.White),
       leadingIcon = { Icon(imageVector = Icons.Filled.Search, SEARCH) },
       trailingIcon = {
-        if (searchText.isNotEmpty())
+        if (searchText.isNotEmpty()) {
           IconButton(onClick = { onSearchTextChanged("") }) {
             Icon(imageVector = Icons.Filled.Clear, CLEAR, tint = Color.Gray)
           }
-      }
+        }
+      },
     )
   }
 }

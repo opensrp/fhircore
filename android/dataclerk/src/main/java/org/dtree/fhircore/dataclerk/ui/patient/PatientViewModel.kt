@@ -46,12 +46,13 @@ class PatientViewModel
 constructor(
   savedStateHandle: SavedStateHandle,
   private val appDataStore: AppDataStore,
-  @ApplicationContext val context: Context
+  @ApplicationContext val context: Context,
 ) : ViewModel() {
   private val patientId = savedStateHandle.get<String>("patientId") ?: ""
   val screenState = MutableStateFlow<PatientDetailScreenState>(PatientDetailScreenState.Loading)
   val resourceMapStatus: MutableState<Map<String, MutableStateFlow<ResourcePropertyState>>> =
     mutableStateOf(mapOf())
+
   init {
     fetchPatient()
   }
@@ -67,30 +68,30 @@ constructor(
           data.add(PatientDetailOverview(patientItem, firstInGroup = true))
           data.add(
             PatientDetailProperty(
-              PatientProperty("Last Updated", patientItem.dateCreated?.toHumanDisplay() ?: "")
-            )
+              PatientProperty("Last Updated", patientItem.dateCreated?.toHumanDisplay() ?: ""),
+            ),
           )
           data.add(PatientDetailProperty(PatientProperty("HCC/ArtNumber", patientItem.id)))
           data.add(
             PatientDetailProperty(
-              PatientProperty(getString(R.string.patient_property_mobile), patientItem.phone)
-            )
+              PatientProperty(getString(R.string.patient_property_mobile), patientItem.phone),
+            ),
           )
           data.add(
             PatientDetailProperty(
               PatientProperty(
                 getString(R.string.patient_property_dob),
-                patientItem.dob?.localizedString ?: ""
-              )
-            )
+                patientItem.dob?.localizedString ?: "",
+              ),
+            ),
           )
           data.add(
             PatientDetailProperty(
               PatientProperty(
                 getString(R.string.patient_property_age),
-                getFormattedAge(patient, context.resources)
-              )
-            )
+                getFormattedAge(patient, context.resources),
+              ),
+            ),
           )
           data.add(
             PatientDetailProperty(
@@ -98,22 +99,22 @@ constructor(
                 getString(R.string.patient_property_gender),
                 patientItem.gender.replaceFirstChar {
                   if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
-                }
+                },
               ),
-              lastInGroup = true
-            )
+              lastInGroup = true,
+            ),
           )
           val address = patientItem.addressData.fullAddress
           data.add(
             PatientDetailProperty(
               PatientProperty(
                 getString(R.string.patient_property_address),
-                address.ifBlank { "N/A" }
-              )
-            )
+                address.ifBlank { "N/A" },
+              ),
+            ),
           )
           data.add(
-            PatientReferenceProperty(PatientProperty("CHW Assigned", patientItem.chwAssigned))
+            PatientReferenceProperty(PatientProperty("CHW Assigned", patientItem.chwAssigned)),
           )
           if (patientItem.chwAssigned.isNotBlank()) {
             hashList.add(patientItem.chwAssigned)
@@ -153,12 +154,13 @@ constructor(
   }
 
   private fun getString(resId: Int) = context.resources.getString(resId)
+
   fun editPatient(context: Context) {
     QuestionnaireActivity.launchQuestionnaire(
       context = context,
       questionnaireId = EDIT_PROFILE_FORM,
       clientIdentifier = patientId,
-      questionnaireType = QuestionnaireType.EDIT
+      questionnaireType = QuestionnaireType.EDIT,
     )
   }
 
@@ -172,6 +174,7 @@ private fun isAndroidIcuSupported() = true
 val LocalDate.localizedString: String
   get() {
     val date = Date.from(atStartOfDay(ZoneId.systemDefault())?.toInstant())
-    return if (isAndroidIcuSupported()) DateFormat.getDateInstance(DateFormat.DEFAULT).format(date)
-    else SimpleDateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()).format(date)
+    return if (isAndroidIcuSupported()) {
+      DateFormat.getDateInstance(DateFormat.DEFAULT).format(date)
+    } else SimpleDateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault()).format(date)
   }

@@ -63,6 +63,7 @@ import org.smartregister.fhircore.engine.trace.FakePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -74,9 +75,11 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginActivity: LoginActivity
 
   @get:Rule var hiltRule = HiltAndroidRule(this)
+
   @OptIn(ExperimentalCoroutinesApi::class)
   @get:Rule(order = 2)
   val coroutineTestRule: CoroutineTestRule = CoroutineTestRule()
+
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue val repository: DefaultRepository = mockk()
@@ -94,12 +97,16 @@ class LoginActivityTest : ActivityRobolectricTest() {
   private lateinit var loginService: LoginService
 
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
+
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @BindValue @JvmField val performanceReporter: PerformanceReporter = FakePerformanceReporter()
   private val fhirResourceService = mockk<FhirResourceService>()
   private val keycloakService = mockk<KeycloakService>()
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val tokenAuthenticator = mockk<TokenAuthenticator>()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @OptIn(ExperimentalCoroutinesApi::class)
   @Before
@@ -122,9 +129,9 @@ class LoginActivityTest : ActivityRobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          fhirResourceDataSource = fhirResourceDataSource
-        )
+          dispatcherProvider = dispatcherProvider,
+          fhirResourceDataSource = fhirResourceDataSource,
+        ),
       )
 
     loginActivity =
@@ -159,7 +166,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -176,7 +183,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -185,7 +192,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
           .create()
           .resume()
-          .get()
+          .get(),
       )
     loginActivity.configurationRegistry = configurationRegistry
     loginActivity.configurationRegistry.appId = "default"
@@ -210,7 +217,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         putExtra(AccountManager.KEY_ACCOUNT_NAME, accountName)
         putExtra(
           AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE,
-          mockk<AccountAuthenticatorResponse>()
+          mockk<AccountAuthenticatorResponse>(),
         )
         putExtra(AccountManager.KEY_ACCOUNT_TYPE, AccountManager.KEY_ACCOUNT_TYPE)
       }
@@ -219,7 +226,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
         Robolectric.buildActivity(LoginActivity::class.java, updateAuthIntent)
           .create()
           .resume()
-          .get()
+          .get(),
       )
     loginActivity.configurationRegistry = configurationRegistry
     loginActivity.configurationRegistry.appId = "default"

@@ -33,22 +33,22 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 @Composable
 fun FamilyProfileTopBar(
   familyProfileViewData: ProfileViewData.FamilyProfileViewData,
-  modifier: Modifier
+  modifier: Modifier,
 ) {
   Column(
-    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary).padding(16.dp)
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary).padding(16.dp),
   ) {
     Text(
       text = familyProfileViewData.name,
       color = Color.White,
       fontSize = 20.sp,
-      modifier = modifier.padding(top = 4.dp)
+      modifier = modifier.padding(top = 4.dp),
     )
     Text(
       text = familyProfileViewData.address,
       color = Color.LightGray.copy(alpha = 0.8f),
       fontSize = 20.sp,
-      modifier = modifier.padding(top = 4.dp)
+      modifier = modifier.padding(top = 4.dp),
     )
   }
 }
@@ -59,6 +59,6 @@ fun FamilyProfileTopBarPreview() {
   FamilyProfileTopBar(
     familyProfileViewData =
       ProfileViewData.FamilyProfileViewData(name = "William Odinga", address = "#4 Sugoi, Bondo"),
-    modifier = Modifier
+    modifier = Modifier,
   )
 }

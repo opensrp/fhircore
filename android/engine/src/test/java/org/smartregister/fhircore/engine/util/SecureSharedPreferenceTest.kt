@@ -60,7 +60,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
     Assert.assertEquals(
       "!@#$".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
-      secureSharedPreference.retrieveCredentials()!!.passwordHash
+      secureSharedPreference.retrieveCredentials()!!.passwordHash,
     )
   }
 

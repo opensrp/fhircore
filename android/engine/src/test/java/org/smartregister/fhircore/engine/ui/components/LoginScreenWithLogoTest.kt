@@ -47,28 +47,26 @@ class LoginScreenWithLogoTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    loginViewModelWithLogo =
-      mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
-        every { username } returns this@LoginScreenWithLogoTest.username
-        every { password } returns this@LoginScreenWithLogoTest.password
-        every { loginErrorState } returns this@LoginScreenWithLogoTest.loginErrorState
-        every { showProgressBar } returns this@LoginScreenWithLogoTest.showProgressBar
-        every { loadingConfig } returns this@LoginScreenWithLogoTest.loadingConfig
-        every { onUsernameUpdated(any()) } answers
-          {
-            this@LoginScreenWithLogoTest.username.value = firstArg()
-          }
-        every { onPasswordUpdated(any()) } answers
-          {
-            this@LoginScreenWithLogoTest.password.value = firstArg()
-          }
-      }
+    loginViewModelWithLogo = mockk {
+      every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+      every { username } returns this@LoginScreenWithLogoTest.username
+      every { password } returns this@LoginScreenWithLogoTest.password
+      every { loginErrorState } returns this@LoginScreenWithLogoTest.loginErrorState
+      every { showProgressBar } returns this@LoginScreenWithLogoTest.showProgressBar
+      every { loadingConfig } returns this@LoginScreenWithLogoTest.loadingConfig
+      every { onUsernameUpdated(any()) } answers
+        {
+          this@LoginScreenWithLogoTest.username.value = firstArg()
+        }
+      every { onPasswordUpdated(any()) } answers
+        {
+          this@LoginScreenWithLogoTest.password.value = firstArg()
+        }
+    }
   }
 
   @Test
   fun testLoginScreenComponentsWithLogo() {
-
     composeRule.setContent { LoginScreen(loginViewModelWithLogo) }
 
     // verifying app logo properties

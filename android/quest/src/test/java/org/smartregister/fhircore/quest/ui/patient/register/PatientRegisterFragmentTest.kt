@@ -74,7 +74,7 @@ class PatientRegisterFragmentTest : RobolectricTest() {
     composeRule.setContent {
       registerFragment.ConstructRegisterList(
         pagingItems = dummyPatientPagingList(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
@@ -87,45 +87,45 @@ class PatientRegisterFragmentTest : RobolectricTest() {
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(name = "Samia"),
-        ""
-      )
+        "",
+      ),
     )
     Assert.assertTrue(
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(identifier = "12345"),
-        "12345"
-      )
+        "12345",
+      ),
     )
 
     Assert.assertTrue(
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(name = "Razi"),
-        "Razi"
-      )
+        "Razi",
+      ),
     )
 
     Assert.assertTrue(
       registerFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientItem(id = "1234"),
-        "1234"
-      )
+        "1234",
+      ),
     )
   }
 
   @Test
   fun testPerformFilterShouldReturnTrueForEmptyFilter() {
     Assert.assertTrue(
-      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientItem(), "")
+      registerFragment.performFilter(RegisterFilterType.SEARCH_FILTER, PatientItem(), ""),
     )
   }
 
   @Test
   fun testPerformFilterShouldReturnFalseForUnhandledFilterType() {
     Assert.assertFalse(
-      registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, PatientItem(), "222")
+      registerFragment.performFilter(RegisterFilterType.OVERDUE_FILTER, PatientItem(), "222"),
     )
   }
 

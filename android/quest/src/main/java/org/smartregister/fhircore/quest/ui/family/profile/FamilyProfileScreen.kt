@@ -83,9 +83,8 @@ import org.smartregister.fhircore.quest.ui.family.profile.model.FamilyBottomShee
 fun FamilyProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
-  familyProfileViewModel: FamilyProfileViewModel = hiltViewModel()
+  familyProfileViewModel: FamilyProfileViewModel = hiltViewModel(),
 ) {
-
   val viewState = familyProfileViewModel.familyProfileUiState.value
   val profileViewData = familyProfileViewModel.familyMemberProfileData.value
   var showOverflowMenu by remember { mutableStateOf(false) }
@@ -118,10 +117,11 @@ fun FamilyProfileScreen(
                   changeFamilyHead(familyMember.patientId, familyId!!)
                   fetchFamilyProfileData()
                 }
-                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                   bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
-            }
+            },
           )
         }
         FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS -> {
@@ -136,30 +136,31 @@ fun FamilyProfileScreen(
                   context = context,
                   taskFormId = taskFormId,
                   taskId = taskId!!,
-                  patientId = currentMemberPatientId
-                )
+                  patientId = currentMemberPatientId,
+                ),
               )
             },
             onViewProfile = {
               coroutineScope.launch {
-                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                   bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
               familyProfileViewModel.onEvent(
                 FamilyProfileEvent.OpenMemberProfile(
                   patientId = currentMemberPatientId,
                   familyId = familyProfileViewModel.familyId,
-                  navController = navController
-                )
+                  navController = navController,
+                ),
               )
-            }
+            },
           )
         }
       }
     },
     scaffoldState = bottomSheetScaffoldState,
     sheetPeekHeight = 0.dp,
-    sheetGesturesEnabled = true
+    sheetGesturesEnabled = true,
   ) {
     Scaffold(
       topBar = {
@@ -177,13 +178,13 @@ fun FamilyProfileScreen(
               Icon(
                 imageVector = Icons.Outlined.MoreVert,
                 contentDescription = null,
-                tint = Color.White
+                tint = Color.White,
               )
             }
             DropdownMenu(
               expanded = showOverflowMenu,
               onDismissRequest = { showOverflowMenu = false },
-              modifier = modifier.padding(0.dp)
+              modifier = modifier.padding(0.dp),
             ) {
               viewState.overflowMenuItems.forEach {
                 DropdownMenuItem(
@@ -196,15 +197,15 @@ fun FamilyProfileScreen(
                       if (familyList.list.isNotEmpty()) {
                         familyBottomSheetAction = FamilyBottomSheetAction.CHANGE_FAMILY_HEAD
                         coroutineScope.launch {
-                          if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                          if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                             bottomSheetScaffoldState.bottomSheetState.expand()
-                          else bottomSheetScaffoldState.bottomSheetState.collapse()
+                          } else bottomSheetScaffoldState.bottomSheetState.collapse()
                         }
                       } else {
                         Toast.makeText(
                             context,
                             "No eligible family members found for family head",
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_SHORT,
                           )
                           .show()
                       }
@@ -213,8 +214,8 @@ fun FamilyProfileScreen(
                         FamilyProfileEvent.OverflowMenuClick(
                           context,
                           it.id,
-                          familyProfileViewModel.familyId
-                        )
+                          familyProfileViewModel.familyId,
+                        ),
                       )
                   },
                   contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -223,13 +224,16 @@ fun FamilyProfileScreen(
                       .fillMaxWidth()
                       .background(
                         color =
-                          if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                          else Color.Transparent
-                      )
-                ) { Text(text = stringResource(it.titleResource), color = it.titleColor) }
+                          if (it.confirmAction) {
+                            it.titleColor.copy(alpha = 0.1f)
+                          } else Color.Transparent,
+                      ),
+                ) {
+                  Text(text = stringResource(it.titleResource), color = it.titleColor)
+                }
               }
             }
-          }
+          },
         )
       },
       floatingActionButton = {
@@ -238,14 +242,14 @@ fun FamilyProfileScreen(
           text = { Text(text = stringResource(R.string.add_memeber).uppercase()) },
           onClick = {
             familyProfileViewModel.onEvent(
-              FamilyProfileEvent.AddMember(context, familyProfileViewModel.familyId)
+              FamilyProfileEvent.AddMember(context, familyProfileViewModel.familyId),
             )
           },
           backgroundColor = MaterialTheme.colors.primary,
           icon = { Icon(imageVector = Icons.Filled.Add, contentDescription = null) },
-          interactionSource = mutableInteractionSource
+          interactionSource = mutableInteractionSource,
         )
-      }
+      },
     ) { innerPadding ->
       Box(modifier = modifier.padding(innerPadding)) {
         Column(modifier = modifier.verticalScroll(verticalScrollState)) {
@@ -256,7 +260,7 @@ fun FamilyProfileScreen(
           Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 16.dp)
+            modifier = modifier.fillMaxWidth().padding(vertical = 20.dp, horizontal = 16.dp),
           ) {
             Text(text = stringResource(R.string.household), fontSize = 18.sp)
             OutlinedButton(
@@ -265,7 +269,7 @@ fun FamilyProfileScreen(
                 ButtonDefaults.buttonColors(
                   backgroundColor = InfoColor.copy(alpha = 0.1f),
                   contentColor = InfoColor,
-                )
+                ),
             ) {
               Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
@@ -281,7 +285,6 @@ fun FamilyProfileScreen(
             FamilyProfileRow(
               familyMemberViewState = memberViewState,
               onFamilyMemberClick = {
-
                 // Update bottom sheet action
                 familyBottomSheetAction = FamilyBottomSheetAction.FAMILY_MEMBER_DETAILS
 
@@ -293,7 +296,7 @@ fun FamilyProfileScreen(
                   listOf(
                       memberViewState.name,
                       memberViewState.gender.capitalizeFirstLetter().first().toString(),
-                      memberViewState.age
+                      memberViewState.age,
                     )
                     .joinToString(", ")
 
@@ -304,14 +307,14 @@ fun FamilyProfileScreen(
                       questionnaire = it.task,
                       questionnaireId = it.taskFormId,
                       backReference = it.taskId.asReference(ResourceType.Task),
-                      color = it.colorCode
+                      color = it.colorCode,
                     )
                   }
 
                 coroutineScope.launch {
-                  if (bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                  if (bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                     bottomSheetScaffoldState.bottomSheetState.expand()
-                  else bottomSheetScaffoldState.bottomSheetState.collapse()
+                  } else bottomSheetScaffoldState.bottomSheetState.collapse()
                 }
               },
               onTaskClick = { taskFormId, taskId ->
@@ -320,10 +323,10 @@ fun FamilyProfileScreen(
                     context = context,
                     taskFormId = taskFormId,
                     taskId = taskId,
-                    patientId = memberViewState.patientId
-                  )
+                    patientId = memberViewState.patientId,
+                  ),
                 )
-              }
+              },
             )
             Divider()
           }

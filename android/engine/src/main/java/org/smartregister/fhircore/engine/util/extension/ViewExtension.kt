@@ -38,7 +38,7 @@ enum class DrawablePosition(val position: Int) {
   DRAWABLE_LEFT(0),
   DRAWABLE_TOP(1),
   DRAWABLE_RIGHT(2),
-  DRAWABLE_BOTTOM(3)
+  DRAWABLE_BOTTOM(3),
 }
 
 @SuppressLint("ClickableViewAccessibility")
@@ -47,7 +47,8 @@ fun EditText.addOnDrawableClickListener(drawablePosition: DrawablePosition, onCl
     object : View.OnTouchListener {
       override fun onTouch(view: View?, motionEvent: MotionEvent?): Boolean {
         if (motionEvent == null || view == null) return false
-        if (motionEvent.action == MotionEvent.ACTION_UP &&
+        if (
+          motionEvent.action == MotionEvent.ACTION_UP &&
             (view as EditText).isDrawableClicked(drawablePosition, motionEvent)
         ) {
           onClicked()
@@ -55,7 +56,7 @@ fun EditText.addOnDrawableClickListener(drawablePosition: DrawablePosition, onCl
         }
         return false
       }
-    }
+    },
   )
 }
 
@@ -70,7 +71,8 @@ private fun EditText.isDrawableClicked(
         (this.right - this.compoundDrawables[drawablePosition.position].bounds.width())
     DrawablePosition.DRAWABLE_LEFT ->
       motionEvent.rawX <= (this.compoundDrawables[drawablePosition.position].bounds.width())
-    DrawablePosition.DRAWABLE_TOP, DrawablePosition.DRAWABLE_BOTTOM -> return false
+    DrawablePosition.DRAWABLE_TOP,
+    DrawablePosition.DRAWABLE_BOTTOM, -> return false
   }
 }
 

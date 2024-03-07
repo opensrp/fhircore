@@ -83,7 +83,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
               }
           },
           included = null,
-          revIncluded = null
+          revIncluded = null,
         ),
         SearchResult(
           Task().apply {
@@ -95,8 +95,8 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
               }
           },
           included = null,
-          revIncluded = null
-        )
+          revIncluded = null,
+        ),
       )
 
     coEvery { fhirEngine.search<Task>(any<Search>()) } returns tasks
@@ -122,7 +122,7 @@ class FhirTaskPlanWorkerTest : RobolectricTest() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return FhirTaskPlanWorker(appContext, workerParameters, fhirEngine)
     }

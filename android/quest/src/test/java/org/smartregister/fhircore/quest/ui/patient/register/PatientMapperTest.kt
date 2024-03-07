@@ -90,7 +90,7 @@ class PatientMapperTest : RobolectricTest() {
     family: String,
     given: String,
     age: Int,
-    telephones: List<String>
+    telephones: List<String>,
   ): Patient {
     return Patient().apply {
       this.id = id

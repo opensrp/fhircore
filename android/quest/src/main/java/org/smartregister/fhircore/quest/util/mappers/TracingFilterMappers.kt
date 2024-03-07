@@ -26,9 +26,9 @@ import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterFilte
 fun transformToTracingAgeFilterEnum(it: TracingRegisterFilterState) =
   when (it.age.selected) {
     AgeFilter.ALL_AGES -> null
-    AgeFilter.`0_2_YEARS` -> TracingAgeFilterEnum.ZERO_TO_2
-    AgeFilter.`0-18_YEARS` -> TracingAgeFilterEnum.ZERO_TO_18
-    AgeFilter.`18_PLUS_YEARS` -> TracingAgeFilterEnum.`18_PLUS`
+    AgeFilter.YEARS_0_TO_2 -> TracingAgeFilterEnum.ZERO_TO_2
+    AgeFilter.YEARS_0_TO_18 -> TracingAgeFilterEnum.ZERO_TO_18
+    AgeFilter.YEARS_18_PLUS -> TracingAgeFilterEnum.PLUS_18
   }
 
 fun transformPatientCategoryToHealthStatus(patientCategory: TracingPatientCategory) =

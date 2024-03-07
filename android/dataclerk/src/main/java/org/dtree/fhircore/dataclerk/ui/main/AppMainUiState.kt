@@ -45,6 +45,6 @@ fun appMainUiStateOf(
     currentLanguage = currentLanguage,
     languages = languages,
     isInitialSync = isInitialSync,
-    registrationButton = registrationButton
+    registrationButton = registrationButton,
   )
 }

@@ -60,28 +60,26 @@ class LoginScreenTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    loginViewModel =
-      mockk {
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
-        every { username } returns this@LoginScreenTest.username
-        every { password } returns this@LoginScreenTest.password
-        every { loadingConfig } returns this@LoginScreenTest.loadingConfig
-        every { loginErrorState } returns this@LoginScreenTest.loginError
-        every { showProgressBar } returns this@LoginScreenTest.showProgressBar
-        every { onUsernameUpdated(any()) } answers
-          {
-            this@LoginScreenTest.username.value = firstArg()
-          }
-        every { onPasswordUpdated(any()) } answers
-          {
-            this@LoginScreenTest.password.value = firstArg()
-          }
-      }
+    loginViewModel = mockk {
+      every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+      every { username } returns this@LoginScreenTest.username
+      every { password } returns this@LoginScreenTest.password
+      every { loadingConfig } returns this@LoginScreenTest.loadingConfig
+      every { loginErrorState } returns this@LoginScreenTest.loginError
+      every { showProgressBar } returns this@LoginScreenTest.showProgressBar
+      every { onUsernameUpdated(any()) } answers
+        {
+          this@LoginScreenTest.username.value = firstArg()
+        }
+      every { onPasswordUpdated(any()) } answers
+        {
+          this@LoginScreenTest.password.value = firstArg()
+        }
+    }
   }
 
   @Test
   fun testLoginScreenComponents() {
-
     composeRule.setContent { LoginScreen(loginViewModel) }
 
     // verifying app name heading properties

@@ -33,9 +33,10 @@ object TracingHelpers {
       "art-client-sexual-contact-registration",
       "art-client-sibling-contact-registration",
       "art-client-social-network-contact-registration",
-      "contact-and-community-positive-hiv-test-and-next-appointment"
+      "contact-and-community-positive-hiv-test-and-next-appointment",
     )
   const val tracingBundleId = "tracing"
+
   fun requireTracingTasks(id: String): Boolean =
     tracingQuestionnaires.firstOrNull { x -> x == id } != null
 }

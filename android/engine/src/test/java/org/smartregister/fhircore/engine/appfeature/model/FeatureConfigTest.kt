@@ -39,8 +39,8 @@ class FeatureConfigTest {
             "HOUSEHOLD_REGISTRATION",
             "REMOVE_HOUSEHOLD",
             "HOUSEHOLD_VISITS",
-            "REMOVE_HOUSEHOLD_MEMBER"
-          )
+            "REMOVE_HOUSEHOLD_MEMBER",
+          ),
       )
   }
 

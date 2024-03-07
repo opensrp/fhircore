@@ -25,11 +25,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.DispatcherModule
 import org.smartregister.fhircore.engine.di.FhirEngineModule
-import org.smartregister.fhircore.engine.di.NetworkModule
 
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
 class FakeFhirEngineModule {
 

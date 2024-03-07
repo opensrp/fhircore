@@ -48,7 +48,6 @@ class QuestConfigServiceTest : RobolectricTest() {
 
   @Test
   fun testProvideAuthConfigurationShouldReturnConfigs() {
-
     val authConfiguration = configService.provideAuthConfiguration()
 
     Assert.assertNotNull(authConfiguration)
@@ -58,7 +57,7 @@ class QuestConfigServiceTest : RobolectricTest() {
     Assert.assertEquals(BuildConfig.OAUTH_CLIENT_SECRET, authConfiguration.clientSecret)
     Assert.assertEquals(
       InstrumentationRegistry.getInstrumentation().targetContext.packageName,
-      authConfiguration.accountType
+      authConfiguration.accountType,
     )
   }
 }

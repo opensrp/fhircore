@@ -51,7 +51,8 @@ enum class HealthStatus(var display: String = "") {
   },
   DEFAULT {
     override fun priority(): StatusPriority = Int.MAX_VALUE
-  };
+  },
+  ;
 
   abstract fun priority(): StatusPriority
 

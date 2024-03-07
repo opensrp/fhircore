@@ -58,7 +58,7 @@ class DataClerkApplication : Application(), DataCaptureConfig.Provider, Configur
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
         )
     return configuration as DataCaptureConfig
   }

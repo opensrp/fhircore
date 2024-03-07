@@ -48,7 +48,7 @@ constructor(
       birthdate = patient.birthDate,
       address = patient.extractAddress(),
       description = task.description,
-      overdue = DateUtils.hasPastDays(task.executionPeriod.endElement)
+      overdue = DateUtils.hasPastDays(task.executionPeriod.endElement),
     )
   }
 }

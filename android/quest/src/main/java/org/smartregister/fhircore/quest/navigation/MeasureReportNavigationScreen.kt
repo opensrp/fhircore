@@ -20,7 +20,10 @@ sealed class MeasureReportNavigationScreen(
   val route: String,
 ) {
   object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
+
   object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
+
   object PatientsList : MeasureReportNavigationScreen("patientsList")
+
   object MeasureReportResult : MeasureReportNavigationScreen("measureReportResult")
 }

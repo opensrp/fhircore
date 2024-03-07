@@ -36,7 +36,9 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 class PinLoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var syncBroadcaster: Lazy<SyncBroadcaster>
 
   val pinViewModel by viewModels<PinViewModel>()
@@ -77,7 +79,7 @@ class PinLoginActivity : BaseMultiLanguageActivity() {
         addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         addCategory(Intent.CATEGORY_LAUNCHER)
-      }
+      },
     )
     finish()
   }

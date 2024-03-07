@@ -28,7 +28,7 @@ class OverflowMenuFactory @Inject constructor() {
   /** Retrieve [overflowMenuHost]. Remove any menu ids that satisfy the [conditions] */
   fun retrieveOverflowMenuItems(
     overflowMenuHost: OverflowMenuHost,
-    conditions: List<Pair<Int, Boolean>> = emptyList()
+    conditions: List<Pair<Int, Boolean>> = emptyList(),
   ): MutableList<OverflowMenuItem> {
     val overflowMenuItems = overflowMenuMap.getValue(overflowMenuHost)
     conditions.forEach { conditionPair: Pair<Int, Boolean> ->
@@ -48,7 +48,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.view_past_encounters, R.string.view_past_encounters),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   PATIENT_PROFILE(
     listOf(
@@ -57,7 +57,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.record_as_anc, R.string.record_as_anc),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   NEWLY_DIAGNOSED_PROFILE(
     listOf(
@@ -70,7 +70,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   ART_CLIENT_PROFILE(
     listOf(
@@ -82,7 +82,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   EXPOSED_INFANT_PROFILE(
     listOf(
@@ -92,7 +92,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   CHILD_CONTACT_PROFILE(
     listOf(
@@ -101,7 +101,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   SEXUAL_CONTACT_PROFILE(
     listOf(
@@ -110,7 +110,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   COMMUNITY_POSITIVE_PROFILE(
     listOf(
@@ -119,20 +119,20 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   NOT_ON_ART(
     listOf(
       OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   TRACING_PROFILE(
     listOf(
       OverflowMenuItem(R.id.tracing_history, R.string.tracing_history),
-      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile)
-    )
+      OverflowMenuItem(R.id.edit_profile, R.string.edit_profile),
+    ),
   ),
   SIBLING_CONTACT_PROFILE(
     listOf(
@@ -141,7 +141,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   SOCIAL_NETWORK_CONTACT_PROFILE(
     listOf(
@@ -150,7 +150,7 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
   BIOLOGICAL_PARENT_CONTACT_PROFILE(
     listOf(
@@ -159,6 +159,6 @@ enum class OverflowMenuHost(val overflowMenuItems: List<OverflowMenuItem>) {
       OverflowMenuItem(R.id.clinic_history, R.string.clinic_history),
       OverflowMenuItem(R.id.patient_transfer_out, R.string.transfer_out),
       OverflowMenuItem(R.id.patient_change_status, R.string.change_status),
-    )
+    ),
   ),
 }

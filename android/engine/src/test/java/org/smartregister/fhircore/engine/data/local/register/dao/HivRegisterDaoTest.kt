@@ -71,6 +71,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
@@ -80,12 +81,18 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class HivRegisterDaoTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val instantTaskExecutorRule = InstantTaskExecutorRule()
+
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
+
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
+
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   private lateinit var hivRegisterDao: HivRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
@@ -95,47 +102,47 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
   private val testPatient =
     buildPatient(
-      id = "1",
-      family = "doe",
-      given = "john",
-      age = 50,
-      patientType = "exposed-infant",
-      practitionerReference = "practitioner/1234"
-    )
+        id = "1",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant",
+        practitionerReference = "practitioner/1234",
+      )
       .apply { active = true }
 
   private val testPatientGenderNull =
     buildPatient(
-      id = "3",
-      family = "doe",
-      given = "jane",
-      gender = null,
-      patientType = "exposed-infant",
-    )
+        id = "3",
+        family = "doe",
+        given = "jane",
+        gender = null,
+        patientType = "exposed-infant",
+      )
       .apply { active = true }
 
   private val testPatientDeceasedFalse =
     buildPatient(
-      id = "4",
-      family = "doe",
-      given = "john",
-      age = 50,
-      patientType = "exposed-infant",
-      practitionerReference = "practitioner/1234",
-      deceased = false
-    )
+        id = "4",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant",
+        practitionerReference = "practitioner/1234",
+        deceased = false,
+      )
       .apply { active = true }
 
   private val testPatientDeceasedTrue =
     buildPatient(
-      id = "5",
-      family = "doe",
-      given = "john",
-      age = 50,
-      patientType = "exposed-infant",
-      practitionerReference = "practitioner/1234",
-      deceased = true
-    )
+        id = "5",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant",
+        practitionerReference = "practitioner/1234",
+        deceased = true,
+      )
       .apply { active = true }
 
   private val testTask1 =
@@ -145,7 +152,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
         Coding().apply {
           system = "https://d-tree.org"
           code = "clinic-visit-task-order-3"
-        }
+        },
       )
     }
 
@@ -156,7 +163,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
         Coding().apply {
           system = "https://d-tree.org"
           code = "clinic-visit-task-order-1"
-        }
+        },
       )
     }
 
@@ -168,7 +175,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       addActivity(
         CarePlan.CarePlanActivityComponent().apply {
           outcomeReference.add(Reference(testTask1.referenceValue()))
-        }
+        },
       )
     }
 
@@ -180,7 +187,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       addActivity(
         CarePlan.CarePlanActivityComponent().apply {
           outcomeReference.add(Reference(testTask2.referenceValue()))
-        }
+        },
       )
     }
 
@@ -190,10 +197,10 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
     coEvery { fhirEngine.get(ResourceType.Patient, "1") } returns testPatient
 
@@ -213,17 +220,17 @@ internal class HivRegisterDaoTest : RobolectricTest() {
               SearchResult(testPatient, included = null, revIncluded = null),
               SearchResult(testPatientGenderNull, included = null, revIncluded = null),
               SearchResult(testPatientDeceasedFalse, included = null, revIncluded = null),
-              SearchResult(testPatientDeceasedTrue, included = null, revIncluded = null)
+              SearchResult(testPatientDeceasedTrue, included = null, revIncluded = null),
             )
           ResourceType.Task ->
             listOf(
               SearchResult(testTask1, included = null, revIncluded = null),
-              SearchResult(testTask2, included = null, revIncluded = null)
+              SearchResult(testTask2, included = null, revIncluded = null),
             )
           ResourceType.CarePlan ->
             listOf(
               SearchResult(carePlan1, included = null, revIncluded = null),
-              SearchResult(carePlan2, included = null, revIncluded = null)
+              SearchResult(carePlan2, included = null, revIncluded = null),
             )
           else -> emptyList()
         }
@@ -238,7 +245,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
     every {
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
+        AppConfigClassification.APPLICATION,
       )
     } returns
       applicationConfigurationOf(patientTypeFilterTagViaMetaCodingSystem = "https://d-tree.org")
@@ -247,7 +254,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       HivRegisterDao(
         fhirEngine = fhirEngine,
         defaultRepository = defaultRepository,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
       )
   }
 
@@ -361,6 +368,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
     assertEquals(HealthStatus.EXPOSED_INFANT, hivProfileData.healthStatus)
     assertEquals(Enumerations.AdministrativeGender.MALE, hivProfileData.gender)
   }
+
   @Test
   fun testProfileTaskList() {
     val data = runBlocking {
@@ -413,7 +421,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
           Coding().apply {
             system = "https://d-tree.org"
             code = "client-already-on-art"
-          }
+          },
         )
         birthDate = DateType(Date()).apply { add(Calendar.YEAR, 48) }.dateTimeValue().value
       }
@@ -463,14 +471,14 @@ internal class HivRegisterDaoTest : RobolectricTest() {
           Identifier().apply {
             this.use = Identifier.IdentifierUse.OFFICIAL
             this.value = identifierNumber
-          }
+          },
         )
 
         identifier.add(
           Identifier().apply {
             this.use = Identifier.IdentifierUse.SECONDARY
             this.value = "149856"
-          }
+          },
         )
       }
     assertEquals(identifierNumber, hivRegisterDao.hivPatientIdentifier(patient))
@@ -478,21 +486,21 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
   @Test
   fun `test hiv patient identifier to be empty string when no 'official' identifier found`() =
-      runTest {
-    val identifierNumber = "149856"
-    val patient =
-      Patient().apply {
-        identifier.add(Identifier())
+    runTest {
+      val identifierNumber = "149856"
+      val patient =
+        Patient().apply {
+          identifier.add(Identifier())
 
-        identifier.add(
-          Identifier().apply {
-            this.use = Identifier.IdentifierUse.SECONDARY
-            this.value = identifierNumber
-          }
-        )
-      }
-    assertEquals("", hivRegisterDao.hivPatientIdentifier(patient))
-  }
+          identifier.add(
+            Identifier().apply {
+              this.use = Identifier.IdentifierUse.SECONDARY
+              this.value = identifierNumber
+            },
+          )
+        }
+      assertEquals("", hivRegisterDao.hivPatientIdentifier(patient))
+    }
 
   @Test
   fun testGetRegisterDataFilters() {
@@ -507,27 +515,27 @@ internal class HivRegisterDaoTest : RobolectricTest() {
 
   private val testHivPatient =
     buildPatient(
-      id = "logicalId",
-      family = "doe",
-      given = "john",
-      age = 50,
-      patientType = "exposed-infant",
-      practitionerReference = "practitioner/1234"
-    )
+        id = "logicalId",
+        family = "doe",
+        given = "john",
+        age = 50,
+        patientType = "exposed-infant",
+        practitionerReference = "practitioner/1234",
+      )
       .apply {
         active = true
         identifier.add(
           Identifier().apply {
             this.use = Identifier.IdentifierUse.SECONDARY
             this.value = "149856"
-          }
+          },
         )
         meta.addTag(
           Coding().apply {
             system = "https://d-tree.org"
             code = "exposed-infant"
             display = "Exposed Infant"
-          }
+          },
         )
       }
 

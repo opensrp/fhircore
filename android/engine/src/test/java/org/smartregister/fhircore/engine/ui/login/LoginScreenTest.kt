@@ -40,10 +40,13 @@ class LoginScreenTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onUsernameUpdated(userName: String) {}
+
         fun onPasswordUpdated() {}
+
         fun forgotPassword() {}
+
         fun attemptRemoteLogin() {}
-      }
+      },
     )
 
   private lateinit var loginViewModel: LoginViewModel
@@ -52,15 +55,14 @@ class LoginScreenTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    loginViewModel =
-      mockk {
-        every { username } returns MutableLiveData("demo")
-        every { password } returns MutableLiveData("1234")
-        every { loginErrorState } returns MutableLiveData(null)
-        every { loadingConfig } returns MutableLiveData(false)
-        every { showProgressBar } returns MutableLiveData(false)
-        every { loginViewConfiguration } returns MutableLiveData(loginConfig)
-      }
+    loginViewModel = mockk {
+      every { username } returns MutableLiveData("demo")
+      every { password } returns MutableLiveData("1234")
+      every { loginErrorState } returns MutableLiveData(null)
+      every { loadingConfig } returns MutableLiveData(false)
+      every { showProgressBar } returns MutableLiveData(false)
+      every { loginViewConfiguration } returns MutableLiveData(loginConfig)
+    }
   }
 
   @Test
@@ -85,7 +87,7 @@ class LoginScreenTest : RobolectricTest() {
         password = "password",
         onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
         forgotPassword = { listenerObjectSpy.forgotPassword() },
-        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() }
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
       )
     }
     if (loginConfig.showLogo) {

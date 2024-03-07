@@ -59,7 +59,7 @@ constructor(
   val oAuthService: OAuthService,
   val dispatcherProvider: DispatcherProvider,
   val accountManager: AccountManager,
-  @ApplicationContext val context: Context
+  @ApplicationContext val context: Context,
 ) : FhirAuthenticator {
 
   private val jwtParser = Jwts.parser()
@@ -87,12 +87,14 @@ constructor(
             Handler(Looper.getMainLooper()) { message: Message ->
               Timber.e(message.toString())
               true
-            }
+            },
           )
         authResultFuture.result
       } catch (exception: Exception) {
         when (exception) {
-          is OperationCanceledException, is AuthenticatorException, is IOException -> {
+          is OperationCanceledException,
+          is AuthenticatorException,
+          is IOException, -> {
             // TODO: Should we cancel the sync job to avoid retries when offline?
             Timber.e(exception)
             bundleOf(AccountManager.KEY_AUTHTOKEN to accessToken)
@@ -100,32 +102,34 @@ constructor(
           else -> bundleOf()
         }
       }
-    return if (authResultBundle.containsKey(AccountManager.KEY_AUTHTOKEN))
+    return if (authResultBundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
       authResultBundle.getString(AccountManager.KEY_AUTHTOKEN)!!
-    else ""
+    } else {
+      ""
+    }
   }
 
   private fun AccountManager.handleAccountManagerFutureCallback(account: Account?) =
-      { result: AccountManagerFuture<Bundle> ->
-    val bundle = result.result
-    when {
-      bundle.containsKey(AccountManager.KEY_AUTHTOKEN) -> {
-        val token = bundle.getString(AccountManager.KEY_AUTHTOKEN)
-        setAuthToken(account, AUTH_TOKEN_TYPE, token)
-      }
-      bundle.containsKey(AccountManager.KEY_INTENT) -> {
-        val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
+    { result: AccountManagerFuture<Bundle> ->
+      val bundle = result.result
+      when {
+        bundle.containsKey(AccountManager.KEY_AUTHTOKEN) -> {
+          val token = bundle.getString(AccountManager.KEY_AUTHTOKEN)
+          setAuthToken(account, AUTH_TOKEN_TYPE, token)
+        }
+        bundle.containsKey(AccountManager.KEY_INTENT) -> {
+          val launchIntent = bundle.get(AccountManager.KEY_INTENT) as? Intent
 
-        // Deletes session PIN to allow reset
-        secureSharedPreference.deleteSessionPin()
+          // Deletes session PIN to allow reset
+          secureSharedPreference.deleteSessionPin()
 
-        if (launchIntent != null && !isLoginPageRendered) {
-          context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
-          isLoginPageRendered = true
+          if (launchIntent != null && !isLoginPageRendered) {
+            context.startActivity(launchIntent.putExtra(CANCEL_BACKGROUND_SYNC, true))
+            isLoginPageRendered = true
+          }
         }
       }
     }
-  }
 
   /** This function checks if token is null or empty or expired */
   fun isTokenActive(authToken: String?): Boolean {
@@ -144,7 +148,7 @@ constructor(
       GRANT_TYPE to grantType,
       CLIENT_ID to authConfiguration.clientId,
       CLIENT_SECRET to authConfiguration.clientSecret,
-      SCOPE to authConfiguration.scope
+      SCOPE to authConfiguration.scope,
     )
 
   /**
@@ -179,13 +183,13 @@ constructor(
           oAuthService.logout(
             clientId = authConfiguration.clientId,
             clientSecret = authConfiguration.clientSecret,
-            refreshToken = accountManager.getPassword(account)
+            refreshToken = accountManager.getPassword(account),
           )
 
         if (responseBody.isSuccessful) {
           accountManager.invalidateAuthToken(
             account.type,
-            accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE)
+            accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE),
           )
           Result.success(true)
         } else Result.success(false)
@@ -227,7 +231,7 @@ constructor(
     return runBlocking {
       val oAuthResponse =
         oAuthService.fetchToken(
-          buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) }
+          buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) },
         )
 
       // Updates with new refresh-token
@@ -244,7 +248,9 @@ constructor(
       val generatedHash =
         enteredPassword.toPasswordHash(Base64.getDecoder().decode(credentials!!.salt))
       generatedHash == credentials.passwordHash
-    } else false
+    } else {
+      false
+    }
   }
 
   fun getAccountType(): String = authConfiguration.accountType

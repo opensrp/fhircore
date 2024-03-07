@@ -122,8 +122,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = mockk(),
         libraryEvaluatorProvider = { mockk<LibraryEvaluator>() },
-        tracer = FakePerformanceReporter()
-      )
+        tracer = FakePerformanceReporter(),
+      ),
     )
 
   @Before
@@ -174,7 +174,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
   @Test
   fun testActivityShouldNotNull() {
     Assert.assertNotNull(
-      questionnaireActivity.supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG)
+      questionnaireActivity.supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG),
     )
     Assert.assertNotNull(questionnaireActivity)
   }
@@ -191,26 +191,26 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         formName = "my-form",
         questionnaireType = QuestionnaireType.READ_ONLY,
         questionnaireResponse = questionnaireResponse,
-        populationResources = populationResources
+        populationResources = populationResources,
       )
     Assert.assertEquals("my-form", result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       "1234",
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY),
     )
     Assert.assertEquals(
       QuestionnaireType.READ_ONLY.name,
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE)
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE),
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4)
         .newJsonParser()
         .encodeResourceToString(questionnaireResponse),
-      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE)
+      result.getString(QuestionnaireActivity.QUESTIONNAIRE_RESPONSE),
     )
     Assert.assertEquals(
       FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(patient),
-      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0)
+      result.getStringArrayList(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.get(0),
     )
   }
 
@@ -229,8 +229,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             url = "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl"
             setValue(
               CodeableConcept(
-                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page")
-              )
+                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page"),
+              ),
             )
           }
           addItem().apply {
@@ -273,15 +273,17 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent().apply {
         putStringArrayListExtra(
           QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-          arrayListOf(Patient().encodeResourceToString())
+          arrayListOf(Patient().encodeResourceToString()),
         )
       }
     val questionnaireResponse =
       questionnaireViewModel2.generateQuestionnaireResponse(questionnaire, populationIntent)
     questionnaireResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     assertFailsWith<IllegalArgumentException>(
-      message = "Multiple answers for non-repeat questionnaire item phone-value-1"
-    ) { checkQuestionnaireResponse(questionnaire, questionnaireResponse) }
+      message = "Multiple answers for non-repeat questionnaire item phone-value-1",
+    ) {
+      checkQuestionnaireResponse(questionnaire, questionnaireResponse)
+    }
   }
 
   @Test(expected = None::class)
@@ -299,8 +301,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             url = "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl"
             setValue(
               CodeableConcept(
-                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page")
-              )
+                Coding("http://hl7.org/fhir/questionnaire-item-control", "page", "Page"),
+              ),
             )
           }
           addItem().apply {
@@ -343,7 +345,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       Intent().apply {
         putStringArrayListExtra(
           QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-          arrayListOf(Patient().encodeResourceToString())
+          arrayListOf(Patient().encodeResourceToString()),
         )
       }
     val questionnaireResponse =
@@ -382,7 +384,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_TYPE, QuestionnaireType.READ_ONLY.name)
         putExtra(
           QuestionnaireActivity.QUESTIONNAIRE_RESPONSE,
-          QuestionnaireResponse().encodeResourceToString()
+          QuestionnaireResponse().encodeResourceToString(),
         )
       }
 
@@ -405,13 +407,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `activity finishes when loadQuestionnaireAndConfig fails with loadQuestionnaireAndConfig from viewmodel`() =
-      runTest {
-    coEvery {
-      questionnaireViewModel.getQuestionnaireConfigPair(questionnaireActivity, any(), any())
-    } throws QuestionnaireNotFoundException("unknown_form")
-    questionnaireActivity.loadQuestionnaireAndConfig("unknown_form")
-    Assert.assertTrue(questionnaireActivity.isFinishing.or(questionnaireActivity.isDestroyed))
-  }
+    runTest {
+      coEvery {
+        questionnaireViewModel.getQuestionnaireConfigPair(questionnaireActivity, any(), any())
+      } throws QuestionnaireNotFoundException("unknown_form")
+      questionnaireActivity.loadQuestionnaireAndConfig("unknown_form")
+      Assert.assertTrue(questionnaireActivity.isFinishing.or(questionnaireActivity.isDestroyed))
+    }
 
   @Test
   fun testOnBackPressedShouldShowAlert() {
@@ -422,13 +424,14 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_back_pressed_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_back_pressed_button_title),
-      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text
+      alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).text,
     )
   }
+
   @Test
   fun testOnBackPressedShouldCallFinishWhenInReadOnlyMode() {
     val qActivity = spyk(questionnaireActivity)
@@ -451,7 +454,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
         any(),
         any(),
-        any()
+        any(),
       )
     }
   }
@@ -466,7 +469,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.form_progress_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     verify(timeout = 2000) {
@@ -476,7 +479,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
         any(),
         any(),
-        any()
+        any(),
       )
     }
   }
@@ -500,7 +503,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_invalid_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
 
     verify(inverse = true) {
@@ -510,7 +513,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
         any(),
         any(),
-        any()
+        any(),
       )
     }
   }
@@ -520,7 +523,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(
       questionnaireActivity,
       "questionnaire",
-      Questionnaire().apply { experimental = false }
+      Questionnaire().apply { experimental = false },
     )
 
     questionnaireActivity.onSubmitRequestResult()
@@ -530,7 +533,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_submit_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
   }
 
@@ -539,7 +542,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     ReflectionHelpers.setField(
       questionnaireActivity,
       "questionnaire",
-      Questionnaire().apply { experimental = true }
+      Questionnaire().apply { experimental = true },
     )
 
     questionnaireActivity.onSubmitRequestResult()
@@ -549,7 +552,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     Assert.assertEquals(
       getString(R.string.questionnaire_alert_test_only_message),
-      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text
+      alertDialog.findViewById<TextView>(R.id.tv_alert_message)!!.text,
     )
   }
 
@@ -652,7 +655,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val spiedActivity = spyk(questionnaireActivity)
     spiedActivity.finishActivity(
       QuestionnaireResponse(),
-      listOf(Encounter().apply { status = Encounter.EncounterStatus.FINISHED })
+      listOf(Encounter().apply { status = Encounter.EncounterStatus.FINISHED }),
     )
 
     verify {
@@ -661,9 +664,9 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         withArg {
           Assert.assertEquals(
             Encounter.EncounterStatus.FINISHED.toCode(),
-            it.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_RES_ENCOUNTER)
+            it.extras?.getString(QuestionnaireActivity.QUESTIONNAIRE_RES_ENCOUNTER),
           )
-        }
+        },
       )
     }
     Assert.assertTrue(spiedActivity.isFinishing)
@@ -680,7 +683,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       ctx,
       questionnaireId = "testQuestionnaire",
       clientIdentifier = null,
-      populationResources = arrayListOf()
+      populationResources = arrayListOf(),
     )
 
     verify { ctx.startActivity(any()) }
@@ -696,7 +699,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       ctx,
       questionnaireId = "testQuestionnaire",
       clientIdentifier = null,
-      populationResources = arrayListOf()
+      populationResources = arrayListOf(),
     )
     verify { ctx.startActivityForResult(any(), withArg { Assert.assertEquals(0, it) }) }
   }
@@ -711,7 +714,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       ctx,
       questionnaireId = "testQuestionnaire",
       launchContexts = null,
-      populationResources = arrayListOf()
+      populationResources = arrayListOf(),
     )
     verify { ctx.startActivityForResult(any(), withArg { Assert.assertEquals(0, it) }) }
   }
@@ -726,7 +729,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       ctx,
       questionnaireId = "testQuestionnaire",
       launchContexts = null,
-      populationResources = arrayListOf()
+      populationResources = arrayListOf(),
     )
     verify { ctx.startActivity(any()) }
   }
@@ -754,7 +757,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       intentBundle = intentBundle,
       questionnaireType = questionnaireType,
       launchContexts = launchContexts,
-      populationResources = populationResources
+      populationResources = populationResources,
     )
 
     val expectedIntent =
@@ -767,8 +770,8 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             formName = questionnaireId,
             questionnaireType = questionnaireType,
             launchContexts = launchContexts,
-            populationResources = populationResources
-          )
+            populationResources = populationResources,
+          ),
         )
 
     verify {
@@ -776,29 +779,29 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         withArg {
           Assert.assertEquals(
             expectedIntent.getStringExtra("clientIdentifier"),
-            it.getStringExtra("clientIdentifier")
+            it.getStringExtra("clientIdentifier"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("groupIdentifier"),
-            it.getStringExtra("groupIdentifier")
+            it.getStringExtra("groupIdentifier"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("formName"),
-            it.getStringExtra("formName")
+            it.getStringExtra("formName"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("questionnaireType"),
-            it.getStringExtra("questionnaireType")
+            it.getStringExtra("questionnaireType"),
           )
           Assert.assertEquals(
             expectedIntent.getStringArrayListExtra("launchContexts"),
-            it.getStringArrayListExtra("launchContexts")
+            it.getStringArrayListExtra("launchContexts"),
           )
           Assert.assertEquals(
             expectedIntent.getStringArrayListExtra("populationResources"),
-            it.getStringArrayListExtra("populationResources")
+            it.getStringArrayListExtra("populationResources"),
           )
-        }
+        },
       )
     }
   }
@@ -826,7 +829,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
       backReference = backReference,
       intentBundle = intentBundle,
       launchContexts = launchContexts,
-      populationResources = populationResources
+      populationResources = populationResources,
     )
 
     val expectedIntent =
@@ -839,7 +842,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
             formName = questionnaireId,
             questionnaireType = questionnaireType,
             launchContexts = launchContexts,
-            populationResources = populationResources
+            populationResources = populationResources,
           ),
         )
 
@@ -848,30 +851,30 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         withArg {
           Assert.assertEquals(
             expectedIntent.getStringExtra("clientIdentifier"),
-            it.getStringExtra("clientIdentifier")
+            it.getStringExtra("clientIdentifier"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("backReference"),
-            it.getStringExtra("backReference")
+            it.getStringExtra("backReference"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("formName"),
-            it.getStringExtra("formName")
+            it.getStringExtra("formName"),
           )
           Assert.assertEquals(
             expectedIntent.getStringExtra("questionnaireType"),
-            it.getStringExtra("questionnaireType")
+            it.getStringExtra("questionnaireType"),
           )
           Assert.assertEquals(
             expectedIntent.getStringArrayListExtra("launchContexts"),
-            it.getStringArrayListExtra("launchContexts")
+            it.getStringArrayListExtra("launchContexts"),
           )
           Assert.assertEquals(
             expectedIntent.getStringArrayListExtra("populationResources"),
-            it.getStringArrayListExtra("populationResources")
+            it.getStringArrayListExtra("populationResources"),
           )
         },
-        0
+        0,
       )
     }
   }

@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.ui.components.PIN_VIEW
 import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
 
 @ExperimentalCoroutinesApi
-class PinLoginScreensTest : RobolectricTest() {
+class PinLoginScreenTest : RobolectricTest() {
 
   @get:Rule val composeRule = createComposeRule()
 
@@ -50,10 +50,13 @@ class PinLoginScreensTest : RobolectricTest() {
       object {
         // Imitate click action by doing nothing
         fun onPinChanged() {}
+
         fun onMenuLoginClicked(value: String) {}
+
         fun forgotPin() {}
+
         fun onDismissForgotDialog() {}
-      }
+      },
     )
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
@@ -62,12 +65,11 @@ class PinLoginScreensTest : RobolectricTest() {
 
   @Before
   fun setUp() {
-    pinViewModel =
-      mockk {
-        every { appName } returns "TestApp"
-        every { showError } returns MutableLiveData(true)
-        every { enterUserLoginMessage } returns "Enter PIN for DemoUser"
-      }
+    pinViewModel = mockk {
+      every { appName } returns "TestApp"
+      every { showError } returns MutableLiveData(true)
+      every { enterUserLoginMessage } returns "Enter PIN for DemoUser"
+    }
   }
 
   @Test
@@ -87,7 +89,7 @@ class PinLoginScreensTest : RobolectricTest() {
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
-        appName = "anc"
+        appName = "anc",
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
@@ -117,7 +119,7 @@ class PinLoginScreensTest : RobolectricTest() {
         onMenuLoginClicked = { listenerObjectSpy.onMenuLoginClicked(FORCE_LOGIN_VIA_USERNAME) },
         enterUserPinMessage = "Enter PIN for DemoUser",
         forgotPin = { listenerObjectSpy.forgotPin() },
-        appName = "g6pd"
+        appName = "g6pd",
       )
     }
     composeRule.onNodeWithTag(PIN_VIEW).assertExists()
@@ -128,7 +130,7 @@ class PinLoginScreensTest : RobolectricTest() {
     composeRule.setContent {
       ForgotPinDialog(
         forgotPin = { listenerObjectSpy.forgotPin() },
-        onDismissDialog = { listenerObjectSpy.onDismissForgotDialog() }
+        onDismissDialog = { listenerObjectSpy.onDismissForgotDialog() },
       )
     }
     composeRule.onNodeWithTag(PIN_FORGOT_DIALOG).assertExists()

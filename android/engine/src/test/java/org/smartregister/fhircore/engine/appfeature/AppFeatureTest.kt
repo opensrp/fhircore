@@ -28,17 +28,17 @@ class AppFeatureTest {
 
     val appFeaturePatientManagement = AppFeature.PatientManagement
     Assert.assertTrue(
-      appFeaturePatientManagement.name.equals("PatientManagement", ignoreCase = true)
+      appFeaturePatientManagement.name.equals("PatientManagement", ignoreCase = true),
     )
 
     val appFeatureHouseholdManagement = AppFeature.HouseholdManagement
     Assert.assertTrue(
-      appFeatureHouseholdManagement.name.equals("HouseholdManagement", ignoreCase = true)
+      appFeatureHouseholdManagement.name.equals("HouseholdManagement", ignoreCase = true),
     )
 
     val appFeatureDeviceToDeviceSync = AppFeature.DeviceToDeviceSync
     Assert.assertTrue(
-      appFeatureDeviceToDeviceSync.name.equals("DeviceToDeviceSync", ignoreCase = true)
+      appFeatureDeviceToDeviceSync.name.equals("DeviceToDeviceSync", ignoreCase = true),
     )
   }
 }

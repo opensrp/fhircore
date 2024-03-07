@@ -28,7 +28,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 class DataFiltersConfiguration(
   override val appId: String = "",
   override val classification: String = "",
-  val filters: List<SearchFilter> = listOf()
+  val filters: List<SearchFilter> = listOf(),
 ) : Configuration
 
 @Stable
@@ -41,7 +41,7 @@ data class SearchFilter(
   val valueType: Enumerations.DataType,
   val valueBoolean: Boolean? = null,
   val valueCoding: Code? = null,
-  val valueString: String? = null
+  val valueString: String? = null,
 )
 
 @Stable
@@ -62,5 +62,5 @@ fun Code.asCodeableConcept() =
 fun dataFilterConfigurationOf(
   appId: String = "",
   classification: String = "form",
-  filters: List<SearchFilter> = listOf()
+  filters: List<SearchFilter> = listOf(),
 ) = DataFiltersConfiguration(appId = appId, classification = classification, filters = filters)

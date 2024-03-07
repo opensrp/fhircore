@@ -47,11 +47,11 @@ class RemoveFamilyQuestionnaireActivity : BaseRemoveFamilyEntityQuestionnaireAct
     fun launchQuestionnaire(
       context: Context,
       questionnaireId: String,
-      clientIdentifier: String? = null
+      clientIdentifier: String? = null,
     ) {
       context.startActivity(
         Intent(context, RemoveFamilyQuestionnaireActivity::class.java)
-          .putExtras(intentArgs(formName = questionnaireId, clientIdentifier = clientIdentifier))
+          .putExtras(intentArgs(formName = questionnaireId, clientIdentifier = clientIdentifier)),
       )
     }
   }

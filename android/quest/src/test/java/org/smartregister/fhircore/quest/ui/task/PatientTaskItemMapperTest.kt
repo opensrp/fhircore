@@ -53,7 +53,7 @@ class PatientTaskItemMapperTest : RobolectricTest() {
                 start = "2020-03-10".getDate("yyyy-MM-dd")
                 end = "2020-03-12".getDate("yyyy-MM-dd")
               }
-          }
+          },
       )
 
     val patientTaskItem = mapper.transformInputToOutputModel(patientTask)

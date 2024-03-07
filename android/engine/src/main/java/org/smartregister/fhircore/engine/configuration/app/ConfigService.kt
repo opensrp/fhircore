@@ -41,7 +41,7 @@ interface ConfigService {
       .enqueueUniquePeriodicWork(
         FhirTaskPlanWorker.WORK_ID,
         ExistingPeriodicWorkPolicy.UPDATE,
-        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build()
+        PeriodicWorkRequestBuilder<FhirTaskPlanWorker>(12, TimeUnit.HOURS).build(),
       )
   }
 
@@ -92,7 +92,7 @@ interface ConfigService {
       .enqueueUniquePeriodicWork(
         MissedFHIRAppointmentsWorker.NAME,
         ExistingPeriodicWorkPolicy.UPDATE,
-        workRequest
+        workRequest,
       )
   }
 
@@ -104,7 +104,7 @@ interface ConfigService {
       .enqueueUniquePeriodicWork(
         ProposedWelcomeServiceAppointmentsWorker.NAME,
         ExistingPeriodicWorkPolicy.UPDATE,
-        workRequest
+        workRequest,
       )
   }
 
@@ -116,7 +116,7 @@ interface ConfigService {
       .enqueueUniquePeriodicWork(
         WelcomeServiceBackToCarePlanWorker.NAME,
         ExistingPeriodicWorkPolicy.UPDATE,
-        workRequest
+        workRequest,
       )
   }
 }

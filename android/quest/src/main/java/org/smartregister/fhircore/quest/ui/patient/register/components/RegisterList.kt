@@ -41,7 +41,7 @@ fun RegisterList(
   pagingItems: LazyPagingItems<RegisterViewData>,
   onRowClick: (String) -> Unit,
   modifier: Modifier = Modifier,
-  progressMessage: String = ""
+  progressMessage: String = "",
 ) {
   LazyColumn(modifier = modifier) {
     items(pagingItems, key = { it.logicalId }) {
@@ -58,7 +58,7 @@ fun RegisterList(
           item {
             ErrorMessage(
               message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-              onClickRetry = { retry() }
+              onClickRetry = { retry() },
             )
           }
         }
@@ -81,7 +81,7 @@ fun BoxedCircularProgressBar(progressMessage: String) {
   ) {
     CircularProgressBar(
       modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally),
-      text = progressMessage
+      text = progressMessage,
     )
   }
 }
@@ -91,7 +91,7 @@ fun RegisterRowItem(registerViewData: RegisterViewData, onRowClick: (String) -> 
   when (registerViewData.registerType) {
     RegisterData.HivRegisterData::class,
     RegisterData.TracingRegisterData::class,
-    RegisterData.AppointmentRegisterData::class -> {
+    RegisterData.AppointmentRegisterData::class, -> {
       HivPatientRegisterListRow(data = registerViewData, onItemClick = onRowClick)
     }
     else -> {

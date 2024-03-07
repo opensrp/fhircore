@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -63,6 +64,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 class AppointmentRegisterDaoTest : RobolectricTest() {
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk(relaxed = true)
+
   @get:Rule(order = 2) var coroutineRule = CoroutineTestRule()
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -71,11 +73,14 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
 
   @get:Rule(order = 2) val coroutineTestRule = CoroutineTestRule()
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private lateinit var appointmentRegisterDao: AppointmentRegisterDao
 
   private val fhirEngine: FhirEngine = mockk()
 
   lateinit var defaultRepository: DefaultRepository
+
   @Inject lateinit var configService: ConfigService
 
   var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -86,10 +91,10 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
-        dispatcherProvider = coroutineRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        configService = configService
+        configService = configService,
       )
     coEvery { fhirEngine.get(ResourceType.Patient, "1234") } returns
       buildPatient("1", "doe", "john", 10, patientType = "exposed-infant")
@@ -106,7 +111,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = DefaultDispatcherProvider(),
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
   }
 
@@ -135,7 +140,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         Appointment().apply {
           status = Appointment.AppointmentStatus.BOOKED
           start = Date()
-        }
+        },
       )
 
     coEvery { fhirEngine.search<Resource>(any<Search>()) } answers
@@ -143,7 +148,9 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         val searchObj = firstArg<Search>()
         if (searchObj.type == ResourceType.Appointment) {
           appointments.map { SearchResult(it, revIncluded = null, included = null) }
-        } else emptyList()
+        } else {
+          emptyList()
+        }
       }
 
     val count = appointmentRegisterDao.countRegisterData("1234")
@@ -164,7 +171,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
           addReasonCode(CodeableConcept(Coding().apply { code = "Milestone" }))
         },
         included = null,
-        revIncluded = null
+        revIncluded = null,
       )
     val appointment2 =
       SearchResult(
@@ -176,7 +183,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
           addReasonCode(CodeableConcept(Coding().apply { code = "ICT" }))
         },
         included = null,
-        revIncluded = null
+        revIncluded = null,
       )
     coEvery { fhirEngine.search<Appointment>(any<Search>()) } returns
       listOf(appointment1, appointment2)
@@ -185,7 +192,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
         startDate,
         myPatients = true,
         patientCategory = null,
-        reasonCode = "ICT"
+        reasonCode = "ICT",
       )
     val counts = appointmentRegisterDao.countRegisterFiltered(filters = registerFilter)
     Assert.assertEquals(1, counts)
@@ -227,7 +234,7 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
           Identifier().apply {
             use = Identifier.IdentifierUse.OFFICIAL
             value = "3214"
-          }
+          },
         )
       }
     coEvery { fhirEngine.get(ResourceType.Patient, "12345-3214") } returns patient1
@@ -278,8 +285,8 @@ class AppointmentRegisterDaoTest : RobolectricTest() {
             startDate,
             myPatients = true,
             patientCategory = listOf(HealthStatus.EXPOSED_INFANT),
-            reasonCode = null
-          )
+            reasonCode = null,
+          ),
       )
     Assert.assertEquals(2, data.size)
     Assert.assertEquals("appointment2", data.elementAt(0).logicalId)

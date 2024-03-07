@@ -76,7 +76,7 @@ constructor(
   syncBroadcaster: SyncBroadcaster,
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
-  private val registerViewDataMapper: RegisterViewDataMapper
+  private val registerViewDataMapper: RegisterViewDataMapper,
 ) : ViewModel(), StandardRegisterViewModel {
   private val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
   private val healthModule =
@@ -126,7 +126,7 @@ constructor(
             dateOfAppointment = it.date.value,
             myPatients = it.patients.selected == PatientAssignment.MY_PATIENTS,
             patientCategory = categories,
-            reasonCode = reason
+            reasonCode = reason,
           )
         }
         .onEach { resetPage() }
@@ -134,8 +134,8 @@ constructor(
 
     viewModelScope.launch {
       combine(searchFlow, pageFlow, registerFilterFlow, refreshCounterFlow) { s, p, f, _ ->
-        Triple(s, p, f)
-      }
+          Triple(s, p, f)
+        }
         .mapLatest {
           val pagingFlow =
             if (it.first.isNotBlank()) {
@@ -151,8 +151,8 @@ constructor(
 
     viewModelScope.launch {
       combine(searchFlow, pageFlow, registerFilterFlow, refreshCounterFlow) { s, p, f, _ ->
-        Triple(s, p, f)
-      }
+          Triple(s, p, f)
+        }
         .filter { it.first.isBlank() }
         .mapLatest {
           registerRepository.countRegisterFiltered(appFeatureName, healthModule, filters = it.third)
@@ -203,14 +203,14 @@ constructor(
     appFeatureName: String?,
     loadAll: Boolean = false,
     page: Int = 0,
-    registerFilters: AppointmentRegisterFilter
+    registerFilters: AppointmentRegisterFilter,
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(
           pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
           initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE,
-          enablePlaceholders = false
+          enablePlaceholders = false,
         ),
       pagingSourceFactory = {
         RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
@@ -220,17 +220,17 @@ constructor(
               healthModule = healthModule,
               loadAll = loadAll,
               currentPage = if (loadAll) 0 else page,
-              filters = registerFilters
-            )
+              filters = registerFilters,
+            ),
           )
         }
-      }
+      },
     )
 
   override fun countPages() =
-    _totalRecordsCount.map { it.toDouble().div(RegisterPagingSource.DEFAULT_PAGE_SIZE) }.map {
-      ceil(it).toInt()
-    }
+    _totalRecordsCount
+      .map { it.toDouble().div(RegisterPagingSource.DEFAULT_PAGE_SIZE) }
+      .map { ceil(it).toInt() }
 
   override fun onEvent(event: StandardRegisterEvent) {
     when (event) {
@@ -266,7 +266,7 @@ data class AppointmentFilterState(
   val date: AppointmentDate,
   val patients: AppointmentFilter<PatientAssignment>,
   val patientCategory: AppointmentFilter<PatientCategory>,
-  val reason: AppointmentFilter<Reason>
+  val reason: AppointmentFilter<Reason>,
 ) {
   companion object {
     fun default() =
@@ -277,9 +277,9 @@ data class AppointmentFilterState(
         patientCategory =
           AppointmentFilter(
             PatientCategory.ALL_PATIENT_CATEGORIES,
-            PatientCategory.values().asList()
+            PatientCategory.values().asList(),
           ),
-        reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList())
+        reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList()),
       )
   }
 }

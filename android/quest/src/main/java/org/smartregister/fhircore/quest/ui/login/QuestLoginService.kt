@@ -34,7 +34,7 @@ constructor(
   val appFeatureManager: AppFeatureManager,
   val secureSharedPreference: SecureSharedPreference,
   val p2pSenderTransferDao: P2PSenderTransferDao,
-  val p2pReceiverTransferDao: P2PReceiverTransferDao
+  val p2pReceiverTransferDao: P2PReceiverTransferDao,
 ) : LoginService {
 
   override lateinit var loginActivity: AppCompatActivity
@@ -45,7 +45,7 @@ constructor(
       startActivity(
         Intent(loginActivity, AppMainActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
+        },
       )
       finish()
     }
@@ -61,8 +61,8 @@ constructor(
           dbPassphrase = username,
           username = username,
           senderTransferDao = p2pSenderTransferDao,
-          receiverTransferDao = p2pReceiverTransferDao
-        )
+          receiverTransferDao = p2pReceiverTransferDao,
+        ),
       )
     }
   }

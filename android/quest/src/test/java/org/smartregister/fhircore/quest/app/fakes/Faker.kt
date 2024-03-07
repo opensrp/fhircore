@@ -51,12 +51,13 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.re
 
 object Faker {
   private const val APP_DEBUG = "quest"
+
   fun buildPatient(
     id: String = "sampleId",
     family: String = "Mandela",
     given: String = "Nelson",
     age: Int = 78,
-    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE
+    gender: Enumerations.AdministrativeGender = Enumerations.AdministrativeGender.MALE,
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -76,7 +77,6 @@ object Faker {
   }
 
   fun initPatientRepositoryMocks(patientRepository: PatientRepository) {
-
     coEvery { patientRepository.fetchDemographicsWithAdditionalData(any()) } answers
       {
         PatientItem(id = firstArg(), name = "John Doe", gender = "M", age = "22y")
@@ -89,7 +89,7 @@ object Faker {
             HumanName().apply {
               family = "Doe"
               given = listOf(StringType("John"))
-            }
+            },
           )
         id = "5583145"
         gender = Enumerations.AdministrativeGender.MALE
@@ -99,7 +99,7 @@ object Faker {
             Address().apply {
               city = "Nairobi"
               country = "Kenya"
-            }
+            },
           )
         identifier = listOf(Identifier().apply { value = "12345" })
       }
@@ -109,13 +109,13 @@ object Faker {
         QuestionnaireConfig(
           form = "sample-order-result",
           title = "Sample Order Result",
-          identifier = "12345"
+          identifier = "12345",
         ),
         QuestionnaireConfig(
           form = "sample-test-result",
           title = "Sample Test Result",
-          identifier = "67890"
-        )
+          identifier = "67890",
+        ),
       )
 
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
@@ -123,34 +123,33 @@ object Faker {
         QuestResultItem(
           Pair(
             QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "Sample Order", "Sample Order")
+            QuestionnaireItem("1", "Sample Order", "Sample Order"),
           ),
           listOf(
             listOf(
               AdditionalData(value = "Sample Order", label = "Label"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
-            )
-          )
+              AdditionalData(value = "(${Date().asDdMmmYyyy()})"),
+            ),
+          ),
         ),
         QuestResultItem(
           Pair(
             QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "ample Test", "ample Test")
+            QuestionnaireItem("1", "ample Test", "ample Test"),
           ),
           listOf(
             listOf(
               AdditionalData(value = "Sample Test"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})")
-            )
-          )
-        )
+              AdditionalData(value = "(${Date().asDdMmmYyyy()})"),
+            ),
+          ),
+        ),
       )
 
     coEvery { patientRepository.fetchPregnancyCondition(any()) } returns ""
   }
 
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
-
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
     coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
@@ -169,11 +168,11 @@ object Faker {
   fun loadTestConfigurationRegistryData(
     appId: String,
     fhirEngine: FhirEngine,
-    configurationRegistry: ConfigurationRegistry
+    configurationRegistry: ConfigurationRegistry,
   ) {
     val composition =
-      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString() as
-        Composition
+      getBasePath(appId, "composition").readFile(systemPath).decodeResourceFromString()
+        as Composition
     coEvery { fhirEngine.search<Composition>(any<Search>()) } returns
       listOf(SearchResult(composition, included = null, revIncluded = null))
 

@@ -41,7 +41,7 @@ import org.smartregister.fhircore.quest.ui.tracing.components.TracingDataScaffol
 @Composable
 fun TracingHistoryScreen(
   navController: NavHostController,
-  viewModel: TracingHistoryViewModel = hiltViewModel()
+  viewModel: TracingHistoryViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
 
@@ -57,12 +57,12 @@ fun TracingHistoryScreen(
             TracingHistoryEvent.OpenOutComesScreen(
               context = context,
               navController = navController,
-              historyId = history.historyId
-            )
+              historyId = history.historyId,
+            ),
           )
-        }
+        },
       )
-    }
+    },
   )
 }
 
@@ -81,9 +81,9 @@ fun TracingHistoryCard(history: TracingHistory, onClick: () -> Unit) {
         style =
           MaterialTheme.typography.subtitle1.copy(
             color = if (history.isActive) SuccessColor else MaterialTheme.colors.onSurface,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
           ),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
       )
     }
   }

@@ -83,7 +83,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
-        transformSupportServices = transformSupportServices
+        transformSupportServices = transformSupportServices,
       )
 
     mockkStatic(DateTimeType::class)
@@ -116,10 +116,11 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("131373") } returns structureMap
 
-    fhirCarePlanGenerator.generateCarePlan(
+    fhirCarePlanGenerator
+      .generateCarePlan(
         plandefinition,
         patient,
-        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient })
+        Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = patient }),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also {
@@ -130,24 +131,24 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals("Child Routine visit Plan", carePlan.title)
         Assert.assertEquals(
           "This defines the schedule of care for patients under 5 years old",
-          carePlan.description
+          carePlan.description,
         )
         Assert.assertEquals(patient.logicalId, carePlan.subject.extractId())
         Assert.assertEquals(
           DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
+          carePlan.created.makeItReadable(),
         )
         Assert.assertEquals(
           patient.generalPractitionerFirstRep.extractId(),
-          carePlan.author.extractId()
+          carePlan.author.extractId(),
         )
         Assert.assertEquals(
           DateTimeType.now().value.makeItReadable(),
-          carePlan.period.start.makeItReadable()
+          carePlan.period.start.makeItReadable(),
         )
         Assert.assertEquals(
           patient.birthDate.plusYears(5).makeItReadable(),
-          carePlan.period.end.makeItReadable()
+          carePlan.period.end.makeItReadable(),
         )
         // 60 - 2  = 58 TODO Fix issue with number of tasks updating relative to today's date
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
@@ -198,15 +199,16 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     coEvery { fhirEngine.create(any()) } returns emptyList()
     coEvery { fhirEngine.get<StructureMap>("hh") } returns structureMap
 
-    fhirCarePlanGenerator.generateCarePlan(
+    fhirCarePlanGenerator
+      .generateCarePlan(
         plandefinition,
         group,
         Bundle()
           .addEntry(
             Bundle.BundleEntryComponent().apply {
               resource = Encounter().apply { status = Encounter.EncounterStatus.FINISHED }
-            }
-          )
+            },
+          ),
       )!!
       .also { println(it.encodeResourceToString()) }
       .also {
@@ -219,7 +221,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
         Assert.assertEquals(group.logicalId, carePlan.subject.extractId())
         Assert.assertEquals(
           DateTimeType.now().value.makeItReadable(),
-          carePlan.created.makeItReadable()
+          carePlan.created.makeItReadable(),
         )
         Assert.assertNotNull(carePlan.period.start)
         Assert.assertTrue(carePlan.activityFirstRep.outcomeReference.isNotEmpty())
@@ -301,7 +303,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
             CarePlan.CarePlanActivityComponent().let { activity ->
               activity.outcomeReference = listOf(Reference("12345"))
               activity
-            }
+            },
           )
         id = "123456"
       }
@@ -320,7 +322,7 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
       Assert.assertNotNull(
         updatedCarePlan.activity.find { x ->
           x.outcomeReference.find { y -> y.reference == "12345" } == null
-        }
+        },
       )
     }
   }

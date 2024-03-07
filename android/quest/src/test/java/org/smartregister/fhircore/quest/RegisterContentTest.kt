@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest
 
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Encounter
@@ -52,8 +52,8 @@ class RegisterContentTest : RobolectricTest() {
 
     val tType = targetResource.entry[1].resource as Observation
     val sampleTType =
-      "test-results-questionnaire/sample/obs_res_type.json".parseSampleResourceFromFile() as
-        Observation
+      "test-results-questionnaire/sample/obs_res_type.json".parseSampleResourceFromFile()
+        as Observation
 
     assertResourceContent(tType, sampleTType)
 
@@ -74,8 +74,9 @@ class RegisterContentTest : RobolectricTest() {
     // replace properties generating dynamically
     actual.setPropertySafely("id", expected.idElement)
 
-    if (expected.resourceType == ResourceType.Observation)
+    if (expected.resourceType == ResourceType.Observation) {
       actual.setPropertySafely("encounter", expected.getNamedProperty("encounter").values[0])
+    }
 
     val expectedStr = expected.convertToString(true)
     val actualStr = actual.convertToString(true)
@@ -98,15 +99,15 @@ class RegisterContentTest : RobolectricTest() {
 
     val patient = targetResource.entry[0].resource as Patient
     val samplePatient =
-      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile() as
-        Patient
+      "patient-registration-questionnaire/sample/patient.json".parseSampleResourceFromFile()
+        as Patient
 
     assertResourceContent(patient, samplePatient)
 
     val condition = targetResource.entry[1].resource as Condition
     val sampleCondition =
-      "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile() as
-        Condition
+      "patient-registration-questionnaire/sample/condition.json".parseSampleResourceFromFile()
+        as Condition
     // replace subject as registration forms generate uuid on the fly
     sampleCondition.subject = condition.subject
 
@@ -114,7 +115,7 @@ class RegisterContentTest : RobolectricTest() {
   }
 
   @Test
-  fun testMwCorePopulationResources() = runTest {
+  fun testMwCorePopulationResources() {
     val questionnaire =
       "mwcore-registration/questionnaire.json".readFile().decodeResourceFromString<Questionnaire>()
     // Patient().apply { addTags(listOf(Coding("https://www.d-tree.org", "p-category", "P
@@ -125,15 +126,15 @@ class RegisterContentTest : RobolectricTest() {
         codingList.add(Coding("https://www.d-tree.org", "p-category", "hello"))
         meta.tag.apply { addAll(codingList) }
       }
-    val result = ResourceMapper.populate(questionnaire, patient)
+    val result = runBlocking { ResourceMapper.populate(questionnaire, patient) }
     Assert.assertEquals(
       "p-category",
-      result.item.first().itemFirstRep.answerFirstRep.valueCoding.code
+      result.item.first().itemFirstRep.answerFirstRep.valueCoding.code,
     )
   }
 
   @Test
-  fun testMwCorePopulationResources2() = runTest {
+  fun testMwCorePopulationResources2() {
     val structureMap = "mwcore-registration/patient-edit-profile-structure-map.txt".readFile()
     val response = "mwcore-registration/questionnaire-resposne.json".readFile()
 

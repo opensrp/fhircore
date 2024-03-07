@@ -21,9 +21,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.MutableLiveData
-import io.mockk.every
-import io.mockk.mockk
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.domain.util.DataLoadState
@@ -31,28 +32,32 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@HiltAndroidTest
 class InfoCardTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
+
   @get:Rule(order = 2) val composeRule = createComposeRule()
 
-  private val settingsViewModel = mockk<SettingsViewModel>()
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+  }
 
   @Test
   fun infoCard_ShowsLoading_WhenStateIsLoading() {
-    every { settingsViewModel.profileData } returns MutableLiveData(DataLoadState.Loading)
-
-    composeRule.setContent { InfoCard(viewModel = settingsViewModel) }
-
+    composeRule.mainClock.autoAdvance = false
+    composeRule.setContent { InfoCard(profileData = MutableLiveData(DataLoadState.Loading)) }
     composeRule.onNodeWithTag("ProgressBarItem").assertExists()
   }
 
   @Test
   fun infoCard_ShowsError_WhenStateIsError() {
-    every { settingsViewModel.profileData } returns
-      MutableLiveData(DataLoadState.Error(Exception("Test Error")))
-
-    composeRule.setContent { InfoCard(viewModel = settingsViewModel) }
-
+    composeRule.mainClock.autoAdvance = false
+    composeRule.setContent {
+      InfoCard(profileData = MutableLiveData(DataLoadState.Error(Exception("Test Error"))))
+    }
     composeRule.onNodeWithText("Something went wrong while fetching data..").assertExists()
   }
 
@@ -60,10 +65,10 @@ class InfoCardTest : RobolectricTest() {
   fun infoCard_ShowsContent_WhenStateIsSuccess() {
     val mockData =
       ProfileData(userName = "Test User", isUserValid = true, practitionerDetails = null)
-    every { settingsViewModel.profileData } returns MutableLiveData(DataLoadState.Success(mockData))
-
-    composeRule.setContent { InfoCard(viewModel = settingsViewModel) }
-
+    composeRule.mainClock.autoAdvance = false
+    composeRule.setContent {
+      InfoCard(profileData = MutableLiveData(DataLoadState.Success(mockData)))
+    }
     composeRule.onNodeWithText("Test User", ignoreCase = true).assertExists()
   }
 

@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.robolectric.AccountManagerShadow
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -80,6 +81,8 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private lateinit var loginViewModel: LoginViewModel
   private val fhirResourceService = mockk<FhirResourceService>()
@@ -108,9 +111,9 @@ internal class LoginViewModelTest : RobolectricTest() {
           fhirResourceService = fhirResourceService,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
-          fhirResourceDataSource = fhirResourceDataSource
-        )
+          dispatcherProvider = dispatcherProvider,
+          fhirResourceDataSource = fhirResourceDataSource,
+        ),
       )
   }
 
@@ -140,6 +143,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
   }
+
   @Test
   fun testUnSuccessfulOfflineLogin() = runTest {
     val activity = mockedActivity()
@@ -167,7 +171,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     updateCredentials()
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = "9807A290-0572-40E7-9EE0-C60F729E9F09"
+      value = "9807A290-0572-40E7-9EE0-C60F729E9F09",
     )
     every { tokenAuthenticator.sessionActive() } returns true
     every {
@@ -198,8 +202,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
     coEvery { keycloakService.fetchUserInfo() } returns
       Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
@@ -225,7 +229,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       Assert.assertFalse(loginViewModel.showProgressBar.value!!)
       Assert.assertEquals(
         LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-        loginViewModel.loginErrorState.value!!
+        loginViewModel.loginErrorState.value!!,
       )
     }
 
@@ -235,7 +239,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = "9807A290-0572-40E7-9EE0-C60F729E9F09"
+      value = "9807A290-0572-40E7-9EE0-C60F729E9F09",
     )
     every { tokenAuthenticator.sessionActive() } returns true
     loginViewModel.login(mockedActivity(isDeviceOnline = true), scope = this)
@@ -244,7 +248,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
       LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
-      loginViewModel.loginErrorState.value!!
+      loginViewModel.loginErrorState.value!!,
     )
   }
 
@@ -262,8 +266,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -322,8 +326,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -354,8 +358,8 @@ internal class LoginViewModelTest : RobolectricTest() {
           tokenType = "you_guess_it",
           refreshToken = "another_very_refreshing_token",
           refreshExpiresIn = 540000,
-          scope = "open_my_guy"
-        )
+          scope = "open_my_guy",
+        ),
       )
 
     // Mock result for fetch user info via keycloak endpoint
@@ -404,7 +408,7 @@ internal class LoginViewModelTest : RobolectricTest() {
               Organization().apply {
                 name = "the.org"
                 id = "the.org.id"
-              }
+              },
             )
         }
     }
@@ -414,10 +418,10 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetails() = runTest {
     coEvery { defaultRepository.create(true, any()) } returns listOf()
     loginViewModel.savePractitionerDetails(
-      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() })
+      Bundle().addEntry(Bundle.BundleEntryComponent().apply { resource = practitionerDetails() }),
     )
     Assert.assertNotNull(
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name)
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
 
@@ -440,6 +444,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       onPasswordUpdated(thisPassword)
     }
   }
+
   private fun mockedActivity(isDeviceOnline: Boolean = false): HiltActivityForTest {
     val activity = mockk<HiltActivityForTest>(relaxed = true)
     every { activity.isDeviceOnline() } returns isDeviceOnline

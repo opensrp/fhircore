@@ -44,7 +44,7 @@ import org.smartregister.fhircore.quest.ui.tracing.components.OutlineCard
 fun TracingHistoryDetailsScreen(
   title: String,
   navController: NavHostController,
-  viewModel: TracingHistoryDetailsViewModel = hiltViewModel()
+  viewModel: TracingHistoryDetailsViewModel = hiltViewModel(),
 ) {
   Scaffold(
     topBar = {
@@ -56,11 +56,13 @@ fun TracingHistoryDetailsScreen(
           }
         },
       )
-    }
+    },
   ) { innerPadding ->
     Column(
-      Modifier.padding(innerPadding).padding(horizontal = 12.dp, vertical = 8.dp).fillMaxSize()
-    ) { TracingHistoryDetailsScreenView(viewModel) }
+      Modifier.padding(innerPadding).padding(horizontal = 12.dp, vertical = 8.dp).fillMaxSize(),
+    ) {
+      TracingHistoryDetailsScreenView(viewModel)
+    }
   }
 }
 
@@ -82,13 +84,13 @@ fun HistoryDetailsCard(details: TracingOutcomeDetails) {
       InfoBoxItem(title = "Date:", value = details.date.asDdMmYyyy())
       InfoBoxItem(
         title = "Reason for tracing:",
-        value = details.reasons.joinToString(separator = ",")
+        value = details.reasons.joinToString(separator = ","),
       )
       InfoBoxItem(title = "Spoke to patient:", value = if (details.conducted) "Yes" else "No")
       InfoBoxItem(title = "Tracing Outcome:", value = details.outcome)
       InfoBoxItem(
         title = "Date of Clinic Appointment:",
-        value = details.dateOfAppointment?.asDdMmYyyy() ?: "N/A"
+        value = details.dateOfAppointment?.asDdMmYyyy() ?: "N/A",
       )
     }
   }

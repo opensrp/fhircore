@@ -53,14 +53,15 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed, -> {
               fetchTracingData()
             }
             else -> {}
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
 
     fetchTracingData()
@@ -70,7 +71,7 @@ constructor(
     viewModelScope.launch {
       try {
         _tracingHistoryDetailsViewDataFlow.emit(
-          repository.getHistoryDetails(historyId = historyId, encounterId = encounterId)
+          repository.getHistoryDetails(historyId = historyId, encounterId = encounterId),
         )
       } catch (e: Exception) {
         e.printStackTrace()

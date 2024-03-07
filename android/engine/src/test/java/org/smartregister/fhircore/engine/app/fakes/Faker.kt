@@ -58,7 +58,7 @@ object Faker {
 
   fun loadTestConfigurationRegistryData(
     fhirEngine: FhirEngine,
-    configurationRegistry: ConfigurationRegistry
+    configurationRegistry: ConfigurationRegistry,
   ) {
     val composition =
       getBasePath("composition").readFile(systemPath).decodeResourceFromString() as Composition
@@ -113,7 +113,7 @@ object Faker {
           sharedPreferencesHelper = mockk(),
           dispatcherProvider = mockk(),
           context = ApplicationProvider.getApplicationContext(),
-        )
+        ),
       )
 
     runBlocking {
@@ -133,7 +133,7 @@ object Faker {
     gender: Enumerations.AdministrativeGender? = Enumerations.AdministrativeGender.MALE,
     patientType: String = "",
     practitionerReference: String = "",
-    deceased: Boolean = false
+    deceased: Boolean = false,
   ): Patient {
     return Patient().apply {
       this.id = id
@@ -155,7 +155,7 @@ object Faker {
           system = "https://d-tree.org"
           code = patientType
           display = "Exposed Infant"
-        }
+        },
       )
 
       this.meta.addTag(
@@ -163,7 +163,7 @@ object Faker {
           system = ORGANISATION_SYSTEM
           code = "123"
           display = ORGANISATION_DISPLAY
-        }
+        },
       )
 
       this.generalPractitionerFirstRep.apply { reference = practitionerReference }

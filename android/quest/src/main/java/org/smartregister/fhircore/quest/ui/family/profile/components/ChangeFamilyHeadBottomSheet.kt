@@ -75,9 +75,8 @@ fun ChangeFamilyHeadBottomSheet(
   bottomSheetScaffoldState: BottomSheetScaffoldState,
   familyMembers: EligibleFamilyHeadMember?,
   onSaveClick: (FamilyMemberViewState) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
-
   var source by remember { mutableStateOf(familyMembers) }
   var isEnabled by remember { mutableStateOf(false) }
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
@@ -89,7 +88,7 @@ fun ChangeFamilyHeadBottomSheet(
           modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
       ) {
         Text(
           text = stringResource(id = R.string.label_assign_new_family_head),
@@ -104,10 +103,11 @@ fun ChangeFamilyHeadBottomSheet(
           modifier =
             modifier.clickable {
               coroutineScope.launch {
-                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+                if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                   bottomSheetScaffoldState.bottomSheetState.collapse()
+                }
               }
-            }
+            },
         )
       }
       Divider()
@@ -120,20 +120,20 @@ fun ChangeFamilyHeadBottomSheet(
             .padding(horizontal = 12.dp, vertical = 18.dp)
             .background(
               color = colorResource(id = R.color.background_warning),
-              shape = RoundedCornerShape(8.dp)
-            )
+              shape = RoundedCornerShape(8.dp),
+            ),
       ) {
         Image(
           painter = painterResource(id = R.drawable.ic_alert_triangle),
           contentDescription = null,
-          modifier = modifier.padding(horizontal = 12.dp)
+          modifier = modifier.padding(horizontal = 12.dp),
         )
         Text(
           text = stringResource(id = R.string.alert_message_abort_operation),
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Medium,
           fontSize = 16.sp,
-          modifier = modifier.padding(vertical = 12.dp)
+          modifier = modifier.padding(vertical = 12.dp),
         )
       }
       Text(
@@ -145,7 +145,7 @@ fun ChangeFamilyHeadBottomSheet(
       )
       LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
       ) {
         itemsIndexed(
           items = source!!.list,
@@ -157,7 +157,7 @@ fun ChangeFamilyHeadBottomSheet(
               source = source!!.copy(reselect = source!!.reselect.not())
             }
             Divider(color = DividerColor, thickness = 1.dp)
-          }
+          },
         )
       }
       Row(
@@ -167,16 +167,17 @@ fun ChangeFamilyHeadBottomSheet(
           modifier
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
       ) {
         TextButton(
           onClick = {
             coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                 bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
             }
           },
-          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL)
+          modifier = modifier.fillMaxWidth().weight(1F).testTag(TEST_TAG_CANCEL),
         ) {
           Text(
             fontSize = 14.sp,
@@ -191,8 +192,8 @@ fun ChangeFamilyHeadBottomSheet(
           colors =
             ButtonDefaults.textButtonColors(
               backgroundColor =
-                colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white)
-            )
+                colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white),
+            ),
         ) {
           Text(
             fontSize = 14.sp,
@@ -209,18 +210,18 @@ fun ChangeFamilyHeadBottomSheet(
 fun BottomListItem(
   model: EligibleFamilyHeadMemberViewState,
   modifier: Modifier = Modifier,
-  onClick: (FamilyMemberViewState) -> Unit
+  onClick: (FamilyMemberViewState) -> Unit,
 ) {
   Row(modifier = modifier.fillMaxWidth().padding(14.dp).clickable { onClick(model.familyMember) }) {
     RadioButton(
       selected = model.selected,
       modifier = modifier.testTag(model.familyMember.patientId),
-      onClick = { onClick(model.familyMember) }
+      onClick = { onClick(model.familyMember) },
     )
     Text(
       text =
         listOf(model.familyMember.name, model.familyMember.age, model.familyMember.gender)
-          .joinToString(", ")
+          .joinToString(", "),
     )
   }
 }

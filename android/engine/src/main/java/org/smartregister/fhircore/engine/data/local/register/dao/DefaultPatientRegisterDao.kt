@@ -55,7 +55,7 @@ constructor(
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> =
     withContext(dispatcherProvider.io()) {
       val patients =
@@ -66,14 +66,16 @@ constructor(
           from = currentPage * DEFAULT_PAGE_SIZE
         }
 
-      patients.map { it.resource }.map {
-        RegisterData.DefaultRegisterData(
-          logicalId = it.logicalId,
-          name = it.extractName(),
-          gender = it.gender,
-          age = it.extractAge()
-        )
-      }
+      patients
+        .map { it.resource }
+        .map {
+          RegisterData.DefaultRegisterData(
+            logicalId = it.logicalId,
+            name = it.extractName(),
+            gender = it.gender,
+            age = it.extractAge(),
+          )
+        }
     }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long =
@@ -94,37 +96,41 @@ constructor(
         deathDate =
           if (patient.hasDeceasedDateTimeType()) patient.deceasedDateTimeType.value else null,
         deceased =
-          if (patient.hasDeceasedBooleanType()) patient.deceasedBooleanType.booleanValue()
-          else null,
+          if (patient.hasDeceasedBooleanType()) {
+            patient.deceasedBooleanType.booleanValue()
+          } else {
+            null
+          },
         visits =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
-            subjectParam = Encounter.SUBJECT
+            subjectParam = Encounter.SUBJECT,
           ),
         flags =
           defaultRepository.searchResourceFor(subjectId = resourceId, subjectParam = Flag.SUBJECT),
         conditions =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
-            subjectParam = Condition.SUBJECT
+            subjectParam = Condition.SUBJECT,
           ),
         tasks =
-          defaultRepository.searchResourceFor<Task>(
+          defaultRepository
+            .searchResourceFor<Task>(
               subjectId = resourceId,
-              subjectParam = Task.SUBJECT
+              subjectParam = Task.SUBJECT,
             )
             .sortedBy { it.executionPeriod.start.time },
         services =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
-            subjectParam = CarePlan.SUBJECT
+            subjectParam = CarePlan.SUBJECT,
           ),
         forms = defaultRepository.searchQuestionnaireConfig(formsFilter),
         responses =
           defaultRepository.searchResourceFor(
             subjectId = resourceId,
-            subjectParam = QuestionnaireResponse.SUBJECT
-          )
+            subjectParam = QuestionnaireResponse.SUBJECT,
+          ),
       )
     }
 

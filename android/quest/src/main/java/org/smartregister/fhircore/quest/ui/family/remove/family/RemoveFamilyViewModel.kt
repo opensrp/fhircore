@@ -32,15 +32,17 @@ class RemoveFamilyViewModel
 @Inject
 constructor(
   override val repository: AppRegisterRepository,
-  val appFeatureManager: AppFeatureManager
+  val appFeatureManager: AppFeatureManager,
 ) : BaseRemoveFamilyEntityViewModel<Group>(repository) {
 
   var isDeactivateMembers = false
 
   init {
     isDeactivateMembers =
-      appFeatureManager.appFeatureSettings(AppFeature.HouseholdManagement)[
-          DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY]
+      appFeatureManager
+        .appFeatureSettings(AppFeature.HouseholdManagement)[
+          DEACTIVATE_FAMILY_MEMBERS_SETTING_KEY,
+        ]
         .toBoolean()
   }
 

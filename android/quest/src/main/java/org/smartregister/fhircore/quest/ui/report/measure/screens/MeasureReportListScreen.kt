@@ -52,7 +52,7 @@ fun MeasureReportListScreen(
   navController: NavController,
   dataList: Flow<PagingData<MeasureReportRowData>>,
   onReportMeasureClicked: (MeasureReportRowData) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val lazyReportItems = dataList.collectAsLazyPagingItems()
 
@@ -66,9 +66,9 @@ fun MeasureReportListScreen(
           }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn(modifier = modifier.background(Color.White).fillMaxSize()) {

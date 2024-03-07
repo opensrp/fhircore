@@ -38,7 +38,7 @@ class NavigationBottomSheetTest : RobolectricTest() {
   private val registerItems =
     listOf(
       RegisterItem(uniqueTag = "UniqueTag1", title = "Menu 1", isSelected = true),
-      RegisterItem(uniqueTag = "UniqueTag2", title = "Menu 2", isSelected = false)
+      RegisterItem(uniqueTag = "UniqueTag2", title = "Menu 2", isSelected = false),
     )
 
   @Before

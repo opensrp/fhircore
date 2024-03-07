@@ -85,11 +85,11 @@ class PatientTaskFragmentTest : RobolectricTest() {
         RegisterViewConfiguration(
           appId = "quest",
           classification = "classification",
-          useLabel = true
+          useLabel = true,
         )
       patientTaskFragment.ConstructRegisterList(
         pagingItems = dummyPatientTaskPagingList(),
-        modifier = Modifier
+        modifier = Modifier,
       )
     }
 
@@ -102,8 +102,8 @@ class PatientTaskFragmentTest : RobolectricTest() {
       patientTaskFragment.performFilter(
         RegisterFilterType.SEARCH_FILTER,
         PatientTaskItem(name = "Samia"),
-        ""
-      )
+        "",
+      ),
     )
   }
 
@@ -114,7 +114,7 @@ class PatientTaskFragmentTest : RobolectricTest() {
     assertNotNull(registerDataViewModel)
     Assert.assertEquals(
       PatientTaskRepository::class.simpleName,
-      registerDataViewModel.registerRepository::class.simpleName
+      registerDataViewModel.registerRepository::class.simpleName,
     )
   }
 }

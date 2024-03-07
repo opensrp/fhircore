@@ -82,7 +82,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val appFeatureManager: AppFeatureManager,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
 
   private val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
@@ -158,7 +158,8 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Failed, is SyncJobStatus.Finished -> {
+            is SyncJobStatus.Failed,
+            is SyncJobStatus.Finished, -> {
               refresh()
               _firstTimeSyncState.value = false
             }
@@ -198,7 +199,7 @@ constructor(
         appFeatureName = appFeatureName,
         healthModule = healthModule,
         loadAll = false,
-        searchFilter = text
+        searchFilter = text,
       )
       .flow
       .cachedIn(viewModelScope)
@@ -213,14 +214,14 @@ constructor(
     healthModule: HealthModule,
     loadAll: Boolean = false,
     page: Int = 0,
-    searchFilter: String? = null
+    searchFilter: String? = null,
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(
           pageSize = DEFAULT_PAGE_SIZE,
           initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE,
-          enablePlaceholders = false
+          enablePlaceholders = false,
         ),
       pagingSourceFactory = {
         RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
@@ -230,11 +231,11 @@ constructor(
               healthModule = healthModule,
               loadAll = loadAll,
               currentPage = if (loadAll) 0 else page,
-              searchFilter = searchFilter
-            )
+              searchFilter = searchFilter,
+            ),
           )
         }
-      }
+      },
     )
 
   fun countPages() =
@@ -245,8 +246,8 @@ constructor(
       .putExtras(
         QuestionnaireActivity.intentArgs(
           formName = registerViewConfiguration.registrationForm,
-          questionnaireType = QuestionnaireType.DEFAULT
-        )
+          questionnaireType = QuestionnaireType.DEFAULT,
+        ),
       )
 
   fun onEvent(event: PatientRegisterEvent) {
@@ -271,13 +272,13 @@ constructor(
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             Pair(NavigationArg.HEALTH_MODULE, healthModule),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
           )
-        if (healthModule == HealthModule.FAMILY)
+        if (healthModule == HealthModule.FAMILY) {
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
+        } else
           event.navController.navigate(
-            route = MainNavigationScreen.PatientProfile.route + urlParams
+            route = MainNavigationScreen.PatientProfile.route + urlParams,
           )
       }
     }

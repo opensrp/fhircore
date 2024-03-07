@@ -55,7 +55,7 @@ import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGenera
 fun RegisterBottomSheet(
   registers: List<RegisterItem>,
   itemListener: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
     Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp)) {
@@ -65,18 +65,20 @@ fun RegisterBottomSheet(
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         modifier =
-          modifier.padding(horizontal = 12.dp, vertical = 16.dp).align(Alignment.CenterHorizontally)
+          modifier
+            .padding(horizontal = 12.dp, vertical = 16.dp)
+            .align(Alignment.CenterHorizontally),
       )
       LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
       ) {
         items(
           items = registers,
           itemContent = {
             RegisterListItem(it, itemListener)
             Divider(color = DividerColor, thickness = 1.dp)
-          }
+          },
         )
       }
     }
@@ -87,11 +89,11 @@ fun RegisterBottomSheet(
 fun RegisterListItem(
   registerItem: RegisterItem,
   itemListener: (String) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     modifier =
-      modifier.fillMaxWidth().clickable { itemListener(registerItem.uniqueTag) }.padding(14.dp)
+      modifier.fillMaxWidth().clickable { itemListener(registerItem.uniqueTag) }.padding(14.dp),
   ) {
     Box(modifier = modifier.wrapContentWidth()) {
       if (registerItem.isSelected) {
@@ -99,7 +101,7 @@ fun RegisterListItem(
           painter = painterResource(R.drawable.ic_green_tick),
           contentDescription = stringResource(id = R.string.tick),
           colorFilter = ColorFilter.tint(color = Color.Gray),
-          modifier = modifier.size(22.dp)
+          modifier = modifier.size(22.dp),
         )
       } else {
         Spacer(modifier = modifier.width(20.dp))
@@ -115,7 +117,7 @@ fun RegisterListItem(
 fun RegisterListItemPreview() {
   RegisterListItem(
     registerItem = RegisterItem("TestFragmentTag", "All Clients", true),
-    itemListener = {}
+    itemListener = {},
   )
 }
 
@@ -128,7 +130,7 @@ fun RegisterBottomSheetPreview() {
     registers =
       listOf(
         RegisterItem(uniqueTag = "TestFragmentTag", title = "All Clients"),
-        RegisterItem(uniqueTag = "TestFragmentTag2", title = "Families", isSelected = true)
-      )
+        RegisterItem(uniqueTag = "TestFragmentTag2", title = "Families", isSelected = true),
+      ),
   )
 }

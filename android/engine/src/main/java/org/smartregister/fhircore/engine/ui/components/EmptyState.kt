@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.sp
 fun EmptyState(message: String, modifier: Modifier = Modifier) {
   Column(
     modifier = modifier.padding(16.dp).fillMaxWidth(),
-    verticalArrangement = Arrangement.Center
+    verticalArrangement = Arrangement.Center,
   ) {
     Text(
       text = message,
@@ -43,7 +43,7 @@ fun EmptyState(message: String, modifier: Modifier = Modifier) {
         modifier
           .padding(vertical = 8.dp)
           .align(Alignment.CenterHorizontally)
-          .testTag(ERROR_MESSAGE_TAG)
+          .testTag(ERROR_MESSAGE_TAG),
     )
   }
 }

@@ -22,25 +22,38 @@ sealed class MainNavigationScreen(
   val titleResource: Int? = null,
   val iconResource: Int? = null,
   val route: String,
-  val showInBottomNav: Boolean = false
+  val showInBottomNav: Boolean = false,
 ) {
   object Home : MainNavigationScreen(R.string.clients, R.drawable.ic_home, "homeRoute", true)
+
   object Tasks : MainNavigationScreen(R.string.tasks, R.drawable.ic_tasks, "tasksRoute", true)
+
   object Reports :
     MainNavigationScreen(R.string.reports, R.drawable.ic_reports, "reportsRoute", true)
+
   object Settings :
     MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
+
   object PatientProfile :
     MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
+
   object TracingProfile :
     MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
+
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
+
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
+
   object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
+
   object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
+
   object TracingHistory : MainNavigationScreen(route = "tracingHistory")
+
   object TracingOutcomes : MainNavigationScreen(route = "tracingOutcome")
+
   object TracingHistoryDetails : MainNavigationScreen(route = "tracingHistoryDetails ")
+
   companion object {
     val appScreens =
       listOf(
@@ -56,7 +69,7 @@ sealed class MainNavigationScreen(
         TracingProfile,
         TracingHistory,
         TracingOutcomes,
-        TracingHistoryDetails
+        TracingHistoryDetails,
       )
   }
 }

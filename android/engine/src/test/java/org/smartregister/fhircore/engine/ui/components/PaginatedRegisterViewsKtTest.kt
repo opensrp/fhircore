@@ -53,10 +53,11 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         fun onPreviousButtonClick() {
           // Imitate previous button click action by doing nothing
         }
+
         fun onNextButtonClick() {
           // Imitate next button click action by doing nothing
         }
-      }
+      },
     )
 
   @Test
@@ -76,7 +77,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
     composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertDoesNotExist()
@@ -91,7 +92,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
     composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
@@ -122,7 +123,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 3,
         pagesCount = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
     composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
@@ -153,7 +154,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         currentPage = 1,
         pagesCount = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() }
+        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
     composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
@@ -193,7 +194,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = true
+        showFooter = true,
       )
     }
 
@@ -223,7 +224,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = true
+        showFooter = true,
       )
     }
 
@@ -257,7 +258,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = true
+        showFooter = true,
       )
     }
 
@@ -294,7 +295,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = false
+        showFooter = false,
       )
     }
 
@@ -328,7 +329,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = true
+        showFooter = true,
       )
     }
 
@@ -362,7 +363,7 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
         showHeader = true,
-        showFooter = false
+        showFooter = false,
       )
     }
 

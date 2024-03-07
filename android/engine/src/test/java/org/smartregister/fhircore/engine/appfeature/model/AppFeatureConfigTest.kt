@@ -31,7 +31,7 @@ class AppFeatureConfigTest {
       AppFeatureConfig(
         appId = "quest",
         classification = "app_feature",
-        appFeatures = listOf(mockk(), mockk(), mockk())
+        appFeatures = listOf(mockk(), mockk(), mockk()),
       )
   }
 

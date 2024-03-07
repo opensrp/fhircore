@@ -23,10 +23,16 @@ import org.smartregister.fhircore.engine.domain.model.Language
 
 sealed class AppMainEvent {
   data class SwitchLanguage(val language: Language, val context: Context) : AppMainEvent()
+
   data class DeviceToDeviceSync(val context: Context) : AppMainEvent()
+
   data class Logout(val context: Context) : AppMainEvent()
+
   data class SyncData(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
+
   object ResumeSync : AppMainEvent()
+
   data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
+
   data class RefreshAuthToken(val launchManualAuth: (Intent) -> Unit) : AppMainEvent()
 }

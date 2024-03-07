@@ -73,13 +73,18 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @BindValue val patientRepository: PatientRepository = mockk()
+
   @BindValue val libraryEvaluator: LibraryEvaluator = mockk()
+
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   val defaultRepository: DefaultRepository = mockk()
+
   @BindValue
   var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
+
   @Inject lateinit var patientItemMapper: PatientItemMapper
 
   lateinit var questPatientDetailViewModel: ListDataDetailViewModel
@@ -107,8 +112,8 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk(),
-          fhirEngine
-        )
+          fhirEngine,
+        ),
       )
 
     val intent =
@@ -142,7 +147,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
   @Test
   fun testOnFormItemClickListenerShouldStartQuestionnaireActivity() {
     questPatientDetailActivity.patientViewModel.onFormItemClickListener(
-      QuestionnaireConfig(form = "test-form", title = "Title", identifier = "1234")
+      QuestionnaireConfig(form = "test-form", title = "Title", identifier = "1234"),
     )
 
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
@@ -170,12 +175,12 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
                 this.authored = Date()
                 this.contained = listOf(Encounter().apply { this.id = "12345" })
               }
-              .encodeResourceToString()
+              .encodeResourceToString(),
           ),
-          QuestionnaireItem("12345", "name", "title")
+          QuestionnaireItem("12345", "name", "title"),
         ),
-        listOf(listOf(AdditionalData("", "", "", "", "", null)))
-      )
+        listOf(listOf(AdditionalData("", "", "", "", "", null))),
+      ),
     )
 
     val expectedIntent = Intent(questPatientDetailActivity, QuestionnaireActivity::class.java)
@@ -185,7 +190,7 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
     Assert.assertEquals("12345", actualIntent.getStringExtra(QUESTIONNAIRE_ARG_FORM))
     Assert.assertEquals(
       QuestionnaireType.READ_ONLY.name,
-      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_TYPE)
+      actualIntent.getStringExtra(QUESTIONNAIRE_ARG_TYPE),
     )
   }
 
@@ -202,13 +207,13 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
           id = "open_questionnaire",
           title = "Questionnaire",
           icon = "",
-          TestDetailsNavigationAction(form = "", readOnly = true)
-        )
+          TestDetailsNavigationAction(form = "", readOnly = true),
+        ),
       )
     ResultDetailsNavigationConfiguration(
       appId = "quest",
       classification = "result_details_navigation",
-      navigationOptions
+      navigationOptions,
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
@@ -219,11 +224,11 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem(
           Pair(
             QuestionnaireResponseItem("", Date(), "12345", ""),
-            QuestionnaireItem("", "name", "title")
+            QuestionnaireItem("", "name", "title"),
           ),
-          listOf()
-        )
-      )
+          listOf(),
+        ),
+      ),
     )
 
     val dialog = shadowOf(ShadowAlertDialog.getLatestAlertDialog())
@@ -239,13 +244,13 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
           id = "open_test_details",
           title = "Test Details",
           icon = "",
-          TestDetailsNavigationAction(form = "", readOnly = true)
-        )
+          TestDetailsNavigationAction(form = "", readOnly = true),
+        ),
       )
     ResultDetailsNavigationConfiguration(
       appId = "g6pd",
       classification = "result_details_navigation",
-      navigationOptions
+      navigationOptions,
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
@@ -256,11 +261,11 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
         QuestResultItem(
           Pair(
             QuestionnaireResponseItem("12345", Date(), "12345", ""),
-            QuestionnaireItem("1", "name", "title")
+            QuestionnaireItem("1", "name", "title"),
           ),
-          listOf()
-        )
-      )
+          listOf(),
+        ),
+      ),
     )
 
     val expectedIntent = Intent(questPatientDetailActivity, SimpleDetailsActivity::class.java)
@@ -277,19 +282,19 @@ class QuestPatientDetailActivityTest : RobolectricTest() {
           id = "open_test_details",
           title = "Test Details",
           icon = "",
-          TestDetailsNavigationAction(form = "", readOnly = true)
-        )
+          TestDetailsNavigationAction(form = "", readOnly = true),
+        ),
       )
     ResultDetailsNavigationConfiguration(
       appId = "g6pd",
       classification = "result_details_navigation",
-      navigationOptions
+      navigationOptions,
     )
 
     ReflectionHelpers.callInstanceMethod<Any>(
       questPatientDetailActivity,
       "handlePatientResources",
-      ReflectionHelpers.ClassParameter(ArrayList::class.java, arrayListOf("Condition"))
+      ReflectionHelpers.ClassParameter(ArrayList::class.java, arrayListOf("Condition")),
     )
 
     Assert.assertEquals("Condition", questPatientDetailActivity.patientResourcesList[0])

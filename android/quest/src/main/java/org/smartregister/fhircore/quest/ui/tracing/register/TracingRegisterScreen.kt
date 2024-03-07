@@ -58,7 +58,7 @@ fun TracingRegisterScreen(
   modifier: Modifier = Modifier,
   screenTitle: String,
   navController: NavHostController,
-  registerViewModel: TracingRegisterViewModel = hiltViewModel()
+  registerViewModel: TracingRegisterViewModel = hiltViewModel(),
 ) {
   var showFiltersDialog by remember { mutableStateOf(false) }
   val currentFilterState by registerViewModel.filtersStateFlow.collectAsStateWithLifecycle()
@@ -68,7 +68,7 @@ fun TracingRegisterScreen(
     screenTitle = screenTitle,
     navController = navController,
     registerViewModel = registerViewModel,
-    filterNavClickAction = { showFiltersDialog = true }
+    filterNavClickAction = { showFiltersDialog = true },
   )
 
   if (showFiltersDialog) {
@@ -78,7 +78,7 @@ fun TracingRegisterScreen(
       onApplyAction = {
         registerViewModel.onEvent(StandardRegisterEvent.ApplyFilter(it))
         showFiltersDialog = false
-      }
+      },
     )
   }
 }
@@ -87,13 +87,13 @@ fun TracingRegisterScreen(
 fun FilterTracingRegisterModal(
   filterState: TracingRegisterFilterState,
   onDismissAction: () -> Unit,
-  onApplyAction: (TracingRegisterFilterState) -> Unit
+  onApplyAction: (TracingRegisterFilterState) -> Unit,
 ) {
   var filtersState by remember { mutableStateOf(filterState) }
 
   Dialog(
     onDismissRequest = onDismissAction,
-    properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
   ) {
     Card(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
       Column(modifier = Modifier.padding(8.dp)) {
@@ -101,14 +101,14 @@ fun FilterTracingRegisterModal(
           text = stringResource(id = R.string.filters).uppercase(),
           textAlign = TextAlign.Start,
           style = MaterialTheme.typography.h5,
-          color = MaterialTheme.colors.primary
+          color = MaterialTheme.colors.primary,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(
           horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(8.dp)
+          verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
           TracingRegisterExposedDropdown(
             filter = filtersState.patientAssignment,
@@ -119,16 +119,16 @@ fun FilterTracingRegisterModal(
                   patientCategory =
                     TracingRegisterUiFilter(
                       TracingPatientCategory.ALL_PATIENT_CATEGORIES,
-                      TracingPatientCategory.values().asList()
+                      TracingPatientCategory.values().asList(),
                     ),
                   reason =
                     TracingRegisterUiFilter(
                       TracingReason.ALL_REASONS,
-                      TracingReason.values().asList()
+                      TracingReason.values().asList(),
                     ),
-                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
                 )
-            }
+            },
           )
 
           TracingRegisterExposedDropdown(
@@ -140,11 +140,11 @@ fun FilterTracingRegisterModal(
                   reason =
                     TracingRegisterUiFilter(
                       TracingReason.ALL_REASONS,
-                      TracingReason.values().asList()
+                      TracingReason.values().asList(),
                     ),
-                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
                 )
-            }
+            },
           )
 
           TracingRegisterExposedDropdown(
@@ -153,14 +153,14 @@ fun FilterTracingRegisterModal(
               filtersState =
                 filtersState.copy(
                   reason = it,
-                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+                  age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
                 )
-            }
+            },
           )
 
           TracingRegisterExposedDropdown(
             filter = filtersState.age,
-            onItemSelected = { filtersState = filtersState.copy(age = it) }
+            onItemSelected = { filtersState = filtersState.copy(age = it) },
           )
         }
 
@@ -170,14 +170,18 @@ fun FilterTracingRegisterModal(
             modifier = Modifier.wrapContentWidth(),
             colors =
               ButtonDefaults.textButtonColors(
-                contentColor = Color.DarkGray.copy(alpha = ContentAlpha.medium)
-              )
-          ) { Text(text = stringResource(id = R.string.cancel).uppercase()) }
+                contentColor = Color.DarkGray.copy(alpha = ContentAlpha.medium),
+              ),
+          ) {
+            Text(text = stringResource(id = R.string.cancel).uppercase())
+          }
 
           TextButton(
             onClick = { onApplyAction.invoke(filtersState) },
-            modifier = Modifier.wrapContentWidth()
-          ) { Text(text = stringResource(id = R.string.apply).uppercase()) }
+            modifier = Modifier.wrapContentWidth(),
+          ) {
+            Text(text = stringResource(id = R.string.apply).uppercase())
+          }
         }
       }
     }
@@ -188,11 +192,11 @@ fun FilterTracingRegisterModal(
 @Composable
 fun <T : TracingFilterOption> TracingRegisterExposedDropdown(
   filter: TracingRegisterUiFilter<T>,
-  onItemSelected: (TracingRegisterUiFilter<T>) -> Unit
+  onItemSelected: (TracingRegisterUiFilter<T>) -> Unit,
 ) {
   LocalExposedDropdownMenuBox(
     selectedItem = filter.selected,
     options = filter.options,
-    onItemSelected = { onItemSelected.invoke(filter.copy(selected = it)) }
+    onItemSelected = { onItemSelected.invoke(filter.copy(selected = it)) },
   )
 }

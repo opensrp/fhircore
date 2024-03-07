@@ -44,7 +44,7 @@ fun RegisterHeader(modifier: Modifier = Modifier, resultCount: Int) {
         modifier
           .testTag(SEARCH_HEADER_TEXT_TAG)
           .padding(horizontal = 16.dp, vertical = 8.dp)
-          .fillMaxWidth()
+          .fillMaxWidth(),
     )
   }
 }

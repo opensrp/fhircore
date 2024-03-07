@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Data class to represent a form configuration. Questionnaires are synced from the server
+ *
  * @property appId Application id for the questionnaire
  * @property form A unique name for the form as declared in the `form_configurations.json file`
  * @property title The title of the form
@@ -33,5 +34,5 @@ data class QuestionnaireConfig(
   val saveButtonText: String? = null,
   val setPractitionerDetails: Boolean = true,
   val setOrganizationDetails: Boolean = true,
-  val planDefinitions: List<String> = listOf()
+  val planDefinitions: List<String> = listOf(),
 )

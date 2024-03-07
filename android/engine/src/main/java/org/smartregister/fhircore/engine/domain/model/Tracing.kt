@@ -23,7 +23,7 @@ data class TracingHistory(
   val startDate: Date,
   val endDate: Date?,
   val isActive: Boolean,
-  val numberOfAttempts: Int
+  val numberOfAttempts: Int,
 )
 
 data class TracingOutcome(

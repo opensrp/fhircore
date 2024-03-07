@@ -52,6 +52,7 @@ class PatientUtilTest : RobolectricTest() {
 
   @BindValue
   var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
+
   @Inject lateinit var fhirEngine: FhirEngine
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -97,14 +98,13 @@ class PatientUtilTest : RobolectricTest() {
 
   @Test
   fun testPropertiesMapping() {
-
     var filter =
       Filter(
         resourceType = Enumerations.ResourceType.CONDITION,
         key = "code",
         valueType = Enumerations.DataType.CODEABLECONCEPT,
         valueCoding = Code(),
-        dynamicColors = listOf(DynamicColor("Normal", "#00FF00"))
+        dynamicColors = listOf(DynamicColor("Normal", "#00FF00")),
       )
 
     var properties = runBlocking { propertiesMapping("Normal", filter) }
@@ -119,7 +119,7 @@ class PatientUtilTest : RobolectricTest() {
         key = "code",
         valueType = Enumerations.DataType.CODEABLECONCEPT,
         valueCoding = Code(),
-        properties = Properties(label = Property(), value = Property(color = "#000000", 20))
+        properties = Properties(label = Property(), value = Property(color = "#000000", 20)),
       )
 
     properties = runBlocking { propertiesMapping("Deficient", filter) }
@@ -141,7 +141,7 @@ class PatientUtilTest : RobolectricTest() {
                   system = "http://snomed.info/sct"
                   code = "9024005"
                 }
-              }
+              },
             )
           code =
             CodeableConcept().apply {
@@ -153,8 +153,8 @@ class PatientUtilTest : RobolectricTest() {
             }
         },
         included = null,
-        revIncluded = null
-      )
+        revIncluded = null,
+      ),
     )
   }
 }

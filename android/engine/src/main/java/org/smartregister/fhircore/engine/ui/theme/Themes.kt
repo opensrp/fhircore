@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
  * To enable app theme set darkTheme = isSystemInDarkTheme
  */
 @Composable
-fun AppTheme(darkTheme: Boolean = false, content: (@Composable() () -> Unit)) {
+fun AppTheme(
+  darkTheme: Boolean = false,
+  content: (@Composable() () -> Unit),
+) {
   MaterialTheme(colors = if (darkTheme) DarkColors else LightColors, content = content)
 }

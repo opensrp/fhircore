@@ -64,22 +64,21 @@ fun FamilyMemberBottomSheet(
   formButtonData: List<FormButtonData>,
   onFormClick: (String, String?) -> Unit,
   onViewProfile: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Column(modifier = modifier.verticalScroll(rememberScrollState())) {
-
     // Top section displays the name, gender and age for member
     Spacer(modifier = modifier.height(16.dp))
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,
-      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+      modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
     ) {
       Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
         Text(
           text = stringResource(id = R.string.what_to_do),
           fontWeight = FontWeight.SemiBold,
-          modifier = modifier.padding(bottom = 4.dp)
+          modifier = modifier.padding(bottom = 4.dp),
         )
         Text(text = title, color = DefaultColor.copy(0.8f))
       }
@@ -90,10 +89,11 @@ fun FamilyMemberBottomSheet(
         modifier =
           modifier.clickable {
             coroutineScope.launch {
-              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed)
+              if (!bottomSheetScaffoldState.bottomSheetState.isCollapsed) {
                 bottomSheetScaffoldState.bottomSheetState.collapse()
+              }
             }
-          }
+          },
       )
     }
     Spacer(modifier = modifier.height(8.dp))
@@ -107,7 +107,7 @@ fun FamilyMemberBottomSheet(
           formButtonData = it,
           onFormClick = { questionnaireId, taskId ->
             if (it.questionnaireId != null) onFormClick(questionnaireId, taskId)
-          }
+          },
         )
       }
       Spacer(modifier = modifier.height(8.dp))
@@ -122,7 +122,7 @@ fun FamilyMemberBottomSheet(
         modifier
           .fillMaxWidth()
           .clickable { onViewProfile() }
-          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .padding(horizontal = 16.dp, vertical = 16.dp),
     )
     Spacer(modifier = modifier.height(16.dp))
   }
@@ -136,8 +136,12 @@ private fun FamilyMemberBottomSheetWithoutFormDataPreview() {
     bottomSheetScaffoldState = rememberBottomSheetScaffoldState(),
     title = "John Doe, M, 35y",
     formButtonData = emptyList(),
-    onFormClick = { _, _ -> /*Do nothing*/ },
-    onViewProfile = { /*Do nothing*/}
+    onFormClick = { _, _ ->
+      // Do nothing
+    },
+    onViewProfile = {
+      // Do nothing
+    },
   )
 }
 
@@ -152,9 +156,13 @@ private fun FamilyMemberBottomSheetWithFormDataPreview() {
       listOf(
         FormButtonData("Issue bednet", "12344", null, OverdueColor),
         FormButtonData("Sick child", "12345", null, OverdueColor),
-        FormButtonData("Pregnancy visit", "12008")
+        FormButtonData("Pregnancy visit", "12008"),
       ),
-    onFormClick = { _, _ -> /*Do nothing*/ },
-    onViewProfile = { /*Do nothing*/}
+    onFormClick = { _, _ ->
+      // Do nothing
+    },
+    onViewProfile = {
+      // Do nothing
+    },
   )
 }

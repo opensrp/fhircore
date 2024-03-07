@@ -57,6 +57,7 @@ internal class PinViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -72,7 +73,7 @@ internal class PinViewModelTest : RobolectricTest() {
       applicationName = "Test App",
       appLogoIconResourceFile = "ic_launcher",
       enablePin = true,
-      showLogo = true
+      showLogo = true,
     )
 
   @Before
@@ -94,7 +95,7 @@ internal class PinViewModelTest : RobolectricTest() {
         sharedPreferences = sharedPreferencesHelper,
         secureSharedPreference = secureSharedPreference,
         configurationRegistry = configurationRegistry,
-        app = application
+        app = application,
       )
     pinViewModel.apply {
       savedPin = "1234"
@@ -114,14 +115,14 @@ internal class PinViewModelTest : RobolectricTest() {
         applicationName = "Test App",
         appLogoIconResourceFile = "ic_launcher",
         enablePin = true,
-        showLogo = true
+        showLogo = true,
       )
     Assert.assertEquals(expectedPinConfig.appId, testPinViewConfiguration.appId)
     Assert.assertEquals(expectedPinConfig.classification, testPinViewConfiguration.classification)
     Assert.assertEquals(expectedPinConfig.applicationName, testPinViewConfiguration.applicationName)
     Assert.assertEquals(
       expectedPinConfig.appLogoIconResourceFile,
-      testPinViewConfiguration.appLogoIconResourceFile
+      testPinViewConfiguration.appLogoIconResourceFile,
     )
     Assert.assertEquals(expectedPinConfig.enablePin, testPinViewConfiguration.enablePin)
     Assert.assertEquals(expectedPinConfig.showLogo, testPinViewConfiguration.showLogo)
@@ -144,7 +145,7 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel.onPinConfirmed()
     Assert.assertEquals(
       pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
-      testPin.value.toString()
+      testPin.value.toString(),
     )
     Assert.assertEquals(pinViewModel.showError.value, false)
   }
@@ -154,7 +155,7 @@ internal class PinViewModelTest : RobolectricTest() {
     pinViewModel.onPinConfirmed()
     Assert.assertEquals(
       pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
-      testPin.value.toString()
+      testPin.value.toString(),
     )
     Assert.assertEquals(pinViewModel.showError.value, false)
     Assert.assertEquals(pinViewModel.navigateToHome.value, true)

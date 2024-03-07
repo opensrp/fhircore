@@ -53,7 +53,7 @@ class AppDataStore
 constructor(
   private val fhirEngine: FhirEngine,
   private val configurationRegistry: ConfigurationRegistry,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
 ) {
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
@@ -89,7 +89,7 @@ constructor(
 
   suspend fun patientCount(): Long {
     return fhirEngine.count(
-      Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) }
+      Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) },
     )
   }
 
@@ -101,7 +101,7 @@ constructor(
           {
             modifier = StringFilterModifier.CONTAINS
             value = text
-          }
+          },
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = text }) })
         operation = Operation.OR
@@ -127,14 +127,14 @@ data class PatientItem(
   val chwAssigned: String,
   val healthStatus: HealthStatus,
   val practitioners: List<Reference>? = null,
-  val dateCreated: Date? = null
+  val dateCreated: Date? = null,
 )
 
 data class AddressData(
   val district: String = "",
   val state: String = "",
   val text: String = "",
-  val fullAddress: String = ""
+  val fullAddress: String = "",
 )
 
 internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): PatientItem {
@@ -142,9 +142,11 @@ internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): Pat
   val isActive = active
   val gender = if (hasGenderElement()) genderElement.valueAsString else ""
   val dob =
-    if (hasBirthDateElement())
+    if (hasBirthDateElement()) {
       LocalDate.parse(birthDateElement.valueAsString, DateTimeFormatter.ISO_DATE)
-    else null
+    } else {
+      null
+    }
   return PatientItem(
     id = this.extractOfficialIdentifier() ?: "N/A",
     resourceId = this.logicalId,
@@ -162,8 +164,8 @@ internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): Pat
         district = this.extractWithFhirPath("Patient.address.district"),
         state = this.extractWithFhirPath("Patient.address.state"),
         text = this.extractWithFhirPath("Patient.address.text"),
-        fullAddress = this.extractAddress()
+        fullAddress = this.extractAddress(),
       ),
-    dateCreated = this.meta.lastUpdated
+    dateCreated = this.meta.lastUpdated,
   )
 }

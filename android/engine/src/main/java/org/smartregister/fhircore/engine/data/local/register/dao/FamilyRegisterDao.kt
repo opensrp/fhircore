@@ -64,45 +64,47 @@ class FamilyRegisterDao
 constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : RegisterDao {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
     val families =
       fhirEngine.search<Group> {
         getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) }
         count =
-          if (loadAll) countRegisterData(appFeatureName).toInt()
-          else PaginationConstant.DEFAULT_PAGE_SIZE
+          if (loadAll) {
+            countRegisterData(appFeatureName).toInt()
+          } else PaginationConstant.DEFAULT_PAGE_SIZE
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
-    return families.map { it.resource }.filter { it.active && !it.name.isNullOrEmpty() }.map {
-      family ->
-      val members: List<RegisterData.FamilyMemberRegisterData> =
-        family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
-          loadFamilyMemberRegisterData(it.entity.extractId())
-        }
-          ?: listOf()
+    return families
+      .map { it.resource }
+      .filter { it.active && !it.name.isNullOrEmpty() }
+      .map { family ->
+        val members: List<RegisterData.FamilyMemberRegisterData> =
+          family.member
+            ?.filter { it.hasEntity() && it.entity.hasReference() }
+            ?.mapNotNull { loadFamilyMemberRegisterData(it.entity.extractId()) } ?: listOf()
 
-      val familyHead = loadFamilyHead(family)
+        val familyHead = loadFamilyHead(family)
 
-      RegisterData.FamilyRegisterData(
-        logicalId = family.logicalId,
-        name = family.name,
-        identifier = family.extractOfficialIdentifier(),
-        address = familyHead?.extractAddress() ?: "",
-        head = familyHead?.let { loadFamilyMemberRegisterData(familyHead.logicalId) },
-        members = members,
-        servicesDue = members.sumOf { it.servicesDue ?: 0 },
-        servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
-        lastSeen = family.meta?.lastUpdated.lastSeenFormat()
-      )
-    }
+        RegisterData.FamilyRegisterData(
+          logicalId = family.logicalId,
+          name = family.name,
+          identifier = family.extractOfficialIdentifier(),
+          address = familyHead?.extractAddress() ?: "",
+          head = familyHead?.let { loadFamilyMemberRegisterData(familyHead.logicalId) },
+          members = members,
+          servicesDue = members.sumOf { it.servicesDue ?: 0 },
+          servicesOverdue = members.sumOf { it.servicesOverdue ?: 0 },
+          lastSeen = family.meta?.lastUpdated.lastSeenFormat(),
+        )
+      }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
@@ -117,23 +119,23 @@ constructor(
       age = familyHead?.extractAge() ?: "",
       head = familyHead?.let { loadFamilyMemberProfileData(familyHead.logicalId) },
       members =
-        family.member?.filter { it.hasEntity() && it.entity.hasReference() }?.mapNotNull {
-          loadFamilyMemberProfileData(it.entity.extractId())
-        }
-          ?: listOf(),
+        family.member
+          ?.filter { it.hasEntity() && it.entity.hasReference() }
+          ?.mapNotNull { loadFamilyMemberProfileData(it.entity.extractId()) } ?: listOf(),
       services =
         defaultRepository.searchResourceFor(
           subjectId = family.logicalId,
           subjectParam = CarePlan.SUBJECT,
-          filters = getRegisterDataFilters(FAMILY_CARE_PLAN)
+          filters = getRegisterDataFilters(FAMILY_CARE_PLAN),
         ),
       tasks =
-        defaultRepository.searchResourceFor<Task>(
+        defaultRepository
+          .searchResourceFor<Task>(
             subjectId = family.logicalId,
             subjectParam = Task.SUBJECT,
-            subjectType = ResourceType.Group
+            subjectType = ResourceType.Group,
           )
-          .let { it.sortedBy { it.executionPeriod.start.time } }
+          .let { it.sortedBy { it.executionPeriod.start.time } },
     )
   }
 
@@ -153,7 +155,7 @@ constructor(
         .searchResourceFor<RelatedPerson>(
           token = RelatedPerson.RES_ID,
           subjectType = ResourceType.RelatedPerson,
-          subjectId = reference.extractId()
+          subjectId = reference.extractId(),
         )
         .firstOrNull()
         ?.let { relatedPerson ->
@@ -161,14 +163,13 @@ constructor(
             .searchResourceFor<Patient>(
               token = Patient.RES_ID,
               subjectType = ResourceType.Patient,
-              subjectId = relatedPerson.patient.extractId()
+              subjectId = relatedPerson.patient.extractId(),
             )
             .firstOrNull()
         }
     }
 
   suspend fun changeFamilyHead(newFamilyHead: String, oldFamilyHead: String) {
-
     val patient = fhirEngine.get<Patient>(newFamilyHead)
 
     // TODO create a utility/extension function for creating RelatedPersonResource
@@ -198,13 +199,12 @@ constructor(
   suspend fun removeFamily(familyId: String, isDeactivateMembers: Boolean?) {
     defaultRepository.loadResource<Group>(familyId)?.let { family ->
       if (!family.active) throw IllegalStateException("Family already deleted")
-      family
-        .managingEntity
+      family.managingEntity
         ?.let { reference ->
           defaultRepository.searchResourceFor<RelatedPerson>(
             token = RelatedPerson.RES_ID,
             subjectType = ResourceType.RelatedPerson,
-            subjectId = reference.extractId()
+            subjectId = reference.extractId(),
           )
         }
         ?.firstOrNull()
@@ -237,13 +237,12 @@ constructor(
           family.member.run {
             remove(this.find { it.entity.reference == "Patient/${patient.logicalId}" })
           }
-          family
-            .managingEntity
+          family.managingEntity
             ?.let { reference ->
               defaultRepository.searchResourceFor<RelatedPerson>(
                 token = RelatedPerson.RES_ID,
                 subjectType = ResourceType.RelatedPerson,
-                subjectId = reference.extractId()
+                subjectId = reference.extractId(),
               )
             }
             ?.firstOrNull()
@@ -260,7 +259,7 @@ constructor(
   }
 
   private suspend fun loadFamilyMemberRegisterData(
-    memberId: String
+    memberId: String,
   ): RegisterData.FamilyMemberRegisterData? {
     return defaultRepository.loadResource<Patient>(memberId)?.let { patient ->
       if (!patient.active) return null
@@ -278,7 +277,7 @@ constructor(
         servicesDue =
           carePlans.map { it.resource }.filter { it.due() }.flatMap { it.activity }.size,
         servicesOverdue =
-          carePlans.map { it.resource }.filter { it.overdue() }.flatMap { it.activity }.size
+          carePlans.map { it.resource }.filter { it.overdue() }.flatMap { it.activity }.size,
       )
     }
   }
@@ -303,7 +302,7 @@ constructor(
         conditions = conditions,
         flags = flags,
         services = carePlans.map { it.resource },
-        tasks = tasks
+        tasks = tasks,
       )
     }
 
@@ -311,7 +310,7 @@ constructor(
     defaultRepository.searchResourceFor<Condition>(
       subjectId = patientId,
       subjectParam = Condition.SUBJECT,
-      subjectType = ResourceType.Patient
+      subjectType = ResourceType.Patient,
     )
 
   private suspend fun loadMemberCarePlan(patientId: String) =
@@ -321,23 +320,26 @@ constructor(
     }
 
   private suspend fun loadMemberTask(patientId: String) =
-    defaultRepository.searchResourceFor<Task>(
+    defaultRepository
+      .searchResourceFor<Task>(
         subjectId = patientId,
         subjectParam = Task.SUBJECT,
-        subjectType = ResourceType.Patient
+        subjectType = ResourceType.Patient,
       )
       .let { it.sortedBy { it.executionPeriod.start.time } }
 
   private fun Group.extractOfficialIdentifier(): String? =
-    if (this.hasIdentifier())
+    if (this.hasIdentifier()) {
       this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
-    else null
+    } else {
+      null
+    }
 
   private suspend fun loadMemberFlags(patientId: String) =
     defaultRepository.searchResourceFor<Flag>(
       subjectId = patientId,
       subjectParam = Flag.SUBJECT,
-      subjectType = ResourceType.Patient
+      subjectType = ResourceType.Patient,
     )
 
   private fun getRegisterDataFilters(id: String) =

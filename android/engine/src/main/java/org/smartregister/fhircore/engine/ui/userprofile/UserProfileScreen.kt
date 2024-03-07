@@ -66,9 +66,8 @@ import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 @Composable
 fun UserProfileScreen(
   modifier: Modifier = Modifier,
-  userProfileViewModel: UserProfileViewModel = hiltViewModel()
+  userProfileViewModel: UserProfileViewModel = hiltViewModel(),
 ) {
-
   val username by remember { mutableStateOf(userProfileViewModel.retrieveUsername()) }
   var expanded by remember { mutableStateOf(false) }
   val context = LocalContext.current
@@ -78,21 +77,21 @@ fun UserProfileScreen(
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
         Box(
           modifier = modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-          contentAlignment = Alignment.Center
+          contentAlignment = Alignment.Center,
         ) {
           Text(
             text = username!!.first().uppercase(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.Bold,
             fontSize = 28.sp,
-            color = BlueTextColor
+            color = BlueTextColor,
           )
         }
         Text(
           text = username!!.capitalize(Locale.current),
           fontSize = 22.sp,
           modifier = modifier.padding(vertical = 22.dp),
-          fontWeight = FontWeight.Bold
+          fontWeight = FontWeight.Bold,
         )
       }
     }
@@ -101,7 +100,7 @@ fun UserProfileScreen(
       icon = Icons.Rounded.Sync,
       text = stringResource(id = R.string.sync),
       clickListener = userProfileViewModel::runSync,
-      modifier = modifier
+      modifier = modifier,
     )
 
     // Language option
@@ -112,14 +111,14 @@ fun UserProfileScreen(
             .fillMaxWidth()
             .clickable { expanded = true }
             .padding(vertical = 16.dp, horizontal = 20.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
       ) {
         Row(modifier = Modifier.align(Alignment.CenterVertically)) {
           Icon(
             painterResource(R.drawable.ic_outline_language_black),
             stringResource(R.string.language),
             tint = BlueTextColor,
-            modifier = Modifier.size(26.dp)
+            modifier = Modifier.size(26.dp),
           )
           Spacer(modifier = modifier.width(20.dp))
           Text(text = stringResource(id = R.string.language), fontSize = 18.sp)
@@ -129,12 +128,12 @@ fun UserProfileScreen(
             text = userProfileViewModel.loadSelectedLanguage(),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            modifier = modifier.wrapContentWidth(Alignment.End)
+            modifier = modifier.wrapContentWidth(Alignment.End),
           )
           DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = modifier.wrapContentWidth(Alignment.End)
+            modifier = modifier.wrapContentWidth(Alignment.End),
           ) {
             for (language in userProfileViewModel.languages) {
               DropdownMenuItem(onClick = { userProfileViewModel.setLanguage(language) }) {
@@ -147,7 +146,7 @@ fun UserProfileScreen(
           imageVector = Icons.Rounded.ChevronRight,
           "",
           tint = Color.LightGray,
-          modifier = modifier.wrapContentWidth(Alignment.End)
+          modifier = modifier.wrapContentWidth(Alignment.End),
         )
       }
       Divider(color = DividerColor)
@@ -157,7 +156,7 @@ fun UserProfileScreen(
       icon = Icons.Rounded.Logout,
       text = stringResource(id = R.string.logout),
       clickListener = { userProfileViewModel.logoutUser(context) },
-      modifier = modifier
+      modifier = modifier,
     )
   }
 }
@@ -167,7 +166,7 @@ fun UserProfileRow(
   icon: ImageVector,
   text: String,
   clickListener: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     modifier =
@@ -175,7 +174,7 @@ fun UserProfileRow(
         .fillMaxWidth()
         .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
     Row {
       Icon(imageVector = icon, "", tint = BlueTextColor)
@@ -186,7 +185,7 @@ fun UserProfileRow(
       imageVector = Icons.Rounded.ChevronRight,
       "",
       tint = Color.LightGray,
-      modifier = modifier.wrapContentWidth(Alignment.End)
+      modifier = modifier.wrapContentWidth(Alignment.End),
     )
   }
   Divider(color = DividerColor)

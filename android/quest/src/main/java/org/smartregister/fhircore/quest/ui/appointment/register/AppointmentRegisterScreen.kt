@@ -72,7 +72,7 @@ fun AppointmentRegisterScreen(
   modifier: Modifier = Modifier,
   screenTitle: String,
   navController: NavHostController,
-  registerViewModel: AppointmentRegisterViewModel = hiltViewModel()
+  registerViewModel: AppointmentRegisterViewModel = hiltViewModel(),
 ) {
   var showFiltersDialog by remember { mutableStateOf(false) }
   val currentFilterState by registerViewModel.filtersStateFlow.collectAsStateWithLifecycle()
@@ -82,7 +82,7 @@ fun AppointmentRegisterScreen(
     screenTitle = screenTitle,
     navController = navController,
     registerViewModel = registerViewModel,
-    filterNavClickAction = { showFiltersDialog = true }
+    filterNavClickAction = { showFiltersDialog = true },
   )
 
   if (showFiltersDialog) {
@@ -94,7 +94,7 @@ fun AppointmentRegisterScreen(
       onFiltersApply = {
         registerViewModel.onEvent(StandardRegisterEvent.ApplyFilter(it))
         showFiltersDialog = false
-      }
+      },
     )
   }
 }
@@ -104,13 +104,13 @@ fun FilterAppointmentsModal(
   currentFilterState: AppointmentFilterState,
   fragmentManager: FragmentManager,
   onDismissAction: () -> Unit,
-  onFiltersApply: (AppointmentFilterState) -> Unit
+  onFiltersApply: (AppointmentFilterState) -> Unit,
 ) {
   var filtersState by remember { mutableStateOf(currentFilterState) }
 
   Dialog(
     onDismissRequest = onDismissAction,
-    properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+    properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
   ) {
     Card(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
       Column(modifier = Modifier.padding(8.dp)) {
@@ -118,14 +118,14 @@ fun FilterAppointmentsModal(
           text = stringResource(id = R.string.filters).uppercase(),
           textAlign = TextAlign.Start,
           style = MaterialTheme.typography.h5,
-          color = MaterialTheme.colors.primary
+          color = MaterialTheme.colors.primary,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(
           horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.spacedBy(8.dp)
+          verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
           AppointmentDateField(
             fragmentManager,
@@ -133,7 +133,7 @@ fun FilterAppointmentsModal(
             onNewDateSelected = {
               filtersState =
                 AppointmentFilterState.default().copy(date = it) // reset other filters to default
-            }
+            },
           )
 
           AppointmentExposedDropdown(
@@ -145,11 +145,11 @@ fun FilterAppointmentsModal(
                   patientCategory =
                     AppointmentFilter(
                       PatientCategory.ALL_PATIENT_CATEGORIES,
-                      PatientCategory.values().asList()
+                      PatientCategory.values().asList(),
                     ),
-                  reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList())
+                  reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList()),
                 )
-            }
+            },
           )
 
           AppointmentExposedDropdown(
@@ -163,14 +163,14 @@ fun FilterAppointmentsModal(
               filtersState =
                 filtersState.copy(
                   patientCategory = it,
-                  reason = AppointmentFilter(Reason.ALL_REASONS, categoryReasons)
+                  reason = AppointmentFilter(Reason.ALL_REASONS, categoryReasons),
                 )
-            }
+            },
           )
 
           AppointmentExposedDropdown(
             filter = filtersState.reason,
-            onItemSelected = { filtersState = filtersState.copy(reason = it) }
+            onItemSelected = { filtersState = filtersState.copy(reason = it) },
           )
         }
 
@@ -180,14 +180,18 @@ fun FilterAppointmentsModal(
             modifier = Modifier.wrapContentWidth(),
             colors =
               ButtonDefaults.textButtonColors(
-                contentColor = Color.DarkGray.copy(alpha = ContentAlpha.medium)
-              )
-          ) { Text(text = stringResource(id = R.string.cancel).uppercase()) }
+                contentColor = Color.DarkGray.copy(alpha = ContentAlpha.medium),
+              ),
+          ) {
+            Text(text = stringResource(id = R.string.cancel).uppercase())
+          }
 
           TextButton(
             onClick = { onFiltersApply(filtersState) },
-            modifier = Modifier.wrapContentWidth()
-          ) { Text(text = stringResource(id = R.string.apply).uppercase()) }
+            modifier = Modifier.wrapContentWidth(),
+          ) {
+            Text(text = stringResource(id = R.string.apply).uppercase())
+          }
         }
       }
     }
@@ -199,14 +203,14 @@ fun AppointmentDatePicker(
   fragmentManager: FragmentManager,
   selectedDate: AppointmentDate,
   onDatePicked: (AppointmentDate) -> Unit,
-  onDateCancel: () -> Unit
+  onDateCancel: () -> Unit,
 ) {
   LocalDatePickerDialog(
     fragmentManager = fragmentManager,
     datePickerTag = "APPOINTMENT_DATE_PICKER",
     selectedDate = selectedDate.value,
     onDatePicked = { onDatePicked.invoke(AppointmentDate(it)) },
-    onDateCancel = { onDateCancel.invoke() }
+    onDateCancel = { onDateCancel.invoke() },
   )
 }
 
@@ -214,7 +218,7 @@ fun AppointmentDatePicker(
 fun AppointmentDateField(
   fragmentManager: FragmentManager,
   date: AppointmentDate,
-  onNewDateSelected: (AppointmentDate) -> Unit
+  onNewDateSelected: (AppointmentDate) -> Unit,
 ) {
   val interactionSource = remember { MutableInteractionSource() }
   val isPressed by interactionSource.collectIsPressedAsState()
@@ -239,7 +243,7 @@ fun AppointmentDateField(
         Icon(imageVector = Icons.Filled.CalendarToday, contentDescription = "date of appointment")
       }
     },
-    interactionSource = interactionSource
+    interactionSource = interactionSource,
   )
 
   if (showCalendarDialog) {
@@ -250,7 +254,7 @@ fun AppointmentDateField(
         onNewDateSelected(it)
         showCalendarDialog = false
       },
-      onDateCancel = { showCalendarDialog = false }
+      onDateCancel = { showCalendarDialog = false },
     )
   }
 }
@@ -259,12 +263,12 @@ fun AppointmentDateField(
 @Composable
 fun <T : AppointmentFilterOption> AppointmentExposedDropdown(
   filter: AppointmentFilter<T>,
-  onItemSelected: (AppointmentFilter<T>) -> Unit
+  onItemSelected: (AppointmentFilter<T>) -> Unit,
 ) {
   LocalExposedDropdownMenuBox(
     selectedItem = filter.selected,
     options = filter.options,
-    onItemSelected = { onItemSelected.invoke(filter.copy(selected = it)) }
+    onItemSelected = { onItemSelected.invoke(filter.copy(selected = it)) },
   )
 }
 
@@ -285,6 +289,6 @@ fun PreviewFilterAppointmentsModal() {
     currentFilterState = AppointmentFilterState.default(),
     fragmentManager = activity.supportFragmentManager,
     onDismissAction = {},
-    onFiltersApply = {}
+    onFiltersApply = {},
   )
 }

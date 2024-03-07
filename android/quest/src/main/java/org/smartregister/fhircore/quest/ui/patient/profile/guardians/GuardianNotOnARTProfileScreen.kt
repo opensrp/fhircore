@@ -59,7 +59,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.PatientProfileViewSecti
 fun GuardianRelatedPersonProfileScreen(
   onBackPress: () -> Unit,
   modifier: Modifier = Modifier,
-  viewModel: GuardianNotOnARTProfileViewModel = hiltViewModel()
+  viewModel: GuardianNotOnARTProfileViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
   val profileViewData = viewModel.profileViewData.value
@@ -78,12 +78,12 @@ fun GuardianRelatedPersonProfileScreen(
             Icon(
               imageVector = Icons.Outlined.MoreVert,
               contentDescription = null,
-              tint = Color.White
+              tint = Color.White,
             )
           }
           DropdownMenu(
             expanded = showOverflowMenu,
-            onDismissRequest = { showOverflowMenu = false }
+            onDismissRequest = { showOverflowMenu = false },
           ) {
             viewState.visibleOverflowMenuItems().forEach {
               DropdownMenuItem(
@@ -97,9 +97,10 @@ fun GuardianRelatedPersonProfileScreen(
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
+                        if (it.confirmAction) {
+                          it.titleColor.copy(alpha = 0.1f)
+                        } else Color.Transparent,
+                    ),
               ) {
                 when (it.id) {
                   R.id.view_children -> {
@@ -108,7 +109,7 @@ fun GuardianRelatedPersonProfileScreen(
                   R.id.view_guardians -> {
                     Text(
                       text = stringResource(it.titleResource, profileViewData.guardians.size),
-                      color = it.titleColor
+                      color = it.titleColor,
                     )
                   }
                   else -> {
@@ -118,16 +119,16 @@ fun GuardianRelatedPersonProfileScreen(
               }
             }
           }
-        }
+        },
       )
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(
         modifier =
           modifier
             .verticalScroll(rememberScrollState())
-            .background(PatientProfileSectionsBackgroundColor)
+            .background(PatientProfileSectionsBackgroundColor),
       ) {
         // Personal Data: e.g. sex, age, dob
         PersonalData(profileViewData)
@@ -139,7 +140,7 @@ fun GuardianRelatedPersonProfileScreen(
               stringResource(org.smartregister.fhircore.engine.R.string.clinic_visits).uppercase(),
             onActionClick = {},
             showSeeAll = profileViewData.showListsHighlights,
-            profileViewSection = PatientProfileViewSection.TASKS
+            profileViewSection = PatientProfileViewSection.TASKS,
           ) {
             profileViewData.tasks.forEach {
               ProfileActionableItem(
@@ -149,10 +150,10 @@ fun GuardianRelatedPersonProfileScreen(
                     PatientProfileEvent.OpenTaskForm(
                       context = context,
                       taskFormId = taskFormId,
-                      taskId = taskId
-                    )
+                      taskId = taskId,
+                    ),
                   )
-                }
+                },
               )
             }
           }
@@ -163,14 +164,14 @@ fun GuardianRelatedPersonProfileScreen(
           ProfileCard(
             title = stringResource(org.smartregister.fhircore.engine.R.string.forms),
             onActionClick = { viewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.FORMS
+            profileViewSection = PatientProfileViewSection.FORMS,
           ) {
             profileViewData.forms.forEach {
               FormButton(
                 formButtonData = it,
                 onFormClick = { questionnaireId, _ ->
                   viewModel.onEvent(PatientProfileEvent.LoadQuestionnaire(questionnaireId, context))
-                }
+                },
               )
             }
           }
@@ -182,7 +183,7 @@ fun GuardianRelatedPersonProfileScreen(
           ProfileCard(
             title = stringResource(org.smartregister.fhircore.engine.R.string.medical_history),
             onActionClick = { viewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+            profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY,
           ) {
             profileViewData.medicalHistoryData.forEach {
               ProfileActionableItem(it, onActionClick = { _, _ -> })
@@ -195,7 +196,7 @@ fun GuardianRelatedPersonProfileScreen(
           ProfileCard(
             title = stringResource(org.smartregister.fhircore.engine.R.string.upcoming_services),
             onActionClick = { viewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
+            profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
           ) {
             profileViewData.upcomingServices.forEach {
               ProfileActionableItem(it, onActionClick = { _, _ -> })
@@ -208,7 +209,7 @@ fun GuardianRelatedPersonProfileScreen(
           ProfileCard(
             title = stringResource(org.smartregister.fhircore.engine.R.string.service_card),
             onActionClick = { viewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-            profileViewSection = PatientProfileViewSection.SERVICE_CARD
+            profileViewSection = PatientProfileViewSection.SERVICE_CARD,
           ) {
             profileViewData.ancCardData.forEach {
               ProfileActionableItem(it, onActionClick = { _, _ -> })

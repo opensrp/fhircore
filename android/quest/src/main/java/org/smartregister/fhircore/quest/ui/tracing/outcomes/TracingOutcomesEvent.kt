@@ -25,6 +25,6 @@ sealed class TracingOutcomesEvent {
     val context: Context,
     val title: String,
     val historyId: String,
-    val encounterId: String
+    val encounterId: String,
   ) : TracingOutcomesEvent()
 }

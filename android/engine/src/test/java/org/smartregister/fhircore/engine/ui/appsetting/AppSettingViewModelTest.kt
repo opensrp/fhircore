@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.ui.appsetting
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.GsonBuilder
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -29,6 +31,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -38,6 +41,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Reference
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -49,6 +53,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -56,29 +61,41 @@ import retrofit2.HttpException
 import retrofit2.Response
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@HiltAndroidTest
 class AppSettingViewModelTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @ExperimentalCoroutinesApi @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
   private val defaultRepository = mockk<DefaultRepository>()
   private val fhirResourceDataSource = mockk<FhirResourceDataSource>()
   private val sharedPreferencesHelper =
     SharedPreferencesHelper(
       ApplicationProvider.getApplicationContext(),
-      GsonBuilder().setLenient().create()
+      GsonBuilder().setLenient().create(),
     )
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private val configService = mockk<ConfigService>()
-  @ExperimentalCoroutinesApi
-  private val appSettingViewModel =
-    spyk(
-      AppSettingViewModel(
-        fhirResourceDataSource = fhirResourceDataSource,
-        defaultRepository = defaultRepository,
-        sharedPreferencesHelper = sharedPreferencesHelper,
-        configurationRegistry = Faker.buildTestConfigurationRegistry(),
-        dispatcherProvider = this.coroutineTestRule.testDispatcherProvider
-      )
-    )
+
+  @ExperimentalCoroutinesApi private lateinit var appSettingViewModel: AppSettingViewModel
+
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
+  @Before
+  fun setUp() {
+    hiltRule.inject()
+    appSettingViewModel =
+      spyk(
+        AppSettingViewModel(
+          fhirResourceDataSource = fhirResourceDataSource,
+          defaultRepository = defaultRepository,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = Faker.buildTestConfigurationRegistry(),
+          dispatcherProvider = dispatcherProvider,
+        ),
+      )
+  }
 
   @Test
   fun testOnApplicationIdChanged() {
@@ -132,8 +149,8 @@ class AppSettingViewModelTest : RobolectricTest() {
       HttpException(
         Response.error<ResponseBody>(
           500,
-          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull())
-        )
+          "Internal Server Error".toResponseBody("application/json".toMediaTypeOrNull()),
+        ),
       )
     fhirResourceDataSource.getResource(ArgumentMatchers.anyString())
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
@@ -142,7 +159,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -160,7 +177,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_no_internet)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -177,7 +194,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -196,7 +213,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     every { context.getString(R.string.error_loading_config_general) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_no_internet),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }
@@ -213,7 +230,7 @@ class AppSettingViewModelTest : RobolectricTest() {
     verify { context.showToast(context.getString(R.string.error_loading_config_http_error)) }
     Assert.assertEquals(
       context.getString(R.string.error_loading_config_http_error),
-      appSettingViewModel.error.value
+      appSettingViewModel.error.value,
     )
     Assert.assertEquals(false, appSettingViewModel.showProgressBar.value)
   }

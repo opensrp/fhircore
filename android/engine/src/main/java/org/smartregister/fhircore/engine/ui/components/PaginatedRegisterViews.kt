@@ -56,7 +56,7 @@ fun PaginatedRegister(
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
-  maxHeight: Float = DEFAULT_MAX_HEIGHT
+  maxHeight: Float = DEFAULT_MAX_HEIGHT,
 ) {
   val bottomPadding = if (showFooter) 48.dp else 0.dp
   ConstraintLayout(modifier = Modifier.fillMaxWidth().fillMaxHeight(maxHeight)) {
@@ -68,7 +68,7 @@ fun PaginatedRegister(
           start.linkTo(parent.start)
           top.linkTo(parent.top)
           end.linkTo(parent.end)
-        }
+        },
     ) {
       if (showHeader) {
         if (showResultsCount) {
@@ -77,7 +77,7 @@ fun PaginatedRegister(
       }
       Box(
         contentAlignment = Alignment.TopCenter,
-        modifier = modifier.fillMaxSize().padding(bottom = bottomPadding)
+        modifier = modifier.fillMaxSize().padding(bottom = bottomPadding),
       ) {
         if (loadState == LoadState.Loading) {
           CircularProgressBar()
@@ -98,7 +98,7 @@ fun PaginatedRegister(
             currentPage = currentPage,
             pagesCount = pagesCount,
             previousButtonClickListener = previousButtonClickListener,
-            nextButtonClickListener = nextButtonClickListener
+            nextButtonClickListener = nextButtonClickListener,
           )
         }
       }
@@ -138,7 +138,7 @@ fun PaginatedRegisterPreviewWithoutResults() {
     currentPage = 0,
     pagesCount = DEFAULT_MAX_PAGE_COUNT,
     previousButtonClickListener = {},
-    nextButtonClickListener = {}
+    nextButtonClickListener = {},
   )
 }
 
@@ -156,6 +156,6 @@ fun PaginatedRegisterPreviewWithoutHeaderAndFooter() {
     currentPage = 0,
     pagesCount = DEFAULT_MAX_PAGE_COUNT,
     previousButtonClickListener = {},
-    nextButtonClickListener = {}
+    nextButtonClickListener = {},
   )
 }

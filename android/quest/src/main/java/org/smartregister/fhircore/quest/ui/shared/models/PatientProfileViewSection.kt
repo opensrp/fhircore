@@ -22,5 +22,5 @@ enum class PatientProfileViewSection {
   UPCOMING_SERVICES,
   MEDICAL_HISTORY,
   TEST_RESULTS,
-  FORMS
+  FORMS,
 }

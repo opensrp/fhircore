@@ -114,10 +114,10 @@ class ViewExtensionTest : RobolectricTest() {
         ReflectionHelpers.ClassParameter.from(EditText::class.java, editText),
         ReflectionHelpers.ClassParameter.from(
           DrawablePosition::class.java,
-          DrawablePosition.DRAWABLE_RIGHT
+          DrawablePosition.DRAWABLE_RIGHT,
         ),
-        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent)
-      )
+        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent),
+      ),
     )
   }
 
@@ -136,10 +136,10 @@ class ViewExtensionTest : RobolectricTest() {
         ReflectionHelpers.ClassParameter.from(EditText::class.java, editText),
         ReflectionHelpers.ClassParameter.from(
           DrawablePosition::class.java,
-          DrawablePosition.DRAWABLE_LEFT
+          DrawablePosition.DRAWABLE_LEFT,
         ),
-        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent)
-      )
+        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent),
+      ),
     )
   }
 
@@ -158,10 +158,10 @@ class ViewExtensionTest : RobolectricTest() {
         ReflectionHelpers.ClassParameter.from(EditText::class.java, editText),
         ReflectionHelpers.ClassParameter.from(
           DrawablePosition::class.java,
-          DrawablePosition.DRAWABLE_RIGHT
+          DrawablePosition.DRAWABLE_RIGHT,
         ),
-        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent)
-      )
+        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent),
+      ),
     )
   }
 
@@ -180,10 +180,10 @@ class ViewExtensionTest : RobolectricTest() {
         ReflectionHelpers.ClassParameter.from(EditText::class.java, editText),
         ReflectionHelpers.ClassParameter.from(
           DrawablePosition::class.java,
-          DrawablePosition.DRAWABLE_LEFT
+          DrawablePosition.DRAWABLE_LEFT,
         ),
-        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent)
-      )
+        ReflectionHelpers.ClassParameter.from(MotionEvent::class.java, mouseEvent),
+      ),
     )
   }
 

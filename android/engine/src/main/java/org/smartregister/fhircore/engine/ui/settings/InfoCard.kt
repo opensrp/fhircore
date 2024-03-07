@@ -47,22 +47,25 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
 import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.ui.theme.BlueTextColor
 import org.smartregister.fhircore.engine.ui.theme.LighterBlue
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @Composable
-fun InfoCard(viewModel: SettingsViewModel) {
-  val state by viewModel.profileData.observeAsState()
+fun InfoCard(profileData: LiveData<DataLoadState<ProfileData>>) {
+  val state by profileData.observeAsState()
 
   when (state) {
     is DataLoadState.Loading ->
       Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
-      ) { CircularProgressIndicator(Modifier.testTag("ProgressBarItem")) }
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        CircularProgressIndicator(Modifier.testTag("ProgressBarItem"))
+      }
     is DataLoadState.Error -> Column { Text(text = "Something went wrong while fetching data..") }
     is DataLoadState.Success -> {
       val data = (state as DataLoadState.Success<ProfileData>).data
@@ -71,21 +74,21 @@ fun InfoCard(viewModel: SettingsViewModel) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
           Box(
             modifier = Modifier.clip(CircleShape).background(color = LighterBlue).size(80.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
           ) {
             Text(
               text = username.first().uppercase(),
               textAlign = TextAlign.Center,
               fontWeight = FontWeight.Bold,
               fontSize = 28.sp,
-              color = BlueTextColor
+              color = BlueTextColor,
             )
           }
           Text(
             text = username.capitalize(Locale.current),
             fontSize = 22.sp,
             modifier = Modifier.padding(vertical = 22.dp),
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
           )
         }
       }

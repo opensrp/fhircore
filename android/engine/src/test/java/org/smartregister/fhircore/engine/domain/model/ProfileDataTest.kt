@@ -124,9 +124,10 @@ class ProfileDataTest : RobolectricTest() {
           healthStatus = HealthStatus.EXPOSED_INFANT,
           services = buildCarePlanServices(),
           conditions = emptyList(),
-          practitioners = emptyList()
+          practitioners = emptyList(),
         )
-      HealthModule.HOME_TRACING, HealthModule.PHONE_TRACING ->
+      HealthModule.HOME_TRACING,
+      HealthModule.PHONE_TRACING, ->
         ProfileData.DefaultProfileData(
           logicalId = "logicalId",
           name = "testName",
@@ -134,7 +135,7 @@ class ProfileDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
         )
       HealthModule.APPOINTMENT ->
         ProfileData.DefaultProfileData(
@@ -144,7 +145,7 @@ class ProfileDataTest : RobolectricTest() {
           address = "testAddress",
           age = "5y",
           gender = Enumerations.AdministrativeGender.MALE,
-          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25")
+          birthdate = SimpleDateFormat("yyyy-MM-dd").parse("2021-05-25"),
         )
       HealthModule.ANC ->
         ProfileData.AncProfileData(
@@ -160,7 +161,7 @@ class ProfileDataTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
       HealthModule.FAMILY ->
         ProfileData.FamilyProfileData(
@@ -171,7 +172,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.FAMILY_PLANNING ->
         ProfileData.FamilyProfileData(
@@ -182,7 +183,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.RDT ->
         ProfileData.FamilyProfileData(
@@ -193,7 +194,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.PNC ->
         ProfileData.FamilyProfileData(
@@ -204,7 +205,7 @@ class ProfileDataTest : RobolectricTest() {
           age = "5y",
           services = emptyList(),
           tasks = emptyList(),
-          members = emptyList()
+          members = emptyList(),
         )
       HealthModule.CHILD ->
         ProfileData.AncProfileData(
@@ -220,7 +221,7 @@ class ProfileDataTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
       HealthModule.DEFAULT ->
         ProfileData.DefaultProfileData(
@@ -235,7 +236,7 @@ class ProfileDataTest : RobolectricTest() {
           tasks = emptyList(),
           conditions = emptyList(),
           flags = emptyList(),
-          visits = emptyList()
+          visits = emptyList(),
         )
     }
   }

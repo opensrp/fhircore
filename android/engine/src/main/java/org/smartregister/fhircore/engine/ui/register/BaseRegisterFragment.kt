@@ -47,7 +47,6 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
   abstract fun onItemClicked(listenerIntent: ListenerIntent, data: O)
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
     registerDataViewModel =
       initializeRegisterDataViewModel().apply {
         this.currentPage.observe(viewLifecycleOwner) { registerDataViewModel.loadPageData(it) }
@@ -61,7 +60,7 @@ abstract class BaseRegisterFragment<I : Any, O : Any> : Fragment() {
           filterRegisterData(
             registerFilterType = registerFilterType,
             filterValue = value,
-            registerFilter = this@BaseRegisterFragment::performFilter
+            registerFilter = this@BaseRegisterFragment::performFilter,
           )
         }
       } else {

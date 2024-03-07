@@ -63,7 +63,8 @@ class LoginActivity :
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
 
-    if (!intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
+    if (
+      !intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME).isNullOrBlank() &&
         loginViewModel.username.value.isNullOrBlank()
     ) {
       loginViewModel.onUsernameUpdated(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!)
@@ -77,7 +78,6 @@ class LoginActivity :
       loadLastLoggedInUsername()
       navigateToHome.observe(this@LoginActivity) { isNavigate ->
         if (isNavigate) {
-
           val isUpdatingCurrentAccount =
             intent.hasExtra(AccountManager.KEY_ACCOUNT_NAME) &&
               intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==

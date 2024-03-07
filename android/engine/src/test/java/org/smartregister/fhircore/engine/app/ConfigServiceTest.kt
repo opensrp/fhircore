@@ -34,6 +34,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 @HiltAndroidTest
 class ConfigServiceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   @Inject lateinit var gson: Gson
 
   private val application = ApplicationProvider.getApplicationContext<Application>()
@@ -45,6 +46,7 @@ class ConfigServiceTest : RobolectricTest() {
     hiltRule.inject()
     sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
   }
+
   @Test
   fun testProvideSyncTagsShouldHaveOrganizationId() {
     val practitionerId = "practitioner-id"
@@ -76,7 +78,7 @@ class ConfigServiceTest : RobolectricTest() {
     val organizationId2 = "organization-id2"
     sharedPreferencesHelper.write(
       ResourceType.Organization.name,
-      listOf(organizationId1, organizationId2)
+      listOf(organizationId1, organizationId2),
     )
 
     val resourceTags = configService.provideResourceTags(sharedPreferencesHelper)

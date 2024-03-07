@@ -64,6 +64,7 @@ import retrofit2.HttpException
 class AccountAuthenticatorTest : RobolectricTest() {
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
+
   @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
   var accountManager: AccountManager = mockk()
@@ -94,7 +95,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
           accountManager = accountManager,
           tokenAuthenticator = tokenAuthenticator,
           secureSharedPreference = secureSharedPreference,
-        )
+        ),
       )
   }
 
@@ -107,7 +108,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
         accountType = accountType,
         authTokenType = authTokenType,
         requiredFeatures = emptyArray(),
-        options = bundleOf()
+        options = bundleOf(),
       )
     Assert.assertNotNull(bundle)
     val parcelable = bundle.getParcelable<Intent>(KEY_INTENT)
@@ -118,7 +119,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertEquals(accountType, parcelable.getStringExtra(AccountAuthenticator.ACCOUNT_TYPE))
     Assert.assertEquals(
       authTokenType,
-      parcelable.getStringExtra(TokenAuthenticator.AUTH_TOKEN_TYPE)
+      parcelable.getStringExtra(TokenAuthenticator.AUTH_TOKEN_TYPE),
     )
   }
 
@@ -127,8 +128,8 @@ class AccountAuthenticatorTest : RobolectricTest() {
     Assert.assertNotNull(
       accountAuthenticator.editProperties(
         response = null,
-        accountType = configService.provideAuthConfiguration().accountType
-      )
+        accountType = configService.provideAuthConfiguration().accountType,
+      ),
     )
   }
 
@@ -191,16 +192,20 @@ class AccountAuthenticatorTest : RobolectricTest() {
         any<Bundle>(),
         any<Activity>(),
         any<AccountManagerCallback<Bundle>>(),
-        any<Handler>()
+        any<Handler>(),
       )
     } answers
       {
         val accountManagerBundleFuture =
           object : AccountManagerFuture<Bundle> {
             override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
+
             override fun isCancelled(): Boolean = false
+
             override fun isDone(): Boolean = true
+
             override fun getResult(): Bundle = bundleOf(KEY_INTENT to Intent())
+
             override fun getResult(timeout: Long, unit: TimeUnit?): Bundle =
               bundleOf(KEY_INTENT to Intent())
           }
@@ -298,7 +303,7 @@ class AccountAuthenticatorTest : RobolectricTest() {
         mockk {
           every { code() } returns 0
           every { message() } returns ""
-        }
+        },
       )
 
     val authTokenBundle: Bundle =
@@ -346,14 +351,14 @@ class AccountAuthenticatorTest : RobolectricTest() {
     val authTokenLabel = "auth_token_label"
     Assert.assertEquals(
       authTokenLabel.uppercase(),
-      accountAuthenticator.getAuthTokenLabel(authTokenLabel)
+      accountAuthenticator.getAuthTokenLabel(authTokenLabel),
     )
   }
 
   @Test
   fun testUpdateCredentialsShouldReturnEmptyBundle() {
     Assert.assertTrue(
-      accountAuthenticator.updateCredentials(mockk(), mockk(), authTokenType, bundleOf()).isEmpty
+      accountAuthenticator.updateCredentials(mockk(), mockk(), authTokenType, bundleOf()).isEmpty,
     )
   }
 

@@ -26,8 +26,11 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 interface StandardRegisterViewModel {
   fun onEvent(event: StandardRegisterEvent)
+
   fun countPages(): LiveData<Int>
+
   fun refresh()
+
   fun progressMessage(): String
 
   val isRefreshing: StateFlow<Boolean>

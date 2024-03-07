@@ -29,7 +29,8 @@ enum class PhonePatientAssignment : TracingPatientAssignment {
   ALL_PHONE,
   ASSIGNED_TO_ME {
     override fun assignedToMe(): Boolean = true
-  };
+  },
+  ;
 
   override fun assignedToMe(): Boolean = false
 
@@ -41,7 +42,8 @@ enum class HomePatientAssignment : TracingPatientAssignment {
   ALL_HOME,
   ASSIGNED_TO_ME {
     override fun assignedToMe(): Boolean = true
-  };
+  },
+  ;
 
   override fun assignedToMe(): Boolean = false
 
@@ -55,7 +57,8 @@ enum class TracingPatientCategory : TracingFilterOption {
   EXPOSED_INFANT,
   CHILD_CONTACT,
   PERSON_WHO_IS_REACTIVE_AT_THE_COMMUNITY,
-  SEXUAL_CONTACT;
+  SEXUAL_CONTACT,
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
@@ -80,7 +83,8 @@ enum class TracingReason : TracingFilterOption {
   DRY_BLOOD_SAMPLE_RESULT,
   DRY_BLOOD_SAMPLE_INVALID,
   MISSED_MILESTONE_VISIT,
-  MISSED_ROUTINE_VISIT;
+  MISSED_ROUTINE_VISIT,
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
@@ -88,15 +92,16 @@ enum class TracingReason : TracingFilterOption {
 
 enum class AgeFilter : TracingFilterOption {
   ALL_AGES,
-  `0_2_YEARS` {
+  YEARS_0_TO_2 {
     override fun text() = "0 -2 Years"
   },
-  `0-18_YEARS` {
+  YEARS_0_TO_18 {
     override fun text() = "0 - 18 Years"
   },
-  `18_PLUS_YEARS` {
+  YEARS_18_PLUS {
     override fun text() = "18+ Years"
-  };
+  },
+  ;
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
@@ -104,5 +109,5 @@ enum class AgeFilter : TracingFilterOption {
 
 data class TracingRegisterUiFilter<T : TracingFilterOption>(
   val selected: T,
-  val options: Iterable<T>
+  val options: Iterable<T>,
 )

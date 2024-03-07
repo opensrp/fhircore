@@ -67,7 +67,7 @@ constructor(
   open val dispatcherProvider: DispatcherProvider,
   open val sharedPreferencesHelper: SharedPreferencesHelper,
   open val configurationRegistry: ConfigurationRegistry,
-  open val configService: ConfigService
+  open val configService: ConfigService,
 ) {
 
   suspend inline fun <reified T : Resource> loadResource(resourceId: String): T? {
@@ -105,7 +105,7 @@ constructor(
     subjectId: String,
     subjectType: ResourceType = ResourceType.Patient,
     subjectParam: ReferenceClientParam,
-    filters: List<SearchFilter> = listOf()
+    filters: List<SearchFilter> = listOf(),
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine
@@ -120,7 +120,7 @@ constructor(
     token: TokenClientParam,
     subjectType: ResourceType,
     subjectId: String,
-    filters: List<SearchFilter> = listOf()
+    filters: List<SearchFilter> = listOf(),
   ): List<T> =
     withContext(dispatcherProvider.io()) {
       fhirEngine
@@ -132,7 +132,7 @@ constructor(
     }
 
   suspend fun searchQuestionnaireConfig(
-    filters: List<SearchFilter> = listOf()
+    filters: List<SearchFilter> = listOf(),
   ): List<QuestionnaireConfig> =
     withContext(dispatcherProvider.io()) {
       fhirEngine
@@ -141,9 +141,11 @@ constructor(
         .map {
           QuestionnaireConfig(
             form = it.nameElement.getLocalizedText() ?: it.logicalId,
-            title = it.titleElement.getLocalizedText()
-                ?: it.nameElement.getLocalizedText() ?: it.logicalId,
-            identifier = it.logicalId
+            title =
+              it.titleElement.getLocalizedText()
+                ?: it.nameElement.getLocalizedText()
+                ?: it.logicalId,
+            identifier = it.logicalId,
           )
         }
     }

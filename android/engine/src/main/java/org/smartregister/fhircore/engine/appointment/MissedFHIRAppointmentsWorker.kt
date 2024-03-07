@@ -36,7 +36,7 @@ class MissedFHIRAppointmentsWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
 ) : CoroutineWorker(appContext, workerParameters) {
   override suspend fun doWork(): Result {
     Timber.i("Checking missed Appointments")
@@ -49,7 +49,7 @@ constructor(
             {
               value = of(DateTimeType.today())
               prefix = ParamPrefixEnum.LESSTHAN
-            }
+            },
           )
         }
         .map { it.resource }

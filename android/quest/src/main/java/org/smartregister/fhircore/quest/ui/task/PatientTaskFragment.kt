@@ -41,7 +41,9 @@ import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem>() {
 
   @Inject lateinit var patientTaskRepository: PatientTaskRepository
+
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
+
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   override lateinit var registerViewConfiguration: RegisterViewConfiguration
@@ -51,7 +53,7 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
     registerViewConfiguration =
       configurationRegistry.retrieveConfiguration(
         configClassification = QuestConfigClassification.PATIENT_TASK_REGISTER,
-        questJsonSpecificationProvider.getJson()
+        questJsonSpecificationProvider.getJson(),
       )
     configureViews(registerViewConfiguration)
   }
@@ -63,13 +65,13 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
   @Composable
   override fun ConstructRegisterList(
     pagingItems: LazyPagingItems<PatientTaskItem>,
-    modifier: Modifier
+    modifier: Modifier,
   ) {
     PatientTaskList(
       pagingItems = pagingItems,
       useLabel = registerViewConfiguration.useLabel,
       modifier = Modifier,
-      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) }
+      clickListener = { listenerIntent, data -> onItemClicked(listenerIntent, data) },
     )
   }
 
@@ -80,7 +82,7 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
   override fun performFilter(
     registerFilterType: RegisterFilterType,
     data: PatientTaskItem,
-    value: Any
+    value: Any,
   ): Boolean {
     // Nothing to filter at the moment
     return false
@@ -91,10 +93,11 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
     val registerDataViewModel =
       RegisterDataViewModel(
         application = requireActivity().application,
-        registerRepository = patientTaskRepository
+        registerRepository = patientTaskRepository,
       )
     return ViewModelProvider(viewModelStore, registerDataViewModel.createFactory())[
-      registerDataViewModel::class.java]
+      registerDataViewModel::class.java,
+    ]
   }
 
   companion object {

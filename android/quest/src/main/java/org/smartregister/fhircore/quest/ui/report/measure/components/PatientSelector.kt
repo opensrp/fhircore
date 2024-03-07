@@ -48,12 +48,12 @@ import org.smartregister.fhircore.quest.R
 fun PatientSelector(
   patientName: String,
   onChangePatient: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     modifier = modifier.wrapContentWidth().padding(vertical = 8.dp, horizontal = 8.dp),
     horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     Box(
       modifier =
@@ -62,11 +62,11 @@ fun PatientSelector(
           .background(color = Color.LightGray.copy(alpha = 0.4f))
           .wrapContentWidth()
           .padding(8.dp),
-      contentAlignment = Alignment.Center
+      contentAlignment = Alignment.Center,
     ) {
       Row(
         modifier = Modifier.align(Alignment.Center),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
       ) {
         Text(text = patientName, textAlign = TextAlign.Center, fontSize = 16.sp)
         Spacer(modifier = Modifier.size(8.dp))
@@ -76,7 +76,7 @@ fun PatientSelector(
               .clip(RoundedCornerShape(8.dp))
               .background(color = Color.LightGray)
               .wrapContentWidth()
-              .clickable { onChangePatient() }
+              .clickable { onChangePatient() },
         ) {
           Box(
             modifier =
@@ -86,12 +86,12 @@ fun PatientSelector(
                 .background(color = Color.DarkGray.copy(alpha = 0.4f))
                 .wrapContentWidth()
                 .padding(4.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
           ) {
             Icon(
               Icons.Filled.Close,
               contentDescription = "Back arrow",
-              modifier = Modifier.size(20.dp)
+              modifier = Modifier.size(20.dp),
             )
           }
         }
@@ -104,13 +104,13 @@ fun PatientSelector(
           .clickable { onChangePatient() }
           .padding(vertical = 8.dp, horizontal = 12.dp),
       horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
+      verticalAlignment = Alignment.CenterVertically,
     ) {
       Text(
         text = stringResource(id = R.string.change),
         textAlign = TextAlign.Center,
         color = InfoColor,
-        fontSize = 16.sp
+        fontSize = 16.sp,
       )
     }
   }

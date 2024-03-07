@@ -52,8 +52,9 @@ object FhirPathUtil {
         }
       }
       .also {
-        if (it == null)
+        if (it == null) {
           Timber.i("${resource.resourceType}, ${filter.key}: could not resolve key value filter")
+        }
       }
   }
 }

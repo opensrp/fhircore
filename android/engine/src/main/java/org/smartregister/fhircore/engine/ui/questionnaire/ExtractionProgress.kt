@@ -20,5 +20,6 @@ import org.hl7.fhir.r4.model.Resource
 
 sealed class ExtractionProgress {
   class Success(val extras: List<Resource>? = null) : ExtractionProgress()
+
   object Failed : ExtractionProgress()
 }

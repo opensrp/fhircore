@@ -26,21 +26,23 @@ data class AppointmentRegisterFilter(
   val myPatients: Boolean,
   val patientCategory:
     Iterable<
-      HealthStatus>?, // nullable whereby null represents absence of filter by patient category
-  val reasonCode: String? // nullable whereby null represents absence of filter by reason code
+      HealthStatus,
+    >?, // nullable whereby null represents absence of filter by patient category
+  val reasonCode: String?, // nullable whereby null represents absence of filter by reason code
 ) : RegisterFilter
 
 enum class TracingAgeFilterEnum {
   ZERO_TO_2,
   ZERO_TO_18,
-  `18_PLUS`
+  PLUS_18,
 }
 
 data class TracingRegisterFilter(
   val isAssignedToMe: Boolean,
   val patientCategory:
     Iterable<
-      HealthStatus>?, // nullable whereby null represents absence of filter by patient category
+      HealthStatus,
+    >?, // nullable whereby null represents absence of filter by patient category
   val reasonCode: String?, // nullable whereby null represents absence of filter by reason code
-  val age: TracingAgeFilterEnum? // nullable whereby null represents absence of filter by age
+  val age: TracingAgeFilterEnum?, // nullable whereby null represents absence of filter by age
 ) : RegisterFilter

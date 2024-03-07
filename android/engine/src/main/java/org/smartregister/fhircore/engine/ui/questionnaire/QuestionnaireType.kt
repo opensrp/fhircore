@@ -19,8 +19,10 @@ package org.smartregister.fhircore.engine.ui.questionnaire
 enum class QuestionnaireType {
   READ_ONLY,
   EDIT,
-  DEFAULT;
+  DEFAULT,
+  ;
 
   fun isEditMode() = this == EDIT
+
   fun isReadOnly() = this == READ_ONLY
 }

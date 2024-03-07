@@ -94,7 +94,7 @@ class LibraryEvaluatorTest {
         fhirContext,
         evaluatorId,
         context,
-        contextLabel
+        contextLabel,
       )
     Assert.assertEquals(result, auxResult)
   }
@@ -138,24 +138,21 @@ class LibraryEvaluatorTest {
     val cqlLibrary =
       parser.parseResource(
         FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/library.json")
-          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray()))
-      ) as
-        Library
+          .replace("#library-elm.json", Base64.getEncoder().encodeToString(cqlElm.toByteArray())),
+      ) as Library
     val fhirHelpersLibrary =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json")
-      ) as
-        Library
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/helper.json"),
+      ) as Library
 
     val dataBundle =
       parser.parseResource(
-        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json")
-      ) as
-        Bundle
+        FileUtil.readJsonFile("test/resources/cql/g6pdlibraryevaluator/patient.json"),
+      ) as Bundle
 
     val patient =
-      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource as
-        Patient
+      dataBundle.entry.first { it.resource.resourceType == ResourceType.Patient }.resource
+        as Patient
 
     val fhirEngine = mockk<FhirEngine>()
     val defaultRepository: DefaultRepository =
@@ -164,7 +161,7 @@ class LibraryEvaluatorTest {
         dispatcherProvider = DefaultDispatcherProvider(),
         sharedPreferencesHelper = mockk(),
         configurationRegistry = mockk(),
-        configService = mockk()
+        configService = mockk(),
       )
 
     coEvery { fhirEngine.get(ResourceType.Library, cqlLibrary.logicalId) } returns cqlLibrary
@@ -178,7 +175,7 @@ class LibraryEvaluatorTest {
         patient,
         dataBundle.apply { entry.removeIf { it.resource.resourceType == ResourceType.Patient } },
         defaultRepository,
-        true
+        true,
       )
     }
 

@@ -63,7 +63,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
 ) {
 
   val configurationsMap = mutableMapOf<String, Configuration>()
@@ -82,7 +82,7 @@ constructor(
    */
   inline fun <reified T : Configuration> retrieveConfiguration(
     configClassification: ConfigClassification,
-    jsonSerializer: Json? = null
+    jsonSerializer: Json? = null,
   ): T =
     workflowPointName(configClassification.classification).let { workflowName ->
       val workflowPoint = workflowPointsMap[workflowName]
@@ -93,12 +93,11 @@ constructor(
       configurationsMap.getOrPut(workflowName) {
         // Binary content could be either a Configuration or a FHIR Resource
         (workflowPoint.resource as Binary).content.decodeToString().let {
-          if (T::class.java.isAssignableFrom(FhirConfiguration::class.java))
+          if (T::class.java.isAssignableFrom(FhirConfiguration::class.java)) {
             FhirConfiguration(appId, workflowPoint.classification, it.decodeResourceFromString())
-          else it.decodeJson<T>(jsonSerializer)
+          } else it.decodeJson<T>(jsonSerializer)
         }
-      } as
-        T
+      } as T
     }
 
   fun retrieveDataFilterConfiguration(id: String) =
@@ -121,6 +120,7 @@ constructor(
    *      }
    *    }
    * ```
+   *
    * }
    *
    * A workflow point would be mapped like "workflowPoint": "registration", "resource":
@@ -129,7 +129,7 @@ constructor(
    *
    * @param appId application's unique identifier
    * @param configsLoadedCallback function for use as trailing lambda that provides Boolean
-   * indicating whether configurations were loaded successfully or not
+   *   indicating whether configurations were loaded successfully or not
    */
   suspend fun loadConfigurations(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
     this.appId = appId
@@ -145,7 +145,7 @@ constructor(
             classification = it.focus.identifier.value,
             description = it.title,
             resource = getBinary(it.focus.extractId()),
-            workflowPoint = it.focus.identifier.value
+            workflowPoint = it.focus.identifier.value,
           )
         workflowPointsMap[workflowPointName] = workflowPoint
       }
@@ -159,42 +159,41 @@ constructor(
     val baseConfigPath = BASE_CONFIG_PATH.run { replace(DEFAULT_APP_ID, parsedAppId) }
 
     runCatching {
-      context
-        .assets
-        .open(baseConfigPath.plus(COMPOSITION_CONFIG_PATH))
-        .bufferedReader()
-        .use { it.readText() }
-        .decodeResourceFromString<Composition>()
-        .section
-        .filter { isWorkflowPoint(it) }
-        .forEach { sectionComponent ->
-          val binaryConfigPath =
-            BINARY_CONFIG_PATH.run {
-              replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
-            }
+        context.assets
+          .open(baseConfigPath.plus(COMPOSITION_CONFIG_PATH))
+          .bufferedReader()
+          .use { it.readText() }
+          .decodeResourceFromString<Composition>()
+          .section
+          .filter { isWorkflowPoint(it) }
+          .forEach { sectionComponent ->
+            val binaryConfigPath =
+              BINARY_CONFIG_PATH.run {
+                replace(DEFAULT_CLASSIFICATION, sectionComponent.focus.identifier.value)
+              }
 
-          val localBinaryJsonConfig =
-            context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
-              it.readText()
-            }
+            val localBinaryJsonConfig =
+              context.assets.open(baseConfigPath.plus(binaryConfigPath)).bufferedReader().use {
+                it.readText()
+              }
 
-          val binaryConfig =
-            Binary().apply {
-              contentType = CONFIG_CONTENT_TYPE
-              content = localBinaryJsonConfig.encodeToByteArray()
-            }
+            val binaryConfig =
+              Binary().apply {
+                contentType = CONFIG_CONTENT_TYPE
+                content = localBinaryJsonConfig.encodeToByteArray()
+              }
 
-          val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
-          val workflowPoint =
-            WorkflowPoint(
-              classification = sectionComponent.focus.identifier.value,
-              description = sectionComponent.title,
-              resource = binaryConfig,
-              workflowPoint = sectionComponent.focus.identifier.value
-            )
-          workflowPointsMap[workflowPointName] = workflowPoint
-        }
-    }
+            val workflowPointName = workflowPointName(sectionComponent.focus.identifier.value)
+            val workflowPoint =
+              WorkflowPoint(
+                classification = sectionComponent.focus.identifier.value,
+                description = sectionComponent.title,
+                resource = binaryConfig,
+                workflowPoint = sectionComponent.focus.identifier.value,
+              )
+            workflowPointsMap[workflowPointName] = workflowPoint
+          }
+      }
       .getOrNull()
       .also { if (it == null) configsLoadedCallback(false) }
       ?.also { configsLoadedCallback(true) }

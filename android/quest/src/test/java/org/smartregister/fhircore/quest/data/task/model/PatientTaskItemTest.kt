@@ -39,7 +39,7 @@ class PatientTaskItemTest : RobolectricTest() {
         birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
         address = "Nairobi",
         description = "Sick Visit",
-        overdue = true
+        overdue = true,
       )
   }
 
@@ -47,7 +47,7 @@ class PatientTaskItemTest : RobolectricTest() {
   fun testDemographicsShouldReturnFlatDemographic() {
     Assert.assertEquals(
       "${patientTaskItem.name}, ${patientTaskItem.gender}, ${patientTaskItem.birthdate.toAgeDisplay()}",
-      patientTaskItem.demographics()
+      patientTaskItem.demographics(),
     )
   }
 }

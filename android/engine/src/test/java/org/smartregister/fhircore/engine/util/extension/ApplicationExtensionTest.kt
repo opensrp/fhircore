@@ -62,7 +62,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     coEvery { fhirEngine.search<Immunization>(any<Search>()) } throws
       ResourceNotFoundException(
         "resource not found",
-        "immunizations for patient $patientId not found"
+        "immunizations for patient $patientId not found",
       )
 
     val immunizations: List<Immunization>?
@@ -79,7 +79,7 @@ class ApplicationExtensionTest : RobolectricTest() {
     coEvery { fhirEngine.search<RelatedPerson>(any<Search>()) } throws
       ResourceNotFoundException(
         "resource not found",
-        "RelatedPersons for patient $patientId not found"
+        "RelatedPersons for patient $patientId not found",
       )
 
     val relatedPersons: List<RelatedPerson>?
@@ -268,21 +268,21 @@ class ApplicationExtensionTest : RobolectricTest() {
         "#RefGoal" to "Goal/ref-goal-id",
         "#RefCareTeam" to "CareTeam/325",
         "#RefPractitioner" to "Practitioner/399",
-        "#RefDateOnset" to dateOnset
+        "#RefDateOnset" to dateOnset,
       )
 
     val condition =
       context.loadResourceTemplate(
         "pregnancy_condition_template.json",
         Condition::class.java,
-        conditionData
+        conditionData,
       )
 
     Assert.assertEquals(conditionData["#Id"], condition.logicalId)
     Assert.assertEquals(conditionData["#RefPatient"], condition.subject.reference)
     Assert.assertEquals(
       conditionData["#RefDateOnset"],
-      condition.onsetDateTimeType.toHumanDisplay()
+      condition.onsetDateTimeType.toHumanDisplay(),
     )
   }
 
@@ -300,13 +300,12 @@ class ApplicationExtensionTest : RobolectricTest() {
     val expectedDateTimeFormat = "2010-01-01"
     Assert.assertEquals(
       expectedDateTimeFormat,
-      DateTimeType(dateTimeTypeObject).format().split("T")[0]
+      DateTimeType(dateTimeTypeObject).format().split("T")[0],
     )
   }
 
   @Test
   fun `FhirEngine#loadCqlLibraryBundle()`() {
-
     val context = ApplicationProvider.getApplicationContext<Application>()
     val fhirEngine = mockk<FhirEngine>()
     val fhirOperator: FhirOperator = mockk()
@@ -324,7 +323,7 @@ class ApplicationExtensionTest : RobolectricTest() {
         context = context,
         fhirOperator = fhirOperator,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        resourcesBundlePath = measureResourceBundleUrl
+        resourcesBundlePath = measureResourceBundleUrl,
       )
     }
 

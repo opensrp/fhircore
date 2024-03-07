@@ -29,7 +29,7 @@ class QuestionnaireNotFoundExceptionTest {
       QuestionnaireNotFoundException(formName = testFormName, cause = testCause)
     Assert.assertEquals(
       "Questionnaire '$testFormName' not found",
-      questionnaireNotFoundException.message
+      questionnaireNotFoundException.message,
     )
     Assert.assertEquals(testCause, questionnaireNotFoundException.cause)
   }
@@ -40,7 +40,7 @@ class QuestionnaireNotFoundExceptionTest {
     val questionnaireNotFoundException = QuestionnaireNotFoundException(formName = testFormName)
     Assert.assertEquals(
       "Questionnaire '$testFormName' not found",
-      questionnaireNotFoundException.message
+      questionnaireNotFoundException.message,
     )
   }
 }

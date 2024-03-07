@@ -41,9 +41,8 @@ fun PatientTaskList(
   pagingItems: LazyPagingItems<PatientTaskItem>,
   useLabel: Boolean,
   modifier: Modifier = Modifier,
-  clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit
+  clickListener: (PatientTaskListenerIntent, PatientTaskItem) -> Unit,
 ) {
-
   LazyColumn {
     items(pagingItems, key = { it.id }) {
       PatientTaskRow(it!!, useLabel, clickListener, modifier = modifier)
@@ -61,7 +60,7 @@ fun PatientTaskList(
             ErrorMessage(
               message = loadStateError.error.localizedMessage!!,
               modifier = modifier.fillParentMaxSize(),
-              onClickRetry = { retry() }
+              onClickRetry = { retry() },
             )
           }
         }
@@ -91,7 +90,7 @@ fun dummyPatientTaskPagingList(): LazyPagingItems<PatientTaskItem> {
             birthdate = "2020-03-10".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Sick Visit",
-            overdue = true
+            overdue = true,
           ),
           PatientTaskItem(
             id = "2",
@@ -100,10 +99,10 @@ fun dummyPatientTaskPagingList(): LazyPagingItems<PatientTaskItem> {
             birthdate = "2021-04-20".getDate("yyyy-MM-dd"),
             address = "Nairobi",
             description = "Immunization Visit",
-            overdue = false
-          )
-        )
-      )
+            overdue = false,
+          ),
+        ),
+      ),
     )
   return listFlow.collectAsLazyPagingItems()
 }

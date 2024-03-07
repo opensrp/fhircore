@@ -2,9 +2,9 @@ name: CI MwCore
 
 on:
   push:
-    branches: [ mwcore-dev ]
+    branches: [mwcore-dev]
   pull_request:
-    branches: [ mwcore-dev ]
+    branches: [mwcore-dev]
 
 env:
   FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
@@ -12,6 +12,41 @@ env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
+  dataclerk:
+    runs-on: macos-latest
+    steps:
+      - name: Cancel Previous workflow runs
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - name: Decode google-services.json
+        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/dataclerk/google-services.json
+        env:
+          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.DATACLERK_GOOGLE_SERVICES_JSON }}
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        working-directory: android
+
+      - name: Spotless check dataclerk module
+        run: ./gradlew :dataclerk:spotlessCheck
+        working-directory: android
+
+      - name: Builds
+        run: ./gradlew :dataclerk:assembleDebug
+        working-directory: android
+
   engine-tests:
     runs-on: macos-latest
     steps:
@@ -25,15 +60,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
-          java-version: 11
-
-      - name: Decode google-services.json
-        run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
-        env:
-          ENCODED_GOOGLE_SERVICES_JSON: ${{ secrets.MWCORE_GOOGLE_SERVICES_JSON }}
+          java-version: 17
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -65,10 +95,10 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Decode google-services.json
         run: echo $ENCODED_GOOGLE_SERVICES_JSON | base64 -d > android/quest/google-services.json
@@ -81,6 +111,10 @@ jobs:
 
       - name: Spotless check quest application
         run: ./gradlew :quest:spotlessCheck
+        working-directory: android
+
+      - name: Builds
+        run: ./gradlew :quest:assembleMwcoreDevDebug
         working-directory: android
 
       # - name: Run Quest unit tests with Gradle

@@ -102,7 +102,7 @@ constructor(
 
   private suspend fun fetchAccessToken(
     username: String,
-    password: CharArray
+    password: CharArray,
   ): Result<OAuthResponse> =
     tokenAuthenticator.fetchAccessToken(username, password).onFailure {
       _showProgressBar.postValue(false)
@@ -121,17 +121,19 @@ constructor(
     }
 
   private suspend fun fetchUserInfo(): Result<UserInfo?> =
-    runCatching { keycloakService.fetchUserInfo().body() }.onFailure {
-      Timber.e(it)
-      _showProgressBar.postValue(false)
-      _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
-    }
+    runCatching { keycloakService.fetchUserInfo().body() }
+      .onFailure {
+        Timber.e(it)
+        _showProgressBar.postValue(false)
+        _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+      }
 
   private suspend fun fetchPractitioner(keycloakUuid: String?): Result<Bundle> {
     val endpointResult =
-      keycloakUuid?.takeIf { it.isNotBlank() }?.practitionerEndpointUrl()?.runCatching {
-        fhirResourceService.getResource(url = this)
-      }
+      keycloakUuid
+        ?.takeIf { it.isNotBlank() }
+        ?.practitionerEndpointUrl()
+        ?.runCatching { fhirResourceService.getResource(url = this) }
         ?: Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user."))
     endpointResult.onFailure {
       _showProgressBar.postValue(false)
@@ -263,17 +265,16 @@ constructor(
 
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies
+      locationHierarchies,
     )
     sharedPreferences.write(
       key = SharedPreferenceKey.PRACTITIONER_ID.name,
       value =
-        practitionerDetails
-          .fhirPractitionerDetails
+        practitionerDetails.fhirPractitionerDetails
           ?.practitioners
           ?.firstOrNull()
           ?.id
-          ?.extractLogicalIdUuid()
+          ?.extractLogicalIdUuid(),
     )
 
     sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)

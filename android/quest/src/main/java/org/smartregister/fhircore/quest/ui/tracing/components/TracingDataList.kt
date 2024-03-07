@@ -54,7 +54,7 @@ fun <T : Any> TracingDataScaffoldList(
   title: String,
   navController: NavHostController,
   viewModel: GeneralListViewModel<T>,
-  content: (@Composable() (value: T) -> Unit)
+  content: (@Composable() (value: T) -> Unit),
 ) {
   Scaffold(
     topBar = {
@@ -66,7 +66,7 @@ fun <T : Any> TracingDataScaffoldList(
           }
         },
       )
-    }
+    },
   ) { innerPadding ->
     val pagingItems: LazyPagingItems<T> =
       viewModel.paginateData.collectAsState().value.collectAsLazyPagingItems()
@@ -76,7 +76,7 @@ fun <T : Any> TracingDataScaffoldList(
       pagingItems = pagingItems,
       refreshing = viewModel.isRefreshing,
       refresh = { viewModel.refresh() },
-      content = content
+      content = content,
     )
   }
 }
@@ -87,7 +87,7 @@ fun <T : Any> TracingDataList(
   modifier: Modifier = Modifier,
   refreshing: StateFlow<Boolean>,
   refresh: () -> Unit,
-  content: (@Composable() (value: T) -> Unit)
+  content: (@Composable() (value: T) -> Unit),
 ) {
   Box(modifier = modifier) {
     val isRefreshing by refreshing.collectAsState()
@@ -95,15 +95,16 @@ fun <T : Any> TracingDataList(
       state = rememberSwipeRefreshState(isRefreshing),
       onRefresh = refresh,
       //        indicator = { _, _ -> }
-      ) {
+    ) {
       LazyColumn(
         modifier = modifier.padding(horizontal = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
       ) {
         item { Spacer(modifier = Modifier.height(8.dp)) }
         items(pagingItems) { history -> if (history != null) content(history) }
         pagingItems.apply {
-          if (itemCount <= 0 &&
+          if (
+            itemCount <= 0 &&
               loadState.source.refresh is LoadState.NotLoading &&
               loadState.append.endOfPaginationReached
           ) {
@@ -119,7 +120,7 @@ fun <T : Any> TracingDataList(
               item {
                 ErrorMessage(
                   message = loadStateError.error.also { Timber.e(it) }.localizedMessage!!,
-                  onClickRetry = { retry() }
+                  onClickRetry = { retry() },
                 )
               }
             }

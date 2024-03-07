@@ -32,6 +32,7 @@ import java.util.Base64
 import java.util.Date
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.context.SimpleWorkerContext
@@ -59,7 +60,9 @@ import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
 
-  @get:Rule(order = 10) val coroutineTestRule = CoroutineTestRule()
+  @OptIn(ExperimentalCoroutinesApi::class)
+  @get:Rule(order = 10)
+  val coroutineTestRule = CoroutineTestRule()
 
   @get:Rule(order = 20) val instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -103,8 +106,11 @@ abstract class RobolectricTest {
   fun IBaseResource.convertToString(trimTime: Boolean) =
     FhirContext.forCached(FhirVersionEnum.R4).newJsonParser().encodeResourceToString(this).let {
       // replace time part 11:11:11+05:00 with xx:xx:xx+xx:xx
-      if (trimTime) it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
-      else it
+      if (trimTime) {
+        it.replace(Regex("\\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}"), "xx:xx:xx+xx:xx")
+      } else {
+        it
+      }
     }
 
   fun String.replaceTimePart() =
@@ -133,7 +139,7 @@ abstract class RobolectricTest {
     scu: StructureMapUtilities,
     structureMapJson: String,
     responseJson: String,
-    sourceGroup: String
+    sourceGroup: String,
   ): Bundle {
     val map = scu.parse(structureMapJson, sourceGroup)
 
@@ -145,9 +151,9 @@ abstract class RobolectricTest {
 
     val source = iParser.parseResource(QuestionnaireResponse::class.java, responseJson)
 
-    kotlin.runCatching { scu.transform(scu.worker(), source, map, targetResource) }.onFailure {
-      println(it.stackTraceToString())
-    }
+    kotlin
+      .runCatching { scu.transform(scu.worker(), source, map, targetResource) }
+      .onFailure { println(it.stackTraceToString()) }
 
     println(iParser.encodeResourceToString(targetResource))
 

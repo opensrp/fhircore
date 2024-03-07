@@ -24,7 +24,6 @@ class DetailViewConfigurationTest {
 
   @Test
   fun testDetailViewConfiguration() {
-
     val filters =
       listOf(
         Filter(
@@ -33,8 +32,8 @@ class DetailViewConfigurationTest {
           displayableProperty = "label",
           valuePrefix = "re",
           valuePostfix = "end",
-          valueType = Enumerations.DataType.ADDRESS
-        )
+          valueType = Enumerations.DataType.ADDRESS,
+        ),
       )
 
     val detailViewConfiguration =
@@ -42,7 +41,7 @@ class DetailViewConfigurationTest {
         appId = "quest",
         classification = "registration",
         label = "patient registration",
-        rows = listOf(DetailViewRowConfiguration(filters))
+        rows = listOf(DetailViewRowConfiguration(filters)),
       )
 
     Assert.assertEquals("quest", detailViewConfiguration.appId)

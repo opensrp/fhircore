@@ -61,7 +61,7 @@ constructor(
 
   private val syncConfig by lazy {
     configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-      AppConfigClassification.SYNC
+      AppConfigClassification.SYNC,
     )
   }
 
@@ -84,7 +84,7 @@ constructor(
           super.onStop(owner)
           deregisterSyncListener(onSyncListener)
         }
-      }
+      },
     )
   }
 
@@ -94,8 +94,9 @@ constructor(
    */
   fun deregisterSyncListener(onSyncListener: OnSyncListener) {
     val removed = _onSyncListeners.removeIf { it.get() == onSyncListener }
-    if (removed)
+    if (removed) {
       Timber.w("De-registered ${onSyncListener::class.simpleName} from receiving sync state...")
+    }
   }
 
   /** Retrieve registry sync params */
@@ -106,53 +107,56 @@ constructor(
 
     val appConfig =
       configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION
+        AppConfigClassification.APPLICATION,
       )
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter.map { it.resource as SearchParameter }.forEach { sp ->
-      val paramName = sp.name // e.g. organization
-      val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-      val paramExpression = sp.expression
-      val expressionValue =
-        when (paramName) {
-          ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-          ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
-          ConfigurationRegistry.ID -> paramExpression
-          ConfigurationRegistry.COUNT -> appConfig.count
-          else -> null
-        }?.let {
-          // replace the evaluated value into expression for complex expressions
-          // e.g. #organization -> 123
-          // e.g. patient.organization eq #organization -> patient.organization eq 123
-          paramExpression.replace(paramLiteral, it)
-        }
+    syncConfig.resource.parameter
+      .map { it.resource as SearchParameter }
+      .forEach { sp ->
+        val paramName = sp.name // e.g. organization
+        val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
+        val paramExpression = sp.expression
+        val expressionValue =
+          when (paramName) {
+            ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
+            ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+            ConfigurationRegistry.ID -> paramExpression
+            ConfigurationRegistry.COUNT -> appConfig.count
+            else -> null
+          }?.let {
+            // replace the evaluated value into expression for complex expressions
+            // e.g. #organization -> 123
+            // e.g. patient.organization eq #organization -> patient.organization eq 123
+            paramExpression.replace(paramLiteral, it)
+          }
 
-      // for each entity in base create and add param map
-      // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital ],..]
-      sp.base.forEach { base ->
-        val resourceType = ResourceType.fromCode(base.code)
-        val pair = pairs.find { it.first == resourceType }
-        if (pair == null) {
-          pairs.add(
-            Pair(
-              resourceType,
-              expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf()
+        // for each entity in base create and add param map
+        // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
+        // ],..]
+        sp.base.forEach { base ->
+          val resourceType = ResourceType.fromCode(base.code)
+          val pair = pairs.find { it.first == resourceType }
+          if (pair == null) {
+            pairs.add(
+              Pair(
+                resourceType,
+                expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf(),
+              ),
             )
-          )
-        } else {
-          expressionValue?.let {
-            // add another parameter if there is a matching resource type
-            // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
-            val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
-            val index = pairs.indexOfFirst { it.first == resourceType }
-            resourceType.filterBasedOnPerResourceType(pairs)
-            pairs.set(index, Pair(resourceType, updatedPair))
+          } else {
+            expressionValue?.let {
+              // add another parameter if there is a matching resource type
+              // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
+              val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+              val index = pairs.indexOfFirst { it.first == resourceType }
+              resourceType.filterBasedOnPerResourceType(pairs)
+              pairs.set(index, Pair(resourceType, updatedPair))
+            }
           }
         }
       }
-    }
 
     val syncConfigParams = sharedPreferencesHelper.filterByResourceLocation(pairs)
     Timber.i("SYNC CONFIG $syncConfigParams")
@@ -162,7 +166,7 @@ constructor(
 }
 
 private fun ResourceType.filterBasedOnPerResourceType(
-  pairs: MutableList<Pair<ResourceType, Map<String, String>>>
+  pairs: MutableList<Pair<ResourceType, Map<String, String>>>,
 ) =
   when (this) {
     ResourceType.RelatedPerson ->
@@ -173,13 +177,13 @@ private fun ResourceType.filterBasedOnPerResourceType(
       pairs.addParam(
         resourceType = this,
         param = CarePlan.SP_STATUS,
-        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase()
+        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase(),
       )
     ResourceType.Observation ->
       pairs.addParam(
         resourceType = this,
         param = Observation.SP_STATUS,
-        value = Observation.ObservationStatus.FINAL.toString().lowercase()
+        value = Observation.ObservationStatus.FINAL.toString().lowercase(),
       )
 
     //    ResourceType.Task ->
@@ -198,19 +202,19 @@ private fun ResourceType.filterBasedOnPerResourceType(
       pairs.addParam(
         resourceType = this,
         param = Appointment.SP_STATUS,
-        value = Appointment.AppointmentStatus.BOOKED.toString().lowercase()
+        value = Appointment.AppointmentStatus.BOOKED.toString().lowercase(),
       )
     ResourceType.Encounter ->
       pairs.addParam(
         resourceType = this,
         param = Encounter.SP_STATUS,
-        value = Encounter.EncounterStatus.INPROGRESS.toString().lowercase()
+        value = Encounter.EncounterStatus.INPROGRESS.toString().lowercase(),
       )
     ResourceType.List ->
       pairs.addParam(
         resourceType = this,
         param = ListResource.SP_STATUS,
-        value = ListResource.ListStatus.CURRENT.toString().lowercase()
+        value = ListResource.ListStatus.CURRENT.toString().lowercase(),
       )
     else -> Unit
   }
@@ -218,7 +222,6 @@ private fun ResourceType.filterBasedOnPerResourceType(
 private fun SharedPreferencesHelper.filterByResourceLocation(
   pairs: MutableList<Pair<ResourceType, Map<String, String>>>,
 ): MutableList<Pair<ResourceType, Map<String, String>>> {
-
   val resourcesTemp = mutableListOf<Pair<ResourceType, Map<String, String>>>()
   val results = mutableListOf<Pair<ResourceType, Map<String, String>>>()
   resourcesTemp.addAll(pairs)
@@ -228,7 +231,8 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
 
   resourcesTemp.forEach {
     val resourceType = it.first
-    if (resourceType != ResourceType.Practitioner &&
+    if (
+      resourceType != ResourceType.Practitioner &&
         resourceType != ResourceType.Questionnaire &&
         resourceType != ResourceType.StructureMap
     ) {

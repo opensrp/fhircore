@@ -25,18 +25,24 @@ sealed class AppMainEvent(val state: SyncJobStatus) {
   data class SwitchLanguage(
     val syncState: SyncJobStatus,
     val language: Language,
-    val context: Context
+    val context: Context,
   ) : AppMainEvent(syncState)
+
   data class DeviceToDeviceSync(val syncState: SyncJobStatus, val context: Context) :
     AppMainEvent(syncState)
+
   data class Logout(val syncState: SyncJobStatus, val context: Context) : AppMainEvent(syncState)
+
   data class SyncData(val syncState: SyncJobStatus, val launchManualAuth: (Intent) -> Unit) :
     AppMainEvent(syncState)
+
   data class ResumeSync(val syncState: SyncJobStatus) : AppMainEvent(syncState)
+
   data class UpdateSyncState(val syncState: SyncJobStatus, val lastSyncTime: String?) :
     AppMainEvent(syncState)
+
   data class RefreshAuthToken(
     val syncState: SyncJobStatus,
-    val launchManualAuth: (Intent) -> Unit
+    val launchManualAuth: (Intent) -> Unit,
   ) : AppMainEvent(syncState)
 }

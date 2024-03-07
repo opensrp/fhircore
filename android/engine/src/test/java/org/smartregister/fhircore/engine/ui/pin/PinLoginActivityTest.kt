@@ -116,7 +116,7 @@ class PinLoginActivityTest : ActivityRobolectricTest() {
     pinLoginActivity.pinViewModel.onPinChanged("1234")
     Assert.assertEquals(
       pinLoginActivity.pinViewModel.secureSharedPreference.retrieveSessionPin()!!,
-      testPin.value.toString()
+      testPin.value.toString(),
     )
   }
 

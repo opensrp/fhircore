@@ -52,7 +52,7 @@ fun ProfileCard(
   onActionClick: ((PatientProfileViewSection) -> Unit),
   showSeeAll: Boolean = true,
   modifier: Modifier = Modifier,
-  body: (@Composable() () -> Unit)
+  body: (@Composable() () -> Unit),
 ) {
   ProfileCard(
     title = { Text(text = title.uppercase(Locale.getDefault())) },
@@ -60,7 +60,7 @@ fun ProfileCard(
     onActionClick = onActionClick,
     showSeeAll,
     modifier,
-    body
+    body,
   )
 }
 
@@ -71,31 +71,31 @@ fun ProfileCard(
   onActionClick: (PatientProfileViewSection) -> Unit,
   showSeeAll: Boolean = true,
   modifier: Modifier = Modifier,
-  body: (@Composable() () -> Unit)
+  body: (@Composable() () -> Unit),
 ) {
   Column {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween,
-      modifier = modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp)
+      modifier = modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 16.dp),
     ) {
       title()
 
       if (showSeeAll) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          modifier = modifier.clickable { onActionClick(profileViewSection) }
+          modifier = modifier.clickable { onActionClick(profileViewSection) },
         ) {
           TextButton(onClick = { onActionClick(profileViewSection) }) {
             Text(
               text = stringResource(R.string.see_all).uppercase(Locale.getDefault()),
-              color = InfoColor
+              color = InfoColor,
             )
           }
           Icon(
             imageVector = Icons.Outlined.ChevronRight,
             contentDescription = null,
-            tint = InfoColor
+            tint = InfoColor,
           )
         }
       }
@@ -103,8 +103,10 @@ fun ProfileCard(
 
     Card(
       elevation = 5.dp,
-      modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).padding(16.dp)
-    ) { Column { body() } }
+      modifier = modifier.fillMaxWidth().clip(RoundedCornerShape(6.dp)).padding(16.dp),
+    ) {
+      Column { body() }
+    }
   }
 }
 
@@ -114,7 +116,7 @@ private fun PatientProfileSectionPreview() {
   ProfileCard(
     title = "TASKS",
     onActionClick = {},
-    profileViewSection = PatientProfileViewSection.TASKS
+    profileViewSection = PatientProfileViewSection.TASKS,
   ) {
     Column {
       ProfileActionableItem(
@@ -125,9 +127,9 @@ private fun PatientProfileSectionPreview() {
           subtitle = "due date",
           profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = InfoColor,
-          actionButtonText = "ANC visit"
+          actionButtonText = "ANC visit",
         ),
-        onActionClick = { _, _ -> }
+        onActionClick = { _, _ -> },
       )
       Divider()
       ProfileActionableItem(
@@ -138,9 +140,9 @@ private fun PatientProfileSectionPreview() {
           subtitle = "due date",
           profileViewSection = PatientProfileViewSection.TASKS,
           actionButtonColor = OverdueColor,
-          actionButtonText = "Malaria medicine"
+          actionButtonText = "Malaria medicine",
         ),
-        onActionClick = { _, _ -> }
+        onActionClick = { _, _ -> },
       )
     }
   }

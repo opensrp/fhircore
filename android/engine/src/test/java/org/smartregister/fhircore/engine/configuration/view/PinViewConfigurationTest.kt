@@ -30,7 +30,7 @@ class PinViewConfigurationTest {
         applicationName = "app",
         appLogoIconResourceFile = "ic_launcher",
         showLogo = true,
-        enablePin = true
+        enablePin = true,
       )
     Assert.assertEquals("anc", pinViewConfiguration.appId)
     Assert.assertEquals("classification", pinViewConfiguration.classification)
@@ -49,7 +49,7 @@ class PinViewConfigurationTest {
         applicationName = "app",
         appLogoIconResourceFile = "ic_launcher",
         showLogo = true,
-        enablePin = false
+        enablePin = false,
       )
     Assert.assertEquals("anc", pinConfiguration.appId)
     Assert.assertEquals("classification", pinConfiguration.classification)

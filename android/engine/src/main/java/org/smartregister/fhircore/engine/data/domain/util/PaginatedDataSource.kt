@@ -30,7 +30,7 @@ import androidx.paging.PagingState
  * @property loadAll Indicate whether to load all data incrementally in the background
  */
 class PaginatedDataSource<I : Any, O : Any>(
-  private val registerRepository: RegisterRepository<I, O>
+  private val registerRepository: RegisterRepository<I, O>,
 ) : PagingSource<Int, O>() {
 
   var currentPage: Int = 0

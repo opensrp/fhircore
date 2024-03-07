@@ -103,9 +103,9 @@ fun ReportTypeSelectorScreen(
       measureReportViewModel.resetState()
       navController.popBackStack(
         route = MeasureReportNavigationScreen.MeasureReportList.route,
-        inclusive = false
+        inclusive = false,
       )
-    }
+    },
   )
 }
 
@@ -123,9 +123,8 @@ fun ReportTypeSelectorPage(
   onGenerateReportClicked: () -> Unit,
   onBackPress: () -> Unit,
   modifier: Modifier = Modifier,
-  showProgressIndicator: Boolean = false
+  showProgressIndicator: Boolean = false,
 ) {
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -134,9 +133,9 @@ fun ReportTypeSelectorPage(
           IconButton(onClick = onBackPress) { Icon(Icons.Filled.ArrowBack, null) }
         },
         contentColor = Color.White,
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = MaterialTheme.colors.primary,
       )
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       Column(modifier = modifier.fillMaxSize()) {
@@ -150,7 +149,7 @@ fun ReportTypeSelectorPage(
               Text(
                 text = stringResource(R.string.please_wait),
                 textAlign = TextAlign.Center,
-                modifier = modifier.padding(vertical = 16.dp)
+                modifier = modifier.padding(vertical = 16.dp),
               )
             }
           } else {
@@ -159,7 +158,7 @@ fun ReportTypeSelectorPage(
                 startDate = startDate,
                 endDate = endDate,
                 dateRange = dateRange,
-                onDateRangeSelected = onDateRangeSelected
+                onDateRangeSelected = onDateRangeSelected,
               )
               Spacer(modifier = modifier.size(28.dp))
               PatientSelectionBox(
@@ -167,25 +166,25 @@ fun ReportTypeSelectorPage(
                   listOf(
                     MeasureReportTypeData(
                       textResource = R.string.all,
-                      measureReportType = MeasureReport.MeasureReportType.SUMMARY
+                      measureReportType = MeasureReport.MeasureReportType.SUMMARY,
                     ),
                     MeasureReportTypeData(
                       textResource = R.string.individual,
-                      measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL
-                    )
+                      measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
+                    ),
                   ),
                 patientName = patientName,
                 reportTypeState = reportTypeState,
-                onReportTypeSelected = onReportTypeSelected
+                onReportTypeSelected = onReportTypeSelected,
               )
               Column(
                 modifier = modifier.fillMaxHeight(),
-                verticalArrangement = Arrangement.Bottom
+                verticalArrangement = Arrangement.Bottom,
               ) {
                 Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                   GenerateReportButton(
                     generateReportEnabled = generateReport,
-                    onGenerateReportClicked = onGenerateReportClicked
+                    onGenerateReportClicked = onGenerateReportClicked,
                   )
                 }
               }
@@ -203,17 +202,17 @@ fun PatientSelectionBox(
   patientName: String?,
   reportTypeState: MutableState<MeasureReport.MeasureReportType>,
   onReportTypeSelected: (MeasureReport.MeasureReportType) -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Column(
     modifier = modifier.wrapContentWidth(),
     verticalArrangement = Arrangement.Center,
-    horizontalAlignment = Alignment.Start
+    horizontalAlignment = Alignment.Start,
   ) {
     Text(
       text = stringResource(id = R.string.patient),
       fontSize = 18.sp,
-      fontWeight = FontWeight.Bold
+      fontWeight = FontWeight.Bold,
     )
 
     radioOptions.forEach { reportTypeData ->
@@ -223,7 +222,7 @@ fun PatientSelectionBox(
           onClick = {
             reportTypeState.value = reportTypeData.measureReportType
             onReportTypeSelected(reportTypeState.value)
-          }
+          },
         )
         Text(
           text = stringResource(id = reportTypeData.textResource),
@@ -232,13 +231,14 @@ fun PatientSelectionBox(
             modifier.clickable {
               reportTypeState.value = reportTypeData.measureReportType
               onReportTypeSelected(reportTypeState.value)
-            }
+            },
         )
       }
       Spacer(modifier = modifier.size(4.dp))
     }
 
-    if (reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
+    if (
+      reportTypeState.value == MeasureReport.MeasureReportType.INDIVIDUAL &&
         !patientName.isNullOrEmpty()
     ) {
       Row(modifier = modifier.padding(start = 24.dp)) {
@@ -256,18 +256,18 @@ fun PatientSelectionBox(
 fun GenerateReportButton(
   generateReportEnabled: Boolean,
   onGenerateReportClicked: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Column {
     Button(
       enabled = generateReportEnabled,
       onClick = onGenerateReportClicked,
-      modifier = modifier.fillMaxWidth()
+      modifier = modifier.fillMaxWidth(),
     ) {
       Text(
         color = Color.White,
         text = stringResource(id = R.string.generate_report),
-        modifier = modifier.padding(8.dp)
+        modifier = modifier.padding(8.dp),
       )
     }
   }
@@ -288,11 +288,11 @@ fun PatientSelectionAllPreview() {
         MeasureReportTypeData(
           textResource = R.string.individual,
           measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
+        ),
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
-    patientName = null
+    patientName = null,
   )
 }
 
@@ -311,11 +311,11 @@ fun PatientSelectionIndividualPreview() {
         MeasureReportTypeData(
           textResource = R.string.individual,
           measureReportType = MeasureReport.MeasureReportType.INDIVIDUAL,
-        )
+        ),
       ),
     reportTypeState = reportTypeState,
     onReportTypeSelected = {},
-    patientName = "John Jared"
+    patientName = "John Jared",
   )
 }
 
@@ -339,6 +339,6 @@ fun ReportFilterPreview() {
     onReportTypeSelected = {},
     reportTypeState = reportTypeState,
     showProgressIndicator = false,
-    onBackPress = {}
+    onBackPress = {},
   )
 }

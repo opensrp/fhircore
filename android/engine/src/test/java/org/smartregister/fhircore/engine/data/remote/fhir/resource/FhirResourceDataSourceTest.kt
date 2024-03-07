@@ -56,7 +56,7 @@ class FhirResourceDataSourceTest {
       coEvery { resourceService.insertResource(any(), any(), any()) } returns resource
       Assert.assertEquals(
         resource,
-        fhirResourceDataSource.insert(ResourceType.Patient.name, "id", "{}")
+        fhirResourceDataSource.insert(ResourceType.Patient.name, "id", "{}"),
       )
     }
   }
@@ -68,20 +68,19 @@ class FhirResourceDataSourceTest {
       coEvery { resourceService.updateResource(any(), any(), any()) } returns operationOutcome
       Assert.assertEquals(
         operationOutcome,
-        fhirResourceDataSource.update(ResourceType.Patient.name, "id", "{}")
+        fhirResourceDataSource.update(ResourceType.Patient.name, "id", "{}"),
       )
     }
   }
 
   @Test
   fun testDeleteShouldRemoveResource() {
-
     runTest {
       val operationOutcome = OperationOutcome()
       coEvery { resourceService.deleteResource(any(), any()) } returns operationOutcome
       Assert.assertEquals(
         operationOutcome,
-        fhirResourceDataSource.delete(ResourceType.Patient.name, "id")
+        fhirResourceDataSource.delete(ResourceType.Patient.name, "id"),
       )
     }
   }
@@ -95,8 +94,8 @@ class FhirResourceDataSourceTest {
         bundle,
         fhirResourceDataSource.search(
           ResourceType.Practitioner.name,
-          mapOf("identifier" to "19292929")
-        )
+          mapOf("identifier" to "19292929"),
+        ),
       )
     }
   }

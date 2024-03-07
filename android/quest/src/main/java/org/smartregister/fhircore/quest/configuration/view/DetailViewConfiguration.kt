@@ -26,7 +26,7 @@ class DetailViewConfiguration(
   override val appId: String = "",
   override val classification: String = "",
   val label: String = "",
-  val rows: List<DetailViewRowConfiguration> = listOf()
+  val rows: List<DetailViewRowConfiguration> = listOf(),
 ) : Configuration
 
 @Stable @Serializable class DetailViewRowConfiguration(val filters: List<Filter>)

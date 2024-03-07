@@ -76,9 +76,11 @@ abstract class GeneralListViewModel<T : Any>(syncBroadcaster: SyncBroadcaster) :
       }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
   }
+
   private fun paginateRegisterDataForSearch() {
     paginateData.value = paginateRegisterDataFlow()
   }
+
   abstract fun paginateRegisterDataFlow(page: Int = 0): Flow<PagingData<T>>
 
   fun refresh() {

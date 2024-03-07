@@ -74,6 +74,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
   @get:Rule(order = 1) val composeRule = createComposeRule()
 
   @Inject lateinit var patientItemMapper: PatientItemMapper
+
   @BindValue
   var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("g6pd")
   val application = ApplicationProvider.getApplicationContext<Application>()
@@ -101,8 +102,8 @@ class ListDataDetailScreenTest : RobolectricTest() {
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk(),
-          fhirEngine
-        )
+          fhirEngine,
+        ),
       )
 
     patientDetailsViewConfig =
@@ -221,13 +222,17 @@ class ListDataDetailScreenTest : RobolectricTest() {
     composeRule.onAllNodesWithTag(RESULT_ITEM).assertCountEquals(2)
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(hasAnyChild(hasText("Label")))
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(hasAnyChild(hasText("Sample Order")))
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[0].assert(
-      hasAnyChild(hasText("(${Date().asDdMmmYyyy()})"))
-    )
+    composeRule
+      .onAllNodesWithTag(RESULT_ITEM, true)[0]
+      .assert(
+        hasAnyChild(hasText("(${Date().asDdMmmYyyy()})")),
+      )
     composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(hasAnyChild(hasText("Sample Test")))
-    composeRule.onAllNodesWithTag(RESULT_ITEM, true)[1].assert(
-      hasAnyChild(hasText("(${Date().asDdMmmYyyy()})"))
-    )
+    composeRule
+      .onAllNodesWithTag(RESULT_ITEM, true)[1]
+      .assert(
+        hasAnyChild(hasText("(${Date().asDdMmmYyyy()})")),
+      )
   }
 
   @Test
@@ -272,8 +277,8 @@ class ListDataDetailScreenTest : RobolectricTest() {
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk(),
-          fhirEngine
-        )
+          fhirEngine,
+        ),
       )
 
     if (shouldLoadAdditionalData) {
@@ -284,7 +289,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
             name = "John Doe",
             gender = "M",
             age = "22y",
-            additionalData = listOf(AdditionalData(label = "G6PD", value = "Normal"))
+            additionalData = listOf(AdditionalData(label = "G6PD", value = "Normal")),
           )
         }
     }
@@ -297,7 +302,7 @@ class ListDataDetailScreenTest : RobolectricTest() {
         patientId,
         ResourceType.Patient,
         patientDetailsViewConfig.questionnaireFilter!!,
-        patientDetailsViewConfig
+        patientDetailsViewConfig,
       )
       getAllForms(patientDetailsViewConfig.questionnaireFilter!!)
     }
@@ -315,8 +320,8 @@ class ListDataDetailScreenTest : RobolectricTest() {
           defaultRepository = defaultRepository,
           patientItemMapper = patientItemMapper,
           mockk(),
-          fhirEngine
-        )
+          fhirEngine,
+        ),
       )
     composeRule.setContent { QuestPatientDetailScreen(questPatientDetailViewModel) }
   }

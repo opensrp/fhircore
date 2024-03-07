@@ -21,7 +21,7 @@ data class MeasureReportPatientViewData(
   val name: String,
   val gender: String,
   val age: String,
-  val family: String? = null
+  val family: String? = null,
 ) {
   fun personalDetails() = listOf(name, gender, age).joinToString(", ")
 }

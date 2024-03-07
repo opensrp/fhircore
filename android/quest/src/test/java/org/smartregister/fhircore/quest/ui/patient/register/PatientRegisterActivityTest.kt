@@ -62,6 +62,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   var configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry("quest")
 
   @BindValue val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
+
   @BindValue val secureSharedPreference: SecureSharedPreference = mockk()
 
   private lateinit var patientRegisterActivity: PatientRegisterActivity
@@ -97,20 +98,20 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnClientMenuOptionSelectedShouldLaunchPatientRegisterFragment() {
     patientRegisterActivity.onNavigationOptionItemSelected(
-      RoboMenuItem().apply { itemId = R.id.menu_item_clients }
+      RoboMenuItem().apply { itemId = R.id.menu_item_clients },
     )
     // switched to patient register fragment
     Assert.assertEquals(
       "Clients",
-      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text,
     )
     Assert.assertEquals(
       View.GONE,
-      patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility
+      patientRegisterActivity.findViewById<View>(R.id.filter_register_button).visibility,
     )
     Assert.assertEquals(
       View.VISIBLE,
-      patientRegisterActivity.findViewById<View>(R.id.edit_text_search).visibility
+      patientRegisterActivity.findViewById<View>(R.id.edit_text_search).visibility,
     )
   }
 
@@ -118,26 +119,25 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
   fun testOnBottomNavigationOptionItemSelectedShouldLaunchUserProfileFragment() {
     patientRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "menu_item_settings".hashCode() },
-      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
+      patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!,
     )
     // switched to user profile fragment
     Assert.assertEquals(
       "Settings",
-      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text
+      patientRegisterActivity.findViewById<TextView>(R.id.register_filter_textview).text,
     )
     Assert.assertEquals(
       View.GONE,
-      patientRegisterActivity.findViewById<View>(R.id.middle_toolbar_section).visibility
+      patientRegisterActivity.findViewById<View>(R.id.middle_toolbar_section).visibility,
     )
     Assert.assertEquals(
       View.GONE,
-      patientRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility
+      patientRegisterActivity.findViewById<ImageButton>(R.id.filter_register_button).visibility,
     )
   }
 
   @Test
   fun testOnBottomNavigationOptionItemSelectedShouldLaunchQuestionnaireDataDetailActivity() {
-
     val config = patientRegisterActivity.registerViewModel.registerViewConfiguration.value!!
 
     config.bottomNavigationOptions?.plus(
@@ -146,13 +146,13 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
         title = "Control Test",
         icon = "ic_reports",
         action =
-          QuestionnaireDataDetailsNavigationAction(classification = "control_test_details_view")
-      )
+          QuestionnaireDataDetailsNavigationAction(classification = "control_test_details_view"),
+      ),
     )
 
     patientRegisterActivity.onBottomNavigationOptionItemSelected(
       RoboMenuItem().apply { itemId = "control_test".hashCode() },
-      config
+      config,
     )
 
     val expectedIntent =
@@ -168,7 +168,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     val activityBinding =
       ReflectionHelpers.getField<BaseRegisterActivityBinding>(
         patientRegisterActivity,
-        "registerActivityBinding"
+        "registerActivityBinding",
       )
 
     with(activityBinding) {
@@ -206,7 +206,7 @@ class PatientRegisterActivityTest : ActivityRobolectricTest() {
     val list =
       ReflectionHelpers.callInstanceMethod<List<RegisterItem>>(
         patientRegisterActivity,
-        "registersList"
+        "registersList",
       )
     Assert.assertEquals(1, list.size)
     with(list[0]) {

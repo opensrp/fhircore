@@ -30,7 +30,7 @@ class SideMenuOptionFactory
 @Inject
 constructor(
   val appFeatureManager: AppFeatureManager,
-  val registerRepository: AppRegisterRepository
+  val registerRepository: AppRegisterRepository,
 ) {
   val defaultSideMenu =
     SideMenuOption(
@@ -43,9 +43,9 @@ constructor(
         suspend {
           registerRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
-            healthModule = HealthModule.DEFAULT
+            healthModule = HealthModule.DEFAULT,
           )
-        }
+        },
     )
 
   fun retrieveSideMenuOptions(): List<SideMenuOption> {
@@ -83,9 +83,9 @@ constructor(
             suspend {
               registerRepository.countRegisterData(
                 appFeatureName = it.feature,
-                healthModule = it.healthModule!!
+                healthModule = it.healthModule!!,
               )
-            }
+            },
         )
       }
     return sideMenuOptions.ifEmpty { listOf(defaultSideMenu) }

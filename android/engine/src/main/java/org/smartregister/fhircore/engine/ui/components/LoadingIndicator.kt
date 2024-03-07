@@ -33,6 +33,6 @@ fun LoadingIndicator() {
       Modifier.testTag("ProgressBarItem")
         .fillMaxWidth()
         .padding(16.dp)
-        .wrapContentWidth(Alignment.CenterHorizontally)
+        .wrapContentWidth(Alignment.CenterHorizontally),
   )
 }

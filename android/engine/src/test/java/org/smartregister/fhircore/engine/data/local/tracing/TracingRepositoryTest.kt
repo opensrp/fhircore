@@ -75,7 +75,7 @@ class TracingRepositoryTest {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -83,7 +83,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://dtree.org"
               code = "miss-routine"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -102,7 +102,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://d-tree.org"
               code = "home-tracing-outcome"
-            }
+            },
           )
         subject = patient0.asReference()
         period = Period().apply { start = Date() }
@@ -124,7 +124,7 @@ class TracingRepositoryTest {
               Coding().apply {
                 system = "https://d-tree.org"
                 code = "1"
-              }
+              },
             )
             .apply { text = "1" }
         mode = ListResource.ListMode.SNAPSHOT
@@ -138,7 +138,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-task"
-                }
+                },
               )
               .apply { text = task0.referenceValue() }
         }
@@ -149,7 +149,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-enc"
-                }
+                },
               )
               .apply { text = enc0.referenceValue() }
         }
@@ -178,9 +178,9 @@ class TracingRepositoryTest {
         startDate = list0.date,
         endDate = null,
         numberOfAttempts = 1,
-        isActive = true
+        isActive = true,
       ),
-      tracingHistory
+      tracingHistory,
     )
   }
 
@@ -201,7 +201,7 @@ class TracingRepositoryTest {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -209,7 +209,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://dtree.org"
               code = "miss-routine"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -228,7 +228,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://d-tree.org"
               code = "home-tracing-outcome"
-            }
+            },
           )
         subject = patient0.asReference()
         period = Period().apply { start = Date() }
@@ -250,7 +250,7 @@ class TracingRepositoryTest {
               Coding().apply {
                 system = "https://d-tree.org"
                 code = "1"
-              }
+              },
             )
             .apply { text = "1" }
         mode = ListResource.ListMode.SNAPSHOT
@@ -264,7 +264,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-task"
-                }
+                },
               )
               .apply { text = task0.referenceValue() }
         }
@@ -275,7 +275,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-enc"
-                }
+                },
               )
               .apply { text = enc0.referenceValue() }
         }
@@ -291,9 +291,9 @@ class TracingRepositoryTest {
         historyId = list0.logicalId,
         encounterId = enc0.logicalId,
         title = "Home Tracing Outcome 1",
-        date = enc0.period.start
+        date = enc0.period.start,
       ),
-      tracingOutcome
+      tracingOutcome,
     )
   }
 
@@ -314,7 +314,7 @@ class TracingRepositoryTest {
                 system = "https://dtree.org"
                 code = "home-tracing"
                 display = "Home Tracing"
-              }
+              },
             )
           }
         reasonCode =
@@ -323,7 +323,7 @@ class TracingRepositoryTest {
               system = "https://dtree.org"
               code = "miss-routine"
               display = "Missed Routine"
-            }
+            },
           )
         reasonReference = Reference().apply { reference = "Questionnaire/art-tracing-outcome" }
       }
@@ -342,7 +342,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://d-tree.org"
               code = "home-tracing-outcome"
-            }
+            },
           )
         subject = patient0.asReference()
         period = Period().apply { start = Date() }
@@ -378,7 +378,7 @@ class TracingRepositoryTest {
             Coding().apply {
               system = "https://d-tree.org"
               code = "home-tracing-outcome-date-of-agreed-appointment"
-            }
+            },
           )
         value = dateOfAppointmentObserved
       }
@@ -391,7 +391,7 @@ class TracingRepositoryTest {
               Coding().apply {
                 system = "https://d-tree.org"
                 code = "1"
-              }
+              },
             )
             .apply { text = "1" }
         mode = ListResource.ListMode.SNAPSHOT
@@ -405,7 +405,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-task"
-                }
+                },
               )
               .apply { text = task0.referenceValue() }
         }
@@ -416,7 +416,7 @@ class TracingRepositoryTest {
                 Coding().apply {
                   system = "https://d-tree.org"
                   code = "tracing-enc"
-                }
+                },
               )
               .apply { text = enc0.referenceValue() }
         }
@@ -432,7 +432,7 @@ class TracingRepositoryTest {
           ResourceType.Observation ->
             listOf(
               SearchResult(obs0, included = null, revIncluded = null),
-              SearchResult(obs1, included = null, revIncluded = null)
+              SearchResult(obs1, included = null, revIncluded = null),
             )
           else -> emptyList()
         }

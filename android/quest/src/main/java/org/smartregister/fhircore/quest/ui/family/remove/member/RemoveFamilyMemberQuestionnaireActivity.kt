@@ -51,12 +51,12 @@ class RemoveFamilyMemberQuestionnaireActivity :
       context: Context,
       questionnaireId: String,
       clientIdentifier: String? = null,
-      intentBundle: Bundle = Bundle.EMPTY
+      intentBundle: Bundle = Bundle.EMPTY,
     ) {
       context.startActivity(
         Intent(context, RemoveFamilyMemberQuestionnaireActivity::class.java)
           .putExtras(intentBundle)
-          .putExtras(intentArgs(formName = questionnaireId, clientIdentifier = clientIdentifier))
+          .putExtras(intentArgs(formName = questionnaireId, clientIdentifier = clientIdentifier)),
       )
     }
   }

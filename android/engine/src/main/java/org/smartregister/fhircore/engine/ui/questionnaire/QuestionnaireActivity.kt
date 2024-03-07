@@ -195,7 +195,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         override fun onFragmentCreated(
           fm: FragmentManager,
           f: Fragment,
-          savedInstanceState: Bundle?
+          savedInstanceState: Bundle?,
         ) {
           super.onFragmentCreated(fm, f, savedInstanceState)
           tracer.stopTrace(QUESTIONNAIRE_TRACE)
@@ -205,7 +205,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           fm: FragmentManager,
           f: Fragment,
           v: View,
-          savedInstanceState: Bundle?
+          savedInstanceState: Bundle?,
         ) {
           super.onFragmentViewCreated(fm, f, v, savedInstanceState)
           if (f is QuestionnaireFragment) {
@@ -219,13 +219,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           }
         }
       },
-      false
+      false,
     )
     supportFragmentManager.commit { replace(R.id.container, fragment, QUESTIONNAIRE_FRAGMENT_TAG) }
     supportFragmentManager.setFragmentResultListener(
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
-      this
-    ) { _, _ -> onSubmitRequestResult() }
+      this,
+    ) { _, _ ->
+      onSubmitRequestResult()
+    }
 
     supportFragmentManager.addFragmentOnAttachListener { _, frag ->
       Timber.e(frag.tag?.uppercase())
@@ -239,7 +241,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       // setting the save button text from Questionnaire Config
       questionnaireConfig.saveButtonText
         ?: getString(R.string.questionnaire_alert_submit_button_title)
-    } else getString(R.string.questionnaire_alert_submit_button_title)
+    } else {
+      getString(R.string.questionnaire_alert_submit_button_title)
+    }
   }
 
   open fun onSubmitRequestResult() {
@@ -259,7 +263,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           questionnaireViewModel.getQuestionnaireConfigPair(
             this@QuestionnaireActivity,
             formName,
-            questionnaireType
+            questionnaireType,
           )
 
         questionnaireConfig = resultPair.first
@@ -306,22 +310,23 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun showFormSubmissionConfirmAlert() {
-    if (questionnaire.experimental)
+    if (questionnaire.experimental) {
       showConfirmAlert(
         context = this,
         message = R.string.questionnaire_alert_test_only_message,
         title = R.string.questionnaire_alert_test_only_title,
         confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_test_only_button_title
+        confirmButtonText = R.string.questionnaire_alert_test_only_button_title,
       )
-    else
+    } else {
       showConfirmAlert(
         context = this,
         message = R.string.questionnaire_alert_submit_message,
         title = R.string.questionnaire_alert_submit_title,
         confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_submit_button_title
+        confirmButtonText = R.string.questionnaire_alert_submit_button_title,
       )
+    }
   }
 
   fun getQuestionnaireResponse(): QuestionnaireResponse {
@@ -331,8 +336,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   fun dismissSaveProcessing() {
-    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing)
+    if (::saveProcessingAlertDialog.isInitialized && saveProcessingAlertDialog.isShowing) {
       saveProcessingAlertDialog.dismiss()
+    }
   }
 
   open fun handleQuestionnaireSubmit() {
@@ -345,7 +351,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       AlertDialogue.showErrorAlert(
         this,
         R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title
+        R.string.questionnaire_alert_invalid_title,
       )
       return
     }
@@ -364,7 +370,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   fun onPostSave(
     result: Boolean,
     questionnaireResponse: QuestionnaireResponse,
-    extras: List<Resource>? = null
+    extras: List<Resource>? = null,
   ) {
     dismissSaveProcessing()
     if (result) {
@@ -380,10 +386,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun postSaveSuccessful(
     questionnaireResponse: QuestionnaireResponse,
-    extras: List<Resource>? = null
+    extras: List<Resource>? = null,
   ) {
     val message = questionnaireViewModel.extractionProgressMessage.value
-    if (message?.isNotEmpty() == true)
+    if (message?.isNotEmpty() == true) {
       AlertDialogue.showInfoAlert(
         this,
         message,
@@ -391,14 +397,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         {
           it.dismiss()
           finishActivity(questionnaireResponse, extras)
-        }
+        },
       )
-    else finishActivity(questionnaireResponse, extras)
+    } else {
+      finishActivity(questionnaireResponse, extras)
+    }
   }
 
   fun finishActivity(questionnaireResponse: QuestionnaireResponse, extras: List<Resource>? = null) {
     val parcelResponse = questionnaireResponse.copy()
-    questionnaire.find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
+    questionnaire
+      .find(FieldType.TYPE, Questionnaire.QuestionnaireItemType.ATTACHMENT.name)
       .forEach { parcelResponse.find(it.linkId)?.answer?.clear() }
     setResult(
       Activity.RESULT_OK,
@@ -407,14 +416,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         putExtra(QUESTIONNAIRE_ARG_FORM, questionnaire.logicalId)
         putExtra(
           QUESTIONNAIRE_BACK_REFERENCE_KEY,
-          intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
+          intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY),
         )
         extras?.map { res ->
           if (res is Encounter) {
             putExtra(QUESTIONNAIRE_RES_ENCOUNTER, res.status.toCode())
           }
         }
-      }
+      },
     )
     finish()
   }
@@ -423,7 +432,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
-        context = this
+        context = this,
       )
       .values
       .flatten()
@@ -436,7 +445,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse = questionnaireResponse,
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
-      questionnaireType = questionnaireType
+      questionnaireType = questionnaireType,
     )
   }
 
@@ -459,7 +468,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         getDismissDialogMessage(),
         R.string.questionnaire_alert_back_pressed_title,
         { finish() },
-        R.string.questionnaire_alert_back_pressed_button_title
+        R.string.questionnaire_alert_back_pressed_button_title,
       )
     }
   }
@@ -493,15 +502,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
       launchContexts: ArrayList<Resource>? = null,
-      populationResources: ArrayList<out Resource> = ArrayList()
+      populationResources: ArrayList<out Resource> = ArrayList(),
     ) =
       bundleOf(
-        Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
-        Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
-        Pair(QUESTIONNAIRE_ARG_FORM, formName),
-        Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
-        Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference)
-      )
+          Pair(QUESTIONNAIRE_ARG_PATIENT_KEY, clientIdentifier),
+          Pair(QUESTIONNAIRE_ARG_GROUP_KEY, groupIdentifier),
+          Pair(QUESTIONNAIRE_ARG_FORM, formName),
+          Pair(QUESTIONNAIRE_ARG_TYPE, questionnaireType.name),
+          Pair(QUESTIONNAIRE_BACK_REFERENCE_KEY, backReference),
+        )
         .apply {
           questionnaireResponse?.let {
             putString(QUESTIONNAIRE_RESPONSE, it.encodeResourceToString())
@@ -510,15 +519,17 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
           if (resourcesList.isNotEmpty()) {
             putStringArrayList(
               QUESTIONNAIRE_POPULATION_RESOURCES,
-              resourcesList.toCollection(ArrayList())
+              resourcesList.toCollection(ArrayList()),
             )
           }
-          launchContexts?.takeIf { it.isNotEmpty() }?.let { list ->
-            putStringArrayList(
-              QUESTIONNAIRE_LAUNCH_CONTEXT,
-              ArrayList(list.map { it.encodeResourceToString() })
-            )
-          }
+          launchContexts
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { list ->
+              putStringArrayList(
+                QUESTIONNAIRE_LAUNCH_CONTEXT,
+                ArrayList(list.map { it.encodeResourceToString() }),
+              )
+            }
         }
 
     fun launchQuestionnaire(
@@ -529,7 +540,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       intentBundle: Bundle = Bundle.EMPTY,
       launchContexts: ArrayList<Resource>? = null,
-      populationResources: ArrayList<Resource>? = null
+      populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivity(
         Intent(context, QuestionnaireActivity::class.java)
@@ -541,9 +552,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               formName = questionnaireId,
               questionnaireType = questionnaireType,
               launchContexts = launchContexts,
-              populationResources = populationResources ?: ArrayList()
-            )
-          )
+              populationResources = populationResources ?: ArrayList(),
+            ),
+          ),
       )
     }
 
@@ -555,7 +566,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       backReference: String? = null,
       intentBundle: Bundle = Bundle.EMPTY,
       launchContexts: ArrayList<Resource>? = null,
-      populationResources: ArrayList<Resource>? = null
+      populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivityForResult(
         Intent(context, QuestionnaireActivity::class.java)
@@ -567,10 +578,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               questionnaireType = questionnaireType,
               backReference = backReference,
               launchContexts = launchContexts,
-              populationResources = populationResources ?: ArrayList()
-            )
+              populationResources = populationResources ?: ArrayList(),
+            ),
           ),
-        0
+        0,
       )
     }
   }

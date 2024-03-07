@@ -24,5 +24,5 @@ data class AuthCredentials(
   val salt: String,
   val passwordHash: String,
   var sessionToken: String? = null,
-  var refreshToken: String? = null
+  var refreshToken: String? = null,
 )

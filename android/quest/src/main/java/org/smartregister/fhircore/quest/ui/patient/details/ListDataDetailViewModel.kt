@@ -49,7 +49,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val patientItemMapper: PatientItemMapper,
   val libraryEvaluatorProvider: Provider<LibraryEvaluator>,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
 ) : ViewModel() {
 
   private val _patientDetailsViewConfiguration = MutableLiveData<DataDetailsListViewConfiguration>()
@@ -66,7 +66,7 @@ constructor(
 
   fun getDemographicsWithAdditionalData(
     patientId: String,
-    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration,
   ) {
     viewModelScope.launch {
       val demographic = patientRepository.fetchDemographicsWithAdditionalData(patientId)
@@ -87,7 +87,7 @@ constructor(
     subjectId: String,
     subjectType: ResourceType,
     searchFilter: SearchFilter,
-    patientDetailsViewConfiguration: DataDetailsListViewConfiguration
+    patientDetailsViewConfiguration: DataDetailsListViewConfiguration,
   ) {
     viewModelScope.launch {
       val forms = patientRepository.fetchTestForms(searchFilter)
@@ -97,8 +97,8 @@ constructor(
           subjectId,
           subjectType,
           forms,
-          patientDetailsViewConfiguration
-        )
+          patientDetailsViewConfiguration,
+        ),
       )
     }
   }
@@ -121,7 +121,8 @@ constructor(
 
   fun fetchResultItemLabel(testResult: Pair<QuestionnaireResponse, Questionnaire>): String {
     return testResult.second.titleElement.getLocalizedText()
-      ?: testResult.second.nameElement.getLocalizedText() ?: testResult.second.logicalId
+      ?: testResult.second.nameElement.getLocalizedText()
+      ?: testResult.second.logicalId
   }
 
   fun updateViewConfigurations(patientDetailsViewConfiguration: DataDetailsListViewConfiguration) {
@@ -134,8 +135,9 @@ constructor(
     viewModelScope.launch {
       val activePregnancyConditionString =
         patientRepository.fetchPregnancyCondition(patientId = patientId)
-      if (activePregnancyConditionString.isNotEmpty())
+      if (activePregnancyConditionString.isNotEmpty()) {
         resourceList.add(activePregnancyConditionString)
+      }
       resourceListLive.postValue(resourceList)
     }
     return resourceListLive

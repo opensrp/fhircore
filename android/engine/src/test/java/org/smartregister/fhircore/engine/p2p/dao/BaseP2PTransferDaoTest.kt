@@ -69,24 +69,26 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     val actualDataTypes = baseP2PTransferDao.getDataTypes()
     Assert.assertEquals(6, actualDataTypes.size)
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     Assert.assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -132,12 +134,11 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
 
   @Test
   fun `loadResources() calls fhirEngine#search()`() {
-
     runBlocking {
       baseP2PTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
-        classType = Patient::class.java
+        classType = Patient::class.java,
       )
     }
 
@@ -159,38 +160,38 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
     Assert.assertEquals(
       Group::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0),
+      ),
     )
     Assert.assertEquals(
       Encounter::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 0),
+      ),
     )
     Assert.assertEquals(
       Observation::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 0),
+      ),
     )
     Assert.assertEquals(
       Patient::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 0),
+      ),
     )
     Assert.assertEquals(
       Questionnaire::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 0),
+      ),
     )
     Assert.assertEquals(
       QuestionnaireResponse::class.java,
       baseP2PTransferDao.resourceClassType(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0)
-      )
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 0),
+      ),
     )
   }
 
@@ -207,14 +208,14 @@ class BaseP2PTransferDaoTest : RobolectricTest() {
             Address().apply {
               city = "Nairobi"
               country = "Kenya"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Kiptoo"))
               family = "Maina"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
         meta = Meta().apply { lastUpdated = currentDate }

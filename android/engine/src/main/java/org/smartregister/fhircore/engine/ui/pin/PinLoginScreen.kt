@@ -81,7 +81,6 @@ const val PIN_SET_PIN_CONFIRM_BUTTON = "setPinConfirmButton"
 
 @Composable
 fun PinLoginScreen(viewModel: PinViewModel) {
-
   val showError by viewModel.showError.observeAsState(initial = false)
 
   PinLoginPage(
@@ -105,7 +104,6 @@ fun PinLoginPage(
   forgotPin: () -> Unit,
   appName: String = "",
 ) {
-
   var showMenu by remember { mutableStateOf(false) }
   var showForgotPinDialog by remember { mutableStateOf(false) }
 
@@ -117,29 +115,33 @@ fun PinLoginPage(
           Icon(
             Icons.Filled.ArrowBack,
             contentDescription = "Back arrow",
-            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON)
+            modifier = Modifier.size(0.dp).testTag(PIN_TOOLBAR_MENU_ICON),
           )
         }
       },
       actions = {
         IconButton(
           onClick = { showMenu = !showMenu },
-          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON)
-        ) { Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null) }
+          modifier = Modifier.testTag(PIN_TOOLBAR_MENU_BUTTON),
+        ) {
+          Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null)
+        }
         DropdownMenu(
           expanded = showMenu,
           onDismissRequest = { showMenu = false },
-          Modifier.testTag(PIN_TOOLBAR_MENU)
+          Modifier.testTag(PIN_TOOLBAR_MENU),
         ) {
           DropdownMenuItem(
             onClick = {
               showMenu = false
               onMenuLoginClicked()
             },
-            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN)
-          ) { Text(text = stringResource(id = R.string.pin_menu_login)) }
+            modifier = Modifier.testTag(PIN_TOOLBAR_MENU_LOGIN),
+          ) {
+            Text(text = stringResource(id = R.string.pin_menu_login))
+          }
         }
-      }
+      },
     )
 
     if (showForgotPinDialog) {
@@ -150,7 +152,7 @@ fun PinLoginPage(
       modifier =
         Modifier.fillMaxSize()
           .padding(horizontal = 16.dp, vertical = 70.dp)
-          .wrapContentWidth(Alignment.CenterHorizontally)
+          .wrapContentWidth(Alignment.CenterHorizontally),
     ) {
       Image(
         painter = painterResource(id = R.drawable.ic_app_logo),
@@ -161,14 +163,14 @@ fun PinLoginPage(
             .align(Alignment.CenterHorizontally)
             .requiredHeight(120.dp)
             .requiredWidth(140.dp)
-            .testTag(APP_LOGO_TAG)
+            .testTag(APP_LOGO_TAG),
       )
       Text(
         text = appName,
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
-        modifier = modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally),
       )
 
       Text(
@@ -176,25 +178,26 @@ fun PinLoginPage(
         textAlign = TextAlign.Center,
         fontWeight = FontWeight.Normal,
         fontSize = 20.sp,
-        modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
+        modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally),
       )
 
       PinView(
         pinInputLength = PIN_INPUT_MAX_THRESHOLD,
         isDotted = true,
         onPinChanged = onPinChanged,
-        showError = showError
+        showError = showError,
       )
 
-      if (showError)
+      if (showError) {
         Text(
           text = stringResource(R.string.incorrect_pin_please_retry),
           textAlign = TextAlign.Center,
           fontWeight = FontWeight.Normal,
           fontSize = 16.sp,
           color = colorResource(id = R.color.colorError),
-          modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally)
+          modifier = modifier.padding(vertical = 16.dp).align(Alignment.CenterHorizontally),
         )
+      }
 
       Text(
         text = stringResource(R.string.forgot_pin),
@@ -206,7 +209,7 @@ fun PinLoginPage(
             .padding(top = 24.dp)
             .align(Alignment.CenterHorizontally)
             .testTag(PIN_FORGOT_PIN)
-            .clickable { showForgotPinDialog = !showForgotPinDialog }
+            .clickable { showForgotPinDialog = !showForgotPinDialog },
       )
     }
   }
@@ -216,7 +219,7 @@ fun PinLoginPage(
 fun ForgotPinDialog(
   forgotPin: () -> Unit,
   onDismissDialog: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   AlertDialog(
     onDismissRequest = onDismissDialog,
@@ -224,18 +227,18 @@ fun ForgotPinDialog(
       Text(
         text = stringResource(R.string.forgot_pin),
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
       )
     },
     text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
     buttons = {
       Row(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
-        horizontalArrangement = Arrangement.End
+        horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() }
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
@@ -244,11 +247,11 @@ fun ForgotPinDialog(
             modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPin()
-            }
+            },
         )
       }
     },
-    modifier = Modifier.testTag(PIN_FORGOT_DIALOG)
+    modifier = Modifier.testTag(PIN_FORGOT_DIALOG),
   )
 }
 
@@ -261,7 +264,7 @@ fun PinLoginPreview() {
     showError = false,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "anc"
+    appName = "anc",
   )
 }
 
@@ -274,6 +277,6 @@ fun PinLoginErrorPreview() {
     showError = true,
     onMenuLoginClicked = {},
     forgotPin = {},
-    appName = "ecbis"
+    appName = "ecbis",
   )
 }

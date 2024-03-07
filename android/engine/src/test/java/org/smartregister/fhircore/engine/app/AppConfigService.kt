@@ -34,7 +34,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       oauthServerBaseUrl = "http://fake.keycloak.url.com",
       clientId = "fake-client-id",
       clientSecret = "siri-fake",
-      accountType = context.packageName
+      accountType = context.packageName,
     )
 
   override fun defineResourceTags() =
@@ -45,7 +45,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
           Coding().apply {
             system = CARETEAM_SYSTEM
             display = CARETEAM_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
@@ -53,7 +53,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
           Coding().apply {
             system = LOCATION_SYSTEM
             display = LOCATION_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
@@ -61,7 +61,7 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
           Coding().apply {
             system = ORGANIZATION_SYSTEM
             display = ORGANIZATION_DISPLAY
-          }
+          },
       ),
       ResourceTag(
         type = SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -70,8 +70,8 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
             system = PRACTITIONER_SYSTEM
             display = PRACTITIONER_DISPLAY
           },
-        isResource = false
-      )
+        isResource = false,
+      ),
     )
 
   companion object {

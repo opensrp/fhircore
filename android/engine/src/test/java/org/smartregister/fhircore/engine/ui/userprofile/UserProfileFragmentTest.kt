@@ -57,7 +57,9 @@ class UserProfileFragmentTest : RobolectricTest() {
 
   @get:Rule(order = 2) val instantTaskExecutorRule = InstantTaskExecutorRule()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
+
   @BindValue var accountAuthenticator: AccountAuthenticator = mockk()
+
   @BindValue
   var userProfileViewModel: UserProfileViewModel =
     UserProfileViewModel(mockk(), accountAuthenticator, mockk(), mockk(), mockk())
@@ -78,7 +80,7 @@ class UserProfileFragmentTest : RobolectricTest() {
       it.supportFragmentManager.commitNow {
         add(
           UserProfileFragment().also { profileFragment -> userProfileFragment = profileFragment },
-          UserProfileFragment.TAG
+          UserProfileFragment.TAG,
         )
       }
     }

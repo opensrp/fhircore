@@ -84,7 +84,7 @@ fun AppDrawer(
   onSideMenuClick: (AppMainEvent) -> Unit,
   enableDeviceToDeviceSync: Boolean,
   enableReports: Boolean,
-  syncClickEnabled: Boolean
+  syncClickEnabled: Boolean,
 ) {
   val context = LocalContext.current
   var expandLanguageDropdown by remember { mutableStateOf(false) }
@@ -96,23 +96,23 @@ fun AppDrawer(
           // Re-issue sync event
           onSideMenuClick(AppMainEvent.ResumeSync)
         }
-      }
+      },
     )
   val syncEvent = AppMainEvent.SyncData { intent -> authActivityLauncherForResult.launch(intent) }
 
   Column(
     verticalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxHeight().background(SideMenuDarkColor)
+    modifier = modifier.fillMaxHeight().background(SideMenuDarkColor),
   ) {
     Column(modifier.background(SideMenuDarkColor).padding(16.dp)) {
       Text(
         text = appTitle,
         fontSize = 22.sp,
         color = AppTitleColor,
-        modifier = modifier.padding(vertical = 16.dp)
+        modifier = modifier.padding(vertical = 16.dp),
       )
       LazyColumn {
-        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule.name}" }) { sideMenuOption
+        items(sideMenuOptions, { "${it.appFeatureName}|${it.healthModule.name}" }) { sideMenuOption,
           ->
           val title = stringResource(sideMenuOption.titleResource)
 
@@ -132,10 +132,10 @@ fun AppDrawer(
                     NavigationArg.bindArgumentsOf(
                       Pair(NavigationArg.FEATURE, sideMenuOption.appFeatureName),
                       Pair(NavigationArg.HEALTH_MODULE, sideMenuOption.healthModule),
-                      Pair(NavigationArg.SCREEN_TITLE, title)
-                    )
+                      Pair(NavigationArg.SCREEN_TITLE, title),
+                    ),
               )
-            }
+            },
           )
         }
       }
@@ -147,7 +147,7 @@ fun AppDrawer(
           onSideMenuClick = {
             openDrawer(false)
             navController.navigate(MainNavigationScreen.Reports.route)
-          }
+          },
         )
       }
       if (enableDeviceToDeviceSync) {
@@ -158,7 +158,7 @@ fun AppDrawer(
           onSideMenuClick = {
             openDrawer(false)
             onSideMenuClick(AppMainEvent.DeviceToDeviceSync(context))
-          }
+          },
         )
       }
       if (languages.isNotEmpty()) {
@@ -168,24 +168,24 @@ fun AppDrawer(
             title = stringResource(R.string.language),
             showEndText = true,
             endText = currentLanguage,
-            onSideMenuClick = { expandLanguageDropdown = true }
+            onSideMenuClick = { expandLanguageDropdown = true },
           )
           DropdownMenu(
             expanded = expandLanguageDropdown,
             onDismissRequest = { expandLanguageDropdown = false },
-            modifier = modifier.wrapContentWidth(Alignment.End)
+            modifier = modifier.wrapContentWidth(Alignment.End),
           ) {
             for (language in languages) {
               DropdownMenuItem(
                 onClick = {
                   onSideMenuClick(AppMainEvent.SwitchLanguage(language, context))
                   expandLanguageDropdown = false
-                }
+                },
               ) {
                 Text(
                   modifier = modifier.fillMaxWidth(),
                   text = language.displayName,
-                  fontSize = 18.sp
+                  fontSize = 18.sp,
                 )
               }
             }
@@ -199,20 +199,20 @@ fun AppDrawer(
         onSideMenuClick = {
           openDrawer(false)
           navController.navigate(MainNavigationScreen.Settings.route)
-        }
+        },
       )
       SideMenuItem(
         iconResource = R.drawable.ic_logout_white,
         title = stringResource(R.string.logout_user, username),
         showEndText = false,
-        onSideMenuClick = { onSideMenuClick(AppMainEvent.Logout(context)) }
+        onSideMenuClick = { onSideMenuClick(AppMainEvent.Logout(context)) },
       )
     }
     Box(
       modifier =
         modifier
           .background(SideMenuBottomItemDarkColor)
-          .padding(horizontal = 16.dp, vertical = 4.dp)
+          .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
       SideMenuItem(
         iconResource = R.drawable.ic_sync,
@@ -221,7 +221,7 @@ fun AppDrawer(
         showEndText = true,
         endTextColor = SubtitleTextColor,
         onSideMenuClick = { onSideMenuClick(syncEvent) },
-        enabled = syncClickEnabled
+        enabled = syncClickEnabled,
       )
     }
   }
@@ -236,13 +236,14 @@ fun SideMenuItem(
   endTextColor: Color = Color.White,
   showEndText: Boolean,
   onSideMenuClick: () -> Unit,
-  enabled: Boolean = true
+  enabled: Boolean = true,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier =
-      if (enabled) modifier.fillMaxWidth().clickable { onSideMenuClick() }
-      else modifier.fillMaxWidth(),
+      if (enabled) {
+        modifier.fillMaxWidth().clickable { onSideMenuClick() }
+      } else modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     val alpha = if (enabled) ContentAlpha.high else ContentAlpha.disabled
@@ -252,7 +253,7 @@ fun SideMenuItem(
         modifier = modifier.padding(end = 10.dp).size(24.dp).alpha(alpha),
         painter = painterResource(id = iconResource),
         contentDescription = SIDE_MENU_ICON,
-        tint = Color.White
+        tint = Color.White,
       )
       SideMenuItemText(title = title, textColor = Color.White.copy(alpha))
     }
@@ -293,20 +294,20 @@ fun AppDrawerPreview() {
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
           count = suspend { 16 },
-          showCount = true
+          showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "Reports",
           iconResource = R.drawable.ic_reports,
           titleResource = R.string.clients,
-          showCount = false
-        )
+          showCount = false,
+        ),
       ),
     onSideMenuClick = {},
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
     enableDeviceToDeviceSync = true,
     enableReports = true,
-    syncClickEnabled = true
+    syncClickEnabled = true,
   )
 }
 
@@ -335,19 +336,19 @@ fun AppDrawerPreviewSyncDisabled() {
           iconResource = R.drawable.ic_user,
           titleResource = R.string.clients,
           count = suspend { 16 },
-          showCount = true
+          showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "Reports",
           iconResource = R.drawable.ic_reports,
           titleResource = R.string.clients,
-          showCount = false
-        )
+          showCount = false,
+        ),
       ),
     onSideMenuClick = {},
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
     enableDeviceToDeviceSync = true,
     enableReports = true,
-    syncClickEnabled = false
+    syncClickEnabled = false,
   )
 }

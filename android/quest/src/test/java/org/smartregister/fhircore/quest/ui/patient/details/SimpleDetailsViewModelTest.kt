@@ -94,7 +94,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
       listOf(
         MedicationRequest().apply {
           this.intent = MedicationRequest.MedicationRequestIntent.FILLERORDER
-        }
+        },
       )
     coEvery { viewModel.getPatient(any()) } returns Patient()
 
@@ -102,7 +102,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
       Encounter().apply {
         id = "123"
         subject = Reference().apply { reference = "Encounter/123" }
-      }
+      },
     )
 
     coVerify { patientRepository.getCondition(any(), any()) }
@@ -118,7 +118,7 @@ class SimpleDetailsViewModelTest : RobolectricTest() {
         key = "code",
         valueType = Enumerations.DataType.CODEABLECONCEPT,
         valueCoding = Code("http://a.b.com", "c1"),
-        valuePrefix = null
+        valuePrefix = null,
       )
 
     val obs =

@@ -65,7 +65,7 @@ import org.hl7.fhir.r4.model.Practitioner
 fun PatientScreen(
   navController: NavController,
   appMainViewModel: AppMainViewModel,
-  patientViewModel: PatientViewModel = hiltViewModel()
+  patientViewModel: PatientViewModel = hiltViewModel(),
 ) {
   val state by patientViewModel.screenState.collectAsState()
 
@@ -93,9 +93,9 @@ fun PatientScreen(
             Text(text = (state as PatientDetailScreenState.Success).patientDetail.name)
           }
         },
-        actions = {}
+        actions = {},
       )
-    }
+    },
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues).fillMaxSize()) {
       PatientDetailsTab(state, patientViewModel)
@@ -106,7 +106,7 @@ fun PatientScreen(
 @Composable
 fun PatientDetailsTab(
   state: PatientDetailScreenState,
-  patientViewModel: PatientViewModel = hiltViewModel()
+  patientViewModel: PatientViewModel = hiltViewModel(),
 ) {
   val list by patientViewModel.resourceMapStatus
   val context = LocalContext.current
@@ -114,7 +114,7 @@ fun PatientDetailsTab(
     LazyColumn(
       verticalArrangement = Arrangement.spacedBy(8.dp),
       contentPadding = PaddingValues(8.dp),
-      modifier = Modifier.fillMaxSize()
+      modifier = Modifier.fillMaxSize(),
     ) {
       items(state.detailsData) { data ->
         when (data) {
@@ -139,13 +139,12 @@ fun PatientDetailsCardViewBinding(data: PatientDetailHeader) {
 
 @Composable
 fun PatientDetailsHeaderBinding(data: PatientDetailOverview, editPatient: () -> Unit = {}) {
-
   Card(modifier = Modifier.fillMaxWidth()) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patient.name,
         style =
-          MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal)
+          MaterialTheme.typography.titleLarge.copy(fontSize = 24.sp, fontStyle = FontStyle.Normal),
       )
       Row(Modifier.padding(8.dp)) {
         Text(text = "Type", style = MaterialTheme.typography.bodyMedium)
@@ -166,13 +165,13 @@ fun PatientListItemViewBinding(data: PatientDetailProperty) {
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patientProperty.header,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
       )
       Box(modifier = Modifier.height(8.dp))
       Text(
         text = data.patientProperty.value,
         style = MaterialTheme.typography.bodyMedium,
-        maxLines = 1
+        maxLines = 1,
       )
     }
   }
@@ -181,7 +180,7 @@ fun PatientListItemViewBinding(data: PatientDetailProperty) {
 @Composable
 fun PatientReferencePropertyBinding(
   data: PatientReferenceProperty,
-  value: MutableStateFlow<ResourcePropertyState>
+  value: MutableStateFlow<ResourcePropertyState>,
 ) {
   val state by value.collectAsState()
 
@@ -189,14 +188,14 @@ fun PatientReferencePropertyBinding(
     Column(Modifier.padding(Constants.defaultCardPadding)) {
       Text(
         text = data.patientProperty.header,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
       )
       Box(modifier = Modifier.height(8.dp))
       if (state is ResourcePropertyState.Error) {
         Text(
           text = (state as ResourcePropertyState.Error).message,
           style = MaterialTheme.typography.bodyMedium,
-          maxLines = 1
+          maxLines = 1,
         )
       } else if (state is ResourcePropertyState.Success) {
         val resource = (state as ResourcePropertyState.Success).resource
@@ -204,7 +203,7 @@ fun PatientReferencePropertyBinding(
           Text(
             text = resource.extractName(),
             style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1
+            maxLines = 1,
           )
         }
       } else {

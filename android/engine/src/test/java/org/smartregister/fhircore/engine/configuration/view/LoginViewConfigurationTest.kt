@@ -32,7 +32,7 @@ class LoginViewConfigurationTest {
         applicationVersionCode = 2,
         darkMode = true,
         showLogo = true,
-        enablePin = true
+        enablePin = true,
       )
     Assert.assertEquals("anc", loginViewConfiguration.appId)
     Assert.assertEquals("classification", loginViewConfiguration.classification)
@@ -54,7 +54,7 @@ class LoginViewConfigurationTest {
         applicationVersionCode = 2,
         darkMode = true,
         showLogo = true,
-        enablePin = false
+        enablePin = false,
       )
     Assert.assertEquals("anc", loginViewConfigurationOf.appId)
     Assert.assertEquals("classification", loginViewConfigurationOf.classification)

@@ -40,7 +40,7 @@ class ProposedWelcomeServiceAppointmentsWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
 ) : CoroutineWorker(appContext, workerParameters) {
   val welcomeServiceCodeableConcept =
     CodeableConcept(Coding("https://d-tree.org", "Welcome", "Welcome Service")).apply {
@@ -55,7 +55,7 @@ constructor(
         .search<Appointment> {
           filter(
             Appointment.STATUS,
-            { value = of(Appointment.AppointmentStatus.PROPOSED.toCode()) }
+            { value = of(Appointment.AppointmentStatus.PROPOSED.toCode()) },
           )
           filter(Appointment.REASON_CODE, { value = of(welcomeServiceCodeableConcept) })
           filter(
@@ -63,7 +63,7 @@ constructor(
             {
               value = of(DateTimeType.today())
               prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            }
+            },
           )
         }
         .map { it.resource }

@@ -20,8 +20,9 @@ import com.google.android.fhir.FhirEngine
 
 /**
  * An interface that provides the application configurations.
+ *
  * @property resourceSyncParams Set [FhirEngine] resource sync params needed for syncing data from
- * the server
+ *   the server
  */
 interface RegistrySyncParamConfigService {
 

@@ -23,7 +23,6 @@ class HealthStatusTest {
 
   @Test
   fun testPatientTypes() {
-
     val expectedContactHealthStatusPriority = 3
     Assert.assertNotNull(HealthStatus.valueOf("NEWLY_DIAGNOSED_CLIENT"))
     Assert.assertNotNull(HealthStatus.valueOf("CLIENT_ALREADY_ON_ART"))
@@ -41,14 +40,14 @@ class HealthStatusTest {
     Assert.assertNotNull(biologicalParentContactHealthStatus)
     Assert.assertEquals(
       expectedContactHealthStatusPriority,
-      biologicalParentContactHealthStatus.priority()
+      biologicalParentContactHealthStatus.priority(),
     )
 
     val socialNetworkContactHealthStatus = HealthStatus.valueOf("SOCIAL_NETWORK_CONTACT")
     Assert.assertNotNull(socialNetworkContactHealthStatus)
     Assert.assertEquals(
       expectedContactHealthStatusPriority,
-      socialNetworkContactHealthStatus.priority()
+      socialNetworkContactHealthStatus.priority(),
     )
   }
 }

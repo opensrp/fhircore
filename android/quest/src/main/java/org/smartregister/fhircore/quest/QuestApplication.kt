@@ -68,7 +68,7 @@ class QuestApplication :
     listOfNotNull(
       LoginActivity::class.java.name,
       AppSettingActivity::class.java.name,
-      launcherActivityName
+      launcherActivityName,
     )
   }
 
@@ -117,7 +117,7 @@ class QuestApplication :
         override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
         override fun onActivityDestroyed(activity: Activity) {}
-      }
+      },
     )
     ProcessLifecycleOwner.get().lifecycle.addObserver(this@QuestApplication)
   }
@@ -129,7 +129,7 @@ class QuestApplication :
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
         )
     return configuration as DataCaptureConfig
   }
@@ -150,10 +150,11 @@ class QuestApplication :
         mForegroundActivityContext?.getActivity()?.run {
           this.startActivity(
             Intent(this, LoginActivity::class.java).apply {
-              accountAuthenticator.retrieveLastLoggedInUsername()?.takeIf { it.isNotBlank() }?.let {
-                putExtra(AccountManager.KEY_ACCOUNT_NAME, it)
-              }
-            }
+              accountAuthenticator
+                .retrieveLastLoggedInUsername()
+                ?.takeIf { it.isNotBlank() }
+                ?.let { putExtra(AccountManager.KEY_ACCOUNT_NAME, it) }
+            },
           )
         }
       }

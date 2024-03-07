@@ -55,27 +55,27 @@ class RegisterDataViewModelTest : RobolectricTest() {
     registerDataViewModel =
       spyk(
         objToCopy =
-          RegisterDataViewModel(application = application, registerRepository = registerRepository)
+          RegisterDataViewModel(application = application, registerRepository = registerRepository),
       )
   }
 
   @Test
   fun testUpdateViewConfiguration() {
     registerDataViewModel.updateViewConfigurations(
-      RegisterViewConfiguration("appId", "classification")
+      RegisterViewConfiguration("appId", "classification"),
     )
     Assert.assertEquals("appId", registerDataViewModel.registerViewConfiguration.value?.appId)
     Assert.assertEquals(
       "classification",
-      registerDataViewModel.registerViewConfiguration.value?.classification
+      registerDataViewModel.registerViewConfiguration.value?.classification,
     )
     registerDataViewModel.updateViewConfigurations(
-      RegisterViewConfiguration("newAppId", "newClassification")
+      RegisterViewConfiguration("newAppId", "newClassification"),
     )
     Assert.assertEquals("newAppId", registerDataViewModel.registerViewConfiguration.value?.appId)
     Assert.assertEquals(
       "newClassification",
-      registerDataViewModel.registerViewConfiguration.value?.classification
+      registerDataViewModel.registerViewConfiguration.value?.classification,
     )
   }
 
@@ -150,7 +150,8 @@ class RegisterDataViewModelTest : RobolectricTest() {
     registerDataViewModel.filterRegisterData(RegisterFilterType.SEARCH_FILTER, "20") {
       _: RegisterFilterType,
       content: String,
-      _: Any ->
+      _: Any,
+      ->
       content.isNotEmpty()
     }
     Assert.assertNotNull(registerDataViewModel.registerData.value)

@@ -88,8 +88,7 @@ constructor(
       log =
         "${log}Id,${group.key},Date" +
           "\n" +
-          group.value.joinToString(separator = "\n") @ExcludeFromJacocoGeneratedReport
-          {
+          group.value.joinToString(separator = "\n") @ExcludeFromJacocoGeneratedReport {
             "${it.id},${it.version},${it.date}"
           } +
           "" +
@@ -105,21 +104,22 @@ constructor(
 
   suspend fun getResourcesToReport(): Map<String, List<ResourceField>> {
     val questionnaire =
-      fhirEngine.search<Questionnaire> {}.map { it.resource }.map {
-        ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
-      }
+      fhirEngine
+        .search<Questionnaire> {}
+        .map { it.resource }
+        .map { ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy()) }
     val structureMaps =
-      fhirEngine.search<StructureMap> {}.map { it.resource }.map {
-        ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy())
-      }
+      fhirEngine
+        .search<StructureMap> {}
+        .map { it.resource }
+        .map { ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy()) }
 
     return mapOf(Pair("Questionnaire", questionnaire), Pair("StructureMap", structureMaps))
   }
 
   fun fetchDetails() {
     try {
-      viewModelScope.launch @ExcludeFromJacocoGeneratedReport
-      {
+      viewModelScope.launch @ExcludeFromJacocoGeneratedReport {
         val userInfo = keycloakService.fetchUserInfo().body()
         if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
           val bundle =

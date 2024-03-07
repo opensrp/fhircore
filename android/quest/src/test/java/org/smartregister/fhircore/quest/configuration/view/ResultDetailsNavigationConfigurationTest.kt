@@ -34,9 +34,9 @@ class ResultDetailsNavigationConfigurationTest {
               id = "homeNav",
               title = "homeTitle",
               icon = "arrow",
-              action = TestDetailsNavigationAction(form = "reg-form", readOnly = true)
-            )
-          )
+              action = TestDetailsNavigationAction(form = "reg-form", readOnly = true),
+            ),
+          ),
       )
 
     Assert.assertEquals("quest", resultDetailsNavigationConfiguration.appId)

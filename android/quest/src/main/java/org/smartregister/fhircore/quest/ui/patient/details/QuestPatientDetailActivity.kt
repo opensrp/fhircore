@@ -61,6 +61,7 @@ class QuestPatientDetailActivity :
   val patientViewModel by viewModels<ListDataDetailViewModel>()
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
   @Inject lateinit var questJsonSpecificationProvider: QuestJsonSpecificationProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +83,7 @@ class QuestPatientDetailActivity :
     patientDetailConfig =
       configurationRegistry.retrieveConfiguration(
         configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
-        questJsonSpecificationProvider.getJson()
+        questJsonSpecificationProvider.getJson(),
       )
 
     if (configurationRegistry.isAppIdInitialized()) {
@@ -111,7 +112,7 @@ class QuestPatientDetailActivity :
         patientId,
         ResourceType.Patient,
         patientDetailConfig.questionnaireFilter!!,
-        patientDetailConfig
+        patientDetailConfig,
       )
       getAllForms(patientDetailConfig.questionnaireFilter!!)
     }
@@ -126,26 +127,27 @@ class QuestPatientDetailActivity :
               QuestionnaireActivity.intentArgs(
                 clientIdentifier = patientId,
                 formName = getRegistrationForm(),
-                questionnaireType = QuestionnaireType.EDIT
-              )
+                questionnaireType = QuestionnaireType.EDIT,
+              ),
             )
             .apply {
               if (patientResourcesList.isNotEmpty()) {
                 this.putStringArrayListExtra(
                   QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES,
-                  patientResourcesList
+                  patientResourcesList,
                 )
               }
-            }
+            },
         )
       }
     }
   }
 
   fun getRegistrationForm(): String {
-    return configurationRegistry.retrieveConfiguration<RegisterViewConfiguration>(
+    return configurationRegistry
+      .retrieveConfiguration<RegisterViewConfiguration>(
         configClassification = QuestConfigClassification.PATIENT_REGISTER,
-        questJsonSpecificationProvider.getJson()
+        questJsonSpecificationProvider.getJson(),
       )
       .registrationForm
   }
@@ -153,7 +155,7 @@ class QuestPatientDetailActivity :
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
-    if (resultCode == Activity.RESULT_OK)
+    if (resultCode == Activity.RESULT_OK) {
       getResultDetailsNavigationOptions().navigationOptions.forEach {
         when (it.action) {
           is TestDetailsNavigationAction -> {
@@ -164,7 +166,7 @@ class QuestPatientDetailActivity :
                 startActivity(
                   Intent(this, SimpleDetailsActivity::class.java).apply {
                     putExtra(RECORD_ID_ARG, it.replace("#", ""))
-                  }
+                  },
                 )
               }
             }
@@ -172,6 +174,7 @@ class QuestPatientDetailActivity :
           is QuestionnaireNavigationAction -> {}
         }
       }
+    }
   }
 
   private fun launchQuestionnaireForm(questionnaireConfig: QuestionnaireConfig?) {
@@ -181,11 +184,11 @@ class QuestPatientDetailActivity :
           putExtras(
             QuestionnaireActivity.intentArgs(
               clientIdentifier = patientId,
-              formName = questionnaireConfig.identifier
-            )
+              formName = questionnaireConfig.identifier,
+            ),
           )
         },
-        0
+        0,
       )
     }
   }
@@ -199,7 +202,7 @@ class QuestPatientDetailActivity :
   private fun handleNavigationOptions(
     navigationOption: NavigationOption,
     resultItem: QuestResultItem?,
-    patientId: String
+    patientId: String,
   ) {
     when (navigationOption.action) {
       is QuestionnaireNavigationAction -> {
@@ -218,9 +221,9 @@ class QuestPatientDetailActivity :
                       questionnaireType = QuestionnaireType.READ_ONLY,
                       questionnaireResponse =
                         resultItem.source.first.questionnaireResponseString
-                          .decodeResourceFromString()
-                    )
-                  )
+                          .decodeResourceFromString(),
+                    ),
+                  ),
               )
             }
           }
@@ -231,7 +234,7 @@ class QuestPatientDetailActivity :
           startActivity(
             Intent(this@QuestPatientDetailActivity, SimpleDetailsActivity::class.java).apply {
               putExtra(RECORD_ID_ARG, it)
-            }
+            },
           )
         }
       }
@@ -241,7 +244,7 @@ class QuestPatientDetailActivity :
   fun getResultDetailsNavigationOptions() =
     configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
       configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-      questJsonSpecificationProvider.getJson()
+      questJsonSpecificationProvider.getJson(),
     )
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {

@@ -31,7 +31,7 @@ class DataClerkLoginService @Inject constructor() : LoginService {
       startActivity(
         Intent(loginActivity, AppMainActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
+        },
       )
       finish()
     }

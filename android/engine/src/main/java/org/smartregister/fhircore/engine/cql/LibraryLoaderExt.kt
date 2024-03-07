@@ -71,14 +71,15 @@ open class LibraryLoaderExt(
           ctxt: DeserializationContext,
           baseType: JavaType,
           idResolver: TypeIdResolver,
-          failureMsg: String?
+          failureMsg: String?,
         ): JavaType {
           val id = idResolver.idFromBaseType()
           val type = idResolver.typeFromId(ctxt, id)
-          return if (baseType.isConcrete && type != null) type
-          else super.handleMissingTypeId(ctxt, baseType, idResolver, failureMsg)
+          return if (baseType.isConcrete && type != null) {
+            type
+          } else super.handleMissingTypeId(ctxt, baseType, idResolver, failureMsg)
         }
-      }
+      },
     )
     return mapper.readValue(reader, LibraryWrapper::class.java).library
   }

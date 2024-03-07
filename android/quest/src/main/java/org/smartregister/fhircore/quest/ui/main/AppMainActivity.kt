@@ -89,29 +89,30 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       is SyncJobStatus.Started -> {
         showToast(getString(R.string.syncing))
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_initiated)),
         )
       }
       is SyncJobStatus.InProgress -> {
         Timber.d(
-          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%"
+          "Syncing in progress: ${state.syncOperation.name} ${state.completed.div(max(state.total, 1).toDouble()).times(100)}%",
         )
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress))
+          AppMainEvent.UpdateSyncState(state, getString(R.string.syncing_in_progress)),
         )
       }
       is SyncJobStatus.Glitch -> {
         appMainViewModel.onEvent(
-          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp())
+          AppMainEvent.UpdateSyncState(state, appMainViewModel.retrieveLastSyncTimestamp()),
         )
         Timber.w(
           (if (state?.exceptions != null) state.exceptions else emptyList()).joinToString {
             it.exception.message.toString()
-          }
+          },
         )
       }
       is SyncJobStatus.Failed -> {
-        if (!state?.exceptions.isNullOrEmpty() &&
+        if (
+          !state?.exceptions.isNullOrEmpty() &&
             state.exceptions.first().resourceType == ResourceType.Flag
         ) {
           showToast(state.exceptions.first().exception.message!!)
@@ -121,21 +122,24 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
         val hasAuthError =
           state?.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
-          }
-            ?: false
+          } ?: false
         val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
         showToast(getString(message))
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
-            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty())
+            if (!appMainViewModel.retrieveLastSyncTimestamp().isNullOrEmpty()) {
               getString(R.string.last_sync_timestamp, appMainViewModel.retrieveLastSyncTimestamp())
-            else getString(R.string.syncing_failed)
-          )
+            } else {
+              getString(R.string.syncing_failed)
+            },
+          ),
         )
         if (hasAuthError) {
           appMainViewModel.onEvent(
-            AppMainEvent.RefreshAuthToken { intent -> authActivityLauncherForResult.launch(intent) }
+            AppMainEvent.RefreshAuthToken { intent ->
+              authActivityLauncherForResult.launch(intent)
+            },
           )
         }
         Timber.w(state?.exceptions?.joinToString { it.exception.message.toString() })
@@ -147,8 +151,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           onEvent(
             AppMainEvent.UpdateSyncState(
               state,
-              getString(R.string.last_sync_timestamp, formatLastSyncTimestamp(state.timestamp))
-            )
+              getString(R.string.last_sync_timestamp, formatLastSyncTimestamp(state.timestamp)),
+            ),
           )
           updateLastSyncTimestamp(state.timestamp)
         }
@@ -182,7 +186,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
-    if (resultCode == Activity.RESULT_OK)
+    if (resultCode == Activity.RESULT_OK) {
       data?.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)?.let {
         when {
           it.asReference(ResourceType.Task).extractId() ==
@@ -206,19 +210,20 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
                 }
               fhirCarePlanGenerator.completeTask(
                 it.asReference(ResourceType.Task).extractId(),
-                encounterStatus
+                encounterStatus,
               )
             }
             appMainViewModel.onTaskComplete(
-              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
+              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM),
             )
           }
           it == "notify" -> {
             appMainViewModel.onTaskComplete(
-              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM)
+              data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM),
             )
           }
         }
       }
+    }
   }
 }

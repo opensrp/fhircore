@@ -38,13 +38,13 @@ import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 suspend fun loadAdditionalData(
   patientId: String,
   configurationRegistry: ConfigurationRegistry,
-  fhirEngine: FhirEngine
+  fhirEngine: FhirEngine,
 ): List<AdditionalData> {
   val result = mutableListOf<AdditionalData>()
 
   val patientRegisterRowViewConfiguration =
     configurationRegistry.retrieveConfiguration<PatientRegisterRowViewConfiguration>(
-      configClassification = QuestConfigClassification.PATIENT_REGISTER_ROW
+      configClassification = QuestConfigClassification.PATIENT_REGISTER_ROW,
     )
 
   patientRegisterRowViewConfiguration.filters?.forEach { filter ->
@@ -55,19 +55,21 @@ suspend fun loadAdditionalData(
       val sortedByDescending = conditions.maxByOrNull { it.recordedDate }
       val recordedDate = sortedByDescending?.recordedDate ?: ""
       sortedByDescending?.category?.forEach { cc ->
-        cc.coding.firstOrNull { c -> c.code == filter.valueCoding!!.code }?.let {
-          val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
-          result.add(
-            AdditionalData(
-              label = filter.label,
-              value = status,
-              valuePrefix = filter.valuePrefix,
-              lastDateAdded =
-                DateUtils.simpleDateFormat(pattern = "dd-MMM-yyyy").format(recordedDate),
-              properties = propertiesMapping(status, filter)
+        cc.coding
+          .firstOrNull { c -> c.code == filter.valueCoding!!.code }
+          ?.let {
+            val status = sortedByDescending.code?.coding?.firstOrNull()?.display ?: ""
+            result.add(
+              AdditionalData(
+                label = filter.label,
+                value = status,
+                valuePrefix = filter.valuePrefix,
+                lastDateAdded =
+                  DateUtils.simpleDateFormat(pattern = "dd-MMM-yyyy").format(recordedDate),
+                properties = propertiesMapping(status, filter),
+              ),
             )
-          )
-        }
+          }
       }
     }
   }
@@ -79,7 +81,7 @@ suspend inline fun <reified T : Resource> getSearchResults(
   reference: String,
   referenceParam: ReferenceClientParam,
   filter: Filter?,
-  fhirEngine: FhirEngine
+  fhirEngine: FhirEngine,
 ): List<T> {
   return fhirEngine
     .search<T> {
@@ -90,7 +92,7 @@ suspend inline fun <reified T : Resource> getSearchResults(
           Enumerations.DataType.CODEABLECONCEPT -> {
             filter(
               TokenClientParam(filter.key),
-              { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) }
+              { value = of(CodeableConcept().addCoding(filter.valueCoding!!.asCoding())) },
             )
           }
           else -> {
@@ -111,11 +113,12 @@ fun propertiesMapping(value: String, filter: Filter): Properties {
     label = filter.properties?.label,
     value =
       Property(
-        color = filter.dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
+        color =
+          filter.dynamicColors?.firstOrNull { it.valueEqual == value }?.useColor
             ?: filter.properties?.value?.color,
         textSize = filter.properties?.value?.textSize,
-        fontWeight = filter.properties?.value?.fontWeight
-      )
+        fontWeight = filter.properties?.value?.fontWeight,
+      ),
   )
 }
 

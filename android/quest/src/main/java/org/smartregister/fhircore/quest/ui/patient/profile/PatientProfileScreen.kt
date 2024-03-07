@@ -79,9 +79,8 @@ fun PatientProfileScreen(
   navController: NavHostController,
   modifier: Modifier = Modifier,
   appMainViewModel: AppMainViewModel,
-  patientProfileViewModel: PatientProfileViewModel = hiltViewModel()
+  patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
 ) {
-
   val context = LocalContext.current
   val profileViewDataState = patientProfileViewModel.patientProfileViewData.collectAsState()
   val profileViewData by remember { profileViewDataState }
@@ -109,26 +108,26 @@ fun PatientProfileScreen(
             Icon(
               imageVector = Icons.Outlined.Refresh,
               contentDescription = null,
-              tint = Color.White
+              tint = Color.White,
             )
           }
           IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
             Icon(
               imageVector = Icons.Outlined.MoreVert,
               contentDescription = null,
-              tint = Color.White
+              tint = Color.White,
             )
           }
           DropdownMenu(
             expanded = showOverflowMenu,
-            onDismissRequest = { showOverflowMenu = false }
+            onDismissRequest = { showOverflowMenu = false },
           ) {
             viewState.visibleOverflowMenuItems().forEach {
               DropdownMenuItem(
                 onClick = {
                   showOverflowMenu = false
                   patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(navController, context, it.id)
+                    PatientProfileEvent.OverflowMenuClick(navController, context, it.id),
                   )
                 },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -137,9 +136,10 @@ fun PatientProfileScreen(
                     .fillMaxWidth()
                     .background(
                       color =
-                        if (it.confirmAction) it.titleColor.copy(alpha = 0.1f)
-                        else Color.Transparent
-                    )
+                        if (it.confirmAction) {
+                          it.titleColor.copy(alpha = 0.1f)
+                        } else Color.Transparent,
+                    ),
               ) {
                 when (it.id) {
                   R2.id.view_children -> {
@@ -148,7 +148,7 @@ fun PatientProfileScreen(
                   R2.id.view_guardians -> {
                     Text(
                       text = stringResource(it.titleResource, profileViewData.guardians.size),
-                      color = it.titleColor
+                      color = it.titleColor,
                     )
                   }
                   else -> {
@@ -158,9 +158,9 @@ fun PatientProfileScreen(
               }
             }
           }
-        }
+        },
       )
-    }
+    },
   ) { innerPadding ->
     Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
       Box(modifier = Modifier.padding(innerPadding).weight(2.0f)) {
@@ -168,9 +168,8 @@ fun PatientProfileScreen(
           modifier =
             modifier
               .verticalScroll(rememberScrollState())
-              .background(PatientProfileSectionsBackgroundColor)
+              .background(PatientProfileSectionsBackgroundColor),
         ) {
-
           // Personal Data: e.g. sex, age, dob
           if (tasksId.contains(PatientProfileViewModel.WELCOME_SERVICE_NEWLY_DIAGNOSED)) {
             PersonalData(profileViewData, color = WelcomeServiceNewlyDiagnosed)
@@ -193,18 +192,18 @@ fun PatientProfileScreen(
               title = {
                 Row(
                   modifier = Modifier.weight(1f),
-                  horizontalArrangement = Arrangement.SpaceBetween
+                  horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                   Text(
                     text =
-                      stringResource(R.string.next_appointment_date).uppercase(Locale.getDefault())
+                      stringResource(R.string.next_appointment_date).uppercase(Locale.getDefault()),
                   )
                   if (appointmentDate != null) Text(text = appointmentDate.asDdMmmYyyy())
                 }
               },
               onActionClick = {},
               showSeeAll = profileViewData.showListsHighlights,
-              profileViewSection = PatientProfileViewSection.TASKS
+              profileViewSection = PatientProfileViewSection.TASKS,
             ) {
               profileViewData.tasks.forEach {
                 ProfileActionableItem(
@@ -214,10 +213,10 @@ fun PatientProfileScreen(
                       PatientProfileEvent.OpenTaskForm(
                         context = context,
                         taskFormId = taskFormId,
-                        taskId = taskId
-                      )
+                        taskId = taskId,
+                      ),
                     )
-                  }
+                  },
                 )
               }
             }
@@ -228,16 +227,16 @@ fun PatientProfileScreen(
             ProfileCard(
               title = stringResource(R.string.forms),
               onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-              profileViewSection = PatientProfileViewSection.FORMS
+              profileViewSection = PatientProfileViewSection.FORMS,
             ) {
               profileViewData.forms.forEach {
                 FormButton(
                   formButtonData = it,
                   onFormClick = { questionnaireId, _ ->
                     patientProfileViewModel.onEvent(
-                      PatientProfileEvent.LoadQuestionnaire(questionnaireId, context)
+                      PatientProfileEvent.LoadQuestionnaire(questionnaireId, context),
                     )
-                  }
+                  },
                 )
               }
             }
@@ -249,7 +248,7 @@ fun PatientProfileScreen(
             ProfileCard(
               title = stringResource(R.string.medical_history),
               onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-              profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY
+              profileViewSection = PatientProfileViewSection.MEDICAL_HISTORY,
             ) {
               profileViewData.medicalHistoryData.forEach {
                 ProfileActionableItem(it, onActionClick = { _, _ -> })
@@ -262,7 +261,7 @@ fun PatientProfileScreen(
             ProfileCard(
               title = stringResource(R.string.upcoming_services),
               onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-              profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES
+              profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
             ) {
               profileViewData.upcomingServices.forEach {
                 ProfileActionableItem(it, onActionClick = { _, _ -> })
@@ -275,7 +274,7 @@ fun PatientProfileScreen(
             ProfileCard(
               title = stringResource(R.string.service_card),
               onActionClick = { patientProfileViewModel.onEvent(PatientProfileEvent.SeeAll(it)) },
-              profileViewSection = PatientProfileViewSection.SERVICE_CARD
+              profileViewSection = PatientProfileViewSection.SERVICE_CARD,
             ) {
               profileViewData.ancCardData.forEach {
                 ProfileActionableItem(it, onActionClick = { _, _ -> })
@@ -295,11 +294,11 @@ fun PatientProfileScreen(
               PatientProfileEvent.OpenTaskForm(
                 context = context,
                 taskFormId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
-                taskId = PatientProfileViewModel.PATIENT_FINISH_VISIT
-              )
+                taskId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
+              ),
             )
           },
-          enabled = profileViewData.tasksCompleted
+          enabled = profileViewData.tasksCompleted,
         ) {
           Text(
             modifier = Modifier.padding(10.dp),
@@ -307,7 +306,7 @@ fun PatientProfileScreen(
             textAlign = TextAlign.Center,
             fontSize = 18.sp,
             fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
           )
         }
       }

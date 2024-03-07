@@ -25,18 +25,18 @@ import org.smartregister.fhircore.quest.util.mappers.MeasureReportPatientViewDat
 /** Retrieve ANC patients data for measure reporting */
 class MeasureReportPatientsPagingSource(
   private val measureReportRepository: MeasureReportRepository,
-  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper
+  val measureReportPatientViewDataMapper: MeasureReportPatientViewDataMapper,
 ) : PagingSource<Int, MeasureReportPatientViewData>() {
 
   override suspend fun load(
-    params: LoadParams<Int>
+    params: LoadParams<Int>,
   ): LoadResult<Int, MeasureReportPatientViewData> {
     return try {
       val currentPage = params.key ?: 0
       val data =
         measureReportRepository.retrievePatients(currentPage).map { registerData ->
           measureReportPatientViewDataMapper.transformInputToOutputModel(
-            registerData as RegisterData.AncRegisterData
+            registerData as RegisterData.AncRegisterData,
           )
         }
       val prevKey = if (currentPage == 0) null else currentPage - 1

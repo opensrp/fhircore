@@ -28,9 +28,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import org.hl7.fhir.r4.model.ResourceType
 
-private val Context.dataStorage: DataStore<Preferences> by preferencesDataStore(
-  name = "app_datastore"
-)
+private val Context.dataStorage: DataStore<Preferences> by
+  preferencesDataStore(
+    name = "app_datastore",
+  )
 
 /**
  * Stores the lastUpdated timestamp per resource to be used by [DownloadWorkManager]'s

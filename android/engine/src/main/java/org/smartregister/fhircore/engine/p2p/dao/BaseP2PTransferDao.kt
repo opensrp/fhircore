@@ -53,16 +53,16 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   open fun getDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf(
-        ResourceType.Group,
-        ResourceType.Patient,
-        ResourceType.Questionnaire,
-        ResourceType.QuestionnaireResponse,
-        ResourceType.Observation,
-        ResourceType.Encounter
-      )
+          ResourceType.Group,
+          ResourceType.Patient,
+          ResourceType.Questionnaire,
+          ResourceType.QuestionnaireResponse,
+          ResourceType.Observation,
+          ResourceType.Encounter,
+        )
         .mapIndexed { index, resourceType ->
           DataType(name = resourceType.name, DataType.Filetype.JSON, index)
-        }
+        },
     )
 
   suspend fun <R : Resource> addOrUpdate(resource: R) {
@@ -82,7 +82,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
   suspend fun loadResources(
     lastRecordUpdatedAt: Long,
     batchSize: Int,
-    classType: Class<out Resource>
+    classType: Class<out Resource>,
   ): List<Resource> {
     return withContext(dispatcherProvider.io()) {
       // TODO FIX search order by _lastUpdated; SearchQuery no longer allowed in search API
@@ -114,7 +114,7 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
             {
               value = of(DateTimeType(Date(lastRecordUpdatedAt)))
               prefix = ParamPrefixEnum.GREATERTHAN
-            }
+            },
           )
 
           // sort(StringClientParam("_lastUpdated"), Order.ASCENDING)
@@ -132,6 +132,6 @@ constructor(open val fhirEngine: FhirEngine, open val dispatcherProvider: Dispat
       ResourceType.Patient -> Patient::class.java
       ResourceType.Questionnaire -> Questionnaire::class.java
       ResourceType.QuestionnaireResponse -> QuestionnaireResponse::class.java
-      else -> null /*TODO support other resource types*/
+      else -> null // TODO support other resource types
     }
 }

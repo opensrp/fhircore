@@ -43,7 +43,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 fun GuardiansRoute(
   navigateRoute: (String) -> Unit,
   onBackPress: () -> Unit,
-  viewModel: GuardianRegisterViewModel = hiltViewModel()
+  viewModel: GuardianRegisterViewModel = hiltViewModel(),
 ) {
   val uiState by viewModel.guardianUiDetails
 
@@ -51,7 +51,7 @@ fun GuardiansRoute(
     navigateRoute = navigateRoute,
     onBackPress = onBackPress,
     patientFirstName = uiState.patientFirstName,
-    viewGuardiansData = uiState.registerViewData
+    viewGuardiansData = uiState.registerViewData,
   )
 }
 
@@ -60,7 +60,7 @@ fun GuardiansRegisterScreen(
   navigateRoute: (String) -> Unit,
   onBackPress: () -> Unit,
   patientFirstName: String,
-  viewGuardiansData: List<GuardianPatientRegisterData>
+  viewGuardiansData: List<GuardianPatientRegisterData>,
 ) {
   Scaffold(
     topBar = {
@@ -70,15 +70,15 @@ fun GuardiansRegisterScreen(
           IconButton(onClick = { onBackPress() }) {
             Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = null)
           }
-        }
+        },
       )
-    }
+    },
   ) { contentPadding ->
     LazyColumn(modifier = Modifier.padding(contentPadding)) {
       items(viewGuardiansData, key = { it.viewData.logicalId }) { viewGuardianItem ->
         HivPatientRegisterListRow(
           data = viewGuardianItem.viewData,
-          onItemClick = { navigateRoute(viewGuardianItem.profileNavRoute) }
+          onItemClick = { navigateRoute(viewGuardianItem.profileNavRoute) },
         )
       }
     }
@@ -104,7 +104,7 @@ fun PreviewGuardiansScreen() {
               serviceButtonBackgroundColor = FemalePinkColor,
               registerType = RegisterData.HivRegisterData::class,
             ),
-          profileNavRoute = "*TODO*"
+          profileNavRoute = "*TODO*",
         ),
         GuardianPatientRegisterData(
           viewData =
@@ -117,9 +117,9 @@ fun PreviewGuardiansScreen() {
               serviceButtonBackgroundColor = MaleBlueColor,
               registerType = RegisterData.HivRegisterData::class,
             ),
-          profileNavRoute = "*TODO*"
-        )
+          profileNavRoute = "*TODO*",
+        ),
       ),
-    navigateRoute = { /*TODO*/}
+    navigateRoute = { /*TODO*/},
   )
 }

@@ -40,7 +40,7 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine
+  val fhirEngine: FhirEngine,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
@@ -66,15 +66,14 @@ constructor(
             Task.TaskStatus.READY,
             Task.TaskStatus.ACCEPTED,
             Task.TaskStatus.INPROGRESS,
-            Task.TaskStatus.RECEIVED
+            Task.TaskStatus.RECEIVED,
           )
       }
       .forEach { task ->
         if (task.hasPastEnd()) {
           task.status = Task.TaskStatus.FAILED
           fhirEngine.update(task)
-          task
-            .basedOn
+          task.basedOn
             .find { it.reference.startsWith(ResourceType.CarePlan.name) }
             ?.extractId()
             ?.takeIf { it.isNotBlank() }

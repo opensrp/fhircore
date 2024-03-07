@@ -71,8 +71,8 @@ constructor(
   var patientTracingProfileUiState: MutableState<TracingProfileUiState> =
     mutableStateOf(
       TracingProfileUiState(
-        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.TRACING_PROFILE)
-      )
+        overflowMenuFactory.retrieveOverflowMenuItems(OverflowMenuHost.TRACING_PROFILE),
+      ),
     )
 
   private val _patientProfileViewDataFlow = MutableStateFlow(ProfileViewData.TracingProfileData())
@@ -86,7 +86,8 @@ constructor(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
-            is SyncJobStatus.Finished, is SyncJobStatus.Failed -> {
+            is SyncJobStatus.Finished,
+            is SyncJobStatus.Failed, -> {
               isSyncing.value = false
               //              fetchTracingData()
             }
@@ -99,7 +100,7 @@ constructor(
           }
         }
       },
-      viewModelScope
+      viewModelScope,
     )
 
     fetchTracingData()
@@ -109,8 +110,8 @@ constructor(
     viewModelScope.launch {
       registerRepository.loadPatientProfileData(appFeatureName, healthModule, patientId)?.let {
         _patientProfileViewDataFlow.value =
-          profileViewDataMapper.transformInputToOutputModel(it) as
-            ProfileViewData.TracingProfileData
+          profileViewDataMapper.transformInputToOutputModel(it)
+            as ProfileViewData.TracingProfileData
       }
     }
   }
@@ -124,7 +125,7 @@ constructor(
           event.context,
           event.questionnaireId,
           clientIdentifier = patientId,
-          populationResources = profile.populationResources
+          populationResources = profile.populationResources,
         )
       is TracingProfileEvent.OverflowMenuClick -> {
         when (event.menuId) {
@@ -133,12 +134,12 @@ constructor(
               event.context,
               questionnaireId = EDIT_PROFILE_FORM,
               clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.EDIT
+              questionnaireType = QuestionnaireType.EDIT,
             )
           R.id.tracing_history -> {
             val urlParams = NavigationArg.bindArgumentsOf(Pair(NavigationArg.PATIENT_ID, patientId))
             event.navController.navigate(
-              route = MainNavigationScreen.TracingHistory.route + urlParams
+              route = MainNavigationScreen.TracingHistory.route + urlParams,
             )
           }
           else -> {
@@ -152,7 +153,7 @@ constructor(
           questionnaireId = event.taskFormId,
           clientIdentifier = patientId,
           backReference = event.taskId.asReference(ResourceType.Task).reference,
-          populationResources = profile.populationResources
+          populationResources = profile.populationResources,
         )
       is TracingProfileEvent.LoadOutComesForm -> {
         profile.isHomeTracing?.let { isHomeTracing ->
@@ -162,7 +163,7 @@ constructor(
             clientIdentifier = patientId,
             questionnaireType = QuestionnaireType.EDIT,
             populationResources = profile.populationResources,
-            backReference = "notify"
+            backReference = "notify",
           )
         }
       }
@@ -170,14 +171,14 @@ constructor(
         val urlParams =
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.PATIENT_ID, patientId),
-            Pair(NavigationArg.TRACING_ID, event.historyId)
+            Pair(NavigationArg.TRACING_ID, event.historyId),
           )
         event.navController.navigate(route = MainNavigationScreen.TracingOutcomes.route + urlParams)
       }
       is TracingProfileEvent.CallPhoneNumber -> {
         if (event.phoneNumber.isNotBlank()) {
           event.context.startActivity(
-            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${event.phoneNumber}") }
+            Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${event.phoneNumber}") },
           )
         }
       }

@@ -61,7 +61,7 @@ import org.smartregister.fhircore.quest.ui.tracing.register.TracingRegisterScree
 @Composable
 fun MainScreen(
   modifier: Modifier = Modifier,
-  appMainViewModel: AppMainViewModel = hiltViewModel()
+  appMainViewModel: AppMainViewModel = hiltViewModel(),
 ) {
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
@@ -93,7 +93,7 @@ fun MainScreen(
         navController = navController,
         enableDeviceToDeviceSync = uiState.enableDeviceToDeviceSync,
         enableReports = uiState.enableReports,
-        syncClickEnabled = uiState.syncClickEnabled
+        syncClickEnabled = uiState.syncClickEnabled,
       )
     },
     bottomBar = {
@@ -102,7 +102,7 @@ fun MainScreen(
         navController = navController,
         mainNavigationScreens = MainNavigationScreen.appScreens
       )*/
-    }
+    },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       AppMainNavigationGraph(
@@ -110,7 +110,7 @@ fun MainScreen(
         mainNavigationScreens = MainNavigationScreen.appScreens,
         openDrawer = openDrawer,
         sideMenuOptions = uiState.sideMenuOptions,
-        appMainViewModel = appMainViewModel
+        appMainViewModel = appMainViewModel,
       )
     }
   }
@@ -123,22 +123,21 @@ private fun AppMainNavigationGraph(
   openDrawer: (Boolean) -> Unit,
   sideMenuOptions: List<SideMenuOption>,
   measureReportViewModel: MeasureReportViewModel = hiltViewModel(),
-  appMainViewModel: AppMainViewModel
+  appMainViewModel: AppMainViewModel,
 ) {
-
   val firstSideMenuOption = sideMenuOptions.first()
   val firstScreenTitle = stringResource(firstSideMenuOption.titleResource)
   NavHost(
     navController = navController,
     startDestination =
       MainNavigationScreen.Home.route +
-        NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE)
+        NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.SCREEN_TITLE),
   ) {
     mainNavigationScreens.forEach {
       val commonNavArgs =
         NavigationArg.commonNavArgs(
           firstSideMenuOption.appFeatureName,
-          firstSideMenuOption.healthModule
+          firstSideMenuOption.healthModule,
         )
 
       when (it) {
@@ -152,8 +151,8 @@ private fun AppMainNavigationGraph(
                   type = NavType.StringType
                   nullable = true
                   defaultValue = firstScreenTitle
-                }
-              )
+                },
+              ),
           ) { stackEntry ->
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE)
@@ -162,7 +161,8 @@ private fun AppMainNavigationGraph(
             val healthModule: HealthModule =
               stackEntry.arguments?.getSerializable(NavigationArg.HEALTH_MODULE) as HealthModule?
                 ?: HealthModule.HIV
-            if (healthModule == HealthModule.HOME_TRACING ||
+            if (
+              healthModule == HealthModule.HOME_TRACING ||
                 healthModule == HealthModule.PHONE_TRACING
             ) {
               TracingRegisterScreen(navController = navController, screenTitle = screenTitle)
@@ -172,7 +172,7 @@ private fun AppMainNavigationGraph(
               PatientRegisterScreen(
                 navController = navController,
                 openDrawer = openDrawer,
-                screenTitle = screenTitle
+                screenTitle = screenTitle,
               )
             }
           }
@@ -187,7 +187,7 @@ private fun AppMainNavigationGraph(
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
+            arguments = commonNavArgs.plus(patientIdNavArgument()),
           ) {
             PatientProfileScreen(navController = navController, appMainViewModel = appMainViewModel)
           }
@@ -195,20 +195,22 @@ private fun AppMainNavigationGraph(
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID, NavigationArg.FAMILY_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { TracingProfileScreen(navController = navController, appViewModel = appMainViewModel) }
+            arguments = commonNavArgs.plus(patientIdNavArgument()),
+          ) {
+            TracingProfileScreen(navController = navController, appViewModel = appMainViewModel)
+          }
         MainNavigationScreen.PatientGuardians ->
           composable(
             route =
               "${it.route}/{${NavigationArg.PATIENT_ID}}${NavigationArg.routePathsOf(includeCommonArgs = true)}",
             arguments =
               commonNavArgs.plus(
-                navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType }
-              )
+                navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+              ),
           ) {
             GuardiansRoute(
               navigateRoute = { route -> navController.navigate(route) },
-              onBackPress = { navController.popBackStack() }
+              onBackPress = { navController.popBackStack() },
             )
           }
         MainNavigationScreen.GuardianProfile ->
@@ -223,15 +225,15 @@ private fun AppMainNavigationGraph(
                     type = NavType.StringType
                     nullable = true
                     defaultValue = "true"
-                  }
-                )
-              )
+                  },
+                ),
+              ),
           ) { stackEntry ->
             val onART = stackEntry.arguments?.getString(NavigationArg.ON_ART) ?: "true"
             if (onART.toBoolean()) {
               PatientProfileScreen(
                 navController = navController,
-                appMainViewModel = appMainViewModel
+                appMainViewModel = appMainViewModel,
               )
             } else {
               GuardianRelatedPersonProfileScreen(onBackPress = { navController.popBackStack() })
@@ -241,20 +243,26 @@ private fun AppMainNavigationGraph(
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { FamilyProfileScreen(navController = navController) }
+            arguments = commonNavArgs.plus(patientIdNavArgument()),
+          ) {
+            FamilyProfileScreen(navController = navController)
+          }
         MainNavigationScreen.ViewChildContacts ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { ChildContactsProfileScreen(navController = navController) }
+            arguments = commonNavArgs.plus(patientIdNavArgument()),
+          ) {
+            ChildContactsProfileScreen(navController = navController)
+          }
         MainNavigationScreen.TracingHistory ->
           composable(
             route =
               "${it.route}${NavigationArg.routePathsOf(includeCommonArgs = true, NavigationArg.PATIENT_ID)}",
-            arguments = commonNavArgs.plus(patientIdNavArgument())
-          ) { TracingHistoryScreen(navController = navController) }
+            arguments = commonNavArgs.plus(patientIdNavArgument()),
+          ) {
+            TracingHistoryScreen(navController = navController)
+          }
         MainNavigationScreen.TracingOutcomes ->
           composable(
             route =
@@ -266,10 +274,12 @@ private fun AppMainNavigationGraph(
                   navArgument(NavigationArg.TRACING_ID) {
                     type = NavType.StringType
                     nullable = false
-                  }
-                )
-              )
-          ) { TracingOutcomesScreen(navController = navController) }
+                  },
+                ),
+              ),
+          ) {
+            TracingOutcomesScreen(navController = navController)
+          }
         MainNavigationScreen.TracingHistoryDetails ->
           composable(
             route =
@@ -280,9 +290,9 @@ private fun AppMainNavigationGraph(
                   navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
                   navArgument(NavigationArg.TRACING_ID) { type = NavType.StringType },
                   navArgument(NavigationArg.TRACING_ENCOUNTER_ID) { type = NavType.StringType },
-                  navArgument(NavigationArg.SCREEN_TITLE) { type = NavType.StringType }
-                )
-              )
+                  navArgument(NavigationArg.SCREEN_TITLE) { type = NavType.StringType },
+                ),
+              ),
           ) { stackEntry ->
             val screenTitle: String =
               stackEntry.arguments?.getString(NavigationArg.SCREEN_TITLE) ?: ""
@@ -304,5 +314,5 @@ private fun patientIdNavArgument() =
       type = NavType.StringType
       nullable = true
       defaultValue = null
-    }
+    },
   )

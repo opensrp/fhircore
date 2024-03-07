@@ -25,13 +25,13 @@ interface RegisterDao {
   suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean = false,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData>
 
   suspend fun searchByName(
     nameQuery: String,
     currentPage: Int,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
     TODO()
   }
@@ -40,7 +40,7 @@ interface RegisterDao {
     currentPage: Int,
     loadAll: Boolean = false,
     appFeatureName: String? = null,
-    filters: RegisterFilter
+    filters: RegisterFilter,
   ): List<RegisterData> {
     TODO("default")
   }

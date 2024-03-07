@@ -21,14 +21,18 @@ import org.hl7.fhir.r4.model.Resource
 
 sealed class PatientDetailScreenState {
   object Loading : PatientDetailScreenState()
+
   data class Success(val patientDetail: PatientItem, val detailsData: List<PatientDetailData>) :
     PatientDetailScreenState()
+
   data class Error(val message: String) : PatientDetailScreenState()
 }
 
 sealed class ResourcePropertyState {
   object Loading : ResourcePropertyState()
+
   data class Success(val resource: Resource) : ResourcePropertyState()
+
   data class Error(val message: String) : ResourcePropertyState()
 }
 
@@ -40,25 +44,25 @@ interface PatientDetailData {
 data class PatientDetailHeader(
   val header: String,
   override val firstInGroup: Boolean = false,
-  override val lastInGroup: Boolean = false
+  override val lastInGroup: Boolean = false,
 ) : PatientDetailData
 
 data class PatientDetailProperty(
   val patientProperty: PatientProperty,
   override val firstInGroup: Boolean = false,
-  override val lastInGroup: Boolean = false
+  override val lastInGroup: Boolean = false,
 ) : PatientDetailData
 
 data class PatientDetailOverview(
   val patient: PatientItem,
   override val firstInGroup: Boolean = false,
-  override val lastInGroup: Boolean = false
+  override val lastInGroup: Boolean = false,
 ) : PatientDetailData
 
 data class PatientReferenceProperty(
   val patientProperty: PatientProperty,
   override val firstInGroup: Boolean = false,
-  override val lastInGroup: Boolean = false
+  override val lastInGroup: Boolean = false,
 ) : PatientDetailData
 
 data class PatientProperty(val header: String, val value: String)

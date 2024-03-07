@@ -85,7 +85,7 @@ abstract class BaseRemoveFamilyEntityQuestionnaireActivity<T> : QuestionnaireAct
       neutralButtonListener = { dialog ->
         viewModel.discard()
         dialog.dismiss()
-      }
+      },
     )
   }
 

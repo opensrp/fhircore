@@ -30,7 +30,7 @@ class MeasureReportPatientViewDataMapper
 constructor(@ApplicationContext val context: Context) :
   DataMapper<RegisterData.AncRegisterData, MeasureReportPatientViewData> {
   override fun transformInputToOutputModel(
-    inputModel: RegisterData.AncRegisterData
+    inputModel: RegisterData.AncRegisterData,
   ): MeasureReportPatientViewData {
     return MeasureReportPatientViewData(
       logicalId = inputModel.logicalId,

@@ -18,5 +18,5 @@ package org.smartregister.fhircore.quest.ui.family.profile.model
 
 enum class FamilyBottomSheetAction {
   CHANGE_FAMILY_HEAD,
-  FAMILY_MEMBER_DETAILS
+  FAMILY_MEMBER_DETAILS,
 }

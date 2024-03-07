@@ -77,7 +77,7 @@ fun PinView(
   inputPin: String = "",
   isDotted: Boolean = false,
   showError: Boolean = false,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   val (editValue, setEditValue) = remember { mutableStateOf(inputPin) }
   val pinLength = remember { pinInputLength }
@@ -97,14 +97,15 @@ fun PinView(
       }
     },
     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-    modifier = Modifier.size(0.dp).focusRequester(focusRequester).testTag(PIN_VIEW_INPUT_TEXT_FIELD)
+    modifier =
+      Modifier.size(0.dp).focusRequester(focusRequester).testTag(PIN_VIEW_INPUT_TEXT_FIELD),
   )
   Row(
     modifier =
       Modifier.fillMaxWidth()
         .testTag(PIN_VIEW)
         .background(color = colorResource(id = R.color.cardview_light_background)),
-    horizontalArrangement = Arrangement.Center
+    horizontalArrangement = Arrangement.Center,
   ) {
     (0 until pinLength).map { index ->
       PinCell(
@@ -118,7 +119,7 @@ fun PinView(
         isCursorVisible = editValue.length == index,
         isDotted = isDotted,
         showError = showError,
-        focusRequester = focusRequester
+        focusRequester = focusRequester,
       )
       Spacer(modifier = Modifier.size(8.dp))
     }
@@ -133,7 +134,7 @@ fun PinCell(
   isCursorVisible: Boolean = false,
   isDotted: Boolean = false,
   showError: Boolean = false,
-  focusRequester: FocusRequester = FocusRequester()
+  focusRequester: FocusRequester = FocusRequester(),
 ) {
   val scope = rememberCoroutineScope()
   val (cursorSymbol, setCursorSymbol) = remember { mutableStateOf("") }
@@ -185,7 +186,7 @@ fun PinCell(
       elevation = 1.dp,
       shape = RoundedCornerShape(cardRoundedCornerRadius),
       border = BorderStroke(width = 1.dp, color = borderColor),
-      backgroundColor = backgroundColor
+      backgroundColor = backgroundColor,
     ) {
       var iModifier = Modifier.wrapContentSize().align(Alignment.Center).testTag(textTestTag)
       if (indexValue.isEmpty() && isCursorVisible) {
@@ -199,7 +200,7 @@ fun PinCell(
         text = if (isCursorVisible) cursorSymbol else textValue,
         fontSize = textSize,
         style = MaterialTheme.typography.body1,
-        modifier = iModifier
+        modifier = iModifier,
       )
       if (indexValue.isEmpty() && isCursorVisible) {
         LaunchedEffect(indexValue.isEmpty() && isCursorVisible) { focusRequester.requestFocus() }

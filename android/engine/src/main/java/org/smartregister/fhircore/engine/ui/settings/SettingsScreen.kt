@@ -69,7 +69,7 @@ fun SettingsScreen(
   modifier: Modifier = Modifier,
   navController: NavController? = null,
   settingsViewModel: SettingsViewModel = hiltViewModel(),
-  devViewModel: DevViewModel = hiltViewModel()
+  devViewModel: DevViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
   val devMenuSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -78,7 +78,7 @@ fun SettingsScreen(
 
   ModalBottomSheetLayout(
     sheetState = viewResSheetState,
-    sheetContent = { ViewResourceReport(devViewModel) }
+    sheetContent = { ViewResourceReport(devViewModel) },
   ) {
     ModalBottomSheetLayout(
       sheetState = devMenuSheetState,
@@ -89,7 +89,7 @@ fun SettingsScreen(
             viewResSheetState.show()
           }
         }
-      }
+      },
     ) {
       Scaffold(
         topBar = {
@@ -99,43 +99,43 @@ fun SettingsScreen(
               IconButton(onClick = { navController?.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, "")
               }
-            }
+            },
           )
-        }
+        },
       ) { paddingValues ->
         Column(
           modifier =
             modifier
               .padding(paddingValues)
               .padding(vertical = 20.dp)
-              .verticalScroll(rememberScrollState())
+              .verticalScroll(rememberScrollState()),
         ) {
-          InfoCard(viewModel = settingsViewModel)
+          InfoCard(profileData = settingsViewModel.profileData)
           Divider(color = DividerColor)
           UserProfileRow(
             icon = Icons.Rounded.Download,
             text = stringResource(R.string.re_fetch_practitioner),
             clickListener = settingsViewModel::fetchPractitionerDetails,
-            modifier = modifier
+            modifier = modifier,
           )
           UserProfileRow(
             icon = Icons.Rounded.Sync,
             text = stringResource(id = R.string.sync),
             clickListener = settingsViewModel::runSync,
-            modifier = modifier
+            modifier = modifier,
           )
           UserProfileRow(
             icon = Icons.Rounded.BugReport,
             text = stringResource(R.string.dev_menu),
             clickListener = { scope.launch { devMenuSheetState.show() } },
-            modifier = modifier
+            modifier = modifier,
           )
 
           UserProfileRow(
             icon = Icons.Rounded.Logout,
             text = stringResource(id = R.string.logout),
             clickListener = { settingsViewModel.logoutUser(context) },
-            modifier = modifier
+            modifier = modifier,
           )
         }
       }
@@ -148,7 +148,7 @@ fun UserProfileRow(
   icon: ImageVector,
   text: String,
   clickListener: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
     modifier =
@@ -156,7 +156,7 @@ fun UserProfileRow(
         .fillMaxWidth()
         .clickable { clickListener() }
         .padding(vertical = 16.dp, horizontal = 20.dp),
-    horizontalArrangement = Arrangement.SpaceBetween
+    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
     Row {
       Icon(imageVector = icon, "", tint = BlueTextColor)
@@ -167,7 +167,7 @@ fun UserProfileRow(
       imageVector = Icons.Rounded.ChevronRight,
       "",
       tint = Color.LightGray,
-      modifier = modifier.wrapContentWidth(Alignment.End)
+      modifier = modifier.wrapContentWidth(Alignment.End),
     )
   }
   Divider(color = DividerColor)

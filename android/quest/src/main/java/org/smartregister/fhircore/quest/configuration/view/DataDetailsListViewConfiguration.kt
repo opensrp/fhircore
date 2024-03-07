@@ -31,7 +31,7 @@ data class DataDetailsListViewConfiguration(
   val dataRowClickable: Boolean = true,
   val dynamicRows: List<List<Filter>> = listOf(),
   val questionnaireFilter: SearchFilter? = null,
-  val questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
+  val questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf(),
 ) : Configuration
 
 @Stable
@@ -43,7 +43,7 @@ fun dataDetailsListViewConfigurationOf(
   dataRowClickable: Boolean = true,
   dynamicRows: List<List<Filter>> = mutableListOf(),
   questionnaireFilter: SearchFilter? = null,
-  questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf()
+  questionnaireFieldsFilter: List<QuestionnaireItemFilter> = listOf(),
 ) =
   DataDetailsListViewConfiguration(
     appId = appId,
@@ -53,5 +53,5 @@ fun dataDetailsListViewConfigurationOf(
     dataRowClickable = dataRowClickable,
     dynamicRows = dynamicRows,
     questionnaireFilter = questionnaireFilter,
-    questionnaireFieldsFilter = questionnaireFieldsFilter
+    questionnaireFieldsFilter = questionnaireFieldsFilter,
   )

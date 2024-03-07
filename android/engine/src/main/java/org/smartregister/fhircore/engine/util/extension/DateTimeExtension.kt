@@ -52,8 +52,9 @@ fun Date.toHumanDisplay(): String =
   SimpleDateFormat("MMM d, yyyy h:mm:ss a", Locale.getDefault()).format(this)
 
 fun Date?.makeItReadable(): String {
-  return if (this == null) "N/A"
-  else {
+  return if (this == null) {
+    "N/A"
+  } else {
     SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault()).run { format(this@makeItReadable) }
   }
 }

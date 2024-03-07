@@ -26,12 +26,12 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 
 /**
  * @property _patientPagingSourceState as state containing the properties used in the
- * [AppRegisterRepository] function for loading data to the paging source.
+ *   [AppRegisterRepository] function for loading data to the paging source.
  */
 class ChildContactPagingSource(
   private val otherChildResource: List<Resource>,
   private val registerRepository: AppRegisterRepository,
-  private val registerViewDataMapper: RegisterViewDataMapper
+  private val registerViewDataMapper: RegisterViewDataMapper,
 ) : PagingSource<Int, RegisterViewData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
@@ -51,9 +51,10 @@ class ChildContactPagingSource(
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
     return try {
       val data =
-        registerRepository.loadChildrenRegisterData(
+        registerRepository
+          .loadChildrenRegisterData(
             healthModule = _patientPagingSourceState.healthModule,
-            otherPatientResource = otherChildResource
+            otherPatientResource = otherChildResource,
           )
           .map { registerViewDataMapper.transformInputToOutputModel(it) }
 

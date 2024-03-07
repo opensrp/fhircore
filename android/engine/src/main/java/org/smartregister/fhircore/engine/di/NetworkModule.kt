@@ -25,6 +25,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -39,6 +40,7 @@ import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverterFactory
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -56,7 +58,7 @@ class NetworkModule {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -76,14 +78,14 @@ class NetworkModule {
             request.addHeader(AUTHORIZATION, "Bearer $accessToken")
           }
           chain.proceed(request.build())
-        }
+        },
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
           level = HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
-        }
+        },
       )
       .connectTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
       .readTimeout(TIMEOUT_DURATION, TimeUnit.SECONDS)
@@ -91,7 +93,12 @@ class NetworkModule {
       .retryOnConnectionFailure(false) // Avoid silent retries sometimes before token is provided
       .build()
 
-  @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
+  @Provides
+  fun provideGson(): Gson =
+    GsonBuilder()
+      .setLenient()
+      .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
+      .create()
 
   @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
@@ -109,7 +116,7 @@ class NetworkModule {
   fun provideAuthRetrofit(
     @NoAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    gson: Gson
+    gson: Gson,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -123,7 +130,7 @@ class NetworkModule {
   fun provideKeycloakRetrofit(
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
-    json: Json
+    json: Json,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().oauthServerBaseUrl)
@@ -137,7 +144,7 @@ class NetworkModule {
     @WithAuthorizationOkHttpClientQualifier okHttpClient: OkHttpClient,
     configService: ConfigService,
     gson: Gson,
-    parser: IParser
+    parser: IParser,
   ): Retrofit =
     Retrofit.Builder()
       .baseUrl(configService.provideAuthConfiguration().fhirServerBaseUrl)

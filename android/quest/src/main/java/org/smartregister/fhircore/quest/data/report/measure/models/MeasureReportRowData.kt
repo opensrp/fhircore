@@ -26,5 +26,5 @@ data class MeasureReportRowData(
   val title: String = "",
   val description: String = "",
   val reportType: String = "",
-  val name: String = ""
+  val name: String = "",
 )

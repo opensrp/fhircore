@@ -55,7 +55,7 @@ import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
@@ -74,14 +74,13 @@ import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import timber.log.Timber
 
-abstract class TracingRegisterDao
-constructor(
+abstract class TracingRegisterDao(
   open val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
   private val tracingRepository: TracingRepository,
   val configurationRegistry: ConfigurationRegistry,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val dispatcherProvider: DispatcherProvider,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : RegisterDao {
 
   @VisibleForTesting(otherwise = PROTECTED) abstract val tracingCoding: Coding
@@ -89,6 +88,7 @@ constructor(
   private val alternateTracingCoding = lazy {
     tracingCoding.copy().apply { system = "http://snomed.info/sct" }
   }
+
   fun hivPatientIdentifier(patient: Patient): String =
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier() ?: HivRegisterDao.ResourceValue.BLANK
@@ -96,7 +96,7 @@ constructor(
   private val currentPractitioner by lazy {
     sharedPreferencesHelper.read(
       key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      defaultValue = null
+      defaultValue = null,
     )
   }
 
@@ -105,27 +105,27 @@ constructor(
       TokenClientParam("_tag"),
       { value = of(tracingCoding) },
       { value = of(alternateTracingCoding.value) },
-      operation = Operation.OR
+      operation = Operation.OR,
     )
     filter(
       Task.STATUS,
       { value = of(Task.TaskStatus.READY.toCode()) },
       { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-      operation = Operation.OR
+      operation = Operation.OR,
     )
     filter(
       Task.PERIOD,
       {
         value = of(DateTimeType.now())
         prefix = ParamPrefixEnum.GREATERTHAN
-      }
+      },
     )
   }
 
   private suspend fun searchRegister(
     filters: RegisterFilter,
     loadAll: Boolean,
-    page: Int = -1
+    page: Int = -1,
   ): List<Pair<Patient, Iterable<Task>>> {
     filters as TracingRegisterFilter
     val filterFilter = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
@@ -153,7 +153,11 @@ constructor(
                   }
 
                 return@flatMap listOf<Coding>(coding, alternativeCoding).map<
-                  Coding, TokenParamFilterCriterion.() -> Unit> { c -> { value = of(c) } }
+                  Coding,
+                  TokenParamFilterCriterion.() -> Unit,
+                > { c ->
+                  { value = of(c) }
+                }
               }
 
             filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
@@ -162,7 +166,7 @@ constructor(
           if (filters.isAssignedToMe && currentPractitioner != null) {
             filter(
               Patient.GENERAL_PRACTITIONER,
-              { value = currentPractitioner?.asReference(ResourceType.Practitioner)?.reference }
+              { value = currentPractitioner?.asReference(ResourceType.Practitioner)?.reference },
             )
           }
         }
@@ -179,12 +183,14 @@ constructor(
                 val date = Date.from(today.minusYears(18L).toInstant())
                 it.birthDate.after(date)
               }
-              TracingAgeFilterEnum.`18_PLUS` -> {
+              TracingAgeFilterEnum.PLUS_18 -> {
                 val date = Date.from(today.minusYears(18L).toInstant())
                 it.birthDate.time <= date.time
               }
             }
-          } else true
+          } else {
+            true
+          }
         }
 
     val patientrefs =
@@ -205,18 +211,18 @@ constructor(
           .filter {
             it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
               it.executionPeriod.hasStart() &&
-              it.executionPeriod
-                .start
+              it.executionPeriod.start
                 .before(Date())
                 .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
           }
-      } else emptyList()
+      } else {
+        emptyList()
+      }
 
     val filteredTasks =
       filters.reasonCode?.let { reasonCode ->
         tasks.filter { it.reasonCode.coding.any { coding -> coding.code == reasonCode } }
-      }
-        ?: tasks
+      } ?: tasks
     val groupedTasks = filteredTasks.groupBy { it.`for`.reference }
 
     return patients
@@ -231,7 +237,7 @@ constructor(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?,
-    filters: RegisterFilter
+    filters: RegisterFilter,
   ): List<RegisterData> {
     val patientTasksPairs = searchRegister(filters, loadAll = true)
     val patientSubjectRefFilterCriteria =
@@ -242,7 +248,7 @@ constructor(
         }
         .toTypedArray()
     val subjectListResourcesGroup: Map<String, ListResource> =
-      if (patientSubjectRefFilterCriteria.isNotEmpty())
+      if (patientSubjectRefFilterCriteria.isNotEmpty()) {
         fhirEngine
           .search<ListResource> {
             filter(ListResource.SUBJECT, *patientSubjectRefFilterCriteria, operation = Operation.OR)
@@ -253,7 +259,9 @@ constructor(
           .filter { it.status == ListResource.ListStatus.CURRENT }
           .groupingBy { it.subject.reference }
           .reduce { _, accumulator, element -> maxOf(accumulator, element, compareBy { it.title }) }
-      else emptyMap()
+      } else {
+        emptyMap()
+      }
 
     val tracingData: List<RegisterData.TracingRegisterData> =
       patientTasksPairs
@@ -269,15 +277,16 @@ constructor(
       val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
       tracingData.safeSubList(from..to)
-    } else tracingData
+    } else {
+      tracingData
+    }
   }
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?
+    appFeatureName: String?,
   ): List<RegisterData> {
-
     val tracingPatients =
       fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }
 
@@ -291,7 +300,9 @@ constructor(
           val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
           val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
           it.safeSubList(from..to)
-        } else it
+        } else {
+          it
+        }
       }
   }
 
@@ -299,8 +310,9 @@ constructor(
     val patient = defaultRepository.loadResource<Patient>(resourceId)
     return patient?.let {
       val metaCodingSystemTag =
-        configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-            AppConfigClassification.APPLICATION
+        configurationRegistry
+          .retrieveConfiguration<ApplicationConfiguration>(
+            AppConfigClassification.APPLICATION,
           )
           .patientTypeFilterTagViaMetaCodingSystem
       val tasks = validTasks(patient)
@@ -335,7 +347,7 @@ constructor(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }
+            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display },
           ),
       )
     }
@@ -357,10 +369,11 @@ constructor(
   }
 
   suspend fun Patient.activeCarePlans() =
-    defaultRepository.searchResourceFor<CarePlan>(
+    defaultRepository
+      .searchResourceFor<CarePlan>(
         subjectId = this.logicalId,
         subjectType = ResourceType.Patient,
-        subjectParam = CarePlan.SUBJECT
+        subjectParam = CarePlan.SUBJECT,
       )
       .filter { carePlan -> carePlan.status == CarePlan.CarePlanStatus.ACTIVE }
 
@@ -387,23 +400,23 @@ constructor(
       .filter {
         (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name).or(
           it.type == Patient.LinkType.REFER &&
-            it.other.referenceElement.resourceType == ResourceType.Patient.name
+            it.other.referenceElement.resourceType == ResourceType.Patient.name,
         )
       }
       .map { defaultRepository.loadResource(it.other) }
 
   override suspend fun countRegisterFiltered(
     appFeatureName: String?,
-    filters: RegisterFilter
+    filters: RegisterFilter,
   ): Long {
     return searchRegister(filters, loadAll = true).count().toLong()
   }
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     val patients =
-      fhirEngine.search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }.map {
-        it.resource
-      }
+      fhirEngine
+        .search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }
+        .map { it.resource }
     return patients.count { validTasks(it).any() }.toLong()
   }
 
@@ -421,8 +434,7 @@ constructor(
     return patientTasks.filter {
       it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
         it.executionPeriod.hasStart() &&
-        it.executionPeriod
-          .start
+        it.executionPeriod.start
           .before(Date())
           .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
     }
@@ -430,7 +442,7 @@ constructor(
 
   private suspend fun Patient.toTracingRegisterData(
     tasks: Iterable<Task>,
-    listResource: ListResource?
+    listResource: ListResource?,
   ): RegisterData.TracingRegisterData {
     val attempt =
       tracingRepository
@@ -447,14 +459,14 @@ constructor(
       familyName = this.extractFamilyName(),
       healthStatus =
         this.extractHealthStatusFromMeta(
-          applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+          applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
       isPregnant = defaultRepository.isPatientPregnant(this),
       isBreastfeeding = defaultRepository.isPatientBreastfeeding(this),
       attempts = attempt.numberOfAttempts,
       lastAttemptDate = attempt.lastAttempt,
       firstAdded = oldestTaskDate,
-      reasons = attempt.reasons
+      reasons = attempt.reasons,
     )
   }
 

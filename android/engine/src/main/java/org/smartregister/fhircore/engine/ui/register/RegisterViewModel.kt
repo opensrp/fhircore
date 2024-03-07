@@ -59,7 +59,7 @@ constructor(
 
   private val applicationConfiguration =
     configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-      AppConfigClassification.APPLICATION
+      AppConfigClassification.APPLICATION,
     )
 
   private val _lastSyncTimestamp =
@@ -79,7 +79,7 @@ constructor(
 
   var selectedLanguage =
     MutableLiveData(
-      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())
+      sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag()),
     )
 
   val registerViewConfiguration: MutableLiveData<RegisterViewConfiguration> = MutableLiveData()

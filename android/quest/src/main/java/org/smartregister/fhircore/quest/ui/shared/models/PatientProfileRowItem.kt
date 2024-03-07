@@ -37,5 +37,5 @@ data class PatientProfileRowItem(
   val actionButtonColor: Color? = null,
   val actionButtonText: String? = null,
   val showAngleRightIcon: Boolean = false,
-  val showDot: Boolean = false
+  val showDot: Boolean = false,
 )

@@ -42,7 +42,7 @@ constructor(
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -68,7 +68,7 @@ constructor(
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
-        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!
+        sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.UK.toLanguageTag())!!,
       )
       .displayName
 

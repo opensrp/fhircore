@@ -59,24 +59,26 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
     val actualDataTypes = p2PSenderTransferDao.getDataTypes()
     Assert.assertEquals(6, actualDataTypes.size)
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0))
+      actualDataTypes.contains(DataType(ResourceType.Group.name, DataType.Filetype.JSON, 0)),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1))
-    )
-    Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2))
+      actualDataTypes.contains(DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)),
     )
     Assert.assertTrue(
       actualDataTypes.contains(
-        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3)
-      )
+        DataType(ResourceType.Questionnaire.name, DataType.Filetype.JSON, 2),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4))
+      actualDataTypes.contains(
+        DataType(ResourceType.QuestionnaireResponse.name, DataType.Filetype.JSON, 3),
+      ),
     )
     Assert.assertTrue(
-      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5))
+      actualDataTypes.contains(DataType(ResourceType.Observation.name, DataType.Filetype.JSON, 4)),
+    )
+    Assert.assertTrue(
+      actualDataTypes.contains(DataType(ResourceType.Encounter.name, DataType.Filetype.JSON, 5)),
     )
   }
 
@@ -87,7 +89,7 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
       p2PSenderTransferDao.loadResources(
         lastRecordUpdatedAt = 0,
         batchSize = 25,
-        Patient::class.java
+        Patient::class.java,
       )
     } returns listOf(expectedPatient)
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
@@ -120,14 +122,14 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
             Address().apply {
               city = "Nairobi"
               country = "Kenya"
-            }
+            },
           )
         name =
           listOf(
             HumanName().apply {
               given = mutableListOf(StringType("Kiptoo"))
               family = "Maina"
-            }
+            },
           )
         telecom = listOf(ContactPoint().apply { value = "12345" })
         meta = Meta().apply { lastUpdated = currentDate }

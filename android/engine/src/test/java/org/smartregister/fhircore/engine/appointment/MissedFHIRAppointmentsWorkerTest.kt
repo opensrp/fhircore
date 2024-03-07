@@ -68,10 +68,10 @@ class MissedFHIRAppointmentsWorkerTest : RobolectricTest() {
             override fun createWorker(
               appContext: Context,
               workerClassName: String,
-              workerParameters: WorkerParameters
+              workerParameters: WorkerParameters,
             ): ListenableWorker =
               MissedFHIRAppointmentsWorker(appContext, workerParameters, fhirEngine)
-          }
+          },
         )
         .build()
   }
@@ -99,7 +99,7 @@ class MissedFHIRAppointmentsWorkerTest : RobolectricTest() {
       listOf(
         SearchResult(missedAppointment, included = null, revIncluded = null),
         SearchResult(bookedAppointment, included = null, revIncluded = null),
-        SearchResult(bookedAppointmentStartNull, included = null, revIncluded = null)
+        SearchResult(bookedAppointmentStartNull, included = null, revIncluded = null),
       )
     coEvery { fhirEngine.search<Appointment>(any<Search>()) } returns appointments
     coEvery { fhirEngine.update(*anyVararg()) } just runs

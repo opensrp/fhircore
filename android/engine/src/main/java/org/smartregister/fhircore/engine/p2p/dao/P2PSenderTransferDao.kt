@@ -45,20 +45,25 @@ constructor(fhirEngine: FhirEngine, dispatcherProvider: DefaultDispatcherProvide
         resourceClassType(dataType)?.let { classType ->
           loadResources(lastRecordUpdatedAt = highestRecordId, batchSize = batchSize, classType)
         }
-      }
-        ?: listOf()
+      } ?: listOf()
 
     Timber.e("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =
-      (if (records.isNotEmpty()) records.last().meta?.lastUpdated?.time ?: highestRecordId
-      else lastUpdated)
+      (if (records.isNotEmpty()) {
+        records.last().meta?.lastUpdated?.time ?: highestRecordId
+      } else {
+        lastUpdated
+      })
 
     val jsonArray = JSONArray()
     records.forEach {
       jsonArray.put(jsonParser.encodeResourceToString(it))
       highestRecordId =
-        if (it.meta?.lastUpdated?.time!! > highestRecordId) it.meta?.lastUpdated?.time!!
-        else highestRecordId
+        if (it.meta?.lastUpdated?.time!! > highestRecordId) {
+          it.meta?.lastUpdated?.time!!
+        } else {
+          highestRecordId
+        }
       Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
     }
 

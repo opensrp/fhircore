@@ -34,7 +34,7 @@ class ApplicationConfigurationTest {
         appLogoIconResourceFile = "ic_launcher",
         patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
         count = "100",
-        taskFilterTagViaMetaCodingSystem = "task-filter-tag"
+        taskFilterTagViaMetaCodingSystem = "task-filter-tag",
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -44,12 +44,12 @@ class ApplicationConfigurationTest {
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
     Assert.assertEquals(
       "test-filter-tag",
-      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
+      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem,
     )
     Assert.assertEquals("100", applicationConfiguration.count)
     Assert.assertEquals(
       "task-filter-tag",
-      applicationConfiguration.taskFilterTagViaMetaCodingSystem
+      applicationConfiguration.taskFilterTagViaMetaCodingSystem,
     )
   }
 
@@ -66,7 +66,7 @@ class ApplicationConfigurationTest {
         appLogoIconResourceFile = "ic_launcher",
         patientTypeFilterTagViaMetaCodingSystem = "test-filter-tag",
         count = "100",
-        taskFilterTagViaMetaCodingSystem = "task-filter-tag"
+        taskFilterTagViaMetaCodingSystem = "task-filter-tag",
       )
     Assert.assertEquals("ancApp", applicationConfiguration.appId)
     Assert.assertEquals("classification", applicationConfiguration.classification)
@@ -76,12 +76,12 @@ class ApplicationConfigurationTest {
     Assert.assertEquals("ic_launcher", applicationConfiguration.appLogoIconResourceFile)
     Assert.assertEquals(
       "test-filter-tag",
-      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem
+      applicationConfiguration.patientTypeFilterTagViaMetaCodingSystem,
     )
     Assert.assertEquals("100", applicationConfiguration.count)
     Assert.assertEquals(
       "task-filter-tag",
-      applicationConfiguration.taskFilterTagViaMetaCodingSystem
+      applicationConfiguration.taskFilterTagViaMetaCodingSystem,
     )
   }
 }

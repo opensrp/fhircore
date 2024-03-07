@@ -29,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runBlockingTest
@@ -46,8 +47,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -64,6 +65,8 @@ class UserProfileViewModelTest : RobolectricTest() {
   lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   var tokenAuthenticator: TokenAuthenticator = mockk()
 
   private lateinit var configService: ConfigService
@@ -91,11 +94,11 @@ class UserProfileViewModelTest : RobolectricTest() {
         configService,
         fhirEngine = mockk(),
         sharedSyncStatus,
-        dispatcherProvider = CoroutineTestRule().testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
         appContext = context,
         tracer = mockk(),
         tokenAuthenticator = tokenAuthenticator,
-        sharedPreferencesHelper = sharedPreferencesHelper
+        sharedPreferencesHelper = sharedPreferencesHelper,
       )
     userProfileViewModel =
       UserProfileViewModel(
@@ -103,7 +106,7 @@ class UserProfileViewModelTest : RobolectricTest() {
         accountAuthenticator,
         secureSharedPreference,
         sharedPreferencesHelper,
-        configurationRegistry
+        configurationRegistry,
       )
   }
 

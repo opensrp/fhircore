@@ -107,9 +107,9 @@ class SimpleDetailsActivityTest : RobolectricTest() {
 
     val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResponse)
 
-    kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
-      Timber.d(it.stackTraceToString())
-    }
+    kotlin
+      .runCatching { scu.transform(contextR4, baseElement, map, targetResource) }
+      .onFailure { Timber.d(it.stackTraceToString()) }
 
     println(iParser.encodeResourceToString(targetResource))
   }
@@ -141,9 +141,9 @@ class SimpleDetailsActivityTest : RobolectricTest() {
 
     val baseElement = iParser.parseResource(QuestionnaireResponse::class.java, g6pdResponse)
 
-    kotlin.runCatching { scu.transform(contextR4, baseElement, map, targetResource) }.onFailure {
-      Timber.d(it.stackTraceToString())
-    }
+    kotlin
+      .runCatching { scu.transform(contextR4, baseElement, map, targetResource) }
+      .onFailure { Timber.d(it.stackTraceToString()) }
 
     Timber.d(iParser.encodeResourceToString(targetResource))
   }

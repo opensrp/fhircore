@@ -37,7 +37,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
       oauthServerBaseUrl = BuildConfig.OAUTH_BASE_URL,
       clientId = BuildConfig.OAUTH_CIENT_ID,
       clientSecret = BuildConfig.OAUTH_CLIENT_SECRET,
-      accountType = BuildConfig.APPLICATION_ID
+      accountType = BuildConfig.APPLICATION_ID,
     )
 
   override fun defineResourceTags() =
@@ -48,7 +48,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
           Coding().apply {
             system = context.getString(R.string.sync_strategy_careteam_system)
             display = context.getString(R.string.sync_strategy_careteam_display)
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
@@ -56,7 +56,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
           Coding().apply {
             system = context.getString(R.string.sync_strategy_location_system)
             display = context.getString(R.string.sync_strategy_location_display)
-          }
+          },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
@@ -64,7 +64,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
           Coding().apply {
             system = context.getString(R.string.sync_strategy_organization_system)
             display = context.getString(R.string.sync_strategy_organization_display)
-          }
+          },
       ),
       ResourceTag(
         type = SharedPreferenceKey.PRACTITIONER_ID.name,
@@ -73,7 +73,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
             system = context.getString(R.string.sync_strategy_practitioner_system)
             display = context.getString(R.string.sync_strategy_practitioner_display)
           },
-        isResource = false
+        isResource = false,
       ),
       ResourceTag(
         type = SharedPreferenceKey.APP_ID.name,
@@ -82,7 +82,7 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
             system = context.getString(R.string.sync_strategy_appid_system)
             display = context.getString(R.string.application_id)
           },
-        isResource = false
-      )
+        isResource = false,
+      ),
     )
 }

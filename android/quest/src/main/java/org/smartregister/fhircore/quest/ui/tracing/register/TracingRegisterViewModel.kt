@@ -86,7 +86,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val appFeatureManager: AppFeatureManager,
-  val sharedPreferencesHelper: SharedPreferencesHelper
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel(), StandardRegisterViewModel {
 
   private val appFeatureName = savedStateHandle.get<String>(NavigationArg.FEATURE)
@@ -139,14 +139,14 @@ constructor(
             patientCategory = categories,
             isAssignedToMe = it.patientAssignment.selected.assignedToMe(),
             age = ageFilter,
-            reasonCode = reasonCode
+            reasonCode = reasonCode,
           )
         }
         .onEach { resetPage() }
     viewModelScope.launch {
       combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
-        Triple(s, p, f)
-      }
+          Triple(s, p, f)
+        }
         .mapLatest {
           val pagingFlow =
             if (it.first.isNotBlank()) {
@@ -161,8 +161,8 @@ constructor(
     }
     viewModelScope.launch {
       combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
-        Triple(s, p, f)
-      }
+          Triple(s, p, f)
+        }
         .filter { it.first.isBlank() }
         .mapLatest {
           registerRepository.countRegisterFiltered(appFeatureName, healthModule, filters = it.third)
@@ -216,14 +216,14 @@ constructor(
     appFeatureName: String?,
     loadAll: Boolean = false,
     page: Int = 0,
-    registerFilters: TracingRegisterFilter
+    registerFilters: TracingRegisterFilter,
   ): Pager<Int, RegisterViewData> =
     Pager(
       config =
         PagingConfig(
           pageSize = DEFAULT_PAGE_SIZE,
           initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE,
-          enablePlaceholders = false
+          enablePlaceholders = false,
         ),
       pagingSourceFactory = {
         RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
@@ -233,11 +233,11 @@ constructor(
               healthModule = healthModule,
               loadAll = loadAll,
               currentPage = if (loadAll) 0 else page,
-              filters = registerFilters
-            )
+              filters = registerFilters,
+            ),
           )
         }
-      }
+      },
     )
 
   override fun countPages() =
@@ -260,13 +260,13 @@ constructor(
           NavigationArg.bindArgumentsOf(
             Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
             Pair(NavigationArg.HEALTH_MODULE, healthModule),
-            Pair(NavigationArg.PATIENT_ID, event.patientId)
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
           )
-        if (healthModule == HealthModule.FAMILY)
+        if (healthModule == HealthModule.FAMILY) {
           event.navController.navigate(route = MainNavigationScreen.FamilyProfile.route + urlParams)
-        else
+        } else
           event.navController.navigate(
-            route = MainNavigationScreen.TracingProfile.route + urlParams
+            route = MainNavigationScreen.TracingProfile.route + urlParams,
           )
       }
       is StandardRegisterEvent.ApplyFilter<*> -> {
@@ -295,7 +295,7 @@ data class TracingRegisterFilterState(
   val patientAssignment: TracingRegisterUiFilter<TracingPatientAssignment>,
   val patientCategory: TracingRegisterUiFilter<TracingPatientCategory>,
   val reason: TracingRegisterUiFilter<TracingReason>,
-  val age: TracingRegisterUiFilter<AgeFilter>
+  val age: TracingRegisterUiFilter<AgeFilter>,
 ) {
   companion object {
     fun default(healthModule: HealthModule) =
@@ -305,32 +305,32 @@ data class TracingRegisterFilterState(
             patientAssignment =
               TracingRegisterUiFilter(
                 PhonePatientAssignment.ALL_PHONE,
-                PhonePatientAssignment.values().asList()
+                PhonePatientAssignment.values().asList(),
               ),
             patientCategory =
               TracingRegisterUiFilter(
                 TracingPatientCategory.ALL_PATIENT_CATEGORIES,
-                TracingPatientCategory.values().asList()
+                TracingPatientCategory.values().asList(),
               ),
             reason =
               TracingRegisterUiFilter(TracingReason.ALL_REASONS, TracingReason.values().asList()),
-            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
           )
         HealthModule.HOME_TRACING ->
           TracingRegisterFilterState(
             patientAssignment =
               TracingRegisterUiFilter(
                 HomePatientAssignment.ALL_HOME,
-                HomePatientAssignment.values().asList()
+                HomePatientAssignment.values().asList(),
               ),
             patientCategory =
               TracingRegisterUiFilter(
                 TracingPatientCategory.ALL_PATIENT_CATEGORIES,
-                TracingPatientCategory.values().asList()
+                TracingPatientCategory.values().asList(),
               ),
             reason =
               TracingRegisterUiFilter(TracingReason.ALL_REASONS, TracingReason.values().asList()),
-            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList())
+            age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
           )
         else -> throw IllegalArgumentException("Not allowed")
       }

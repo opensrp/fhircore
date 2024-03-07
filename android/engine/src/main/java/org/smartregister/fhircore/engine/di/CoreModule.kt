@@ -41,7 +41,7 @@ import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
 @InstallIn(SingletonComponent::class)
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module
 class CoreModule {
 
   @Singleton
@@ -53,7 +53,7 @@ class CoreModule {
     fhirEngine: FhirEngine,
     tracer: PerformanceReporter,
     tokenAuthenticator: TokenAuthenticator,
-    sharedPreferencesHelper: SharedPreferencesHelper
+    sharedPreferencesHelper: SharedPreferencesHelper,
   ) =
     SyncBroadcaster(
       configurationRegistry = configurationRegistry,
@@ -62,7 +62,7 @@ class CoreModule {
       appContext = context,
       tracer = tracer,
       tokenAuthenticator = tokenAuthenticator,
-      sharedPreferencesHelper = sharedPreferencesHelper
+      sharedPreferencesHelper = sharedPreferencesHelper,
     )
 
   @Singleton
@@ -89,6 +89,6 @@ class CoreModule {
   fun providePatientDao(
     fhirEngine: FhirEngine,
     defaultRepository: DefaultRepository,
-    configurationRegistry: ConfigurationRegistry
+    configurationRegistry: ConfigurationRegistry,
   ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
 }

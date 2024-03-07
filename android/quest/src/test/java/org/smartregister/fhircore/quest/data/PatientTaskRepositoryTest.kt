@@ -64,7 +64,7 @@ class PatientTaskRepositoryTest : RobolectricTest() {
         context = ApplicationProvider.getApplicationContext(),
         fhirEngine = fhirEngine,
         dataMapper = patientTaskItemMapper,
-        dispatcherProvider = dispatcherProvider
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
@@ -84,8 +84,8 @@ class PatientTaskRepositoryTest : RobolectricTest() {
             `for` = Reference("Patient/2")
           },
           included = null,
-          revIncluded = null
-        )
+          revIncluded = null,
+        ),
       )
 
     val patient =

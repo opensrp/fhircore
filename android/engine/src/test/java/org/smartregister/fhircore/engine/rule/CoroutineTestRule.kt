@@ -18,25 +18,14 @@ package org.smartregister.fhircore.engine.rule
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.app.testDispatcher
 
 @ExperimentalCoroutinesApi
-class CoroutineTestRule(val testDispatcher: TestDispatcher = UnconfinedTestDispatcher()) :
-  TestWatcher() {
-
-  val testDispatcherProvider =
-    object : DispatcherProvider {
-      override fun default() = testDispatcher
-      override fun io() = testDispatcher
-      override fun main() = testDispatcher
-      override fun unconfined() = testDispatcher
-    }
+class CoroutineTestRule : TestWatcher() {
 
   override fun starting(description: Description) {
     Dispatchers.setMain(testDispatcher)

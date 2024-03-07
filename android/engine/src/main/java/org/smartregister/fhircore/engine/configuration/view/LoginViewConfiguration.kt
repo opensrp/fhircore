@@ -30,17 +30,19 @@ class LoginViewConfiguration(
   val applicationVersionCode: Int = 1,
   val darkMode: Boolean = true,
   val showLogo: Boolean = false,
-  val enablePin: Boolean = false
+  val enablePin: Boolean = false,
 ) : Configuration
+
 /**
  * A function providing a DSL for configuring [LoginViewConfiguration]. The configurations provided
  * by this method are used on the register calling this method
+ *
  * @param appId Set unique identifier for this configuration
  * @param applicationName Set the application name
  * @param applicationVersion Set the application version
  * @param applicationVersionCode Set the application version code
  * @param darkMode Change login theme; alter the background color to white when false dark blue
- * otherwise
+ *   otherwise
  * @param showLogo Show login logo for the app otherwise
  * @param enablePin provides PIN login feature
  */
@@ -53,7 +55,7 @@ fun loginViewConfigurationOf(
   applicationVersionCode: Int = 1,
   darkMode: Boolean = false,
   showLogo: Boolean = false,
-  enablePin: Boolean = false
+  enablePin: Boolean = false,
 ) =
   LoginViewConfiguration(
     appId = appId,
@@ -63,5 +65,5 @@ fun loginViewConfigurationOf(
     applicationVersionCode = applicationVersionCode,
     darkMode = darkMode,
     showLogo = showLogo,
-    enablePin = enablePin
+    enablePin = enablePin,
   )

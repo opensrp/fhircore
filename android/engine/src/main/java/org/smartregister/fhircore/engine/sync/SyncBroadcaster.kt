@@ -65,7 +65,7 @@ constructor(
   val tracer: PerformanceReporter,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val tokenAuthenticator: TokenAuthenticator,
-  @ApplicationContext val appContext: Context
+  @ApplicationContext val appContext: Context,
 ) {
 
   private inline fun <reified W : FhirSyncWorker> getWorkerInfo(): Flow<SyncJobStatus> {
@@ -91,7 +91,7 @@ constructor(
         val authFailResourceSyncException =
           ResourceSyncException(
             ResourceType.Flag,
-            Exception(appContext.getString(R.string.sync_authentication_error))
+            Exception(appContext.getString(R.string.sync_authentication_error)),
           )
         sharedSyncStatus.emit(SyncJobStatus.Failed(listOf(authFailResourceSyncException)))
         return@launch
@@ -114,7 +114,8 @@ constructor(
 
   private fun traceSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Failed, is SyncJobStatus.Finished -> {
+      is SyncJobStatus.Failed,
+      is SyncJobStatus.Finished, -> {
         tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, syncJobStatus::class.java.simpleName)
         tracer.stopTrace(SYNC_TRACE)
       }
@@ -125,7 +126,7 @@ constructor(
         tracer.putAttribute(
           SYNC_TRACE,
           SYNC_ATTR_TYPE,
-          if (isInitialSync()) SYNC_ATTR_TYPE_INITIAL else SYNC_ATTR_TYPE_SUBSEQUENT
+          if (isInitialSync()) SYNC_ATTR_TYPE_INITIAL else SYNC_ATTR_TYPE_SUBSEQUENT,
         )
       }
     }

@@ -38,7 +38,6 @@ class LoaderViewKtTest : RobolectricTest() {
 
   @Test
   fun testLoaderDialogView() {
-
     composeRule.setContent { LoaderDialog() }
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertExists()
     composeRule.onNodeWithTag(LOADER_DIALOG_PROGRESS_BAR_TAG).assertIsDisplayed()
@@ -48,7 +47,7 @@ class LoaderViewKtTest : RobolectricTest() {
     composeRule
       .onNodeWithTag(LOADER_DIALOG_PROGRESS_MSG_TAG)
       .assertTextEquals(
-        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing)
+        ApplicationProvider.getApplicationContext<Application>().getString(R.string.syncing),
       )
   }
 
