@@ -1,10 +1,14 @@
 # Bundling Configurations to Target Specific App Versions
 
+|||
+---|---
+Date Submitted | March 7, 2024
+Date Approved | TBD
+Status | In review
 
 ## Background
 
 There is a need to ensure compatibility between FHIR configs downloaded from the server and the version of OpenSRP app. With OpenSRP still in active development, with ongoing changes to how configs are defined, implementing version-based content limitations is crucial to ensuring that the application functions correctly. This allows for streamlining of user experience and maintaining consistency across different versions of the application.
-
 
 ## Switch from Composition to ImplementationGuide
 
@@ -18,13 +22,10 @@ The `useContext.valueRange` defines the lowest and highest APK versions it is co
 
 IG’s `definition` field maps to `section` field of the composition.
 
-
-
 * `resource.reference` maps to `section.focus.reference`
 * `resource.name` maps to `section.focus.indentifier.value`
 
 ImplementationGuide
-
 
 ```
   - version
@@ -37,15 +38,11 @@ ImplementationGuide
       - name
 ```
 
-
 ImplementationGuides are used to package all related resources to manage workflows e.g. immunization IG, malaria IG, HIV IG, etc. To align with how others use IGs, the ideal approach inOpenSRP would be to link all resources referenced in the composition config’s section in the implementation guide and fully switch to using an IG instead of a composition resource. 
 
 For the first iteration of the switch, an implementation guide will be created and the existing composition config referenced in the IG.
 
-
 ## Sequenced Work Plan
-
-
 
 1. Add an ImplementationGuide that references the existing composition config
     * Create an IG with at least the fields below:
@@ -68,14 +65,12 @@ For the first iteration of the switch, an implementation guide will be created a
 * Pros
     * Useful for debug purposes - provides crucial information during debugging sessions. It allows developers to quickly identify which version of the IG was used to generate specific content, aiding in diagnosing and resolving issues more efficiently. It is also easy to correlate inconsistencies or errors directly to the version of the IG tagged in the resources
     * Track failure back to version of content - a clear audit trail of content changes and their corresponding IG versions is maintained
-    * 
 * Cons
     * Increases data size - introduces additional metadata which can slightly increase the overall data size, albeit minimally.
     * Adds code complexity to do tagging
-    * 
 4. **[TBD]** Restrict the ability to sync IG based on useContext within version of app doing the syncing eg. get the latest IG version valid for app version
     * There may be multiple versions of an IG for a given app. How should OpenSRP pick the version of the IG to fetch and use to sync?
-        8. Select the most recent version, i.e., IG with highest version number for the given app version
+      8. Select the most recent version, i.e., IG with highest version number for the given app version
     * How should the app handle cases where a valid IG does not exist for the version of the app?
         9. The app should provide appropriate feedback to the user, indicating that IG syncing is not available for their current app version. This could be accompanied by instructions on how to update the app to a version that is supported
         10. The app could also offer fallback functionality or access to alternative resources if IG syncing is not possible.
