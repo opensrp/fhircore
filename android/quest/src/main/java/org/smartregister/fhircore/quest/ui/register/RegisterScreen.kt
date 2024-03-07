@@ -83,7 +83,7 @@ fun RegisterScreen(
 
   Scaffold(
     topBar = {
-      Column {
+      Column(modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
         // Top section has toolbar and a results counts view
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
@@ -117,7 +117,6 @@ fun RegisterScreen(
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
-          modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,
@@ -125,7 +124,9 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding).testTag(FIRST_TIME_SYNC_DIALOG)) {
+    Box(
+      modifier = modifier.padding(innerPadding).testTag(FIRST_TIME_SYNC_DIALOG),
+    ) {
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
@@ -142,17 +143,18 @@ fun RegisterScreen(
         registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {
-        RegisterCardList(
-          registerCardConfig = registerUiState.registerConfiguration.registerCard,
-          pagingItems = pagingItems,
-          navController = navController,
-          lazyListState = lazyListState,
-          onEvent = onEvent,
-          registerUiState = registerUiState,
-          currentPage = currentPage,
-          showPagination = searchText.value.isEmpty(),
-          modifier = Modifier.testTag(REGISTER_CARD_TEST_TAG),
-        )
+        Column(modifier = Modifier.testTag(REGISTER_CARD_TEST_TAG)) {
+          RegisterCardList(
+            registerCardConfig = registerUiState.registerConfiguration.registerCard,
+            pagingItems = pagingItems,
+            navController = navController,
+            lazyListState = lazyListState,
+            onEvent = onEvent,
+            registerUiState = registerUiState,
+            currentPage = currentPage,
+            showPagination = searchText.value.isEmpty(),
+          )
+        }
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
           NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
