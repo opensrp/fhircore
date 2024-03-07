@@ -89,7 +89,10 @@ class RegisterScreenTest {
       )
     }
     composeTestRule.waitUntil(5_000) { true }
-    composeTestRule.onNodeWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+    composeTestRule
+      .onNodeWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
@@ -128,7 +131,10 @@ class RegisterScreenTest {
       )
     }
 
-    composeTestRule.onAllNodesWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
+    composeTestRule
+      .onNodeWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
@@ -163,7 +169,7 @@ class RegisterScreenTest {
         navController = rememberNavController(),
       )
     }
-    composeTestRule.onAllNodesWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
+    composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true).assertExists()
   }
 
   @Test
