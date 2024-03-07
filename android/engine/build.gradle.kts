@@ -114,7 +114,7 @@ dependencies {
   implementation("com.github.bumptech.glide:glide:4.16.0")
   implementation("id.zelory:compressor:3.0.1")
 
-  implementation(group = "javax.xml.stream", name = "stax-api", version="1.0-2")
+  implementation(group = "javax.xml.stream", name = "stax-api", version = "1.0-2")
   implementation(group = "xerces", name = "xercesImpl", version = "2.11.0")
   implementation(group = "com.github.java-json-tools", name = "msg-simple", version = "1.2")
 

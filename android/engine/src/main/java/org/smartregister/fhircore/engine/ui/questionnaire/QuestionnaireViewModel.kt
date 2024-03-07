@@ -708,7 +708,8 @@ constructor(
     intent: Intent,
   ): QuestionnaireResponse {
     val resources = getPopulationResources(intent, questionnaire.logicalId)
-    val questResponse = ResourceMapper.populate(questionnaire, /* *resources */ emptyMap()) // FIXME("Work using launchContexts")
+    val questResponse =
+      ResourceMapper.populate(questionnaire, emptyMap()) // FIXME("Work using launchContexts")
     questResponse.contained = resources.toList()
     questResponse.questionnaire = "${questionnaire.resourceType}/${questionnaire.logicalId}"
     return questResponse

@@ -48,7 +48,7 @@ fun PatientTaskList(
     items(
       pagingItems.itemCount,
       key = pagingItems.itemKey { it.id },
-      contentType = pagingItems.itemContentType()
+      contentType = pagingItems.itemContentType(),
     ) {
       PatientTaskRow(pagingItems[it]!!, useLabel, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)

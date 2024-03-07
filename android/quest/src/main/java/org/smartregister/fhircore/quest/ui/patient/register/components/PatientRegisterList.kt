@@ -46,7 +46,7 @@ fun PatientRegisterList(
     items(
       pagingItems.itemCount,
       key = pagingItems.itemKey { it.id },
-      contentType = pagingItems.itemContentType()
+      contentType = pagingItems.itemContentType(),
     ) {
       PatientRow(pagingItems[it]!!, clickListener, modifier = modifier)
       Divider(color = DividerColor, thickness = 1.dp)

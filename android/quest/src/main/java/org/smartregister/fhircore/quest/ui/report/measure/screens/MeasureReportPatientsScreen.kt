@@ -83,7 +83,7 @@ fun MeasureReportPatientsScreen(
         items(
           pagingItems.itemCount,
           key = pagingItems.itemKey { it.logicalId },
-          contentType = pagingItems.itemContentType()
+          contentType = pagingItems.itemContentType(),
         ) {
           MeasureReportPatientRow(
             measureReportPatientViewData = pagingItems[it]!!,

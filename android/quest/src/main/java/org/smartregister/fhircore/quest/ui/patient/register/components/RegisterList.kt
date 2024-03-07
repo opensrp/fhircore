@@ -48,7 +48,7 @@ fun RegisterList(
     items(
       pagingItems.itemCount,
       key = pagingItems.itemKey { it.logicalId },
-      contentType = pagingItems.itemContentType()
+      contentType = pagingItems.itemContentType(),
     ) {
       RegisterRowItem(registerViewData = pagingItems[it]!!, onRowClick = onRowClick)
     }

@@ -76,11 +76,11 @@ fun MeasureReportListScreen(
         items(
           count = lazyReportItems.itemCount,
           key = lazyReportItems.itemKey { it.id },
-          contentType = lazyReportItems.itemContentType()
+          contentType = lazyReportItems.itemContentType(),
         ) { index ->
           MeasureReportRow(
             lazyReportItems[index]!!,
-            { onReportMeasureClicked(lazyReportItems[index]!!) }
+            { onReportMeasureClicked(lazyReportItems[index]!!) },
           )
           Divider(color = DividerColor, thickness = 1.dp)
         }

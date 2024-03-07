@@ -144,10 +144,11 @@ class SyncBroadcasterTest : RobolectricTest() {
         WorkInfo.State.SUCCEEDED,
         outputData = Data.EMPTY,
         tags = emptySet(),
-        progress = workDataOf(
-          "StateType" to SyncJobStatus.Started::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Started()),
-        ),
+        progress =
+          workDataOf(
+            "StateType" to SyncJobStatus.Started::class.java.name,
+            "State" to gson.toJson(SyncJobStatus.Started()),
+          ),
       )
     val inProgressInfo =
       WorkInfo(
@@ -155,10 +156,11 @@ class SyncBroadcasterTest : RobolectricTest() {
         WorkInfo.State.SUCCEEDED,
         outputData = Data.EMPTY,
         tags = emptySet(),
-        progress = workDataOf(
-          "StateType" to SyncJobStatus.Succeeded::class.java.name,
-          "State" to gson.toJson(SyncJobStatus.Succeeded()),
-        ),
+        progress =
+          workDataOf(
+            "StateType" to SyncJobStatus.Succeeded::class.java.name,
+            "State" to gson.toJson(SyncJobStatus.Succeeded()),
+          ),
       )
 
     every { workManager.getWorkInfosForUniqueWorkLiveData(any()) } answers

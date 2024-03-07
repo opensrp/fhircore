@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
-import android.content.res.AssetManager
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -27,23 +26,17 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.count
 import com.google.android.fhir.search.getQuery
 import com.google.android.fhir.search.search
-import com.google.android.fhir.workflow.FhirOperator
 import com.google.gson.Gson
 import java.util.Locale
-import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
-import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import timber.log.Timber
 
 fun <T> Context.loadResourceTemplate(id: String, clazz: Class<T>, data: Map<String, String?>): T {
   var json = assets.open(id).bufferedReader().use { it.readText() }

@@ -44,6 +44,9 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.util.Calendar
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -100,9 +103,6 @@ import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.retainMetadata
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import java.util.Calendar
-import java.util.Date
-import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -174,13 +174,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     questionnaireViewModel =
       spyk(
         QuestionnaireViewModel(
-            fhirEngine = fhirEngine,
-            defaultRepository = defaultRepo,
-            configurationRegistry = configurationRegistry,
-            transformSupportServices = mockk(),
-            dispatcherProvider = defaultRepo.dispatcherProvider,
-            sharedPreferencesHelper = sharedPreferencesHelper,
-            tracer = FakePerformanceReporter(),
+          fhirEngine = fhirEngine,
+          defaultRepository = defaultRepo,
+          configurationRegistry = configurationRegistry,
+          transformSupportServices = mockk(),
+          dispatcherProvider = defaultRepo.dispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          tracer = FakePerformanceReporter(),
         ),
       )
     coEvery { fhirEngine.get(ResourceType.Patient, any()) } returns samplePatient()

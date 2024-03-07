@@ -60,7 +60,7 @@ constructor(
         },
     )
 
-  override fun getUploadStrategy(): UploadStrategy  = UploadStrategy.AllChangesSquashedBundlePut
+  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
   override fun getFhirEngine(): FhirEngine = engine
 }
