@@ -46,34 +46,37 @@ For the first iteration of the switch, an implementation guide will be created a
 
 1. Add an ImplementationGuide that references the existing composition config
     * Create an IG with at least the fields below:
-        1. `version` - sequential version number of the config
-        2. `useContext.valueRange` - a range of lowest and highest supported APK versions of the app
-        3. `definition.resource` - a reference to the existing composition resource
+        * `version` - sequential version number of the config
+        * `useContext.valueRange` - a range of lowest and highest supported APK versions of the app
+        * `definition.resource` - a reference to the existing composition resource
     * Update OpenSRP to support syncing using both IG and composition configs
-        4. For apps that do not have an IG, follow the current sync flow using the composition config
-        5. For apps that have an IG configured:
-            1. Fetch the highest version of the IG config from the server whose useContext range applies for the app’s version.
-            2. Use the composition config referenced in the IG and follow the standard sync using composition config.
-        6. In cases where both an IG and a composition config are defined for an app, the IG takes precedence over the composition. The flow in (ii) applies.
+        * For apps that do not have an IG, follow the current sync flow using the composition config
+        * For apps that have an IG configured:
+            * Fetch the highest version of the IG config from the server whose useContext range applies for the app’s version.
+            * Use the composition config referenced in the IG and follow the standard sync using composition config.
+        * In cases where both an IG and a composition config are defined for an app, the IG takes precedence over the composition. The flow in (ii) applies.
     * Document how to set IG’s `version`, `useContext`, etc. follow SEMVER etc
-        7. To ensure there are no missing or improperly referenced configs, and that correct versioning is done, validation will be required in fhir-tooling:
-* FHIR content verification CI tool
-* Additional checks for missing configs, invalid versioning, etc. to be done when uploading using fhir-tooling
+        * To ensure there are no missing or improperly referenced configs, and that correct versioning is done, validation will be required in fhir-tooling:
+            * FHIR content verification CI tool
+            * Additional checks for missing configs, invalid versioning, etc. to be done when uploading using fhir-tooling
+
 2. Display version and useContext info in app
     * Add IG version and useContext values to the application’s settings screen
+
 3. **[TBD, review with PM/TPM/Dev, requires product owner sign-off]** Tag generated content with version of IG. This can be valuable when troubleshooting. Below are some of the considerations to guide the decision on whether to do this 
-* Pros
-    * Useful for debug purposes - provides crucial information during debugging sessions. It allows developers to quickly identify which version of the IG was used to generate specific content, aiding in diagnosing and resolving issues more efficiently. It is also easy to correlate inconsistencies or errors directly to the version of the IG tagged in the resources
-    * Track failure back to version of content - a clear audit trail of content changes and their corresponding IG versions is maintained
-* Cons
-    * Increases data size - introduces additional metadata which can slightly increase the overall data size, albeit minimally.
-    * Adds code complexity to do tagging
+    * Pros
+        * Useful for debug purposes - provides crucial information during debugging sessions. It allows developers to quickly identify which version of the IG was used to generate specific content, aiding in diagnosing and resolving issues more efficiently. It is also easy to correlate inconsistencies or errors directly to the version of the IG tagged in the resources
+        * Track failure back to version of content - a clear audit trail of content changes and their corresponding IG versions is maintained
+    * Cons
+        * Increases data size - introduces additional metadata which can slightly increase the overall data size, albeit minimally.
+        * Adds code complexity to do tagging
+
 4. **[TBD]** Restrict the ability to sync IG based on useContext within version of app doing the syncing eg. get the latest IG version valid for app version
     * There may be multiple versions of an IG for a given app. How should OpenSRP pick the version of the IG to fetch and use to sync?
-      8. Select the most recent version, i.e., IG with highest version number for the given app version
+        * Select the most recent version, i.e., IG with highest version number for the given app version
     * How should the app handle cases where a valid IG does not exist for the version of the app?
-        9. The app should provide appropriate feedback to the user, indicating that IG syncing is not available for their current app version. This could be accompanied by instructions on how to update the app to a version that is supported
-        10. The app could also offer fallback functionality or access to alternative resources if IG syncing is not possible.
+        * The app should provide appropriate feedback to the user, indicating that IG syncing is not available for their current app version. This could be accompanied by instructions on how to update the app to a version that is supported
+        * The app could also offer fallback functionality or access to alternative resources if IG syncing is not possible.
     * Do the version filters only apply to configs and not to content generated in the app?
-        11. Version filters should primarily apply to configs
-        12. Content generated within the app may not necessarily be restricted by version filters unless it directly interacts with IG-related functionalities. However, it's essential to ensure that any generated content remains compatible with the selected IG version to maintain data integrity and interoperability.
+        * Version filters should primarily apply to configs
+        * Content generated within the app may not necessarily be restricted by version filters unless it directly interacts with IG-related functionalities. However, it's essential to ensure that any generated content remains compatible with the selected IG version to maintain data integrity and interoperability.
