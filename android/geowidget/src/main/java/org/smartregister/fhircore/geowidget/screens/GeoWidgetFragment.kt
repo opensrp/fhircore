@@ -45,6 +45,7 @@ import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
@@ -64,7 +65,7 @@ class GeoWidgetFragment : Fragment() {
     internal var onCancelAddingLocationCallback: () -> Unit = {}
     internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     internal var useGpsOnAddingLocation: Boolean = false
-
+    internal var mapLayers : List<MapLayer> = ArrayList()
     private lateinit var mapView: KujakuMapView
     private var geoJsonSource: GeoJsonSource? = null
     private var featureCollection: FeatureCollection? = null
@@ -129,14 +130,24 @@ class GeoWidgetFragment : Fragment() {
 
     private fun KujakuMapView.addMapStyle(style: Style) {
         val baseLayerSwitcherPlugin = BaseLayerSwitcherPlugin(this, style)
-        val mapboxSatelliteLayer = MapBoxSatelliteLayer()
-        val streetsBaseLayer = StreetsBaseLayer(requireActivity())
-        val streetSatelliteLayer = StreetSatelliteLayer(requireContext())
 
         baseLayerSwitcherPlugin.apply {
-            addBaseLayer(mapboxSatelliteLayer, false)
-            addBaseLayer(streetsBaseLayer, false)
-            addBaseLayer(streetSatelliteLayer, true)
+            mapLayers.forEach {
+                when (it) {
+                    is MapLayer.SatelliteLayer -> {
+                        addBaseLayer(MapBoxSatelliteLayer(),it.isDefault)
+                    }
+
+                    is MapLayer.StreetLayer -> {
+                        addBaseLayer(StreetsBaseLayer(requireContext()),it.isDefault)
+                    }
+
+                    is MapLayer.StreetSatelliteLayer -> {
+                        addBaseLayer(StreetSatelliteLayer(requireContext()),it.isDefault)
+                    }
+                }
+            }
+
         }
 
         showCurrentLocationBtn(true)
@@ -268,7 +279,7 @@ class Builder {
     private var onCancelAddingLocationCallback: () -> Unit = {}
     private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     private var useGpsOnAddingLocation: Boolean = false
-
+    private var mapLayers : List<MapLayer> = ArrayList()
     fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
         this.onAddLocationCallback = onAddLocationCallback
     }
@@ -285,12 +296,17 @@ class Builder {
         this.useGpsOnAddingLocation = value
     }
 
+    fun setMapLayers(list : List<MapLayer>) = apply {
+        this.mapLayers = list
+    }
+
     fun build(): GeoWidgetFragment {
         return GeoWidgetFragment().apply {
             this.onAddLocationCallback = this@Builder.onAddLocationCallback
             this.onCancelAddingLocationCallback = this@Builder.onCancelAddingLocationCallback
             this.onClickLocationCallback = this@Builder.onClickLocationCallback
             this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
+            this.mapLayers = this@Builder.mapLayers
         }
     }
 }
