@@ -132,7 +132,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     intent =
       Intent().apply {
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_TITLE_KEY, "Patient registration")
-        putStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_LAUNCH_CONTEXT, arrayListOf())
+        putExtra(QuestionnaireActivity.QUESTIONNAIRE_LAUNCH_CONTEXTS, bundleOf())
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM, "patient-registration")
         putExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY, "1234")
       }
@@ -710,7 +710,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     QuestionnaireActivity.launchQuestionnaireForResult(
       ctx,
       questionnaireId = "testQuestionnaire",
-      launchContexts = null,
+      launchContexts = emptyMap(),
       populationResources = arrayListOf(),
     )
     verify { ctx.startActivityForResult(any(), withArg { Assert.assertEquals(0, it) }) }
@@ -725,7 +725,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     QuestionnaireActivity.launchQuestionnaire(
       ctx,
       questionnaireId = "testQuestionnaire",
-      launchContexts = null,
+      launchContexts = emptyMap(),
       populationResources = arrayListOf(),
     )
     verify { ctx.startActivity(any()) }
@@ -739,7 +739,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val groupIdentifier = "group_identifier"
     val intentBundle = Bundle.EMPTY
     val questionnaireType = QuestionnaireType.DEFAULT
-    val launchContexts = mockk<ArrayList<Resource>>(relaxed = true)
+    val launchContexts = mockk<Map<String, Resource>>(relaxed = true)
     val populationResources = mockk<ArrayList<Resource>>(relaxed = true)
 
     val ctx = spyk<Activity>()
@@ -811,7 +811,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
     val backReference = "back_reference"
     val intentBundle = Bundle.EMPTY
     val questionnaireType = QuestionnaireType.DEFAULT
-    val launchContexts = mockk<ArrayList<Resource>>(relaxed = true)
+    val launchContexts = mockk<Map<String, Resource>>(relaxed = true)
     val populationResources = mockk<ArrayList<Resource>>(relaxed = true)
 
     val ctx = spyk<Activity>()

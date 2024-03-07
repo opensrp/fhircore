@@ -172,7 +172,7 @@ abstract class BaseRegisterActivity :
     val syncTimestamp =
       when (state) {
         is SyncJobStatus.Succeeded,
-        is SyncJobStatus.Failed -> state.timestamp.asString()
+        is SyncJobStatus.Failed, -> state.timestamp.asString()
         else -> ""
       }
     progressSync.hide()

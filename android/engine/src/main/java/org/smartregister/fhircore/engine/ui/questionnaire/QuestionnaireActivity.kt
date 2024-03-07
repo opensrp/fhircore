@@ -194,11 +194,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       //        Timber.e(it.encodeResourceToString())
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
     }
-    intent.getStringArrayListExtra(QUESTIONNAIRE_LAUNCH_CONTEXT)?.let {
-      val launchContextMap = it.associateBy { resourceString ->
-        val resource = parser.parseResource(resourceString) as Resource
-        resource.resourceType.name.lowercase()
-      }
+    intent.getBundleExtra(QUESTIONNAIRE_LAUNCH_CONTEXTS)?.let { launchContextBundle ->
+      val launchContextMap =
+        buildMap<String, String> {
+          launchContextBundle.keySet().forEach {
+            this[it] =
+              launchContextBundle.getString(it)
+                ?: throw NotImplementedError("launchContext with null is not currently supported")
+          }
+        }
       questionnaireFragmentBuilder.setQuestionnaireLaunchContextMap(launchContextMap)
     }
 
@@ -503,7 +507,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
     const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
-    const val QUESTIONNAIRE_LAUNCH_CONTEXT =
+    const val QUESTIONNAIRE_LAUNCH_CONTEXTS =
       "org.smartregister.fhircore.engine.ui.questionnaire.launchContext"
     const val QUESTIONNAIRE_TRACE = "Questionnaire.renderFragment"
 
@@ -514,7 +518,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       questionnaireResponse: QuestionnaireResponse? = null,
       backReference: String? = null,
-      launchContexts: ArrayList<Resource>? = null,
+      launchContexts: Map<String, Resource> = emptyMap(),
       populationResources: ArrayList<out Resource> = ArrayList(),
     ) =
       bundleOf(
@@ -536,12 +540,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
             )
           }
           launchContexts
-            ?.takeIf { it.isNotEmpty() }
-            ?.let { list ->
-              putStringArrayList(
-                QUESTIONNAIRE_LAUNCH_CONTEXT,
-                ArrayList(list.map { it.encodeResourceToString() }),
-              )
+            .takeIf { it.isNotEmpty() }
+            ?.let { kv ->
+              val launchContextsBundlePairs =
+                kv.map { it.key to it.value.encodeResourceToString() }.toTypedArray()
+              putBundle(QUESTIONNAIRE_LAUNCH_CONTEXTS, bundleOf(*launchContextsBundlePairs))
             }
         }
 
@@ -552,7 +555,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       groupIdentifier: String? = null,
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       intentBundle: Bundle = Bundle.EMPTY,
-      launchContexts: ArrayList<Resource>? = null,
+      launchContexts: Map<String, Resource> = emptyMap(),
       populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivity(
@@ -578,7 +581,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
       backReference: String? = null,
       intentBundle: Bundle = Bundle.EMPTY,
-      launchContexts: ArrayList<Resource>? = null,
+      launchContexts: Map<String, Resource> = emptyMap(),
       populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivityForResult(
