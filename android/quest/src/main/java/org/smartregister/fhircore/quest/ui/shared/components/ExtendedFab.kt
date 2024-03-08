@@ -89,7 +89,7 @@ fun ExtendedFab(
           imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
           tint = if (firstFabEnabled) Color.White else DefaultColor,
           navController = navController,
-          resourceData = resourceData!!,
+          resourceData = resourceData,
         )
       }
       if (text.isNotEmpty()) {
