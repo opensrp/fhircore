@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -72,7 +73,9 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -570,6 +573,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coVerify(inverse = true) { fhirEngine.get(ResourceType.Binary, referenceId) }
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testLoadConfigurationsLoadFromAssetsResources() {
+
+    val appId = "appId/debug"
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+
+    val configJson = context.assets.open("configs/app/registers/anc_register_config.json").bufferedReader().readText()
+
+    configJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid()
+
+    Assert.assertNotNull(configRegistry.configsJsonMap)
   }
 
   @Test
