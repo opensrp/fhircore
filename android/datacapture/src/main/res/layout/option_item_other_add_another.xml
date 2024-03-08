@@ -11,12 +11,19 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<Button
-    style="?attr/questionnaireAddAnotherAnswerButtonStyle"
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/add_another"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:text="@string/open_choice_other_add_another"
-/>
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    >
+    <Button
+        style="?attr/questionnaireAddAnotherAnswerButtonStyle"
+        android:id="@+id/add_another"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/open_choice_other_add_another"
+        />
+</LinearLayout>
