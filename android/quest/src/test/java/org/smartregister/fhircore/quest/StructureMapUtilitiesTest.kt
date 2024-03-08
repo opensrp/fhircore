@@ -252,9 +252,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap = "content/general/diabetes_compass/registration/patient_registration.map".readFile()
-    // val sMap =
-    // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
@@ -418,7 +415,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
-    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val pcm = FilesystemPackageCacheManager(true)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
     val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
@@ -451,7 +448,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         .readFile()
     val screeningStructureMap =
       "content/general/diabetes_compass/registration/patient_registration.map".readFile()
-    val pcm = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val pcm = FilesystemPackageCacheManager(true)
     // Package name manually checked from
     // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
     val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
