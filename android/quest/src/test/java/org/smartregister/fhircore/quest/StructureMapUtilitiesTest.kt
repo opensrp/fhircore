@@ -535,13 +535,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
     println("bundle-$targetResource")
     println("data"+iParser.encodeToString(targetResource))
-    Assert.assertEquals(3, targetResource.entry.size)
+    Assert.assertEquals(4, targetResource.entry.size)
     println("group-$targetResource" + iParser.encodeToString(targetResource.entry[0].resource))
     println("location-$targetResource" + iParser.encodeToString(targetResource.entry[1].resource))
     println("list-$targetResource" + iParser.encodeToString(targetResource.entry[2].resource))
     Assert.assertEquals("Group", targetResource.entry[0].resource.resourceType.toString())
     Assert.assertEquals("Location", targetResource.entry[1].resource.resourceType.toString())
     Assert.assertEquals("List", targetResource.entry[2].resource.resourceType.toString())
+    Assert.assertEquals("Encounter", targetResource.entry[3].resource.resourceType.toString())
   }
 
   @Test

@@ -8,7 +8,7 @@ group HouseholdRegistration(source src : QuestionnaireResponse, target bundle: B
     src -> bundle.id = uuid() "rule_bundle_id";
     src -> bundle.type = 'collection' "rule_bundle_type";
     src -> bundle.entry as entry, entry.resource = create('Group') as group then
-        ExtractGroup(src, group, bundle) "rule_bundle_entries";
+        ExtractGroup(src, group, bundle), ExtractEncounter(src, bundle) "rule_bundle_entries";
 }
 
 group ExtractGroup(source src : QuestionnaireResponse,
@@ -17,7 +17,7 @@ group ExtractGroup(source src : QuestionnaireResponse,
 
         // SETS GROUP DATA
 
-        src -> group.id = uuid() as groupId then {
+        src -> group.id = uuid() as locationLinkResourceId then {
 
             src -> group.name = evaluate(src, $this.item.where(linkId = 'household.name').answer.value) "rule_group_name";
 
@@ -52,7 +52,7 @@ group ExtractGroup(source src : QuestionnaireResponse,
                     entry.resource = create("Location") as location then {
                         src -> bundle.entry as entry,
                         entry.resource = create("List") as linkingList
-                            then ExtractOtherResources(src, bundle, location, linkingList, groupId) "r-other-resources";
+                            then ExtractOtherResources(src, bundle, location, linkingList, locationLinkResourceId) "r-other-resources";
                     } "r-other-data-call";
             } "r-other-resource-data";
 
@@ -89,9 +89,9 @@ group ExtractOtherResources(source src: QuestionnaireResponse,
             src -> code.coding = create('Coding') as coding then {
                 src -> coding.system = 'https://fhir-ru.github.io/v3/ServiceDeliveryLocationRoleType/vs.html' "r_gps_type_coding_system";
                 src -> coding.code = 'PTRES' "r_gps_type_c_coding_code";
-                src -> coding.display = 'Patient\' Residence' "r_gps_type_c_coding_display";
+                src -> coding.display = "Patient's Residence" "r_gps_type_c_coding_display";
             } "r_gps_type_c_coding";
-            src -> code.text = 'Patient\'s Residence' "r_gps_type-text";
+            src -> code.text = "Patient's Residence" "r_gps_type-text";
         } "r_gps_location_type";
 
         src -> gpsLocation.physicalType = create('CodeableConcept') as code then {
@@ -157,4 +157,17 @@ group ExtractHouseholdCode(source src : Group, target concept: CodeableConcept) 
     src -> concept.coding = c("https://www.snomed.org", "35359004") as coding then {
         src -> coding.display = 'Family' "r_cp_cod_disp";
     } "r_cp_cc_cod";
+}
+
+group ExtractEncounter(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src->bundle.entry as entry,
+    entry.resource = create("Encounter") as encounter then {
+        src -> encounter.id = uuid() "r_enc_id";
+        src->encounter.status = "finished" "r_enc_status";
+        src->encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH","household register") "r_enc_class";
+        src->encounter.serviceType = cc("http://terminology.hl7.org/CodeSystem/service-type", "128","Housing Information") "r_enc_ser_type";
+
+        src.subject as subj -> encounter.subject = subj "rule_subj";
+
+    } "r_bundle_entry_enc";
 }
