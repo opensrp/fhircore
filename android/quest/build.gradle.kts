@@ -25,6 +25,7 @@ android {
   defaultConfig {
     applicationId = "org.smartregister.fhircore"
     minSdk = Deps.sdk_versions.min_sdk
+    targetSdk = Deps.sdk_versions.target_sdk
     versionCode = 4
     versionName = "0.0.4"
     multiDexEnabled = true
