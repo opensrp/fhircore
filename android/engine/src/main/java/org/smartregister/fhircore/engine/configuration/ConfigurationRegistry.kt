@@ -21,33 +21,32 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Composition
-import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.AppConfigService
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.view.DataFiltersConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
-import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * A configuration store used to store all the application configurations. Application
@@ -69,7 +68,7 @@ constructor(
 ) {
 
     val configurationsMap = mutableMapOf<String, Configuration>()
-
+    private var applicationConfiguration = MutableStateFlow<AppConfiguration?>(null)
     val workflowPointsMap = mutableMapOf<String, WorkflowPoint>()
 
     /**
@@ -135,14 +134,20 @@ constructor(
      * @param configsLoadedCallback function for use as trailing lambda that provides Boolean
      *   indicating whether configurations were loaded successfully or not
      */
-    suspend fun loadConfigurations(): Boolean {
+    suspend fun loadConfigurations(jsonSerializer: Json? = null): Boolean {
         return try {
-            getBinary(appConfigService.getAppId())
+            val binary = getBinary(appConfigService.getAppId()).content.decodeToString()
+            val config = binary.decodeJson<AppConfiguration>(jsonSerializer)
+            applicationConfiguration.value = config
             true
         } catch (ex: ResourceNotFoundException) {
             false
         }
     }
+
+    fun getAppConfigs(): ApplicationConfiguration? = applicationConfiguration.value?.appConfig
+    fun getAppFeatureConfigs() : AppFeatureConfig? = applicationConfiguration.value?.appFeatures
+    fun getSyncConfigs() : SyncConfig? = applicationConfiguration.value?.syncConfig
 
     fun loadConfigurationsLocally(appId: String, configsLoadedCallback: (Boolean) -> Unit) {
         val parsedAppId = appId.substringBefore("/$DEBUG_SUFFIX")

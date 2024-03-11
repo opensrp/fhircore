@@ -42,11 +42,14 @@ class AppSettingActivity : AppCompatActivity() {
         appSettingViewModel.loadConfigurations()
         lifecycleScope.launch {
             appSettingViewModel.goToHome.collect {
-                goHome()
+                if (it == true) {
+                    goHome()
+                }
             }
         }
+
         installSplashScreen().setKeepOnScreenCondition {
-            appSettingViewModel.loadState.value is DataLoadState.Success
+            appSettingViewModel.loadState.value == null
         }
 
         setContent {
@@ -54,7 +57,7 @@ class AppSettingActivity : AppCompatActivity() {
                 val state by appSettingViewModel.loadState.observeAsState(DataLoadState.Loading)
 
                 AppSettingScreen(
-                    state = state,
+                    state = state ?: DataLoadState.Loading,
                     goToHome = this::goHome,
                     retry = appSettingViewModel::fetchRemoteConfigurations
                 )

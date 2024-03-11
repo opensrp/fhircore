@@ -28,24 +28,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import kotlin.system.exitProcess
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME
-import org.smartregister.fhircore.engine.util.FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP
 import org.smartregister.fhircore.engine.util.extension.showToast
+import javax.inject.Inject
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class LoginActivity :
-  BaseMultiLanguageActivity(), ConfigurableComposableView<LoginViewConfiguration> {
+  BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
 
@@ -58,7 +54,7 @@ class LoginActivity :
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-
+    loginViewModel.fetchLoginConfigs()
     navigateToScreen()
 
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
@@ -83,22 +79,7 @@ class LoginActivity :
               intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==
                 loginViewModel.username.value?.trim()
 
-          if (loginViewModel.loginViewConfiguration.value?.enablePin == true) {
-            val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
-            val forceLoginViaUsernamePinSetup =
-              loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-            when {
-              lastPinExist -> {
-                goToHomeScreen(FORCE_LOGIN_VIA_USERNAME, false)
-              }
-              forceLoginViaUsernamePinSetup -> {
-                goToHomeScreen(FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP, false)
-              }
-              else -> {
-                loginService.navigateToPinLogin(goForSetup = true)
-              }
-            }
-          } else if (isUpdatingCurrentAccount) {
+        if (isUpdatingCurrentAccount) {
             configurationRegistry.fetchNonWorkflowConfigResources()
             syncBroadcaster.get().runSync() // restart/resume sync
             setResult(Activity.RESULT_OK)
@@ -112,19 +93,15 @@ class LoginActivity :
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
 
-      if (configurationRegistry.isAppIdInitialized()) {
-        configureViews(configurationRegistry.retrieveConfiguration(AppConfigClassification.LOGIN))
-      }
-
       // Check if Pin enabled and stored then move to Pin login
-      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
-      val forceLoginViaUsername =
-        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
-      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
-        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-        loginService.navigateToPinLogin()
-      }
+//      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
+//      val forceLoginViaUsername =
+//        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
+//      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+//      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
+//        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
+//        loginService.navigateToPinLogin()
+//      }
     }
   }
 
@@ -139,15 +116,12 @@ class LoginActivity :
     return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
   }
 
-  override fun configureViews(viewConfiguration: LoginViewConfiguration) {
-    loginViewModel.updateViewConfigurations(viewConfiguration)
-  }
-
   private fun launchDialPad(phone: String) {
     startActivity(Intent(Intent.ACTION_DIAL).apply { data = Uri.parse(phone) })
   }
 
   override fun onBackPressed() {
+    super.onBackPressed()
     if (backPressed) {
       finishAffinity()
       exitProcess(0)

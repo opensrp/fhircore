@@ -31,6 +31,8 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -66,6 +68,7 @@ constructor(
   val tokenAuthenticator: TokenAuthenticator,
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
+  val configurationRegistry: ConfigurationRegistry
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -91,10 +94,6 @@ constructor(
   private val _showProgressBar = MutableLiveData(false)
   val showProgressBar
     get() = _showProgressBar
-
-  private val _loginViewConfiguration = MutableLiveData(loginViewConfigurationOf())
-  val loginViewConfiguration: LiveData<LoginViewConfiguration>
-    get() = _loginViewConfiguration
 
   private val _loadingConfig = MutableLiveData(true)
   val loadingConfig: LiveData<Boolean>
@@ -142,11 +141,6 @@ constructor(
       _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
     }
     return endpointResult
-  }
-
-  fun updateViewConfigurations(registerViewConfiguration: LoginViewConfiguration) {
-    _loginViewConfiguration.value = registerViewConfiguration
-    _loadingConfig.value = false
   }
 
   fun onUsernameUpdated(username: String) {
@@ -282,6 +276,13 @@ constructor(
 
   fun loadLastLoggedInUsername() {
     _username.postValue(accountAuthenticator.retrieveLastLoggedInUsername() ?: "")
+  }
+
+  fun fetchLoginConfigs() {
+    val appConfigs = configurationRegistry.getAppConfigs()
+    if (appConfigs != null) {
+      _loadingConfig.value = false
+    }
   }
 
   companion object {

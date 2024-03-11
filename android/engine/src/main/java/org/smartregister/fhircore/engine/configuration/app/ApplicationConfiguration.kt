@@ -25,7 +25,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Com
 @Serializable
 data class ApplicationConfiguration(
   override val appId: String = "",
-  override val classification: String,
+  override val classification: String = "",
   var theme: String = "",
   var languages: List<String> = listOf("en"),
   var syncInterval: Long = 30,

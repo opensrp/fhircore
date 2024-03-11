@@ -45,7 +45,7 @@ constructor(
     private val configRepository: ConfigRepository,
 ) : ViewModel() {
 
-    private val _loadState = MutableLiveData<DataLoadState<Boolean>>(DataLoadState.Loading)
+    private val _loadState = MutableLiveData<DataLoadState<Boolean>?>()
     val loadState = _loadState
 
     private val _goToHome = MutableStateFlow<Boolean?>(null)
@@ -53,10 +53,9 @@ constructor(
 
     fun loadConfigurations() {
         viewModelScope.launch {
-            _loadState.postValue(DataLoadState.Loading)
             val loaded = configurationRegistry.loadConfigurations()
             if (loaded) {
-                _goToHome.emit(true)
+                _goToHome.value = true
                 _loadState.postValue(DataLoadState.Success(data = true))
             } else {
                 fetchRemoteConfigurations()

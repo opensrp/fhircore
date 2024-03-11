@@ -60,9 +60,7 @@ constructor(
 ) {
 
   private val syncConfig by lazy {
-    configurationRegistry.retrieveConfiguration<FhirConfiguration<Parameters>>(
-      AppConfigClassification.SYNC,
-    )
+    configurationRegistry.getSyncConfigs()
   }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
@@ -112,9 +110,9 @@ constructor(
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig.resource.parameter
-      .map { it.resource as SearchParameter }
-      .forEach { sp ->
+    syncConfig?.parameter
+      ?.map { it.resource }
+      ?.forEach { sp ->
         val paramName = sp.name // e.g. organization
         val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
         val paramExpression = sp.expression
@@ -129,14 +127,14 @@ constructor(
             // replace the evaluated value into expression for complex expressions
             // e.g. #organization -> 123
             // e.g. patient.organization eq #organization -> patient.organization eq 123
-            paramExpression.replace(paramLiteral, it)
+            paramExpression?.replace(paramLiteral, it)
           }
 
         // for each entity in base create and add param map
         // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
         // ],..]
         sp.base.forEach { base ->
-          val resourceType = ResourceType.fromCode(base.code)
+          val resourceType = ResourceType.fromCode(base)
           val pair = pairs.find { it.first == resourceType }
           if (pair == null) {
             pairs.add(
