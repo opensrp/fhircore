@@ -577,6 +577,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testLoadConfigurationsLoadFromAssetsResources() {
+    val expectedConfigKey = "754"
     configRegistry.configsJsonMap[ResourceType.Questionnaire.name] =
       """{"resourceId": "thisQuestionnaire", "resourceType": "Questionnaire"}"""
 
@@ -589,10 +590,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val configJson =
       context.assets.open("sample_patient_registration.json").bufferedReader().readText()
 
-    configJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid()
-
+    val configKey = configJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid()
+    configRegistry.configsJsonMap.containsKey(ResourceType.Questionnaire.name)
     Assert.assertNotNull(configRegistry.configsJsonMap)
     Assert.assertTrue(configRegistry.configsJsonMap.containsKey(ResourceType.Questionnaire.name))
+    assertEquals(expectedConfigKey, configKey)
   }
 
   @Test
