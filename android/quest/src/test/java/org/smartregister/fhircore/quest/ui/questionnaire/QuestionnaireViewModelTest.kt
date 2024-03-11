@@ -27,6 +27,7 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -39,6 +40,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import java.net.URL
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -73,6 +75,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
@@ -81,6 +84,8 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -101,6 +106,7 @@ import org.smartregister.fhircore.engine.util.extension.isToday
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
@@ -126,6 +132,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  private lateinit var configRegistry: ConfigurationRegistry
+
+  private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -134,6 +143,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val patient =
     Faker.buildPatient().apply {
       address =
@@ -151,6 +161,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
+
+    fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
@@ -201,6 +213,25 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
     samplePatientRegisterQuestionnaire = questionnaireJson.decodeResourceFromString()
+
+    configRegistry =
+      ConfigurationRegistry(
+        fhirEngine,
+        fhirResourceDataSource,
+        sharedPreferencesHelper,
+        dispatcherProvider,
+        AppConfigService(context),
+        Faker.json,
+        context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+        openSrpApplication =
+          object : OpenSrpApplication() {
+            override fun getFhirServerHost(): URL? {
+              return URL("http://my_test_fhirbase_url/fhir/")
+            }
+          },
+      )
+    configRegistry.setNonProxy(false)
+    Assert.assertNotNull(configRegistry)
   }
 
   private fun practitionerDetails(): PractitionerDetails {
@@ -522,7 +553,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @Test
   fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromAssets() = runTest {
     val sampleQuestionnaire = Faker.buildQuestionnaire()
-
     val theQuestionnaireConfig =
       QuestionnaireConfig(
         id = sampleQuestionnaire.id,
@@ -628,6 +658,36 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       newQuestionnaireConfig.resourceIdentifier,
       barCodeItemValue?.primitiveValue(),
     )
+  }
+
+  @Test
+  fun testWithQuestionnaireReturnsNull() = runTest {
+    val mockedSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockedConfigurationRegistry: ConfigurationRegistry = mockk()
+
+    val questionnaireJson =
+      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid(),
+      )
+
+    coEvery {
+      mockedSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    } returns "app/debug"
+
+    val load = configurationRegistry.configsJsonMap.getOrDefault(theQuestionnaireConfig.id, null)
+    val theResource = load?.decodeResourceFromString<Questionnaire>()
+
+    val sampleQQuestionnaire =
+      theResource?.let {
+        mockedConfigurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+          it.id,
+        )
+      }
+
+    Assert.assertNull(sampleQQuestionnaire)
   }
 
   @Test
