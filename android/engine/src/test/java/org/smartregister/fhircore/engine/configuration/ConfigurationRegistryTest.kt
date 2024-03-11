@@ -359,7 +359,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery {
       fhirResourceDataSource.getResource(
-        "${ResourceType.List.name}?$resourceKey?${ConfigurationRegistry.ID}=$resourceId&_page&_count"
+        "${ResourceType.List.name}?$resourceKey?${ConfigurationRegistry.ID}=$resourceId&_page&_count",
       )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
@@ -380,7 +380,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     )
     coVerify {
       fhirResourceDataSource.getResource(
-        "${ResourceType.List.name}?$resourceKey?${ConfigurationRegistry.ID}=$resourceId&_page&_count"
+        "${ResourceType.List.name}?$resourceKey?${ConfigurationRegistry.ID}=$resourceId&_page&_count",
       )
     }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
