@@ -32,6 +32,7 @@ data class ApplicationConfiguration(
   val syncInterval: Long = 15,
   val syncStrategies: List<String> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
+  val listSyncConfig: ListSyncConfig = ListSyncConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val reportRepeatTime: String = "",

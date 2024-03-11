@@ -23,6 +23,12 @@
     "showLogo": true,
     "enablePin": true
   },
+
+  "listSyncConfigs": {
+    "page": 1,
+    "count": 20
+  },
+
   "deviceToDeviceSync": {
     "resourcesToSync": [
       "Group",
