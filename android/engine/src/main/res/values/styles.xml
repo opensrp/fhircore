@@ -61,6 +61,9 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="questionnaireSubmitButtonStyle">@style/Quest.Questionnaire.SubmitButtonStyle
         </item>
+        <item name="questionnaireGroupTypeHeaderStyle">
+            @style/Questionnaire.GroupTypeHeaderStyle
+        </item>
     </style>
     <style name="Quest.Questionnaire.SubmitButtonStyle" parent="Questionnaire.SubmitButtonStyle">
         <item name="android:text">@string/str_save</item>
@@ -74,6 +77,10 @@
         <item name="android:textColor">@color/white</item>
         <item name="android:textSize">18sp</item>
         <item name="android:layout_gravity">bottom|start</item>
+    </style>
+
+    <style name="Questionnaire.GroupTypeHeaderStyle" parent="">
+        <item name="android:paddingBottom">@dimen/header_padding_bottom</item>
     </style>
 
 </resources>

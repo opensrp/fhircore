@@ -789,7 +789,9 @@ constructor(
       questionnaireResponse ->
       if (!questionnaireResponse.hasItem()) {
         Timber.tag("QuestionnaireViewModel.populateQuestionnaireResponse")
-          .d("Questionnaire response has no populated answers")
+          .d(
+            "Questionnaire response has no populated answers against Questionnaire=${questionnaire.logicalId}"
+          )
       }
     }
   }

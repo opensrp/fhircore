@@ -19,7 +19,13 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireItemViewHolderFactoryMatchersProviderFactory
 import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderViewHolderFactory
+import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
+import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.hl7.fhir.r4.model.CodeableConcept
+
+const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
+  "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
 
 object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
@@ -27,14 +33,18 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   override fun get(
     provider: String
   ): QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider {
-    return QuestionnaireItemViewHolderFactoryMatchersProviderImpl
+    return when (provider) {
+      OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER ->
+        OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl
+      else -> throw NotImplementedError()
+    }
   }
 
-  object QuestionnaireItemViewHolderFactoryMatchersProviderImpl :
+  object OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl :
     QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
 
-    const val BARCODE_URL = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
-    const val BARCODE_NAME = "barcode"
+    private const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
+    private const val BARCODE_NAME = "barcode"
 
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
@@ -44,7 +54,34 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
           questionnaireItem.getExtensionByUrl(BARCODE_URL).let {
             if (it == null) false else it.value.asStringValue() == BARCODE_NAME
           }
-        }
+        },
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = LocationGpsCoordinateViewHolderFactory,
+          matches = LocationGpsCoordinateViewHolderFactory::matcher,
+        ),
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = LocationWidgetViewHolderFactory,
+          matches = { questionnaireItem ->
+            val codeableConcept =
+              questionnaireItem.extension
+                .firstOrNull {
+                  it.url == "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl" ||
+                    it.url ==
+                      "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
+                }
+                ?.value as
+                CodeableConcept?
+            val itemControlCode =
+              codeableConcept?.coding
+                ?.firstOrNull {
+                  it.system == "http://hl7.org/fhir/questionnaire-item-control" ||
+                    it.system == "https://github.com/google/android-fhir/questionnaire-item-control"
+                }
+                ?.code
+
+            itemControlCode == "location-widget"
+          },
+        ),
       )
     }
   }
