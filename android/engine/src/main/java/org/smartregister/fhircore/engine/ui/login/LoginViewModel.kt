@@ -33,6 +33,7 @@ import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
+import org.smartregister.fhircore.engine.configuration.app.AppConfigService
 import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
 import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -68,7 +69,8 @@ constructor(
   val tokenAuthenticator: TokenAuthenticator,
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
-  val configurationRegistry: ConfigurationRegistry
+  val configurationRegistry: ConfigurationRegistry,
+  val appConfigs: AppConfigService
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -160,51 +162,60 @@ constructor(
   }
 
   private suspend fun login(offline: Boolean) {
-    val usernameValue = _username.value
-    val passwordValue = _password.value
-    if (usernameValue.isNullOrBlank() || passwordValue.isNullOrBlank()) return
+    try {
+      val usernameValue = _username.value
+      val passwordValue = _password.value
+      if (usernameValue.isNullOrBlank() || passwordValue.isNullOrBlank()) return
 
-    _loginErrorState.postValue(null)
-    _showProgressBar.postValue(true)
+      _loginErrorState.postValue(null)
+      _showProgressBar.postValue(true)
 
-    val trimmedUsername = _username.value!!.trim()
-    val passwordAsCharArray = _password.value!!.toCharArray()
-    if (offline) {
-      verifyCredentials(trimmedUsername, passwordAsCharArray)
-      return
-    }
-
-    val practitionerID =
-      sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
-    val sessionActiveExists = tokenAuthenticator.sessionActive() && practitionerID != null
-    val existingCredentials = secureSharedPreference.retrieveCredentials()
-    val multiUserLoginAttempted =
-      existingCredentials?.username?.equals(trimmedUsername, true) == false
-
-    when {
-      multiUserLoginAttempted -> {
-        _showProgressBar.postValue(false)
-        _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+      val trimmedUsername = _username.value!!.trim()
+      val passwordAsCharArray = _password.value!!.toCharArray()
+      if (offline) {
+        verifyCredentials(trimmedUsername, passwordAsCharArray)
+        return
       }
-      sessionActiveExists -> verifyCredentials(trimmedUsername, passwordAsCharArray)
-      else -> {
-        val accessTokenResult = fetchAccessToken(trimmedUsername, passwordAsCharArray)
-        if (accessTokenResult.isFailure) return
 
-        if (accessTokenResult.getOrNull() == null) return
+      val practitionerID =
+        sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
+      val sessionActiveExists = tokenAuthenticator.sessionActive() && practitionerID != null
+      val existingCredentials = secureSharedPreference.retrieveCredentials()
+      val multiUserLoginAttempted =
+        existingCredentials?.username?.equals(trimmedUsername, true) == false
 
-        val jwtParser = Jwts.parser()
-        val jwt = accessTokenResult.getOrNull()!!.accessToken!!.substringBeforeLast('.').plus(".")
-        val subClaim = jwtParser.parseClaimsJwt(jwt)
-        val keycloakUuid = subClaim.body["sub"].toString()
-        val practitionerDetailsResult = fetchPractitioner(keycloakUuid)
-        if (practitionerDetailsResult.isFailure) return
+      when {
+        multiUserLoginAttempted -> {
+          _showProgressBar.postValue(false)
+          _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
+        }
+        sessionActiveExists -> verifyCredentials(trimmedUsername, passwordAsCharArray)
+        else -> {
+          val accessTokenResult = fetchAccessToken(trimmedUsername, passwordAsCharArray)
+          if (accessTokenResult.isFailure) return
 
-        savePractitionerDetails(practitionerDetailsResult.getOrDefault(Bundle()))
+          if (accessTokenResult.getOrNull() == null) return
 
-        _showProgressBar.postValue(false)
-        updateNavigateHome(true)
+          val jwtParser = Jwts.parser()
+          val jwt = accessTokenResult.getOrNull()!!.accessToken!!.substringBeforeLast('.').plus(".")
+          val subClaim = jwtParser.parseClaimsJwt(jwt)
+          val keycloakUuid = subClaim.body["sub"].toString()
+          val practitionerDetailsResult = fetchPractitioner(keycloakUuid)
+          if (practitionerDetailsResult.isFailure) return
+
+          savePractitionerDetails(practitionerDetailsResult.getOrDefault(Bundle()))
+
+          _showProgressBar.postValue(false)
+          updateNavigateHome(true)
+        }
       }
+    } catch (ex: Exception) {
+      if (ex is PractitionerNotFoundException) {
+        _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
+      } else {
+        _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
+      }
+      _showProgressBar.postValue(false)
     }
   }
 
@@ -236,6 +247,8 @@ constructor(
   suspend fun savePractitionerDetails(bundle: Bundle) {
     if (bundle.entry.isNullOrEmpty()) return
     val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
+
+    if (practitionerDetails.id == "${appConfigs.getBaseFhirUrl()}practitioner-details/Practitioner Not Found") throw PractitionerNotFoundException()
 
     val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
     val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()

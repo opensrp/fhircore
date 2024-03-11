@@ -20,3 +20,5 @@ class InvalidCredentialsException(cause: Throwable? = null) :
   Exception("Invalid login credentials", cause)
 
 class LoginNetworkException(cause: Throwable? = null) : Exception("Network call failed", cause)
+
+class PractitionerNotFoundException: Exception("Practitioner Not Found")
