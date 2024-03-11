@@ -55,38 +55,38 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
   }
 
   fun loadData(encounterId: String) {
-    viewModelScope.launch {
-      val encounter = patientRepository.loadEncounter(encounterId)
-      val config =
-        patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
-          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW,
-        )
-
-      val dataItem = DetailsViewItem()
-      dataItem.label = config.label
-
-      val dataMap = getDataMap(encounter)
-
-      config.rows.forEach {
-        val row = DetailsViewItemRow()
-
-        it.filters.forEach { f ->
-          // get the required property from pre-loaded resources e.g. CONDITION
-          val value =
-            dataMap[f.resourceType]
-              ?.find { doesSatisfyFilter(it, f) == true }
-              ?.getPathValue(f.displayableProperty)
-
-          row.cells.add(DetailsViewItemCell(value, f))
-        }
-
-        dataItem.rows.add(row)
-      }
-
-      Timber.i(dataItem.rows.toString())
-
-      _detailsViewItem.postValue(dataItem)
-    }
+//    viewModelScope.launch {
+//      val encounter = patientRepository.loadEncounter(encounterId)
+//      val config =
+//        patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
+//          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW,
+//        )
+//
+//      val dataItem = DetailsViewItem()
+//      dataItem.label = config.label
+//
+//      val dataMap = getDataMap(encounter)
+//
+//      config.rows.forEach {
+//        val row = DetailsViewItemRow()
+//
+//        it.filters.forEach { f ->
+//          // get the required property from pre-loaded resources e.g. CONDITION
+//          val value =
+//            dataMap[f.resourceType]
+//              ?.find { doesSatisfyFilter(it, f) == true }
+//              ?.getPathValue(f.displayableProperty)
+//
+//          row.cells.add(DetailsViewItemCell(value, f))
+//        }
+//
+//        dataItem.rows.add(row)
+//      }
+//
+//      Timber.i(dataItem.rows.toString())
+//
+//      _detailsViewItem.postValue(dataItem)
+//    }
   }
 
   /**
