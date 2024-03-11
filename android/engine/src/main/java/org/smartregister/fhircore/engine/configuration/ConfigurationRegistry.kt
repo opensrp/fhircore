@@ -52,6 +52,7 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.OpenSrpApplication
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -676,6 +677,11 @@ constructor(
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
+    val applicationConfig =
+      retrieveConfiguration<ApplicationConfiguration>(
+        configType = ConfigType.Application,
+      )
+
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
       chunkedResourceIdList.forEach {
@@ -697,7 +703,7 @@ constructor(
                     )
                   val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
                   val listResourceUrlPath =
-                    "${ResourceType.List.name}?$resourceKey?$ID=$resourceId&_page&_count"
+                    "${ResourceType.List.name}?$resourceKey?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page} &_count= ${applicationConfig.listSyncConfig.count}"
                   fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                     listEntryResourceBundle ->
                     addOrUpdate(listEntryResourceBundle.resource)
