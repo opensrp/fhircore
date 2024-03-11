@@ -47,10 +47,11 @@ class AppSettingScreenKtTest : RobolectricTest() {
   fun testAppSettingScreenLayout() {
     composeRule.setContent {
       AppSettingScreen(
-        appId = appId,
-        onAppIdChanged = listenersSpy.onAppIdChanged,
-        fetchConfiguration = listenersSpy.fetchConfiguration,
-        error = "",
+          appId = appId,
+          onAppIdChanged = listenersSpy.onAppIdChanged,
+          fetchConfiguration = listenersSpy.fetchConfiguration,
+          error = "",
+          state = state,
       )
     }
 
@@ -63,10 +64,11 @@ class AppSettingScreenKtTest : RobolectricTest() {
   fun testLoadConfigurationButtonListenerAction() {
     composeRule.setContent {
       AppSettingScreen(
-        appId = appId,
-        onAppIdChanged = listenersSpy.onAppIdChanged,
-        fetchConfiguration = listenersSpy.fetchConfiguration,
-        error = "",
+          appId = appId,
+          onAppIdChanged = listenersSpy.onAppIdChanged,
+          fetchConfiguration = listenersSpy.fetchConfiguration,
+          error = "",
+          state = state,
       )
     }
 
@@ -80,10 +82,11 @@ class AppSettingScreenKtTest : RobolectricTest() {
     val error = "theError"
     composeRule.setContent {
       AppSettingScreen(
-        appId = appId,
-        onAppIdChanged = listenersSpy.onAppIdChanged,
-        fetchConfiguration = listenersSpy.fetchConfiguration,
-        error = error,
+          appId = appId,
+          onAppIdChanged = listenersSpy.onAppIdChanged,
+          fetchConfiguration = listenersSpy.fetchConfiguration,
+          error = error,
+          state = state,
       )
     }
 

@@ -76,7 +76,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
         isResource = false,
       ),
       ResourceTag(
-        type = SharedPreferenceKey.APP_ID.name,
+        type = BuildConfig.APPLICATION_ID,
         tag =
           Coding().apply {
             system = context.getString(R.string.sync_strategy_appid_system)

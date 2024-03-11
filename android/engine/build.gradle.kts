@@ -216,6 +216,8 @@ dependencies {
   implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
   implementation("com.google.firebase:firebase-perf-ktx")
 
+  implementation("androidx.core:core-splashscreen:1.0.0")
+
   // Hilt test dependencies
   testImplementation("com.google.dagger:hilt-android-testing:${Deps.versions.hiltVersion}")
   kaptTest("com.google.dagger:hilt-android-compiler:${Deps.versions.hiltVersion}")

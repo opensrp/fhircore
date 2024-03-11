@@ -23,62 +23,47 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.res.stringResource
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
-import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.auth.AccountAuthenticator
-import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
+import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.domain.util.DataLoadState
+import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
+    private val appSettingViewModel: AppSettingViewModel by viewModels()
 
-  @Inject lateinit var accountAuthenticator: AccountAuthenticator
-
-  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
-
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
-
-  private val appSettingViewModel: AppSettingViewModel by viewModels()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-    super.onCreate(savedInstanceState)
-    val appSettingActivity = this@AppSettingActivity
-    setContent { AppTheme { LoaderDialog(dialogMessage = stringResource(R.string.initializing)) } }
-    val existingAppId =
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
-
-    appSettingViewModel.error.observe(appSettingActivity) { error ->
-      if (!error.isNullOrEmpty()) showToast(error)
-    }
-
-    // If app exists load the configs otherwise fetch from the server
-    if (!existingAppId.isNullOrEmpty()) {
-      appSettingViewModel.run {
-        onApplicationIdChanged(existingAppId)
-        loadConfigurations(appSettingActivity)
-      }
-    } else {
-      setContent {
-        AppTheme {
-          val appId by appSettingViewModel.appId.observeAsState("")
-          val showProgressBar by appSettingViewModel.showProgressBar.observeAsState(false)
-          val error by appSettingViewModel.error.observeAsState("")
-          AppSettingScreen(
-            appId = appId,
-            onAppIdChanged = appSettingViewModel::onApplicationIdChanged,
-            fetchConfiguration = appSettingViewModel::fetchConfigurations,
-            showProgressBar = showProgressBar,
-            error = error,
-          )
+    override fun onCreate(savedInstanceState: Bundle?) {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        super.onCreate(savedInstanceState)
+        appSettingViewModel.loadConfigurations()
+        lifecycleScope.launch {
+            appSettingViewModel.goToHome.collect {
+                goHome()
+            }
         }
-      }
+        installSplashScreen().setKeepOnScreenCondition {
+            appSettingViewModel.loadState.value is DataLoadState.Success
+        }
+
+        setContent {
+            AppTheme {
+                val state by appSettingViewModel.loadState.observeAsState(DataLoadState.Loading)
+
+                AppSettingScreen(
+                    state = state,
+                    goToHome = this::goHome,
+                    retry = appSettingViewModel::fetchRemoteConfigurations
+                )
+            }
+        }
     }
-  }
+
+
+    private fun goHome() {
+        launchActivityWithNoBackStackHistory<LoginActivity>()
+    }
 }

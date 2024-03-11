@@ -1,13 +1,9 @@
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.extra
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileNotFoundException
 import java.io.InputStreamReader
 import java.util.Properties
 
 val fhirAuthArray = arrayOf(
-    "FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE"
+    "FHIR_BASE_URL", "OAUTH_BASE_URL", "OAUTH_CIENT_ID", "OAUTH_CLIENT_SECRET", "OAUTH_SCOPE", "APP_ID"
 )
 //KEYSTORE CREDENTIALS
 val keystoreAuthArray = arrayOf(

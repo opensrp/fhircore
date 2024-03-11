@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.domain.util
 
 sealed class DataLoadState<out T> {
-  object Loading : DataLoadState<Nothing>()
+  data object Loading : DataLoadState<Nothing>()
 
   data class Success<T>(val data: T) : DataLoadState<T>()
 

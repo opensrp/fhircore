@@ -34,6 +34,7 @@ android {
     buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CIENT_ID", """"${project.extra["OAUTH_CIENT_ID"]}"""")
+    buildConfigField("String", "APP_ID", """"${project.extra["APP_ID"]}"""")
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
