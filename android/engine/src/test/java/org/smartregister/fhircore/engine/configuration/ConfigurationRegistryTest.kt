@@ -577,16 +577,22 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testLoadConfigurationsLoadFromAssetsResources() {
+    configRegistry.configsJsonMap[ResourceType.Questionnaire.name] =
+      """{"resourceId": "thisQuestionnaire", "resourceType": "Questionnaire"}"""
+
+    // First time reading the configCacheMap not yet populated
+    Assert.assertFalse(configRegistry.configCacheMap.containsKey(ResourceType.Questionnaire.name))
 
     val appId = "appId/debug"
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-
-    val configJson = context.assets.open("configs/app/registers/anc_register_config.json").bufferedReader().readText()
+    val configJson =
+      context.assets.open("sample_patient_registration.json").bufferedReader().readText()
 
     configJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid()
 
     Assert.assertNotNull(configRegistry.configsJsonMap)
+    Assert.assertTrue(configRegistry.configsJsonMap.containsKey(ResourceType.Questionnaire.name))
   }
 
   @Test
