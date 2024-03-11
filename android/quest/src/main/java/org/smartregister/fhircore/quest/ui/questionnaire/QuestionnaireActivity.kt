@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -128,7 +129,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   fun setupLocationServices() {
-    if (viewModel.applicationConfiguration.logQuestionnaireLocation) {
+    if (viewModel.applicationConfiguration.logGpsLocations.contains(LocationLogOptions.QUESTIONNAIRE)) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
