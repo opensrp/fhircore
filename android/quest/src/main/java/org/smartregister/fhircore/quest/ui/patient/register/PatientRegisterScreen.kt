@@ -38,6 +38,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.compose.ui.res.stringResource
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -47,6 +48,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -83,7 +85,6 @@ fun PatientRegisterScreen(
         }
       },
     )
-  val registerConfigs = remember { patientRegisterViewModel.registerViewConfiguration }
 
   val pagingItems: LazyPagingItems<RegisterViewData> =
     patientRegisterViewModel.paginatedRegisterData.collectAsState().value.collectAsLazyPagingItems()
@@ -131,12 +132,10 @@ fun PatientRegisterScreen(
                 patientRegistrationLauncher.launch(
                   patientRegisterViewModel.patientRegisterQuestionnaireIntent(context),
                 )
-                //
-                // patientRegisterViewModel.onEvent(PatientRegisterEvent.RegisterNewClient(context))
               },
               enabled = !firstTimeSync,
             ) {
-              Text(text = registerConfigs.newClientButtonText, modifier = modifier.padding(8.dp))
+              Text(text = stringResource(R.string.register_new_client), modifier = modifier.padding(8.dp))
             }
           }
         }

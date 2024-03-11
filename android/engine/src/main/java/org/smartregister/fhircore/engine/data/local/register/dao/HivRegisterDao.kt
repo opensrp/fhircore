@@ -386,8 +386,8 @@ constructor(
 
   fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
 
-  fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+  private fun getApplicationConfiguration(): ApplicationConfiguration {
+    return configurationRegistry.getAppConfigs()!!
   }
 
   suspend fun removePatient(patientId: String) {

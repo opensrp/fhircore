@@ -58,9 +58,7 @@ constructor(
 ) : ViewModel() {
 
   private val applicationConfiguration =
-    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-      AppConfigClassification.APPLICATION,
-    )
+    configurationRegistry.getAppConfigs()
 
   private val _lastSyncTimestamp =
     MutableLiveData(sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, ""))

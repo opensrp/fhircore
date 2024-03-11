@@ -311,9 +311,7 @@ abstract class TracingRegisterDao(
     return patient?.let {
       val metaCodingSystemTag =
         configurationRegistry
-          .retrieveConfiguration<ApplicationConfiguration>(
-            AppConfigClassification.APPLICATION,
-          )
+          .getAppConfigs()
           .patientTypeFilterTagViaMetaCodingSystem
       val tasks = validTasks(patient)
 
@@ -421,7 +419,7 @@ abstract class TracingRegisterDao(
   }
 
   private fun applicationConfiguration(): ApplicationConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    configurationRegistry.getAppConfigs()
 
   private suspend fun validTasks(patient: Patient): List<Task> {
     val patientTasks =

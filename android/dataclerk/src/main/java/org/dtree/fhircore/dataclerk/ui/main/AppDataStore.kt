@@ -58,7 +58,7 @@ constructor(
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   private fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    return configurationRegistry.getAppConfigs()
   }
 
   suspend fun loadPatients(page: Int = 1): List<PatientItem> {

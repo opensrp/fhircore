@@ -65,7 +65,7 @@ constructor(
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
 
   private val applicationConfiguration: ApplicationConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    configurationRegistry.getAppConfigs()
   val refreshHash = mutableStateOf("")
 
   suspend fun retrieveAppMainUiState(syncBroadcaster: SyncBroadcaster) {

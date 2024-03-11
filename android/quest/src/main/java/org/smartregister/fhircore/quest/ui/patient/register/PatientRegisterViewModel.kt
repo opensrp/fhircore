@@ -121,12 +121,7 @@ constructor(
   val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  var registerViewConfiguration: RegisterViewConfiguration
-    private set
-
   init {
-    registerViewConfiguration =
-      configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
 
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)
@@ -245,7 +240,7 @@ constructor(
     Intent(context, QuestionnaireActivity::class.java)
       .putExtras(
         QuestionnaireActivity.intentArgs(
-          formName = registerViewConfiguration.registrationForm,
+          formName = configurationRegistry.getAppConfigs().registrationForm,
           questionnaireType = QuestionnaireType.DEFAULT,
         ),
       )

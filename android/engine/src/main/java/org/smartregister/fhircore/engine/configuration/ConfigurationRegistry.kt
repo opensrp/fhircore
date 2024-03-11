@@ -61,9 +61,9 @@ class ConfigurationRegistry
 constructor(
     @ApplicationContext val context: Context,
     val fhirEngine: FhirEngine,
-    val fhirResourceDataSource: FhirResourceDataSource,
-    val sharedPreferencesHelper: SharedPreferencesHelper,
-    val dispatcherProvider: DispatcherProvider,
+     val fhirResourceDataSource: FhirResourceDataSource,
+     val sharedPreferencesHelper: SharedPreferencesHelper,
+      val dispatcherProvider: DispatcherProvider,
     val appConfigService: AppConfigService
 ) {
 
@@ -145,7 +145,7 @@ constructor(
         }
     }
 
-    fun getAppConfigs(): ApplicationConfiguration? = applicationConfiguration.value?.appConfig
+    fun getAppConfigs(): ApplicationConfiguration = applicationConfiguration.value?.appConfig!!
     fun getAppFeatureConfigs() : AppFeatureConfig? = applicationConfiguration.value?.appFeatures
     fun getSyncConfigs() : SyncConfig? = applicationConfiguration.value?.syncConfig
 

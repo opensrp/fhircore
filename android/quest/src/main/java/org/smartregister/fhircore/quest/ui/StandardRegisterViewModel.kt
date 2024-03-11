@@ -35,7 +35,6 @@ interface StandardRegisterViewModel {
 
   val isRefreshing: StateFlow<Boolean>
   val currentPage: LiveData<Int>
-  var registerViewConfiguration: RegisterViewConfiguration
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>>
   val searchText: StateFlow<String>
 }

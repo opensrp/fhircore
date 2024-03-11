@@ -113,7 +113,7 @@ class LoginActivity :
   }
 
   fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    return configurationRegistry.getAppConfigs()
   }
 
   private fun launchDialPad(phone: String) {

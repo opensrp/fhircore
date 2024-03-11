@@ -86,7 +86,7 @@ constructor(
       ?.actor
 
   private fun applicationConfiguration(): ApplicationConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    configurationRegistry.getAppConfigs()
 
   override suspend fun countRegisterData(appFeatureName: String?): Long {
     return fhirEngine

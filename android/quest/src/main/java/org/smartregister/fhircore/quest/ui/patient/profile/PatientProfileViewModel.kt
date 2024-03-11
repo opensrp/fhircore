@@ -103,7 +103,7 @@ constructor(
   var patientProfileData: ProfileData? = null
 
   val applicationConfiguration: ApplicationConfiguration
-    get() = configurationRegistry.retrieveConfiguration(AppConfigClassification.APPLICATION)
+    get() = configurationRegistry.getAppConfigs()
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
 

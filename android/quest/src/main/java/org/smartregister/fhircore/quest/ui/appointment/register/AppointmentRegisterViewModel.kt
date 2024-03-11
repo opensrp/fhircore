@@ -111,9 +111,6 @@ constructor(
     MutableStateFlow(AppointmentFilterState.default())
   val filtersStateFlow: StateFlow<AppointmentFilterState> = _filtersMutableStateFlow.asStateFlow()
 
-  override var registerViewConfiguration: RegisterViewConfiguration =
-    configurationRegistry.retrieveConfiguration(AppConfigClassification.PATIENT_REGISTER)
-
   init {
     val searchFlow = _searchText.debounce(500)
     val pageFlow = _currentPage.asFlow().debounce(200)

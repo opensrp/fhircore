@@ -37,6 +37,7 @@ data class ApplicationConfiguration(
   var taskOrderFilterTagViaMetaCodingSystem: String =
     DEFAULT_TASK_ORDER_FILTER_TAG_META_CODING_SYSTEM,
   var taskFilterTagViaMetaCodingSystem: String = DEFAULT_TASK_FILTER_TAG_META_CODING_SYSTEM,
+  var registrationForm: String = "patient-demographic-registration"
 ) : Configuration
 
 /**

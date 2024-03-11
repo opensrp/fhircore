@@ -104,9 +104,7 @@ constructor(
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION,
-      )
+      configurationRegistry.getAppConfigs()
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now

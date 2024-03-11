@@ -244,9 +244,7 @@ internal class HivRegisterDaoTest : RobolectricTest() {
       applicationConfigurationOf(patientTypeFilterTagViaMetaCodingSystem = "https://d-tree.org")
 
     every {
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        AppConfigClassification.APPLICATION,
-      )
+      configurationRegistry.getAppConfigs()
     } returns
       applicationConfigurationOf(patientTypeFilterTagViaMetaCodingSystem = "https://d-tree.org")
 

@@ -99,6 +99,6 @@ suspend fun FhirEngine.loadPatientImmunizations(patientId: String): List<Immuniz
 }
 
 fun ConfigurationRegistry.fetchLanguages() =
-  this.retrieveConfiguration<ApplicationConfiguration>(AppConfigClassification.APPLICATION)
+  this.getAppConfigs()
     .run { this.languages }
     .map { Language(it, Locale.forLanguageTag(it).displayName) }
