@@ -41,9 +41,9 @@ data class ApplicationConfiguration(
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
-  val logGpsLocations: List<LocationLogOptions> = listOf(),
+  val logGpsLocation: List<LocationLogOptions> = listOf(),
 ) : Configuration()
 
 enum class LocationLogOptions {
-  QUESTIONNAIRE
+  QUESTIONNAIRE,
 }

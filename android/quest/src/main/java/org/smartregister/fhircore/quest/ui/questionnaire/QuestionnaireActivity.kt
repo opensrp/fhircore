@@ -129,7 +129,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
   }
 
   fun setupLocationServices() {
-    if (viewModel.applicationConfiguration.logGpsLocations.contains(LocationLogOptions.QUESTIONNAIRE)) {
+    if (
+      viewModel.applicationConfiguration.logGpsLocation.contains(LocationLogOptions.QUESTIONNAIRE)
+    ) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
