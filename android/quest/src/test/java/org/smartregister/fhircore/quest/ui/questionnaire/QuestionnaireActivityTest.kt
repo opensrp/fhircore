@@ -63,6 +63,7 @@ import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowToast
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -216,7 +217,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations.contains(LocationLogOptions.QUESTIONNAIRE))
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
@@ -235,7 +236,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should open location settings if location is disabled`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations.contains(LocationLogOptions.QUESTIONNAIRE))
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
@@ -258,7 +259,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations.contains(LocationLogOptions.QUESTIONNAIRE))
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
