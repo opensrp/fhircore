@@ -23,8 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.jsonwebtoken.Jwts
-import java.net.UnknownHostException
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
@@ -32,10 +30,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.AppConfigService
-import org.smartregister.fhircore.engine.configuration.view.LoginViewConfiguration
-import org.smartregister.fhircore.engine.configuration.view.loginViewConfigurationOf
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -55,6 +50,8 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
+import java.net.UnknownHostException
+import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel

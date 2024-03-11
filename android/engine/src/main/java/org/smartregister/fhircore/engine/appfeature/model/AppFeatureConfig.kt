@@ -21,7 +21,5 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 data class AppFeatureConfig(
-  override val appId: String = "",
-  override val classification: String = "",
-  val appFeatures: List<FeatureConfig> = listOf(),
-) : Configuration
+  val features: List<FeatureConfig> = listOf(),
+)
