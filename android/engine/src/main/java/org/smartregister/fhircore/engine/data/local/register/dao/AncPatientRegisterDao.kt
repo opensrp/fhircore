@@ -66,7 +66,7 @@ constructor(
     val pregnancies =
       fhirEngine
         .search<Condition> {
-          getRegisterDataFilters().forEach { filterBy(it) }
+//         [].forEach { filterBy(it) }
           sort(Patient.NAME, Order.ASCENDING)
           count =
             if (loadAll) {
@@ -145,8 +145,8 @@ constructor(
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?) =
-    fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
+  override suspend fun countRegisterData(appFeatureName: String?) = 0L
+//    fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
 
   private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {
     var visitStatus = VisitStatus.PLANNED
@@ -156,7 +156,4 @@ constructor(
 
     return visitStatus
   }
-
-  private fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.ANC.name)
 }

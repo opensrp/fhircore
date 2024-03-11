@@ -26,7 +26,6 @@ class RegisterDaoFactory
 @Inject
 constructor(
   val ancPatientRegisterDao: AncPatientRegisterDao,
-  val defaultPatientRegisterDao: DefaultPatientRegisterDao,
   val familyRegisterDao: FamilyRegisterDao,
   val hivRegisterDao: HivRegisterDao,
   val appointmentRegisterDao: AppointmentRegisterDao,
@@ -42,7 +41,6 @@ constructor(
       Pair(HealthModule.HOME_TRACING, homeTracingRegisterDao),
       Pair(HealthModule.PHONE_TRACING, phoneTracingRegisterDao),
       Pair(HealthModule.APPOINTMENT, appointmentRegisterDao),
-      Pair(HealthModule.DEFAULT, defaultPatientRegisterDao),
     )
   }
 }

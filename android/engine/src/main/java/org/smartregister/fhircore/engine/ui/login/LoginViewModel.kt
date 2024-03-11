@@ -289,10 +289,7 @@ constructor(
   }
 
   fun fetchLoginConfigs() {
-    val appConfigs = configurationRegistry.getAppConfigs()
-    if (appConfigs != null) {
-      _loadingConfig.value = false
-    }
+    _loadingConfig.value = false
   }
 
   companion object {

@@ -80,12 +80,10 @@ class LoginActivity :
                 loginViewModel.username.value?.trim()
 
         if (isUpdatingCurrentAccount) {
-            configurationRegistry.fetchNonWorkflowConfigResources()
             syncBroadcaster.get().runSync() // restart/resume sync
             setResult(Activity.RESULT_OK)
             finish() // Return to the previous activity
           } else {
-            configurationRegistry.fetchNonWorkflowConfigResources()
             syncBroadcaster.get().runSync()
             loginService.navigateToHome()
           }
@@ -107,7 +105,6 @@ class LoginActivity :
 
   private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
     loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
-    configurationRegistry.fetchNonWorkflowConfigResources()
     syncBroadcaster.get().runSync()
     loginService.navigateToHome()
   }

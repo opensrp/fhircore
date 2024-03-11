@@ -34,6 +34,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule.FAMILY
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.view.SearchFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.FamilyMemberProfileData
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -343,7 +344,7 @@ constructor(
     )
 
   private fun getRegisterDataFilters(id: String) =
-    configurationRegistry.retrieveDataFilterConfiguration(id)
+    listOf<SearchFilter>()
 
   companion object {
     const val FAMILY_CARE_PLAN = "family_care_plan"

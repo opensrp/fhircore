@@ -177,12 +177,9 @@ constructor(
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
     return kotlin
       .runCatching {
-        configurationRegistry.retrieveConfiguration<FormConfiguration>(
-          AppConfigClassification.FORMS,
-        )
+        configurationRegistry.getFormConfigs()
       }
       .getOrNull()
-      ?.forms
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(

@@ -29,9 +29,3 @@ class FormConfiguration(
   val forms: List<QuestionnaireConfig> = listOf(),
 ) : Configuration
 
-@Stable
-fun formConfigurationOf(
-  appId: String = "",
-  classification: String = "form",
-  forms: List<QuestionnaireConfig> = listOf(),
-) = FormConfiguration(appId = appId, classification = classification, forms = forms)

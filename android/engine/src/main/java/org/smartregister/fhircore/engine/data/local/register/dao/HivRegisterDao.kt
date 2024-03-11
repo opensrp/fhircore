@@ -384,8 +384,6 @@ constructor(
       }
       .map { defaultRepository.loadResource(it.other) }
 
-  fun getRegisterDataFilters(id: String) = configurationRegistry.retrieveDataFilterConfiguration(id)
-
   private fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.getAppConfigs()!!
   }

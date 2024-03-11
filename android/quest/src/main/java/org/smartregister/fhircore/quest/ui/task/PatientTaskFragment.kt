@@ -50,11 +50,7 @@ class PatientTaskFragment : ComposeRegisterFragment<PatientTask, PatientTaskItem
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    registerViewConfiguration =
-      configurationRegistry.retrieveConfiguration(
-        configClassification = QuestConfigClassification.PATIENT_TASK_REGISTER,
-        questJsonSpecificationProvider.getJson(),
-      )
+    registerViewConfiguration = RegisterViewConfiguration()
     configureViews(registerViewConfiguration)
   }
 

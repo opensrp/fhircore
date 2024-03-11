@@ -42,10 +42,7 @@ suspend fun loadAdditionalData(
 ): List<AdditionalData> {
   val result = mutableListOf<AdditionalData>()
 
-  val patientRegisterRowViewConfiguration =
-    configurationRegistry.retrieveConfiguration<PatientRegisterRowViewConfiguration>(
-      configClassification = QuestConfigClassification.PATIENT_REGISTER_ROW,
-    )
+  val patientRegisterRowViewConfiguration = PatientRegisterRowViewConfiguration()
 
   patientRegisterRowViewConfiguration.filters?.forEach { filter ->
     if (filter.resourceType == Enumerations.ResourceType.CONDITION) {

@@ -62,13 +62,13 @@ class QuestionnaireDataDetailActivity :
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
     }
 
-    detailConfig =
-      configurationRegistry.retrieveConfiguration(
-        configClassification =
-          QuestConfigClassification.valueOf(
-            intent.getStringExtra(CLASSIFICATION_ARG)!!.uppercase(),
-          ),
-      )
+//    detailConfig =
+//      configurationRegistry.retrieveConfiguration(
+//        configClassification =
+//          QuestConfigClassification.valueOf(
+//            intent.getStringExtra(CLASSIFICATION_ARG)!!.uppercase(),
+//          ),
+//      )
 
     configureViews(detailConfig)
     loadData()
@@ -102,9 +102,7 @@ class QuestionnaireDataDetailActivity :
   }
 
   fun getResultDetailsNavigationOptions() =
-    configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
-      configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-    )
+    ResultDetailsNavigationConfiguration()
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     viewModel.updateViewConfigurations(viewConfiguration)

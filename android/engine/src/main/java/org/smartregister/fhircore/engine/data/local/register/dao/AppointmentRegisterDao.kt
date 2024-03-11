@@ -304,7 +304,4 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData? {
     TODO()
   }
-
-  fun getRegisterDataFilters() =
-    configurationRegistry.retrieveDataFilterConfiguration(HealthModule.APPOINTMENT.name)
 }

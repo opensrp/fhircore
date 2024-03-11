@@ -80,15 +80,13 @@ class QuestPatientDetailActivity :
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-    patientDetailConfig =
-      configurationRegistry.retrieveConfiguration(
-        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
-        questJsonSpecificationProvider.getJson(),
-      )
+//    patientDetailConfig =
+//      configurationRegistry.retrieveConfiguration(
+//        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
+//        questJsonSpecificationProvider.getJson(),
+//      )
 
-    if (configurationRegistry.isAppIdInitialized()) {
-      configureViews(patientDetailConfig)
-    }
+    configureViews(patientDetailConfig)
 
     loadData()
 
@@ -145,10 +143,7 @@ class QuestPatientDetailActivity :
 
   fun getRegistrationForm(): String {
     return configurationRegistry
-      .retrieveConfiguration<RegisterViewConfiguration>(
-        configClassification = QuestConfigClassification.PATIENT_REGISTER,
-        questJsonSpecificationProvider.getJson(),
-      )
+      .getAppConfigs()
       .registrationForm
   }
 
@@ -242,10 +237,7 @@ class QuestPatientDetailActivity :
   }
 
   fun getResultDetailsNavigationOptions() =
-    configurationRegistry.retrieveConfiguration<ResultDetailsNavigationConfiguration>(
-      configClassification = QuestConfigClassification.RESULT_DETAILS_NAVIGATION,
-      questJsonSpecificationProvider.getJson(),
-    )
+    ResultDetailsNavigationConfiguration()
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)

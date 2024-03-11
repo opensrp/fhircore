@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
 
 /**
  * Every class or object providing UI customizations e.g. appTitle, showFilter, showSideMenu,
@@ -41,7 +42,8 @@ interface Configuration {
 data class AppConfiguration(
     val appConfig: ApplicationConfiguration,
     val appFeatures: AppFeatureConfig,
-    val syncConfig: SyncConfig
+    val syncConfig: SyncConfig,
+    val formConfigs: List<QuestionnaireConfig> = listOf(),
 )
 
 
