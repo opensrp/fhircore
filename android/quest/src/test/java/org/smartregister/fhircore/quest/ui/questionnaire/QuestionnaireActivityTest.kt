@@ -216,7 +216,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should fetch location when location is enabled and permissions granted`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
@@ -235,7 +235,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should open location settings if location is disabled`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
@@ -258,7 +258,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @Test
   fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
     setupActivity()
-    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logQuestionnaireLocation)
+    assertTrue(questionnaireActivity.viewModel.applicationConfiguration.logGpsLocations)
 
     val fusedLocationProviderClient =
       LocationServices.getFusedLocationProviderClient(questionnaireActivity)
