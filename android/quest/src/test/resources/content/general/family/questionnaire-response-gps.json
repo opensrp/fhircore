@@ -1,0 +1,183 @@
+{
+  "resourceType": "QuestionnaireResponse",
+  "id": "47a2c01e-d968-44b8-9062-7172e77c5585",
+  "meta": {
+    "lastUpdated": "2024-02-20T10:57:25.069+05:00",
+    "tag": [
+      {
+        "system": "http://fhir.ona.io",
+        "code": "000005",
+        "display": "Clinical Focus"
+      },
+      {
+        "system": "http://fhir.ona.io",
+        "code": "000005",
+        "display": "Clinical Focus"
+      },
+      {
+        "system": "https://smartregister.org/care-team-tag-id",
+        "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+        "display": "Practitioner CareTeam"
+      },
+      {
+        "system": "https://smartregister.org/location-tag-id",
+        "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+        "display": "Practitioner Location"
+      },
+      {
+        "system": "https://smartregister.org/organisation-tag-id",
+        "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+        "display": "Practitioner Organization"
+      },
+      {
+        "system": "https://smartregister.org/practitioner-tag-id",
+        "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+        "display": "Practitioner"
+      }
+    ]
+  },
+  "contained": [
+    {
+      "resourceType": "Group",
+      "id": "31db9c93-cb3a-4854-b9ff-61040a625381",
+      "meta": {
+        "tag": [
+          {
+            "system": "https://smartregister.org/app-version",
+            "code": "1.0.3-echis",
+            "display": "Application Version"
+          },
+          {
+            "system": "https://smartregister.org/care-team-tag-id",
+            "code": "bf369c01-0fad-4e1b-8cab-aa0fe9642cfa",
+            "display": "Practitioner CareTeam"
+          },
+          {
+            "system": "https://smartregister.org/location-tag-id",
+            "code": "0a90ea06-1026-45c1-b64b-73e13b59ad1e",
+            "display": "Practitioner Location"
+          },
+          {
+            "system": "https://smartregister.org/organisation-tag-id",
+            "code": "d1ea93d6-5b98-4fdf-b868-18b963a08307",
+            "display": "Practitioner Organization"
+          },
+          {
+            "system": "https://smartregister.org/practitioner-tag-id",
+            "code": "6edaafb0-0212-4069-a0e2-c6a90a080c83",
+            "display": "Practitioner"
+          }
+        ]
+      },
+      "identifier": [
+        {
+          "use": "official",
+          "value": "162149",
+          "period": {
+            "start": "2024-02-20T10:57:24+05:00"
+          }
+        },
+        {
+          "use": "secondary",
+          "value": "52fd342e-e4fb-4768-ae3c-a7669fb449f9"
+        }
+      ],
+      "active": true,
+      "type": "person",
+      "code": {
+        "coding": [
+          {
+            "system": "https://www.snomed.org",
+            "code": "35359004",
+            "display": "Family"
+          }
+        ]
+      },
+      "name": "HhregUnitTest",
+      "managingEntity": {
+        "reference": "Organization/d1ea93d6-5b98-4fdf-b868-18b963a08307"
+      },
+      "characteristic": [
+        {
+          "code": {
+            "coding": [
+              {
+                "system": "http://ona.io/codes",
+                "code": "hh_location",
+                "display": "Household Location"
+              }
+            ],
+            "text": "HhregVilla"
+          },
+          "exclude": false
+        }
+      ]
+    }
+  ],
+  "questionnaire": "Questionnaire/447a1f25-0c44-4638-ab3d-63a97113909b",
+  "status": "completed",
+  "subject": {
+    "reference": "Group/31db9c93-cb3a-4854-b9ff-61040a625381"
+  },
+  "authored": "2024-02-20T10:57:24+05:00",
+  "author": {
+    "reference": "Practitioner/6edaafb0-0212-4069-a0e2-c6a90a080c83"
+  },
+  "item": [
+    {
+      "linkId": "7133a736-f901-4ef3-8861-2d0d00b1856e",
+      "text": "HOUSEHOLD REGISTRATION"
+    },
+    {
+      "linkId": "household.id",
+      "text": "Household OpenSRP ID",
+      "answer": [
+        {
+          "valueInteger": 162149
+        }
+      ]
+    },
+    {
+      "linkId": "household.name",
+      "text": "Household Name",
+      "answer": [
+        {
+          "valueString": "HhregUnitTest"
+        }
+      ]
+    },
+    {
+      "linkId": "household.location",
+      "text": "Household Village",
+      "answer": [
+        {
+          "valueString": "HhregVilla"
+        }
+      ]
+    },
+    {
+      "linkId": "location-widget",
+      "text": "Location Widget",
+      "item": [
+        {
+          "linkId": "latitude",
+          "text": "Latitude",
+          "answer": [
+            {
+              "valueDecimal": 24.8808488
+            }
+          ]
+        },
+        {
+          "linkId": "longitude",
+          "text": "Longitude",
+          "answer": [
+            {
+              "valueDecimal": 67.0424254
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
