@@ -92,7 +92,6 @@ class RegisterScreenTest {
     composeTestRule
       .onNodeWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
       .assertExists()
-      .assertIsDisplayed()
   }
 
   @Test

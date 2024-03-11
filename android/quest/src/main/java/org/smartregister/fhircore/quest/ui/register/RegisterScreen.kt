@@ -83,44 +83,44 @@ fun RegisterScreen(
 
   Scaffold(
     topBar = {
-      Column(modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
-        // Top section has toolbar and a results counts view
-        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
-        TopScreenSection(
-          title = registerUiState.screenTitle,
-          searchText = searchText.value,
-          filteredRecordsCount = registerUiState.filteredRecordsCount,
-          searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
-          toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-          },
-          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-        ) { event ->
-          when (event) {
-            ToolbarClickEvent.Navigate ->
-              when (toolBarHomeNavigation) {
-                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
-              }
-            ToolbarClickEvent.FilterData -> {
-              onEvent(RegisterEvent.ResetFilterRecordsCount)
-              filterActions?.handleClickEvent(navController)
+      // Top section has toolbar and a results counts view
+      val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
+      TopScreenSection(
+        title = registerUiState.screenTitle,
+        searchText = searchText.value,
+        filteredRecordsCount = registerUiState.filteredRecordsCount,
+        searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+        toolBarHomeNavigation = toolBarHomeNavigation,
+        onSearchTextChanged = { searchText ->
+          onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+        },
+        isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+      ) { event ->
+        when (event) {
+          ToolbarClickEvent.Navigate ->
+            when (toolBarHomeNavigation) {
+              ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+              ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
             }
+          ToolbarClickEvent.FilterData -> {
+            onEvent(RegisterEvent.ResetFilterRecordsCount)
+            filterActions?.handleClickEvent(navController)
           }
         }
-        // Only show counter during search
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
+      // Only show counter during search
+      if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
-      val fabActions = registerUiState.registerConfiguration?.fabActions
-      if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-        ExtendedFab(
-          fabActions = fabActions,
-          navController = navController,
-          lazyListState = lazyListState,
-        )
+      Column(modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
+        val fabActions = registerUiState.registerConfiguration?.fabActions
+        if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+          ExtendedFab(
+            fabActions = fabActions,
+            navController = navController,
+            lazyListState = lazyListState,
+          )
+        }
       }
     },
   ) { innerPadding ->
