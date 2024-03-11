@@ -169,7 +169,6 @@
         {
           "viewType": "LIST",
           "listResource": "Patient",
-          "padding": 16,
           "relatedResources": [
             {
               "id": "householdPatients",
