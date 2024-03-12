@@ -131,6 +131,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
+  @Inject lateinit var configurationReg: ConfigurationRegistry
+
   @Inject lateinit var parser: IParser
 
   private lateinit var configRegistry: ConfigurationRegistry
@@ -140,7 +142,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
   private lateinit var defaultRepository: DefaultRepository
-  @BindValue
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
@@ -206,7 +207,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          configurationRegistry = configurationRegistry,
+          configurationRegistry = configurationReg,
         ),
       )
 
