@@ -581,7 +581,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap[ResourceType.Questionnaire.name] =
       """{"resourceId": "thisQuestionnaire", "resourceType": "Questionnaire"}"""
 
-
     val appId = "appId/debug"
     runTest { configRegistry.loadConfigurations(appId, context) }
 
