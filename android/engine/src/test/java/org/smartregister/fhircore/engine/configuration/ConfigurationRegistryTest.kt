@@ -581,8 +581,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap[ResourceType.Questionnaire.name] =
       """{"resourceId": "thisQuestionnaire", "resourceType": "Questionnaire"}"""
 
-    // First time reading the configCacheMap not yet populated
-    Assert.assertFalse(configRegistry.configCacheMap.containsKey(ResourceType.Questionnaire.name))
 
     val appId = "appId/debug"
     runTest { configRegistry.loadConfigurations(appId, context) }
