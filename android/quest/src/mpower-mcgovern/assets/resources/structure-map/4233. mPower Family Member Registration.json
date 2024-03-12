@@ -218,7 +218,7 @@
           ]
         },
         {
-          "name": "rule_patient_identifier_opensrp",
+          "name": "rule_patient_identifier_system_id",
           "source": [
             {
               "context": "src"
@@ -229,7 +229,7 @@
               "context": "patient",
               "contextType": "variable",
               "element": "identifier",
-              "variable": "patientIdentifierOpenSRPId",
+              "variable": "patientIdentifierSystemId",
               "transform": "create",
               "parameter": [
                 {
@@ -240,7 +240,7 @@
           ],
           "rule": [
             {
-              "name": "rule_patient_identifier_opensrp_id_value",
+              "name": "rule_patient_identifier_system_id_value",
               "source": [
                 {
                   "context": "src"
@@ -248,7 +248,7 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierOpenSRPId",
+                  "context": "patientIdentifierSystemId",
                   "contextType": "variable",
                   "element": "value",
                   "transform": "evaluate",
@@ -257,14 +257,14 @@
                       "valueId": "src"
                     },
                     {
-                      "valueString": "$this.item.where(linkId = 'ed77104e-c279-4030-ab20-8cd99ca99ca9').answer.value"
+                      "valueString": "$this.item.where(linkId = '2588ee71-9699-440d-8364-6ac7c1e63ccd').answer.value"
                     }
                   ]
                 }
               ]
             },
             {
-              "name": "rule_patient_identifier_opensrp_id_use",
+              "name": "rule_patient_identifier_system_id_use",
               "source": [
                 {
                   "context": "src"
@@ -272,7 +272,7 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierOpenSRPId",
+                  "context": "patientIdentifierSystemId",
                   "contextType": "variable",
                   "element": "use",
                   "transform": "copy",
@@ -293,7 +293,7 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierOpenSRPId",
+                  "context": "patientIdentifierSystemId",
                   "contextType": "variable",
                   "element": "period",
                   "variable": "period",
@@ -362,7 +362,7 @@
                       "valueId": "src"
                     },
                     {
-                      "valueString": "$this.item.where(linkId = '2588ee71-9699-440d-8364-6ac7c1e63ccd').answer.value"
+                      "valueString": "$this.item.where(linkId = '2588ee71-9699-440d-8364-6ac7c1e63ccd').answer.value.substring(0, 12)"
                     }
                   ]
                 }
@@ -456,7 +456,7 @@
                   "context": "src",
                   "element": "item",
                   "variable": "patient_national_id",
-                  "condition": "(linkId = '7a31ee75-e1eb-4037-8f69-c8fd5a06fc32')"
+                  "condition": "((linkId = '7a31ee75-e1eb-4037-8f69-c8fd5a06fc32') and answer.value.exists())"
                 }
               ],
               "rule": [
@@ -565,7 +565,7 @@
                   "context": "src",
                   "element": "item",
                   "variable": "patient_birth_id",
-                  "condition": "(linkId = 'b2bad7a2-9757-423c-8b2a-e2c183d6e076')"
+                  "condition": "((linkId = 'b2bad7a2-9757-423c-8b2a-e2c183d6e076') and answer.value.exists())"
                 }
               ],
               "rule": [

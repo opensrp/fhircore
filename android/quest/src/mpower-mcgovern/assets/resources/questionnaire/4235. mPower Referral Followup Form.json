@@ -7,23 +7,6 @@
   "version": "0.0.1",
   "status": "active",
   "publisher": "mPower-mcGovern",
-  "useContext": [
-    {
-      "code": {
-        "system": "http://hl7.org/fhir/ValueSet/usage-context-type",
-        "code": "focus",
-        "display": "Clinical Focus"
-      },
-      "valueCodeableConcept": {
-        "coding": [
-          {
-            "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
-            "display": "mPower Referral Follow-up Form"
-          }
-        ]
-      }
-    }
-  ],
   "contact": [
     {
       "name": "http://www.mpower-social.com"
@@ -41,7 +24,7 @@
           "valueBoolean": true
         }
       ],
-      "linkId": "c706016d-b8e9-44c7-9acb-155bb4e6092c",
+      "linkId": "d5962592-08d5-447b-d6a2-62a077e6bb05",
       "type": "string",
       "required": true,
       "readOnly": true,
@@ -143,6 +126,38 @@
         }
       ],
       "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "referReason",
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='d5962592-08d5-447b-d6a2-62a077e6bb05').answer.value"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "selectedReason",
+            "language": "text/fhirpath",
+            "expression": "%qItem.answerOption.where(value.code=%referReason).value"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "otherReason",
+            "language": "text/fhirpath",
+            "expression": "%qItem.answerOption.where(value.code='other').value"
+          }
+        },
+        {
+          "url" : "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression" : {
+            "description" : "Refer Reason",
+            "language" : "text/fhirpath",
+            "expression" : "iif(%selectedReason, %selectedReason, %otherReason)"
+          }
+        },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
           "valueCodeableConcept": {
@@ -315,20 +330,6 @@
       "required": true,
       "answerOption": [
         {
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
-              "valueBoolean": true
-            }
-          ],
-          "valueCoding": {
-            "id": "d28de9f5-d0fe-41ea-8e5b-8ed3cc7abc62",
-            "code": "not_going",
-            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
-            "display": "কোথাও যায় নি"
-          }
-        },
-        {
           "valueCoding": {
             "id": "c8da3613-bafc-45d4-8e05-561c042df2ef",
             "code": "medical_collage_hos",
@@ -374,6 +375,20 @@
             "code": "community_clinic",
             "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
             "display": "কমিউনিটি ক্লিনিক"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-optionExclusive",
+              "valueBoolean": true
+            }
+          ],
+          "valueCoding": {
+            "id": "d28de9f5-d0fe-41ea-8e5b-8ed3cc7abc62",
+            "code": "not_going",
+            "system": "urn:uuid:7b38ba32-20d3-4472-87b9-406a5f19fbc9",
+            "display": "কোথাও যায় নি"
           }
         }
       ],

@@ -689,10 +689,18 @@
       "required": true,
       "extension": [
         {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "familySystemId",
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='6f5d14d9-9e6e-47c9-9c62-00e76a3f767c').answer.value"
+          }
+        },
+        {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
           "valueExpression": {
             "language": "application/x-fhir-query",
-            "expression": "Patient?{{Group.member.entity.reference.contains(id)}}&active=true"
+            "expression": "Patient?identifier={{%familySystemId}}&active=true"
           }
         },
         {
@@ -772,6 +780,19 @@
       "linkId": "210afefc-3e4f-4489-86af-587ada65e06c",
       "type": "string",
       "text": "Group Id",
+      "readOnly": true,
+      "required": true,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+      "type": "string",
+      "text": "Family System Id",
       "readOnly": true,
       "required": true,
       "extension": [
