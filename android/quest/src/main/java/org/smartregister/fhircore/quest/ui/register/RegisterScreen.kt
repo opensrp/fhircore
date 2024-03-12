@@ -125,19 +125,20 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(
-      modifier = modifier.padding(innerPadding).testTag(FIRST_TIME_SYNC_DIALOG),
+      modifier = modifier.padding(innerPadding)
     ) {
       if (registerUiState.isFirstTimeSync) {
-        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
-        LoaderDialog(
-          modifier = modifier,
-          percentageProgressFlow = registerUiState.progressPercentage,
-          dialogMessage =
+        Column(modifier = Modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
+          val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
+          LoaderDialog(
+            percentageProgressFlow = registerUiState.progressPercentage,
+            dialogMessage =
             stringResource(
               id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
             ),
-          showPercentageProgress = true,
-        )
+            showPercentageProgress = true,
+          )
+        }
       }
       if (
         registerUiState.totalRecordsCount > 0 &&
