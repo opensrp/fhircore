@@ -125,7 +125,7 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(
-      modifier = modifier.padding(innerPadding)
+      modifier = modifier.padding(innerPadding),
     ) {
       if (registerUiState.isFirstTimeSync) {
         Column(modifier = Modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
@@ -133,9 +133,9 @@ fun RegisterScreen(
           LoaderDialog(
             percentageProgressFlow = registerUiState.progressPercentage,
             dialogMessage =
-            stringResource(
-              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
-            ),
+              stringResource(
+                id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+              ),
             showPercentageProgress = true,
           )
         }
