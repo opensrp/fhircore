@@ -38,7 +38,7 @@ const config = {
         docs: {
           routeBasePath:'/',
           editUrl:
-            'https://github.com/opensrp/fhircore/tree/main/docs',
+            'https://github.com/opensrp/fhircore/tree/main',
         },
         blog: false,
         theme: {
