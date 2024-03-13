@@ -1,12 +1,12 @@
 ---
-sidebar_label: App Flavors
+sidebar_label: App flavors
 ---
 
 # How to Add/Modify App Flavors
 
 ## Product Flavors Configuration
 
-Product flavors are a way to create different versions of the same application with distinct features or characteristics. Each product flavor represents a different version of the application, and you can configure various aspect of the app for each flavor. To set this up, navigate to `fhircore > android > quest > Gradle scripts > build.gradle.kts` in the `quest` module. 
+Product flavors are a way to create different versions of the same application with distinct features or characteristics. Each product flavor represents a different version of the application, and you can configure various aspect of the app for each flavor. To set this up, navigate to `fhircore > android > quest > Gradle scripts > build.gradle.kts` in the `quest` module.
 
 ## Configuration Details
 
@@ -105,7 +105,7 @@ android {
 }
 ```
 
-`create("debugNonProxy") { initWith(getByName("debug")) }` 
+`create("debugNonProxy") { initWith(getByName("debug")) }`
 
 - This line creates a new custom build variant named "debugNonProxy" by inheriting configurations from the existing "debug" variant. Here's a breakdown:
 
