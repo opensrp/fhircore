@@ -17,13 +17,16 @@
 package org.smartregister.fhircore.engine.ui.multiselect
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.CheckboxDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TriStateCheckbox
 import androidx.compose.material.icons.Icons
@@ -149,6 +152,8 @@ fun <T> MultiSelectCheckbox(
           }
         },
         modifier = Modifier.padding(0.dp),
+        colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colors.primary),
+        interactionSource = remember { MutableInteractionSource() },
       )
       content(currentTreeNode)
     }

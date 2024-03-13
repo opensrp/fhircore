@@ -27,13 +27,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -68,87 +66,84 @@ fun MultiSelectBottomSheetView(
   searchTextState: MutableState<TextFieldValue>,
   onTextChanged: (String) -> Unit,
 ) {
-  Surface(shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-      Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
-      ) {
-        Text(
-          text = if (title.isNullOrEmpty()) stringResource(R.string.select_location) else title,
-          textAlign = TextAlign.Start,
-          fontWeight = FontWeight.Bold,
-          fontSize = 16.sp,
-        )
-        Icon(
-          imageVector = Icons.Filled.Clear,
-          contentDescription = null,
-          modifier = Modifier.clickable { onDismiss() },
-        )
-      }
-      Divider(color = DividerColor, thickness = 1.dp)
-      Box(
-        modifier =
-          Modifier.background(color = Color.Transparent)
-            .padding(vertical = 16.dp, horizontal = 8.dp),
-      ) {
-        OutlinedTextField(
-          value = searchTextState.value,
-          onValueChange = { value ->
-            searchTextState.value = value
-            onTextChanged(value.text)
-          },
-          modifier = Modifier.fillMaxWidth(),
-          textStyle = TextStyle(fontSize = 18.sp),
-          trailingIcon = {
-            if (searchTextState.value.text.isNotEmpty()) {
-              IconButton(
-                onClick = {
-                  searchTextState.value = TextFieldValue("")
-                  onTextChanged(searchTextState.value.text)
-                },
-              ) {
-                Icon(
-                  Icons.Default.Close,
-                  contentDescription = "",
-                  modifier = Modifier.padding(16.dp).size(24.dp),
-                )
-              }
-            }
-          },
-          singleLine = true,
-          placeholder = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Text(
-                color = Color(0xff757575),
-                text = stringResource(id = R.string.search),
+  Column(modifier = Modifier.fillMaxWidth()) {
+    Row(
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
+    ) {
+      Text(
+        text = if (title.isNullOrEmpty()) stringResource(R.string.select_location) else title,
+        textAlign = TextAlign.Start,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+      )
+      Icon(
+        imageVector = Icons.Filled.Clear,
+        contentDescription = null,
+        modifier = Modifier.clickable { onDismiss() },
+      )
+    }
+    Divider(color = DividerColor, thickness = 1.dp)
+    Box(
+      modifier =
+        Modifier.background(color = Color.Transparent).padding(vertical = 16.dp, horizontal = 8.dp),
+    ) {
+      OutlinedTextField(
+        value = searchTextState.value,
+        onValueChange = { value ->
+          searchTextState.value = value
+          onTextChanged(value.text)
+        },
+        modifier = Modifier.fillMaxWidth(),
+        textStyle = TextStyle(fontSize = 18.sp),
+        trailingIcon = {
+          if (searchTextState.value.text.isNotEmpty()) {
+            IconButton(
+              onClick = {
+                searchTextState.value = TextFieldValue("")
+                onTextChanged(searchTextState.value.text)
+              },
+            ) {
+              Icon(
+                Icons.Default.Close,
+                contentDescription = "",
+                modifier = Modifier.padding(16.dp).size(24.dp),
               )
             }
-          },
-        )
-      }
-      LazyColumn(modifier = Modifier.padding(horizontal = 8.dp)) {
-        items(rootNodeIds, key = { item -> item }) {
-          MultiSelectView(
-            rootNodeId = it,
-            treeNodeMap = treeNodeMap,
-            selectedNodes = selectedNodes,
-          ) { treeNode ->
-            Column { Text(text = treeNode.data) }
           }
-        }
-
-        item {
-          Button(
-            onClick = { /*TODO Get selected nodes*/},
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
-          ) {
+        },
+        singleLine = true,
+        placeholder = {
+          Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-              text = stringResource(id = R.string.sync_data).uppercase(),
-              modifier = Modifier.padding(8.dp),
+              color = Color(0xff757575),
+              text = stringResource(id = R.string.search),
             )
           }
+        },
+      )
+    }
+    LazyColumn(modifier = Modifier.padding(horizontal = 8.dp)) {
+      items(rootNodeIds, key = { item -> item }) {
+        MultiSelectView(
+          rootNodeId = it,
+          treeNodeMap = treeNodeMap,
+          selectedNodes = selectedNodes,
+        ) { treeNode ->
+          Column { Text(text = treeNode.data) }
+        }
+      }
+
+      item {
+        Button(
+          onClick = { /*TODO Get selected nodes*/},
+          modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+        ) {
+          Text(
+            text = stringResource(id = R.string.sync_data).uppercase(),
+            modifier = Modifier.padding(8.dp),
+          )
         }
       }
     }
