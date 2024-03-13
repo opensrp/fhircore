@@ -94,7 +94,7 @@ object LocationUtils {
           .addOnSuccessListener { location: Location? ->
             if (location != null) {
               Timber.d(
-                "Approx location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+                "Approximate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
               )
               continuation.resume(location)
             }
