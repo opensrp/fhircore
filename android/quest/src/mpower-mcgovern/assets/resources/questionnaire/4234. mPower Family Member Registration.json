@@ -783,15 +783,46 @@
           "valueString": "0|(01[1-9][0-9]{8})|\\s*"
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "11 অঙ্কের মোবাইল নম্বর লিখুন"
-        },
-        {
           "url": "http://hl7.org/fhir/StructureDefinition/minLength",
           "valueInteger": 11
         }
       ],
-      "maxLength": 11
+      "maxLength": 11,
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "valid_mobile_no_hint",
+          "text": "11 ডিজিটের হতে হবে",
+          "type": "display"
+        }
+      ]
     },
     {
       "linkId": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
@@ -852,10 +883,6 @@
       "required": true,
       "extension": [
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "মোট 10/13/17 সংখ্যা হওয়া আবশ্যক"
-        },
-        {
           "url": "http://hl7.org/fhir/StructureDefinition/regex",
           "valueString": "([0-9]{10})|([0-9]{13})|([0-9]{17})|\\\\s*"
         },
@@ -865,6 +892,41 @@
         }
       ],
       "maxLength": 17,
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "nid_validation_hint",
+          "text": "মোট 10 / 13 / 17 সংখ্যার হতে হবে",
+          "type": "display"
+        }
+      ],
       "enableWhen": [
         {
           "question": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
@@ -889,10 +951,6 @@
           }
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "মোট 17 সংখ্যা হওয়া আবশ্যক"
-        },
-        {
           "url": "http://hl7.org/fhir/StructureDefinition/minLength",
           "valueInteger": 17
         },
@@ -902,7 +960,42 @@
         }
       ],
       "required": true,
-      "maxLength": 17
+      "maxLength": 17,
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "nid_validation_hint",
+          "text": "মোট 17 সংখ্যার হতে হবে",
+          "type": "display"
+        }
+      ]
     },
     {
       "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
@@ -1340,16 +1433,20 @@
     {
       "extension": [
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় হতে হবে"
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "valueDecimal": 1.5
         },
         {
-          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-          "valueInteger": 0
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "valueDecimal": 5
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "1.5 এর সমান বা বেশি এবং 5 এর সমান বা কম হওয়া উচিত"
         }
       ],
       "linkId": "0bcd75c0-2fc9-4027-9c54-23f1d0812d91",
-      "type": "integer",
+      "type": "decimal",
       "text": "ওজন(কেজি) *",
       "required": true,
       "enableWhen": [

@@ -1,0 +1,5 @@
+<resources>
+    <string name="integer_format_validation_error_msg">Number must be greater than 0 and no decimal places permitted</string>
+    <string name="regex_validation_error_msg" >The answer doesn\'t match the requirements</string>
+    <string name="decimal_format_validation_error_msg">Invalid value</string>
+</resources>

@@ -177,10 +177,6 @@
           "required": true,
           "extension": [
             {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "সংখ্যাটি 0 এর চেয়ে সমান বা বড় এবং 10 এর চেয়ে সমান বা ছোট হতে হবে"
-            },
-            {
               "url": "http://hl7.org/fhir/StructureDefinition/regex",
               "valueString": "^([1-9]|10)$"
             },
@@ -194,6 +190,39 @@
             }
           ],
           "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-display-category",
+                        "code": "instructions",
+                        "display": "Instructions"
+                      }
+                    ],
+                    "text": "Instructions"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "inline",
+                        "display": "In-line"
+                      }
+                    ],
+                    "text": "In-line"
+                  }
+                }
+              ],
+              "linkId": "pregnancy_count_hint",
+              "text": "সংখ্যাটি 1 এর চেয়ে সমান বা বড় এবং 10 এর চেয়ে সমান বা ছোট হতে হবে",
+              "type": "display"
+            },
             {
               "linkId": "3f8bbfec-04f5-47a0-8c68-26cbf6d848e1",
               "type": "display",
@@ -233,10 +262,6 @@
               "valueString": "[0-9]*"
             },
             {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "সংখ্যাটি 0 এর সমান বা বড় হতে হবে"
-            },
-            {
               "url": "http://hl7.org/fhir/StructureDefinition/minValue",
               "valueInteger": 0
             },
@@ -253,6 +278,39 @@
             }
           ],
           "item": [
+            {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-display-category",
+                        "code": "instructions",
+                        "display": "Instructions"
+                      }
+                    ],
+                    "text": "Instructions"
+                  }
+                },
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+                  "valueCodeableConcept": {
+                    "coding": [
+                      {
+                        "system": "http://hl7.org/fhir/questionnaire-item-control",
+                        "code": "inline",
+                        "display": "In-line"
+                      }
+                    ],
+                    "text": "In-line"
+                  }
+                }
+              ],
+              "linkId": "live_child_count_hint",
+              "text": "সংখ্যাটি 0 এর সমান বা বড় হতে হবে",
+              "type": "display"
+            },
             {
               "linkId": "b8039221-29a3-4f9f-e704-1527fd8df150",
               "type": "display",

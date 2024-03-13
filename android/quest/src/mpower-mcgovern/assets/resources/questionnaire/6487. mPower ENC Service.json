@@ -20,7 +20,7 @@
   "subjectType": [
     "Patient"
   ],
-  "date": "2024-02-07T00:00:00+06:00",
+  "date": "2023-09-10T00:00:00+06:00",
   "item": [
     {
       "linkId": "40c5bb3b-756d-4fa0-8090-40ce045db064",
@@ -103,7 +103,7 @@
       "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/minValue",
-          "valueDecimal": 1
+          "valueDecimal": 1.5
         },
         {
           "url": "http://hl7.org/fhir/StructureDefinition/maxValue",

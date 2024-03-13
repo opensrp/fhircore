@@ -504,16 +504,6 @@
       "type": "string",
       "text": "প্রসবের স্থান (অন্যান্য) লিখুন *",
       "required": true,
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/regex",
-          "valueString": "^[\\\\.\\\\- ]*"
-        },
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "একটি বৈধ নাম লিখুন"
-        }
-      ],
       "enableWhen": [
         {
           "question": "9a836c2a-b187-43f3-8c7a-f70e67d92943",
@@ -686,16 +676,6 @@
       "type": "string",
       "text": "প্রসবের সহায়তাকারী (অন্যান্য) লিখুন *",
       "required": true,
-      "extension": [
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "একটি বৈধ নাম লিখুন"
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/regex",
-          "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-        }
-      ],
       "enableWhen": [
         {
           "question": "c8ba3514-e246-4236-8b30-5300790a7917",
@@ -1002,16 +982,6 @@
       "type": "string",
       "text": "প্রসবকালীন জটিলতা (অন্যান্য) লিখুন *",
       "required": true,
-      "extension": [
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "একটি বৈধ নাম লিখুন"
-        },
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/regex",
-          "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-        }
-      ],
       "enableWhen": [
         {
           "question": "3ec8fa03-508c-41e4-82cb-ac81803e42c5",

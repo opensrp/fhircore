@@ -86,10 +86,6 @@
         {
           "url": "http://hl7.org/fhir/StructureDefinition/regex",
           "valueString": "H[0-9\\\\/]*"
-        },
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "H দিয়ে শুরু করতে হবে এরপর যে কোন নাম্বার অথবা / দিন অথবা শুধু H লিখুন"
         }
       ],
       "item": [
@@ -140,10 +136,6 @@
         {
           "url": "http://hl7.org/fhir/StructureDefinition/regex",
           "valueString": "^[a-zA-Z][A-Za-z\\\\.\\\\- ]*"
-        },
-        {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "একটি বৈধ নাম লিখুন"
         }
       ],
       "linkId": "aaafd263-5e5b-4b78-bbc6-e01be0eb72ec",
@@ -158,10 +150,6 @@
           "valueInteger": 11
         },
         {
-          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-          "valueString": "11 ডিজিটের মোবাইল নম্বর লিখুন"
-        },
-        {
           "url": "http://hl7.org/fhir/StructureDefinition/regex",
           "valueString": "0|(01[1-9][0-9]{8})|\\s*"
         }
@@ -170,7 +158,42 @@
       "type": "string",
       "text": "খানা প্রধানের মোবাইল নম্বর *",
       "required": true,
-      "maxLength": 11
+      "maxLength": 11,
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "valid_mobile_no_hint",
+          "text": "11 ডিজিটের হতে হবে",
+          "type": "display"
+        }
+      ]
     },
     {
       "linkId": "023ca3f7-5591-46c6-8002-2fb31415c069",
@@ -321,7 +344,42 @@
       "linkId": "29b9289c-be48-49c0-81e4-e93cde1c33c2",
       "type": "integer",
       "text": "খানার মোট সদস্য সংখ্যা *",
-      "required": true
+      "required": true,  
+      "item": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-display-category",
+                    "code": "instructions",
+                    "display": "Instructions"
+                  }
+                ],
+                "text": "Instructions"
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "inline",
+                    "display": "In-line"
+                  }
+                ],
+                "text": "In-line"
+              }
+            }
+          ],
+          "linkId": "member_count_hint",
+          "text": "অবশ্যই ১ - ৫০ এর মধ্যে হতে হবে",
+          "type": "display"
+        }
+      ]
     },
     {
       "linkId": "90331830-e4f0-4cb7-8a15-3e330ebfcfc0",
@@ -634,13 +692,13 @@
     },
     {
       "linkId": "859563b7-7509-4756-89c1-1e1286d12955",
-      "type": "integer",
+      "type": "decimal",
       "text": "বসত জমির পরিমাণ কত শতাংশ",
       "required": false
     },
     {
       "linkId": "462d5637-ce8f-4a45-9c63-185d3816bb94",
-      "type": "integer",
+      "type": "decimal",
       "text": "চাষের যোগ্য জমির পরিমাণ কত শতাংশ",
       "required": false
     },
