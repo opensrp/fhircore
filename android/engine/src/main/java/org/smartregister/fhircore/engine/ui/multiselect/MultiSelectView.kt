@@ -17,17 +17,18 @@
 package org.smartregister.fhircore.engine.ui.multiselect
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.material.TriStateCheckbox
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -36,10 +37,14 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.util.LinkedList
+import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 @Composable
 fun <T> ColumnScope.MultiSelectView(
@@ -49,24 +54,34 @@ fun <T> ColumnScope.MultiSelectView(
   depth: Int = 0,
   content: @Composable (TreeNode<T>) -> Unit,
 ) {
-  val collapsedState = remember { mutableStateOf(false) }
-  MultiSelectCheckbox(
-    selectedNodes = selectedNodes,
-    treeNodeMap = treeNodeMap,
-    currentTreeNode = treeNodeMap.getValue(rootNodeId),
-    depth = depth,
-    content = content,
-    collapsedState = collapsedState,
-  )
-  if (collapsedState.value) {
-    treeNodeMap.getValue(rootNodeId).children?.forEach {
-      MultiSelectView(
-        rootNodeId = it,
-        treeNodeMap = treeNodeMap,
-        selectedNodes = selectedNodes,
-        depth = depth + 16,
-        content = content,
+  if (treeNodeMap.isEmpty()) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+      Text(
+        text = stringResource(id = R.string.no_data),
+        modifier = Modifier.padding(16.dp),
+        fontWeight = FontWeight.Bold,
       )
+    }
+  } else {
+    val collapsedState = remember { mutableStateOf(false) }
+    MultiSelectCheckbox(
+      selectedNodes = selectedNodes,
+      treeNodeMap = treeNodeMap,
+      currentTreeNode = treeNodeMap.getValue(rootNodeId),
+      depth = depth,
+      content = content,
+      collapsedState = collapsedState,
+    )
+    if (collapsedState.value) {
+      treeNodeMap.getValue(rootNodeId).children.forEach {
+        MultiSelectView(
+          rootNodeId = it.id,
+          treeNodeMap = treeNodeMap,
+          selectedNodes = selectedNodes,
+          depth = depth + 16,
+          content = content,
+        )
+      }
     }
   }
 }
@@ -86,7 +101,7 @@ fun <T> MultiSelectCheckbox(
       modifier = Modifier.fillMaxWidth().padding(start = depth.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      if (!currentTreeNode.children.isNullOrEmpty()) {
+      if (currentTreeNode.children.isNotEmpty()) {
         Icon(
           imageVector =
             if (collapsedState.value) {
@@ -111,12 +126,12 @@ fun <T> MultiSelectCheckbox(
             val parentNode = treeNodeMap[parentId]
             if (
               parentNode?.children?.all {
-                selectedNodes[it] == ToggleableState.Off || selectedNodes[it] == null
+                selectedNodes[it.id] == ToggleableState.Off || selectedNodes[it.id] == null
               } == true
             ) {
               toggleableState = ToggleableState.Off
             }
-            if (parentNode?.children?.all { selectedNodes[it] == ToggleableState.On } == true) {
+            if (parentNode?.children?.all { selectedNodes[it.id] == ToggleableState.On } == true) {
               toggleableState = ToggleableState.On
             }
             selectedNodes[parentId] = toggleableState
@@ -125,12 +140,12 @@ fun <T> MultiSelectCheckbox(
 
           // Select all the nested checkboxes
           val linkedList =
-            currentTreeNode.children?.map { treeNodeMap.getValue(it) }?.let { LinkedList(it) }
+            currentTreeNode.children.map { treeNodeMap.getValue(it.id) }.let { LinkedList(it) }
 
-          while (!linkedList.isNullOrEmpty()) {
+          while (!linkedList.isEmpty()) {
             val currentNode = linkedList.removeFirst()
             selectedNodes[currentNode.id] = ToggleableState(checked.value)
-            currentNode.children?.forEach { linkedList.add(treeNodeMap.getValue(it)) }
+            currentNode.children.forEach { linkedList.add(treeNodeMap.getValue(it.id)) }
           }
         },
         modifier = Modifier.padding(0.dp),
@@ -142,85 +157,16 @@ fun <T> MultiSelectCheckbox(
 
 @Preview(showBackground = true)
 @Composable
-fun MultiSelectViewPreview() {
-  Column {
-    MultiSelectView(
-      selectedNodes = SnapshotStateMap(),
-      treeNodeMap =
-        SnapshotStateMap<String, TreeNode<String>>().apply {
-          put(
-            "kenya",
-            TreeNode(
-              id = "kenya",
-              parentId = null,
-              data = "Kenya",
-              children = listOf("nairobi"),
-            ),
-          )
-          put(
-            "nairobi",
-            TreeNode(
-              id = "nairobi",
-              parentId = "kenya",
-              data = "Nairobi",
-              children = listOf("sampleId1"),
-            ),
-          )
-          put(
-            "sampleId1",
-            TreeNode(
-              id = "sampleId1",
-              parentId = "nairobi",
-              data = "Kibera - Clinic",
-              children = listOf("sampleId1.1", "sampleId3"),
-            ),
-          )
-          put(
-            "sampleId1.1",
-            TreeNode(
-              id = "sampleId1.1",
-              parentId = "sampleId1",
-              data = "Clinic Village 1",
-              children = listOf("sampleId1.1.1", "sampleId1.1.2"),
-            ),
-          )
-          put(
-            "sampleId1.1.1",
-            TreeNode(
-              id = "sampleId1.1.1",
-              parentId = "sampleId1.1",
-              data = "Sub village 1",
-            ),
-          )
-          put(
-            "sampleId1.1.2",
-            TreeNode(
-              id = "sampleId1.1.2",
-              parentId = "sampleId1.1",
-              data = "Sub village 2",
-            ),
-          )
-          put(
-            "sampleId3",
-            TreeNode(
-              id = "sampleId3",
-              parentId = "sampleId1",
-              data = "Clinic Village 2",
-              children = listOf("sampleId2.1"),
-            ),
-          )
-          put(
-            "sampleId2.1",
-            TreeNode(
-              id = "sampleId2.1",
-              parentId = "sampleId3",
-              data = "Sub village 2",
-            ),
-          )
-        },
-      rootNodeId = "kenya",
-      depth = 0,
-      content = { treeNode -> Column { Text(text = treeNode.data) } },
-    )
+fun MultiSelectViewNoDataPreview() {
+  AppTheme {
+    Column {
+      MultiSelectView(
+        selectedNodes = SnapshotStateMap(),
+        treeNodeMap = SnapshotStateMap<String, TreeNode<String>>(),
+        rootNodeId = "kenya",
+        depth = 0,
+        content = { treeNode -> Column { Text(text = treeNode.data) } },
+      )
+    }
   }
 }

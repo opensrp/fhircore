@@ -40,7 +40,7 @@ class TreeMapTest : RobolectricTest() {
 
   @Inject lateinit var fhirContext: FhirContext
 
-  private lateinit var locationsLookupItems: List<LookupItem<Location>>
+  private lateinit var locationTreeNodes: List<TreeNode<Location>>
 
   @Before
   fun setUp() {
@@ -51,18 +51,19 @@ class TreeMapTest : RobolectricTest() {
         .open("locations.json")
         .bufferedReader()
         .use { it.readText() }
-    locationsLookupItems =
+    locationTreeNodes =
       fhirContext
         .newJsonParser()
         .parseResource(Bundle::class.java, locationsJson)
         .entry
         .map { it.resource as Location }
-        .map { LookupItem(it.logicalId, it.partOf.extractId(), it) }
+        .map { TreeNode(it.logicalId, it.partOf.extractId(), it) }
   }
 
   @Test
   fun testPopulateLookupMapShouldReturnMapOfTreeNodes() {
-    val lookup = TreeMap.populateLookupMap(locationsLookupItems, SnapshotStateMap())
+    val lookup: MutableMap<String, TreeNode<Location>> =
+      TreeMap.populateLookupMap(locationTreeNodes, SnapshotStateMap())
     Assert.assertFalse(lookup.isEmpty())
 
     val rootLocation = lookup["eff94f33-c356-4634-8795-d52340706ba9"]
@@ -76,8 +77,7 @@ class TreeMapTest : RobolectricTest() {
 
     // Assert that each child location references the parent; all have same parent id
     locationWithChildren?.children?.forEach {
-      val child = lookup[it]
-      Assert.assertEquals(locationWithChildren.id, child?.parentId)
+      Assert.assertEquals(locationWithChildren.id, it.parentId)
     }
   }
 }

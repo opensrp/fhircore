@@ -21,32 +21,23 @@ import androidx.compose.runtime.Stable
 @Stable
 data class TreeNode<T>(
   val id: String,
-  val parentId: String?,
+  var parentId: String?,
   val data: T,
-  val children: List<String>? = null,
-)
-
-@Stable
-data class LookupItem<T>(
-  val id: String,
-  val parentId: String?,
-  val data: T,
+  val children: MutableList<TreeNode<T>> = mutableListOf(),
 )
 
 object TreeMap {
 
   fun <T> populateLookupMap(
-    items: List<LookupItem<T>>,
+    items: List<TreeNode<T>>,
     lookup: MutableMap<String, TreeNode<T>>,
   ): MutableMap<String, TreeNode<T>> {
-    items.forEach {
-      val childNode = findOrCreate(it.id, it, lookup)
-      val parentNode = findOrCreate(it.parentId, it, lookup)
-      if (childNode != null) {
-        lookup[childNode.id] = childNode.copy(parentId = parentNode?.id)
-      }
+    items.forEach { item ->
+      val childNode = findOrCreate(item.id, item, lookup)
+      val parentNode = findOrCreate(item.parentId, item, lookup)
       if (parentNode != null && childNode != null) {
-        lookup[parentNode.id] = parentNode.copy(children = parentNode.children?.plus(childNode.id))
+        parentNode.children.add(childNode)
+        childNode.parentId = parentNode.id
       }
     }
     return lookup
@@ -54,10 +45,17 @@ object TreeMap {
 
   private fun <T> findOrCreate(
     id: String?,
-    lookupItem: LookupItem<T>,
+    lookupItem: TreeNode<T>,
     lookup: MutableMap<String, TreeNode<T>>,
   ): TreeNode<T>? {
     if (id.isNullOrEmpty()) return null
-    return lookup.getOrPut(id) { TreeNode(id, null, lookupItem.data, children = mutableListOf()) }
+    return lookup.getOrPut(id) {
+      TreeNode(
+        id = id,
+        parentId = null,
+        data = lookupItem.data,
+        children = mutableListOf(),
+      )
+    }
   }
 }
