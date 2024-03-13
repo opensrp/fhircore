@@ -38,4 +38,28 @@ To create  a repeated group questionnaire, you will need to set create a questio
       "text": "Add Child Details",
 ```
 
-2.
+2. You can opt to use a single page questionnaire that scrolls to targeted block sections or alternatively you can use paginated questionnaire
+
+## Using tasking approach
+
+Handling multiple births using the tasking approach requires one to generate child registration tasks using a linked plan definition by defining an evaluation criteria on the activity definition of the linked plan definition.
+Using $lite to generate such tasks by linking the correct StructureMap in the action to execute task generation dynamically based on number kids born. A sample plan definition activity definition action is shown below;
+
+```
+      {
+          "prefix": "new-born-registration",
+          "priority": "routine",
+          "condition": [
+            {
+              "kind": "applicability",
+              "expression": {
+                "language": "text/fhirpath",
+                "expression": "fhirpath to evaluate criteria"
+              }
+            }
+          ],
+          "definitionCanonical": "#careplan-new-born-registration",
+          "transform": "http://hl7.org/fhir/StructureMap/uuid"
+        }
+
+```
