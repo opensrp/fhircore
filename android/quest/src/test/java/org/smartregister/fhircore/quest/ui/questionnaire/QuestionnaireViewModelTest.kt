@@ -27,7 +27,6 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
@@ -40,7 +39,6 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
-import java.net.URL
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -130,11 +128,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var configurationReg: ConfigurationRegistry
+  @Inject lateinit var configRegistry: ConfigurationRegistry
 
   @Inject lateinit var parser: IParser
-
-  private lateinit var configRegistry: ConfigurationRegistry
 
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
@@ -206,7 +202,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          configurationRegistry = configurationReg,
+          configurationRegistry = configRegistry,
         ),
       )
 
@@ -215,25 +211,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
 
     samplePatientRegisterQuestionnaire = questionnaireJson.decodeResourceFromString()
-
-    configRegistry =
-      ConfigurationRegistry(
-        fhirEngine,
-        fhirResourceDataSource,
-        sharedPreferencesHelper,
-        dispatcherProvider,
-        AppConfigService(context),
-        Faker.json,
-        context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-        openSrpApplication =
-          object : OpenSrpApplication() {
-            override fun getFhirServerHost(): URL? {
-              return URL("http://my_test_fhirbase_url/fhir/")
-            }
-          },
-      )
-    configRegistry.setNonProxy(false)
-    Assert.assertNotNull(configRegistry)
   }
 
   private fun practitionerDetails(): PractitionerDetails {
