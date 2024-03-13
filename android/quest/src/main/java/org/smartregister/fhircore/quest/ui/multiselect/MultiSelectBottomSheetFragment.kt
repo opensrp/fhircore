@@ -56,7 +56,8 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
             title = bottomSheetArgs.screenTitle,
             onDismiss = { dismiss() },
             searchTextState = multiSelectViewModel.searchTextState,
-            onTextChanged = multiSelectViewModel::onTextChanged,
+            onSearchTextChanged = multiSelectViewModel::onTextChanged,
+            onSelectionDone = multiSelectViewModel::onSelectionDone,
           )
         }
       }

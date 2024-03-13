@@ -31,7 +31,7 @@ object TreeMap {
   fun <T> populateLookupMap(
     items: List<TreeNode<T>>,
     lookup: MutableMap<String, TreeNode<T>>,
-  ): MutableMap<String, TreeNode<T>> {
+  ): Map<String, TreeNode<T>> {
     items.forEach { item ->
       val childNode = findOrCreate(item.id, item, lookup)
       val parentNode = findOrCreate(item.parentId, item, lookup)

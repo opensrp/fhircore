@@ -52,8 +52,8 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 @Composable
 fun <T> ColumnScope.MultiSelectView(
   rootNodeId: String,
-  treeNodeMap: SnapshotStateMap<String, TreeNode<T>>,
-  selectedNodes: SnapshotStateMap<String, ToggleableState>,
+  treeNodeMap: Map<String, TreeNode<T>>,
+  selectedNodes: MutableMap<String, ToggleableState>,
   depth: Int = 0,
   content: @Composable (TreeNode<T>) -> Unit,
 ) {
@@ -91,7 +91,7 @@ fun <T> ColumnScope.MultiSelectView(
 
 @Composable
 fun <T> MultiSelectCheckbox(
-  selectedNodes: SnapshotStateMap<String, ToggleableState>,
+  selectedNodes: MutableMap<String, ToggleableState>,
   treeNodeMap: Map<String, TreeNode<T>>,
   currentTreeNode: TreeNode<T>,
   depth: Int,

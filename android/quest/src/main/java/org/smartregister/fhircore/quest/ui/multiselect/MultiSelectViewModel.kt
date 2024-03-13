@@ -21,14 +21,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.state.ToggleableState
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
 import org.smartregister.fhircore.engine.ui.multiselect.TreeMap
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
@@ -41,15 +42,29 @@ class MultiSelectViewModel
 constructor(
   val defaultRepository: DefaultRepository,
   val fhirPathDataExtractor: FhirPathDataExtractor,
+  val preferenceDataStore: PreferenceDataStore,
 ) : ViewModel() {
 
-  val searchTextState: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue())
+  val searchTextState: MutableState<String> = mutableStateOf("")
   val rootNodeIds: SnapshotStateList<String> = SnapshotStateList()
-  val lookupMap: SnapshotStateMap<String, TreeNode<String>> = SnapshotStateMap()
   val selectedNodes: SnapshotStateMap<String, ToggleableState> = SnapshotStateMap()
+  val lookupMap = SnapshotStateMap<String, TreeNode<String>>()
 
   fun populateLookupMap(multiSelectViewConfig: MultiSelectViewConfig) {
+    // Mark previously selected nodes
     viewModelScope.launch {
+      val previouslySelectedNodes =
+        preferenceDataStore.read(PreferenceDataStore.SYNC_LOCATION_IDS).firstOrNull()
+      if (!previouslySelectedNodes.isNullOrEmpty()) {
+        previouslySelectedNodes
+          .split(",")
+          .asSequence()
+          .map { it.split(":") }
+          .filter { it.size == 2 }
+          .map { Pair(it.first(), it.last()) }
+          .forEach { selectedNodes[it.first] = ToggleableState.valueOf(it.second) }
+      }
+
       val repositoryResourceDataList =
         defaultRepository.searchResourcesRecursively(
           fhirResourceConfig = multiSelectViewConfig.resourceConfig,
@@ -85,6 +100,17 @@ constructor(
   }
 
   fun onTextChanged(searchTerm: String) {
-    searchTextState.value = TextFieldValue(searchTerm)
+    searchTextState.value = searchTerm
+  }
+
+  fun onSelectionDone(dismiss: () -> Unit) {
+    viewModelScope.launch {
+      // Consider using a proto-datastore here
+      preferenceDataStore.write(
+        PreferenceDataStore.SYNC_LOCATION_IDS,
+        selectedNodes.map { "${it.key}:${it.value}" }.joinToString(","),
+      )
+      dismiss()
+    }
   }
 }

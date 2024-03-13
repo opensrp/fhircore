@@ -47,7 +47,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,12 +58,13 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 @Composable
 fun MultiSelectBottomSheetView(
   rootNodeIds: SnapshotStateList<String>,
-  treeNodeMap: SnapshotStateMap<String, TreeNode<String>>,
+  treeNodeMap: Map<String, TreeNode<String>>,
   selectedNodes: SnapshotStateMap<String, ToggleableState>,
   title: String?,
   onDismiss: () -> Unit,
-  searchTextState: MutableState<TextFieldValue>,
-  onTextChanged: (String) -> Unit,
+  searchTextState: MutableState<String>,
+  onSearchTextChanged: (String) -> Unit,
+  onSelectionDone: (() -> Unit) -> Unit,
 ) {
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(
@@ -91,20 +91,12 @@ fun MultiSelectBottomSheetView(
     ) {
       OutlinedTextField(
         value = searchTextState.value,
-        onValueChange = { value ->
-          searchTextState.value = value
-          onTextChanged(value.text)
-        },
+        onValueChange = { value -> onSearchTextChanged(value) },
         modifier = Modifier.fillMaxWidth(),
         textStyle = TextStyle(fontSize = 18.sp),
         trailingIcon = {
-          if (searchTextState.value.text.isNotEmpty()) {
-            IconButton(
-              onClick = {
-                searchTextState.value = TextFieldValue("")
-                onTextChanged(searchTextState.value.text)
-              },
-            ) {
+          if (searchTextState.value.isNotEmpty()) {
+            IconButton(onClick = { onSearchTextChanged("") }) {
               Icon(
                 Icons.Default.Close,
                 contentDescription = "",
@@ -137,7 +129,7 @@ fun MultiSelectBottomSheetView(
 
       item {
         Button(
-          onClick = { /*TODO Get selected nodes*/},
+          onClick = { onSelectionDone(onDismiss) },
           modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
         ) {
           Text(
