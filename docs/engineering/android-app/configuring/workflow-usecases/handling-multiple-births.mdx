@@ -43,7 +43,7 @@ To create  a repeated group questionnaire, you will need to set create a questio
 ## Using tasking approach
 
 Handling multiple births using the tasking approach requires one to generate child registration tasks using a linked plan definition by defining an evaluation criteria on the activity definition of the linked plan definition.
-Using $lite to generate such tasks by linking the correct StructureMap in the action to execute task generation dynamically based on number kids born. A sample plan definition activity definition action is shown below;
+Using $lite to generate such tasks by linking the correct StructureMap in the action to execute task generation dynamically based on number children born. A sample plan definition activity definition action is shown below;
 
 ```
       {
@@ -63,3 +63,5 @@ Using $lite to generate such tasks by linking the correct StructureMap in the ac
         }
 
 ```
+
+To generate the tasks dynamically, evaluate the number of children born response from the context QuestionnaireResponse and use it to iterate to generate tasks matching the number of children.
