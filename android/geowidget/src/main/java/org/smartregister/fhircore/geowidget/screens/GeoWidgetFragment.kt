@@ -66,6 +66,9 @@ class GeoWidgetFragment : Fragment() {
     internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     internal var useGpsOnAddingLocation: Boolean = false
     internal var mapLayers : List<MapLayer> = ArrayList()
+    internal var shouldLocationButtonShow : Boolean = true
+    internal var shouldPlaneSwitcherButtonShow : Boolean = true
+
     private lateinit var mapView: KujakuMapView
     private var geoJsonSource: GeoJsonSource? = null
     private var featureCollection: FeatureCollection? = null
@@ -150,8 +153,12 @@ class GeoWidgetFragment : Fragment() {
 
         }
 
-        showCurrentLocationBtn(true)
-        baseLayerSwitcherPlugin.show()
+        if (shouldLocationButtonShow) {
+            showCurrentLocationBtn(true)
+        }
+        if (shouldPlaneSwitcherButtonShow) {
+            baseLayerSwitcherPlugin.show()
+        }
     }
 
     private fun setOnClickLocationListener(mapView: KujakuMapView) {
@@ -280,6 +287,8 @@ class Builder {
     private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     private var useGpsOnAddingLocation: Boolean = false
     private var mapLayers : List<MapLayer> = ArrayList()
+    private var shouldLocationButtonShow : Boolean = true
+    private var shouldPlaneSwitcherButtonShow : Boolean = true
     fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
         this.onAddLocationCallback = onAddLocationCallback
     }
@@ -300,6 +309,14 @@ class Builder {
         this.mapLayers = list
     }
 
+    fun setLocationButtonVisibility(show : Boolean) = apply {
+        this.shouldLocationButtonShow = show
+    }
+
+    fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
+        this.shouldPlaneSwitcherButtonShow = show
+    }
+
     fun build(): GeoWidgetFragment {
         return GeoWidgetFragment().apply {
             this.onAddLocationCallback = this@Builder.onAddLocationCallback
@@ -307,6 +324,8 @@ class Builder {
             this.onClickLocationCallback = this@Builder.onClickLocationCallback
             this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
             this.mapLayers = this@Builder.mapLayers
+            this.shouldLocationButtonShow = this@Builder.shouldLocationButtonShow
+            this.shouldPlaneSwitcherButtonShow = this@Builder.shouldPlaneSwitcherButtonShow
         }
     }
 }

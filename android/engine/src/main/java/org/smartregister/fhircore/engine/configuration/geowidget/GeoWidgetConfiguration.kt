@@ -31,6 +31,9 @@ data class GeoWidgetConfiguration(
   val profileId: String,
   val registrationQuestionnaire: QuestionnaireConfig,
   val mapLayers : List<MapLayer> = arrayListOf(MapLayer.StreetLayer(true)),
+  val shouldLocationButtonShow: Boolean = true,
+  val shouldPlaneSwitcherButtonShow: Boolean = true,
+  val shouldAddingLocationButtonShow: Boolean = true,
   val resourceConfig: FhirResourceConfig? = null,
 ) : Configuration()
 
