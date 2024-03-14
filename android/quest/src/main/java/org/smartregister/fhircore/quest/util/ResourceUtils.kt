@@ -24,7 +24,7 @@ typealias GpsLocation = android.location.Location
 object ResourceUtils {
   fun createFhirLocationFromGpsLocation(
     gpsLocation: GpsLocation,
-    fhirLocation: Location? = null
+    fhirLocation: Location? = null,
   ): Location {
     return (fhirLocation ?: Location()).apply {
       id = UUID.randomUUID().toString()
