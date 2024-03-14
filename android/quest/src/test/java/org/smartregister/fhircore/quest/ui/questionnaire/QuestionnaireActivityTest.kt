@@ -97,7 +97,7 @@ class QuestionnaireActivityTest : RobolectricTest() {
   @BindValue lateinit var defaultRepository: DefaultRepository
 
   @BindValue
-  val configurationRegistry: ConfigurationRegistry = spyk(Faker.buildTestConfigurationRegistry())
+  val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Before
   fun setUp() {

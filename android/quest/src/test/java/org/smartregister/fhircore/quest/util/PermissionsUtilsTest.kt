@@ -50,8 +50,9 @@ class PermissionsUtilsTest : RobolectricTest() {
 
   @Test
   fun `checkPermissions should return false when any permission is not granted`() {
-    val permissions = listOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    val permissions = listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET)
 
+    shadowOf(context).grantPermissions(Manifest.permission.INTERNET)
     shadowOf(context).denyPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
 
     val result = PermissionUtils.checkPermissions(context, permissions)
