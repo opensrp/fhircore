@@ -256,11 +256,16 @@ class PatientExtensionTest : RobolectricTest() {
 
   @Test
   fun testExtractAgeShouldReturnCallGetAgeStringFromDaysWhenPatientHasBirthDate() {
+    val currentDate = LocalDate.now()
+
+    val oneYearAgo = currentDate.minusYears(1)
+
     val calendar =
-      Calendar.getInstance().apply { timeInMillis = (timeInMillis - (1L * 365 * 24 * 3600 * 1000)) }
+      Calendar.getInstance().apply {
+        timeInMillis = oneYearAgo.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+      }
 
     val patient = Patient().apply { birthDate = calendar.time }
-
     Assert.assertEquals("1y", patient.extractAge(context))
   }
 

@@ -1,12 +1,9 @@
 import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `ktlint`
   id("com.android.library")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -163,7 +160,7 @@ dependencies {
   api(libs.jjwt)
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
-  api(libs.material3)
+//  api(libs.material3)
   api(libs.foundation)
   api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)

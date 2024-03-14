@@ -51,55 +51,58 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
-  Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
-    // Header section
-    Row(
-      modifier =
-        modifier
-          .fillMaxWidth()
-          .conditional(viewProperties.header != null, { padding(top = 24.dp, bottom = 8.dp) }),
-      verticalAlignment = Alignment.Top,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      if (viewProperties.header != null) {
-        CompoundText(
-          modifier =
-            modifier
-              .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
-              .wrapContentWidth(Alignment.Start),
-          compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
-          resourceData = resourceData,
-          navController = navController,
-        )
-        if (viewProperties.headerAction != null && headerActionVisible) {
+  // Check if card is visible
+  if (viewProperties.visible.toBoolean()) {
+    val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
+    Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
+      // Header section
+      Row(
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .conditional(viewProperties.header != null, { padding(top = 24.dp, bottom = 8.dp) }),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        if (viewProperties.header != null) {
           CompoundText(
-            modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
-            compoundTextProperties = viewProperties.headerAction!!,
+            modifier =
+              modifier
+                .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
+                .wrapContentWidth(Alignment.Start),
+            compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
+            resourceData = resourceData,
+            navController = navController,
+          )
+          if (viewProperties.headerAction != null && headerActionVisible) {
+            CompoundText(
+              modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
+              compoundTextProperties = viewProperties.headerAction!!,
+              resourceData = resourceData,
+              navController = navController,
+            )
+          }
+        }
+      }
+      // Card section
+      Card(
+        elevation = viewProperties.elevation.dp,
+        modifier =
+          modifier
+            .padding(
+              start = viewProperties.padding.dp,
+              end = viewProperties.padding.dp,
+            )
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
+      ) {
+        Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
+          ViewRenderer(
+            viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
           )
         }
-      }
-    }
-    // Card section
-    Card(
-      elevation = viewProperties.elevation.dp,
-      modifier =
-        modifier
-          .padding(
-            start = viewProperties.padding.dp,
-            end = viewProperties.padding.dp,
-          )
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
-    ) {
-      Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
-        ViewRenderer(
-          viewProperties = viewProperties.content,
-          resourceData = resourceData,
-          navController = navController,
-        )
       }
     }
   }
