@@ -32,7 +32,7 @@ class ResourceUtilsTest {
         altitude = 30.0
       }
 
-    val locationResource = ResourceUtils.createLocationResource(location)
+    val locationResource = ResourceUtils.createFhirLocationFromGpsLocation(location)
 
     assertNotNull(locationResource.id)
     assertEquals(location.longitude.toBigDecimal(), locationResource.position.longitude)
