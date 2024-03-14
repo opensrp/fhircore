@@ -124,10 +124,10 @@ class GeoWidgetFragment : Fragment() {
     private fun setUpMapView(): KujakuMapView {
         return KujakuMapView(requireActivity()).apply {
             id = R.id.kujaku_widget
-            val builder = Style.Builder().fromUri("asset://fhircore_style.json")
+            val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
             getMapAsync { mapboxMap ->
                 mapboxMap.setStyle(builder) { style ->
-                    geoJsonSource = style.getSourceAs("quest-data-set")
+                    geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
                     addMapStyle(style)
                     if (geoJsonSource != null && featureCollection != null) {
                         geoJsonSource!!.setGeoJson(featureCollection)
