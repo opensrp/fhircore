@@ -75,8 +75,8 @@ class LocationUtilsTest : RobolectricTest() {
 
     val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
 
-    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
-    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
+    assertEquals(location.latitude, result!!.latitude , 0.0)
+    assertEquals(location.longitude, result.longitude , 0.0)
   }
 
   @Test
@@ -89,8 +89,8 @@ class LocationUtilsTest : RobolectricTest() {
     fusedLocationProviderClient.setMockLocation(location)
 
     val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
-    assertEquals(location.latitude, result?.latitude ?: 0.0, 0.0)
-    assertEquals(location.longitude, result?.longitude ?: 0.0, 0.0)
+    assertEquals(location.latitude, result!!.latitude, 0.0)
+    assertEquals(location.longitude, result.longitude , 0.0)
   }
 
   @Test

@@ -16,27 +16,24 @@
 
 package org.smartregister.fhircore.quest.util
 
-import android.location.Location
 import java.util.UUID
+import org.hl7.fhir.r4.model.Location
 
-class ResourceUtils {
-  companion object {
-    fun createLocationResource(
-      gpsLocation: Location?,
-      locationResource: org.hl7.fhir.r4.model.Location? = null,
-    ): org.hl7.fhir.r4.model.Location {
-      var locationResourceCopy = locationResource
+typealias GpsLocation = android.location.Location
 
-      if (locationResourceCopy == null) {
-        locationResourceCopy = org.hl7.fhir.r4.model.Location()
-      }
-
-      locationResourceCopy.id = UUID.randomUUID().toString()
-      locationResourceCopy.position.latitude = gpsLocation!!.latitude.toBigDecimal()
-      locationResourceCopy.position.longitude = gpsLocation!!.longitude.toBigDecimal()
-      locationResourceCopy.position.altitude = gpsLocation!!.altitude.toBigDecimal()
-
-      return locationResourceCopy
+object ResourceUtils {
+  fun createFhirLocationFromGpsLocation(
+    gpsLocation: GpsLocation,
+    fhirLocation: Location? = null
+  ): Location {
+    return (fhirLocation ?: Location()).apply {
+      id = UUID.randomUUID().toString()
+      position =
+        Location.LocationPositionComponent().apply {
+          latitude = gpsLocation.latitude.toBigDecimal()
+          longitude = gpsLocation.longitude.toBigDecimal()
+          altitude = gpsLocation.altitude.toBigDecimal()
+        }
     }
   }
 }

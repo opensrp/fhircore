@@ -359,7 +359,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
           if (currentLocation != null) {
             questionnaireResponse.contained.add(
-              ResourceUtils.createLocationResource(gpsLocation = currentLocation),
+              ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
             )
           }
 
