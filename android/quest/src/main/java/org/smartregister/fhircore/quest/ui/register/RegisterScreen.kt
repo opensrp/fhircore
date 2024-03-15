@@ -112,7 +112,7 @@ fun RegisterScreen(
       if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
-      Column(modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
+      Column(modifier = modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
         val fabActions = registerUiState.registerConfiguration?.fabActions
         if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
           ExtendedFab(
@@ -144,7 +144,7 @@ fun RegisterScreen(
         registerUiState.totalRecordsCount > 0 &&
           registerUiState.registerConfiguration?.registerCard != null
       ) {
-        Column(modifier = Modifier.testTag(REGISTER_CARD_TEST_TAG)) {
+        Column(modifier = modifier.testTag(REGISTER_CARD_TEST_TAG)) {
           RegisterCardList(
             registerCardConfig = registerUiState.registerConfiguration.registerCard,
             pagingItems = pagingItems,

@@ -81,7 +81,7 @@ fun LoaderDialog(
               CircularProgressIndicator(
                 color = Color.White,
                 strokeWidth = 3.dp,
-                modifier = Modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(40.dp),
+                modifier = modifier.testTag(LOADER_DIALOG_PROGRESS_BAR_TAG).size(40.dp),
               )
               Row(
                 horizontalArrangement = Arrangement.Center,
@@ -92,7 +92,7 @@ fun LoaderDialog(
                   color = Color.White,
                   text = dialogMessage,
                   modifier =
-                    Modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
+                    modifier.testTag(LOADER_DIALOG_PROGRESS_MSG_TAG).padding(vertical = 16.dp),
                 )
 
                 if (showPercentageProgress) {
@@ -100,7 +100,7 @@ fun LoaderDialog(
                     fontSize = 15.sp,
                     color = Color.White,
                     text = stringResource(id = R.string.percentage_progress, currentPercentage),
-                    modifier = Modifier.padding(horizontal = 3.dp, vertical = 16.dp),
+                    modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
                   )
                 }
               }
