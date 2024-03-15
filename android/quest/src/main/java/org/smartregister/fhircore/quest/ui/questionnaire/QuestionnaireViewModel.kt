@@ -410,6 +410,7 @@ constructor(
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
   }
+
   private suspend fun Resource.applyRelatedEntityLocationMetaTag(
     questionnaireConfig: QuestionnaireConfig,
     context: Context,

@@ -41,6 +41,7 @@ import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -102,7 +103,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import kotlin.test.assertEquals
 
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
@@ -1144,8 +1144,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
   }
 
-
-
   @Test
   fun testApplyRelatedEntityLocationMetaTagWithResourceIdentifier() = runBlocking {
     val questionnaireConfig =
@@ -1155,19 +1153,20 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         saveQuestionnaireResponse = false,
         type = "EDIT",
         extractedResourceUniquePropertyExpressions =
-        listOf(
-          ExtractedResourceUniquePropertyExpression(
-            ResourceType.Observation,
-            "Observation.code.where(coding.code='obs1').coding.code",
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Observation,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
           ),
-        ),
       )
-    val questionnaireResponse =  QuestionnaireResponse().apply {
-      id = "resourceId"
-      meta.lastUpdated = Date()
-      subject = patient.asReference()
-      questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-    }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "resourceId"
+        meta.lastUpdated = Date()
+        subject = patient.asReference()
+        questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+      }
     val subjectType = ResourceType.Observation
 
     assertEquals("resourceId", questionnaireResponse.id)
@@ -1185,12 +1184,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         saveQuestionnaireResponse = false,
         type = "EDIT",
         extractedResourceUniquePropertyExpressions =
-        listOf(
-          ExtractedResourceUniquePropertyExpression(
-            ResourceType.Observation,
-            "Observation.code.where(coding.code='obs1').coding.code",
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Observation,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
           ),
-        ),
       )
     bundle.entry.forEach {
       val resource = it.resource
@@ -1199,7 +1198,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       assertEquals(subjectType, resource.resourceType)
       assertEquals(questionnaireConfig.resourceIdentifier, resource.id)
-
     }
   }
 
@@ -1213,44 +1211,55 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         saveQuestionnaireResponse = false,
         type = "EDIT",
         extractedResourceUniquePropertyExpressions =
-        listOf(
-          ExtractedResourceUniquePropertyExpression(
-            ResourceType.Observation,
-            "Observation.code.where(coding.code='obs1').coding.code",
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Observation,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
           ),
-        ),
       )
-    val questionnaireResponse =  QuestionnaireResponse().apply {
-      id = "resourceId"
-      meta.lastUpdated = Date()
-      subject = patient.asReference()
-    }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "resourceId"
+        meta.lastUpdated = Date()
+        subject = patient.asReference()
+      }
 
-    val bundle = Bundle().apply {
-        addEntry(Bundle.BundleEntryComponent().apply {
-          PractitionerDetails().apply {
-            fhirPractitionerDetails =
-              FhirPractitionerDetails().apply {
-                id = "practitionerId1"
-                practitionerId = StringType("practitionerId1")
-              }
-          }
-          id = "patientId1"
-        })
-      addEntry(Bundle.BundleEntryComponent().apply {
-        PractitionerDetails().apply {
-          fhirPractitionerDetails =
-            FhirPractitionerDetails().apply {
-              id = "practitionerId2"
-              practitionerId = StringType("practitionerId2")
+    val bundle =
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply {
+            PractitionerDetails().apply {
+              fhirPractitionerDetails =
+                FhirPractitionerDetails().apply {
+                  id = "practitionerId1"
+                  practitionerId = StringType("practitionerId1")
+                }
             }
-        }
-        id = "patientId1"
-      })
-    }
-    questionnaireViewModel.saveExtractedResources(bundle, questionnaire, questionnaireConfig, questionnaireResponse, context)
+            id = "patientId1"
+          },
+        )
+        addEntry(
+          Bundle.BundleEntryComponent().apply {
+            PractitionerDetails().apply {
+              fhirPractitionerDetails =
+                FhirPractitionerDetails().apply {
+                  id = "practitionerId2"
+                  practitionerId = StringType("practitionerId2")
+                }
+            }
+            id = "patientId1"
+          },
+        )
+      }
+    questionnaireViewModel.saveExtractedResources(
+      bundle,
+      questionnaire,
+      questionnaireConfig,
+      questionnaireResponse,
+      context
+    )
 
     assertEquals("patientLogicalId", questionnaireResponse.subject.reference)
   }
 }
-
