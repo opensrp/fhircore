@@ -1257,7 +1257,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaire,
       questionnaireConfig,
       questionnaireResponse,
-      context
+      context,
     )
 
     assertEquals("patientLogicalId", questionnaireResponse.subject.reference)
