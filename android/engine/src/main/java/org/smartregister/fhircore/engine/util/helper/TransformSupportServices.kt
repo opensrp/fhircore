@@ -28,6 +28,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.EpisodeOfCare
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.PlanDefinition
@@ -79,6 +80,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
       "AdverseEvent_SuspectEntity" -> AdverseEvent.AdverseEventSuspectEntityComponent()
+      "Location_Position" -> Location.LocationPositionComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }
