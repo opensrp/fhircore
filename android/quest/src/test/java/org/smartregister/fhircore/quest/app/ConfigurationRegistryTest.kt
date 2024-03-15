@@ -32,6 +32,7 @@ import io.mockk.spyk
 import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
@@ -181,6 +182,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
+    coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
