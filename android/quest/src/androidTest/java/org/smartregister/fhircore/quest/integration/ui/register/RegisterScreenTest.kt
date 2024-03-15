@@ -79,6 +79,7 @@ class RegisterScreenTest {
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 
       RegisterScreen(
+        modifier = Modifier,
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
@@ -120,6 +121,7 @@ class RegisterScreenTest {
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 
       RegisterScreen(
+        modifier = Modifier,
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,
@@ -159,6 +161,7 @@ class RegisterScreenTest {
 
     composeTestRule.setContent {
       RegisterScreen(
+        modifier = Modifier,
         openDrawer = {},
         onEvent = {},
         registerUiState = registerUiState,

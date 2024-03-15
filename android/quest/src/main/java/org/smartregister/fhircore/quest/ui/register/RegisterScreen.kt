@@ -128,7 +128,7 @@ fun RegisterScreen(
       modifier = modifier.padding(innerPadding),
     ) {
       if (registerUiState.isFirstTimeSync) {
-        Column(modifier = Modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
+        Column(modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
           val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
           LoaderDialog(
             percentageProgressFlow = registerUiState.progressPercentage,
