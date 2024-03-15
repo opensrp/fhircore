@@ -86,6 +86,7 @@ fun RegisterScreen(
       // Top section has toolbar and a results counts view
       val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
       TopScreenSection(
+        modifier=modifier,
         title = registerUiState.screenTitle,
         searchText = searchText.value,
         filteredRecordsCount = registerUiState.filteredRecordsCount,
@@ -116,6 +117,7 @@ fun RegisterScreen(
         val fabActions = registerUiState.registerConfiguration?.fabActions
         if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
           ExtendedFab(
+            modifier = modifier,
             fabActions = fabActions,
             navController = navController,
             lazyListState = lazyListState,
@@ -131,6 +133,7 @@ fun RegisterScreen(
         Column(modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
           val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
           LoaderDialog(
+            modifier = modifier,
             percentageProgressFlow = registerUiState.progressPercentage,
             dialogMessage =
               stringResource(
@@ -146,6 +149,7 @@ fun RegisterScreen(
       ) {
         Column(modifier = modifier.testTag(REGISTER_CARD_TEST_TAG)) {
           RegisterCardList(
+            modifier = modifier,
             registerCardConfig = registerUiState.registerConfiguration.registerCard,
             pagingItems = pagingItems,
             navController = navController,
