@@ -72,7 +72,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito.mock
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
@@ -95,7 +94,6 @@ import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.extension.yesterday
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -104,7 +102,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import kotlin.test.DefaultAsserter.assertEquals
 import kotlin.test.assertEquals
 
 @HiltAndroidTest
@@ -1147,9 +1144,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
   }
 
+
+
   @Test
   fun testApplyRelatedEntityLocationMetaTagWithResourceIdentifier() = runBlocking {
-    // given
     val questionnaireConfig =
       questionnaireConfig.copy(
         resourceIdentifier = "resourceId",
@@ -1172,17 +1170,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
     val subjectType = ResourceType.Observation
 
-    // then
-   // questionnaireResponse.applyRelatedEntityLocationMetaTag(questionnaireConfig, context, subjectType)
-
-    // when
     assertEquals("resourceId", questionnaireResponse.id)
     assertEquals(subjectType, questionnaireConfig.resourceType)
   }
 
   @Test
   fun `test applyRelatedEntityLocationMetaTag with groupIdentifier`() = runBlocking {
-    // given
     val bundleSlot = slot<Bundle>()
     val bundle = bundleSlot.captured
     val questionnaireConfig =
@@ -1199,21 +1192,65 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           ),
         ),
       )
-
-    // when , then
     bundle.entry.forEach {
       val resource = it.resource
       val subjectType = ResourceType.Group
       resource.id = "groupId"
 
-      // then
-      //applyRelatedEntityLocationMetaTag(resource, questionnaireConfig, context, subjectType)
-
-      // Assert
       assertEquals(subjectType, resource.resourceType)
       assertEquals(questionnaireConfig.resourceIdentifier, resource.id)
 
     }
+  }
+
+  @Test
+  fun `test saveExtractedResources for resource modification`() = runBlocking {
+    val questionnaire = extractionQuestionnaire()
+    val questionnaireConfig =
+      questionnaireConfig.copy(
+        resourceIdentifier = "groupId",
+        resourceType = ResourceType.Group,
+        saveQuestionnaireResponse = false,
+        type = "EDIT",
+        extractedResourceUniquePropertyExpressions =
+        listOf(
+          ExtractedResourceUniquePropertyExpression(
+            ResourceType.Observation,
+            "Observation.code.where(coding.code='obs1').coding.code",
+          ),
+        ),
+      )
+    val questionnaireResponse =  QuestionnaireResponse().apply {
+      id = "resourceId"
+      meta.lastUpdated = Date()
+      subject = patient.asReference()
+    }
+
+    val bundle = Bundle().apply {
+        addEntry(Bundle.BundleEntryComponent().apply {
+          PractitionerDetails().apply {
+            fhirPractitionerDetails =
+              FhirPractitionerDetails().apply {
+                id = "practitionerId1"
+                practitionerId = StringType("practitionerId1")
+              }
+          }
+          id = "patientId1"
+        })
+      addEntry(Bundle.BundleEntryComponent().apply {
+        PractitionerDetails().apply {
+          fhirPractitionerDetails =
+            FhirPractitionerDetails().apply {
+              id = "practitionerId2"
+              practitionerId = StringType("practitionerId2")
+            }
+        }
+        id = "patientId1"
+      })
+    }
+    questionnaireViewModel.saveExtractedResources(bundle, questionnaire, questionnaireConfig, questionnaireResponse, context)
+
+    assertEquals("patientLogicalId", questionnaireResponse.subject.reference)
   }
 }
 
