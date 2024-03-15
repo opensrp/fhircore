@@ -318,7 +318,12 @@ constructor(
         // Use file name as the key. Conventionally navigation configs MUST end with
         // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
-        if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
+        if (
+          !fileName.equals(
+            String.format(COMPOSITION_CONFIG_PATH, appId),
+            ignoreCase = true,
+          )
+        ) {
           val configKey =
             fileName
               .lowercase(Locale.ENGLISH)
@@ -421,7 +426,7 @@ constructor(
           }
           .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name && isNonProxy()) {
+            if (entry.key == ResourceType.List.name && !isNonProxy()) {
               processCompositionListResources(
                 entry,
                 patientRelatedResourceTypes = patientRelatedResourceTypes,
@@ -430,7 +435,12 @@ constructor(
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
               chunkedResourceIdList.forEach { parentIt ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                  "Fetching config resource ${entry.key}: with ids ${
+                                        StringUtils.join(
+                                            parentIt,
+                                            ",",
+                                        )
+                                    }",
                 )
                 processCompositionManifestResources(
                   entry.key,
@@ -583,7 +593,9 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
+          ?: "${
+                        openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }
+                    }/${this.referenceValue()}"
     }
 
   fun writeToFile(resource: Resource): File {

@@ -32,7 +32,6 @@ import io.mockk.spyk
 import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
