@@ -1,0 +1,88 @@
+# Data migration
+
+
+The main functionalities of data migration are:
+- Migrating data by updating resources based on a set of data queries and key-value pairs,
+- Retrieving the latest migration version from shared preferences,
+- Performing the migration only if the new version is greater than the client's latest stored migration version.
+The data migration configuration outlines a set of rules and operations for migrating malformed FHIR resources such as `Task` resource migration on the client app sqlite database. With this configuration one is able to filter the target resource eg `Encounter` or `Task` and read its referenced `PlanDefinition` and its careplans then filter for the task or resource being migrated that lies within the careplan period and read the resulting `careplan id` . The migration then uses the resulting id to replace the malformed attribute such as `Task.basedOn` hence cleaning out the malformed resource attributes that a wrong `StructureMap` may have generated. The feature allows one to filter using data queries and write rules that can query using `forward_include` as well as `rev_include` targeting base resources and any related resources
+
+## Sample JSON for Task migration
+```json
+{
+  "appId": "echis",
+  "configType": "dataMigration",
+  "migrations": [
+    {
+      "resourceType": "Task",
+      "updateValues": [
+        {
+          "jsonPathExpression": "Task.basedOn[0].reference",
+          "valueRule": {
+            "name": "taskBasedOn",
+            "condition": "true",
+            "actions": [
+              "data.put('taskBasedOn', 'CarePlan/' + fhirPath.extractValue(Task, 'Task.basedOn[0].reference') )"
+            ]
+          }
+        }
+      ],
+      "dataQueries": [
+        {
+          "paramName": "status",
+          "operation": "OR",
+          "filterCriteria": [
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "ready"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "requested"
+              }
+            },
+            {
+              "dataType": "CODE",
+              "value": {
+                "system": "http://hl7.org/fhir/task-status",
+                "code": "in-progress"
+              }
+            }
+          ]
+        }
+      ],
+      "purgeAffectedResources": true,
+      "createLocalChangeEntitiesAfterPurge": true,
+      "resourceFilterExpression" : {
+        "conditionalFhirPathExpressions": [
+          "Task.basedOn[0].reference.startsWith('CarePlan').not() and Task.basedOn[0].reference.startsWith('PlanDefinition').not()"
+        ],
+        "matchAll": true
+      },
+      "version": 1
+    }
+  ]
+}
+```
+
+## Config properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+appId | Provides the ID of the application | Yes | |
+configType | Type of configuration | Yes | dataMigration |
+migrations | List of migrations | Yes | |
+resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
+updateValues | Provides the ID of the application | Yes | |
+configType | Type of configuration | Yes | dataMigration |
+rules | List of rule configurations | Yes | |
+version | Version of the migration configuration| Yes | |
+purgeAffectedResources | Flag indicating whether affected resources should be purged | Yes | false |
+createLocalChangeEntitiesAfterPurge | Flag indicating whether to create local change entities after purging | Yes | true |
+resourceFilterExpression | Expression for filtering resources during migration | Yes |  |
+jsonPathExpression | JSON path expression for locating the value within the resource | Yes |  |
+computedValueKey | Key for the computed value to be updated | Yes | |

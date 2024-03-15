@@ -252,8 +252,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     /*val patientRegistrationStructureMap =
     "patient-registration-questionnaire/structure-map.txt".readFile()*/
     val sMap = "content/general/diabetes_compass/registration/patient_registration.map".readFile()
-    // val sMap =
-    // "content/general/diabetes_compass/patient_follow_up/three-year-routine-screening-follow-up.map".readFile()
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
