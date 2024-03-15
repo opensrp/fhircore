@@ -421,14 +421,13 @@ constructor(
           }
           .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name) {
+            if (entry.key == ResourceType.List.name && isNonProxy()) {
               processCompositionListResources(
                 entry,
                 patientRelatedResourceTypes = patientRelatedResourceTypes,
               )
             } else {
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-
               chunkedResourceIdList.forEach { parentIt ->
                 Timber.d(
                   "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",

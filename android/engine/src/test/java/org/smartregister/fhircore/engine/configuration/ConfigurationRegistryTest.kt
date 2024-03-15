@@ -710,7 +710,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
-
+    coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
@@ -724,7 +724,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
-    configRegistry.fetchNonWorkflowConfigResources()
+    runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
@@ -770,6 +770,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       fhirEngine.create(composition)
 
+      coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
       coEvery {
         fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
       } returns Bundle().apply { addEntry().resource = composition }
@@ -794,7 +795,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
-      configRegistry.fetchNonWorkflowConfigResources()
+      runTest { configRegistry.fetchNonWorkflowConfigResources() }
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
