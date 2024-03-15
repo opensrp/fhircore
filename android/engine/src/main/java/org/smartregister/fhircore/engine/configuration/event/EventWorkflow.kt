@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.configuration.event
 
+import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
@@ -37,4 +39,28 @@ data class EventWorkflow(
 data class UpdateWorkflowValueConfig(
   val jsonPathExpression: String,
   val value: JsonElement,
-) : java.io.Serializable
+) : java.io.Serializable, Parcelable {
+  constructor(parcel: Parcel) : this(
+    parcel.readString() ?: "",
+    Json.decodeFromString(parcel.readString() ?: "")
+  )
+
+  override fun writeToParcel(parcel: Parcel, flags: Int) {
+    parcel.writeString(jsonPathExpression)
+    parcel.writeString(value.toString())
+  }
+
+  override fun describeContents(): Int {
+    return 0
+  }
+
+  companion object CREATOR : Parcelable.Creator<UpdateWorkflowValueConfig> {
+    override fun createFromParcel(parcel: Parcel): UpdateWorkflowValueConfig {
+      return UpdateWorkflowValueConfig(parcel)
+    }
+
+    override fun newArray(size: Int): Array<UpdateWorkflowValueConfig?> {
+      return arrayOfNulls(size)
+    }
+  }
+}
