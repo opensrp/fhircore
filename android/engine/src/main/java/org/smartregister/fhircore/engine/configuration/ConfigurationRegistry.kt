@@ -677,9 +677,7 @@ constructor(
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    val applicationConfig: ApplicationConfiguration by lazy {
-      retrieveConfiguration(ConfigType.Application)
-    }
+    val applicationConfig = retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
@@ -701,8 +699,7 @@ constructor(
                       TYPE_REFERENCE_DELIMITER,
                     )
                   val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
-                  val listResourceUrlPath =
-                    "${ResourceType.List.name}?$resourceKey?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page} &_count= ${applicationConfig.listSyncConfig.count}"
+                  val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
                   fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                     listEntryResourceBundle ->
                     addOrUpdate(listEntryResourceBundle.resource)
@@ -720,6 +717,14 @@ constructor(
           searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
+        if (resourceGroup.key.contains("List")) {
+          val searchPath = "${resourceGroup.key}/${it.focus.extractId()}"
+          val resourceKey = searchPath.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+          val resourceId = searchPath.substringAfter(TYPE_REFERENCE_DELIMITER).trim()
+          val listResourceUrlPath =
+            "${ResourceType.List.name}?$resourceKey?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page} &_count= ${applicationConfig.listSyncConfig.count}"
+          fhirResourceDataSource.getResource(listResourceUrlPath)
+        }
       }
     }
   }
