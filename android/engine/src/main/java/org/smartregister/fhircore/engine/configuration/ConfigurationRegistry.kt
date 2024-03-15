@@ -677,7 +677,9 @@ constructor(
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    val applicationConfig = retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val applicationConfig: ApplicationConfiguration by lazy {
+      retrieveConfiguration(ConfigType.Application)
+    }
 
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
