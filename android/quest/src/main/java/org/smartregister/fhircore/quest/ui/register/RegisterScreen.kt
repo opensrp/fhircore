@@ -86,7 +86,7 @@ fun RegisterScreen(
       // Top section has toolbar and a results counts view
       val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
       TopScreenSection(
-        modifier=modifier,
+        modifier = modifier,
         title = registerUiState.screenTitle,
         searchText = searchText.value,
         filteredRecordsCount = registerUiState.filteredRecordsCount,
