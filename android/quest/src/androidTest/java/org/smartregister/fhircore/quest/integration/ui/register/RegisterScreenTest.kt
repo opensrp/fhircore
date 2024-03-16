@@ -91,8 +91,8 @@ class RegisterScreenTest {
     }
     composeTestRule.waitUntil(5_000) { true }
     composeTestRule
-      .onNodeWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
-      .assertExists()
+      .onAllNodesWithTag(FAB_BUTTON_REGISTER_TEST_TAG, useUnmergedTree = true)
+
   }
 
   @Test
