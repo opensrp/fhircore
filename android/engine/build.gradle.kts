@@ -204,6 +204,13 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
+  api(libs.contrib.locationwidget) {
+    isTransitive = true
+    exclude(group = "org.smartregister", module = "data-capture")
+    exclude(group = "ca.uhn.hapi.fhir")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "com.google.android.fhir", module = "engine")
+  }
   api(libs.fhir.engine) {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
