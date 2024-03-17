@@ -356,7 +356,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
-
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     fhirEngine.create(composition)
 
@@ -364,7 +363,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
 
     coEvery {
-      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_page=${appConfig.listSyncConfig.page} &_count= ${appConfig.listSyncConfig.count}")
+      fhirResourceDataSource.getResource(
+        "$resourceKey?_id=$resourceId&_page=${appConfig.listSyncConfig.page} &_count= ${appConfig.listSyncConfig.count}"
+      )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {
@@ -576,7 +577,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertFalse(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     val applicationConfiguration =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        configType = ConfigType.Application
+        configType = ConfigType.Application,
       )
 
     Assert.assertNotNull(applicationConfiguration)
