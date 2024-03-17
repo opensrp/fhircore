@@ -689,7 +689,7 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
     val applicationConfig: ApplicationConfiguration by lazy {
-      retrieveConfiguration(ConfigType.Application)
+      retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
     }
 
     if (isNonProxy()) {

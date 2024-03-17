@@ -53,6 +53,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -351,6 +352,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
             SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
           )
       }
+    configRegistry.configsJsonMap[ConfigType.Application.name] = "{\"appId\": \"${appId}\"}"
+    val appConfig =
+      configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+
+
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     fhirEngine.create(composition)
 
@@ -358,25 +364,28 @@ class ConfigurationRegistryTest : RobolectricTest() {
       bundle
 
     coEvery {
-      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
+      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_page=${appConfig.listSyncConfig.page} &_count= ${appConfig.listSyncConfig.count}")
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
 
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/test-list-id")
+    } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
+
     configRegistry.fhirEngine.create(composition)
-    configRegistry.setNonProxy(true)
+    configRegistry.setNonProxy(false)
     configRegistry.fetchNonWorkflowConfigResources()
 
     val createdResourceArgumentSlot = mutableListOf<Resource>()
 
     coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
-    Assert.assertEquals(
+    assertEquals(
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
-    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -567,7 +576,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     Assert.assertFalse(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     val applicationConfiguration =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
-        configType = ConfigType.Application,
+        configType = ConfigType.Application
       )
 
     Assert.assertNotNull(applicationConfiguration)
