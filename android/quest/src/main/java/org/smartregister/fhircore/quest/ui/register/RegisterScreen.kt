@@ -117,7 +117,7 @@ fun RegisterScreen(
         val fabActions = registerUiState.registerConfiguration?.fabActions
         if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
           ExtendedFab(
-            modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
+            modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
             fabActions = fabActions,
             navController = navController,
             lazyListState = lazyListState,
@@ -126,7 +126,7 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(
-      modifier = modifier.padding(innerPadding),
+      modifier = modifier.padding(innerPadding)
     ) {
       if (registerUiState.isFirstTimeSync) {
         Column(modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
