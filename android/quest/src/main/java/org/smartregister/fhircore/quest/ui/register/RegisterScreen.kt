@@ -53,7 +53,6 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
-import org.smartregister.fhircore.quest.ui.profile.FAB_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -114,19 +113,19 @@ fun RegisterScreen(
       if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
-        val fabActions = registerUiState.registerConfiguration?.fabActions
-        if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
-          ExtendedFab(
-            modifier = Modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
-            fabActions = fabActions,
-            navController = navController,
-            lazyListState = lazyListState,
-          )
+      val fabActions = registerUiState.registerConfiguration?.fabActions
+      if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+        ExtendedFab(
+          modifier = modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
+          fabActions = fabActions,
+          navController = navController,
+          lazyListState = lazyListState,
+        )
       }
     },
   ) { innerPadding ->
     Box(
-      modifier = modifier.padding(innerPadding)
+      modifier = modifier.padding(innerPadding),
     ) {
       if (registerUiState.isFirstTimeSync) {
         Column(modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
