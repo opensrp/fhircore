@@ -53,6 +53,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.profile.FAB_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -113,16 +114,14 @@ fun RegisterScreen(
       if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
-      Column(modifier = modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG)) {
         val fabActions = registerUiState.registerConfiguration?.fabActions
         if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
           ExtendedFab(
-            modifier = modifier,
+            modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
             fabActions = fabActions,
             navController = navController,
             lazyListState = lazyListState,
           )
-        }
       }
     },
   ) { innerPadding ->
