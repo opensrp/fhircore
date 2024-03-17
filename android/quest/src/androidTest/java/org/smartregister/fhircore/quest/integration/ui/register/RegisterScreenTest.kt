@@ -46,6 +46,7 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import org.smartregister.fhircore.quest.ui.register.TOP_BAR_REGISTER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 
 @HiltAndroidTest
@@ -210,7 +211,8 @@ class RegisterScreenTest {
       )
     }
     composeTestRule.waitUntil(5_000) { true }
-    composeTestRule.onAllNodesWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
+    composeTestRule.onNodeWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
+    composeTestRule.onNodeWithTag(TOP_BAR_REGISTER_TEST_TAG, useUnmergedTree = true)
   }
 
   @Test

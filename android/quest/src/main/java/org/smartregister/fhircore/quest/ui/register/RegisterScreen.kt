@@ -67,6 +67,7 @@ const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
 const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
 const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
 const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
+const val TOP_BAR_REGISTER_TEST_TAG = "topScreenTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -86,27 +87,29 @@ fun RegisterScreen(
     topBar = {
       // Top section has toolbar and a results counts view
       val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
-      TopScreenSection(
-        modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
-        title = registerUiState.screenTitle,
-        searchText = searchText.value,
-        filteredRecordsCount = registerUiState.filteredRecordsCount,
-        searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
-        toolBarHomeNavigation = toolBarHomeNavigation,
-        onSearchTextChanged = { searchText ->
-          onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-        },
-        isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-      ) { event ->
-        when (event) {
-          ToolbarClickEvent.Navigate ->
-            when (toolBarHomeNavigation) {
-              ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-              ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+      Column(modifier = modifier.testTag(TOP_BAR_REGISTER_TEST_TAG)) {
+        TopScreenSection(
+          modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
+          title = registerUiState.screenTitle,
+          searchText = searchText.value,
+          filteredRecordsCount = registerUiState.filteredRecordsCount,
+          searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
+          onSearchTextChanged = { searchText ->
+            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+          },
+          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+        ) { event ->
+          when (event) {
+            ToolbarClickEvent.Navigate ->
+              when (toolBarHomeNavigation) {
+                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+              }
+            ToolbarClickEvent.FilterData -> {
+              onEvent(RegisterEvent.ResetFilterRecordsCount)
+              filterActions?.handleClickEvent(navController)
             }
-          ToolbarClickEvent.FilterData -> {
-            onEvent(RegisterEvent.ResetFilterRecordsCount)
-            filterActions?.handleClickEvent(navController)
           }
         }
       }
