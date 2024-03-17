@@ -46,6 +46,7 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 
 @HiltAndroidTest
 class RegisterScreenTest {
@@ -170,6 +171,46 @@ class RegisterScreenTest {
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true).assertExists()
+  }
+
+  @Test
+  fun testThatTopScreenIsRendered() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+    composeTestRule.waitUntil(5_000) { true }
+    composeTestRule.onAllNodesWithTag(TOP_REGISTER_SCREEN_TEST_TAG, useUnmergedTree = true)
   }
 
   @Test

@@ -66,6 +66,7 @@ const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestT
 const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
 const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
 const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
+const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -86,7 +87,7 @@ fun RegisterScreen(
       // Top section has toolbar and a results counts view
       val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
       TopScreenSection(
-        modifier = modifier,
+        modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
         title = registerUiState.screenTitle,
         searchText = searchText.value,
         filteredRecordsCount = registerUiState.filteredRecordsCount,
@@ -128,41 +129,37 @@ fun RegisterScreen(
       modifier = modifier.padding(innerPadding),
     ) {
       if (registerUiState.isFirstTimeSync) {
-        Column(modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG)) {
-          val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
-          LoaderDialog(
-            modifier = modifier,
-            percentageProgressFlow = registerUiState.progressPercentage,
-            dialogMessage =
-              stringResource(
-                id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
-              ),
-            showPercentageProgress = true,
-          )
-        }
+        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
+        LoaderDialog(
+          modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
+          percentageProgressFlow = registerUiState.progressPercentage,
+          dialogMessage =
+            stringResource(
+              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+            ),
+          showPercentageProgress = true,
+        )
       }
-      if (
-        registerUiState.totalRecordsCount > 0 &&
-          registerUiState.registerConfiguration?.registerCard != null
-      ) {
-        Column(modifier = modifier.testTag(REGISTER_CARD_TEST_TAG)) {
-          RegisterCardList(
-            modifier = modifier,
-            registerCardConfig = registerUiState.registerConfiguration.registerCard,
-            pagingItems = pagingItems,
-            navController = navController,
-            lazyListState = lazyListState,
-            onEvent = onEvent,
-            registerUiState = registerUiState,
-            currentPage = currentPage,
-            showPagination = searchText.value.isEmpty(),
-          )
-        }
-      } else {
-        registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
-          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
-            noResultConfig.actionButton?.actions?.handleClickEvent(navController)
-          }
+    }
+    if (
+      registerUiState.totalRecordsCount > 0 &&
+        registerUiState.registerConfiguration?.registerCard != null
+    ) {
+      RegisterCardList(
+        modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
+        registerCardConfig = registerUiState.registerConfiguration.registerCard,
+        pagingItems = pagingItems,
+        navController = navController,
+        lazyListState = lazyListState,
+        onEvent = onEvent,
+        registerUiState = registerUiState,
+        currentPage = currentPage,
+        showPagination = searchText.value.isEmpty(),
+      )
+    } else {
+      registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
+        NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+          noResultConfig.actionButton?.actions?.handleClickEvent(navController)
         }
       }
     }
