@@ -734,7 +734,7 @@ constructor(
           val searchPath = "${resourceGroup.key}/${it.focus.extractId()}"
           val resourceId = searchPath.substringAfter(TYPE_REFERENCE_DELIMITER).trim()
           val listResourceUrlPath =
-            "${ResourceType.List.name}?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page} &_count= ${applicationConfig.listSyncConfig.count}"
+            "${ResourceType.List.name}?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page}&_count=${applicationConfig.listSyncConfig.count}"
           fhirResourceDataSource.getResource(listResourceUrlPath)
         }
       }
