@@ -325,6 +325,63 @@ class ConfigurationRegistryTest : RobolectricTest() {
   // Backward compatibility for NON-PROXY version
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxy() = runTest {
+    val appId = "theAppId"
+    val focusReference = ResourceType.Questionnaire.name
+    val resourceKey = "resourceKey"
+    val resourceId = "resourceId"
+    val testListId = "test-list-id"
+    val listResource =
+      ListResource().apply {
+        id = "test-list-id"
+        entry =
+          listOf(
+            ListResource.ListEntryComponent().apply {
+              item = Reference().apply { reference = "$resourceKey/$resourceId" }
+            },
+          )
+      }
+    val bundle =
+      Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = listResource }) }
+
+    val composition =
+      Composition().apply {
+        identifier = Identifier().apply { value = appId }
+        section =
+          listOf(
+            SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
+          )
+      }
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+    fhirEngine.create(composition)
+
+    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
+      bundle
+
+    coEvery {
+      fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
+    } returns bundle
+    coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
+
+    configRegistry.fhirEngine.create(composition)
+    configRegistry.setNonProxy(true)
+    configRegistry.fetchNonWorkflowConfigResources()
+
+    val createdResourceArgumentSlot = mutableListOf<Resource>()
+
+    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
+    Assert.assertEquals(
+      "test-list-id",
+      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
+    )
+    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() = runTest {
     val appId = "theAppId"
     val focusReference = ResourceType.Questionnaire.name
