@@ -171,7 +171,9 @@ class RegisterScreenTest {
         navController = rememberNavController(),
       )
     }
-    composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true).assertExists()
+    composeTestRule
+      .onAllNodesWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
+      .assertCountEquals(6)
   }
 
   @Test
