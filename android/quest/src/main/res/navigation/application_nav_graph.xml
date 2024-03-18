@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/geoWidgetLauncherFragment">
+    app:startDestination="@id/registerFragment">
 
     <fragment
         android:id="@+id/geoWidgetLauncherFragment"
@@ -43,6 +43,11 @@
             android:defaultValue="@null"
             app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
             app:nullable="true" />
+        <argument
+            android:name="launcherType"
+            android:defaultValue="REGISTER"
+            app:argType="org.smartregister.fhircore.engine.domain.model.LauncherType"
+            app:nullable="false"/>
     </fragment>
 
     <fragment

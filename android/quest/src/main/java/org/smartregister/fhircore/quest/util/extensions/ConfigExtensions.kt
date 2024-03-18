@@ -113,6 +113,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
+            Pair(NavigationArg.LAUNCHER_TYPE, actionConfig.launcherType),
             Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
           )
 
