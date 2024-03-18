@@ -7,7 +7,8 @@ title: Application
 These are app wide configurations used to control the application behaviour globally e.g. application theme, app language etc.
 
 :::note
-There can only be one instance of application configuration for the entire application. There are instances where the `Event Workflow` is added to the application config. See [here](https://docs.opensrp.io/engineering/android-app/configuring/event-management/resource-closure-by-background-worker) 
+There can only be one instance of application configuration for the entire application. There are instances where the `Event Workflow` is added to the application config. See [here](https://docs.opensrp.io/engineering/android-app/configuring/event-management/resource-closure-by-background-worker)
+The `logGpsLocation` config takes in a list of `LocationLogOptions` to toggle whether to capture GPS coordinates in the application. We can currently define this to capture Location GPS on Questionnaire submission by passing the log option `QUESTIONNAIRE` as shown in the sample JSON.
 :::
 
 ## Sample JSON
