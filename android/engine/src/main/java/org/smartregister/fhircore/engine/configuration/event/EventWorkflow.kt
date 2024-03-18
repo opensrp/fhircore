@@ -30,11 +30,12 @@ data class EventWorkflow(
   val triggerConditions: List<EventTriggerCondition> = emptyList(),
   val eventResources: List<ResourceConfig> = emptyList(),
   val updateValues: List<UpdateWorkflowValueConfig> = emptyList(),
-  val resourceFilterExpression: ResourceFilterExpression? = null,
+  val resourceFilterExpressions: List<ResourceFilterExpression>? = null,
 ) : java.io.Serializable, Parcelable
 
 @Serializable
 data class UpdateWorkflowValueConfig(
   val jsonPathExpression: String,
   val value: JsonElement,
+  val resourceType: String,
 ) : java.io.Serializable

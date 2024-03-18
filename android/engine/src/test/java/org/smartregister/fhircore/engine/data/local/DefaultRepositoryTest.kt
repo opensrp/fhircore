@@ -767,6 +767,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "Task.status",
         value = JsonPrimitive("cancelled"),
+        resourceType = "Task",
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
 
@@ -790,6 +791,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "CarePlan.status",
         value = JsonPrimitive("completed"),
+        resourceType = "CarePlan",
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
 
@@ -823,15 +825,17 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = "ServiceRequest",
       )
     val resourceFilterExpression =
       ResourceFilterExpression(
         conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+        resourceType = "ServiceRequest",
       )
     val eventWorkflow =
       EventWorkflow(
         updateValues = listOf(updatedValues),
-        resourceFilterExpression = resourceFilterExpression,
+        resourceFilterExpressions = listOf(resourceFilterExpression),
       )
 
     defaultRepository.updateResourcesRecursively(
@@ -873,16 +877,18 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = "ServiceRequest",
       )
 
     val resourceFilterExpression =
       ResourceFilterExpression(
         conditionalFhirPathExpressions = listOf("ServiceRequest.status != 'completed'"),
+        resourceType = "ServiceRequest",
       )
     val eventWorkflow =
       EventWorkflow(
         updateValues = listOf(updatedValues),
-        resourceFilterExpression = resourceFilterExpression,
+        resourceFilterExpressions = listOf(resourceFilterExpression),
       )
 
     defaultRepository.updateResourcesRecursively(
@@ -917,6 +923,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "CarePlan.status",
         value = JsonPrimitive("completed"),
+        resourceType = "CarePlan",
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     defaultRepository.updateResourcesRecursively(
@@ -989,6 +996,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "Procedure.status",
         value = JsonPrimitive("stopped"),
+        resourceType = "Procedure",
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     runBlocking { defaultRepository.closeResource(procedure, eventWorkflow) }
@@ -1010,6 +1018,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "ServiceRequest.status",
         value = JsonPrimitive("revoked"),
+        resourceType = "ServiceRequest",
       )
     val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
     runBlocking {
@@ -1050,16 +1059,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = "Condition",
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = "Condition",
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = "Condition",
       )
 
     val eventWorkflow =
@@ -1108,16 +1120,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = "Condition",
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = "Condition",
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = "Condition",
       )
 
     val eventWorkflow =
@@ -1172,16 +1187,19 @@ class DefaultRepositoryTest : RobolectricTest() {
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].code",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_CODE),
+        resourceType = "Condition",
       )
     val updatedValueDisplay =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].display",
         JsonPrimitive(PATIENT_CONDITION_RESOLVED_DISPLAY),
+        resourceType = "Condition",
       )
     val updatedValueSystem =
       UpdateWorkflowValueConfig(
         "Condition.clinicalStatus.coding[0].system",
         JsonPrimitive(SNOMED_SYSTEM),
+        resourceType = "Condition",
       )
 
     val eventWorkflow =

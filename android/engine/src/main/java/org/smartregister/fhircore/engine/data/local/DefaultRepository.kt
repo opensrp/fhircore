@@ -756,7 +756,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search).map { it.resource }
     val filteredResources =
       filterResourcesByFhirPathExpression(
-        resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+        resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
         resources = resources,
       )
     filteredResources.forEach {
@@ -778,7 +778,7 @@ constructor(
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       val filteredRelatedResources =
         filterResourcesByFhirPathExpression(
-          resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
           resources = resourcesMap.value,
         )
 
@@ -793,11 +793,32 @@ constructor(
     }
   }
 
+  /**
+   * This function filters event management resources using a filter expression. For example when
+   * closing tasks we do not want to close `completed`tasks. The filter expression will be used to
+   * filter out completed tasks from the resources list
+   *
+   * @param resourceFilterExpressions - Contains the list of conditional FhirPath expressions used
+   *   for filtering resources. It also specifies the resource type that the filter expressions will
+   *   be applied to
+   * @param resources - The list of resources to be filtered. Note that it only contains resources
+   *   of a single type.
+   */
   fun filterResourcesByFhirPathExpression(
-    resourceFilterExpression: ResourceFilterExpression?,
+    resourceFilterExpressions: List<ResourceFilterExpression>?,
     resources: List<Resource>,
   ): List<Resource> {
-    return with(resourceFilterExpression) {
+    val resourceFilterExpressionForCurrentResourceType =
+      resourceFilterExpressions?.firstOrNull {
+        resources[0]
+          .resourceType
+          .name
+          .equals(
+            ignoreCase = true,
+            other = it.resourceType,
+          )
+      }
+    return with(resourceFilterExpressionForCurrentResourceType) {
       if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
       } else {
