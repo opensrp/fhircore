@@ -41,7 +41,7 @@ data class UpdateWorkflowValueConfig(
   val value: JsonElement,
 ) : java.io.Serializable, Parcelable {
   constructor(
-    parcel: Parcel
+    parcel: Parcel,
   ) : this(
     parcel.readString() ?: "",
     Json.decodeFromString(parcel.readString() ?: ""),
