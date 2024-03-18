@@ -40,9 +40,11 @@ data class UpdateWorkflowValueConfig(
   val jsonPathExpression: String,
   val value: JsonElement,
 ) : java.io.Serializable, Parcelable {
-  constructor(parcel: Parcel) : this(
+  constructor(
+    parcel: Parcel
+  ) : this(
     parcel.readString() ?: "",
-    Json.decodeFromString(parcel.readString() ?: "")
+    Json.decodeFromString(parcel.readString() ?: ""),
   )
 
   override fun writeToParcel(parcel: Parcel, flags: Int) {
