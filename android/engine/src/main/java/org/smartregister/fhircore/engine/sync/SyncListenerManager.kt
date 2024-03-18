@@ -24,7 +24,6 @@ import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Appointment
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
@@ -173,12 +172,14 @@ private fun ResourceType.filterBasedOnPerResourceType(
       pairs.addParam(resourceType = this, param = RelatedPerson.SP_ACTIVE, value = true.toString())
     ResourceType.Patient ->
       pairs.addParam(resourceType = this, param = Patient.SP_ACTIVE, value = true.toString())
-    ResourceType.CarePlan ->
-      pairs.addParam(
-        resourceType = this,
-        param = CarePlan.SP_STATUS,
-        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase(),
-      )
+
+    //    ResourceType.CarePlan ->
+    //      pairs.addParam(
+    //        resourceType = this,
+    //        param = CarePlan.SP_STATUS,
+    //        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase(),
+    //      )
+
     ResourceType.Observation ->
       pairs.addParam(
         resourceType = this,
