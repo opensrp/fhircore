@@ -730,13 +730,11 @@ constructor(
           searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
-        if (resourceGroup.key.contains("List")) {
           val searchPath = "${resourceGroup.key}/${it.focus.extractId()}"
           val resourceId = searchPath.substringAfter(TYPE_REFERENCE_DELIMITER).trim()
           val listResourceUrlPath =
-            "${ResourceType.List.name}?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page}&_count=${applicationConfig.listSyncConfig.count}"
+            "${ResourceType.List.name}?$ID=$resourceId&_page=1&_count=50}"
           fhirResourceDataSource.getResource(listResourceUrlPath)
-        }
       }
     }
   }

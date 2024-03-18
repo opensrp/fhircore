@@ -421,7 +421,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery {
       fhirResourceDataSource.getResource(
-        "$resourceKey?_id=$resourceId&_page=${appConfig.listSyncConfig.page}&_count=${appConfig.listSyncConfig.count}",
+        "$resourceKey?_id=$resourceId&_page=1&_count= 50",
       )
     } returns bundle
     coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
