@@ -66,7 +66,7 @@ constructor(
    */
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    Sync.oneTimeSync<AppSyncWorker>(context).handleCurrentSyncJobStatus(this)
+    Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
   }
 
   /**
@@ -96,19 +96,18 @@ constructor(
           onSyncListener.onSync(it.currentSyncJobStatus)
         }
       }
-      .catch { throwable -> Timber.e("Encountered an error during sync:", throwable) }
+      .catch { throwable -> Timber.e("Encountered an error during periodic sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
       .launchIn(coroutineScope)
   }
 
-  // Handle one time sync
-  private fun Flow<CurrentSyncJobStatus>.handleCurrentSyncJobStatus(
+  private fun Flow<CurrentSyncJobStatus>.handleOneTimeSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
       }
-      .catch { throwable -> Timber.e("Encountered an error during sync:", throwable) }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
       .launchIn(coroutineScope)
   }

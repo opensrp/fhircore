@@ -36,6 +36,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
@@ -125,10 +126,12 @@ class UserSettingFragment : Fragment(), OnSyncListener {
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Running ->
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing)),
-          )
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {
+            userSettingViewModel.emitSnackBarState(
+              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            )
+          }
         }
       is CurrentSyncJobStatus.Succeeded -> {
         lifecycleScope.launch {
@@ -142,25 +145,12 @@ class UserSettingFragment : Fragment(), OnSyncListener {
         }
       }
       is CurrentSyncJobStatus.Failed -> {
-        //        val hasAuthError =
-        //          try {
-        //            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-        //            syncJobStatus.exceptions.any {
-        //              it.exception is HttpException && (it.exception as HttpException).code() ==
-        // 401
-        //            }
-        //          } catch (nullPointerException: NullPointerException) {
-        //            false
-        //          }
-
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message =
                 getString(
-                  if (false) {
-                    R.string.sync_unauthorised
-                  } else R.string.sync_completed_with_errors,
+                  R.string.sync_completed_with_errors,
                 ),
               duration = SnackbarDuration.Long,
               actionLabel = getString(R.string.ok).uppercase(),

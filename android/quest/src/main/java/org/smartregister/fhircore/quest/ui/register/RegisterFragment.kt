@@ -220,32 +220,15 @@ class RegisterFragment : Fragment(), OnSyncListener {
         refreshRegisterData()
         syncJobStatus.toString()
         // Show error message in snackBar message
-        val hasAuthError =
-          //          try {
-          //            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: ""
-          // })
-          //            syncJobStatus.exceptions.any {
-          //              it.exception is HttpException && (it.exception as HttpException).code() ==
-          // 401
-          //            }
-          //          } catch (nullPointerException: NullPointerException) {
-          //            false
-          //          }
-
-          lifecycleScope.launch {
-            registerViewModel.emitSnackBarState(
-              SnackBarMessageConfig(
-                message =
-                  getString(
-                    if (false) {
-                      R.string.sync_unauthorised
-                    } else R.string.sync_completed_with_errors,
-                  ),
-                duration = SnackbarDuration.Long,
-                actionLabel = getString(R.string.ok).uppercase(),
-              ),
-            )
-          }
+        lifecycleScope.launch {
+          registerViewModel.emitSnackBarState(
+            SnackBarMessageConfig(
+              message = getString(R.string.sync_completed_with_errors),
+              duration = SnackbarDuration.Long,
+              actionLabel = getString(R.string.ok).uppercase(),
+            ),
+          )
+        }
       }
       else -> {
         // Do nothing
