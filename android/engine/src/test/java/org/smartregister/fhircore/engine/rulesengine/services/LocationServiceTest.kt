@@ -86,7 +86,7 @@ class LocationServiceTest : RobolectricTest() {
         position.latitude = BigDecimal(37.7749)
         position.longitude = BigDecimal(-122.4194)
       }
-    val result = locationService.calculateDistancesByGpsLocation(currentLocation)
+    val result = locationService.calculateDistanceByGpsLocation(currentLocation)
 
     assertEquals("0.00 mtrs", "0.00 mtrs", result)
   }

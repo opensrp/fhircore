@@ -47,7 +47,7 @@ class LocationService(
     return formatDistance(distanceInMeters)
   }
 
-  fun calculateDistancesByGpsLocation(location: Resource): String {
+  fun calculateDistanceByGpsLocation(location: Resource): String {
     val currentLocation = generateLocation(location)
 
     CoroutineScope(Dispatchers.IO).launch {
