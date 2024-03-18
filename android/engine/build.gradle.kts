@@ -162,7 +162,7 @@ dependencies {
   api(libs.jjwt)
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
-  api(libs.material3)
+//  api(libs.material3)
   api(libs.foundation)
   api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)
@@ -201,6 +201,13 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
   }
   api(libs.contrib.barcode) {
+    isTransitive = true
+    exclude(group = "org.smartregister", module = "data-capture")
+    exclude(group = "ca.uhn.hapi.fhir")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "com.google.android.fhir", module = "engine")
+  }
+  api(libs.contrib.locationwidget) {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")
