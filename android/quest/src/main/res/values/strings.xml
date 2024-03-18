@@ -109,6 +109,11 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
+    <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
 
 </resources>

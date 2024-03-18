@@ -7,7 +7,8 @@ title: Application
 These are app wide configurations used to control the application behaviour globally e.g. application theme, app language etc.
 
 :::note
-There can only be one instance of application configuration for the entire application. There are instances where the `Event Workflow` is added to the application config. See [here](https://docs.opensrp.io/engineering/android-app/configuring/event-management/resource-closure-by-background-worker) 
+There can only be one instance of application configuration for the entire application. There are instances where the `Event Workflow` is added to the application config. See [here](https://docs.opensrp.io/engineering/android-app/configuring/event-management/resource-closure-by-background-worker)
+The `logGpsLocation` config takes in a list of `LocationLogOptions` to toggle whether to capture GPS coordinates in the application. We can currently define this to capture Location GPS on Questionnaire submission by passing the log option `QUESTIONNAIRE` as shown in the sample JSON.
 :::
 
 ## Sample JSON
@@ -23,7 +24,7 @@ There can only be one instance of application configuration for the entire appli
     ],
     "useDarkTheme": false,
     "syncInterval": 15,
-    "syncStrategy": [
+    "syncStrategies": [
         "Location",
         "Organization",
         "CareTeam",
@@ -48,7 +49,10 @@ There can only be one instance of application configuration for the entire appli
             "Questionnaire",
             "QuestionnaireResponse"
         ]
-    }
+    },
+    "logGpsLocations": [
+        "QUESTIONNAIRE"
+    ]
 }
 ```
 
@@ -58,17 +62,26 @@ There can only be one instance of application configuration for the entire appli
 
 |Property | Description | Required | Default |
 |--|--|:--:|:--:|
-appId | Unique identifier for the application | Yes | |
-configType | Type of configuration | Yes |  `application` |
-appTitle | Name of the application displayed on side menu (drawer) | No | "" |
-remoteSyncPageSize | Sync batch size | Yes | 100 |
-languages | Supported languages | Yes  | `['en']` |
-useDarkTheme | Indicate whether to apply dark theme | Yes | `false` |
-syncInterval | Configuration duration for periodic sync | Yes | `30` |
-syncStrategy | Tag every resource with the values for the resource types indicated here | Yes | `emptyList()` |
-loginConfig.showLogo | Display logo in login page | Yes | `true` |
-loginConfig.enablePin | Request user for pin after login; to be used for subsequent logins | No | `false` |
-loginConfig.logoHeight | Set the maximum height a logo can have | No | 120 |
-loginConfig.logoWidth | Set the maximum width a logo can have | No | 140 |
-loginConfig.showAppTitle | Toggle App title in LoginScreen visibility | No | true |
-deviceToDeviceSync.resourcesToSync | Types of resource to be synced from one device to another during peer connection | No | `false` |
+`appId` | Unique identifier for the application | Yes | |
+`configType` | Type of configuration | Yes |  `application` |
+`appTitle` | Name of the application displayed on side menu (drawer) | No | `""` |
+`remoteSyncPageSize` | Sync batch size | Yes | `100` |
+`languages` | Supported languages | Yes  | `['en']` |
+`useDarkTheme` | Indicate whether to apply dark theme | Yes | `false` |
+`syncInterval` | Configuration duration for periodic sync | Yes | `30` |
+`syncStrategies` | Tag every resource with the values for the resource types indicated here | Yes | `emptyList()` |
+`loginConfig.showLogo` | Display logo in login page | Yes | `true` |
+`loginConfig.enablePin` | Request user for pin after login; to be used for subsequent logins | No | `false` |
+`loginConfig.logoHeight` | Set the maximum height a logo can have | No | `120` |
+`loginConfig.logoWidth` | Set the maximum width a logo can have | No | `140` |
+`loginConfig.showAppTitle` | Toggle App title in LoginScreen visibility | No | `true` |
+`deviceToDeviceSync.resourcesToSync` | Types of resource to be synced from one device to another during peer connection | No | `false` |
+`snackBarTheme` | Color styling for the SnackBar | Yes | `SnackBarThemeConfig()` |
+`reportRepeatTime` | Time when to re-run reporting | Yes | `""` |
+`taskStatusUpdateJobDuration` | Interval of when to run status update service | Yes | `PT15M` |
+`taskExpireJobDuration` | Interval of when to run task expiry service | Yes | `PT30M` |
+`taskCompleteCarePlanJobDuration` | Interval of when to run task completion service | Yes | `PT60M` |
+`showLogo` | Toggle whether to show the logo | Yes | `true` |
+`taskBackgroundWorkerBatchSize` | Batch size of tasks to be fetched from the server | Yes | `500` |
+`eventWorkflows` | A list of `EventWorkflow`s | Yes | `emptyList()` |
+`logGpsLocation` | A list of `LocationLogOptions` to toggle whether to capture GPS coordinates | Yes | emptyList() |
