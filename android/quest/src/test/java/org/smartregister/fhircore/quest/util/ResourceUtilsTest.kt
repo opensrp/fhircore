@@ -17,8 +17,6 @@
 package org.smartregister.fhircore.quest.util
 
 import android.location.Location
-import io.mockk.every
-import io.mockk.mockk
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.Test
@@ -27,16 +25,18 @@ class ResourceUtilsTest {
 
   @Test
   fun testLocationResourceIsCreated() {
-    val location: Location = mockk()
-    every { location.longitude } returns 10.0
-    every { location.latitude } returns 20.0
-    every { location.altitude } returns 30.0
+    val location =
+      Location("").apply {
+        longitude = 10.0
+        latitude = 20.0
+        altitude = 30.0
+      }
 
-    val locationResource = ResourceUtils.createLocationResource(location)
+    val locationResource = ResourceUtils.createFhirLocationFromGpsLocation(location)
 
     assertNotNull(locationResource.id)
-    assertEquals(locationResource.position.longitude.toDouble(), 10.0)
-    assertEquals(locationResource.position.latitude.toDouble(), 20.0)
-    assertEquals(locationResource.position.altitude.toDouble(), 30.0)
+    assertEquals(location.longitude.toBigDecimal(), locationResource.position.longitude)
+    assertEquals(location.latitude.toBigDecimal(), locationResource.position.latitude)
+    assertEquals(location.altitude.toBigDecimal(), locationResource.position.altitude)
   }
 }

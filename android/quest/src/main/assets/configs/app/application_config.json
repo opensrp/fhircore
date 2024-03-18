@@ -83,5 +83,7 @@
       ]
     }
   ],
-  "logQuestionnaireLocation": true
+  "logGpsLocation": [
+    "QUESTIONNAIRE"
+  ]
 }
