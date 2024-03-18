@@ -2,7 +2,7 @@
   "appId": "app",
   "configType": "report",
   "id": "dashboardReport",
-  "showDateFilter": false,
+  "showDateFilter": true,
   "resources": [
     {
       "resource": "Group",

@@ -345,7 +345,7 @@
           ],
           "rule": [
             {
-              "name": "rule_patient_identifier_family_id_value",
+              "name": "extra_system_id",
               "source": [
                 {
                   "context": "src"
@@ -353,73 +353,97 @@
               ],
               "target": [
                 {
-                  "context": "patientIdentifierFamilyId",
-                  "contextType": "variable",
-                  "element": "value",
+                  "variable": "systemId",
                   "transform": "evaluate",
                   "parameter": [
                     {
                       "valueId": "src"
                     },
                     {
-                      "valueString": "$this.item.where(linkId = '2588ee71-9699-440d-8364-6ac7c1e63ccd').answer.value.substring(0, 12)"
+                      "valueString": "$this.item.where(linkId = '2588ee71-9699-440d-8364-6ac7c1e63ccd').answer.value"
                     }
                   ]
                 }
-              ]
-            },
-            {
-              "name": "rule_patient_identifier_family_id_use",
-              "source": [
-                {
-                  "context": "src"
-                }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "patientIdentifierFamilyId",
-                  "contextType": "variable",
-                  "element": "use",
-                  "transform": "copy",
-                  "parameter": [
+                  "name": "rule_patient_identifier_family_id_value",
+                  "source": [
                     {
-                      "valueString": "temp"
+                      "context": "src"
                     }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "rule_patient_identifier_period",
-              "source": [
-                {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientIdentifierFamilyId",
-                  "contextType": "variable",
-                  "element": "period",
-                  "variable": "period",
-                  "transform": "create",
-                  "parameter": [
+                  ],
+                  "target": [
                     {
-                      "valueString": "Period"
+                      "context": "patientIdentifierFamilyId",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "systemId"
+                        },
+                        {
+                          "valueString": "$this.substring(0, ($this.length() - 2))"
+                        }
+                      ]
                     }
                   ]
                 },
                 {
-                  "context": "period",
-                  "contextType": "variable",
-                  "element": "start",
-                  "transform": "evaluate",
-                  "parameter": [
+                  "name": "rule_patient_identifier_family_id_use",
+                  "source": [
                     {
-                      "valueId": "src"
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientIdentifierFamilyId",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "temp"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_patient_identifier_period",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientIdentifierFamilyId",
+                      "contextType": "variable",
+                      "element": "period",
+                      "variable": "period",
+                      "transform": "create",
+                      "parameter": [
+                        {
+                          "valueString": "Period"
+                        }
+                      ]
                     },
                     {
-                      "valueString": "$this.authored"
+                      "context": "period",
+                      "contextType": "variable",
+                      "element": "start",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "src"
+                        },
+                        {
+                          "valueString": "$this.authored"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -1007,6 +1031,7 @@
                                                 {
                                                   "name": "ExtractRelatedPerson",
                                                   "variable": [
+                                                    "src",
                                                     "patient",
                                                     "relatedPerson"
                                                   ]
@@ -1245,6 +1270,7 @@
                                     {
                                       "name": "ExtractRelatedPerson",
                                       "variable": [
+                                        "src",
                                         "patient",
                                         "relatedPerson"
                                       ]
@@ -1653,6 +1679,11 @@
       "typeMode": "none",
       "input": [
         {
+          "name": "questionnaireResponse",
+          "type": "QuestionnaireResponse",
+          "mode": "source"
+        },
+        {
           "name": "src",
           "type": "Patient",
           "mode": "source"
@@ -1968,6 +1999,42 @@
                     },
                     {
                       "valueString": "relatedPerson.name.given + ' ' + relatedPerson.name.text + ' ' + relatedPerson.name.family"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "check_existing_patient_reference",
+          "source": [
+            {
+              "context": "questionnaireResponse",
+              "variable": "response",
+              "condition": "($this.subject.exists())"
+            }
+          ],
+          "rule": [
+            {
+              "name": "rule_elated_person_patient",
+              "source": [
+                {
+                  "context": "src"
+                }
+              ],
+              "target": [
+                {
+                  "context": "relatedPerson",
+                  "contextType": "variable",
+                  "element": "patient",
+                  "transform": "evaluate",
+                  "parameter": [
+                    {
+                      "valueId": "response"
+                    },
+                    {
+                      "valueString": "$this.subject"
                     }
                   ]
                 }
@@ -2482,6 +2549,42 @@
                       "parameter": [
                         {
                           "valueString": "mPower Family Member Registration"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "check_existing_patient_id",
+              "source": [
+                {
+                  "context": "questionnaireResponse",
+                  "variable": "response",
+                  "condition": "($this.subject.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_encounter_patient_ref",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "response"
+                        },
+                        {
+                          "valueString": "$this.subject"
                         }
                       ]
                     }

@@ -1721,7 +1721,7 @@
     {
       "title": "{{family.details}}",
       "titleColor": "#000000",
-      "visible": "false",
+      "visible": "true",
       "actions": [
         {
           "trigger": "ON_CLICK",

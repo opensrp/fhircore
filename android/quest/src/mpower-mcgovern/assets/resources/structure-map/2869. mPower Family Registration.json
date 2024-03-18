@@ -3112,6 +3112,42 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "check_existing_group_reference",
+              "source": [
+                {
+                  "context": "src",
+                  "variable": "response",
+                  "condition": "($this.subject.exists())"
+                }
+              ],
+              "rule": [
+                {
+                  "name": "rule_encounter_geoup_reference",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "encounter",
+                      "contextType": "variable",
+                      "element": "subject",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "response"
+                        },
+                        {
+                          "valueString": "$this.subject"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
