@@ -87,7 +87,6 @@ import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
@@ -314,11 +313,15 @@ constructor(
     }
   }
 
-  suspend fun retireUsedQuestionnaireUniqueId(questionnaireConfig: QuestionnaireConfig, questionnaireResponse: QuestionnaireResponse) {
+  suspend fun retireUsedQuestionnaireUniqueId(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse
+  ) {
     if (uniqueIdResourcePair != null && questionnaireConfig.uniqueIdAssignment != null) {
       val (id, resource) = uniqueIdResourcePair!!
       val uniqueIdLinkId = questionnaireConfig.uniqueIdAssignment!!.linkId
-      val submittedUniqueId = questionnaireResponse.find(uniqueIdLinkId)?.answer?.first()?.value.toString()
+      val submittedUniqueId =
+        questionnaireResponse.find(uniqueIdLinkId)?.answer?.first()?.value.toString()
 
       // Update Group resource. Can be extended in future to support other resources
       if (resource is Group) {
