@@ -16,14 +16,19 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
+import android.provider.Settings
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.annotation.VisibleForTesting
 import androidx.core.os.bundleOf
@@ -37,6 +42,8 @@ import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.logicalId
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import java.util.Date
@@ -53,6 +60,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -72,6 +80,9 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.initialExpression
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.LocationUtils
+import org.smartregister.fhircore.quest.util.PermissionUtils
+import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
 /**
@@ -93,6 +104,11 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   private var questionnaireResponse: QuestionnaireResponse = QuestionnaireResponse()
   private var baseResourceId: String? = null
   private var baseResourceType: ResourceType? = null
+  private var alertDialog: AlertDialog? = null
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+  private var currentLocation: Location? = null
+  private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+  private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -103,6 +119,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_questionnaire)
+
+    setupLocationServices()
 
     questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
 
@@ -195,6 +213,103 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         withContext(dispatcherProvider.main()) {
           updateViews()
           fragment.whenStarted { loadProgress.dismiss() }
+        }
+      }
+    }
+  }
+
+  private fun setupLocationServices() {
+    if (questionnaireViewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.QUESTIONNAIRE
+      )
+    ) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+      if (!LocationUtils.isLocationEnabled(this)) {
+        openLocationServicesSettings()
+      }
+
+      if (!hasLocationPermissions()) {
+        launchLocationPermissionsDialog()
+      }
+
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation(true)
+      }
+    }
+  }
+
+  private fun hasLocationPermissions(): Boolean {
+    return PermissionUtils.checkPermissions(
+      this,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
+  }
+
+  private fun openLocationServicesSettings() {
+    activityResultLauncher =
+      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
+        if (resultCode == RESULT_OK || hasLocationPermissions()) {
+          fetchLocation()
+        }
+      }
+
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    showLocationSettingsDialog(intent)
+  }
+
+  private fun showLocationSettingsDialog(intent: Intent) {
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.location_services_disabled))
+      .setCancelable(true)
+      .setPositiveButton(getString(R.string.yes)) { _, _ -> activityResultLauncher.launch(intent) }
+      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
+      .show()
+  }
+
+  private fun launchLocationPermissionsDialog() {
+    locationPermissionLauncher =
+      PermissionUtils.getLocationPermissionLauncher(
+        this,
+        onFineLocationPermissionGranted = { fetchLocation(true) },
+        onCoarseLocationPermissionGranted = { fetchLocation(false) },
+        onLocationPermissionDenied = {
+          Toast.makeText(
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
+            .show()
+          Timber.e("Location permissions denied")
+        },
+      )
+
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      ),
+    )
+  }
+
+  private fun fetchLocation(highAccuracy: Boolean = true) {
+    lifecycleScope.launch {
+      try {
+        if (highAccuracy) {
+          currentLocation =
+            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
+        } else {
+          currentLocation =
+            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
+        }
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
+      } finally {
+        if (currentLocation == null) {
+          this@QuestionnaireActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
         }
       }
     }
@@ -405,6 +520,12 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         R.string.questionnaire_alert_invalid_title
       )
       return
+    }
+
+    if (currentLocation != null) {
+      questionnaireResponse.contained.add(
+        ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+      )
     }
 
     handleQuestionnaireResponse(questionnaireResponse)
