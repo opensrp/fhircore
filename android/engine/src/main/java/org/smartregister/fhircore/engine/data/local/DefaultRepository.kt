@@ -809,15 +809,7 @@ constructor(
     resources: List<Resource>,
   ): List<Resource> {
     val resourceFilterExpressionForCurrentResourceType =
-      resourceFilterExpressions?.firstOrNull {
-        resources[0]
-          .resourceType
-          .name
-          .equals(
-            ignoreCase = true,
-            other = it.resourceType,
-          )
-      }
+      resourceFilterExpressions?.firstOrNull { resources[0].resourceType == it.resourceType }
     return with(resourceFilterExpressionForCurrentResourceType) {
       if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
@@ -846,7 +838,7 @@ constructor(
     val updatedResourceDocument =
       jsonParse.apply {
         eventWorkflow.updateValues
-          .filter { it.resourceType.equals(ignoreCase = true, other = resource.resourceType.name) }
+          .filter { it.resourceType == resource.resourceType }
           .forEach { updateExpression ->
             val updateValue =
               getJsonContent(
@@ -865,7 +857,11 @@ constructor(
               ) && updateExpression.value != null
             ) {
               set(
-                updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
+                updateExpression.jsonPathExpression.replace(
+                  resource.resourceType.name,
+                  "\$",
+                  ignoreCase = true
+                ),
                 updateValue,
               )
             }
