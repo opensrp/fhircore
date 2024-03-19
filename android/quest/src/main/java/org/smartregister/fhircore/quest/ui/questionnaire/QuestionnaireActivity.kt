@@ -60,6 +60,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
@@ -218,7 +219,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   private fun setupLocationServices() {
-    if (questionnaireViewModel.applicationConfiguration.logQuestionnaireLocation) {
+    if (questionnaireViewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.QUESTIONNAIRE
+      )
+    ) {
       fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
       if (!LocationUtils.isLocationEnabled(this)) {
@@ -520,7 +524,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     if (currentLocation != null) {
       questionnaireResponse.contained.add(
-        ResourceUtils.createLocationResource(gpsLocation = currentLocation),
+        ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
       )
     }
 
