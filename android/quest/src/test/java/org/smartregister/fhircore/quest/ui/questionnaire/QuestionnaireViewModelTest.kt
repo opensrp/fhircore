@@ -226,7 +226,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = extractionQuestionnaireResponse()
     val actionParameters = emptyList<ActionParameter>()
     val onSuccessfulSubmission =
-      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse, _: Map<String, String> ->
+        Timber.i(idsTypes.toString())
+      })
     coEvery {
       ResourceMapper.extract(
         questionnaire = questionnaire,
@@ -300,7 +302,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-      coVerify(exactly = 0) { onSuccessfulSubmission(any(), questionnaireResponse) }
+      coVerify(exactly = 0) { onSuccessfulSubmission(any(), questionnaireResponse, any()) }
     } else {
       coVerify {
         questionnaireViewModel.saveExtractedResources(
@@ -317,7 +319,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-      coVerify { onSuccessfulSubmission(any(), questionnaireResponse) }
+      coVerify { onSuccessfulSubmission(any(), questionnaireResponse, any()) }
     }
     unmockkObject(Timber)
     unmockkObject(ResourceMapper)
@@ -351,7 +353,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         linkIds = listOf(LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION)),
       )
     val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse, Map<String, String>) -> Unit =
+      spyk()
 
     // Throw ResourceNotFoundException existing QuestionnaireResponse
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
@@ -477,7 +480,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaireConfig = updatedQuestionnaireConfig,
-        context = context,
       )
 
       questionnaireViewModel.executeCql(
@@ -495,7 +497,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
       questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
 
-      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
+      onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse, any())
     }
 
     // Captured bundle slot should contain QuestionnaireResponse
@@ -834,7 +836,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
 
     val questionnaireConfig = questionnaireConfig.copy(planDefinitions = listOf("planDefId"))
-    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig, context)
+    questionnaireViewModel.generateCarePlan(patient, bundle, questionnaireConfig)
     coVerify {
       fhirCarePlanGenerator.generateOrUpdateCarePlan(
         planDefinitionId = "planDefId",

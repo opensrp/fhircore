@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.validation.FhirValidator
+import ca.uhn.fhir.validation.ValidationResult
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.NotValidated
@@ -92,6 +93,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -210,7 +212,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
-    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
+    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse, Map<String, String>) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
@@ -237,21 +239,6 @@ constructor(
           context = context,
         )
 
-      val validationResults =
-        bundle.entry
-          .map { it.resource }
-          .flatMap { fhirValidatorProvider.get().checkResourceValid(it) }
-      val validationFailures = validationResults.filterNot { it.errorMessages.isBlank() }
-      if (validationFailures.isNotEmpty()) {
-        val errorMessages = buildString {
-          validationFailures.map { it.errorMessages }.forEach(this::appendLine)
-        }
-        Timber.e(errorMessages)
-        context.showToast(context.getString(R.string.extracted_resources_validation_fail))
-        setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-        return@launch
-      }
-
       saveExtractedResources(
         bundle = bundle,
         questionnaire = questionnaire,
@@ -270,6 +257,8 @@ constructor(
           IdType(currentQuestionnaireResponse.subject.reference)
         }
 
+      val extractionValidationErrors = mutableMapOf<String, List<ValidationResult>>()
+
       if (subjectIdType != null) {
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
@@ -277,11 +266,16 @@ constructor(
         if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
+          val extractedResources = newBundle.entry.map { it.resource }
+          getValidationFailures(extractedResources)
+            .takeIf { it.isNotEmpty() }
+            ?.let { extractionValidationErrors.putIfAbsent(questionnaire.referenceValue(), it) }
+
           generateCarePlan(
-            context = context,
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
+            validationErrorsMap = extractionValidationErrors,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -290,6 +284,7 @@ constructor(
               bundle = newBundle,
               questionnaire = questionnaire,
               questionnaireConfig = questionnaireConfig,
+              validationErrorsMap = extractionValidationErrors,
             )
           }
 
@@ -306,9 +301,23 @@ constructor(
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
-      onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
+
+      val extractionValidationErrorMessages =
+        extractionValidationErrors.mapValues {
+          buildString { it.value.forEach { appendLine(it.errorMessages) } }
+        }
+      onSuccessfulSubmission(
+        idTypes,
+        currentQuestionnaireResponse,
+        extractionValidationErrorMessages,
+      )
     }
   }
+
+  suspend fun getValidationFailures(resources: Iterable<Resource>) =
+    resources
+      .flatMap { fhirValidatorProvider.get().checkResourceValid(it) }
+      .filter { it.errorMessages.isNotBlank() }
 
   suspend fun saveExtractedResources(
     bundle: Bundle,
@@ -701,6 +710,7 @@ constructor(
     bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig? = null,
+    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
     questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
@@ -731,26 +741,45 @@ constructor(
               null,
             ) as Parameters
 
-          result.parameter.mapNotNull { cqlResultParameterComponent ->
-            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-              resultParameterResource ->
-              if (
-                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                  resultParameterResource.isResource
-              ) {
-                defaultRepository.create(true, resultParameterResource as Resource)
-              }
+          val resources =
+            result.parameter.mapNotNull { cqlResultParameterComponent ->
+              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+                resultParameterResource ->
+                if (BuildConfig.DEBUG) {
+                  Timber.d(
+                    "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                            getStringRepresentation(
+                                                resultParameterResource,
+                                            )
+                                        }",
+                  )
+                }
 
-              if (BuildConfig.DEBUG) {
-                Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                        getStringRepresentation(
-                                            resultParameterResource,
-                                        )
-                                    }",
-                )
+                if (
+                  cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                    resultParameterResource.isResource
+                ) {
+                  defaultRepository.create(true, resultParameterResource as Resource)
+                  resultParameterResource as Resource
+                } else {
+                  null
+                }
               }
             }
+
+          with(validationErrorsMap) {
+            getValidationFailures(resources)
+              .takeIf { it.isNotEmpty() }
+              ?.let {
+                getValidationFailures(resources)
+                  .takeIf { it.isNotEmpty() }
+                  ?.let {
+                    computeIfPresent(librarySearchResult.resource.referenceValue()) { _, v ->
+                      v + it
+                    }
+                    putIfAbsent(librarySearchResult.resource.referenceValue(), it)
+                  }
+              }
           }
         }
     }
@@ -767,28 +796,31 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
-    context: Context,
+    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
-    val errorMessages = buildString {
-      questionnaireConfig.planDefinitions?.forEach { planId ->
-        kotlin
-          .runCatching {
+    questionnaireConfig.planDefinitions?.forEach { planId ->
+      kotlin
+        .runCatching {
+          val carePlan =
             fhirCarePlanGenerator.generateOrUpdateCarePlan(
               planDefinitionId = planId,
               subject = subject,
               data = bundle,
               generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
             )
-          }
-          .onFailure { appendLine(it) }
-      }
-    }
 
-    if (errorMessages.isNotBlank()) {
-      Timber.e(errorMessages)
-      if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
-        context.showToast(context.getString(R.string.error_occurred_generating_careplan))
-      }
+          carePlan?.let {
+            with(validationErrorsMap) {
+              getValidationFailures(listOf(it))
+                .takeIf { it.isNotEmpty() }
+                ?.let {
+                  computeIfPresent("PlanDefinition/$planId") { _, v -> v + it }
+                  putIfAbsent("PlanDefinition/$planId", it)
+                }
+            }
+          }
+        }
+        .onFailure { Timber.e(it) }
     }
   }
 

@@ -41,6 +41,7 @@ import java.io.Serializable
 import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
@@ -58,7 +59,9 @@ import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
 import org.smartregister.fhircore.quest.util.LocationUtils
@@ -372,23 +375,69 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             questionnaireConfig = questionnaireConfig,
             actionParameters = actionParameters,
             context = this@QuestionnaireActivity,
-          ) { idTypes, questionnaireResponse ->
+          ) { idTypes, questionnaireResponse, extractedValidationErrors ->
             // Dismiss progress indicator dialog, submit result then finish activity
             // TODO Ensure this dialog is dismissed even when an exception is encountered
             setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-            setResult(
-              Activity.RESULT_OK,
-              Intent().apply {
-                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
-                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
-                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
-              },
-            )
-            finish()
+
+            if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
+              val message =
+                if (extractedValidationErrors.isEmpty()) {
+                  "Questionnaire submitted and saved successfully with no validation errors"
+                } else {
+                  """
+                    Questionnaire `${questionnaire?.referenceValue()}` was submitted but had the following validation errors
+                    
+                    ${buildString { extractedValidationErrors.forEach {
+                                        appendLine("${it.key}: ")
+                                        append(it.value)
+                                        appendLine()
+                                    }
+                                    }}
+                                    """
+                    .trimIndent()
+                }
+
+              AlertDialogue.showInfoAlert(
+                this@QuestionnaireActivity,
+                message,
+                "Questionnaire submitted",
+                {
+                  it.dismiss()
+                  finishOnQuestionnaireSubmission(
+                    questionnaireResponse,
+                    idTypes,
+                    questionnaireConfig,
+                  )
+                },
+              )
+            } else {
+              finishOnQuestionnaireSubmission(
+                questionnaireResponse,
+                idTypes,
+                questionnaireConfig,
+              )
+            }
           }
         }
       }
     }
+  }
+
+  private fun finishOnQuestionnaireSubmission(
+    questionnaireResponse: QuestionnaireResponse,
+    idTypes: List<IdType>,
+    questionnaireConfig: QuestionnaireConfig,
+  ) {
+    setResult(
+      Activity.RESULT_OK,
+      Intent().apply {
+        putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+        putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+        putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+      },
+    )
+    finish()
   }
 
   private fun handleBackPress() {
