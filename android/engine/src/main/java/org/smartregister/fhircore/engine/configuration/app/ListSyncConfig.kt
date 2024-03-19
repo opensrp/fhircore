@@ -21,5 +21,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ListSyncConfig(
   val page: Int = 1,
-  val count: Int = 50,
+  val count: Int = 20,
 )
