@@ -93,6 +93,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
+          // TODO: Filter out scheduled tasks
             inputModel.currentCarePlan?.activity?.map {
               PatientProfileRowItem(
                 id = it.outcomeReference.first().extractId(),
