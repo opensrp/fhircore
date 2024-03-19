@@ -34,6 +34,7 @@ class UpdateWorkflowValueConfigTest {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "$.example",
         value = Json.decodeFromString("{ \"key\": \"value\" }"),
+        resourceType = "Task",
       )
     val parcel = Parcel.obtain()
     config.writeToParcel(parcel, config.describeContents())
@@ -49,6 +50,7 @@ class UpdateWorkflowValueConfigTest {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "$.example",
         value = Json.decodeFromString("{ \"key\": \"value\" }"),
+        resourceType = "Task",
       )
     val parcel = Parcel.obtain()
     config.writeToParcel(parcel, config.describeContents())

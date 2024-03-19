@@ -46,11 +46,13 @@ data class UpdateWorkflowValueConfig(
   ) : this(
     parcel.readString() ?: "",
     Json.decodeFromString(parcel.readString() ?: ""),
+    parcel.readString() ?: "",
   )
 
   override fun writeToParcel(parcel: Parcel, flags: Int) {
     parcel.writeString(jsonPathExpression)
     parcel.writeString(value.toString())
+    parcel.writeString(resourceType.toString())
   }
 
   override fun describeContents(): Int {
@@ -67,4 +69,3 @@ data class UpdateWorkflowValueConfig(
     }
   }
 }
-
