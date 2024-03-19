@@ -11,7 +11,9 @@
   ],
   "useDarkTheme": false,
   "syncInterval": 30,
-  "syncStrategies": ["Location"],
+  "syncStrategies": [
+    "Location"
+  ],
   "loginConfig": {
     "showLogo": true,
     "enablePin": true
@@ -28,5 +30,8 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "logGpsLocation": [
+    "QUESTIONNAIRE"
+  ]
 }
