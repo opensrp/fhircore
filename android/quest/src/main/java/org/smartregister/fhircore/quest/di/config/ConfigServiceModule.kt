@@ -30,5 +30,8 @@ import org.smartregister.fhircore.quest.QuestConfigService
 abstract class ConfigServiceModule {
   @Binds abstract fun provideConfigService(questConfigService: QuestConfigService): ConfigService
 
-  @Binds abstract fun providesAppConfigService(questAppConfigService: QuestAppConfigService): AppConfigService
+  @Binds
+  abstract fun providesAppConfigService(
+    questAppConfigService: QuestAppConfigService,
+  ): AppConfigService
 }

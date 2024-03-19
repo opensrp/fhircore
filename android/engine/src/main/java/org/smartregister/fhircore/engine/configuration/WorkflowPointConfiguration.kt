@@ -21,7 +21,7 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Resource
 
 @Serializable
-data class WorkflowPoint(
+data class WorkflowPointConfiguration(
   val workflowPoint: String,
   @Contextual val resource: Resource,
   val classification: String,

@@ -34,39 +34,36 @@ import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBack
 
 @AndroidEntryPoint
 class AppSettingActivity : AppCompatActivity() {
-    private val appSettingViewModel: AppSettingViewModel by viewModels()
+  private val appSettingViewModel: AppSettingViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-        super.onCreate(savedInstanceState)
-        appSettingViewModel.loadConfigurations()
-        lifecycleScope.launch {
-            appSettingViewModel.goToHome.collect {
-                if (it == true) {
-                    goHome()
-                }
-            }
+  override fun onCreate(savedInstanceState: Bundle?) {
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+    super.onCreate(savedInstanceState)
+    appSettingViewModel.loadConfigurations()
+    lifecycleScope.launch {
+      appSettingViewModel.goToHome.collect {
+        if (it == true) {
+          goHome()
         }
-
-        installSplashScreen().setKeepOnScreenCondition {
-            appSettingViewModel.loadState.value == null
-        }
-
-        setContent {
-            AppTheme {
-                val state by appSettingViewModel.loadState.observeAsState(DataLoadState.Loading)
-
-                AppSettingScreen(
-                    state = state ?: DataLoadState.Loading,
-                    goToHome = this::goHome,
-                    retry = appSettingViewModel::fetchRemoteConfigurations
-                )
-            }
-        }
+      }
     }
 
+    installSplashScreen().setKeepOnScreenCondition { appSettingViewModel.loadState.value == null }
 
-    private fun goHome() {
-        launchActivityWithNoBackStackHistory<LoginActivity>()
+    setContent {
+      AppTheme {
+        val state by appSettingViewModel.loadState.observeAsState(DataLoadState.Loading)
+
+        AppSettingScreen(
+          state = state ?: DataLoadState.Loading,
+          goToHome = this::goHome,
+          retry = appSettingViewModel::fetchRemoteConfigurations,
+        )
+      }
     }
+  }
+
+  private fun goHome() {
+    launchActivityWithNoBackStackHistory<LoginActivity>()
+  }
 }

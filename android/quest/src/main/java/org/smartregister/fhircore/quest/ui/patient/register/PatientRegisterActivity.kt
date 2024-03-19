@@ -34,7 +34,6 @@ import org.smartregister.fhircore.quest.configuration.view.QuestionnaireDataDeta
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity
 import org.smartregister.fhircore.quest.ui.patient.details.QuestionnaireDataDetailActivity.Companion.CLASSIFICATION_ARG
 import org.smartregister.fhircore.quest.ui.task.PatientTaskFragment
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
@@ -49,8 +48,7 @@ class PatientRegisterActivity : BaseRegisterActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val registerViewConfiguration =
-      RegisterViewConfiguration()
+    val registerViewConfiguration = RegisterViewConfiguration()
     configureViews(registerViewConfiguration)
   }
 

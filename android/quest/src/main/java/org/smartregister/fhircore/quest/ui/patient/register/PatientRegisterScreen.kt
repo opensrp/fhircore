@@ -33,12 +33,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.compose.ui.res.stringResource
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -135,7 +135,10 @@ fun PatientRegisterScreen(
               },
               enabled = !firstTimeSync,
             ) {
-              Text(text = stringResource(R.string.register_new_client), modifier = modifier.padding(8.dp))
+              Text(
+                text = stringResource(R.string.register_new_client),
+                modifier = modifier.padding(8.dp),
+              )
             }
           }
         }

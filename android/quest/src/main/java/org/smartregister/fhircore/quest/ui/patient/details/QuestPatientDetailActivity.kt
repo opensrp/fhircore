@@ -30,7 +30,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.view.ConfigurableComposableView
 import org.smartregister.fhircore.engine.configuration.view.NavigationOption
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -47,7 +46,6 @@ import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigati
 import org.smartregister.fhircore.quest.configuration.view.TestDetailsNavigationAction
 import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
 import org.smartregister.fhircore.quest.ui.patient.details.SimpleDetailsActivity.Companion.RECORD_ID_ARG
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint
@@ -80,11 +78,11 @@ class QuestPatientDetailActivity :
       onFormTestResultClicked.observe(detailActivity, detailActivity::onTestResultItemClickListener)
     }
 
-//    patientDetailConfig =
-//      configurationRegistry.retrieveConfiguration(
-//        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
-//        questJsonSpecificationProvider.getJson(),
-//      )
+    //    patientDetailConfig =
+    //      configurationRegistry.retrieveConfiguration(
+    //        configClassification = QuestConfigClassification.PATIENT_DETAILS_VIEW,
+    //        questJsonSpecificationProvider.getJson(),
+    //      )
 
     configureViews(patientDetailConfig)
 
@@ -142,9 +140,7 @@ class QuestPatientDetailActivity :
   }
 
   fun getRegistrationForm(): String {
-    return configurationRegistry
-      .getAppConfigs()
-      .registrationForm
+    return configurationRegistry.getAppConfigs().registrationForm
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -236,8 +232,7 @@ class QuestPatientDetailActivity :
     }
   }
 
-  fun getResultDetailsNavigationOptions() =
-    ResultDetailsNavigationConfiguration()
+  fun getResultDetailsNavigationOptions() = ResultDetailsNavigationConfiguration()
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     patientViewModel.updateViewConfigurations(viewConfiguration)

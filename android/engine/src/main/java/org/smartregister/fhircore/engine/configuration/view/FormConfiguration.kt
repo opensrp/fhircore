@@ -28,4 +28,3 @@ class FormConfiguration(
   override val classification: String = "",
   val forms: List<QuestionnaireConfig> = listOf(),
 ) : Configuration
-

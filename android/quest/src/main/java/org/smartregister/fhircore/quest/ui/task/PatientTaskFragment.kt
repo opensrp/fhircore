@@ -34,7 +34,6 @@ import org.smartregister.fhircore.engine.util.extension.createFactory
 import org.smartregister.fhircore.quest.data.task.PatientTaskRepository
 import org.smartregister.fhircore.quest.data.task.model.PatientTaskItem
 import org.smartregister.fhircore.quest.ui.task.components.PatientTaskList
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 import org.smartregister.fhircore.quest.util.QuestJsonSpecificationProvider
 
 @AndroidEntryPoint

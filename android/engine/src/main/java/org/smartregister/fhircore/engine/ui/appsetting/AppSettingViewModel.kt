@@ -20,6 +20,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -30,57 +32,55 @@ import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.HttpException
-import java.net.UnknownHostException
-import javax.inject.Inject
 
 @HiltViewModel
 class AppSettingViewModel
 @Inject
 constructor(
-    val fhirResourceDataSource: FhirResourceDataSource,
-    val defaultRepository: DefaultRepository,
-    val sharedPreferencesHelper: SharedPreferencesHelper,
-    val configurationRegistry: ConfigurationRegistry,
-    val dispatcherProvider: DispatcherProvider,
-    private val configRepository: ConfigRepository,
+  val fhirResourceDataSource: FhirResourceDataSource,
+  val defaultRepository: DefaultRepository,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val configurationRegistry: ConfigurationRegistry,
+  val dispatcherProvider: DispatcherProvider,
+  private val configRepository: ConfigRepository,
 ) : ViewModel() {
 
-    private val _loadState = MutableLiveData<DataLoadState<Boolean>?>()
-    val loadState = _loadState
+  private val _loadState = MutableLiveData<DataLoadState<Boolean>?>()
+  val loadState = _loadState
 
-    private val _goToHome = MutableStateFlow<Boolean?>(null)
-    val goToHome = _goToHome
+  private val _goToHome = MutableStateFlow<Boolean?>(null)
+  val goToHome = _goToHome
 
-    fun loadConfigurations() {
-        viewModelScope.launch {
-            val loaded = configurationRegistry.loadConfigurations()
-            if (loaded) {
-                _goToHome.value = true
-                _loadState.postValue(DataLoadState.Success(data = true))
-            } else {
-                fetchRemoteConfigurations()
-            }
-        }
+  fun loadConfigurations() {
+    viewModelScope.launch {
+      val loaded = configurationRegistry.loadConfigurations()
+      if (loaded) {
+        _goToHome.value = true
+        _loadState.postValue(DataLoadState.Success(data = true))
+      } else {
+        fetchRemoteConfigurations()
+      }
     }
+  }
 
-    fun fetchRemoteConfigurations() {
-        viewModelScope.launch {
-            try {
-                _loadState.postValue(DataLoadState.Loading)
-                configRepository.fetchConfigFromRemote()
-                loadConfigurations()
-                _loadState.postValue(DataLoadState.Success(data = true))
-            } catch (unknownHostException: UnknownHostException) {
-                _loadState.postValue(DataLoadState.Error(InternetConnectionException()))
-            } catch (httpException: HttpException) {
-                if ((400..503).contains(httpException.response()!!.code())) {
-                    _loadState.postValue(DataLoadState.Error(ServerException()))
-                } else {
-                    _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
-                }
-            } catch (e: Exception) {
-                _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
-            }
+  fun fetchRemoteConfigurations() {
+    viewModelScope.launch {
+      try {
+        _loadState.postValue(DataLoadState.Loading)
+        configRepository.fetchConfigFromRemote()
+        loadConfigurations()
+        _loadState.postValue(DataLoadState.Success(data = true))
+      } catch (unknownHostException: UnknownHostException) {
+        _loadState.postValue(DataLoadState.Error(InternetConnectionException()))
+      } catch (httpException: HttpException) {
+        if ((400..503).contains(httpException.response()!!.code())) {
+          _loadState.postValue(DataLoadState.Error(ServerException()))
+        } else {
+          _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
         }
+      } catch (e: Exception) {
+        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+      }
     }
+  }
 }

@@ -29,8 +29,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -57,8 +55,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
 
-  private val applicationConfiguration =
-    configurationRegistry.getAppConfigs()
+  private val applicationConfiguration = configurationRegistry.getAppConfigs()
 
   private val _lastSyncTimestamp =
     MutableLiveData(sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, ""))

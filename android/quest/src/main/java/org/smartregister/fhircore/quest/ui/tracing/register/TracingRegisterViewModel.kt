@@ -51,8 +51,6 @@ import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.RegisterViewConfiguration
 import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
@@ -122,7 +120,6 @@ constructor(
     MutableStateFlow(TracingRegisterFilterState.default(healthModule))
   val filtersStateFlow: StateFlow<TracingRegisterFilterState> =
     _filtersMutableStateFlow.asStateFlow()
-
 
   init {
     val searchFlow = _searchText.debounce(500)

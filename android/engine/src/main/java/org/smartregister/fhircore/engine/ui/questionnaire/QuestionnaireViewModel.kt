@@ -65,8 +65,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -175,11 +173,7 @@ constructor(
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
-    return kotlin
-      .runCatching {
-        configurationRegistry.getFormConfigs()
-      }
-      .getOrNull()
+    return kotlin.runCatching { configurationRegistry.getFormConfigs() }.getOrNull()
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(

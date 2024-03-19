@@ -19,25 +19,16 @@ package org.smartregister.fhircore.quest.ui.patient.details
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.quest.configuration.view.DetailViewConfiguration
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
 import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItem
-import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemCell
-import org.smartregister.fhircore.quest.data.patient.model.DetailsViewItemRow
-import org.smartregister.fhircore.quest.util.FhirPathUtil.doesSatisfyFilter
-import org.smartregister.fhircore.quest.util.FhirPathUtil.getPathValue
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
-import timber.log.Timber
 
 @HiltViewModel
 class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientRepository) :
@@ -55,38 +46,39 @@ class SimpleDetailsViewModel @Inject constructor(val patientRepository: PatientR
   }
 
   fun loadData(encounterId: String) {
-//    viewModelScope.launch {
-//      val encounter = patientRepository.loadEncounter(encounterId)
-//      val config =
-//        patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
-//          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW,
-//        )
-//
-//      val dataItem = DetailsViewItem()
-//      dataItem.label = config.label
-//
-//      val dataMap = getDataMap(encounter)
-//
-//      config.rows.forEach {
-//        val row = DetailsViewItemRow()
-//
-//        it.filters.forEach { f ->
-//          // get the required property from pre-loaded resources e.g. CONDITION
-//          val value =
-//            dataMap[f.resourceType]
-//              ?.find { doesSatisfyFilter(it, f) == true }
-//              ?.getPathValue(f.displayableProperty)
-//
-//          row.cells.add(DetailsViewItemCell(value, f))
-//        }
-//
-//        dataItem.rows.add(row)
-//      }
-//
-//      Timber.i(dataItem.rows.toString())
-//
-//      _detailsViewItem.postValue(dataItem)
-//    }
+    //    viewModelScope.launch {
+    //      val encounter = patientRepository.loadEncounter(encounterId)
+    //      val config =
+    //
+    // patientRepository.configurationRegistry.retrieveConfiguration<DetailViewConfiguration>(
+    //          configClassification = QuestConfigClassification.TEST_RESULT_DETAIL_VIEW,
+    //        )
+    //
+    //      val dataItem = DetailsViewItem()
+    //      dataItem.label = config.label
+    //
+    //      val dataMap = getDataMap(encounter)
+    //
+    //      config.rows.forEach {
+    //        val row = DetailsViewItemRow()
+    //
+    //        it.filters.forEach { f ->
+    //          // get the required property from pre-loaded resources e.g. CONDITION
+    //          val value =
+    //            dataMap[f.resourceType]
+    //              ?.find { doesSatisfyFilter(it, f) == true }
+    //              ?.getPathValue(f.displayableProperty)
+    //
+    //          row.cells.add(DetailsViewItemCell(value, f))
+    //        }
+    //
+    //        dataItem.rows.add(row)
+    //      }
+    //
+    //      Timber.i(dataItem.rows.toString())
+    //
+    //      _detailsViewItem.postValue(dataItem)
+    //    }
   }
 
   /**
