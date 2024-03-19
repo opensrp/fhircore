@@ -133,7 +133,7 @@ constructor(
       if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
-          questionnaireConfig.type.isReadOnly(),
+          questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode(),
           readOnlyLinkIds
         )
       }
