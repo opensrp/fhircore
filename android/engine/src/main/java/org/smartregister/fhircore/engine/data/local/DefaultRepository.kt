@@ -845,29 +845,31 @@ constructor(
 
     val updatedResourceDocument =
       jsonParse.apply {
-        eventWorkflow.updateValues.forEach { updateExpression ->
-          val updateValue =
-            getJsonContent(
-              updateExpression.value,
-            )
-          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-          if (
-            updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
-          ) {
-            set(updateExpression.jsonPathExpression, updateValue)
+        eventWorkflow.updateValues
+          .filter { it.resourceType.equals(ignoreCase = true, other = resource.resourceType.name) }
+          .forEach { updateExpression ->
+            val updateValue =
+              getJsonContent(
+                updateExpression.value,
+              )
+            // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+            if (
+              updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
+            ) {
+              set(updateExpression.jsonPathExpression, updateValue)
+            }
+            if (
+              updateExpression.jsonPathExpression.startsWith(
+                resource.resourceType.name,
+                ignoreCase = true,
+              ) && updateExpression.value != null
+            ) {
+              set(
+                updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
+                updateValue,
+              )
+            }
           }
-          if (
-            updateExpression.jsonPathExpression.startsWith(
-              resource.resourceType.name,
-              ignoreCase = true,
-            ) && updateExpression.value != null
-          ) {
-            set(
-              updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
-              updateValue,
-            )
-          }
-        }
       }
 
     val resourceDefinition: Class<out IBaseResource>? =

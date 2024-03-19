@@ -25,5 +25,5 @@ import kotlinx.serialization.Serializable
 data class ResourceFilterExpression(
   val conditionalFhirPathExpressions: List<String>,
   val matchAll: Boolean = true,
-  val resourceType: String?,
+  val resourceType: String = "",
 ) : java.io.Serializable, Parcelable
