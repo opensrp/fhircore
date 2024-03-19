@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
+import org.hl7.fhir.r4.model.CarePlan
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -38,6 +39,8 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.getQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.getQuestionnaireName
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
@@ -90,27 +93,27 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
-            inputModel.tasks.map {
+            inputModel.currentCarePlan?.activity?.map {
               PatientProfileRowItem(
-                id = it.logicalId,
-                actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
+                id = it.outcomeReference.first().extractId(),
+                actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
                 title = "", // it.description,
                 subtitle = "", // context.getString(R.string.due_on,
                 // it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
-                  if (it.status == Task.TaskStatus.COMPLETED) {
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
                     Icons.Filled.Check
                   } else Icons.Filled.Add,
                 actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) {
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
                     SuccessColor
-                  } else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description,
-                subtitleStatus = it.status.name,
+                  } else it.detail.status.retrieveColorCode(),
+                actionButtonColor = it.detail.status.retrieveColorCode(),
+                actionButtonText = it.getQuestionnaireName(),
+                subtitleStatus = it.detail.status.name,
               )
-            },
+            } ?: listOf(),
           practitioners = inputModel.practitioners,
         )
       is ProfileData.DefaultProfileData ->
@@ -214,6 +217,15 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       Task.TaskStatus.CANCELLED -> OverdueColor
       Task.TaskStatus.FAILED -> OverdueColor
       Task.TaskStatus.COMPLETED -> DefaultColor
+      else -> DefaultColor
+    }
+
+  private fun CarePlan.CarePlanActivityStatus.retrieveColorCode(): Color =
+    when (this) {
+      CarePlan.CarePlanActivityStatus.INPROGRESS -> InfoColor
+      CarePlan.CarePlanActivityStatus.CANCELLED -> OverdueColor
+      CarePlan.CarePlanActivityStatus.STOPPED -> OverdueColor
+      CarePlan.CarePlanActivityStatus.COMPLETED -> DefaultColor
       else -> DefaultColor
     }
 

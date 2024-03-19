@@ -100,9 +100,9 @@ constructor(
   val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
     get() = _patientProfileViewDataFlow.asStateFlow()
 
-  var patientProfileData: ProfileData? = null
+  private var patientProfileData: ProfileData? = null
 
-  val applicationConfiguration: ApplicationConfiguration
+  private val applicationConfiguration: ApplicationConfiguration
     get() = configurationRegistry.getAppConfigs()
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
@@ -395,7 +395,7 @@ constructor(
   val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  fun paginateChildrenRegisterData(loadAll: Boolean = true) {
+  private fun paginateChildrenRegisterData(loadAll: Boolean = true) {
     paginatedChildrenRegisterData.value =
       getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
   }

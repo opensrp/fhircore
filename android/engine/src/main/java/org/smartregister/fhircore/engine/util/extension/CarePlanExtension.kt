@@ -38,31 +38,39 @@ fun CarePlan.milestonesOverdue() = this.activity.filter { it.overdue() }
 
 /** If no scheduledPeriod.start specified activity detail is always available */
 fun CarePlan.CarePlanActivityDetailComponent.started(): Boolean =
-  scheduledPeriod?.start?.before(Date()) ?: true
+    scheduledPeriod?.start?.before(Date()) ?: true
 
 /** If no scheduledPeriod.end specified activity detail never ends */
 fun CarePlan.CarePlanActivityDetailComponent.ended(): Boolean =
-  scheduledPeriod?.end?.before(Date()) ?: false
+    scheduledPeriod?.end?.before(Date()) ?: false
 
 fun CarePlan.CarePlanActivityComponent.due() =
-  if (!hasDetail()) {
-    true
-  } else
-    detail.status.isIn(
-      CarePlan.CarePlanActivityStatus.SCHEDULED,
-      CarePlan.CarePlanActivityStatus.NOTSTARTED,
-    ) && detail.started() && !detail.ended()
+    if (!hasDetail()) {
+        true
+    } else
+        detail.status.isIn(
+            CarePlan.CarePlanActivityStatus.SCHEDULED,
+            CarePlan.CarePlanActivityStatus.NOTSTARTED,
+        ) && detail.started() && !detail.ended()
 
 fun CarePlan.CarePlanActivityComponent.overdue() =
-  if (!hasDetail()) {
-    false
-  } else
-    detail.status.isIn(
-      CarePlan.CarePlanActivityStatus.SCHEDULED,
-      CarePlan.CarePlanActivityStatus.NOTSTARTED,
-    ) && detail.ended()
+    if (!hasDetail()) {
+        false
+    } else
+        detail.status.isIn(
+            CarePlan.CarePlanActivityStatus.SCHEDULED,
+            CarePlan.CarePlanActivityStatus.NOTSTARTED,
+        ) && detail.ended()
+
+fun CarePlan.CarePlanActivityComponent.canBeCompleted() =
+    hasDetail().and(detail.status != CarePlan.CarePlanActivityStatus.COMPLETED)
+
+fun CarePlan.CarePlanActivityComponent.getQuestionnaire() =
+    detail.code.coding.firstOrNull()?.code?.split("/")?.lastOrNull()
+
+fun CarePlan.CarePlanActivityComponent.getQuestionnaireName() =  detail.code.coding.firstOrNull()?.display
 
 fun CarePlan.CarePlanStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
 
 fun CarePlan.isLastTask(task: Task) =
-  this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId
+    this.activity.last()?.outcomeReference?.last()?.extractId() == task.logicalId

@@ -165,6 +165,7 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
+      currentCarePlan = patient.activeCarePlans().firstOrNull(),
       healthStatus =
         patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
       tasks =
@@ -247,6 +248,7 @@ constructor(
       chwAssigned = Reference(), // Empty
       showIdentifierInProfile = false,
       healthStatus = HealthStatus.NOT_ON_ART,
+      currentCarePlan = null,
     )
 
   private suspend fun transformPatientToHivRegisterData(patient: Patient) =
