@@ -101,6 +101,8 @@
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
     <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
+    <string name="extracted_resources_validation_fail">Validation on extracted resources failed. Please check the logs</string>
+    <string name="error_occurred_generating_careplan">An error occurred generating CarePlan. Please check the logs</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
     <string name="application_version" translatable="false">Application Version</string>
     <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>

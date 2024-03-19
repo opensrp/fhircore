@@ -23,6 +23,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.validation.FhirValidator
+import ca.uhn.fhir.validation.ValidationResult
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.NotValidated
@@ -38,6 +40,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Provider
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,7 +82,9 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.checkResourceValid
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.errorMessages
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -88,6 +93,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -106,6 +112,7 @@ constructor(
   val transformSupportServices: TransformSupportServices,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirOperator: FhirOperator,
+  val fhirValidatorProvider: Provider<FhirValidator>,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
@@ -205,7 +212,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>,
     context: Context,
-    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit,
+    onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse, Map<String, String>) -> Unit,
   ) {
     viewModelScope.launch(SupervisorJob()) {
       val questionnaireResponseValid =
@@ -250,6 +257,8 @@ constructor(
           IdType(currentQuestionnaireResponse.subject.reference)
         }
 
+      val extractionValidationErrors = mutableMapOf<String, List<ValidationResult>>()
+
       if (subjectIdType != null) {
         val subject =
           loadResource(ResourceType.valueOf(subjectIdType.resourceType), subjectIdType.idPart)
@@ -257,10 +266,16 @@ constructor(
         if (subject != null && !questionnaireConfig.isReadOnly()) {
           val newBundle = bundle.copyBundle(currentQuestionnaireResponse)
 
+          val extractedResources = newBundle.entry.map { it.resource }
+          getValidationFailures(extractedResources)
+            .takeIf { it.isNotEmpty() }
+            ?.let { extractionValidationErrors.putIfAbsent(questionnaire.referenceValue(), it) }
+
           generateCarePlan(
             subject = subject,
             bundle = newBundle,
             questionnaireConfig = questionnaireConfig,
+            validationErrorsMap = extractionValidationErrors,
           )
 
           withContext(dispatcherProvider.io()) {
@@ -269,6 +284,7 @@ constructor(
               bundle = newBundle,
               questionnaire = questionnaire,
               questionnaireConfig = questionnaireConfig,
+              validationErrorsMap = extractionValidationErrors,
             )
           }
 
@@ -285,9 +301,23 @@ constructor(
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
-      onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
+
+      val extractionValidationErrorMessages =
+        extractionValidationErrors.mapValues {
+          buildString { it.value.forEach { appendLine(it.errorMessages) } }
+        }
+      onSuccessfulSubmission(
+        idTypes,
+        currentQuestionnaireResponse,
+        extractionValidationErrorMessages,
+      )
     }
   }
+
+  suspend fun getValidationFailures(resources: Iterable<Resource>) =
+    resources
+      .flatMap { fhirValidatorProvider.get().checkResourceValid(it) }
+      .filter { it.errorMessages.isNotBlank() }
 
   suspend fun saveExtractedResources(
     bundle: Bundle,
@@ -680,6 +710,7 @@ constructor(
     bundle: Bundle,
     questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig? = null,
+    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
     questionnaireConfig?.cqlInputResources?.forEach { resourceId ->
       val basicResource = defaultRepository.loadResource(resourceId) as Basic?
@@ -710,26 +741,45 @@ constructor(
               null,
             ) as Parameters
 
-          result.parameter.mapNotNull { cqlResultParameterComponent ->
-            (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
-              resultParameterResource ->
-              if (
-                cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
-                  resultParameterResource.isResource
-              ) {
-                defaultRepository.create(true, resultParameterResource as Resource)
-              }
+          val resources =
+            result.parameter.mapNotNull { cqlResultParameterComponent ->
+              (cqlResultParameterComponent.value ?: cqlResultParameterComponent.resource)?.let {
+                resultParameterResource ->
+                if (BuildConfig.DEBUG) {
+                  Timber.d(
+                    "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                            getStringRepresentation(
+                                                resultParameterResource,
+                                            )
+                                        }",
+                  )
+                }
 
-              if (BuildConfig.DEBUG) {
-                Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
-                                        getStringRepresentation(
-                                            resultParameterResource,
-                                        )
-                                    }",
-                )
+                if (
+                  cqlResultParameterComponent.name.equals(OUTPUT_PARAMETER_KEY) &&
+                    resultParameterResource.isResource
+                ) {
+                  defaultRepository.create(true, resultParameterResource as Resource)
+                  resultParameterResource as Resource
+                } else {
+                  null
+                }
               }
             }
+
+          with(validationErrorsMap) {
+            getValidationFailures(resources)
+              .takeIf { it.isNotEmpty() }
+              ?.let {
+                getValidationFailures(resources)
+                  .takeIf { it.isNotEmpty() }
+                  ?.let {
+                    computeIfPresent(librarySearchResult.resource.referenceValue()) { _, v ->
+                      v + it
+                    }
+                    putIfAbsent(librarySearchResult.resource.referenceValue(), it)
+                  }
+              }
           }
         }
     }
@@ -746,16 +796,29 @@ constructor(
     subject: Resource,
     bundle: Bundle,
     questionnaireConfig: QuestionnaireConfig,
+    validationErrorsMap: MutableMap<String, List<ValidationResult>> = mutableMapOf(),
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
       kotlin
         .runCatching {
-          fhirCarePlanGenerator.generateOrUpdateCarePlan(
-            planDefinitionId = planId,
-            subject = subject,
-            data = bundle,
-            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
-          )
+          val carePlan =
+            fhirCarePlanGenerator.generateOrUpdateCarePlan(
+              planDefinitionId = planId,
+              subject = subject,
+              data = bundle,
+              generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
+            )
+
+          carePlan?.let {
+            with(validationErrorsMap) {
+              getValidationFailures(listOf(it))
+                .takeIf { it.isNotEmpty() }
+                ?.let {
+                  computeIfPresent("PlanDefinition/$planId") { _, v -> v + it }
+                  putIfAbsent("PlanDefinition/$planId", it)
+                }
+            }
+          }
         }
         .onFailure { Timber.e(it) }
     }

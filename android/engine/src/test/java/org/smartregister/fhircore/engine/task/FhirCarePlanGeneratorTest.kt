@@ -201,8 +201,8 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     fhirCarePlanGenerator =
       FhirCarePlanGenerator(
         fhirEngine = fhirEngine,
-        transformSupportServices = transformSupportServices,
         fhirPathEngine = fhirPathEngine,
+        transformSupportServices = transformSupportServices,
         defaultRepository = defaultRepository,
         fhirResourceUtil = fhirResourceUtil,
         workflowCarePlanGenerator = workflowCarePlanGenerator,
