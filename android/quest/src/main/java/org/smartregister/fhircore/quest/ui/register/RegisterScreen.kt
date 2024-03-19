@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -63,6 +63,10 @@ const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEST_TAG = "noRegisterViewButtonTestTag"
 const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
+const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
+const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
+const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
+const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -80,40 +84,40 @@ fun RegisterScreen(
 
   Scaffold(
     topBar = {
-      Column {
-        // Top section has toolbar and a results counts view
-        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
-        TopScreenSection(
-          title = registerUiState.screenTitle,
-          searchText = searchText.value,
-          filteredRecordsCount = registerUiState.filteredRecordsCount,
-          searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
-          toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-          },
-          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-        ) { event ->
-          when (event) {
-            ToolbarClickEvent.Navigate ->
-              when (toolBarHomeNavigation) {
-                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
-              }
-            ToolbarClickEvent.FilterData -> {
-              onEvent(RegisterEvent.ResetFilterRecordsCount)
-              filterActions?.handleClickEvent(navController)
+      // Top section has toolbar and a results counts view
+      val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
+      TopScreenSection(
+        modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
+        title = registerUiState.screenTitle,
+        searchText = searchText.value,
+        filteredRecordsCount = registerUiState.filteredRecordsCount,
+        searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+        toolBarHomeNavigation = toolBarHomeNavigation,
+        onSearchTextChanged = { searchText ->
+          onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+        },
+        isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+      ) { event ->
+        when (event) {
+          ToolbarClickEvent.Navigate ->
+            when (toolBarHomeNavigation) {
+              ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+              ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
             }
+          ToolbarClickEvent.FilterData -> {
+            onEvent(RegisterEvent.ResetFilterRecordsCount)
+            filterActions?.handleClickEvent(navController)
           }
         }
-        // Only show counter during search
-        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
+      // Only show counter during search
+      if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
+          modifier = modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,
@@ -121,11 +125,13 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
+    Box(
+      modifier = modifier.padding(innerPadding),
+    ) {
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
-          modifier = modifier,
+          modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
           percentageProgressFlow = registerUiState.progressPercentage,
           dialogMessage =
             stringResource(
@@ -134,25 +140,26 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-      if (
-        registerUiState.totalRecordsCount > 0 &&
-          registerUiState.registerConfiguration?.registerCard != null
-      ) {
-        RegisterCardList(
-          registerCardConfig = registerUiState.registerConfiguration.registerCard,
-          pagingItems = pagingItems,
-          navController = navController,
-          lazyListState = lazyListState,
-          onEvent = onEvent,
-          registerUiState = registerUiState,
-          currentPage = currentPage,
-          showPagination = searchText.value.isEmpty(),
-        )
-      } else {
-        registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
-          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
-            noResultConfig.actionButton?.actions?.handleClickEvent(navController)
-          }
+    }
+    if (
+      registerUiState.totalRecordsCount > 0 &&
+        registerUiState.registerConfiguration?.registerCard != null
+    ) {
+      RegisterCardList(
+        modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
+        registerCardConfig = registerUiState.registerConfiguration.registerCard,
+        pagingItems = pagingItems,
+        navController = navController,
+        lazyListState = lazyListState,
+        onEvent = onEvent,
+        registerUiState = registerUiState,
+        currentPage = currentPage,
+        showPagination = searchText.value.isEmpty(),
+      )
+    } else {
+      registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
+        NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+          noResultConfig.actionButton?.actions?.handleClickEvent(navController)
         }
       }
     }
