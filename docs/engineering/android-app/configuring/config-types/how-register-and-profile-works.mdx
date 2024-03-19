@@ -1,0 +1,390 @@
+# How register and profile works together with widgets.
+
+## Profiles
+
+In Fhircore profile are of two types we have `Household profile` and `default  profile`.
+
+Household profile is used to show how list of households are displayed in the UI while default profile is used to show information about a single user.
+
+To learn more about profiles feel free to visit this page [profiles](https://docs.opensrp.io/engineering/android-app/configuring/config-types/profile)
+
+Below is a json configs that shows how rules data queries,views are embedded in the house hold profile.
+
+```json
+{
+  "appId": "appId",
+  "configType": "profile",
+  "id": "householdProfile",
+  "fhirResource": {
+    "baseResource": {
+      "resource": "Group",
+      "dataQueries": [
+        {
+          "paramName": "type",
+          "filterCriteria": [
+            {
+              "dataType": "CODING",
+              "value": {
+                "system": "http://hl7.org/fhir/group-type",
+                "code": "person"
+              }
+            }
+          ]
+        },
+        {
+          "paramName": "code",
+          "filterCriteria": [
+            {
+              "dataType": "CODEABLECONCEPT",
+              "value": {
+                "system": "https://www.snomed.org",
+                "code": "35359004"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "relatedResources": [
+      {
+        "resource": "Patient",
+        "isRevInclude": false,
+        "searchParameter": "member",
+        "relatedResources": [
+          {
+            "resource": "Condition",
+            "searchParameter": "subject"
+          },
+          {
+            "resource": "CarePlan",
+            "searchParameter": "subject"
+          },
+        ],
+        "sortConfigs": [
+          {
+            "paramName": "_lastUpdated",
+            "dataType": "DATE",
+            "order": "DESCENDING"
+          }
+        ]
+      },
+    ]
+  },
+  "fabActions": [
+    {
+      "id": "ActionButton",
+      "visible": true,
+      "display": "{{ add.member }}",
+      "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_add"
+      },
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "questionnaire_id",
+            "title": "Add household member",
+            "saveButtonText": "Add Member",
+            "resourceType": "Patient",
+            "groupResource": {
+              "groupIdentifier": "@{familyLogicalId}",
+              "memberResourceType": "Patient"
+            },
+            "snackBarMessage": {
+              "message": "Household member has been added",
+              "actionLabel": "",
+              "duration": "Short"
+            }
+          },
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "name": "familyName",
+      "condition": "true",
+      "actions": [
+        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+      ]
+    },
+  ],
+  "topAppBar": {
+    "title": {
+      "viewType": "COMPOUND_TEXT",
+      "primaryText": "@{familyName} Family",
+      "primaryTextColor": "#FFFFFF",
+      "fontSize": 20.0,
+      "maxLines": 1,
+      "primaryTextFontWeight": "BOLD"
+    },
+    "content": [
+      {
+        "viewType": "COMPOUND_TEXT",
+        "primaryText": "@{familyName} Family",
+        "primaryTextColor": "#FFFFFF",
+        "fontSize": 16.0,
+        "maxLines": 1,
+        "primaryTextFontWeight": "BOLD"
+      },
+      {
+        "viewType": "COLUMN",
+        "backgroundColor": "primaryColor",
+        "children": [
+          {
+            "viewType": "COMPOUND_TEXT",
+            "primaryText": "@{familyVillage} - HH No: @{familyId}",
+            "primaryTextColor": "#FFFFFF",
+            "colorOpacity": 0.76,
+            "fontSize": 16.0
+          }
+        ]
+      }
+    ]
+  },
+  "views": [
+    {
+      "viewType": "CARD",
+      "header": {
+        "viewType": "COMPOUND_TEXT",
+        "primaryText": "HOUSEHOLD MEMBERS",
+        "primaryTextColor": "#6F7274",
+        "fontSize": 18.0,
+        "padding": 16
+      },
+      "contentPadding": 0,
+      "content": [
+        {
+          "viewType": "LIST",
+          "padding": 16,
+          "resources": [
+            {
+              "id": "householdPatients",
+              "resourceType": "Patient",
+              "relatedResources": [
+                {
+                  "resourceType": "CarePlan",
+                  "fhirPathExpression": "CarePlan.subject.reference"
+                },
+                {
+                  "resourceType": "Condition",
+                  "fhirPathExpression": "Condition.subject.reference"
+                },
+              ]
+            }
+          ],
+          "registerCard": {
+            "rules": [
+              {
+                "name": "patientFirstName",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientFirstName', fhirPath.extractValue(Patient, \"Patient.name[0].select(given[0])\"))"
+                ]
+              },
+              {
+                "name": "patientMiddleName",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientMiddleName', fhirPath.extractValue(Patient, \"Patient.name[0].select(text)\"))"
+                ]
+              },
+              {
+                "name": "patientLastName",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientLastName', fhirPath.extractValue(Patient, \"Patient.name[0].select(family)\"))"
+                ]
+              },
+              {
+                "name": "patientAge",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientAge', service.extractAge(Patient))"
+                ]
+              },
+              {
+                "name": "patientActive",
+                "condition": "true",
+                "actions": [
+                  "data.put('patientActive', fhirPath.extractValue(Patient, 'Patient.active'))"
+                ]
+              },
+            ],
+            "views": [
+              {
+                "viewType": "SERVICE_CARD",
+                "details": [
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "@{patientName}",
+                    "primaryTextColor": "@{patientTextColor}"
+                  },
+                  {
+                    "viewType": "COMPOUND_TEXT",
+                    "primaryText": "@{statuses}",
+                    "primaryTextColor": "#939596"
+                  }
+                ],
+                "serviceMemberIcons": "@{serviceMemberIcons}",
+                "serviceButton": {
+                  "visible": "@{showMemberTasks}",
+                  "text": "@{taskDescription}",
+                  "status": "@{serviceStatus}",
+                  "enabled": "@{patientActive}",
+                  "actions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "LAUNCH_QUESTIONNAIRE",
+                      "questionnaire": {
+                        "id": "@{taskQuestionnaireId}",
+                        "title": "@{taskDescription}",
+                        "saveButtonText": "Save",
+                        "taskId": "@{taskId}",
+                        "resourceIdentifier": "@{taskFor}"
+                      }
+                    }
+                  ]
+                },
+                "actions": [
+                  {
+                    "trigger": "ON_CLICK",
+                    "workflow": "LAUNCH_PROFILE",
+                    "id": "defaultProfile",
+                    "params": [
+                      {
+                        "paramType": "UPDATE_DATE_ON_EDIT",
+                        "key": "familyLogicalId",
+                        "value": "@{familyLogicalId}"
+                      },
+                      {
+                        "paramType": "PARAMDATA",
+                        "key": "isFamilyHeadExists",
+                        "value": "@{isFamilyHeadExists}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "overFlowMenuItems": [
+    {
+      "title": "Family details",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "questionnaire": {
+            "id": "questionnaire_id",
+            "title": "{{add.family}}",
+            "saveButtonText": "Update household details",
+            "setPractitionerDetails": true,
+            "setOrganizationDetails": true,
+            "type": "EDIT",
+            "resourceIdentifier": "@{familyLogicalId}",
+            "resourceType": "Group",
+            "params": [
+              {
+                "key": "familyLogicalId",
+                "value": "@{familyLogicalId}",
+                "paramType": "UPDATE_DATE_ON_EDIT"
+              }
+            ],
+            "snackBarMessage": {
+              "message": "Household details have been updated",
+              "actionLabel": "",
+              "duration": "Short"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "title": "Change family head",
+      "titleColor": "#000000",
+      "visible": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "CHANGE_MANAGING_ENTITY",
+          "managingEntity": {
+
+          }
+        }
+      ]
+    },
+    {
+      "title": "View past encounters",
+      "titleColor": "@{patientTextColor}",
+      "visible": "true",
+      "enabled": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_PROFILE",
+          "id": "householdpastencountersProfile"
+        }
+      ]
+    },
+    {
+      "title": "Remove family",
+      "titleColor": "#FF0000",
+      "visible": "true",
+      "showSeparator": "true",
+      "actions": [
+        {
+          "trigger": "ON_CLICK",
+          "workflow": "LAUNCH_QUESTIONNAIRE",
+          "params": [
+            {
+              "key": "familyId",
+              "value": "@{familyLogicalId}",
+              "paramType": "UPDATE_DATE_ON_EDIT"
+            },
+            {
+              "key": "familyName",
+              "value": "@{familyName}"
+            }
+          ],
+            "onSubmitActions": [
+              {
+                "trigger": "ON_QUESTIONNAIRE_SUBMISSION",
+                "workflow": "LAUNCH_REGISTER",
+                "id": "householdRegister",
+                "display": "All Households",
+                "popNavigationBackStack": true
+              }
+            ]
+          }
+      ]
+    }
+  ]
+}
+```
+
+To Create a full functional household profile config the json above gives a vivid description of how to go about it from the app Id to connecting your views that you would need to be show on your application UI.
+
+The config start by declaring a application id and the config type that is under use.
+
+It then defined the fhirResource that would be used `baseResource` is the parent resource under consideration while `relatedResources` are the resources reference from baseResource. relatedResources can be nested that it a relatedResources can be within a relatedResources.
+
+`dataQueries` contains the `CQL` statement written in the database.
+
+`sortConfigs` applies sorting of the data from the database.
+
+`fabActions` this config shows how you can display a floating action button and all the operations it is associated with. That is it's event and state.
+
+`rules` extracts the data to be rendered on the UI. It comprises of the `name` , `condition` and `action` the action part of the rule is the `fhirPathExpression` that is used to extract data from json.
+
+`topAppBar` is a configuration for the application to app topAppBar it has a title part which is a `compound text` widget and content part which also take other form of widgets.
+
+`view` this displays the data on the UI. each view has its property. From the example above a `card` widget has a `list` widget  and a service card widget.
