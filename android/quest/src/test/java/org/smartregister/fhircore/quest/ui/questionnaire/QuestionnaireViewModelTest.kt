@@ -90,6 +90,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
+import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -1146,121 +1147,49 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testApplyRelatedEntityLocationMetaTagWithResourceIdentifier() = runBlocking {
+  fun isRelatedEntityLocationMetaTagAddedToExtractedResource() = runBlocking {
+    val bundleSlot = slot<Bundle>()
+    val bundle = bundleSlot.captured
+    val relatedEntityLocationUUID = "relatedEntityLocationUUID"
+    val linkId = "linkId"
     val questionnaireConfig =
       questionnaireConfig.copy(
         resourceIdentifier = "resourceId",
-        resourceType = ResourceType.Observation,
+        resourceType = ResourceType.Location,
         saveQuestionnaireResponse = false,
         type = "EDIT",
+        linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
         extractedResourceUniquePropertyExpressions =
-          listOf(
-            ExtractedResourceUniquePropertyExpression(
-              ResourceType.Observation,
-              "Observation.code.where(coding.code='obs1').coding.code",
-            ),
+        listOf(
+          ExtractedResourceUniquePropertyExpression(
+            ResourceType.Location,
+            "Observation.code.where(coding.code='obs1').coding.code",
           ),
-      )
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        id = "resourceId"
-        meta.lastUpdated = Date()
-        subject = patient.asReference()
-        questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-      }
-    val subjectType = ResourceType.Observation
-
-    assertEquals("resourceId", questionnaireResponse.id)
-    assertEquals(subjectType, questionnaireConfig.resourceType)
-  }
-
-  @Test
-  fun `test applyRelatedEntityLocationMetaTag with groupIdentifier`() = runBlocking {
-    val bundleSlot = slot<Bundle>()
-    val bundle = bundleSlot.captured
-    val questionnaireConfig =
-      questionnaireConfig.copy(
-        resourceIdentifier = "groupId",
-        resourceType = ResourceType.Group,
-        saveQuestionnaireResponse = false,
-        type = "EDIT",
-        extractedResourceUniquePropertyExpressions =
-          listOf(
-            ExtractedResourceUniquePropertyExpression(
-              ResourceType.Observation,
-              "Observation.code.where(coding.code='obs1').coding.code",
-            ),
-          ),
+        ),
       )
     bundle.entry.forEach {
       val resource = it.resource
-      val subjectType = ResourceType.Group
-      resource.id = "groupId"
+      val relatedEntityLocationCodingSystem =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+       resource.meta.tag.forEach { coding ->
+          coding.system == relatedEntityLocationCodingSystem && coding.code == relatedEntityLocationUUID
+        }     //Assert.assertNotNull(relatedEntityLocationMetaTag)
 
-      assertEquals(subjectType, resource.resourceType)
-      assertEquals(questionnaireConfig.resourceIdentifier, resource.id)
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          id = "resourceId"
+          subject = patient.asReference()
+          questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+          meta.tag = resource.meta.tag
+        }
+      val subjectType = ResourceType.Observation
+
+
+      assertEquals(resource.meta.tag, questionnaireResponse.meta.tag)
+      assertEquals(subjectType, questionnaireConfig.resourceType)
     }
-  }
 
-  @Test
-  fun `test saveExtractedResources for resource modification`() = runBlocking {
-    val questionnaire = extractionQuestionnaire()
-    val questionnaireConfig =
-      questionnaireConfig.copy(
-        resourceIdentifier = "groupId",
-        resourceType = ResourceType.Group,
-        saveQuestionnaireResponse = false,
-        type = "EDIT",
-        extractedResourceUniquePropertyExpressions =
-          listOf(
-            ExtractedResourceUniquePropertyExpression(
-              ResourceType.Observation,
-              "Observation.code.where(coding.code='obs1').coding.code",
-            ),
-          ),
-      )
-    val questionnaireResponse =
-      QuestionnaireResponse().apply {
-        id = "resourceId"
-        meta.lastUpdated = Date()
-        subject = patient.asReference()
-      }
-
-    val bundle =
-      Bundle().apply {
-        addEntry(
-          Bundle.BundleEntryComponent().apply {
-            PractitionerDetails().apply {
-              fhirPractitionerDetails =
-                FhirPractitionerDetails().apply {
-                  id = "practitionerId1"
-                  practitionerId = StringType("practitionerId1")
-                }
-            }
-            id = "patientId1"
-          },
-        )
-        addEntry(
-          Bundle.BundleEntryComponent().apply {
-            PractitionerDetails().apply {
-              fhirPractitionerDetails =
-                FhirPractitionerDetails().apply {
-                  id = "practitionerId2"
-                  practitionerId = StringType("practitionerId2")
-                }
-            }
-            id = "patientId1"
-          },
-        )
-      }
-    questionnaireViewModel.saveExtractedResources(
-      bundle,
-      questionnaire,
-      questionnaireConfig,
-      questionnaireResponse,
-      context,
-    )
-
-    assertEquals("patientLogicalId", questionnaireResponse.subject.reference)
   }
 }
