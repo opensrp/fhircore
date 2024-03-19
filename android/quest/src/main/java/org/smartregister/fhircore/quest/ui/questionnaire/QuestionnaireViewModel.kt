@@ -59,10 +59,12 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -124,6 +126,10 @@ constructor(
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()
   val questionnaireProgressStateLiveData: LiveData<QuestionnaireProgressState?>
     get() = _questionnaireProgressStateLiveData
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The

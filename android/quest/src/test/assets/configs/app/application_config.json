@@ -28,5 +28,8 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "logGpsLocation": [
+    "QUESTIONNAIRE"
+  ]
 }
