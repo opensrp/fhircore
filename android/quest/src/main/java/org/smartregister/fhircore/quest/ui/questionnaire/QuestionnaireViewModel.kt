@@ -87,6 +87,7 @@ import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
+import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
@@ -304,7 +305,7 @@ constructor(
 
       softDeleteResources(questionnaireConfig)
 
-      retireUsedQuestionnaireUniqueId()
+      retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
 
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
@@ -313,14 +314,16 @@ constructor(
     }
   }
 
-  suspend fun retireUsedQuestionnaireUniqueId() {
-    if (uniqueIdResourcePair != null) {
+  suspend fun retireUsedQuestionnaireUniqueId(questionnaireConfig: QuestionnaireConfig, questionnaireResponse: QuestionnaireResponse) {
+    if (uniqueIdResourcePair != null && questionnaireConfig.uniqueIdAssignment != null) {
       val (id, resource) = uniqueIdResourcePair!!
+      val uniqueIdLinkId = questionnaireConfig.uniqueIdAssignment!!.linkId
+      val submittedUniqueId = questionnaireResponse.find(uniqueIdLinkId)?.answer?.first()?.value.toString()
 
       // Update Group resource. Can be extended in future to support other resources
       if (resource is Group) {
         resource.characteristic.onEach {
-          if (it.hasValueCodeableConcept() && it.valueCodeableConcept.text == id) {
+          if (it.hasValueCodeableConcept() && it.valueCodeableConcept.text == submittedUniqueId) {
             it.exclude = true
             return@onEach
           }
