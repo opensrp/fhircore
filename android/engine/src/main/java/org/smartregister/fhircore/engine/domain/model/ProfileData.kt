@@ -90,6 +90,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val age: String = birthdate.toAgeDisplay(),
     val gender: Enumerations.AdministrativeGender,
     val currentCarePlan: CarePlan?,
+    val isClientVisit: Boolean = true,
     val address: String,
     val addressDistrict: String = "",
     val addressTracingCatchment: String = "",
