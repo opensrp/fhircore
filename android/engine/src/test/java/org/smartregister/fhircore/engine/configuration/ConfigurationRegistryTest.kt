@@ -53,7 +53,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -325,7 +324,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   // Backward compatibility for NON-PROXY version
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxy() = runTest {
+  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() = runTest {
     val appId = "theAppId"
     val focusReference = ResourceType.Questionnaire.name
     val resourceKey = "resourceKey"
@@ -377,73 +376,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
-    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
-  }
-
-  @Test
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testFetchNonWorkflowConfigResourcesBundleListResourceProxyBackwardCompatible() = runTest {
-    val appId = "theAppId"
-    val focusReference = ResourceType.Questionnaire.name
-    val resourceKey = "resourceKey"
-    val resourceId = "resourceId"
-    val testListId = "test-list-id"
-    val listResource =
-      ListResource().apply {
-        id = "test-list-id"
-        entry =
-          listOf(
-            ListResource.ListEntryComponent().apply {
-              item = Reference().apply { reference = "$resourceKey/$resourceId" }
-            },
-          )
-      }
-    val bundle =
-      Bundle().apply { entry = listOf(BundleEntryComponent().apply { resource = listResource }) }
-
-    val composition =
-      Composition().apply {
-        identifier = Identifier().apply { value = appId }
-        section =
-          listOf(
-            SectionComponent().apply { focus.reference = "${ResourceType.List.name}/$testListId" },
-          )
-      }
-    configRegistry.configsJsonMap[ConfigType.Application.name] = "{\"appId\": \"${appId}\"}"
-    val appConfig =
-      configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-
-    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
-    fhirEngine.create(composition)
-
-    coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
-      bundle
-
-    coEvery {
-      fhirResourceDataSource.getResource(
-        "$resourceKey?_id=$resourceId&_page=${appConfig.listSyncConfig.page}&_count=${appConfig.listSyncConfig.count}",
-      )
-    } returns bundle
-    coEvery { fhirResourceDataSource.getResource(any()) } returns bundle
-    coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
-    } returns Bundle().apply { addEntry().resource = composition }
-
-    coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/test-list-id")
-    } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
-
-    configRegistry.fhirEngine.create(composition)
-    configRegistry.setNonProxy(false)
-    configRegistry.fetchNonWorkflowConfigResources()
-
-    val createdResourceArgumentSlot = mutableListOf<Resource>()
-
-    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
-    assertEquals(
-      "test-list-id",
-      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
-    )
+    coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
 
@@ -777,7 +710,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
-    coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
+
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
@@ -791,7 +724,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
+    configRegistry.fetchNonWorkflowConfigResources()
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
@@ -837,7 +770,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       fhirEngine.create(composition)
 
-      coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
       coEvery {
         fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
       } returns Bundle().apply { addEntry().resource = composition }
@@ -862,7 +794,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
-      runTest { configRegistry.fetchNonWorkflowConfigResources() }
+      configRegistry.fetchNonWorkflowConfigResources()
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 

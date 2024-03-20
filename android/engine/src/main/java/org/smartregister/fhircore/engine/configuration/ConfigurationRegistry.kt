@@ -318,12 +318,7 @@ constructor(
         // Use file name as the key. Conventionally navigation configs MUST end with
         // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
-        if (
-          !fileName.equals(
-            String.format(COMPOSITION_CONFIG_PATH, appId),
-            ignoreCase = true,
-          )
-        ) {
+        if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
           val configKey =
             fileName
               .lowercase(Locale.ENGLISH)
@@ -426,7 +421,7 @@ constructor(
           }
           .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            if (entry.key == ResourceType.List.name && !isNonProxy()) {
+            if (entry.key == ResourceType.List.name) {
               processCompositionListResources(
                 entry,
                 patientRelatedResourceTypes = patientRelatedResourceTypes,
@@ -435,12 +430,7 @@ constructor(
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
               chunkedResourceIdList.forEach { parentIt ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${
-                                        StringUtils.join(
-                                            parentIt,
-                                            ",",
-                                        )
-                                    }",
+                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
                 )
                 processCompositionManifestResources(
                   entry.key,
@@ -688,9 +678,6 @@ constructor(
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    val applicationConfig: ApplicationConfiguration by lazy {
-      retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
-    }
 
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
@@ -727,16 +714,9 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          searchPath = "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=1&_count=200",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
-        if (resourceGroup.key.contains("List")) {
-          val searchPath = "${resourceGroup.key}/${it.focus.extractId()}"
-          val resourceId = searchPath.substringAfter(TYPE_REFERENCE_DELIMITER).trim()
-          val listResourceUrlPath =
-            "${ResourceType.List.name}?$ID=$resourceId&_page=${applicationConfig.listSyncConfig.page}&_count=${applicationConfig.listSyncConfig.count}"
-          fhirResourceDataSource.getResource(listResourceUrlPath)
-        }
       }
     }
   }
