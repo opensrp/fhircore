@@ -38,6 +38,7 @@ import com.google.android.fhir.search.search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
@@ -756,7 +757,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search).map { it.resource }
     val filteredResources =
       filterResourcesByFhirPathExpression(
-        resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+        resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
         resources = resources,
       )
     filteredResources.forEach {
@@ -778,7 +779,7 @@ constructor(
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       val filteredRelatedResources =
         filterResourcesByFhirPathExpression(
-          resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
           resources = resourcesMap.value,
         )
 
@@ -793,11 +794,26 @@ constructor(
     }
   }
 
+  /**
+   * This function filters event management resources using a filter expression. For example when
+   * closing tasks we do not want to close `completed`tasks. The filter expression will be used to
+   * filter out completed tasks from the resources list
+   *
+   * @param resourceFilterExpressions - Contains the list of conditional FhirPath expressions used
+   *   for filtering resources. It also specifies the resource type that the filter expressions will
+   *   be applied to
+   * @param resources - The list of resources to be filtered. Note that it only contains resources
+   *   of a single type.
+   */
   fun filterResourcesByFhirPathExpression(
-    resourceFilterExpression: ResourceFilterExpression?,
+    resourceFilterExpressions: List<ResourceFilterExpression>?,
     resources: List<Resource>,
   ): List<Resource> {
-    return with(resourceFilterExpression) {
+    val resourceFilterExpressionForCurrentResourceType =
+      resourceFilterExpressions?.firstOrNull {
+        !resources.isNullOrEmpty() && (resources[0].resourceType == it.resourceType)
+      }
+    return with(resourceFilterExpressionForCurrentResourceType) {
       if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
       } else {
@@ -824,29 +840,42 @@ constructor(
 
     val updatedResourceDocument =
       jsonParse.apply {
-        eventWorkflow.updateValues.forEach { updateExpression ->
-          val updateValue =
-            getJsonContent(
-              updateExpression.value,
-            )
-          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-          if (
-            updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
-          ) {
-            set(updateExpression.jsonPathExpression, updateValue)
+        eventWorkflow.updateValues
+          .filter { it.resourceType == resource.resourceType }
+          .forEach { updateExpression ->
+            try {
+              val updateValue =
+                getJsonContent(
+                  updateExpression.value,
+                )
+              // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+              if (
+                updateExpression.jsonPathExpression.startsWith("\$") &&
+                  updateExpression.value != null
+              ) {
+                set(updateExpression.jsonPathExpression, updateValue)
+              }
+              if (
+                updateExpression.jsonPathExpression.startsWith(
+                  resource.resourceType.name,
+                  ignoreCase = true,
+                ) && updateExpression.value != null
+              ) {
+                set(
+                  updateExpression.jsonPathExpression.replace(
+                    resource.resourceType.name,
+                    "\$",
+                    ignoreCase = true,
+                  ),
+                  updateValue,
+                )
+              }
+            } catch (pathNotFoundException: PathNotFoundException) {
+              Timber.e(
+                "Error updating ${resource.resourceType.name} with ID ${resource.id} using jsonPath ${updateExpression.jsonPathExpression} and value ${updateExpression.value} ",
+              )
+            }
           }
-          if (
-            updateExpression.jsonPathExpression.startsWith(
-              resource.resourceType.name,
-              ignoreCase = true,
-            ) && updateExpression.value != null
-          ) {
-            set(
-              updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
-              updateValue,
-            )
-          }
-        }
       }
 
     val resourceDefinition: Class<out IBaseResource>? =
