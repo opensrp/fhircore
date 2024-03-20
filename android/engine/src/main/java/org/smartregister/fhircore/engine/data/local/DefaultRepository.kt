@@ -809,7 +809,9 @@ constructor(
     resources: List<Resource>,
   ): List<Resource> {
     val resourceFilterExpressionForCurrentResourceType =
-      resourceFilterExpressions?.firstOrNull { resources[0].resourceType == it.resourceType }
+      resourceFilterExpressions?.firstOrNull {
+        !resources.isNullOrEmpty() && (resources[0].resourceType == it.resourceType)
+      }
     return with(resourceFilterExpressionForCurrentResourceType) {
       if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
