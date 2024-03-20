@@ -91,6 +91,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
             context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
           observations = inputModel.observations,
           guardians = inputModel.guardians,
+          currentCarePlan = inputModel.currentCarePlan,
           tasks =
           inputModel.tasks.map {
             PatientProfileRowItem(
