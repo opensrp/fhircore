@@ -99,6 +99,9 @@ fun GeoWidgetLauncherScreen(
                             onEvent(RegisterEvent.ResetFilterRecordsCount)
 
                         }
+                        ToolbarClickEvent.Toggle -> {
+
+                        }
                     }
                 }
 

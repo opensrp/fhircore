@@ -36,6 +36,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.LegendToggle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -67,7 +69,7 @@ const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
-
+const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 @Composable
 fun TopScreenSection(
   modifier: Modifier = Modifier,
@@ -79,7 +81,8 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
-  onClick: (ToolbarClickEvent) -> Unit,
+  launcherType: LauncherType = LauncherType.REGISTER,
+  onClick: (ToolbarClickEvent) -> Unit
 ) {
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
@@ -110,6 +113,17 @@ fun TopScreenSection(
         color = Color.White,
         modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
+      if (launcherType == LauncherType.MAP) {
+        Icon(
+          imageVector = Icons.Default.LegendToggle,
+          contentDescription = FILTER,
+          tint = Color.White,
+          modifier =
+          modifier
+            .clickable { onClick(ToolbarClickEvent.Toggle) }
+            .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+        )
+      }
       if (isFilterIconEnabled) {
         BadgedBox(
           modifier = Modifier.padding(end = 8.dp),
@@ -226,5 +240,37 @@ fun TopScreenSectionNoFilterIconPreview() {
     isFilterIconEnabled = false,
     onClick = {},
     isSearchBarVisible = true
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    launcherType = LauncherType.MAP
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    launcherType = LauncherType.MAP
   )
 }

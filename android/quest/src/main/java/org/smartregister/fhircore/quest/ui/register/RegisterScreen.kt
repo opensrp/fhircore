@@ -108,6 +108,7 @@ fun RegisterScreen(
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
             }
+            ToolbarClickEvent.Toggle ->
           }
         }
         // Only show counter during search

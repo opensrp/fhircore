@@ -43,11 +43,6 @@
             android:defaultValue="@null"
             app:argType="org.smartregister.fhircore.engine.domain.model.ActionParameter[]"
             app:nullable="true" />
-        <argument
-            android:name="launcherType"
-            android:defaultValue="REGISTER"
-            app:argType="org.smartregister.fhircore.engine.domain.model.LauncherType"
-            app:nullable="false"/>
     </fragment>
 
     <fragment
