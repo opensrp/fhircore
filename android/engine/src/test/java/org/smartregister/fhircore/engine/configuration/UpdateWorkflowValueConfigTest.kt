@@ -59,5 +59,6 @@ class UpdateWorkflowValueConfigTest {
     val createdConfig = UpdateWorkflowValueConfig.CREATOR.createFromParcel(parcel)
     assertEquals("$.example", createdConfig.jsonPathExpression)
     assertEquals(Json.decodeFromString<JsonElement>("{ \"key\": \"value\" }"), createdConfig.value)
+    assertEquals(ResourceType.Task, createdConfig.resourceType)
   }
 }

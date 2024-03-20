@@ -860,7 +860,7 @@ constructor(
                 updateExpression.jsonPathExpression.replace(
                   resource.resourceType.name,
                   "\$",
-                  ignoreCase = true
+                  ignoreCase = true,
                 ),
                 updateValue,
               )
