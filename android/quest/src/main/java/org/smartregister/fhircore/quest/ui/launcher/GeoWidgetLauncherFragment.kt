@@ -52,8 +52,10 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
@@ -190,11 +192,14 @@ class GeoWidgetLauncherFragment : Fragment() {
                 )
             }
             .setOnCancelAddingLocationListener {
-
+                requireContext().showToast("on cancel adding location")
             }
             .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-                // todo: open profile
+                requireContext().showToast("open profile")
             }
+            .setMapLayers(geoWidgetConfiguration.mapLayers)
+            .setLocationButtonVisibility(geoWidgetConfiguration.shouldLocationButtonShow)
+            .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.shouldPlaneSwitcherButtonShow)
             .build()
     }
 
@@ -239,16 +244,6 @@ class GeoWidgetLauncherFragment : Fragment() {
                     confirmButtonText = R.string.positive_button_location_set,
                 )
             }
-        }
-    }
-
-    private fun addGeoWidgetFragment() {
-        childFragmentManager.commit {
-            add(
-                R.id.add_geo_widget_container,
-                geoWidgetFragment,
-                GEO_WIDGET_FRAGMENT_TAG,
-            )
         }
     }
 

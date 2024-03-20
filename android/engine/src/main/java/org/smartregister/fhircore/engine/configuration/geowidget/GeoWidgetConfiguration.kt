@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.configuration.geowidget
 
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
@@ -29,5 +30,16 @@ data class GeoWidgetConfiguration(
   val id: String,
   val profileId: String,
   val registrationQuestionnaire: QuestionnaireConfig,
+  val mapLayers : List<MapLayer> = arrayListOf(MapLayer.StreetLayer(true)),
+  val shouldLocationButtonShow: Boolean = true,
+  val shouldPlaneSwitcherButtonShow: Boolean = true,
+  val shouldAddingLocationButtonShow: Boolean = true,
   val resourceConfig: FhirResourceConfig? = null,
 ) : Configuration()
+
+@Serializable
+sealed class MapLayer {
+  data class StreetLayer(val isDefault: Boolean) : MapLayer()
+  data class SatelliteLayer(val isDefault: Boolean) : MapLayer()
+  data class StreetSatelliteLayer(val isDefault: Boolean) : MapLayer()
+}
