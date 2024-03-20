@@ -124,11 +124,11 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:knowledge:0.1.0-alpha03-preview2-SNAPSHOT") {
+  api("org.smartregister:knowledge:0.1.0-alpha03-preview3-SNAPSHOT") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:workflow:0.1.0-alpha04-preview6-SNAPSHOT") {
+  api("org.smartregister:workflow:0.1.0-alpha04-preview8-SNAPSHOT") {
     isTransitive = true
     exclude(group = "xerces")
     exclude(group = "com.github.java-json-tools")
@@ -155,7 +155,7 @@ dependencies {
   api("org.smartregister:p2p-lib:0.3.0-SNAPSHOT")
 
   // Configure Jetpack Compose
-  api(platform("androidx.compose:compose-bom:2024.02.01"))
+  api(platform("androidx.compose:compose-bom:2024.02.02"))
   api("androidx.compose.ui:ui")
   api("androidx.compose.ui:ui-tooling")
   api("androidx.compose.foundation:foundation")
@@ -176,14 +176,14 @@ dependencies {
   val coroutineVersion = "1.7.3"
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
   api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
-  api("org.smartregister:contrib-barcode:0.1.0-beta3-preview5-SNAPSHOT") {
+  api("org.smartregister:contrib-barcode:0.1.0-beta3-preview7-SNAPSHOT") {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
-  api("org.smartregister:data-capture:1.1.0-preview5-SNAPSHOT") {
+  api("org.smartregister:data-capture:1.1.0-preview6-SNAPSHOT") {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
@@ -191,9 +191,9 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:common:0.1.0-alpha05-preview2-SNAPSHOT") { isTransitive = true }
+  api("org.smartregister:common:0.1.0-alpha05-preview3-SNAPSHOT") { isTransitive = true }
 
-  api("org.smartregister:engine:1.0.0-preview2-SNAPSHOT") {
+  api("org.smartregister:engine:1.0.0-preview4-SNAPSHOT") {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
