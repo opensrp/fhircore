@@ -51,17 +51,17 @@ sonar {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = Configs.compileSdk
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
   namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
-    applicationId = "org.smartregister.opensrp"
-    minSdk = 26
-    versionCode = 10
-    versionName = "1.1.0"
+    applicationId = Configs.applicationId
+    minSdk = Configs.minSdk
+    versionCode = Configs.versionCode
+    versionName = Configs.versionName
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -161,7 +161,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = Configs.kotlinCompilerExtensionVersion }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -173,7 +173,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = Configs.jacocoVersion }
 
   lint { abortOnError = false }
 
