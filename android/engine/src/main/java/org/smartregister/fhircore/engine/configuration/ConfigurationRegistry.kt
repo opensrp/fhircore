@@ -52,7 +52,6 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.OpenSrpApplication
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -678,7 +677,6 @@ constructor(
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
       chunkedResourceIdList.forEach {

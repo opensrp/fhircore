@@ -716,7 +716,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        "List?_id=46464&_page=1&_count=200",
+      )
     } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
     coEvery { fhirEngine.get(any(), any()) } throws
@@ -775,7 +778,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
-        fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          "List?_id=46464&_page=1&_count=200",
+        )
       } returns
         Bundle().apply {
           entry =
