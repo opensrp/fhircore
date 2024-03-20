@@ -197,7 +197,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coVerify {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
-        "List?_id=123456&_page=1&_count=200"
+        "List?_id=123456&_page=1&_count=200",
       )
     }
     coVerify { configurationRegistry.addOrUpdate(any()) }
