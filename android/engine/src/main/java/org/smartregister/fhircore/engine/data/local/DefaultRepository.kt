@@ -179,6 +179,13 @@ constructor(
     }
   }
 
+  suspend fun saveLocalOnly(vararg resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      resource.forEach { it.generateMissingId() }
+      fhirEngine.create(*resource, isLocalOnly = true)
+    }
+  }
+
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
