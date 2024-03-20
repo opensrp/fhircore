@@ -1196,7 +1196,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
     questionnaireViewModel.retireUsedQuestionnaireUniqueId(
       questionnaireConfig,
-      questionnaireResponse
+      questionnaireResponse,
     )
     Assert.assertTrue(group.characteristic.first().exclude)
     Assert.assertFalse(group.characteristic.last().exclude)
@@ -1254,7 +1254,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
       questionnaireViewModel.retireUsedQuestionnaireUniqueId(
         questionnaireConfig,
-        questionnaireResponse
+        questionnaireResponse,
       )
 
       Assert.assertTrue(group.characteristic.first().exclude)

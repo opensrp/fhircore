@@ -323,7 +323,7 @@ constructor(
 
   suspend fun retireUsedQuestionnaireUniqueId(
     questionnaireConfig: QuestionnaireConfig,
-    questionnaireResponse: QuestionnaireResponse
+    questionnaireResponse: QuestionnaireResponse,
   ) {
     if (uniqueIdResourcePair != null && questionnaireConfig.uniqueIdAssignment != null) {
       val (id, resource) = uniqueIdResourcePair!!
