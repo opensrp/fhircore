@@ -84,34 +84,36 @@ fun RegisterScreen(
 
   Scaffold(
     topBar = {
-      // Top section has toolbar and a results counts view
-      val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
-      TopScreenSection(
-        modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
-        title = registerUiState.screenTitle,
-        searchText = searchText.value,
-        filteredRecordsCount = registerUiState.filteredRecordsCount,
-        searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
-        toolBarHomeNavigation = toolBarHomeNavigation,
-        onSearchTextChanged = { searchText ->
-          onEvent(RegisterEvent.SearchRegister(searchText = searchText))
-        },
-        isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-      ) { event ->
-        when (event) {
-          ToolbarClickEvent.Navigate ->
-            when (toolBarHomeNavigation) {
-              ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-              ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+      Column {
+        // Top section has toolbar and a results counts view
+        val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
+        TopScreenSection(
+          modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
+          title = registerUiState.screenTitle,
+          searchText = searchText.value,
+          filteredRecordsCount = registerUiState.filteredRecordsCount,
+          searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
+          onSearchTextChanged = { searchText ->
+            onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+          },
+          isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+        ) { event ->
+          when (event) {
+            ToolbarClickEvent.Navigate ->
+              when (toolBarHomeNavigation) {
+                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+              }
+            ToolbarClickEvent.FilterData -> {
+              onEvent(RegisterEvent.ResetFilterRecordsCount)
+              filterActions?.handleClickEvent(navController)
             }
-          ToolbarClickEvent.FilterData -> {
-            onEvent(RegisterEvent.ResetFilterRecordsCount)
-            filterActions?.handleClickEvent(navController)
           }
         }
+        // Only show counter during search
+        if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
-      // Only show counter during search
-      if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
     },
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
@@ -125,9 +127,7 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
-    Box(
-      modifier = modifier.padding(innerPadding),
-    ) {
+    Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
@@ -140,26 +140,26 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-    }
-    if (
-      registerUiState.totalRecordsCount > 0 &&
-        registerUiState.registerConfiguration?.registerCard != null
-    ) {
-      RegisterCardList(
-        modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
-        registerCardConfig = registerUiState.registerConfiguration.registerCard,
-        pagingItems = pagingItems,
-        navController = navController,
-        lazyListState = lazyListState,
-        onEvent = onEvent,
-        registerUiState = registerUiState,
-        currentPage = currentPage,
-        showPagination = searchText.value.isEmpty(),
-      )
-    } else {
-      registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
-        NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
-          noResultConfig.actionButton?.actions?.handleClickEvent(navController)
+      if (
+        registerUiState.totalRecordsCount > 0 &&
+          registerUiState.registerConfiguration?.registerCard != null
+      ) {
+        RegisterCardList(
+          modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
+          registerCardConfig = registerUiState.registerConfiguration.registerCard,
+          pagingItems = pagingItems,
+          navController = navController,
+          lazyListState = lazyListState,
+          onEvent = onEvent,
+          registerUiState = registerUiState,
+          currentPage = currentPage,
+          showPagination = searchText.value.isEmpty(),
+        )
+      } else {
+        registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
+          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+            noResultConfig.actionButton?.actions?.handleClickEvent(navController)
+          }
         }
       }
     }
