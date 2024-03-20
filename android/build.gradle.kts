@@ -61,14 +61,14 @@ subprojects {
 
     kotlin {
       target("**/*.kt")
-      ktlint(Configs.ktLintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
     }
 
     kotlinGradle {
       target("*.gradle.kts")
-      ktlint(Configs.ktLintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
     }
 
@@ -90,7 +90,7 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion(Configs.jacocoVersion)
+          "org.jacoco" -> useVersion(BuildConfigs.jacocoVersion)
         }
       }
     }

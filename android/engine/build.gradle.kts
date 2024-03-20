@@ -15,12 +15,12 @@ plugins {
 }
 
 android {
-  compileSdk = Configs.compileSdk
+  compileSdk = BuildConfigs.compileSdk
 
   namespace = "org.smartregister.fhircore.engine"
 
   defaultConfig {
-    minSdk = Configs.minSdk
+    minSdk = BuildConfigs.minSdk
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -62,7 +62,7 @@ android {
     dataBinding = true
     buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = Configs.kotlinCompilerExtensionVersion }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   packaging {
     resources.excludes.addAll(
@@ -100,7 +100,7 @@ android {
 
   lint { baseline = file("lint-baseline.xml") }
 
-  testCoverage { jacocoVersion = Configs.jacocoVersion }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 }
 
 tasks.withType<Test> {
