@@ -28,6 +28,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
@@ -248,20 +249,24 @@ constructor(
     val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
     val locationHierarchies =
       practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
+    val groups = practitionerDetails.fhirPractitionerDetails?.groups ?: emptyList()
+    val practitionerRoles =
+      practitionerDetails.fhirPractitionerDetails?.practitionerRoles ?: emptyList()
+    val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: emptyList()
 
-    val careTeamIds =
-      defaultRepository.create(false, *careTeams.toTypedArray()).map { it.extractLogicalIdUuid() }
-    sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
-
-    val organizationIds =
-      defaultRepository.create(false, *organizations.toTypedArray()).map {
-        it.extractLogicalIdUuid()
-      }
-    sharedPreferences.write(ResourceType.Organization.name, organizationIds)
-
-    val locationIds =
-      defaultRepository.create(false, *locations.toTypedArray()).map { it.extractLogicalIdUuid() }
-    sharedPreferences.write(ResourceType.Location.name, locationIds)
+    val remoteResources =
+      careTeams.toTypedArray<Resource>() +
+        organizations.toTypedArray() +
+        locations.toTypedArray() +
+        groups.toTypedArray() +
+        practitionerRoles.toTypedArray() +
+        practitioners.toTypedArray()
+    defaultRepository.saveRemote(*remoteResources)
+    with(sharedPreferences) {
+      write(ResourceType.CareTeam.name, careTeams.map { it.id.extractLogicalIdUuid() })
+      write(ResourceType.Organization.name, organizations.map { it.id.extractLogicalIdUuid() })
+      write(ResourceType.Location.name, locations.map { it.id.extractLogicalIdUuid() })
+    }
 
     sharedPreferences.write(
       SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,

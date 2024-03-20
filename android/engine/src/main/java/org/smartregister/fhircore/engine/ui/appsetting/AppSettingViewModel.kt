@@ -111,20 +111,21 @@ constructor(
           }
 
         val composition = data.resource as Composition
-        defaultRepository.save(composition)
 
-        composition.section
-          .groupBy { it.focus.reference.split("/")[0] }
-          .entries
-          .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
-          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-            val ids = entry.value.joinToString(",") { it.focus.extractId() }
-            val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
-            fhirResourceDataSource.loadData(rPath).entry.forEach {
-              defaultRepository.save(it.resource)
+        val compositionBinaries =
+          composition.section
+            .groupBy { it.focus.reference.split("/")[0] }
+            .entries
+            .filter { it.key == ResourceType.Binary.name || it.key == ResourceType.Parameters.name }
+            .flatMap { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+              val ids = entry.value.joinToString(",") { it.focus.extractId() }
+              val rPath = entry.key + "?${Composition.SP_RES_ID}=$ids"
+              fhirResourceDataSource.loadData(rPath).entry.map { it.resource }
             }
-          }
+            .toTypedArray()
 
+        val remoteResources = compositionBinaries + arrayOf(composition)
+        defaultRepository.saveRemote(*remoteResources)
         loadConfigurations(context)
         _showProgressBar.postValue(false)
       } catch (unknownHostException: UnknownHostException) {

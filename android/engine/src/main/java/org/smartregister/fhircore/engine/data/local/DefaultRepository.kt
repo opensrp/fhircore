@@ -179,6 +179,13 @@ constructor(
     }
   }
 
+  suspend fun saveRemote(vararg resource: Resource) {
+    return withContext(dispatcherProvider.io()) {
+      resource.forEach { it.generateMissingId() }
+      fhirEngine.createRemote(*resource)
+    }
+  }
+
   suspend fun create(addResourceTags: Boolean = true, vararg resource: Resource): List<String> {
     return withContext(dispatcherProvider.io()) {
       resource.onEach {
