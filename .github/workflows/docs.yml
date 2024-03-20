@@ -49,6 +49,10 @@ jobs:
         run: touch local.properties
         working-directory: android
 
+      - name: Add empty keystore.properties
+        run: touch keystore.properties
+        working-directory: android
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: android
