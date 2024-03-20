@@ -70,6 +70,15 @@ fun CarePlan.CarePlanActivityComponent.getQuestionnaire() =
 
 fun CarePlan.CarePlanActivityComponent.getQuestionnaireName() =  detail.code.coding.firstOrNull()?.display
 
+fun CarePlan.CarePlanActivityComponent.isGuardianVisit(systemTag: String) =
+    this.detail.reasonCode
+        .filter { cd -> cd.coding.firstOrNull { it.system == systemTag } != null }
+        .any { it.coding.firstOrNull()?.code.equals(GUARDIAN_VISIT_CODE, true) }
+
+fun CarePlan.CarePlanActivityComponent.shouldShowOnProfile(): Boolean {
+    return (this.detail.status == CarePlan.CarePlanActivityStatus.SCHEDULED || this.detail.status == CarePlan.CarePlanActivityStatus.ONHOLD).not()
+}
+
 fun CarePlan.CarePlanStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
 
 fun CarePlan.isLastTask(task: Task) =

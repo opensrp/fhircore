@@ -22,8 +22,6 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
@@ -36,7 +34,6 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -66,9 +63,12 @@ import org.smartregister.fhircore.engine.util.extension.familyName
 import org.smartregister.fhircore.engine.util.extension.givenName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class HivRegisterDao
@@ -148,6 +148,7 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
     val configuration = getApplicationConfiguration()
+val carePlan = patient.activeCarePlans().firstOrNull()
 
     return ProfileData.HivProfileData(
       logicalId = patient.logicalId,
@@ -165,23 +166,12 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
-      currentCarePlan = patient.activeCarePlans().firstOrNull(),
+      currentCarePlan = carePlan,
       healthStatus =
         patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
-      tasks =
-        patient
-          .activeTasks()
-          .sortedWith(
-            compareBy(
-              {
-                it.clinicVisitOrder(configuration.taskOrderFilterTagViaMetaCodingSystem)
-                  ?: Double.MAX_VALUE
-              },
-              // tasks with no clinicVisitOrder, would be sorted with Task#description
-              { it.description },
-            ),
-          ),
-      services = patient.activeCarePlans(),
+      tasks = carePlan?.activity?.filter {
+        it.shouldShowOnProfile()
+      }?.sortedBy { it.detail.code.text.toBigIntegerOrNull() } ?: listOf(),
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
@@ -285,7 +275,7 @@ constructor(
         subjectType = ResourceType.Patient,
       )
       .also {
-        return if (it.isNullOrEmpty().not()) {
+        return if (it.isEmpty().not()) {
           it
             .sortedByDescending { it.effectiveDateTimeType.value }
             .distinctBy { it.code.coding.last().code }
@@ -452,11 +442,4 @@ suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
 fun SharedPreferencesHelper.organisationCode() =
-  read(ResourceType.Organization.name, null)?.filter { it.isDigit() } ?: ""
-
-infix fun Patient.belongsTo(code: String) =
-  meta.tag.any {
-    it.code == code &&
-      it.system == HivRegisterDao.ORGANISATION_SYSTEM &&
-      it.display == HivRegisterDao.ORGANISATION_DISPLAY
-  }
+  read(ResourceType.Organization.name, null) ?: ""

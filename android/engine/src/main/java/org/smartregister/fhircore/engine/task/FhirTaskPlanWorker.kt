@@ -83,6 +83,14 @@ constructor(
               if (carePlan.isLastTask(task)) {
                 carePlan.status = CarePlan.CarePlanStatus.COMPLETED
                 fhirEngine.update(carePlan)
+              } else {
+                val index = carePlan.activity.indexOfFirst { activity -> activity.outcomeReference.firstOrNull()?.reference ==  it}
+                if (index != -1) {
+                  val item = carePlan.activity?.get(index)
+                  item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED
+                  carePlan.activity[index] = item
+                  fhirEngine.update(carePlan)
+                }
               }
             }
         } else if (task.hasStarted() && task.status != Task.TaskStatus.READY) {

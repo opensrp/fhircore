@@ -90,31 +90,29 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           viewChildText =
             context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
           observations = inputModel.observations,
-          carePlans = inputModel.services,
           guardians = inputModel.guardians,
           tasks =
-          // TODO: Filter out scheduled tasks
-            inputModel.currentCarePlan?.activity?.map {
-              PatientProfileRowItem(
-                id = it.outcomeReference.first().extractId(),
-                actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
-                title = "", // it.description,
-                subtitle = "", // context.getString(R.string.due_on,
-                // it.executionPeriod.start.makeItReadable()),
-                profileViewSection = PatientProfileViewSection.TASKS,
-                actionButtonIcon =
-                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
-                    Icons.Filled.Check
-                  } else Icons.Filled.Add,
-                actionIconColor =
-                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
-                    SuccessColor
-                  } else it.detail.status.retrieveColorCode(),
-                actionButtonColor = it.detail.status.retrieveColorCode(),
-                actionButtonText = it.getQuestionnaireName(),
-                subtitleStatus = it.detail.status.name,
-              )
-            } ?: listOf(),
+          inputModel.tasks.map {
+            PatientProfileRowItem(
+              id = it.outcomeReference.first().extractId(),
+              actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
+              title = "", // it.description,
+              subtitle = "", // context.getString(R.string.due_on,
+              // it.executionPeriod.start.makeItReadable()),
+              profileViewSection = PatientProfileViewSection.TASKS,
+              actionButtonIcon =
+                if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
+                  Icons.Filled.Check
+                } else Icons.Filled.Add,
+              actionIconColor =
+                if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
+                  SuccessColor
+                } else it.detail.status.retrieveColorCode(),
+              actionButtonColor = it.detail.status.retrieveColorCode(),
+              actionButtonText = it.getQuestionnaireName(),
+              subtitleStatus = it.detail.status.name,
+            )
+          },
           practitioners = inputModel.practitioners,
         )
       is ProfileData.DefaultProfileData ->

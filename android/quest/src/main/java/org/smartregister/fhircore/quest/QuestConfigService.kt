@@ -65,6 +65,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
             system = context.getString(R.string.sync_strategy_organization_system)
             display = context.getString(R.string.sync_strategy_organization_display)
           },
+        isResource = false,
       ),
       ResourceTag(
         type = SharedPreferenceKey.PRACTITIONER_ID.name,

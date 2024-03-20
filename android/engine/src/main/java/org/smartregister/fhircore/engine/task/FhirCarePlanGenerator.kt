@@ -140,7 +140,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
           this.lastModified = Date()
         }
       update(task)
-      if (task.status == Task.TaskStatus.COMPLETED) {
+      if (task.status == Task.TaskStatus.COMPLETED || task.status == Task.TaskStatus.ONHOLD) {
         val carePlans =
           search<CarePlan> { filter(CarePlan.SUBJECT, { value = task.`for`.reference }) }
             .map { it.resource }
@@ -150,7 +150,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
             val outcome = value.outcomeReference.find { x -> x.reference.contains(id) }
             if (outcome != null) {
               carePlanToUpdate = carePlan.copy()
-              value.detail.status = CarePlan.CarePlanActivityStatus.COMPLETED
+              value.detail.status = if(task.status == Task.TaskStatus.ONHOLD) CarePlan.CarePlanActivityStatus.ONHOLD else CarePlan.CarePlanActivityStatus.COMPLETED
               value.outcomeReference.first().reference = "Task/${task.id}"
               carePlanToUpdate?.activity?.set(index, value)
               break

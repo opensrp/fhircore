@@ -261,7 +261,7 @@ constructor(
       defaultRepository.create(false, *organizations.toTypedArray()).map {
         it.extractLogicalIdUuid()
       }
-    sharedPreferences.write(ResourceType.Organization.name, organizationIds)
+    sharedPreferences.write(ResourceType.Organization.name, organizationIds.firstOrNull())
 
     val locationIds =
       defaultRepository.create(false, *locations.toTypedArray()).map { it.extractLogicalIdUuid() }
