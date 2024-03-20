@@ -50,6 +50,7 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -67,7 +68,8 @@ fun GeoWidgetLauncherScreen(
     navController: NavController,
     toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
     fragmentManager: FragmentManager,
-    fragment: Fragment
+    fragment: Fragment,
+    launcherType: LauncherType
 ) {
 
     Scaffold(
@@ -88,6 +90,7 @@ fun GeoWidgetLauncherScreen(
                         onEvent(RegisterEvent.SearchRegister(searchText = searchText))
                     },
                     isFilterIconEnabled = false,
+                    launcherType = launcherType
                 ) { event ->
                     when (event) {
                         ToolbarClickEvent.Navigate ->

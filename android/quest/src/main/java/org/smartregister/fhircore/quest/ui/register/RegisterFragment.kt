@@ -172,6 +172,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 pagingItems = pagingItems,
                 navController = findNavController(),
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
+                launcherType = appMainViewModel.navigationConfiguration.launcherType
               )
             }
           }

@@ -162,7 +162,8 @@ class GeoWidgetLauncherFragment : Fragment() {
                                 toolBarHomeNavigation = args.toolBarHomeNavigation,
                                 modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
                                 fragmentManager = childFragmentManager ,
-                                fragment = fragment
+                                fragment = fragment,
+                                launcherType = appMainViewModel.navigationConfiguration.launcherType
                             )
                         }
                     }

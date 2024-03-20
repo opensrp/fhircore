@@ -46,6 +46,7 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -75,6 +76,7 @@ fun RegisterScreen(
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  launcherType: LauncherType
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
@@ -97,6 +99,7 @@ fun RegisterScreen(
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          launcherType = launcherType
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
