@@ -38,6 +38,7 @@ import com.google.android.fhir.search.search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
@@ -842,29 +843,36 @@ constructor(
         eventWorkflow.updateValues
           .filter { it.resourceType == resource.resourceType }
           .forEach { updateExpression ->
-            val updateValue =
-              getJsonContent(
-                updateExpression.value,
-              )
-            // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-            if (
-              updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
-            ) {
-              set(updateExpression.jsonPathExpression, updateValue)
-            }
-            if (
-              updateExpression.jsonPathExpression.startsWith(
-                resource.resourceType.name,
-                ignoreCase = true,
-              ) && updateExpression.value != null
-            ) {
-              set(
-                updateExpression.jsonPathExpression.replace(
+            try {
+              val updateValue =
+                getJsonContent(
+                  updateExpression.value,
+                )
+              // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+              if (
+                updateExpression.jsonPathExpression.startsWith("\$") &&
+                  updateExpression.value != null
+              ) {
+                set(updateExpression.jsonPathExpression, updateValue)
+              }
+              if (
+                updateExpression.jsonPathExpression.startsWith(
                   resource.resourceType.name,
-                  "\$",
                   ignoreCase = true,
-                ),
-                updateValue,
+                ) && updateExpression.value != null
+              ) {
+                set(
+                  updateExpression.jsonPathExpression.replace(
+                    resource.resourceType.name,
+                    "\$",
+                    ignoreCase = true,
+                  ),
+                  updateValue,
+                )
+              }
+            } catch (pathNotFoundException: PathNotFoundException) {
+              Timber.e(
+                "Error updating ${resource.resourceType.name} with ID ${resource.id} using jsonPath ${updateExpression.jsonPathExpression} and value ${updateExpression.value} ",
               )
             }
           }

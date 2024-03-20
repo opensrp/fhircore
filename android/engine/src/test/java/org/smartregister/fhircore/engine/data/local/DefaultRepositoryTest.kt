@@ -1087,6 +1087,46 @@ class DefaultRepositoryTest : RobolectricTest() {
     Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
+  @Test
+  fun testCloseResourceUpdatesRestOfTheResourcesWhenUpdatingOneResourceThrowsAnException() {
+    val carePlan = CarePlan().apply { id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53" }
+    coEvery { fhirEngine.update(any()) } just runs
+    val carePlanSlot = slot<CarePlan>()
+
+    val carePlanUpdatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "CarePlan.status",
+        value = JsonPrimitive("completed"),
+        resourceType = ResourceType.CarePlan,
+      )
+    val carePlanEventWorkflow = EventWorkflow(updateValues = listOf(carePlanUpdatedValues))
+
+    runBlocking { defaultRepository.closeResource(carePlan, carePlanEventWorkflow) }
+    coVerify { fhirEngine.update(capture(carePlanSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
+    Assert.assertNull(carePlanSlot.captured.status)
+
+    val procedure =
+      Procedure().apply {
+        id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
+        status = Procedure.ProcedureStatus.UNKNOWN
+      }
+    coEvery { fhirEngine.update(any()) } just runs
+    val procedureSlot = slot<Procedure>()
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "Procedure.status",
+        value = JsonPrimitive("stopped"),
+        resourceType = ResourceType.Procedure,
+      )
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    runBlocking { defaultRepository.closeResource(procedure, eventWorkflow) }
+    coVerify { fhirEngine.update(capture(procedureSlot)) }
+    Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", procedureSlot.captured.id)
+    Assert.assertEquals(Procedure.ProcedureStatus.STOPPED, procedureSlot.captured.status)
+  }
+
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
   @Test
   fun testCloseResourceUpdatesCorrectConditionStatusForClosePNCCondition() {
