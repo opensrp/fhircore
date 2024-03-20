@@ -63,7 +63,7 @@ fun LoaderDialog(
       onDismissRequest = { openDialog.value = true },
       properties = DialogProperties(dismissOnBackPress = true),
     ) {
-      Box(Modifier.size(240.dp, 180.dp)) {
+      Box(modifier.size(240.dp, 180.dp)) {
         Column(
           modifier = modifier.padding(8.dp),
           verticalArrangement = Arrangement.Center,
