@@ -18,7 +18,7 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
 import androidx.navigation.NavController
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.Language
@@ -33,7 +33,8 @@ sealed class AppMainEvent {
     val registersList: List<NavigationMenuConfig>?,
   ) : AppMainEvent()
 
-  data class UpdateSyncState(val state: SyncJobStatus, val lastSyncTime: String?) : AppMainEvent()
+  data class UpdateSyncState(val state: CurrentSyncJobStatus, val lastSyncTime: String?) :
+    AppMainEvent()
 
   data class TriggerWorkflow(val navController: NavController, val navMenu: NavigationMenuConfig) :
     AppMainEvent()

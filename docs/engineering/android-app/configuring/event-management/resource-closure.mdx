@@ -13,61 +13,123 @@ This is achieved by use of the `EventWorkFlow` config.
 ``` json
 
 {
- "eventWorkflows": [
-              {
-                "eventType": "RESOURCE_CLOSURE",
-                "triggerConditions": [
-                  {
-                    "eventResourceId": "carePlanToBeClosed",
-                    "matchAll": false,
-                    "conditionalFhirPathExpressions": [
-                      "condition-to-check"
-                    ]
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "eventResources": [
+        {
+          "id": "sickChildConditionToBeClosed",
+          "resource": "Condition",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "275142008"
                   }
-                ],
-                "eventResources": [
-                  {
-                    "id": "carePlanToBeClosed",
-                    "resource": "CarePlan",
-                    "configRules": [
-                      {
-                        "name": "patientId",
-                        "condition": "true",
-                        "actions": [
-                          "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
-                        ]
-                      }
-                    ],
-                    "dataQueries": [
-                      {
-                        "paramName": "instantiates-canonical",
-                        "filterCriteria": [
-                          {
-                            "dataType": "REFERENCE",
-                            "value": "PlanDefinition/planDefinition-uuid-used-to-generate-the-resources"
-                          }
-                        ]
-                      },
-                      {
-                        "paramName": "subject",
-                        "filterCriteria": [
-                          {
-                            "dataType": "REFERENCE",
-                            "computedRule": "patientId"
-                          }
-                        ]
-                      }
-                    ],
-                    "relatedResources": [
-                      {
-                        "resource": "Task",
-                        "searchParameter": "based-on"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "carePlanToBeClosed",
+          "resource": "CarePlan",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id').contains('Patient') ? fhirPath.extractValue(Patient, 'Patient.id') : 'Patient/' +  fhirPath.extractValue(Patient, 'Patient.id'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "instantiates-canonical",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "value": "PlanDefinition/dc-diabetes-screening-intervention"
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ],
+          "relatedResources": [
+            {
+              "resource": "Task",
+              "searchParameter": "based-on"
+            }
+          ]
+        }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "Task.status",
+          "value": "cancelled",
+          "resourceType": "Task"
+        },
+        {
+          "jsonPathExpression": "CarePlan.status",
+          "value": "completed",
+          "resourceType": "CarePlan"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].code",
+          "value": "370996005",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].system",
+          "value": "http://www.snomed.org/",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].display",
+          "value": "resolved",
+          "resourceType": "Condition"
+        }
+      ],
+      "resourceFilterExpressions": [
+        {
+          "conditionalFhirPathExpressions": [
+            "Task.status != 'completed'"
+          ],
+          "resourceType": "Task"
+        }
+      ]
+    }
+  ]
 }
 
 ```
@@ -107,6 +169,8 @@ eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOU
 triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes
+updateValues | Defines a list of jsonPath expressions for the fields to update as well as the values to use | yes
+resourceFilterExpressions | A list of FhirPath expressions used to filter which resources to close | no
 
 ### Trigger condition properties
 |Property | Description | Required | Default |
@@ -132,6 +196,20 @@ relatedResources | Configs that represent how to fetch related resources e.g Tas
 paramName | String representation of the resource field to search on | yes |  |
 operation | Logical SQL operation to perform i.e AND, OR | yes | AND |
 filterCriteria | Configs that represent the datatype and value for filtering data | yes |  |
+
+### UpdateValue properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+jsonPathExpression | JsonPath representation of the resource field to update | yes |  |
+value | The value to update the resource field with | yes |  |
+resourceType | The name of the resource type to be updated | yes |  |
+
+### Resource Filter Expression properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+conditionalFhirPathExpressions | Criteria to filter which resources when only a subset of the fetched resources need to be updated e.g only update tasks whose status is not completed | yes |  |
+matchAll | Determines whether all conditional FhirPath expressions should evaluate to true | no | true |
+resourceType | The name of the resource type to be updated | yes |  |
 
 
 

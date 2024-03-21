@@ -9,18 +9,18 @@ plugins {
 
 android {
   namespace = "org.smartregister.opensrp.quest.macrobenchmark"
-  compileSdk = 33
+  compileSdk = BuildConfigs.compileSdk
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
-  kotlinOptions { jvmTarget = "1.8" }
+  kotlinOptions { jvmTarget = JavaVersion.VERSION_17.toString() }
 
   defaultConfig {
-    minSdk = 24
-    targetSdk = 33
+    minSdk = BuildConfigs.minSdk
+    targetSdk = BuildConfigs.targetSdk
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR,DEBUGGABLE"

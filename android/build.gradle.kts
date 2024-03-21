@@ -58,18 +58,17 @@ subprojects {
   }
 
   configure<SpotlessExtension> {
-    val lintVersion = "0.49.0"
 
     kotlin {
       target("**/*.kt")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
     }
 
     kotlinGradle {
       target("*.gradle.kts")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
     }
 
@@ -91,7 +90,7 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.11")
+          "org.jacoco" -> useVersion(BuildConfigs.jacocoVersion)
         }
       }
     }

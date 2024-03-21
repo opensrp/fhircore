@@ -17,14 +17,12 @@
 package org.smartregister.fhircore.engine.sync
 
 import android.content.Context
-import androidx.lifecycle.asFlow
 import androidx.work.Constraints
 import androidx.work.NetworkType
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.hasKeyWithValueOfType
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.PeriodicSyncJobStatus
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
@@ -35,12 +33,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -70,9 +66,7 @@ constructor(
    */
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    Sync.oneTimeSync<AppSyncWorker>(context)
-    val uniqueWorkName = "${AppSyncWorker::class.java.name}-oneTimeSync"
-    handleSyncJobStatus(uniqueWorkName, this)
+    Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
   }
 
   /**
@@ -83,51 +77,37 @@ constructor(
   suspend fun schedulePeriodicSync(interval: Long = 15) = coroutineScope {
     Timber.i("Scheduling periodic sync...")
     Sync.periodicSync<AppSyncWorker>(
-      context = context,
-      periodicSyncConfiguration =
-        PeriodicSyncConfiguration(
-          syncConstraints =
-            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
-        ),
-    )
-    val uniqueWorkName = "${AppSyncWorker::class.java.name}-periodicSync"
-    handleSyncJobStatus(uniqueWorkName, this)
+        context = context,
+        periodicSyncConfiguration =
+          PeriodicSyncConfiguration(
+            syncConstraints =
+              Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+            repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+          ),
+      )
+      .handlePeriodicSyncJobStatus(this)
   }
 
-  // TODO This serves as a workaround to fix issue with getting SyncJobStatus.Finished
-  // TODO Refactor once https://github.com/google/android-fhir/pull/2142 is merged
-  private fun handleSyncJobStatus(uniqueWorkName: String, coroutineScope: CoroutineScope) {
-    WorkManager.getInstance(context)
-      .getWorkInfosForUniqueWorkLiveData(uniqueWorkName)
-      .asFlow()
-      .flatMapConcat { it.asFlow() }
-      .mapNotNull { it }
-      .onEach { workInfo ->
-        // PeriodSync doesn't return state. It's enqueued instead. Finish the sync as workaround.
-        if (workInfo.state == WorkInfo.State.ENQUEUED) {
-          syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-            onSyncListener.onSync(SyncJobStatus.Succeeded())
-          }
-        } else {
-          val data =
-            if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-              workInfo.outputData
-            } else workInfo.progress
-          data
-            .takeIf { it.keyValueMap.isNotEmpty() && it.hasKeyWithValueOfType<String>("StateType") }
-            ?.let {
-              val state = it.getString("StateType")!!
-              val stateData = it.getString("State")
-              val syncJobStatus =
-                Sync.gson.fromJson(stateData, Class.forName(state)) as SyncJobStatus
-              syncListenerManager.onSyncListeners.forEach { onSyncListener ->
-                onSyncListener.onSync(syncJobStatus)
-              }
-            }
+  private fun Flow<PeriodicSyncJobStatus>.handlePeriodicSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    this.onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          onSyncListener.onSync(it.currentSyncJobStatus)
         }
       }
-      .catch { throwable -> Timber.e("Encountered an error during sync:", throwable) }
+      .catch { throwable -> Timber.e("Encountered an error during periodic sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
+  }
+
+  private fun Flow<CurrentSyncJobStatus>.handleOneTimeSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    this.onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+      }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
       .launchIn(coroutineScope)
   }
