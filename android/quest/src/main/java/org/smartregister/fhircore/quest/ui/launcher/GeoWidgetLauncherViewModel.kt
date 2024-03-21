@@ -101,11 +101,6 @@ constructor(
         //through Location Selector Feature/Screen
         //todo - for now we are calling this method, once location Selector is developed, we can remove this line
         retrieveLocations()
-        sharedPreferencesHelper
-            .read(SharedPreferenceKey.SELECTED_LOCATION_ID.name, null)?.let {
-                //retrieveLocations()
-        } ?: _locationDialog.postValue("")
-
     }
 
     private fun addLocationToFlow(location: GeoWidgetLocation) {
