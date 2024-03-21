@@ -18,38 +18,23 @@ package org.smartregister.fhircore.quest.ui.launcher
 
 import android.view.View
 import android.widget.FrameLayout
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
-import org.smartregister.fhircore.quest.ui.register.RegisterEvent
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.commit
-import androidx.navigation.NavController
-import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
-import org.smartregister.fhircore.quest.R
-import org.smartregister.fhircore.quest.event.ToolbarClickEvent
-import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherFragment.Companion.GEO_WIDGET_FRAGMENT_TAG
-import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
+import androidx.navigation.NavController
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
@@ -63,11 +48,12 @@ const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestT
 fun GeoWidgetLauncherScreen(
     modifier: Modifier = Modifier,
     openDrawer: (Boolean) -> Unit,
-    onEvent: (RegisterEvent) -> Unit,
+    onEvent: (GeoWidgetEvent) -> Unit,
     navController: NavController,
     toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
     fragmentManager: FragmentManager,
-    fragment: Fragment
+    fragment: Fragment,
+    geoWidgetConfiguration: GeoWidgetConfiguration
 ) {
 
     Scaffold(
@@ -78,16 +64,17 @@ fun GeoWidgetLauncherScreen(
                 * by default isSearchBarVisible is visible
                 * */
                 TopScreenSection(
-                    title = "Map",
+                    title = geoWidgetConfiguration.topScreenSection?.screenTitle ?: "",
                     searchText = "",
                     filteredRecordsCount = 1,
-                    isSearchBarVisible = true,
-                    searchPlaceholder = "Search",
+                    isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
+                    searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
                     toolBarHomeNavigation = toolBarHomeNavigation,
                     onSearchTextChanged = { searchText ->
-                        onEvent(RegisterEvent.SearchRegister(searchText = searchText))
+                        onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
                     },
                     isFilterIconEnabled = false,
+                    topScreenSection = geoWidgetConfiguration.topScreenSection
                 ) { event ->
                     when (event) {
                         ToolbarClickEvent.Navigate ->
@@ -95,9 +82,12 @@ fun GeoWidgetLauncherScreen(
                                 ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
                                 ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
                             }
-                        ToolbarClickEvent.FilterData -> {
-                            onEvent(RegisterEvent.ResetFilterRecordsCount)
 
+                        ToolbarClickEvent.FilterData -> {}
+                        ToolbarClickEvent.Toggle -> {
+                            geoWidgetConfiguration.topScreenSection?.toggleAction?.handleClickEvent(
+                                navController = navController
+                            )
                         }
                     }
                 }
@@ -106,7 +96,11 @@ fun GeoWidgetLauncherScreen(
         }
     ) { innerPadding ->
         Box(modifier = modifier.padding(innerPadding)) {
-            FragmentContainerView(modifier = modifier, fragmentManager = fragmentManager, fragment = fragment)
+            FragmentContainerView(
+                modifier = modifier,
+                fragmentManager = fragmentManager,
+                fragment = fragment
+            )
         }
     }
 }

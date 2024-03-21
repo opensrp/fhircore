@@ -33,9 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -52,7 +50,6 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -162,7 +159,8 @@ class GeoWidgetLauncherFragment : Fragment() {
                                 toolBarHomeNavigation = args.toolBarHomeNavigation,
                                 modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
                                 fragmentManager = childFragmentManager ,
-                                fragment = fragment
+                                fragment = fragment,
+                                geoWidgetConfiguration = geoWidgetConfiguration
                             )
                         }
                     }
@@ -198,8 +196,8 @@ class GeoWidgetLauncherFragment : Fragment() {
                 requireContext().showToast("open profile")
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
-            .setLocationButtonVisibility(geoWidgetConfiguration.shouldLocationButtonShow)
-            .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.shouldPlaneSwitcherButtonShow)
+            .setLocationButtonVisibility(geoWidgetConfiguration.shouldShowLocationButton)
+            .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.shouldShowPlaneSwitcherButton)
             .build()
     }
 
