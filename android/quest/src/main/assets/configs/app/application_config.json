@@ -81,5 +81,8 @@
         }
       ]
     }
+  ],
+  "logGpsLocation": [
+    "QUESTIONNAIRE"
   ]
 }

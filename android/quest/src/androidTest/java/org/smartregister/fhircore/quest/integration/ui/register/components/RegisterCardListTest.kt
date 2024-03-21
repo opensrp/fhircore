@@ -87,7 +87,7 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(2)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
@@ -119,7 +119,7 @@ class RegisterCardListTest {
       )
     }
 
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(3)
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(4)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)

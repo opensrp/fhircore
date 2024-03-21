@@ -14,12 +14,12 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = BuildConfigs.compileSdk
 
   namespace = "org.smartregister.fhircore.geowidget"
 
   defaultConfig {
-    minSdk = 26
+    minSdk = BuildConfigs.minSdk
     buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
@@ -58,7 +58,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   packaging {
     resources.excludes.addAll(
@@ -98,7 +98,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 }
 
 tasks.withType<Test> {
