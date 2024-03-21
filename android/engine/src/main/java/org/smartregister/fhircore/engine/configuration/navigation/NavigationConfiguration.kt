@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.configuration.navigation
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
-import org.smartregister.fhircore.engine.domain.model.LauncherType
 
 @Serializable
 data class NavigationConfiguration(
@@ -28,6 +27,5 @@ data class NavigationConfiguration(
   val menuActionButton: NavigationMenuConfig? = null,
   val staticMenu: List<NavigationMenuConfig> = emptyList(),
   val clientRegisters: List<NavigationMenuConfig> = emptyList(),
-  val bottomSheetRegisters: NavigationBottomSheetRegisterConfig? = null,
-  val launcherType: LauncherType = LauncherType.REGISTER
+  val bottomSheetRegisters: NavigationBottomSheetRegisterConfig? = null
 ) : Configuration()

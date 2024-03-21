@@ -141,7 +141,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   private fun setStartDestination() {
     val navController = navHostFragment.navController
 
-    val startDestination = when (appMainViewModel.navigationConfiguration.launcherType) {
+    val startDestination = when (appMainViewModel.applicationConfiguration.launcherType) {
         LauncherType.MAP -> {
           R.id.geoWidgetLauncherFragment
         }

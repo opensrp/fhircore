@@ -175,19 +175,15 @@ constructor(
             )
         }
     }
-    //todo make our own events eg GeoWidgetEvent
-    fun onEvent(event: RegisterEvent) =
+
+    fun onEvent(event: GeoWidgetEvent) =
         when (event) {
-
-            is RegisterEvent.SearchRegister -> {
-
-            }
-            is RegisterEvent.MoveToNextPage -> {
-
-            }
-            is RegisterEvent.MoveToPreviousPage -> {
-
-            }
-            RegisterEvent.ResetFilterRecordsCount -> {}
+        is GeoWidgetEvent.SearchServicePoints -> {
+            //TODO: here the search bar query will be processed
+            ""
         }
+        GeoWidgetEvent.Toggle -> {
+
+        }
+    }
 }

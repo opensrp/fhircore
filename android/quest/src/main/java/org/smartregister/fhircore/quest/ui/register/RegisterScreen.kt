@@ -46,7 +46,6 @@ import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
-import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
@@ -75,8 +74,7 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-  launcherType: LauncherType
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
@@ -89,7 +87,7 @@ fun RegisterScreen(
        * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
-          title = registerUiState.screenTitle,
+          title = registerUiState.registerConfiguration?.topScreenSection?.screenTitle ?: registerUiState.screenTitle,
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
@@ -99,7 +97,7 @@ fun RegisterScreen(
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-          launcherType = launcherType
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -111,7 +109,11 @@ fun RegisterScreen(
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
             }
-            ToolbarClickEvent.Toggle -> {}
+            ToolbarClickEvent.Toggle -> {
+              registerUiState.registerConfiguration?.topScreenSection?.toggleAction?.handleClickEvent(
+                navController = navController
+              )
+            }
           }
         }
         // Only show counter during search

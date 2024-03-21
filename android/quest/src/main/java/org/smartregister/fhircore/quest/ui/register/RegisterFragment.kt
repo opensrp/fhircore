@@ -164,15 +164,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
             //add a check for launcherType so you can switch between Register or GeoWidgetLauncher
             Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
-                openDrawer = openDrawer,
-                onEvent = registerViewModel::onEvent,
-                registerUiState = registerViewModel.registerUiState.value,
-                searchText = registerViewModel.searchText,
-                currentPage = registerViewModel.currentPage,
-                pagingItems = pagingItems,
-                navController = findNavController(),
-                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
-                launcherType = appMainViewModel.navigationConfiguration.launcherType
+                  openDrawer = openDrawer,
+                  onEvent = registerViewModel::onEvent,
+                  registerUiState = registerViewModel.registerUiState.value,
+                  searchText = registerViewModel.searchText,
+                  currentPage = registerViewModel.currentPage,
+                  pagingItems = pagingItems,
+                  navController = findNavController(),
+                  toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation
               )
             }
           }

@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
@@ -50,7 +49,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.configuration.geowidget.TopScreenSection
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -81,7 +81,7 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
-  launcherType: LauncherType = LauncherType.REGISTER,
+  topScreenSection: TopScreenSection ?= null,
   onClick: (ToolbarClickEvent) -> Unit
 ) {
   Column(
@@ -113,7 +113,7 @@ fun TopScreenSection(
         color = Color.White,
         modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
-      if (launcherType == LauncherType.MAP) {
+      if (topScreenSection?.showToggleButton == true) {
         Icon(
           imageVector = Icons.Default.LegendToggle,
           contentDescription = FILTER,
@@ -121,7 +121,7 @@ fun TopScreenSection(
           modifier =
           modifier
             .clickable { onClick(ToolbarClickEvent.Toggle) }
-            .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+            .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
         )
       }
       if (isFilterIconEnabled) {
@@ -255,7 +255,12 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
-    launcherType = LauncherType.MAP
+    topScreenSection = TopScreenSection(
+        showToggleButton = true,
+        screenTitle = "",
+        toggleIconConfig = ImageConfig(),
+        searchBar =  null,
+        toggleAction =  null)
   )
 }
 
@@ -271,6 +276,11 @@ fun TopScreenSectionWithToggleIconPreview() {
     isFilterIconEnabled = false,
     onClick = {},
     isSearchBarVisible = true,
-    launcherType = LauncherType.MAP
+    topScreenSection = TopScreenSection(
+        showToggleButton = true,
+        screenTitle = "",
+        toggleIconConfig = ImageConfig(),
+        searchBar =  null,
+        toggleAction =  null)
   )
 }
