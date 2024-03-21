@@ -41,6 +41,7 @@ import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -90,7 +91,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
-import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -1160,12 +1160,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         type = "EDIT",
         linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
         extractedResourceUniquePropertyExpressions =
-        listOf(
-          ExtractedResourceUniquePropertyExpression(
-            ResourceType.Location,
-            "Observation.code.where(coding.code='obs1').coding.code",
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Location,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
           ),
-        ),
       )
     bundle.entry.forEach {
       val resource = it.resource
@@ -1173,23 +1173,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context.getString(
           org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
         )
-       resource.meta.tag.forEach { coding ->
-          coding.system == relatedEntityLocationCodingSystem && coding.code == relatedEntityLocationUUID
-        }     //Assert.assertNotNull(relatedEntityLocationMetaTag)
+      resource.meta.tag.filter { coding ->
+        coding.system == relatedEntityLocationCodingSystem &&
+          coding.code == relatedEntityLocationUUID
+      }
 
       val questionnaireResponse =
         QuestionnaireResponse().apply {
           id = "resourceId"
+          context
           subject = patient.asReference()
           questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
           meta.tag = resource.meta.tag
         }
-      val subjectType = ResourceType.Observation
-
 
       assertEquals(resource.meta.tag, questionnaireResponse.meta.tag)
-      assertEquals(subjectType, questionnaireConfig.resourceType)
+      assertContains(
+        questionnaireResponse.meta.tag.map { tag -> tag.code },
+        relatedEntityLocationUUID,
+      )
+      coEvery { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
     }
-
   }
 }
