@@ -74,7 +74,7 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
@@ -87,7 +87,7 @@ fun RegisterScreen(
        * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
-          title = registerUiState.screenTitle,
+          title = registerUiState.registerConfiguration?.topScreenSection?.screenTitle ?: registerUiState.screenTitle,
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
@@ -97,6 +97,7 @@ fun RegisterScreen(
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -107,6 +108,11 @@ fun RegisterScreen(
             ToolbarClickEvent.FilterData -> {
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
+            }
+            ToolbarClickEvent.Toggle -> {
+              registerUiState.registerConfiguration?.topScreenSection?.toggleAction?.handleClickEvent(
+                navController = navController
+              )
             }
           }
         }

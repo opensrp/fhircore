@@ -20,4 +20,6 @@ sealed class ToolbarClickEvent {
   object FilterData : ToolbarClickEvent()
 
   object Navigate : ToolbarClickEvent()
+
+  object Toggle : ToolbarClickEvent()
 }
