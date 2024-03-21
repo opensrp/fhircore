@@ -161,7 +161,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            //add a check for launcherType so you can switch between Register or GeoWidgetLauncher
             Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
                   openDrawer = openDrawer,

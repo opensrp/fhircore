@@ -182,8 +182,5 @@ constructor(
             //TODO: here the search bar query will be processed
             ""
         }
-        GeoWidgetEvent.Toggle -> {
-
-        }
     }
 }
