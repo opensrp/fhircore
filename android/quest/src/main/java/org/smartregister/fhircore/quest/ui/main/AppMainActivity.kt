@@ -33,7 +33,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
@@ -257,10 +257,20 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     )
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Succeeded,
-      is SyncJobStatus.Failed, -> {
+      is CurrentSyncJobStatus.Succeeded -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
+          )
+        }
+      }
+      is CurrentSyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(

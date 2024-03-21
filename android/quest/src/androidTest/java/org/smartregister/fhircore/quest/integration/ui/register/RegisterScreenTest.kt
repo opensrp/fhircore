@@ -24,6 +24,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildAt
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeUp
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
@@ -135,6 +138,49 @@ class RegisterScreenTest {
       .onNodeWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
+  }
+
+  @Test
+  fun testRegisterCardListIsScrollable() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 1,
+        progressPercentage = flowOf(0),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(REGISTER_CARD_TEST_TAG, useUnmergedTree = true)
+      .performTouchInput { swipeUp() }
+      .performTouchInput { swipeDown() }
   }
 
   @Test

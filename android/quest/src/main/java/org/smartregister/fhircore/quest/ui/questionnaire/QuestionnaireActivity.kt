@@ -350,41 +350,43 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      val questionnaireResponse = retrieveQuestionnaireResponse()
+      lifecycleScope.launch {
+        val questionnaireResponse = retrieveQuestionnaireResponse()
 
-      // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
-        finish()
-      }
-      if (questionnaireResponse != null && questionnaire != null) {
-        viewModel.run {
-          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+        // Close questionnaire if opened in read only mode or if experimental
+        if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+          finish()
+        }
+        if (questionnaireResponse != null && questionnaire != null) {
+          viewModel.run {
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          if (currentLocation != null) {
-            questionnaireResponse.contained.add(
-              ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
-            )
-          }
+            if (currentLocation != null) {
+              questionnaireResponse.contained.add(
+                ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+              )
+            }
 
-          handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
-            currentQuestionnaireResponse = questionnaireResponse,
-            questionnaireConfig = questionnaireConfig,
-            actionParameters = actionParameters,
-            context = this@QuestionnaireActivity,
-          ) { idTypes, questionnaireResponse ->
-            // Dismiss progress indicator dialog, submit result then finish activity
-            // TODO Ensure this dialog is dismissed even when an exception is encountered
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-            setResult(
-              Activity.RESULT_OK,
-              Intent().apply {
-                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
-                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
-                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
-              },
-            )
-            finish()
+            handleQuestionnaireSubmission(
+              questionnaire = questionnaire!!,
+              currentQuestionnaireResponse = questionnaireResponse,
+              questionnaireConfig = questionnaireConfig,
+              actionParameters = actionParameters,
+              context = this@QuestionnaireActivity,
+            ) { idTypes, questionnaireResponse ->
+              // Dismiss progress indicator dialog, submit result then finish activity
+              // TODO Ensure this dialog is dismissed even when an exception is encountered
+              setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+              setResult(
+                Activity.RESULT_OK,
+                Intent().apply {
+                  putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                  putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                  putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                },
+              )
+              finish()
+            }
           }
         }
       }
@@ -402,8 +404,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             .questionnaire_in_progress_alert_back_pressed_message,
         title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
         confirmButtonListener = {
-          retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-            viewModel.saveDraftQuestionnaire(questionnaireResponse)
+          lifecycleScope.launch {
+            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+            }
           }
         },
         confirmButtonText =
@@ -426,7 +430,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
+  private suspend fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
 
