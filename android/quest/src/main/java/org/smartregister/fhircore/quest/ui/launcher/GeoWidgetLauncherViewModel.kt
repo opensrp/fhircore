@@ -49,6 +49,8 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.ceil
 
+const val PAGE_SIZE = 20
+
 @HiltViewModel
 class GeoWidgetLauncherViewModel
 @Inject
@@ -72,12 +74,12 @@ constructor(
     private fun retrieveLocations() {
         viewModelScope.launch(dispatcherProvider.io()) {
             val totalResource = defaultRepository.count(Search(ResourceType.Location))
-            val pageSize = 20
-            val totalIteration = ceil(totalResource / pageSize.toDouble()).toInt()
+
+            val totalIteration = ceil(totalResource / PAGE_SIZE.toDouble()).toInt()
 
             repeat(totalIteration) { index ->
-                val startingIndex = index * pageSize
-                val search = Search(ResourceType.Location, pageSize, startingIndex)
+                val startingIndex = index * PAGE_SIZE
+                val search = Search(ResourceType.Location, PAGE_SIZE, startingIndex)
 
                 defaultRepository.search<Location>(search).forEach { location ->
                     if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
