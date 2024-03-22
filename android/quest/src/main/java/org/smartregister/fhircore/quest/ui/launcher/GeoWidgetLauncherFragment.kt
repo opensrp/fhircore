@@ -17,13 +17,7 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.fragment.app.viewModels
@@ -68,10 +62,10 @@ class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher
       .setUseGpsOnAddingLocation(false)
       .setOnAddLocationListener { geoWidgetLocation: GeoWidgetLocation ->
         if (geoWidgetLocation.position == null) return@setOnAddLocationListener
-        geoWidgetLauncherViewModel.launchQuestionnaireWithParams(
+        geoWidgetLauncherViewModel.launchQuestionnaire(
+          geoWidgetConfiguration.registrationQuestionnaire,
           geoWidgetLocation,
           activity?.tryUnwrapContext() as android.content.Context,
-          geoWidgetConfiguration.registrationQuestionnaire,
         )
       }
       .setOnCancelAddingLocationListener {

@@ -109,10 +109,10 @@ constructor(
         addLocationToFlow(geoWidgetLocation)
     }
 
-    fun launchQuestionnaireWithParams(
+    fun launchQuestionnaire(
+        questionnaireConfig: QuestionnaireConfig,
         geoWidgetLocation: GeoWidgetLocation,
         context: Context,
-        questionnaireConfig: QuestionnaireConfig,
     ) {
         val params = addMatchingCoordinatesToActionParameters(
             geoWidgetLocation.position?.latitude,
