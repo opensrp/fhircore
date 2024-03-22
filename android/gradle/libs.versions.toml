@@ -58,7 +58,7 @@ okhttp-logging-interceptor = "4.11.0"
 orchestrator = "1.4.2"
 p2p-lib = "0.6.9-SNAPSHOT"
 androidx-paging = "3.2.0"
-playServicesLocation = "21.2.0"
+playServicesLocation = "19.0.1"
 preference-ktx = "1.2.1"
 prettytime = "5.0.2.Final"
 retrofit = "2.9.0"
@@ -82,7 +82,6 @@ accompanist = "0.23.1"
 jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
 playServicesTasks = "18.1.0"
-google-playServicesLocation = "21.1.0"
 uiautomator = "2.3.0"
 rules = "1.5.0"
 
@@ -197,7 +196,6 @@ work-testing = { group = "androidx.work", name = "work-testing", version.ref = "
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
 play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
-gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-playServicesLocation" }
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
 
