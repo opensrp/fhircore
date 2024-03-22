@@ -75,6 +75,7 @@ constructor(
                               location.position.latitude.toDouble(),
                               location.position.longitude.toDouble()
                           ),
+                          // TODO: add logic to decide the color of location
                       )
                       addLocationToFlow(geoWidgetLocation)
                   }
@@ -96,14 +97,6 @@ constructor(
         val locationId = extractedResourceIds.firstOrNull { it.resourceType == ResourceType.Location.name } ?: return
         val location = getLocationFromDb(locationId.valueAsString) ?: return
 
-        val contextResourceIds = extractedResourceIds.filterNot { it.resourceType == ResourceType.Location.name }
-        val contexts = contextResourceIds.map {
-            org.smartregister.fhircore.geowidget.model.Context(
-                id = it.valueAsString.extractLogicalIdUuid(),
-                type = it.resourceType,
-            )
-        }
-
         val geoWidgetLocation = GeoWidgetLocation(
             id = location.id,
             name = location.name,
@@ -111,7 +104,7 @@ constructor(
                 latitude = location.position.latitude.toDouble(),
                 longitude = location.position.longitude.toDouble(),
             ),
-            contexts = contexts,
+            // TODO: add initial color for location
         )
         addLocationToFlow(geoWidgetLocation)
     }

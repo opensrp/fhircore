@@ -16,21 +16,14 @@
 
 package org.smartregister.fhircore.geowidget.model
 
-import org.json.JSONObject
-
 data class GeoWidgetLocation(
   val id: String = "",
   val name: String = "",
   val position: Position? = null,
-  val contexts: List<Context> = listOf(),
+  val color: String = ""
 )
 
 data class Position(
   val latitude: Double = 0.0,
   val longitude: Double = 0.0,
-)
-
-data class Context(
-  val id: String = "", // the id of 'type'
-  val type: String = "", // Group, Patient, Healthcare Service
 )
