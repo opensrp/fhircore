@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
@@ -36,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.LegendToggle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -49,6 +49,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.geowidget.TopScreenSection
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -67,30 +69,32 @@ const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
-
+const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 @Composable
 fun TopScreenSection(
   modifier: Modifier = Modifier,
   title: String,
+  isSearchBarVisible: Boolean,
   searchText: String,
   filteredRecordsCount: Long? = null,
   searchPlaceholder: String? = null,
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
-  onClick: (ToolbarClickEvent) -> Unit,
+  topScreenSection: TopScreenSection ?= null,
+  onClick: (ToolbarClickEvent) -> Unit
 ) {
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {
     Row(
       modifier =
-        modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 16.dp)
-          .testTag(
-            TITLE_ROW_TEST_TAG,
-          ),
+      modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 16.dp)
+        .testTag(
+          TITLE_ROW_TEST_TAG,
+        ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(
@@ -101,7 +105,7 @@ fun TopScreenSection(
         contentDescription = DRAWER_MENU,
         tint = Color.White,
         modifier =
-          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
+        modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
       )
       Text(
         text = title,
@@ -109,6 +113,17 @@ fun TopScreenSection(
         color = Color.White,
         modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
+      if (topScreenSection?.showToggleButton == true) {
+        Icon(
+          imageVector = Icons.Default.LegendToggle,
+          contentDescription = FILTER,
+          tint = Color.White,
+          modifier =
+          modifier
+            .clickable { onClick(ToolbarClickEvent.Toggle) }
+            .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+        )
+      }
       if (isFilterIconEnabled) {
         BadgedBox(
           modifier = Modifier.padding(end = 8.dp),
@@ -129,14 +144,14 @@ fun TopScreenSection(
             contentDescription = FILTER,
             tint = Color.White,
             modifier =
-              modifier
-                .clickable { onClick(ToolbarClickEvent.FilterData) }
-                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+            modifier
+              .clickable { onClick(ToolbarClickEvent.FilterData) }
+              .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
           )
         }
       }
     }
-
+    if (isSearchBarVisible) {
     OutlinedTextField(
       colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
       value = searchText,
@@ -151,12 +166,12 @@ fun TopScreenSection(
         )
       },
       modifier =
-        modifier
-          .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(size = 10.dp))
-          .background(Color.White)
-          .testTag(OUTLINED_BOX_TEST_TAG),
+      modifier
+        .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+        .fillMaxWidth()
+        .clip(RoundedCornerShape(size = 10.dp))
+        .background(Color.White)
+        .testTag(OUTLINED_BOX_TEST_TAG),
       leadingIcon = {
         Icon(
           imageVector = Icons.Filled.Search,
@@ -181,6 +196,7 @@ fun TopScreenSection(
       },
     )
   }
+  }
 }
 
 @PreviewWithBackgroundExcludeGenerated
@@ -194,6 +210,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
+    isSearchBarVisible = true
   )
 }
 
@@ -208,6 +225,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
+    isSearchBarVisible = true
   )
 }
 
@@ -221,5 +239,48 @@ fun TopScreenSectionNoFilterIconPreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
     onClick = {},
+    isSearchBarVisible = true
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    topScreenSection = TopScreenSection(
+        showToggleButton = true,
+        screenTitle = "",
+        toggleIconConfig = ImageConfig(),
+        searchBar =  null,
+        toggleAction =  null)
+  )
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+fun TopScreenSectionWithToggleIconPreview() {
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    topScreenSection = TopScreenSection(
+        showToggleButton = true,
+        screenTitle = "",
+        toggleIconConfig = ImageConfig(),
+        searchBar =  null,
+        toggleAction =  null)
   )
 }

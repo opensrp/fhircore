@@ -21,14 +21,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -40,239 +39,293 @@ import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
 import dagger.hilt.android.AndroidEntryPoint
 import io.ona.kujaku.callbacks.AddPointCallback
+import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
+import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.util.LinkedList
-import javax.inject.Inject
-import org.hl7.fhir.r4.model.Location
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.smartregister.fhircore.engine.configuration.ConfigType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import org.smartregister.fhircore.geowidget.util.extensions.coordinates
-import org.smartregister.fhircore.geowidget.util.extensions.generateLocation
+import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
+import org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer
+import org.smartregister.fhircore.geowidget.model.Context
+import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.util.extensions.position
 import timber.log.Timber
+import java.util.LinkedList
+
 
 @AndroidEntryPoint
-open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
-  @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
-  val geoWidgetActivityArgs by navArgs<GeoWidgetFragmentArgs>()
-  val geoWidgetViewModel by activityViewModels<GeoWidgetViewModel>()
-  lateinit var kujakuMapView: KujakuMapView
-  var geoJsonSource: GeoJsonSource? = null
-  var featureCollection: FeatureCollection? = null
+class GeoWidgetFragment : Fragment() {
+    private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
+    internal var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    internal var onCancelAddingLocationCallback: () -> Unit = {}
+    internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    internal var useGpsOnAddingLocation: Boolean = false
+    internal var mapLayers : List<MapLayer> = ArrayList()
+    internal var shouldLocationButtonShow : Boolean = true
+    internal var shouldPlaneSwitcherButtonShow : Boolean = true
 
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?,
-  ): View? {
-    Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    geoWidgetConfiguration = geoWidgetConfiguration()
+    private lateinit var mapView: KujakuMapView
+    private var geoJsonSource: GeoJsonSource? = null
+    private var featureCollection: FeatureCollection? = null
 
-    return setupViews()
-  }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
+        return setupViews()
+    }
 
-  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      geoWidgetActivityArgs.configId,
-    )
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setLocationCollector()
+    }
 
-  /** Create the fragment views. Add the toolbar and KujakuMapView to a LinearLayout */
-  private fun setupViews(): LinearLayout {
-    val layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 168)
+    private fun setLocationCollector() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            geoWidgetViewModel.featuresFlow
+                .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+                .collect { features ->
+                    val featureCollection = FeatureCollection.fromFeatures(features.toList())
+                    this@GeoWidgetFragment.featureCollection = featureCollection
+                    if (geoJsonSource != null && featureCollection != null) {
+                        geoJsonSource!!.setGeoJson(featureCollection)
+                        zoomToLocationsOnMap(featureCollection)
+                    }
+                }
+        }
+    }
 
-    val toolbar =
-      Toolbar(requireContext()).apply {
-        popupTheme = org.smartregister.fhircore.engine.R.style.AppTheme
-        visibility = View.VISIBLE
-        navigationIcon =
-          ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
-        setLayoutParams(layoutParams)
-        setBackgroundColor(
-          ContextCompat.getColor(
-            requireContext(),
-            org.smartregister.fhircore.engine.R.color.colorPrimary,
-          ),
+    private fun setupViews(): LinearLayout {
+
+        mapView = setUpMapView()
+
+        return LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+
+            addView(mapView)
+        }
+    }
+
+    private fun setUpMapView(): KujakuMapView {
+        return KujakuMapView(requireActivity()).apply {
+            id = R.id.kujaku_widget
+            val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
+            getMapAsync { mapboxMap ->
+                mapboxMap.setStyle(builder) { style ->
+                    geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
+                    addMapStyle(style)
+                    if (geoJsonSource != null && featureCollection != null) {
+                        geoJsonSource!!.setGeoJson(featureCollection)
+                    }
+                }
+            }
+
+            setOnAddLocationListener(this)
+            setOnClickLocationListener(this)
+        }
+    }
+
+    private fun KujakuMapView.addMapStyle(style: Style) {
+        val baseLayerSwitcherPlugin = BaseLayerSwitcherPlugin(this, style)
+
+        baseLayerSwitcherPlugin.apply {
+            mapLayers.forEach {
+                when (it) {
+                    is MapLayer.SatelliteLayer -> {
+                        addBaseLayer(MapBoxSatelliteLayer(),it.isDefault)
+                    }
+
+                    is MapLayer.StreetLayer -> {
+                        addBaseLayer(StreetsBaseLayer(requireContext()),it.isDefault)
+                    }
+
+                    is MapLayer.StreetSatelliteLayer -> {
+                        addBaseLayer(StreetSatelliteLayer(requireContext()),it.isDefault)
+                    }
+                }
+            }
+
+        }
+
+        if (shouldLocationButtonShow) {
+            showCurrentLocationBtn(true)
+        }
+        if (shouldPlaneSwitcherButtonShow) {
+            baseLayerSwitcherPlugin.show()
+        }
+    }
+
+    private fun setOnClickLocationListener(mapView: KujakuMapView) {
+        mapView.setOnFeatureClickListener(
+            { featuresList ->
+                val feature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
+                if (feature.geometry() !is Point) {
+                    Timber.w("Only feature geometry of type Point is supported!")
+                    return@setOnFeatureClickListener
+                }
+
+                val point = (feature.geometry() as Point)
+                val geoWidgetLocation = GeoWidgetLocation(
+                    id = feature.getStringProperty("id") ?: "",
+                    name = feature.getStringProperty("name") ?: "",
+                    position = Position(
+                        latitude = point.latitude(),
+                        longitude = point.longitude()
+                    ),
+                    contexts = listOf(
+                        Context(
+                            id = feature.getStringProperty("id") ?: "",
+                            type = feature.getStringProperty("type") ?: "",
+                        )
+                    )
+                )
+
+                onClickLocationCallback(geoWidgetLocation)
+            },
+            "quest-data-points",
         )
-        setNavigationOnClickListener { findNavController().popBackStack() }
-      }
-    kujakuMapView =
-      KujakuMapView(requireActivity()).apply {
-        id = R.id.kujaku_widget
-        getMapAsync { mapboxMap ->
-          Timber.i("Get Map async finished")
-          val builder = Style.Builder().fromUri("asset://fhircore_style.json")
-
-          mapboxMap.setStyle(builder) { style ->
-            Timber.i("Finished setting the style")
-            renderResourcesOnMap(style)
-          }
-        }
-      }
-    return LinearLayout(requireContext()).apply {
-      orientation = LinearLayout.VERTICAL
-      addView(toolbar)
-      addView(kujakuMapView)
     }
-  }
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    super.onViewCreated(view, savedInstanceState)
-    setFeatureClickListener()
-    enableFamilyRegistration()
-  }
+    private fun setOnAddLocationListener(mapView: KujakuMapView) {
+        mapView.addPoint(
+            useGpsOnAddingLocation,
+            object : AddPointCallback {
 
-  fun renderResourcesOnMap(style: Style) {
-    geoJsonSource = style.getSourceAs("quest-data-set")
+                override fun onPointAdd(featureJSONObject: JSONObject?) {
+                    featureJSONObject ?: return
+                    val position = featureJSONObject.position() ?: return
+                    val geoWidgetLocation = GeoWidgetLocation(position = position)
+                    onAddLocationCallback(geoWidgetLocation)
+                }
 
-    geoJsonSource?.also { source ->
-      featureCollection?.also { collection ->
-        Timber.i("Setting the feature collection")
-        source.setGeoJson(collection)
-
-        zoomToPointsOnMap(featureCollection)
-      }
+                override fun onCancel() {
+                    onCancelAddingLocationCallback
+                }
+            },
+        )
     }
-  }
 
-  fun enableFamilyRegistration() {
-    kujakuMapView.addPoint(
-      true,
-      object : AddPointCallback {
+    private fun zoomToLocationsOnMap(featureCollection: FeatureCollection?) {
+        featureCollection ?: return
 
-        override fun onPointAdd(featureJSONObject: JSONObject?) {
-          // Open the family registration with the coordinates
-          featureJSONObject ?: return
-          val coordinates = featureJSONObject.coordinates() ?: return
-
-          val geoWidgetActivity = requireContext()
-          Toast.makeText(
-              geoWidgetActivity,
-              getString(org.smartregister.fhircore.engine.R.string.please_wait),
-              Toast.LENGTH_LONG,
-            )
-            .show()
-
-          val location: Location = generateLocation(featureJSONObject, coordinates)
-
-          geoWidgetViewModel.saveLocation(location).observe(viewLifecycleOwner) { saveLocation ->
-            if (saveLocation) {
-              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.RegisterClient(
-                  location.idElement.value,
-                  geoWidgetConfiguration.registrationQuestionnaire,
-                ),
-              )
+        val locationPoint = LinkedList<Point>()
+        featureCollection.features()?.forEach { feature ->
+            val geometry = feature.geometry()
+            if (geometry is Point) {
+                locationPoint.add(geometry)
             }
-          }
         }
 
-        override fun onCancel() {}
-      },
-    )
-  }
+        if ((featureCollection.features()?.size ?: 0) == 0) return
 
-  fun setFeatureClickListener() {
-    kujakuMapView.setOnFeatureClickListener(
-      { featuresList ->
-        featuresList
-          .firstOrNull { it.hasProperty("family-id") }
-          ?.let {
-            it.getStringProperty("family-id")?.also { familyId ->
-              geoWidgetViewModel.geoWidgetEventLiveData.postValue(
-                GeoWidgetEvent.OpenProfile(familyId, geoWidgetConfiguration),
-              )
-            }
-          }
-      },
-      "quest-data-points",
-    )
-  }
+        val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(locationPoint))
+        val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
+        val bounds = LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0])
+        val finalCameraPosition = CameraUpdateFactory.newLatLngBounds(bounds, 50)
 
-  override fun onChanged(value: FeatureCollection) {
-    Timber.e("Feature collection loaded")
-    this.featureCollection = value
-
-    geoJsonSource?.also { source ->
-      featureCollection?.also { collection ->
-        source.setGeoJson(collection)
-        zoomToPointsOnMap(featureCollection)
-      }
-    }
-  }
-
-  fun zoomToPointsOnMap(featureCollection: FeatureCollection?) {
-    featureCollection ?: return
-
-    val points = LinkedList<Point>()
-
-    featureCollection.features()?.forEach { feature ->
-      val geometry = feature.geometry()
-
-      if (geometry is Point) {
-        points.add(geometry)
-      }
+        mapView.getMapAsync { mapboxMap -> mapboxMap.easeCamera(finalCameraPosition) }
     }
 
-    if ((featureCollection.features()?.size ?: 0) == 0) {
-      return
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
     }
 
-    val bbox = TurfMeasurement.bbox(MultiPoint.fromLngLats(points))
-    val paddedBbox = CoordinateUtils.getPaddedBbox(bbox, 1000.0)
-
-    kujakuMapView.getMapAsync { mapboxMap ->
-      mapboxMap.easeCamera(
-        CameraUpdateFactory.newLatLngBounds(
-          LatLngBounds.from(paddedBbox[3], paddedBbox[2], paddedBbox[1], paddedBbox[0]),
-          50,
-        ),
-      )
+    override fun onResume() {
+        super.onResume()
+        mapView.onResume()
     }
-  }
 
-  override fun onStart() {
-    super.onStart()
-    kujakuMapView.onStart()
-  }
+    override fun onPause() {
+        super.onPause()
+        mapView.onPause()
+    }
 
-  override fun onResume() {
-    super.onResume()
-    kujakuMapView.onResume()
-    // Display the groups
-    geoWidgetViewModel
-      .getFamiliesFeatureCollectionStream(requireContext())
-      .observe(viewLifecycleOwner, this)
-  }
+    override fun onStop() {
+        super.onStop()
+        mapView.onStop()
+    }
 
-  override fun onPause() {
-    super.onPause()
-    kujakuMapView.onPause()
-  }
+    override fun onDestroy() {
+        super.onDestroy()
+        mapView.onDestroy()
+    }
 
-  override fun onStop() {
-    super.onStop()
-    kujakuMapView.onStop()
-  }
+    override fun onLowMemory() {
+        super.onLowMemory()
+        mapView.onLowMemory()
+    }
 
-  override fun onDestroy() {
-    super.onDestroy()
-    kujakuMapView.onDestroy()
-  }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        mapView.onSaveInstanceState(outState)
+    }
 
-  override fun onLowMemory() {
-    super.onLowMemory()
-    kujakuMapView.onLowMemory()
-  }
+    fun addLocationToMap(location: GeoWidgetLocation) {
+        geoWidgetViewModel.addLocationToMap(location)
+    }
 
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    kujakuMapView.onSaveInstanceState(outState)
-  }
+    fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+        geoWidgetViewModel.addLocationsToMap(locations)
+    }
+
+    companion object {
+        fun builder() = Builder()
+    }
+}
+
+class Builder {
+
+    private var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    private var onCancelAddingLocationCallback: () -> Unit = {}
+    private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    private var useGpsOnAddingLocation: Boolean = false
+    private var mapLayers : List<MapLayer> = ArrayList()
+    private var shouldLocationButtonShow : Boolean = true
+    private var shouldPlaneSwitcherButtonShow : Boolean = true
+    fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+        this.onAddLocationCallback = onAddLocationCallback
+    }
+
+    fun setOnCancelAddingLocationListener(onCancelAddingLocationCallback: () -> Unit) = apply {
+        this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
+    }
+
+    fun setOnClickLocationListener(onClickLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+        this.onClickLocationCallback = onClickLocationCallback
+    }
+
+    fun setUseGpsOnAddingLocation(value: Boolean) = apply {
+        this.useGpsOnAddingLocation = value
+    }
+
+    fun setMapLayers(list : List<MapLayer>) = apply {
+        this.mapLayers = list
+    }
+
+    fun setLocationButtonVisibility(show : Boolean) = apply {
+        this.shouldLocationButtonShow = show
+    }
+
+    fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
+        this.shouldPlaneSwitcherButtonShow = show
+    }
+
+    fun build(): GeoWidgetFragment {
+        return GeoWidgetFragment().apply {
+            this.onAddLocationCallback = this@Builder.onAddLocationCallback
+            this.onCancelAddingLocationCallback = this@Builder.onCancelAddingLocationCallback
+            this.onClickLocationCallback = this@Builder.onClickLocationCallback
+            this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
+            this.mapLayers = this@Builder.mapLayers
+            this.shouldLocationButtonShow = this@Builder.shouldLocationButtonShow
+            this.shouldPlaneSwitcherButtonShow = this@Builder.shouldPlaneSwitcherButtonShow
+        }
+    }
 }
