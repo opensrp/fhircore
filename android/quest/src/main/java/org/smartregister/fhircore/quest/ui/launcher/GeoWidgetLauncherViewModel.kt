@@ -114,30 +114,44 @@ constructor(
         context: Context,
         questionnaireConfig: QuestionnaireConfig,
     ) {
-        val latitudeParam =
-            ActionParameter(
-                key = "locationLatitude",
-                paramType = ActionParameterType.PREPOPULATE,
-                dataType = Enumerations.DataType.STRING,
-                resourceType = ResourceType.Location,
-                value = geoWidgetLocation.position?.latitude.toString(),
-                linkId = "location-latitude",
-            )
-        val longitudeParam =
-            ActionParameter(
-                key = "locationLongitude",
-                paramType = ActionParameterType.PREPOPULATE,
-                dataType = Enumerations.DataType.STRING,
-                resourceType = ResourceType.Location,
-                value = geoWidgetLocation.position?.longitude.toString(),
-                linkId = "location-longitude",
-            )
+        val params = addMatchingCoordinatesToActionParameters(
+            geoWidgetLocation.position?.latitude,
+            geoWidgetLocation.position?.longitude,
+            questionnaireConfig.extraParams
+        )
         if (context is QuestionnaireHandler) {
             context.launchQuestionnaire(
                 context = context,
                 questionnaireConfig = questionnaireConfig,
-                actionParams = listOf(latitudeParam, longitudeParam),
+                actionParams = params,
             )
         }
+    }
+
+    /** Adds coordinates into the correct action parameter as [ActionParameter.value] if the [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. **/
+    private fun addMatchingCoordinatesToActionParameters(
+        latitude: Double?,
+        longitude: Double?,
+        params: List<ActionParameter>?
+    ): List<ActionParameter> {
+        if (latitude == null || longitude == null) {
+            throw IllegalArgumentException("Latitude or Longitude must not be null")
+        }
+        params ?: return emptyList()
+        return params
+            .filter {
+                it.paramType == ActionParameterType.PREPOPULATE && it.dataType == Enumerations.DataType.STRING
+            }.map {
+                return@map when(it.key) {
+                    KEY_LATITUDE -> it.copy(value = latitude.toString())
+                    KEY_LONGITUDE -> it.copy(value = longitude.toString())
+                    else -> it
+                }
+            }
+    }
+
+    private companion object {
+        const val KEY_LATITUDE = "positionLatitude"
+        const val KEY_LONGITUDE = "positionLongitude"
     }
 }
