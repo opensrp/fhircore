@@ -52,21 +52,12 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 class GeoWidgetLauncherFragment : Fragment(R.layout.fragment_geo_widget_launcher) {
   @Inject lateinit var eventBus: EventBus
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    geoWidgetConfiguration = geoWidgetConfiguration()
+  private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.GeoWidget, args.geoWidgetId, emptyMap())
   }
-
-  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      args.geoWidgetId,
-    )
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
