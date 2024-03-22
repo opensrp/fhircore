@@ -582,9 +582,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${
-                        openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }
-                    }/${this.referenceValue()}"
+          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
   fun writeToFile(resource: Resource): File {
