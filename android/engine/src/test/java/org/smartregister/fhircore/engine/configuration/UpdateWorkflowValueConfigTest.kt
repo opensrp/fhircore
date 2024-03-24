@@ -20,6 +20,7 @@ import android.os.Parcel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,6 +35,7 @@ class UpdateWorkflowValueConfigTest {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "$.example",
         value = Json.decodeFromString("{ \"key\": \"value\" }"),
+        resourceType = ResourceType.Task,
       )
     val parcel = Parcel.obtain()
     config.writeToParcel(parcel, config.describeContents())
@@ -49,6 +51,7 @@ class UpdateWorkflowValueConfigTest {
       UpdateWorkflowValueConfig(
         jsonPathExpression = "$.example",
         value = Json.decodeFromString("{ \"key\": \"value\" }"),
+        resourceType = ResourceType.Task,
       )
     val parcel = Parcel.obtain()
     config.writeToParcel(parcel, config.describeContents())
@@ -56,5 +59,6 @@ class UpdateWorkflowValueConfigTest {
     val createdConfig = UpdateWorkflowValueConfig.CREATOR.createFromParcel(parcel)
     assertEquals("$.example", createdConfig.jsonPathExpression)
     assertEquals(Json.decodeFromString<JsonElement>("{ \"key\": \"value\" }"), createdConfig.value)
+    assertEquals(ResourceType.Task, createdConfig.resourceType)
   }
 }
