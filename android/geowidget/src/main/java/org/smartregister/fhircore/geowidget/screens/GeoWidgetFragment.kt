@@ -49,7 +49,6 @@ import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
 import org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer
-import org.smartregister.fhircore.geowidget.model.Context
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
 import org.smartregister.fhircore.geowidget.util.extensions.position
@@ -173,12 +172,6 @@ class GeoWidgetFragment : Fragment() {
                         latitude = point.latitude(),
                         longitude = point.longitude()
                     ),
-                    contexts = listOf(
-                        Context(
-                            id = feature.getStringProperty("id") ?: "",
-                            type = feature.getStringProperty("type") ?: "",
-                        )
-                    )
                 )
 
                 onClickLocationCallback(geoWidgetLocation)

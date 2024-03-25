@@ -37,16 +37,9 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
   val featuresFlow: StateFlow<Set<Feature>> = _featuresFlow
 
   fun addLocationToMap(location: GeoWidgetLocation) {
-    val contexts = location.contexts.map { context ->
-      JSONObject().apply {
-        put("id", context.id)
-        put("type", context.type)
-      }
-    }
     val properties = JSONObject().apply {
       put("id", location.id)
       put("name", location.name)
-      put("contexts", JSONArray(contexts))
     }
 
     val jsonFeature =
