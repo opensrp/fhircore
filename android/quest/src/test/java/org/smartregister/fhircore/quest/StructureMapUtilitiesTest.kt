@@ -254,7 +254,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val structureMap =
-      structureMapUtilities.parse(patientRegistrationStructureMap, "Patient Registration")
+      structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
 
