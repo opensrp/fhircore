@@ -110,6 +110,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 mainNavController = findNavController(),
                 lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
                 showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+                dataMigrationVersion = userSettingViewModel.retrieveDataMigrationVersion()
               )
             }
           }

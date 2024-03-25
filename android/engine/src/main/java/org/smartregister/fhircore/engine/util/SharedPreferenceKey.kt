@@ -32,4 +32,5 @@ enum class SharedPreferenceKey {
   USER_INFO,
   CARE_TEAM,
   ORGANIZATION,
+  DATA_MIGRATION
 }

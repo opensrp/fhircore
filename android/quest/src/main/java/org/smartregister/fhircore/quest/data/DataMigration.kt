@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.filterByFhirPathExpression
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -148,6 +149,7 @@ constructor(
         ),
       )
     }
+    defaultRepository.sharedPreferencesHelper.write(SharedPreferenceKey.DATA_MIGRATION.name, previousVersion)
     val maxVersion = migrationConfigs?.maxOfOrNull { it.version } ?: previousVersion
     migrationConfigs?.forEach { migrationConfig ->
       try {
@@ -220,6 +222,7 @@ constructor(
       }
     }
     preferenceDataStore.write(PreferenceDataStore.MIGRATION_VERSION, maxVersion)
+    defaultRepository.sharedPreferencesHelper.write(SharedPreferenceKey.DATA_MIGRATION.name, maxVersion)
     withContext(dispatcherProvider.main()) {
       context.showToast(
         context.getString(
