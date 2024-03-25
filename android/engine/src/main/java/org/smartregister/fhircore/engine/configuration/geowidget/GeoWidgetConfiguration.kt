@@ -33,7 +33,7 @@ data class GeoWidgetConfiguration(
   val profileId: String,
   val topScreenSection: TopScreenSection? = null,
   val registrationQuestionnaire: QuestionnaireConfig,
-  val mapLayers: List<MapLayer> = arrayListOf(MapLayer.StreetLayer(true)),
+  val mapLayers : List<MapLayer> = arrayListOf(MapLayer.StreetLayer(true), MapLayer.StreetSatelliteLayer(false), MapLayer.SatelliteLayer(false)),
   val shouldShowLocationButton: Boolean = false,
   val shouldShowPlaneSwitcherButton: Boolean = false,
   val shouldShowAddLocationButton: Boolean = false,

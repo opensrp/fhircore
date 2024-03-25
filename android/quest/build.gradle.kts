@@ -269,6 +269,13 @@ android {
       manifestPlaceholders["appLabel"] = "ZEIR"
     }
 
+    create("gizEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".gizeir"
+      versionNameSuffix = "-gizeir"
+      manifestPlaceholders["appLabel"] = "GIZ EIR"
+    }
+
     create("engage") {
       dimension = "apps"
       applicationIdSuffix = ".engage"
