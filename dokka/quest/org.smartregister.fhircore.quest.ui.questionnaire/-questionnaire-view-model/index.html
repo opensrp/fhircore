@@ -1,0 +1,532 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>QuestionnaireViewModel</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../index.html">
+                            OpenSRP
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":quest:dokkaHtmlPartial/zeirRelease">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="quest::org.smartregister.fhircore.quest.ui.questionnaire/QuestionnaireViewModel///PointingToDeclaration//-288241585">
+  <div class="breadcrumbs"><a href="../../index.html">quest</a><span class="delimiter">/</span><a href="../index.html">org.smartregister.fhircore.quest.ui.questionnaire</a><span class="delimiter">/</span><span class="current">QuestionnaireViewModel</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Questionnaire</span><wbr><span>View</span><wbr><span><span>Model</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">QuestionnaireViewModel</a>&nbsp;<span><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>defaultRepository<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.data.local/-default-repository/index.html">DefaultRepository</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dispatcherProvider<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fhirCarePlanGenerator<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.task/-fhir-care-plan-generator/index.html">FhirCarePlanGenerator</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resourceDataRulesExecutor<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.rulesengine/-resource-data-rules-executor/index.html">ResourceDataRulesExecutor</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>transformSupportServices<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.helper/-transform-support-services/index.html">TransformSupportServices</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sharedPreferencesHelper<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fhirOperator<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.workflow/FhirOperator///PointingToDeclaration/">FhirOperator</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fhirPathDataExtractor<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.fhirpath/-fhir-path-data-extractor/index.html">FhirPathDataExtractor</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>configurationRegistry<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/ViewModel.html">ViewModel</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1101556495%2FConstructors%2F-288241585" anchor-label="QuestionnaireViewModel" id="-1101556495%2FConstructors%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-questionnaire-view-model.html"><span>Questionnaire</span><wbr><span>View</span><wbr><span><span>Model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1101556495%2FConstructors%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultRepository<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.data.local/-default-repository/index.html">DefaultRepository</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a><span class="token punctuation">, </span></span><span class="parameter ">fhirCarePlanGenerator<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.task/-fhir-care-plan-generator/index.html">FhirCarePlanGenerator</a><span class="token punctuation">, </span></span><span class="parameter ">resourceDataRulesExecutor<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.rulesengine/-resource-data-rules-executor/index.html">ResourceDataRulesExecutor</a><span class="token punctuation">, </span></span><span class="parameter ">transformSupportServices<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.helper/-transform-support-services/index.html">TransformSupportServices</a><span class="token punctuation">, </span></span><span class="parameter ">sharedPreferencesHelper<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter ">fhirOperator<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.workflow/FhirOperator///PointingToDeclaration/">FhirOperator</span><span class="token punctuation">, </span></span><span class="parameter ">fhirPathDataExtractor<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.fhirpath/-fhir-path-data-extractor/index.html">FhirPathDataExtractor</a><span class="token punctuation">, </span></span><span class="parameter ">configurationRegistry<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="1002296112%2FClasslikes%2F-288241585" anchor-label="Companion" id="1002296112%2FClasslikes%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1002296112%2FClasslikes%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="1861716299%2FProperties%2F-288241585" anchor-label="applicationConfiguration" id="1861716299%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="application-configuration.html"><span>application</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1861716299%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="application-configuration.html">applicationConfiguration</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration.app/-application-configuration/index.html">ApplicationConfiguration</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-414859274%2FProperties%2F-288241585" anchor-label="configurationRegistry" id="-414859274%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configuration-registry.html"><span>configuration</span><wbr><span><span>Registry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-414859274%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="configuration-registry.html">configurationRegistry</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-447781922%2FProperties%2F-288241585" anchor-label="defaultRepository" id="-447781922%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="default-repository.html"><span>default</span><wbr><span><span>Repository</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-447781922%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="default-repository.html">defaultRepository</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.data.local/-default-repository/index.html">DefaultRepository</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="410839129%2FProperties%2F-288241585" anchor-label="dispatcherProvider" id="410839129%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="dispatcher-provider.html"><span>dispatcher</span><wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="410839129%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="dispatcher-provider.html">dispatcherProvider</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="446410683%2FProperties%2F-288241585" anchor-label="fhirCarePlanGenerator" id="446410683%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-care-plan-generator.html"><span>fhir</span><wbr><span>Care</span><wbr><span>Plan</span><wbr><span><span>Generator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="446410683%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-care-plan-generator.html">fhirCarePlanGenerator</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.task/-fhir-care-plan-generator/index.html">FhirCarePlanGenerator</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="915097026%2FProperties%2F-288241585" anchor-label="fhirOperator" id="915097026%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-operator.html"><span>fhir</span><wbr><span><span>Operator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="915097026%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-operator.html">fhirOperator</a><span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.workflow/FhirOperator///PointingToDeclaration/">FhirOperator</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-394811425%2FProperties%2F-288241585" anchor-label="fhirPathDataExtractor" id="-394811425%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-path-data-extractor.html"><span>fhir</span><wbr><span>Path</span><wbr><span>Data</span><wbr><span><span>Extractor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-394811425%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-path-data-extractor.html">fhirPathDataExtractor</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.fhirpath/-fhir-path-data-extractor/index.html">FhirPathDataExtractor</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1828639642%2FProperties%2F-288241585" anchor-label="questionnaireProgressStateLiveData" id="1828639642%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="questionnaire-progress-state-live-data.html"><span>questionnaire</span><wbr><span>Progress</span><wbr><span>State</span><wbr><span>Live</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1828639642%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="questionnaire-progress-state-live-data.html">questionnaireProgressStateLiveData</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/LiveData.html">LiveData</a><span class="token operator">&lt;</span><a href="../-questionnaire-progress-state/index.html">QuestionnaireProgressState</a><span class="token operator">?</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-706043593%2FProperties%2F-288241585" anchor-label="resourceDataRulesExecutor" id="-706043593%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="resource-data-rules-executor.html"><span>resource</span><wbr><span>Data</span><wbr><span>Rules</span><wbr><span><span>Executor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-706043593%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="resource-data-rules-executor.html">resourceDataRulesExecutor</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.rulesengine/-resource-data-rules-executor/index.html">ResourceDataRulesExecutor</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1052510504%2FProperties%2F-288241585" anchor-label="sharedPreferencesHelper" id="1052510504%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shared-preferences-helper.html"><span>shared</span><wbr><span>Preferences</span><wbr><span><span>Helper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1052510504%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="shared-preferences-helper.html">sharedPreferencesHelper</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1885403408%2FProperties%2F-288241585" anchor-label="transformSupportServices" id="-1885403408%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="transform-support-services.html"><span>transform</span><wbr><span>Support</span><wbr><span><span>Services</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1885403408%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="transform-support-services.html">transformSupportServices</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util.helper/-transform-support-services/index.html">TransformSupportServices</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="264516373%2FFunctions%2F-288241585" anchor-label="addCloseable" id="264516373%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.smartregister.fhircore.quest.ui.usersetting/-user-setting-view-model/index.html#264516373%2FFunctions%2F-288241585"><span>add</span><wbr><span><span>Closeable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="264516373%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../org.smartregister.fhircore.quest.ui.usersetting/-user-setting-view-model/index.html#264516373%2FFunctions%2F-288241585"><span class="token function">addCloseable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html"><span class="token annotation builtin">NonNull</span></a>&nbsp;</span>p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Closeable.html">Closeable</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1896830824%2FFunctions%2F-288241585" anchor-label="addMemberToGroup" id="-1896830824%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-member-to-group.html"><span>add</span><wbr><span>Member</span><wbr><span>To</span><wbr><span><span>Group</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1896830824%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="add-member-to-group.html"><span class="token function">addMemberToGroup</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resource<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token punctuation">, </span></span><span class="parameter ">memberResourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">groupIdentifier<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Adds <span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span> to <span data-unresolved-link="org.hl7.fhir.r4.model/Group/member/#/PointingToDeclaration/">Group.member</span> if the member does not exist and if <span data-unresolved-link="com.google.android.fhir//logicalId/org.hl7.fhir.r4.model.Resource#/PointingToDeclaration/">Resource.logicalId</span> is NOT the same as the retrieved <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-group-resource-config/group-identifier.html">GroupResourceConfig.groupIdentifier</a> (Cannot add a <span data-unresolved-link="org.hl7.fhir.r4.model/Group///PointingToDeclaration/">Group</span> as member of itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1414242307%2FFunctions%2F-288241585" anchor-label="executeCql" id="1414242307%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="execute-cql.html"><span>execute</span><wbr><span><span>Cql</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1414242307%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="execute-cql.html"><span class="token function">executeCql</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subject<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token punctuation">, </span></span><span class="parameter ">bundle<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Bundle///PointingToDeclaration/">Bundle</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaire<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1234417939%2FFunctions%2F-288241585" anchor-label="generateCarePlan" id="1234417939%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="generate-care-plan.html"><span>generate</span><wbr><span>Care</span><wbr><span><span>Plan</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1234417939%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="generate-care-plan.html"><span class="token function">generateCarePlan</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">subject<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token punctuation">, </span></span><span class="parameter ">bundle<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Bundle///PointingToDeclaration/">Bundle</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function generates CarePlans for the <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse/subject/#/PointingToDeclaration/">QuestionnaireResponse.subject</span> using the configured <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/plan-definitions.html">QuestionnaireConfig.planDefinitions</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="656933417%2FFunctions%2F-288241585" anchor-label="handleQuestionnaireSubmission" id="656933417%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="handle-questionnaire-submission.html"><span>handle</span><wbr><span>Questionnaire</span><wbr><span><span>Submission</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="656933417%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="handle-questionnaire-submission.html"><span class="token function">handleQuestionnaireSubmission</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaire<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token punctuation">, </span></span><span class="parameter ">currentQuestionnaireResponse<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">, </span></span><span class="parameter ">actionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter/index.html">ActionParameter</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">onSuccessfulSubmission<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hl7.fhir.r4.model/IdType///PointingToDeclaration/">IdType</span><span class="token operator">&gt;</span><span class="token punctuation">, </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function performs data extraction against the <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span>. All the resources generated from a successful extraction by StructureMap or definition are stored in the database. The <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span> is also stored in the database regardless of the outcome of <span data-unresolved-link="com.google.android.fhir.datacapture.mapping/ResourceMapper/extract/#org.hl7.fhir.r4.model.Questionnaire#org.hl7.fhir.r4.model.QuestionnaireResponse#com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext?#com.google.android.fhir.datacapture.mapping.ProfileLoader?/PointingToDeclaration/">ResourceMapper.extract</span>. This function will optionally generate CarePlan using the PlanDefinition resource configured in <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/plan-definitions.html">QuestionnaireConfig.planDefinitions</a>. The <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/event-workflows.html">QuestionnaireConfig.eventWorkflows</a> contains configurations to cascade update the statuses of resources to in-active (close) that are related to the current <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse/subject/#/PointingToDeclaration/">QuestionnaireResponse.subject</span></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-636350521%2FFunctions%2F-288241585" anchor-label="loadResource" id="-636350521%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="load-resource.html"><span>load</span><wbr><span><span>Resource</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-636350521%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="load-resource.html"><span class="token function">loadResource</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token punctuation">, </span></span><span class="parameter ">resourceIdentifier<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Load <span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span> of type <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span> for the provided <a href="load-resource.html">resourceIdentifier</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2083566995%2FFunctions%2F-288241585" anchor-label="performExtraction" id="2083566995%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="perform-extraction.html"><span>perform</span><wbr><span><span>Extraction</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2083566995%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="perform-extraction.html"><span class="token function">performExtraction</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">extractByStructureMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">questionnaire<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireResponse<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Bundle///PointingToDeclaration/">Bundle</span></div><div class="brief "><p class="paragraph">Perform StructureMap or Definition based definition. The result of this function returns a Bundle that contains the resources that were generated via the <span data-unresolved-link="com.google.android.fhir.datacapture.mapping/ResourceMapper/extract/#org.hl7.fhir.r4.model.Questionnaire#org.hl7.fhir.r4.model.QuestionnaireResponse#com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext?#com.google.android.fhir.datacapture.mapping.ProfileLoader?/PointingToDeclaration/">ResourceMapper.extract</span> operation otherwise returns null if an exception is encountered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1963268967%2FFunctions%2F-288241585" anchor-label="retrievePopulationResources" id="1963268967%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-population-resources.html"><span>retrieve</span><wbr><span>Population</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1963268967%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="retrieve-population-resources.html"><span class="token function">retrievePopulationResources</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">actionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter/index.html">ActionParameter</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Return <span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span>s to be used in the launch context of the questionnaire. Launch context allows information to be passed into questionnaire based on the context in which the questionnaire is being evaluated. For example, what patient, what encounter, what user, etc. is "in context" at the time the questionnaire response is being completed: https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-launchContext.html</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="924577351%2FFunctions%2F-288241585" anchor-label="retrieveQuestionnaire" id="924577351%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-questionnaire.html"><span>retrieve</span><wbr><span><span>Questionnaire</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="924577351%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="retrieve-questionnaire.html"><span class="token function">retrieveQuestionnaire</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">, </span></span><span class="parameter ">actionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter/index.html">ActionParameter</a><span class="token operator">&gt;</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">This function retrieves the <span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span> as configured via the <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a>. The retrieved <span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span> can be pre-populated with computed values from the Rules engine.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="881686335%2FFunctions%2F-288241585" anchor-label="saveDraftQuestionnaire" id="881686335%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="save-draft-questionnaire.html"><span>save</span><wbr><span>Draft</span><wbr><span><span>Questionnaire</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="881686335%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="save-draft-questionnaire.html"><span class="token function">saveDraftQuestionnaire</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaireResponse<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function saves <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span> as draft if any of the <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse/item/#/PointingToDeclaration/">QuestionnaireResponse.item</span> has an answer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-242670127%2FFunctions%2F-288241585" anchor-label="saveExtractedResources" id="-242670127%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="save-extracted-resources.html"><span>save</span><wbr><span>Extracted</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-242670127%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="save-extracted-resources.html"><span class="token function">saveExtractedResources</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">bundle<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Bundle///PointingToDeclaration/">Bundle</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaire<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">, </span></span><span class="parameter ">questionnaireResponse<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="737029593%2FFunctions%2F-288241585" anchor-label="searchLatestQuestionnaireResponse" id="737029593%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="search-latest-questionnaire-response.html"><span>search</span><wbr><span>Latest</span><wbr><span>Questionnaire</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="737029593%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="search-latest-questionnaire-response.html"><span class="token function">searchLatestQuestionnaireResponse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resourceId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">resourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">This function searches and returns the latest <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span> for the given <a href="search-latest-questionnaire-response.html">resourceId</a> that was extracted from the <span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span> identified as <a href="search-latest-questionnaire-response.html">questionnaireId</a>. Returns null if non is found.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1685672979%2FFunctions%2F-288241585" anchor-label="setProgressState" id="-1685672979%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-progress-state.html"><span>set</span><wbr><span>Progress</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1685672979%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-progress-state.html"><span class="token function">setProgressState</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaireState<span class="token operator">: </span><a href="../-questionnaire-progress-state/index.html">QuestionnaireProgressState</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Update the current progress state of the questionnaire.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-609351824%2FFunctions%2F-288241585" anchor-label="softDeleteResources" id="-609351824%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="soft-delete-resources.html"><span>soft</span><wbr><span>Delete</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-609351824%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="soft-delete-resources.html"><span class="token function">softDeleteResources</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaireConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function triggers removal of <span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span> s as per the <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/group-resource.html">QuestionnaireConfig.groupResource</a> or <a href="../../../engine/org.smartregister.fhircore.engine.configuration/-questionnaire-config/remove-resource.html">QuestionnaireConfig.removeResource</a> config properties.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1965014270%2FFunctions%2F-288241585" anchor-label="updateResourcesLastUpdatedProperty" id="-1965014270%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-resources-last-updated-property.html"><span>update</span><wbr><span>Resources</span><wbr><span>Last</span><wbr><span>Updated</span><wbr><span><span>Property</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1965014270%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-resources-last-updated-property.html"><span class="token function">updateResourcesLastUpdatedProperty</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">actionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter/index.html">ActionParameter</a><span class="token operator">&gt;</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function updates the _lastUpdated property of resources configured by the <a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter/param-type.html">ActionParameter.paramType</a> of <a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-action-parameter-type/-u-p-d-a-t-e_-d-a-t-e_-o-n_-e-d-i-t/index.html">ActionParameterType.UPDATE_DATE_ON_EDIT</a>. Each time a questionnaire is submitted, the affected resources last modified/updated date will also be updated.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1605488689%2FFunctions%2F-288241585" anchor-label="validateQuestionnaireResponse" id="1605488689%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="validate-questionnaire-response.html"><span>validate</span><wbr><span>Questionnaire</span><wbr><span><span>Response</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1605488689%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="validate-questionnaire-response.html"><span class="token function">validateQuestionnaireResponse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">questionnaire<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span><span class="token punctuation">, </span></span><span class="parameter ">questionnaireResponse<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">This function validates all <span data-unresolved-link="org.hl7.fhir.r4.model/QuestionnaireResponse///PointingToDeclaration/">QuestionnaireResponse</span> and returns true if all the validation result of <span data-unresolved-link="com.google.android.fhir.datacapture.validation/QuestionnaireResponseValidator///PointingToDeclaration/">QuestionnaireResponseValidator</span> are <span data-unresolved-link="com.google.android.fhir.datacapture.validation/Valid///PointingToDeclaration/">Valid</span> or <span data-unresolved-link="com.google.android.fhir.datacapture.validation/NotValidated///PointingToDeclaration/">NotValidated</span> (validation is optional on <span data-unresolved-link="org.hl7.fhir.r4.model/Questionnaire///PointingToDeclaration/">Questionnaire</span> fields)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
