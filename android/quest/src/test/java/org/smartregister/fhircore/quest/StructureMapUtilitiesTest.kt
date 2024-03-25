@@ -249,14 +249,12 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val patientRegistrationStructureMap =
       "patient-registration-questionnaire/structure-map.txt".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true)
-    /*val patientRegistrationStructureMap =
-    "patient-registration-questionnaire/structure-map.txt".readFile()*/
-    val sMap = "content/general/diabetes_compass/registration/patient_registration.map".readFile()
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val structureMap = structureMapUtilities.parse(sMap, "Patient Registration")
+    val structureMap =
+      structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
 
@@ -406,72 +404,6 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
     Assert.assertEquals(1, targetResource.entry.size)
     Assert.assertEquals("Location", targetResource.entry[0].resource.resourceType.toString())
-  }
-
-  @Test
-  fun `perform diabetes screening extraction`() {
-    val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/screening/screening_questionnaire_response.fhir.json"
-        .readFile()
-    val screeningStructureMap =
-      "content/general/diabetes_compass/screening/diabetes_screening_extraction.map".readFile()
-    val pcm = FilesystemPackageCacheManager(true)
-    // Package name manually checked from
-    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-    contextR4.setExpansionProfile(Parameters())
-    contextR4.isCanRunWithoutTerminology = true
-
-    val transformSupportServices = TransformSupportServices(contextR4)
-    val smUtilities =
-      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = smUtilities.parse(screeningStructureMap, "Diabetes Screening")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val mapString = iParser.encodeResourceToString(map)
-
-    System.out.println(mapString)
-
-    val targetResource = Bundle()
-
-    val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, screeningQuestionnaireResponseString)
-
-    smUtilities.transform(contextR4, baseElement, map, targetResource)
-
-    System.out.println(iParser.encodeResourceToString(targetResource))
-  }
-
-  @Test
-  fun `perform diabetes patient extraction`() {
-    val screeningQuestionnaireResponseString: String =
-      "content/general/diabetes_compass/registration/patient-registration-response.fhir.json"
-        .readFile()
-    val screeningStructureMap =
-      "content/general/diabetes_compass/registration/patient_registration.map".readFile()
-    val pcm = FilesystemPackageCacheManager(true)
-    // Package name manually checked from
-    // https://simplifier.net/packages?Text=hl7.fhir.core&fhirVersion=All+FHIR+Versions
-    val contextR4 = SimpleWorkerContext.fromPackage(pcm.loadPackage("hl7.fhir.r4.core", "4.0.1"))
-    contextR4.setExpansionProfile(Parameters())
-    contextR4.isCanRunWithoutTerminology = true
-
-    val transformSupportServices = TransformSupportServices(contextR4)
-    val smUtilities =
-      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val map = smUtilities.parse(screeningStructureMap, "Patient Registration")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val mapString = iParser.encodeResourceToString(map)
-
-    System.out.println(mapString)
-
-    val targetResource = Bundle()
-
-    val baseElement =
-      iParser.parseResource(QuestionnaireResponse::class.java, screeningQuestionnaireResponseString)
-
-    smUtilities.transform(contextR4, baseElement, map, targetResource)
-
-    System.out.println(iParser.encodeResourceToString(targetResource))
   }
 
   @Test
