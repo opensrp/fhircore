@@ -645,7 +645,7 @@ constructor(
    * result of [QuestionnaireResponseValidator] are [Valid] or [NotValidated] (validation is
    * optional on [Questionnaire] fields)
    */
-  fun validateQuestionnaireResponse(
+  suspend fun validateQuestionnaireResponse(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
