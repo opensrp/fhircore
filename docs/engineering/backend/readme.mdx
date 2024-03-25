@@ -6,11 +6,18 @@ sidebar_label: Backend
 
 ## Backend application setup
 
-The backend requires at a minimum two pieces of software, with an optional third:
+The backend requires these pieces of software, with an optional fourth:
 
-1. a FHIR Store, e.g HAPI FHIR
-2. the [FHIR Information Gateway](https://github.com/onaio/fhir-gateway-plugin) with [OpenSRP plugins](https://hub.docker.com/r/onaio/fhir-gateway-plugin/tags)
+1. FHIR Store, e.g HAPI FHIR - [How to set up HAPI FHIR](https://github.com/hapifhir/hapi-fhir-jpaserver-starter)
+2. [FHIR Information Gateway](https://github.com/onaio/fhir-gateway-plugin) with [OpenSRP plugins](https://hub.docker.com/r/onaio/fhir-gateway-plugin/tags) - [How to set up OpenSRP FHIR Gateway](https://github.com/onaio/fhir-gateway-extension)
+3. Identity and Access Management server with Oauth2 support e.g. Keycloak - [How to set up Keycloak](https://github.com/keycloak/keycloak)
 3. [Optional] the [fhir-web](https://github.com/onaio/fhir-web) admin dashboard.
+
+:::info
+
+For deployment to production, see our [Production configuration](https://docs.opensrp.io/engineering/backend/production) recommendations. 
+
+:::
 
 ## User management
 
