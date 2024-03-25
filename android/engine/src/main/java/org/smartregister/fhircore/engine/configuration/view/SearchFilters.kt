@@ -21,15 +21,6 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
-import org.smartregister.fhircore.engine.configuration.Configuration
-
-@Stable
-@Serializable
-class DataFiltersConfiguration(
-  override val appId: String = "",
-  override val classification: String = "",
-  val filters: List<SearchFilter> = listOf(),
-) : Configuration
 
 @Stable
 @Serializable
@@ -57,10 +48,3 @@ fun Code.asCodeableConcept() =
     addCoding(this@asCodeableConcept.asCoding())
     text = this@asCodeableConcept.display
   }
-
-@Stable
-fun dataFilterConfigurationOf(
-  appId: String = "",
-  classification: String = "form",
-  filters: List<SearchFilter> = listOf(),
-) = DataFiltersConfiguration(appId = appId, classification = classification, filters = filters)

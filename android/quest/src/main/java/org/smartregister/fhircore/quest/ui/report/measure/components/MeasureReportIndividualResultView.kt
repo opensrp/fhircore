@@ -82,13 +82,13 @@ fun MeasureReportIndividualResultView(
       ) {
         if (isMatchedIndicator) {
           Image(
-            painter = painterResource(id = R.drawable.ic_check),
+            painter = painterResource(id = org.smartregister.fhircore.engine.R.drawable.ic_check),
             contentDescription = null,
             modifier = modifier.wrapContentWidth().requiredHeight(40.dp),
           )
         } else {
           Image(
-            painter = painterResource(id = R.drawable.ic_stalled),
+            painter = painterResource(id = org.smartregister.fhircore.engine.R.drawable.ic_stalled),
             contentDescription = null,
             modifier = modifier.wrapContentWidth().requiredHeight(40.dp),
           )

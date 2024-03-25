@@ -119,12 +119,14 @@ fun ChangeFamilyHeadBottomSheet(
             .height(IntrinsicSize.Min)
             .padding(horizontal = 12.dp, vertical = 18.dp)
             .background(
-              color = colorResource(id = R.color.background_warning),
+              color =
+                colorResource(id = org.smartregister.fhircore.engine.R.color.background_warning),
               shape = RoundedCornerShape(8.dp),
             ),
       ) {
         Image(
-          painter = painterResource(id = R.drawable.ic_alert_triangle),
+          painter =
+            painterResource(id = org.smartregister.fhircore.engine.R.drawable.ic_alert_triangle),
           contentDescription = null,
           modifier = modifier.padding(horizontal = 12.dp),
         )
@@ -182,7 +184,7 @@ fun ChangeFamilyHeadBottomSheet(
           Text(
             fontSize = 14.sp,
             color = colorResource(id = R.color.black),
-            text = stringResource(id = R.string.cancel),
+            text = stringResource(id = org.smartregister.fhircore.engine.R.string.cancel),
           )
         }
         TextButton(
@@ -192,13 +194,23 @@ fun ChangeFamilyHeadBottomSheet(
           colors =
             ButtonDefaults.textButtonColors(
               backgroundColor =
-                colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white),
+                colorResource(
+                  id =
+                    if (isEnabled) org.smartregister.fhircore.engine.R.color.colorPrimary
+                    else R.color.white
+                ),
             ),
         ) {
           Text(
             fontSize = 14.sp,
-            color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
-            text = stringResource(id = R.string.str_save).uppercase(),
+            color =
+              colorResource(
+                id =
+                  if (isEnabled) R.color.white
+                  else org.smartregister.fhircore.engine.R.color.colorPrimary
+              ),
+            text =
+              stringResource(id = org.smartregister.fhircore.engine.R.string.str_save).uppercase(),
           )
         }
       }

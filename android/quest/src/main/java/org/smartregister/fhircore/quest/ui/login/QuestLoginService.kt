@@ -16,10 +16,14 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.core.content.ContextCompat.startActivity
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import org.hl7.fhir.utilities.SystemExitManager.finish
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.p2p.dao.P2PReceiverTransferDao
 import org.smartregister.fhircore.engine.p2p.dao.P2PSenderTransferDao
@@ -35,21 +39,22 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val p2pSenderTransferDao: P2PSenderTransferDao,
   val p2pReceiverTransferDao: P2PReceiverTransferDao,
+  @ApplicationContext val appContext: Context,
 ) : LoginService {
 
-  override lateinit var loginActivity: AppCompatActivity
-
   @OptIn(ExperimentalMaterialApi::class)
-  override fun navigateToHome() {
-    loginActivity.run {
-      startActivity(
-        Intent(loginActivity, AppMainActivity::class.java).apply {
+  override fun navigateToHome(startingActivity: AppCompatActivity) {
+    startingActivity.run {
+      val homeIntent =
+        Intent(this, AppMainActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        },
-      )
-      finish()
+        }
+      this.startActivity(homeIntent)
+      this.finish()
     }
+  }
 
+  override fun activateAuthorisedFeatures() {
     appFeatureManager.loadAndActivateFeatures()
 
     // Initialize P2P after login only when username is provided
@@ -57,7 +62,7 @@ constructor(
     if (!username.isNullOrEmpty()) {
       P2PLibrary.init(
         P2PLibrary.Options(
-          context = loginActivity.applicationContext,
+          context = appContext,
           dbPassphrase = username,
           username = username,
           senderTransferDao = p2pSenderTransferDao,

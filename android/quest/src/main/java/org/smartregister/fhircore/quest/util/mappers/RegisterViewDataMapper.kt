@@ -59,7 +59,11 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           logicalId = inputModel.logicalId,
           title = context.getString(R.string.family_suffix, inputModel.name),
           subtitle = inputModel.address,
-          status = context.getString(R.string.date_last_visited, inputModel.lastSeen),
+          status =
+            context.getString(
+              org.smartregister.fhircore.engine.R.string.date_last_visited,
+              inputModel.lastSeen
+            ),
           serviceButtonActionable = false,
           serviceButtonBackgroundColor =
             if (inputModel.servicesOverdue != 0) OverdueDarkRedColor else Color.White,
@@ -70,7 +74,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
               ServiceMember(
                 icon =
                   when {
-                    it.pregnant -> R.drawable.ic_pregnant
+                    it.pregnant -> org.smartregister.fhircore.engine.R.drawable.ic_pregnant
                     it.age.toInt() <= 5 -> R.drawable.ic_kids
                     else -> R.drawable.ic_users
                   },

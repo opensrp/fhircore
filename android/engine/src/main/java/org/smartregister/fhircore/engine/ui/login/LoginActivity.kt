@@ -67,7 +67,6 @@ class LoginActivity : BaseMultiLanguageActivity() {
   }
 
   private fun navigateToScreen() {
-    loginService.loginActivity = this
     loginViewModel.apply {
       loadLastLoggedInUsername()
       navigateToHome.observe(this@LoginActivity) { isNavigate ->
@@ -83,28 +82,13 @@ class LoginActivity : BaseMultiLanguageActivity() {
             finish() // Return to the previous activity
           } else {
             syncBroadcaster.get().runSync()
-            loginService.navigateToHome()
+            loginService.activateAuthorisedFeatures()
+            loginService.navigateToHome(this@LoginActivity)
           }
         }
       }
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
-
-      // Check if Pin enabled and stored then move to Pin login
-      //      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
-      //      val forceLoginViaUsername =
-      //        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-      //      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
-      //      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
-      //        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-      //        loginService.navigateToPinLogin()
-      //      }
     }
-  }
-
-  private fun goToHomeScreen(sharedPreferencesKey: String, sharedPreferencesValue: Boolean) {
-    loginViewModel.sharedPreferences.write(sharedPreferencesKey, sharedPreferencesValue)
-    syncBroadcaster.get().runSync()
-    loginService.navigateToHome()
   }
 
   fun getApplicationConfiguration(): ApplicationConfiguration {

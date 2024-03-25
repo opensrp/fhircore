@@ -57,7 +57,7 @@ interface ConfigService {
       if (strategy.isResource.not()) {
         val id = sharedPreferencesHelper.read(strategy.type, null)
         if (id.isNullOrBlank()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = code ?: "Not defined" }) }
         } else {
           strategy.tag.let { tag ->
             tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })

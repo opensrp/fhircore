@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.login
 
 import android.content.Intent
+import androidx.compose.material.ExperimentalMaterialApi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
@@ -25,7 +26,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -35,10 +35,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterActivity
+import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 
 @HiltAndroidTest
-@Ignore("Fix appId not initialized")
 class QuestLoginServiceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
@@ -57,7 +56,6 @@ class QuestLoginServiceTest : RobolectricTest() {
     runBlocking { configurationRegistry = Faker.buildTestConfigurationRegistry("quest") }
     loginService = spyk(questLoginService)
     loginActivity = Robolectric.buildActivity(LoginActivity::class.java).get()
-    loginService.loginActivity = loginActivity
   }
 
   @After
@@ -66,11 +64,12 @@ class QuestLoginServiceTest : RobolectricTest() {
     loginActivity.finish()
   }
 
+  @OptIn(ExperimentalMaterialApi::class)
   @Test
   fun testNavigateToHomeShouldNavigateToRegisterScreen() {
-    loginService.navigateToHome()
+    loginService.navigateToHome(loginActivity)
     val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
     val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-    Assert.assertEquals(PatientRegisterActivity::class.java, shadowIntent.intentClass)
+    Assert.assertEquals(AppMainActivity::class.java, shadowIntent.intentClass)
   }
 }

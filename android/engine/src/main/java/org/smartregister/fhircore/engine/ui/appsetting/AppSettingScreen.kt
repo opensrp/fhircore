@@ -70,7 +70,7 @@ fun AppSettingScreen(
       modifier = modifier.weight(1f).padding(horizontal = 20.dp),
     ) {
       Text(
-        text = stringResource(R.string.app_name),
+        text = stringResource(com.google.android.fhir.R.string.app_name),
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
         fontSize = 32.sp,

@@ -65,7 +65,7 @@ private fun PopulationResultCard(
       Column {
         Text(
           text = resultItem.title.uppercase(),
-          color = colorResource(id = R.color.darkGrayText),
+          color = colorResource(id = org.smartregister.fhircore.engine.R.color.darkGrayText),
           fontSize = 16.sp,
           modifier = modifier.wrapContentWidth(),
         )
@@ -114,7 +114,7 @@ private fun PopulationResultItem(
       Text(
         text = measureReportIndividualResult.count,
         fontSize = 16.sp,
-        color = colorResource(id = R.color.darkGrayText),
+        color = colorResource(id = org.smartregister.fhircore.engine.R.color.darkGrayText),
         modifier = modifier.wrapContentWidth(),
       )
     }

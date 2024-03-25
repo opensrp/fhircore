@@ -20,9 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 
 interface LoginService {
 
-  var loginActivity: AppCompatActivity
+  fun navigateToHome(startingActivity: AppCompatActivity)
 
-  fun navigateToHome()
-
-  fun navigateToPinLogin(goForSetup: Boolean = false) {}
+  fun activateAuthorisedFeatures()
 }

@@ -278,10 +278,10 @@ fun RegisterListRowForFamilyRegisterOverduePreview() {
         showDivider = true,
         serviceMembers =
           listOf(
-            ServiceMember(R.drawable.ic_pregnant, "1920192"),
-            ServiceMember(R.drawable.ic_pregnant, "1920190"),
-            ServiceMember(R.drawable.ic_pregnant, "1920191"),
-            ServiceMember(R.drawable.ic_pregnant, "1920194"),
+            ServiceMember(org.smartregister.fhircore.engine.R.drawable.ic_pregnant, "1920192"),
+            ServiceMember(org.smartregister.fhircore.engine.R.drawable.ic_pregnant, "1920190"),
+            ServiceMember(org.smartregister.fhircore.engine.R.drawable.ic_pregnant, "1920191"),
+            ServiceMember(org.smartregister.fhircore.engine.R.drawable.ic_pregnant, "1920194"),
           ),
       ),
     onRowClick = {},

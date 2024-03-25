@@ -115,7 +115,7 @@ fun SearchHint(modifier: Modifier) {
   ) {
     Text(
       color = Color(0xff757575),
-      text = stringResource(id = R.string.search_hint),
+      text = stringResource(id = org.smartregister.fhircore.engine.R.string.search_hint),
     )
   }
 }

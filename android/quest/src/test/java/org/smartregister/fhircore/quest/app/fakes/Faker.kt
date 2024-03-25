@@ -39,14 +39,9 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
-import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.quest.data.patient.PatientRepository
-import org.smartregister.fhircore.quest.data.patient.model.AdditionalData
 import org.smartregister.fhircore.quest.data.patient.model.PatientItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestResultItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireItem
-import org.smartregister.fhircore.quest.data.patient.model.QuestionnaireResponseItem
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest.Companion.readFile
 
 object Faker {
@@ -118,41 +113,12 @@ object Faker {
         ),
       )
 
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns
-      listOf(
-        QuestResultItem(
-          Pair(
-            QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "Sample Order", "Sample Order"),
-          ),
-          listOf(
-            listOf(
-              AdditionalData(value = "Sample Order", label = "Label"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})"),
-            ),
-          ),
-        ),
-        QuestResultItem(
-          Pair(
-            QuestionnaireResponseItem("1", Date(), "1", ""),
-            QuestionnaireItem("1", "ample Test", "ample Test"),
-          ),
-          listOf(
-            listOf(
-              AdditionalData(value = "Sample Test"),
-              AdditionalData(value = "(${Date().asDdMmmYyyy()})"),
-            ),
-          ),
-        ),
-      )
-
     coEvery { patientRepository.fetchPregnancyCondition(any()) } returns ""
   }
 
   fun initPatientRepositoryEmptyMocks(patientRepository: PatientRepository) {
     coEvery { patientRepository.fetchDemographics(any()) } returns Patient()
     coEvery { patientRepository.fetchTestForms(any()) } returns emptyList()
-    coEvery { patientRepository.fetchTestResults(any(), any(), any(), any()) } returns emptyList()
   }
 
   val systemPath =
