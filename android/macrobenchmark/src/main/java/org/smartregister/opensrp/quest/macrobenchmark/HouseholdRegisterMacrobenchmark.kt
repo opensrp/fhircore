@@ -16,11 +16,20 @@
 
 package org.smartregister.opensrp.quest.macrobenchmark
 
+import android.content.ComponentName
+import android.content.Intent
 import androidx.benchmark.macro.ExperimentalMetricApi
+import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.StartupTimingMetric
+import androidx.benchmark.macro.TraceSectionMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Direction
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
+import androidx.tracing.Trace
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,16 +47,14 @@ class HouseholdRegisterMacrobenchmark {
     val traceName = "Load Household register page 1"
     benchmarkRule.measureRepeated(
       packageName = "org.smartregister.opensrp",
-      metrics = listOf(StartupTimingMetric()),
+      metrics = listOf(StartupTimingMetric(), TraceSectionMetric(traceName)),
       iterations = iterations,
       startupMode = StartupMode.COLD,
       setupBlock = {
         pressHome()
-        // goToPage()
+        goToPage()
       },
     ) {
-      startActivityAndWait()
-      /*
       Trace.beginSection(traceName)
 
       val startWait = System.currentTimeMillis()
@@ -63,12 +70,9 @@ class HouseholdRegisterMacrobenchmark {
       checkItemByText(device, "All households")
 
       Trace.endSection()
-
-       */
     }
   }
 
-  /*
   @Test
   fun benchmarkPage2() {
     benchmarkPage(
@@ -77,7 +81,6 @@ class HouseholdRegisterMacrobenchmark {
       hashMapOf("firstFamily" to "Toyota Family", "lastFamily" to "Kabaka Family"),
     )
   }
-
 
   @Test
   fun benchmarkPage3() {
@@ -182,6 +185,4 @@ class HouseholdRegisterMacrobenchmark {
       )
     }
   }
-
-   */
 }
