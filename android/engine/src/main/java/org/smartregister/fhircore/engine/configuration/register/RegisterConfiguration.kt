@@ -45,5 +45,5 @@ data class RegisterConfiguration(
     ),
   val configRules: List<RuleConfig>? = null,
   val registerFilter: RegisterFilterConfig? = null,
-  val topScreenSection: TopScreenSection? = null
+  val topScreenSection: TopScreenSection? = null,
 ) : Configuration()

@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.geowidget.model
 
-import org.json.JSONObject
-
 data class GeoWidgetLocation(
   val id: String = "",
   val name: String = "",

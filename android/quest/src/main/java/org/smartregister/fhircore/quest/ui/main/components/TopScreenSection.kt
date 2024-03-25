@@ -70,6 +70,7 @@ const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
+
 @Composable
 fun TopScreenSection(
   modifier: Modifier = Modifier,
@@ -81,20 +82,20 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
-  topScreenSection: TopScreenSection ?= null,
-  onClick: (ToolbarClickEvent) -> Unit
+  topScreenSection: TopScreenSection? = null,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {
     Row(
       modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 16.dp)
-        .testTag(
-          TITLE_ROW_TEST_TAG,
-        ),
+        modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(
+            TITLE_ROW_TEST_TAG,
+          ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(
@@ -105,7 +106,7 @@ fun TopScreenSection(
         contentDescription = DRAWER_MENU,
         tint = Color.White,
         modifier =
-        modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
+          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
       )
       Text(
         text = title,
@@ -119,9 +120,9 @@ fun TopScreenSection(
           contentDescription = FILTER,
           tint = Color.White,
           modifier =
-          modifier
-            .clickable { onClick(ToolbarClickEvent.Toggle) }
-            .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+            modifier
+              .clickable { onClick(ToolbarClickEvent.Toggle) }
+              .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
         )
       }
       if (isFilterIconEnabled) {
@@ -144,58 +145,58 @@ fun TopScreenSection(
             contentDescription = FILTER,
             tint = Color.White,
             modifier =
-            modifier
-              .clickable { onClick(ToolbarClickEvent.FilterData) }
-              .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+              modifier
+                .clickable { onClick(ToolbarClickEvent.FilterData) }
+                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
           )
         }
       }
     }
     if (isSearchBarVisible) {
-    OutlinedTextField(
-      colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
-      value = searchText,
-      onValueChange = { onSearchTextChanged(it) },
-      maxLines = 1,
-      singleLine = true,
-      placeholder = {
-        Text(
-          color = GreyTextColor,
-          text = searchPlaceholder ?: stringResource(R.string.search_hint),
-          modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
-        )
-      },
-      modifier =
-      modifier
-        .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
-        .fillMaxWidth()
-        .clip(RoundedCornerShape(size = 10.dp))
-        .background(Color.White)
-        .testTag(OUTLINED_BOX_TEST_TAG),
-      leadingIcon = {
-        Icon(
-          imageVector = Icons.Filled.Search,
-          SEARCH,
-          modifier = modifier.testTag(LEADING_ICON_TEST_TAG),
-        )
-      },
-      trailingIcon = {
-        if (searchText.isNotEmpty()) {
-          IconButton(
-            onClick = { onSearchTextChanged("") },
-            modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-          ) {
-            Icon(
-              imageVector = Icons.Filled.Clear,
-              CLEAR,
-              tint = Color.Gray,
-              modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-            )
+      OutlinedTextField(
+        colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
+        value = searchText,
+        onValueChange = { onSearchTextChanged(it) },
+        maxLines = 1,
+        singleLine = true,
+        placeholder = {
+          Text(
+            color = GreyTextColor,
+            text = searchPlaceholder ?: stringResource(R.string.search_hint),
+            modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
+          )
+        },
+        modifier =
+          modifier
+            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(size = 10.dp))
+            .background(Color.White)
+            .testTag(OUTLINED_BOX_TEST_TAG),
+        leadingIcon = {
+          Icon(
+            imageVector = Icons.Filled.Search,
+            SEARCH,
+            modifier = modifier.testTag(LEADING_ICON_TEST_TAG),
+          )
+        },
+        trailingIcon = {
+          if (searchText.isNotEmpty()) {
+            IconButton(
+              onClick = { onSearchTextChanged("") },
+              modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Clear,
+                CLEAR,
+                tint = Color.Gray,
+                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+              )
+            }
           }
-        }
-      },
-    )
-  }
+        },
+      )
+    }
   }
 }
 
@@ -210,7 +211,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
-    isSearchBarVisible = true
+    isSearchBarVisible = true,
   )
 }
 
@@ -225,7 +226,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
     onClick = {},
-    isSearchBarVisible = true
+    isSearchBarVisible = true,
   )
 }
 
@@ -239,7 +240,7 @@ fun TopScreenSectionNoFilterIconPreview() {
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
     onClick = {},
-    isSearchBarVisible = true
+    isSearchBarVisible = true,
   )
 }
 
@@ -255,12 +256,14 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
-    topScreenSection = TopScreenSection(
+    topScreenSection =
+      TopScreenSection(
         showToggleButton = true,
         screenTitle = "",
         toggleIconConfig = ImageConfig(),
-        searchBar =  null,
-        toggleAction =  null)
+        searchBar = null,
+        toggleAction = null,
+      ),
   )
 }
 
@@ -276,11 +279,13 @@ fun TopScreenSectionWithToggleIconPreview() {
     isFilterIconEnabled = false,
     onClick = {},
     isSearchBarVisible = true,
-    topScreenSection = TopScreenSection(
+    topScreenSection =
+      TopScreenSection(
         showToggleButton = true,
         screenTitle = "",
         toggleIconConfig = ImageConfig(),
-        searchBar =  null,
-        toggleAction =  null)
+        searchBar = null,
+        toggleAction = null,
+      ),
   )
 }

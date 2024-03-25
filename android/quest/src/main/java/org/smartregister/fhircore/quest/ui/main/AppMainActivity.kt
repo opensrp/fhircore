@@ -149,14 +149,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   private fun setStartDestination() {
     val navController = navHostFragment.navController
-    val startDestination = when (appMainViewModel.applicationConfiguration.launcherType) {
+    val startDestination =
+      when (appMainViewModel.applicationConfiguration.launcherType) {
         LauncherType.MAP -> {
           R.id.geoWidgetLauncherFragment
         }
         else -> {
           R.id.registerFragment
         }
-    }
+      }
     // Inflate the navigation graph
     val navInflater = navController.navInflater
     val graph = navInflater.inflate(R.navigation.application_nav_graph)
@@ -165,6 +166,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     // Set the modified NavGraph to the NavController
     navController.graph = graph
   }
+
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
@@ -256,7 +258,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       ),
     )
   }
-
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {

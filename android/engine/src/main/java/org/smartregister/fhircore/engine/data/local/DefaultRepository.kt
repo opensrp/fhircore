@@ -157,8 +157,7 @@ constructor(
   suspend inline fun <reified R : Resource> search(search: Search) =
     fhirEngine.search<R>(search).map { it.resource }
 
-  suspend inline fun count(search: Search) =
-    fhirEngine.count(search)
+  suspend inline fun count(search: Search) = fhirEngine.count(search)
 
   /**
    * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates

@@ -32,22 +32,23 @@ import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  private val _featuresFlow: MutableStateFlow<Set<Feature>> =
-    MutableStateFlow(setOf())
+  private val _featuresFlow: MutableStateFlow<Set<Feature>> = MutableStateFlow(setOf())
   val featuresFlow: StateFlow<Set<Feature>> = _featuresFlow
 
   fun addLocationToMap(location: GeoWidgetLocation) {
-    val contexts = location.contexts.map { context ->
-      JSONObject().apply {
-        put("id", context.id)
-        put("type", context.type)
+    val contexts =
+      location.contexts.map { context ->
+        JSONObject().apply {
+          put("id", context.id)
+          put("type", context.type)
+        }
       }
-    }
-    val properties = JSONObject().apply {
-      put("id", location.id)
-      put("name", location.name)
-      put("contexts", JSONArray(contexts))
-    }
+    val properties =
+      JSONObject().apply {
+        put("id", location.id)
+        put("name", location.name)
+        put("contexts", JSONArray(contexts))
+      }
 
     val jsonFeature =
       JSONObject().apply {
@@ -61,9 +62,7 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
   }
 
   fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
-    locations.forEach { location ->
-      addLocationToMap(location)
-    }
+    locations.forEach { location -> addLocationToMap(location) }
   }
 
   fun clearLocations() {
