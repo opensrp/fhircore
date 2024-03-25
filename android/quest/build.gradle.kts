@@ -382,6 +382,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.play.services.location)
+  implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 
   // Annotation processors
   kapt(libs.hilt.compiler)

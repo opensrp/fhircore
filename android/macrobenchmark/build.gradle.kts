@@ -35,6 +35,7 @@ android {
       isDebuggable = true
       signingConfig = getByName("debug").signingConfig
       matchingFallbacks += listOf("release")
+      proguardFiles("benchmark-rule.pro")
     }
   }
 
@@ -43,12 +44,11 @@ android {
 }
 
 dependencies {
-  implementation("androidx.test.ext:junit:1.1.5")
-  implementation("androidx.test.espresso:espresso-core:3.4.0")
-  implementation("androidx.test.uiautomator:uiautomator:2.2.0")
-  implementation("androidx.benchmark:benchmark-macro-junit4:1.1.1")
-  implementation("androidx.work:work-testing:2.7.1")
-  // implementation("androidx.tracing:tracing:1.2.0-rc01")
+  implementation(libs.junit)
+  implementation(libs.espresso.core)
+  implementation(libs.uiautomator)
+  implementation(libs.benchmark.macro)
+  implementation(libs.tracing)
 }
 
 androidComponents { beforeVariants(selector().all()) { it.enabled = it.buildType == "benchmark" } }
