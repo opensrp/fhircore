@@ -28,7 +28,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
+import org.smartregister.fhircore.quest.ui.register.RegisterFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import timber.log.Timber
@@ -128,6 +130,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onResume()
     navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
+    setStartDestination()
   }
 
   override fun onPause() {
@@ -135,6 +138,24 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
   }
 
+  private fun setStartDestination() {
+    val navController = navHostFragment.navController
+    val startDestination = when (appMainViewModel.applicationConfiguration.launcherType) {
+        LauncherType.MAP -> {
+          R.id.geoWidgetLauncherFragment
+        }
+        else -> {
+          R.id.registerFragment
+        }
+    }
+    // Inflate the navigation graph
+    val navInflater = navController.navInflater
+    val graph = navInflater.inflate(R.navigation.application_nav_graph)
+    // Set the start destination
+    graph.setStartDestination(startDestination)
+    // Set the modified NavGraph to the NavController
+    navController.graph = graph
+  }
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
     if (activityResult.resultCode == RESULT_OK) {
       val questionnaireResponse: QuestionnaireResponse? =
@@ -162,10 +183,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Succeeded,
-      is SyncJobStatus.Failed, -> {
+      is CurrentSyncJobStatus.Succeeded -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
+          )
+        }
+      }
+      is CurrentSyncJobStatus.Failed -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(

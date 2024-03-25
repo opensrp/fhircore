@@ -87,6 +87,9 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
+    <string name="title_no_location_set">No Location Set</string>
+    <string name="message_location_set">Set location to sync data and load service points</string>
+    <string name="positive_button_location_set">Set location</string>
 
     <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Due on %1$s</string>
@@ -109,6 +112,11 @@
     <string name="extraction_in_progress">Processing questionnaire data…</string>
     <string name="loading_questionnaire">Loading questionnaire…</string>
     <string name="clear_all">Clear All</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
+    <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
 
 </resources>

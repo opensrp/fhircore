@@ -53,9 +53,9 @@ This rule is used within the rules engine or workflow to be able to determine wh
       "condition": "true",
       "actions": [
         "data.put('isPregnant', service.evaluateToBoolean(data.get('activeConditions'), \"Condition.code.text = 'Pregnant' \", false))"
-      ]  
+      ]
     },
-```   
+```
 
 ### Configuring the properties of the `evaluateToBoolean()`
 
