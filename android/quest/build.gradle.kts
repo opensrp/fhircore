@@ -269,7 +269,7 @@ android {
       manifestPlaceholders["appLabel"] = "ZEIR"
     }
 
-    create("gizeir") {
+    create("gizEir") {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
