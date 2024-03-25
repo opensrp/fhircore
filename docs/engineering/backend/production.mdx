@@ -9,7 +9,8 @@ _Separate_ OAuth clients should be configured for the ETL Pipes/Analytics and th
 
 
 #### Android client
-Enable **Direct Access Grant only** - This client should be configured as a `Public` client. To fetch a token you will not need the client secret. This will use the `Resource Credentials/Password` Grant type. 
+Enable **Direct Access Grant only** - This client should be configured as a `Public` client. To fetch a token you will not need the client secret. 
+This will use the `Resource Credentials/Password` Grant type. 
 
 :::danger
 
@@ -18,7 +19,9 @@ Do not store any sensitive data like _password credentials_ or _secrets_ in your
 ::::
 
 #### FHIR Web client
-Enable **Client Authentication** and enable **Standard flow**. _Implicit flow should only be used for local dev testing - it can be configured for stage and maybe preview but NOT production._. This will use the  
+Enable **Client Authentication** and enable **Standard flow**. _Implicit flow should only be used for local dev testing - it can be configured for stage and maybe preview but NOT production._. 
+This will use the `Authorization Code` Grant type
 
 #### Data pipelines/Analytics client
-Enable **Client Authentication** and enable **Service Account Roles**. This will use the `Client Credentials` grant type.
+Enable **Client Authentication** and enable **Service Account Roles**. 
+This will use the `Client Credentials` Grant type.
