@@ -155,19 +155,20 @@ constructor(
     val questionnaire =
       if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
-          resourceId = questionnaireConfig.id,
+          resourceId = questionnaireConfig.id
         )
-      } else defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-          item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.isReadOnly(),
-            readOnlyLinkIds =
-              questionnaireConfig.readOnlyLinkIds
-                ?: questionnaireConfig.linkIds
-                  ?.filter { it.type == LinkIdType.READ_ONLY }
-                  ?.map { it.linkId },
-          )
-        }
+      } else {
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+          if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
+            item.prepareQuestionsForReadingOrEditing(
+              readOnly = questionnaireConfig.isReadOnly(),
+              readOnlyLinkIds =
+                questionnaireConfig.readOnlyLinkIds
+                  ?: questionnaireConfig.linkIds
+                    ?.filter { it.type == LinkIdType.READ_ONLY }
+                    ?.map { it.linkId },
+            )
+          }
 
         // Pre-populate questionnaire items with configured values
         allActionParameters
@@ -176,20 +177,23 @@ constructor(
             item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
           }
 
-        // Set barcode to the configured linkId default: "patient-barcode"
-        if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-          (questionnaireConfig.barcodeLinkId
-              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
-            ?.let { barcodeLinkId ->
-              find(barcodeLinkId)?.apply {
-                initial =
-                  mutableListOf(
-                    Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-                  ) // TODO should this be resource identifier or OpenSrp unique ID?
-                readOnly = true
+          // Set barcode to the configured linkId default: "patient-barcode"
+          if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+            (questionnaireConfig.barcodeLinkId
+                ?: questionnaireConfig.linkIds
+                  ?.firstOrNull { it.type == LinkIdType.BARCODE }
+                  ?.linkId)
+              ?.let { barcodeLinkId ->
+                find(barcodeLinkId)?.apply {
+                  initial =
+                    mutableListOf(
+                      Questionnaire.QuestionnaireItemInitialComponent()
+                        .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                    ) // TODO should this be resource identifier or OpenSrp unique ID?
+                  readOnly = true
+                }
               }
-            }
+          }
         }
       }
     return questionnaire
