@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
+import org.smartregister.fhircore.engine.data.local.purger.ResourcePurgerWorker
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
@@ -118,5 +119,18 @@ interface ConfigService {
         ExistingPeriodicWorkPolicy.UPDATE,
         workRequest,
       )
+  }
+
+  fun scheduleResourcePurger(context: Context) {
+    with(
+      PeriodicWorkRequestBuilder<ResourcePurgerWorker>(12, TimeUnit.HOURS),
+    ) {
+      WorkManager.getInstance(context)
+        .enqueueUniquePeriodicWork(
+          ResourcePurgerWorker.NAME,
+          ExistingPeriodicWorkPolicy.UPDATE,
+          build(),
+        )
+    }
   }
 }
