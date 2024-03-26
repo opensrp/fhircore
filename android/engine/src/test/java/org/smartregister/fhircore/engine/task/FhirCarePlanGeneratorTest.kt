@@ -114,6 +114,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.REFERENCE
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -2172,6 +2173,37 @@ class FhirCarePlanGeneratorTest : RobolectricTest() {
     val planDefIdOnly = planDefinition?.id?.substringAfterLast('/')
 
     planDefinition?.let { assertEquals(planDefinitionId, planDefIdOnly) }
+  }
+
+  @Test
+  fun testRetrievePlanDefinitionReturnsNull() = runTest {
+    val samplePlanDefinition = PlanDefinition().apply { id = "plan-1" }
+
+    val patient =
+      "plans/sample-request/sample_request_patient.json"
+        .readFile()
+        .decodeResourceFromString<Patient>()
+
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+
+    val mockAppId = "mockAppId${ConfigurationRegistry.DEBUG_SUFFIX}"
+
+    every { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+      mockAppId
+
+    val resource =
+      configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(samplePlanDefinition.id)
+    val bundle = Bundle().apply { addEntry().resource = patient }
+    val planDefinition =
+      fhirCarePlanGenerator.generateOrUpdateCarePlan(
+        planDefinitionId = samplePlanDefinition.id,
+        subject = patient,
+        data = bundle,
+        generateCarePlanWithWorkflowApi = false,
+      )
+
+    assertNull(planDefinition)
+    assertNull(resource)
   }
 
   @Test
