@@ -51,17 +51,17 @@ sonar {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = BuildConfigs.compileSdk
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
   namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
-    applicationId = "org.smartregister.opensrp"
-    minSdk = 26
-    versionCode = 10
-    versionName = "1.1.0"
+    applicationId = BuildConfigs.applicationId
+    minSdk = BuildConfigs.minSdk
+    versionCode = BuildConfigs.versionCode
+    versionName = BuildConfigs.versionName
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -161,7 +161,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -173,7 +173,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 
   lint { abortOnError = false }
 
@@ -267,6 +267,13 @@ android {
       applicationIdSuffix = ".zeir"
       versionNameSuffix = "-zeir"
       manifestPlaceholders["appLabel"] = "ZEIR"
+    }
+
+    create("gizEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".gizeir"
+      versionNameSuffix = "-gizeir"
+      manifestPlaceholders["appLabel"] = "GIZ EIR"
     }
 
     create("engage") {
@@ -381,6 +388,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
+  implementation(libs.play.services.location)
 
   // Annotation processors
   kapt(libs.hilt.compiler)

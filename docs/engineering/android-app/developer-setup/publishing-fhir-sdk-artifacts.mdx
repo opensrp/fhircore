@@ -12,6 +12,7 @@ At the moment, we have the following FHIR SDK artifacts that need to be released
 - Android FHIR Structured Data Capture Library
 - Android FHIR Workflow Library
 - Android FHIR Structured Data Capture - Barcode Extensions (contrib)
+- Android FHIR Structured Data Capture - Location Widget Extensions (contrib)
 
 Sometimes one wants to test the changes on the repo e.g. on the `master` branch without doing a remote release to _Sonatype_ during development. It is possible to do this locally.
 
@@ -53,7 +54,7 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   
   #### Processes
 
-  1. On OpenSRP's Github fork of the Android FHIR SDK (Assuming there are new changes) click on _Sync fork_
+  1. On [OpenSRP's Github fork of the Android FHIR SDK](https://github.com/opensrp/android-fhir) (Assuming there are new changes) click on _Sync fork_
   2. _Check out_ to `master` branch locally and _pull_ the latest changes
   3. _Checkout_ to `master-release` branch and _merge_ in `master` changes
   4. _Update the versions_ of the various modules you want to publish in the `buildSrc/src/main/kotlin/Releases.kt` file
@@ -61,7 +62,7 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   6. _Make a commit_ with the updated versions and _add a commit message_ in the format shown in the [Commits section below](#commits)
   7. Push the commit to the `master-release` branch for tracking
   8. Now that the `master-release` branch has all the latest updates from parent `master`, _Check out_ to a new branch on your local with today's date in the dot separated double digit format **DD-MM-YYYY** and prefixe with `release-` e.g. `release-20.10.2023`
-  9. Merge in any other unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet
+  9. Merge in any other unmerged PR branches mentioned in the previous commit message and have not been merged to `master` yet. Ensure they branches have been updated with the latest master/main branch.
   10. _Publish_ the specific modules that you wanted. See the [Publishing section below](#publishing)
   11. After a successful publish to Maven push your release branch above for versioning.
 
@@ -75,8 +76,8 @@ Building FHIR Core should now import the new artifact version. MavenLocal is alr
   
   ```
    SDK Release: Engine, SDC, Workflow, Contrib:Barcode, Common, Knowledger
-   - With unmerged PR #1344 branch
-   - With unmerged PR #1542 branch
+   - With unmerged PR #1344
+   - With unmerged PR #1542
   ```
 See related [sample commit here](https://github.com/google/android-fhir/commit/10e46a0eac5f41b68b5bb1caa87069b83d36c6b1)
 
@@ -100,6 +101,12 @@ See related [sample commit here](https://github.com/google/android-fhir/commit/1
   ### Publishing
 
   Once all the above is in place you just need to run the command: <br/>
-`./gradlew :datacapture:publishReleasePublicationToSonatypeRepository --stacktrace`. All the other modules follow a similar format, you only need to change the module you are targeting, e.g. to publish _engine_ use the command: <br/> `./gradlew :engine:publishReleasePublicationToSonatypeRepository --stacktrace`
+```shell
+./gradlew :datacapture:publishReleasePublicationToSonatypeRepository --stacktrace
+```
+All the other modules follow a similar format, you only need to change the module you are targeting, e.g. to publish _engine_ use the command: <br/> 
+```shell
+./gradlew :engine:publishReleasePublicationToSonatypeRepository --stacktrace
+```
 <br/><br/>
-Your artifact should now be available under the corresponding artifact group under your org. on Sonatype <br/> `https://oss.sonatype.org/content/repositories/snapshots/org/smartregister/data-capture/`
+Your artifact should now be available under the corresponding artifact group under your org. on Sonatype <br/> e.g. see [OpenSRP Standard Data Capture Artifacts](https://oss.sonatype.org/content/repositories/snapshots/org/smartregister/data-capture/)
