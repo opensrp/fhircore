@@ -8,23 +8,23 @@ Status | In review
 
 ## Background
 
-There is a need to ensure compatibility between FHIR configs downloaded from the server and the version of the OpenSRP 2 app. With OpenSRP still in active development, with ongoing changes to how configs are defined, implementing version-based content limitations is crucial to ensuring that the application functions correctly. This allows for streamlining of user experience and maintaining consistency across different versions of the application.
+We need to ensure compatibility between FHIR configs downloaded from the server and the version of the OpenSRP 2 app. With OpenSRP still in active development and ongoing changes to how configs are defined, implementing version-based content limitations is crucial to ensuring that the application functions correctly. This allows us to streamline the user experience and maintain consistency across different versions of the application.
 
 
 ## Switch from Composition to ImplementationGuide
 
-OpenSRP currently uses a composition resource to define resources that map out an OpenSRP 2 application. Storing versioning information in the composition resource is non-trivial.
+OpenSRP currently uses a Composition resource to group the resources that define an OpenSRP 2 application. Storing versioning information in the Composition resource is non-trivial and ad hoc.
 
-An ImplementationGuide (IG) is designed with versioning support and rich metadata such as licensing information, authors, publication status, etc.
+An ImplementationGuide (IG) is designed with versioning support and rich metadata such as licensing information, authors, publication status, etc. IGs are the typical wrapper for a set of resources that define a healthcare workflow or system.
 
-An IG has a `useContext` field whose data type is a `UsageContext` that has `Range` as one of the allowed types. Range has `low` and `high` values which can be used to set the app’s version range supported by the configs. It also has a `version` field of the content.
+An IG has a `useContext` field whose data type is a `UsageContext` that has `valueRange` (Range) as one of the allowed types. Range has `low` and `high` values which we will use define the app versions supported by the configs. It also has a `version` field, we will use this to define the version of the content.
 
 The `useContext.valueRange` defines the lowest and highest APK versions it is compatible with.
 
-IG’s `definition` field maps to `section` field of the composition.
+The IG’s `definition` field maps to the `section` field of the composition.
 
 * `resource.reference` maps to `section.focus.reference`
-* `resource.name` maps to `section.focus.indentifier.value`
+* `resource.name` maps to `section.focus.identifier.value`
 
 ImplementationGuide
 
@@ -39,9 +39,9 @@ ImplementationGuide
       - name
 ```
 
-ImplementationGuides are used to package all related resources to manage workflows e.g. immunization IG, malaria IG, HIV IG, etc. To align with how others use IGs, the ideal approach in OpenSRP would be to link all resources referenced in the composition config’s section in the implementation guide and fully switch to using an IG instead of a composition resource 
+ImplementationGuides are used to package all related resources to manage workflows e.g. immunization IG, malaria IG, HIV IG, etc. To align with how others use IGs, the ideal approach in OpenSRP would be to link all resources referenced in the Composition resource’s section in the implementation guide and fully switch to using an IG instead of a Composition resource
 
-For the first iteration of the switch, an implementation guide will be created and the existing composition config referenced in the IG.
+For the first iteration of the switch, an implementation guide will be created and the existing Composition resource referenced in the IG.
 
 ## Sequenced Work Plan
 
@@ -55,18 +55,18 @@ For the first iteration of the switch, an implementation guide will be created a
         * `status` - publication status of the IG
         * `packageId` - package name for the IG
         * `fhirVersion` - FHIR version(s) the IG targets
-        * `useContext.valueRange` - a range of lowest and highest supported APK versions codes. Using the version code over the SEMVER version simplifies filtering by range when fetching from the server
-        * `definition.resource` - a reference to the existing composition resource
+        * `useContext.valueRange` - a range of lowest and highest supported APK version codes. Using the version code over the SEMVER version simplifies filtering by range when fetching from the server
+        * `definition.resource` - a reference to the existing Composition resource
 
-    2. Update OpenSRP to support syncing using both IG and composition configs.
-        * For apps that do not have an IG, follow the current sync flow using the composition config
+    2. Update OpenSRP to support syncing using both IG and Composition resources.
+        * For apps that do not have an IG, follow the current sync flow using the Composition config
         * For apps that have an IG configured:
             * Fetch the highest version of the IG config from the server whose useContext range applies for the app’s version.
             * Use the composition config referenced in the IG and follow the standard sync using composition config.
         * In cases where both an IG and a composition config are defined for an app, the IG takes precedence over the composition. The flow in (ii) applies.
         * If both IG and composition resources are not available, the app should fail with a message to the user
 
-    3. Documentation on how to set IG’s version and useContext range values
+    3. Document how to set IG’s version and useContext range values
         * The IG `useContext` value should be a range of the app's supported version codes. Using version codes over the app's semantic version allows us to more easily filter from the server by range.
             * useContext.valueRange.low - minimum supported version code. Skip this value if the support starts from the earliest version
             * useContext.valueRange.high - maximum supported version code. Skip this value if the support starts from low and supports every version above that
@@ -94,7 +94,7 @@ For the first iteration of the switch, an implementation guide will be created a
     [GitHub Issue #3151](https://github.com/opensrp/fhircore/issues/3151)
     * Add IG version and useContext values to the application’s settings screen
 
-3. **[TBD, review with PM/TPM/Dev, requires product owner sign-off]** Tag generated content with version of IG. This can be valuable when troubleshooting. Below are some of the considerations to guide the decision on whether to do this 
+3. **[TBD, review with PM/TPM/Dev, requires product owner sign-off]** Tag generated content with version of IG. This can be valuable when troubleshooting. Below are some of the considerations to guide the decision on whether to do this
     * Pros
         * Useful for debug purposes - provides crucial information during debugging sessions. It allows developers to quickly identify which version of the IG was used to generate specific content, aiding in diagnosing and resolving issues more efficiently. It is also easy to correlate inconsistencies or errors directly to the version of the IG tagged in the resources
         * Track failure back to version of content - a clear audit trail of content changes and their corresponding IG versions is maintained
@@ -125,14 +125,14 @@ For the first iteration of the switch, an implementation guide will be created a
         _An IG resource will be created for the versions of the app that they support. Resource.reference field of the IG references the exisiting composition resource._
 
 2. How do we handle bundling of the IG resource using the Workflow manager?
-    * An IG is a metadata resource, not a normal resource. It is referenced by a URL rather than an identifier as is the case with composition resources. 
-    * How will workflow manager discriminate how if processes a content IG vs Workflow IG? 
+    * An IG is a metadata resource, not a normal resource. It is referenced by a URL rather than an identifier as is the case with composition resources.
+    * How will workflow manager discriminate how if processes a content IG vs Workflow IG?
         * The workflow manager should always assume that the IG it is receiving is a workflow IG
     * Also, they are packaged as maven dependencies? TBD
 3. IG focuses on bundling workflows as opposed to resources.
     * An app can have multiple IGs that define different workflows.
         * NB: A workflow is a set of resources. For example you can have an antenatal care IG or an Application IG.
-4. How does the app know what version of the IG/Composition to load? E.g 
+4. How does the app know what version of the IG/Composition to load? E.g
     * 0.1.0 APK version uses Composition/IG version 2
     * 2.0.0 - 3.0.5 APK version uses Composition/IG version 4
         * The app points to an IG and the IG points to a composition resource
@@ -148,7 +148,7 @@ For the first iteration of the switch, an implementation guide will be created a
     * Questionnaire/001 => Questionnaire/002 - Use 2 files
     * Questionnaire/001/_history/1 => Questionnaire/001/_history/2 - The same file leverage FHIR version
     * Does your HAPI FHIR server support versioning using __history_
-    
+
         _As highlighted in bullet (c), as not all FHIR servers support resource versioning, the approach to be applied in this case is use of a different identifier for configs with breaking changes.  _
 
 6. The process of releasing a content IG
