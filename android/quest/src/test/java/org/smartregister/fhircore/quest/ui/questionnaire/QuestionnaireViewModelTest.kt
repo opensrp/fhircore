@@ -125,8 +125,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
-  @Inject lateinit var configRegistry: ConfigurationRegistry
-
   @Inject lateinit var parser: IParser
 
   private val fhirResourceService = mockk<FhirResourceService>()
@@ -544,20 +542,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery {
       mockedConfigurationRegistry.configsJsonMap.getOrDefault(theQuestionnaireConfig.id, null)
     } returns sampleQuestionnaire.encodeResourceToString()
-    questionnaireViewModel =
-      spyk(
-        QuestionnaireViewModel(
-          defaultRepository = defaultRepository,
-          dispatcherProvider = defaultRepository.dispatcherProvider,
-          fhirCarePlanGenerator = fhirCarePlanGenerator,
-          resourceDataRulesExecutor = resourceDataRulesExecutor,
-          transformSupportServices = mockk(),
-          sharedPreferencesHelper = mockedSharedPreferencesHelper,
-          fhirOperator = fhirOperator,
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          configurationRegistry = mockedConfigurationRegistry,
-        ),
-      )
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = theQuestionnaireConfig,
