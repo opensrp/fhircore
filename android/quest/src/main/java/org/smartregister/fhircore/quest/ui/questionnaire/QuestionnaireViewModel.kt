@@ -155,7 +155,7 @@ constructor(
     val questionnaire =
       if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
-          resourceId = questionnaireConfig.id
+          resourceId = questionnaireConfig.id,
         )
       } else {
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
