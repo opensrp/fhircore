@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.LiveData
@@ -111,12 +110,12 @@ constructor(
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
 ) : ViewModel() {
-
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
     sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
   }
+
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
       .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
@@ -135,7 +134,6 @@ constructor(
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
    * retrieved [Questionnaire] can be pre-populated with computed values from the Rules engine.
    */
-  @SuppressLint("SuspiciousIndentation")
   suspend fun retrieveQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>?,
@@ -159,44 +157,41 @@ constructor(
         configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
           resourceId = questionnaireConfig.id,
         )
-      } else defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
-
-    questionnaire?.apply {
-      if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-        item.prepareQuestionsForReadingOrEditing(
-          readOnly = questionnaireConfig.isReadOnly(),
-          readOnlyLinkIds =
-            questionnaireConfig.readOnlyLinkIds
-              ?: questionnaireConfig.linkIds
-                ?.filter { it.type == LinkIdType.READ_ONLY }
-                ?.map { it.linkId },
-        )
-      }
-
-      // Pre-populate questionnaire items with configured values
-      allActionParameters
-        ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
-        ?.let { actionParam ->
-          item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
+      } else defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
+          item.prepareQuestionsForReadingOrEditing(
+            readOnly = questionnaireConfig.isReadOnly(),
+            readOnlyLinkIds =
+              questionnaireConfig.readOnlyLinkIds
+                ?: questionnaireConfig.linkIds
+                  ?.filter { it.type == LinkIdType.READ_ONLY }
+                  ?.map { it.linkId },
+          )
         }
 
-      // Set barcode to the configured linkId default: "patient-barcode"
-      if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-        (questionnaireConfig.barcodeLinkId
-            ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
-          ?.let { barcodeLinkId ->
-            find(barcodeLinkId)?.apply {
-              initial =
-                mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                    .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-                ) // TODO should this be resource identifier or OpenSrp unique ID?
-              readOnly = true
-            }
+        // Pre-populate questionnaire items with configured values
+        allActionParameters
+          ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
+          ?.let { actionParam ->
+            item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
           }
-      }
-    }
 
+        // Set barcode to the configured linkId default: "patient-barcode"
+        if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+          (questionnaireConfig.barcodeLinkId
+              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+            ?.let { barcodeLinkId ->
+              find(barcodeLinkId)?.apply {
+                initial =
+                  mutableListOf(
+                    Questionnaire.QuestionnaireItemInitialComponent()
+                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                  ) // TODO should this be resource identifier or OpenSrp unique ID?
+                readOnly = true
+              }
+            }
+        }
+      }
     return questionnaire
   }
 
@@ -348,7 +343,9 @@ constructor(
             this.id = questionnaireResponse.subject.extractId()
           } else if (
             extractedResourceUniquePropertyExpressionsMap.containsKey(resourceType) &&
-              previouslyExtractedResources.containsKey(resourceType)
+              previouslyExtractedResources.containsKey(
+                resourceType,
+              )
           ) {
             val fhirPathExpression =
               extractedResourceUniquePropertyExpressionsMap
@@ -522,7 +519,11 @@ constructor(
   ): ResourceType? {
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     return questionnaireConfig.resourceType
-      ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+      ?: questionnaireSubjectType?.let {
+        ResourceType.valueOf(
+          it,
+        )
+      }
   }
 
   private fun Resource?.applyResourceMetadata(
@@ -698,7 +699,12 @@ constructor(
 
     if (libraryFilters.isNotEmpty()) {
       defaultRepository.fhirEngine
-        .search<Library> { filter(Resource.RES_ID, *libraryFilters.toTypedArray()) }
+        .search<Library> {
+          filter(
+            Resource.RES_ID,
+            *libraryFilters.toTypedArray(),
+          )
+        }
         .forEach { librarySearchResult ->
           val result: Parameters =
             fhirOperator.evaluateLibrary(
@@ -721,7 +727,11 @@ constructor(
 
               if (BuildConfig.DEBUG) {
                 Timber.d(
-                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${getStringRepresentation(resultParameterResource)}",
+                  "CQL :: Param found: ${cqlResultParameterComponent.name} with value: ${
+                                        getStringRepresentation(
+                                            resultParameterResource,
+                                        )
+                                    }",
                 )
               }
             }
