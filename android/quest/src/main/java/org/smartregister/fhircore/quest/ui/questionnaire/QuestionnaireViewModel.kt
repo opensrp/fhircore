@@ -155,7 +155,7 @@ constructor(
     val questionnaire =
       if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
         configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
-          resourceId = questionnaireConfig.id
+          resourceId = questionnaireConfig.id,
         )
       } else {
         defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
@@ -180,9 +180,7 @@ constructor(
           // Set barcode to the configured linkId default: "patient-barcode"
           if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
             (questionnaireConfig.barcodeLinkId
-                ?: questionnaireConfig.linkIds
-                  ?.firstOrNull { it.type == LinkIdType.BARCODE }
-                  ?.linkId)
+                ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
               ?.let { barcodeLinkId ->
                 find(barcodeLinkId)?.apply {
                   initial =
