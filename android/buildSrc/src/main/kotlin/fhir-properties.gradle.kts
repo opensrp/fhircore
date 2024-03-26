@@ -15,7 +15,7 @@ val localProperties = readProperties((properties["localPropertiesFile"] ?: "${ro
 fhirAuthArray.forEach { property ->
     extra.set(property, localProperties.getProperty(property, when {
         property.contains("URL") -> "https://sample.url/fhir/"
-        else -> "sample_" + property
+        else -> "sample_$property"
     }
     ))
 }
@@ -24,10 +24,10 @@ fhirAuthArray.forEach { property ->
 val keystoreProperties = readProperties((properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString())
 
 keystoreAuthArray.forEach { property ->
-    extra.set(property, keystoreProperties.getProperty(property, "sample_" + property))
+    extra.set(property, keystoreProperties.getProperty(property, "sample_$property"))
 }
 
-fun Project.readProperties(file: String): Properties {
+fun readProperties(file: String): Properties {
     val properties = Properties()
     val localProperties = File(file)
     if (localProperties.isFile) {

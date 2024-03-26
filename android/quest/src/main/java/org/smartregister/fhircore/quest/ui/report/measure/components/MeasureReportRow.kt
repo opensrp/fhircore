@@ -87,9 +87,10 @@ fun MeasureReportRow(
       }
     }
     Image(
-      painter = painterResource(id = R.drawable.ic_forward_arrow),
+      painter = painterResource(id = org.smartregister.fhircore.engine.R.drawable.ic_forward_arrow),
       contentDescription = "",
-      colorFilter = ColorFilter.tint(colorResource(id = R.color.status_gray)),
+      colorFilter =
+        ColorFilter.tint(colorResource(id = org.smartregister.fhircore.engine.R.color.status_gray)),
       modifier = Modifier.padding(end = 12.dp),
     )
   }

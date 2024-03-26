@@ -88,7 +88,9 @@ constructor(
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
-        enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting),
+        // Disable in-app reporting -- Measure reports not well supported
+        // enableReports = appFeatureManager.isFeatureActive(AppFeature.InAppReporting),
+        enableReports = false,
       )
   }
 

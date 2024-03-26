@@ -154,7 +154,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
   @Test
   fun testNavigateToHomeShouldVerifyExpectedIntent() {
     loginViewModel.navigateToHome()
-    verify { loginService.navigateToHome() }
+    verify { loginService.activateAuthorisedFeatures() }
   }
 
   @Test
@@ -199,7 +199,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginService = loginActivity.loginService
 
     loginViewModel.navigateToHome()
-    verify(exactly = 0) { loginService.navigateToHome() }
+    verify(exactly = 0) { loginService.activateAuthorisedFeatures() }
 
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
@@ -235,7 +235,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginViewModel.onUsernameUpdated("newTestUser")
 
     loginViewModel.navigateToHome()
-    verify(exactly = 1) { loginService.navigateToHome() }
+    verify(exactly = 1) { loginService.activateAuthorisedFeatures() }
 
     loginActivity =
       spyk(Robolectric.buildActivity(LoginActivity::class.java).create().resume().get())
@@ -251,7 +251,7 @@ class LoginActivityTest : ActivityRobolectricTest() {
     loginViewModel.updateViewConfigurations(loginConfig)
     loginViewModel.navigateToHome()
 
-    verify { loginService.navigateToHome() }
+    verify { loginService.activateAuthorisedFeatures() }
   }
 
   @Test

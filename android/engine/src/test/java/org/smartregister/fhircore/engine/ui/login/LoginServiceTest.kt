@@ -16,29 +16,22 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
 import org.junit.After
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.robolectric.Robolectric
-import org.robolectric.Shadows.shadowOf
-import org.robolectric.shadows.ShadowIntent
 import org.smartregister.fhircore.engine.app.AppLoginService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.ui.pin.PinLoginActivity
-import org.smartregister.fhircore.engine.ui.pin.PinSetupActivity
 
 @HiltAndroidTest
 class LoginServiceTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  lateinit var loginActivity: LoginActivity
+  private lateinit var loginActivity: LoginActivity
 
   private val loginService: LoginService = spyk(AppLoginService())
 
@@ -52,21 +45,5 @@ class LoginServiceTest : RobolectricTest() {
   @After
   fun tearDown() {
     loginActivity.finish()
-  }
-
-  @Test
-  fun testNavigateToPinLoginNavigateToPinLoginScreen() {
-    loginService.navigateToPinLogin()
-    val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
-    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-    Assert.assertEquals(PinLoginActivity::class.java, shadowIntent.intentClass)
-  }
-
-  @Test
-  fun testNavigateToPinSetupNavigateToPinSetupScreen() {
-    loginService.navigateToPinLogin(goForSetup = true)
-    val startedIntent: Intent = shadowOf(loginActivity).nextStartedActivity
-    val shadowIntent: ShadowIntent = shadowOf(startedIntent)
-    Assert.assertEquals(PinSetupActivity::class.java, shadowIntent.intentClass)
   }
 }

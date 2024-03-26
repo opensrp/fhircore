@@ -46,32 +46,56 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
         type = ResourceType.CareTeam.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_careteam_system)
-            display = context.getString(R.string.sync_strategy_careteam_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_system
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_display
+              )
           },
       ),
       ResourceTag(
         type = ResourceType.Location.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_location_system)
-            display = context.getString(R.string.sync_strategy_location_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_system
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_display
+              )
           },
       ),
       ResourceTag(
         type = ResourceType.Organization.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_organization_system)
-            display = context.getString(R.string.sync_strategy_organization_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_system
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_display
+              )
           },
       ),
       ResourceTag(
         type = SharedPreferenceKey.PRACTITIONER_ID.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_practitioner_system)
-            display = context.getString(R.string.sync_strategy_practitioner_display)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_system
+              )
+            display =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_display
+              )
           },
         isResource = false,
       ),
@@ -79,8 +103,11 @@ class DataClerkConfigService @Inject constructor(@ApplicationContext val context
         type = SharedPreferenceKey.APP_ID.name,
         tag =
           Coding().apply {
-            system = context.getString(R.string.sync_strategy_appid_system)
-            display = context.getString(R.string.application_id)
+            system =
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.sync_strategy_appid_system
+              )
+            display = context.getString(org.smartregister.fhircore.engine.R.string.application_id)
           },
         isResource = false,
       ),

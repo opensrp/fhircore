@@ -226,13 +226,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         ) {
           super.onFragmentViewCreated(fm, f, v, savedInstanceState)
           if (f is QuestionnaireFragment) {
-            v.findViewById<Button>(R.id.submit_questionnaire)?.apply {
-              layoutParams.width =
-                ViewGroup.LayoutParams
-                  .MATCH_PARENT // Override by Styles xml does not seem to work for this layout
-              // param
-              text = submitButtonText()
-            }
+            v.findViewById<Button>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
+              ?.apply {
+                layoutParams.width =
+                  ViewGroup.LayoutParams
+                    .MATCH_PARENT // Override by Styles xml does not seem to work for this layout
+                // param
+                text = submitButtonText()
+              }
           }
         }
       },
@@ -346,7 +347,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  fun getQuestionnaireResponse(): QuestionnaireResponse {
+  suspend fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
     return questionnaireFragment.getQuestionnaireResponse()
@@ -361,25 +362,31 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
+    lifecycleScope.launch {
+      val questionnaireResponse = getQuestionnaireResponse()
+      val isQuestionnaireResponseValid: Boolean
+      withContext(dispatcherProvider.unconfined()) {
+        isQuestionnaireResponseValid = validQuestionnaireResponse(questionnaireResponse)
+      }
 
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title,
-      )
-      return
-    }
+      if (!isQuestionnaireResponseValid) {
+        saveProcessingAlertDialog.dismiss()
 
-    handleQuestionnaireResponse(questionnaireResponse)
+        AlertDialogue.showErrorAlert(
+          this@QuestionnaireActivity,
+          R.string.questionnaire_alert_invalid_message,
+          R.string.questionnaire_alert_invalid_title,
+        )
+        return@launch
+      }
+      handleQuestionnaireResponse(questionnaireResponse)
 
-    questionnaireViewModel.extractionProgress.observe(this) { result ->
-      if (result is ExtractionProgress.Success) {
-        onPostSave(true, questionnaireResponse, result.extras)
-      } else {
-        onPostSave(false, questionnaireResponse)
+      questionnaireViewModel.extractionProgress.observe(this@QuestionnaireActivity) { result ->
+        if (result is ExtractionProgress.Success) {
+          onPostSave(true, questionnaireResponse, result.extras)
+        } else {
+          onPostSave(false, questionnaireResponse)
+        }
       }
     }
   }
@@ -445,7 +452,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
-  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+  suspend fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,

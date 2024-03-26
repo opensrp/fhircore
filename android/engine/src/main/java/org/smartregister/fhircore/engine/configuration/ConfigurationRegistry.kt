@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
@@ -59,7 +60,7 @@ constructor(
     return try {
       val binary = getBinary(appConfigService.getAppId()).content.decodeToString()
       val config = binary.decodeJson<AppConfiguration>(jsonSerializer)
-      applicationConfiguration.value = config
+      applicationConfiguration.update { config }
       true
     } catch (ex: ResourceNotFoundException) {
       false

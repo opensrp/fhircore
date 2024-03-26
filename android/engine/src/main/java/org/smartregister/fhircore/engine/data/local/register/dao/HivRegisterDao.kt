@@ -394,7 +394,7 @@ constructor(
       .map { defaultRepository.loadResource(it.other) }
 
   private fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.getAppConfigs()!!
+    return configurationRegistry.getAppConfigs()
   }
 
   suspend fun removePatient(patientId: String) {

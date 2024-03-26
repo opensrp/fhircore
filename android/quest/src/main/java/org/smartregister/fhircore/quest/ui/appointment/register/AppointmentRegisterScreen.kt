@@ -183,7 +183,10 @@ fun FilterAppointmentsModal(
                 contentColor = Color.DarkGray.copy(alpha = ContentAlpha.medium),
               ),
           ) {
-            Text(text = stringResource(id = R.string.cancel).uppercase())
+            Text(
+              text =
+                stringResource(id = org.smartregister.fhircore.engine.R.string.cancel).uppercase()
+            )
           }
 
           TextButton(

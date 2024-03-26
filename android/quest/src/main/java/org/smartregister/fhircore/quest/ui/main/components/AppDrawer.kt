@@ -140,10 +140,9 @@ fun AppDrawer(
         }
       }
       if (enableReports) {
-        // TODO("Measure reports not well supported, might need further work")
         SideMenuItem(
-          iconResource = R.drawable.ic_reports,
-          title = stringResource(R.string.reports),
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_reports,
+          title = stringResource(org.smartregister.fhircore.engine.R.string.reports),
           showEndText = false,
           onSideMenuClick = {
             openDrawer(false)
@@ -153,7 +152,7 @@ fun AppDrawer(
       }
       if (enableDeviceToDeviceSync) {
         SideMenuItem(
-          iconResource = R.drawable.ic_sync,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_sync,
           title = stringResource(R.string.device_to_device_sync),
           showEndText = false,
           onSideMenuClick = {
@@ -165,8 +164,8 @@ fun AppDrawer(
       if (languages.isNotEmpty()) {
         Box {
           SideMenuItem(
-            iconResource = R.drawable.ic_outline_language_white,
-            title = stringResource(R.string.language),
+            iconResource = org.smartregister.fhircore.engine.R.drawable.ic_outline_language_white,
+            title = stringResource(org.smartregister.fhircore.engine.R.string.language),
             showEndText = true,
             endText = currentLanguage,
             onSideMenuClick = { expandLanguageDropdown = true },
@@ -195,7 +194,7 @@ fun AppDrawer(
       }
       SideMenuItem(
         iconResource = R.drawable.ic_settings,
-        title = stringResource(R.string.settings, username),
+        title = stringResource(org.smartregister.fhircore.engine.R.string.settings, username),
         showEndText = false,
         onSideMenuClick = {
           openDrawer(false)
@@ -203,8 +202,8 @@ fun AppDrawer(
         },
       )
       SideMenuItem(
-        iconResource = R.drawable.ic_logout_white,
-        title = stringResource(R.string.logout_user, username),
+        iconResource = org.smartregister.fhircore.engine.R.drawable.ic_logout_white,
+        title = stringResource(org.smartregister.fhircore.engine.R.string.logout_user, username),
         showEndText = false,
         onSideMenuClick = { onSideMenuClick(AppMainEvent.Logout(context)) },
       )
@@ -216,8 +215,8 @@ fun AppDrawer(
           .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
       SideMenuItem(
-        iconResource = R.drawable.ic_sync,
-        title = stringResource(R.string.sync),
+        iconResource = org.smartregister.fhircore.engine.R.drawable.ic_sync,
+        title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
         endText = lastSyncTime,
         showEndText = true,
         endTextColor = SubtitleTextColor,
@@ -285,22 +284,22 @@ fun AppDrawerPreview() {
       listOf(
         SideMenuOption(
           appFeatureName = "AllFamilies",
-          iconResource = R.drawable.ic_user,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           count = suspend { 4 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
-          iconResource = R.drawable.ic_user,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           count = suspend { 16 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "Reports",
-          iconResource = R.drawable.ic_reports,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_reports,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           showCount = false,
         ),
       ),
@@ -327,22 +326,22 @@ fun AppDrawerPreviewSyncDisabled() {
       listOf(
         SideMenuOption(
           appFeatureName = "AllFamilies",
-          iconResource = R.drawable.ic_user,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           count = suspend { 4 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
-          iconResource = R.drawable.ic_user,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           count = suspend { 16 },
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "Reports",
-          iconResource = R.drawable.ic_reports,
-          titleResource = R.string.clients,
+          iconResource = org.smartregister.fhircore.engine.R.drawable.ic_reports,
+          titleResource = org.smartregister.fhircore.engine.R.string.clients,
           showCount = false,
         ),
       ),
