@@ -43,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
+import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -104,6 +105,7 @@ constructor(
   val defaultRepository: DefaultRepository,
   val configurationRegistry: ConfigurationRegistry,
   val transformSupportServices: TransformSupportServices,
+  val simpleWorkerContext: SimpleWorkerContext,
   val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   var tracer: PerformanceReporter,
@@ -459,6 +461,7 @@ constructor(
         context = context,
         transformSupportServices = transformSupportServices,
         structureMapProvider = retrieveStructureMapProvider(),
+        workerContext = simpleWorkerContext,
       ),
     )
   }

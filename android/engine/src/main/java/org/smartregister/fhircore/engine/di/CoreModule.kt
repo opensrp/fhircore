@@ -67,11 +67,12 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideWorkerContextProvider(): SimpleWorkerContext =
-    SimpleWorkerContext().apply {
-      setExpansionProfile(Parameters())
-      isCanRunWithoutTerminology = true
-    }
+  fun provideWorkerContextProvider(): SimpleWorkerContext {
+   return SimpleWorkerContext().apply {
+     setExpansionProfile(Parameters())
+     isCanRunWithoutTerminology = true
+   }
+  }
 
   @Singleton
   @Provides
@@ -83,7 +84,7 @@ class CoreModule {
   @Singleton
   @Provides
   fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
-    KnowledgeManager.create(context)
+    KnowledgeManager.create(context = context, packageServer = "https://packages.fhir.org/")
 
   @Singleton
   @Provides
@@ -107,4 +108,9 @@ class CoreModule {
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry,
   ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
+
+  companion object {
+    const val HL7_FHIR_PACKAGE = "hl7.fhir.r4.core"
+    const val HL7_FHIR_PACKAGE_VERSION = "4.0.1"
+  }
 }

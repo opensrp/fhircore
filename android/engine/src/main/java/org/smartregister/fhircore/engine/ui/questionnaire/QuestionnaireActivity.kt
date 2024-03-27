@@ -346,7 +346,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     }
   }
 
-  fun getQuestionnaireResponse(): QuestionnaireResponse {
+  suspend fun getQuestionnaireResponse(): QuestionnaireResponse {
     val questionnaireFragment =
       supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment
     return questionnaireFragment.getQuestionnaireResponse()
@@ -359,29 +359,32 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
+    lifecycleScope.launch {
+      saveProcessingAlertDialog = showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
 
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
+      val questionnaireResponse = getQuestionnaireResponse()
+      if (!validQuestionnaireResponse(questionnaireResponse)) {
+        saveProcessingAlertDialog.dismiss()
 
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title,
-      )
-      return
-    }
+        AlertDialogue.showErrorAlert(
+          this@QuestionnaireActivity,
+          R.string.questionnaire_alert_invalid_message,
+          R.string.questionnaire_alert_invalid_title,
+        )
+        return@launch
+      }
 
-    handleQuestionnaireResponse(questionnaireResponse)
+      handleQuestionnaireResponse(questionnaireResponse)
 
-    questionnaireViewModel.extractionProgress.observe(this) { result ->
-      if (result is ExtractionProgress.Success) {
-        onPostSave(true, questionnaireResponse, result.extras)
-      } else {
-        onPostSave(false, questionnaireResponse)
+      questionnaireViewModel.extractionProgress.observe(this@QuestionnaireActivity) { result ->
+        if (result is ExtractionProgress.Success) {
+          onPostSave(true, questionnaireResponse, result.extras)
+        } else {
+          onPostSave(false, questionnaireResponse)
+        }
       }
     }
+
   }
 
   fun onPostSave(
@@ -445,7 +448,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
-  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+ suspend fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
