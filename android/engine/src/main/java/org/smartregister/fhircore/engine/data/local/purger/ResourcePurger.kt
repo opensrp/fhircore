@@ -21,10 +21,12 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
+import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
@@ -35,11 +37,16 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
   suspend operator fun invoke() {
     onPurge<Observation>(ResourceType.Observation)
     onPurge<Encounter>(ResourceType.Encounter)
+    onPurge<QuestionnaireResponse>(ResourceType.QuestionnaireResponse)
     onPurgeCarePlans()
+    onPurgeAppointment()
   }
 
+  private suspend fun <R : Resource> query(type: ResourceType) =
+    fhirEngine.search<R>(Search(type)).map { it.resource }
+
   private suspend fun <R : Resource> onPurge(type: ResourceType) =
-    fhirEngine.search<R>(Search(type)).onEach { it.resource.purge() }
+    query<R>(type).onEach { it.purge() }
 
   private suspend fun Resource.purge() =
     try {
@@ -48,6 +55,11 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
     } catch (e: Exception) {
       Timber.tag("purge:Exception").e(e.message!!)
     }
+
+  private suspend fun onPurgeAppointment() =
+    query<Appointment>(ResourceType.Appointment)
+      .filterNot { it.status == Appointment.AppointmentStatus.BOOKED }
+      .onEach { it.purge() }
 
   /** Purge Inactive [CarePlan] together with it's associated [Task] */
   private suspend fun onPurgeInActiveCarePlanWithTasks(carePlans: List<CarePlan>) =
@@ -92,7 +104,13 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
             Task().apply { id = logicalId }.purge()
           }
         }
-        carePlan.purge()
+        carePlan.setStatusEnteredInError().purge()
       }
     }
+
+  private suspend fun CarePlan.setStatusEnteredInError(): CarePlan {
+    val carePlan = setStatus(CarePlan.CarePlanStatus.ENTEREDINERROR)
+    fhirEngine.update(carePlan)
+    return carePlan
+  }
 }
