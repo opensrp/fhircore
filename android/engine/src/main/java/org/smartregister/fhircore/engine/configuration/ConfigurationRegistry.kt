@@ -43,6 +43,7 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
@@ -482,7 +483,7 @@ constructor(
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     return resultBundle
   }
@@ -500,15 +501,14 @@ constructor(
           gatewayModeHeaderValue,
           searchPath,
         )
-
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
   }
 
   private suspend fun processResultBundleEntries(
-    resultBundle: Bundle,
+    resultBundleEntries: List<BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    resultBundle.entry?.forEach { bundleEntryComponent ->
+    resultBundleEntries.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
           val bundle = bundleEntryComponent.resource as Bundle
@@ -675,8 +675,6 @@ constructor(
         List<Composition.SectionComponent>,
       >,
     patientRelatedResourceTypes: MutableList<ResourceType>,
-    nextPageUrl: String? = null,
-    previousPageUrl: String? = null
   ) {
     if (isNonProxy()) {
       val chunkedResourceIdList = resourceGroup.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
@@ -711,33 +709,15 @@ constructor(
       }
     } else {
       resourceGroup.value.forEach {
-
-        val currentPage = extractPageNumber("${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=")
-        val nextPage = currentPage + 1
-        val previousPage = if (currentPage > 1 ) currentPage - 1 else 1
-        val currentPageUrl = if (!nextPageUrl.isNullOrBlank()) {
-          "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=$nextPage&_count=$DEFAULT_COUNT"
-        } else if (!previousPageUrl.isNullOrBlank()) {
-          "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=$previousPage&_count=$DEFAULT_COUNT"
-        } else {
-          "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT"
-        }
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = currentPageUrl,
+          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
     }
   }
 
-  private fun extractPageNumber(url: String): Int {
-    val pageParam = "_page="
-    val startIndex = url.indexOf(pageParam) + pageParam.length
-    val endIndex = url.indexOf("&", startIndex)
-    val pageNumber = url.substring(startIndex, if (endIndex != -1) endIndex else url.length)
-    return pageNumber.toIntOrNull() ?: 1
-  }
   private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
     this.relatedResources.forEach { it.dependentResourceTypes(target) }
