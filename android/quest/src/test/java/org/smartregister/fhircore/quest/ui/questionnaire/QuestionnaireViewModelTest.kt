@@ -511,6 +511,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testRetrieveQuestionnaireShouldReturnValidQuestionnaire() = runTest {
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockAppId = "mockAppId$ConfigurationRegistry"
+
+    coEvery { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+      mockAppId
+
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
@@ -575,6 +581,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             ),
           ),
       )
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockAppId = "mockAppId$ConfigurationRegistry"
+
+    coEvery { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+      mockAppId
+
     coEvery { fhirEngine.get(ResourceType.Questionnaire, newQuestionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire.apply {
         addItem(
