@@ -24,7 +24,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
@@ -38,6 +40,13 @@ class AppSettingActivity : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         super.onCreate(savedInstanceState)
         appSettingViewModel.loadConfigurations()
+        lifecycleScope.launch {
+            appSettingViewModel.goToHome.collect {
+                if (it == true) {
+                    goHome()
+                }
+            }
+        }
 
         installSplashScreen().setKeepOnScreenCondition {
             appSettingViewModel.loadState.value == null

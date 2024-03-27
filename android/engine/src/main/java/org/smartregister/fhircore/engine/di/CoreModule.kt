@@ -27,9 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
-import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -39,6 +37,8 @@ import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.worker.CoreSimpleWorkerContext
+import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -68,10 +68,7 @@ class CoreModule {
   @Singleton
   @Provides
   fun provideWorkerContextProvider(): SimpleWorkerContext {
-   return SimpleWorkerContext().apply {
-     setExpansionProfile(Parameters())
-     isCanRunWithoutTerminology = true
-   }
+   return CoreSimpleWorkerContext()
   }
 
   @Singleton
@@ -83,8 +80,7 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
-    KnowledgeManager.create(context = context, packageServer = "https://packages.fhir.org/")
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager = KnowledgeManager.create(context)
 
   @Singleton
   @Provides
@@ -108,9 +104,4 @@ class CoreModule {
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry,
   ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
-
-  companion object {
-    const val HL7_FHIR_PACKAGE = "hl7.fhir.r4.core"
-    const val HL7_FHIR_PACKAGE_VERSION = "4.0.1"
-  }
 }
