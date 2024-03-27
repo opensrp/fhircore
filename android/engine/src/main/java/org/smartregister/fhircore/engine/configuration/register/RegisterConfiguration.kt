@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
+import org.smartregister.fhircore.engine.configuration.geowidget.TopScreenSection
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -44,4 +45,5 @@ data class RegisterConfiguration(
     ),
   val configRules: List<RuleConfig>? = null,
   val registerFilter: RegisterFilterConfig? = null,
+  val topScreenSection: TopScreenSection? = null
 ) : Configuration()

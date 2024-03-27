@@ -87,6 +87,9 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
+    <string name="title_no_location_set">No Location Set</string>
+    <string name="message_location_set">Set location to sync data and load service points</string>
+    <string name="positive_button_location_set">Set location</string>
 
     <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Due on %1$s</string>

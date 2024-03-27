@@ -78,26 +78,31 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
   Scaffold(
     topBar = {
       Column {
-        // Top section has toolbar and a results counts view
+       /*
+       * Top section has toolbar and a results counts view
+       * by default isSearchBarVisible is visible
+       * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
+          isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -108,6 +113,11 @@ fun RegisterScreen(
             ToolbarClickEvent.FilterData -> {
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
+            }
+            ToolbarClickEvent.Toggle -> {
+              registerUiState.registerConfiguration?.topScreenSection?.toggleAction?.handleClickEvent(
+                navController = navController
+              )
             }
           }
         }

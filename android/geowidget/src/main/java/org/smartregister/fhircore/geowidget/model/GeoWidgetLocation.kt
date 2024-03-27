@@ -16,18 +16,14 @@
 
 package org.smartregister.fhircore.geowidget.model
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+data class GeoWidgetLocation(
+  val id: String = "",
+  val name: String = "",
+  val position: Position? = null,
+  val color: String = ""
+)
 
-@Serializable
-sealed class GeoWidgetEvent {
-
-  @Serializable
-  data class OpenProfile(val data: String, val geoWidgetConfiguration: GeoWidgetConfiguration) :
-    GeoWidgetEvent()
-
-  @Serializable
-  data class RegisterClient(val data: String, val questionnaire: QuestionnaireConfig) :
-    GeoWidgetEvent()
-}
+data class Position(
+  val latitude: Double = 0.0,
+  val longitude: Double = 0.0,
+)
