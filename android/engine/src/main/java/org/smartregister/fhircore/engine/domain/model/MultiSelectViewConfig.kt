@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore.serializers
+package org.smartregister.fhircore.engine.domain.model
 
-object SerializerConstants {
-  const val PROTOSTORE_SERIALIZER_TAG = "Proto DataStore"
-}
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
+@Parcelize
+data class MultiSelectViewConfig(
+  val resourceConfig: FhirResourceConfig,
+  val parentIdFhirPathExpression: String,
+  val contentFhirPathExpression: String,
+) : java.io.Serializable, Parcelable

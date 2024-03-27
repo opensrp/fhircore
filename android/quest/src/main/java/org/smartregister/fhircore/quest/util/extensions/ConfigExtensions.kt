@@ -173,6 +173,14 @@ fun List<ActionConfig>.handleClickEvent(
           Toast.LENGTH_LONG,
         )
       }
+      ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
+        val args =
+          bundleOf(
+            NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
+            NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
+          )
+        navController.navigate(MainNavigationScreen.LocationSelector.route, args)
+      }
       else -> return
     }
   }
