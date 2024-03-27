@@ -40,6 +40,8 @@ import io.mockk.unmockkObject
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -1143,5 +1145,55 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertTrue(
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
+  }
+
+  @Test
+  fun isRelatedEntityLocationMetaTagAddedToExtractedResource() = runBlocking {
+    val bundleSlot = slot<Bundle>()
+    val bundle = bundleSlot.captured
+    val relatedEntityLocationUUID = "relatedEntityLocationUUID"
+    val linkId = "linkId"
+    val questionnaireConfig =
+      questionnaireConfig.copy(
+        resourceIdentifier = "resourceId",
+        resourceType = ResourceType.Location,
+        saveQuestionnaireResponse = false,
+        type = "EDIT",
+        linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
+        extractedResourceUniquePropertyExpressions =
+          listOf(
+            ExtractedResourceUniquePropertyExpression(
+              ResourceType.Location,
+              "Observation.code.where(coding.code='obs1').coding.code",
+            ),
+          ),
+      )
+    bundle.entry.forEach {
+      val resource = it.resource
+      val relatedEntityLocationCodingSystem =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+      resource.meta.tag.filter { coding ->
+        coding.system == relatedEntityLocationCodingSystem &&
+          coding.code == relatedEntityLocationUUID
+      }
+
+      val questionnaireResponse =
+        QuestionnaireResponse().apply {
+          id = "resourceId"
+          context
+          subject = patient.asReference()
+          questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
+          meta.tag = resource.meta.tag
+        }
+
+      assertEquals(resource.meta.tag, questionnaireResponse.meta.tag)
+      assertContains(
+        questionnaireResponse.meta.tag.map { tag -> tag.code },
+        relatedEntityLocationUUID,
+      )
+      coEvery { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
+    }
   }
 }
