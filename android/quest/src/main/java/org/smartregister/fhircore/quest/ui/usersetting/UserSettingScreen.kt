@@ -104,6 +104,7 @@ const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
 const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
 const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
 const val OPENSRP_LOGO_TEST_TAG = "opensrpLogoTestTag"
+const val USER_SETTING_IMPLEMENTATION_GUIDE = "userSettingRowImplementationGuide"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -125,6 +126,7 @@ fun UserSettingScreen(
   allowP2PSync: Boolean,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
+  impGuideVersion: String? = null
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -380,6 +382,16 @@ fun UserSettingScreen(
           modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
+        if (impGuideVersion != null) {
+          Text(
+            color = contentColor,
+            fontSize = 16.sp,
+            text = impGuideVersion,
+            modifier =
+            modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
+          )
+        }
+
         Text(
           color = contentColor,
           fontSize = 16.sp,
@@ -496,5 +508,6 @@ fun UserSettingPreview() {
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
+    impGuideVersion = "10"
   )
 }
