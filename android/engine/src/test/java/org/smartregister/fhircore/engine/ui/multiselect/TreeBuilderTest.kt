@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.ui.multiselect
 
 import android.app.Application
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.logicalId
@@ -34,7 +33,7 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.extension.extractId
 
 @HiltAndroidTest
-class TreeMapTest : RobolectricTest() {
+class TreeBuilderTest : RobolectricTest() {
 
   @get:Rule val hiltAndroidRule = HiltAndroidRule(this)
 
@@ -51,33 +50,54 @@ class TreeMapTest : RobolectricTest() {
         .open("locations.json")
         .bufferedReader()
         .use { it.readText() }
-    locationTreeNodes =
+
+    val treeNodeMap: Map<String, Location> =
       fhirContext
         .newJsonParser()
         .parseResource(Bundle::class.java, locationsJson)
         .entry
         .map { it.resource as Location }
-        .map { TreeNode(it.logicalId, it.partOf.extractId(), it) }
+        .associateBy { it.logicalId }
+
+    locationTreeNodes =
+      treeNodeMap.values.mapNotNull { location ->
+        if (location.hasPartOf()) {
+          val parentId = location.partOf.extractId()
+          val parent = treeNodeMap[parentId]
+          TreeNode(
+            id = location.logicalId,
+            parent =
+              if (parent != null) {
+                TreeNode(id = parentId, parent = null, data = parent)
+              } else {
+                null
+              },
+            data = location,
+          )
+        } else {
+          null
+        }
+      }
   }
 
   @Test
   fun testPopulateLookupMapShouldReturnMapOfTreeNodes() {
-    val lookup: MutableMap<String, TreeNode<Location>> =
-      TreeMap.populateLookupMap(locationTreeNodes, SnapshotStateMap())
-    Assert.assertFalse(lookup.isEmpty())
+    val rootTreeNodes: List<TreeNode<Location>> =
+      TreeBuilder.buildTrees(locationTreeNodes, setOf("eff94f33-c356-4634-8795-d52340706ba9"))
+    Assert.assertTrue(rootTreeNodes.isNotEmpty())
 
-    val rootLocation = lookup["eff94f33-c356-4634-8795-d52340706ba9"]
-    Assert.assertNull(rootLocation?.parentId)
-    Assert.assertTrue(rootLocation?.data is Location)
-    Assert.assertEquals("eff94f33-c356-4634-8795-d52340706ba9", rootLocation?.data?.logicalId)
+    val rootLocation = rootTreeNodes.first()
+    Assert.assertNull(rootLocation.parent)
+    Assert.assertEquals("eff94f33-c356-4634-8795-d52340706ba9", rootLocation.data.logicalId)
 
-    val locationWithChildren = lookup["25c56dd5-4dca-449d-bf6e-665f90d0ff77"]
+    val locationWithChildren =
+      rootLocation.children.find { it.id == "25c56dd5-4dca-449d-bf6e-665f90d0ff77" }
     Assert.assertNotNull(locationWithChildren)
     Assert.assertEquals(10, locationWithChildren?.children?.size)
 
     // Assert that each child location references the parent; all have same parent id
     locationWithChildren?.children?.forEach {
-      Assert.assertEquals(locationWithChildren.id, it.parentId)
+      Assert.assertEquals(locationWithChildren.id, it.parent?.id)
     }
   }
 }

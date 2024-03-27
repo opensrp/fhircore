@@ -44,7 +44,7 @@ val MenuItemColor = Color(0xFFBFBFBF)
 val SearchHeaderColor = Color(0xFFF2F4F7)
 private val PrimaryColor = Color(0xFF0077CC)
 private val SecondaryColor = Color(0xFFF8DF4B)
-private val SurfaceColor = Color(0xFFF2F4F7)
+private val SurfaceColor = Color(0xFFFFFFFF)
 private val PrimaryVariantColor = Color(0xFF006BBA)
 
 val LightColors =
@@ -53,7 +53,6 @@ val LightColors =
     primaryVariant = PrimaryVariantColor,
     error = DangerColor,
     secondary = SecondaryColor,
-    surface = SurfaceColor,
   )
 
 val DarkColors =
@@ -62,5 +61,4 @@ val DarkColors =
     primaryVariant = PrimaryVariantColor,
     error = DangerColor,
     secondary = SecondaryColor,
-    surface = SurfaceColor,
   )

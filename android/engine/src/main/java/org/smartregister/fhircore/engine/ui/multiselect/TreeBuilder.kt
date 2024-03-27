@@ -19,43 +19,46 @@ package org.smartregister.fhircore.engine.ui.multiselect
 import androidx.compose.runtime.Stable
 
 @Stable
-data class TreeNode<T>(
+class TreeNode<T>(
   val id: String,
-  var parentId: String?,
+  var parent: TreeNode<T>?,
   val data: T,
   val children: MutableList<TreeNode<T>> = mutableListOf(),
 )
 
-object TreeMap {
+object TreeBuilder {
 
-  fun <T> populateLookupMap(
+  /** This function creates and return a list of root [TreeNode]'s */
+  fun <T> buildTrees(
     items: List<TreeNode<T>>,
-    lookup: MutableMap<String, TreeNode<T>>,
-  ): Map<String, TreeNode<T>> {
+    rootNodeIds: Set<String>,
+  ): List<TreeNode<T>> {
+    val lookupMap = mutableMapOf<String, TreeNode<T>>()
     items.forEach { item ->
-      val childNode = findOrCreate(item.id, item, lookup)
-      val parentNode = findOrCreate(item.parentId, item, lookup)
+      val childNode = findOrCreate(item, lookupMap)
+      val parentNode = findOrCreate(item.parent, lookupMap)
       if (parentNode != null && childNode != null) {
         parentNode.children.add(childNode)
-        childNode.parentId = parentNode.id
+        childNode.parent = parentNode
       }
     }
-    return lookup
+    return rootNodeIds.mapNotNull { lookupMap[it] }
   }
 
   private fun <T> findOrCreate(
-    id: String?,
-    lookupItem: TreeNode<T>,
-    lookup: MutableMap<String, TreeNode<T>>,
+    treeNode: TreeNode<T>?,
+    lookupMap: MutableMap<String, TreeNode<T>>,
   ): TreeNode<T>? {
-    if (id.isNullOrEmpty()) return null
-    return lookup.getOrPut(id) {
-      TreeNode(
-        id = id,
-        parentId = null,
-        data = lookupItem.data,
-        children = mutableListOf(),
-      )
+    treeNode?.let { node ->
+      return lookupMap.getOrPut(node.id) {
+        TreeNode(
+          id = node.id,
+          parent = null,
+          data = node.data,
+          children = mutableListOf(),
+        )
+      }
     }
+    return null
   }
 }

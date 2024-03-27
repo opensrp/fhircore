@@ -27,6 +27,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
@@ -36,6 +38,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -47,6 +50,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,14 +62,14 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 
 @Composable
 fun MultiSelectBottomSheetView(
-  rootNodeIds: SnapshotStateList<String>,
-  treeNodeMap: Map<String, TreeNode<String>>,
+  rootTreeNodes: SnapshotStateList<TreeNode<String>>,
   selectedNodes: SnapshotStateMap<String, ToggleableState>,
   title: String?,
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
   onSearchTextChanged: (String) -> Unit,
   onSelectionDone: (() -> Unit) -> Unit,
+  search: () -> Unit,
 ) {
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(
@@ -95,13 +100,23 @@ fun MultiSelectBottomSheetView(
         modifier = Modifier.fillMaxWidth(),
         textStyle = TextStyle(fontSize = 18.sp),
         trailingIcon = {
-          if (searchTextState.value.isNotEmpty()) {
-            IconButton(onClick = { onSearchTextChanged("") }) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp),
+          ) {
+            IconButton(onClick = { search() }, modifier = Modifier.size(28.dp)) {
               Icon(
-                Icons.Default.Close,
+                imageVector = Icons.Default.Search,
                 contentDescription = "",
-                modifier = Modifier.padding(16.dp).size(24.dp),
               )
+            }
+            if (searchTextState.value.isNotEmpty()) {
+              IconButton(onClick = { onSearchTextChanged("") }, modifier = Modifier.size(28.dp)) {
+                Icon(
+                  imageVector = Icons.Default.Close,
+                  contentDescription = "",
+                )
+              }
             }
           }
         },
@@ -114,28 +129,35 @@ fun MultiSelectBottomSheetView(
             )
           }
         },
+        keyboardActions = KeyboardActions(onSearch = { search() }),
+        keyboardOptions =
+          KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
       )
     }
-    LazyColumn(modifier = Modifier.padding(horizontal = 8.dp)) {
-      items(rootNodeIds, key = { item -> item }) {
-        MultiSelectView(
-          rootNodeId = it,
-          treeNodeMap = treeNodeMap,
-          selectedNodes = selectedNodes,
-        ) { treeNode ->
-          Column { Text(text = treeNode.data) }
-        }
-      }
 
-      item {
-        Button(
-          onClick = { onSelectionDone(onDismiss) },
-          modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
-        ) {
-          Text(
-            text = stringResource(id = R.string.sync_data).uppercase(),
-            modifier = Modifier.padding(8.dp),
-          )
+    if (rootTreeNodes.isNotEmpty()) {
+      LazyColumn(modifier = Modifier.padding(horizontal = 8.dp)) {
+        items(rootTreeNodes, key = { item -> item.id }) {
+          MultiSelectView(
+            rootTreeNode = it,
+            selectedNodes = selectedNodes,
+          ) { treeNode ->
+            Column { Text(text = treeNode.data) }
+          }
+        }
+
+        item {
+          if (selectedNodes.isNotEmpty()) {
+            Button(
+              onClick = { onSelectionDone(onDismiss) },
+              modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+            ) {
+              Text(
+                text = stringResource(id = R.string.sync_data).uppercase(),
+                modifier = Modifier.padding(8.dp),
+              )
+            }
+          }
         }
       }
     }

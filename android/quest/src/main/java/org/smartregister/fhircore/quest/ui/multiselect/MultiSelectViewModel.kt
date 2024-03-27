@@ -25,13 +25,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
-import org.smartregister.fhircore.engine.ui.multiselect.TreeMap
+import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -46,9 +47,9 @@ constructor(
 ) : ViewModel() {
 
   val searchTextState: MutableState<String> = mutableStateOf("")
-  val rootNodeIds: SnapshotStateList<String> = SnapshotStateList()
+  val rootTreeNodes: SnapshotStateList<TreeNode<String>> = SnapshotStateList()
   val selectedNodes: SnapshotStateMap<String, ToggleableState> = SnapshotStateMap()
-  val lookupMap = SnapshotStateMap<String, TreeNode<String>>()
+  private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
   fun populateLookupMap(multiSelectViewConfig: MultiSelectViewConfig) {
     // Mark previously selected nodes
@@ -65,37 +66,64 @@ constructor(
           .forEach { selectedNodes[it.first] = ToggleableState.valueOf(it.second) }
       }
 
-      val repositoryResourceDataList =
-        defaultRepository.searchResourcesRecursively(
-          fhirResourceConfig = multiSelectViewConfig.resourceConfig,
-          filterActiveResources = null,
-          secondaryResourceConfigs = null,
-          configRules = null,
-        )
+      val resourcesMap =
+        defaultRepository
+          .searchResourcesRecursively(
+            fhirResourceConfig = multiSelectViewConfig.resourceConfig,
+            filterActiveResources = null,
+            secondaryResourceConfigs = null,
+            configRules = null,
+          )
+          .associateByTo(mutableMapOf(), { it.resource.logicalId }, { it.resource })
+      val rootNodeIds = mutableSetOf<String>()
 
       val lookupItems: List<TreeNode<String>> =
-        repositoryResourceDataList.map {
+        resourcesMap.values.map {
           val parentId =
             fhirPathDataExtractor
               .extractValue(
-                it.resource,
+                it,
                 multiSelectViewConfig.parentIdFhirPathExpression,
               )
               .extractLogicalIdUuid()
           val data =
             fhirPathDataExtractor
               .extractValue(
-                it.resource,
+                it,
                 multiSelectViewConfig.contentFhirPathExpression,
               )
               .extractLogicalIdUuid()
+          // TODO use configuration to obtain root nodes
           if (parentId.isEmpty()) {
-            rootNodeIds.add(it.resource.logicalId)
+            rootNodeIds.add(it.logicalId)
           }
-          TreeNode(id = it.resource.logicalId, parentId = parentId, data = data)
+
+          val parentResource = resourcesMap[parentId]
+
+          TreeNode(
+            id = it.logicalId,
+            parent =
+              if (parentResource != null) {
+                TreeNode(
+                  id = parentResource.logicalId,
+                  parent = null,
+                  data =
+                    fhirPathDataExtractor
+                      .extractValue(
+                        parentResource,
+                        multiSelectViewConfig.contentFhirPathExpression,
+                      )
+                      .extractLogicalIdUuid(),
+                )
+              } else {
+                null
+              },
+            data = data,
+          )
         }
 
-      TreeMap.populateLookupMap(lookupItems, lookupMap)
+      _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
+      rootTreeNodes.addAll(_rootTreeNodes)
     }
   }
 
@@ -111,6 +139,40 @@ constructor(
         selectedNodes.map { "${it.key}:${it.value}" }.joinToString(","),
       )
       dismiss()
+    }
+  }
+
+  fun search() {
+    rootTreeNodes.clear()
+    val searchTerm = searchTextState.value
+    val rootTreeNodeMap = mutableMapOf<String, TreeNode<String>>()
+    if (searchTerm.isEmpty()) {
+      rootTreeNodes.addAll(_rootTreeNodes)
+    } else {
+      _rootTreeNodes.forEach { rootTreeNode ->
+        if (
+          rootTreeNode.data.contains(searchTerm, true) &&
+            !rootTreeNodeMap.containsKey(rootTreeNode.id)
+        ) {
+          rootTreeNodeMap[rootTreeNode.id] = rootTreeNode
+          return@forEach
+        }
+        val childrenList = LinkedList(rootTreeNode.children)
+        while (childrenList.isNotEmpty()) {
+          val currentNode = childrenList.removeFirst()
+          if (currentNode.data.contains(other = searchTerm, ignoreCase = true)) {
+            when {
+              rootTreeNodeMap.containsKey(rootTreeNode.id) -> return@forEach
+              else -> {
+                rootTreeNodeMap[rootTreeNode.id] = rootTreeNode
+                return@forEach
+              }
+            }
+          }
+          currentNode.children.forEach { childrenList.add(it) }
+        }
+      }
+      rootTreeNodes.addAll(rootTreeNodeMap.values)
     }
   }
 }
