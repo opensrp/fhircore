@@ -104,7 +104,6 @@ const val USER_SETTING_ROW_CONTACT_HELP = "userSettingRowContactHelp"
 const val USER_SETTING_ROW_OFFLINE_MAP = "userSettingRowOfflineMap"
 const val USER_SETTING_ROW_SYNC = "userSettingRowSync"
 const val OPENSRP_LOGO_TEST_TAG = "opensrpLogoTestTag"
-const val USER_SETTING_IMPLEMENTATION_GUIDE = "userSettingRowImplementationGuide"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
