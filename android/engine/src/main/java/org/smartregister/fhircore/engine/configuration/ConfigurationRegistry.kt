@@ -43,7 +43,6 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
@@ -492,20 +491,46 @@ constructor(
     gatewayModeHeaderValue: String? = null,
     searchPath: String,
     patientRelatedResourceTypes: MutableList<ResourceType>,
+    currentPage: Int = 1,
   ) {
-    val resultBundle =
-      if (gatewayModeHeaderValue.isNullOrEmpty()) {
-        fhirResourceDataSource.getResource(searchPath)
-      } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(
-          gatewayModeHeaderValue,
-          searchPath,
-        )
-    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+    val nextPage: Int
+    val prevPage: Int
+
+    val pagesToFetch =
+      when {
+        currentPage == 1 -> listOf(currentPage, currentPage + 1)
+        currentPage > 1 -> {
+          nextPage = currentPage + 1
+          prevPage = currentPage - 1
+          listOf(prevPage, currentPage, nextPage)
+        }
+        else -> {
+          prevPage = currentPage - 1
+          listOf(prevPage, currentPage)
+        }
+      }
+
+    for (page in pagesToFetch) {
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, page)
+      processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+    }
+  }
+
+  private suspend fun fetchResourceBundle(
+    gatewayModeHeaderValue: String?,
+    searchPath: String,
+    currentPage: Int,
+  ): Bundle {
+    val url = "$searchPath&_page=$currentPage&_count=4"
+    return if (gatewayModeHeaderValue.isNullOrEmpty()) {
+      fhirResourceDataSource.getResource(url)
+    } else {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+    }
   }
 
   private suspend fun processResultBundleEntries(
-    resultBundleEntries: List<BundleEntryComponent>,
+    resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
     resultBundleEntries.forEach { bundleEntryComponent ->
@@ -711,7 +736,7 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          searchPath = "${resourceGroup.key}?$ID=${it.focus.extractId()}",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
