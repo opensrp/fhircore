@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Resource
@@ -52,6 +53,7 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.OpenSrpApplication
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -73,6 +75,7 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -92,6 +95,7 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
+  val configurationRegistry: ConfigurationRegistry,
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -382,6 +386,10 @@ constructor(
     return configFiles
   }
 
+  private val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+  }
+
   /**
    * Fetch non-patient Resources for the application that are not application configurations
    * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
@@ -405,6 +413,9 @@ constructor(
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
+
+      val implementationGuideResource = fetchRemoteComposition(applicationConfiguration.implementationGuideUrl)
+
       compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
@@ -448,6 +459,77 @@ constructor(
 
         Timber.d("Done fetching application configurations remotely")
       }
+    }
+  }
+
+  @Throws(UnknownHostException::class, HttpException::class)
+  suspend fun fetchNonWorkflowConfigResourcesXXX(isInitialLogin: Boolean = true) {
+    // Reset configurations before loading new ones
+    configCacheMap.clear()
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      val compositionResource = fetchRemoteComposition(parsedAppId)
+      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
+
+      implementationGuideResource?.let { implementationGuide ->
+        implementationGuide
+          .retrieveImplementationGuideDefinitionResources()
+          .asSequence()
+          .filter {
+            it.hasReference() && it.reference.hasReferenceElement()
+          } // is focus.identifier a necessary check
+          .groupBy { section ->
+            section.reference.reference.substringBefore(
+              TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
+          }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+          .forEach { entry: Map.Entry<String, List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>> ->
+            if (entry.key == ResourceType.List.name) {
+              processCompositionListResources(
+                entry,
+                patientRelatedResourceTypes = patientRelatedResourceTypes,
+              )
+            } else {
+              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+              chunkedResourceIdList.forEach { parentIt ->
+                Timber.d(
+                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                )
+                processCompositionManifestResources(
+                  entry.key,
+                  parentIt.map { sectionComponent -> sectionComponent.reference.extractId() },
+                  patientRelatedResourceTypes,
+                )
+              }
+            }
+          }
+
+        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+
+        // Save ImplementationGuide after fetching the referenced composition resource
+        addOrUpdate(implementationGuideResource)
+
+        Timber.d("Done fetching application configurations remotely")
+      }
+    }
+  }
+
+  suspend fun fetchRemoteImplementationGuide(implementationGuideUrl: String?): ImplementationGuide? {
+    Timber.i("Fetching ImplementationGuide $implementationGuideUrl")
+    val urlPath =
+      "${ResourceType.ImplementationGuide.name}?${ImplementationGuide.URL}=$implementationGuideUrl&_count=$DEFAULT_COUNT"
+
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for ImplementationGuide resource on path $urlPath")
+        return null
+      }
+
+      it.resource as ImplementationGuide
     }
   }
 

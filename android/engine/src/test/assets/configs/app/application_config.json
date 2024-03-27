@@ -32,5 +32,6 @@
       "Questionnaire",
       "QuestionnaireResponse"
     ]
-  }
+  },
+  "implementationGuideUrl": "ImplementationGuide/1"
 }

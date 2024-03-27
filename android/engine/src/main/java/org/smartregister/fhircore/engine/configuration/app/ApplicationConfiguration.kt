@@ -42,6 +42,7 @@ data class ApplicationConfiguration(
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
+  val implementationGuideUrl: String = "",
 ) : Configuration()
 
 enum class LocationLogOptions {
