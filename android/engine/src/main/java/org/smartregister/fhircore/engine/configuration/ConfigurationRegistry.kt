@@ -493,25 +493,24 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
-    val nextPage: Int
-    val prevPage: Int
+    var nextPage = currentPage
+    var prevPage: Int? = null
 
-    val pagesToFetch =
+    while (true) {
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, nextPage)
+      processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+
       when {
-        currentPage == 1 -> listOf(currentPage, currentPage + 1)
-        currentPage > 1 -> {
-          nextPage = currentPage + 1
-          prevPage = currentPage - 1
-          listOf(prevPage, currentPage, nextPage)
+        resultBundle.link.any { it.relation == "next" } -> {
+          nextPage++
+          prevPage = nextPage - 1
         }
-        else -> {
-          prevPage = currentPage - 1
-          listOf(prevPage, currentPage)
-        }
+        else -> break
       }
+    }
 
-    for (page in pagesToFetch) {
-      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, page)
+    prevPage?.let {
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, it)
       processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
     }
   }
