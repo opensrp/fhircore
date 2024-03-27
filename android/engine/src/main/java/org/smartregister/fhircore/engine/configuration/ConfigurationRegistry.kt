@@ -143,6 +143,15 @@ constructor(
     return decodedConfig
   }
 
+  inline fun <reified T : Resource> retrieveResourceFromConfigMap(resourceId: String): T? {
+    val loadedResource = configsJsonMap.getOrDefault(resourceId, null)
+    return if (loadedResource != null) {
+      loadedResource.decodeResourceFromString() as T
+    } else {
+      null
+    }
+  }
+
   inline fun <reified T : Configuration> retrieveConfigurations(configType: ConfigType): List<T> =
     configsJsonMap.values
       .filter {
@@ -318,16 +327,19 @@ constructor(
         // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
-          val configKey =
-            fileName
-              .lowercase(Locale.ENGLISH)
-              .substring(
-                fileName.indexOfLast { it == '/' }.plus(1),
-                fileName.lastIndexOf(CONFIG_SUFFIX),
-              )
-              .camelCase()
-
           val configJson = context.assets.open(fileName).bufferedReader().readText()
+          val configKey =
+            if (configJson.contains(RESOURCE_TYPE) && !configJson.contains(CONFIG_TYPE)) {
+              configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid()
+            } else {
+              fileName
+                .lowercase(Locale.ENGLISH)
+                .substring(
+                  fileName.indexOfLast { it == '/' }.plus(1),
+                  fileName.lastIndexOf(CONFIG_SUFFIX),
+                )
+                .camelCase()
+            }
           configsJsonMap[configKey] = configJson
         }
       }
@@ -770,6 +782,7 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+    const val RESOURCE_TYPE = "resourceType"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.

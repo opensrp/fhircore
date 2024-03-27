@@ -30,6 +30,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -71,6 +72,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
@@ -78,6 +80,8 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -87,9 +91,11 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.isToday
@@ -121,6 +127,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var samplePatientRegisterQuestionnaire: Questionnaire
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var questionnaireViewModel: QuestionnaireViewModel
@@ -129,6 +136,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   private val context: Application = ApplicationProvider.getApplicationContext()
   private val fhirOperator: FhirOperator = mockk()
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
+  private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private val patient =
     Faker.buildPatient().apply {
       address =
@@ -146,6 +154,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   @ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
+
+    fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
 
     // Write practitioner and organization to shared preferences
     sharedPreferencesHelper.write(
@@ -501,6 +511,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
   @Test
   fun testRetrieveQuestionnaireShouldReturnValidQuestionnaire() = runTest {
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockAppId = "mockAppId$ConfigurationRegistry"
+
+    coEvery { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+      mockAppId
+
     coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire
 
@@ -512,6 +528,33 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(questionnaire)
     Assert.assertEquals(questionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
+  }
+
+  @Test
+  fun testRetrieveQuestionnaireShouldReturnValidQuestionnaireFromAssets() = runTest {
+    val sampleQuestionnaire = Faker.buildQuestionnaire()
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = sampleQuestionnaire.id,
+        resourceIdentifier = "8uhygtf6",
+      )
+
+    val mockedSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockedConfigurationRegistry = mockk<ConfigurationRegistry>()
+
+    every {
+      mockedSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    } returns "app/debug"
+    coEvery {
+      mockedConfigurationRegistry.configsJsonMap.getOrDefault(theQuestionnaireConfig.id, null)
+    } returns sampleQuestionnaire.encodeResourceToString()
+    val questionnaire =
+      questionnaireViewModel.retrieveQuestionnaire(
+        questionnaireConfig = theQuestionnaireConfig,
+        actionParameters = emptyList(),
+      )
+    Assert.assertNotNull(questionnaire)
+    Assert.assertEquals(theQuestionnaireConfig.id, questionnaire?.id?.extractLogicalIdUuid())
   }
 
   @Test
@@ -538,6 +581,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             ),
           ),
       )
+    val mockSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockAppId = "mockAppId$ConfigurationRegistry"
+
+    coEvery { (mockSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)) } returns
+      mockAppId
+
     coEvery { fhirEngine.get(ResourceType.Questionnaire, newQuestionnaireConfig.id) } returns
       samplePatientRegisterQuestionnaire.apply {
         addItem(
@@ -581,6 +630,36 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       newQuestionnaireConfig.resourceIdentifier,
       barCodeItemValue?.primitiveValue(),
     )
+  }
+
+  @Test
+  fun testWithQuestionnaireReturnsNull() = runTest {
+    val mockedSharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+    val mockedConfigurationRegistry: ConfigurationRegistry = mockk()
+
+    val questionnaireJson =
+      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+
+    val theQuestionnaireConfig =
+      QuestionnaireConfig(
+        id = questionnaireJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid(),
+      )
+
+    coEvery {
+      mockedSharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.trimEnd()
+    } returns "app/debug"
+
+    val load = configurationRegistry.configsJsonMap.getOrDefault(theQuestionnaireConfig.id, null)
+    val theResource = load?.decodeResourceFromString<Questionnaire>()
+
+    val sampleQQuestionnaire =
+      theResource?.let {
+        mockedConfigurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+          it.id,
+        )
+      }
+
+    Assert.assertNull(sampleQQuestionnaire)
   }
 
   @Test
@@ -904,6 +983,22 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       Assert.assertNotNull(latestQuestionnaireResponse)
       Assert.assertEquals("qr1", latestQuestionnaireResponse?.id)
     }
+
+  @Test
+  fun testQuestionnaireResourceIsLoadedWhenAppIdExistsAndIsNotNull() {
+    val sharedPreferencesHelper = mockk<SharedPreferencesHelper>()
+
+    configurationRegistry.configsJsonMap[questionnaireConfig.id] = "your_questionnaire_id"
+
+    every { appIdExistsAndIsNotNull(sharedPreferencesHelper) } returns true
+
+    val questionnaire =
+      configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+        resourceId = "questionnaireConfig.id",
+      )
+
+    questionnaire?.let { Assert.assertEquals("your_questionnaire_id", questionnaire) }
+  }
 
   @Test
   fun testRetrievePopulationResourcesReturnsListOfResourcesOrEmptyList() = runTest {

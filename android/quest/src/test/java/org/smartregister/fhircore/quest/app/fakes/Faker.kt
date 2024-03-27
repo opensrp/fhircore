@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.auth.AuthCredentials
@@ -122,6 +123,12 @@ object Faker {
         city = "City 1"
       }
     }
+  }
+
+  fun buildQuestionnaire(
+    id: String = "405619ff-cde8-4379-b674-0a4735098b33",
+  ): Questionnaire {
+    return Questionnaire().apply { this.id = id }
   }
 
   fun buildBasicResource(

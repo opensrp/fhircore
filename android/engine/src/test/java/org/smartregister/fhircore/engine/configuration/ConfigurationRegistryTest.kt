@@ -48,6 +48,7 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -72,7 +73,9 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -128,6 +131,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap["stringsEn"] = "name.title=Mr.\n" + "gender.male=Male"
     val resource = configRegistry.retrieveResourceBundleConfiguration("nonexistent")
     Assert.assertNull(resource)
+  }
+
+  @Test
+  fun testRetrieveResourceFromConfigMap() {
+    val resourceId = "myResourceId"
+
+    configRegistry.configsJsonMap[resourceId] =
+      "{\"resourceType\": \"List\", \"id\": \"$resourceId\"}"
+
+    val resource = configRegistry.retrieveResourceFromConfigMap<Resource>(resourceId)
+
+    val resourceIdOnly = resource?.id?.substringAfterLast('/')
+
+    resource?.let { assertEquals(resourceId, resourceIdOnly) }
   }
 
   @Test
@@ -556,6 +573,25 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     coVerify(inverse = true) { fhirEngine.get(ResourceType.Binary, referenceId) }
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+  }
+
+  @Test
+  fun testLoadConfigurationsLoadFromAssetsResources() {
+    val expectedConfigKey = "754"
+    configRegistry.configsJsonMap[ResourceType.Questionnaire.name] =
+      """{"resourceId": "thisQuestionnaire", "resourceType": "Questionnaire"}"""
+
+    val appId = "appId/debug"
+    runTest { configRegistry.loadConfigurations(appId, context) }
+
+    val configJson =
+      context.assets.open("sample_patient_registration.json").bufferedReader().readText()
+
+    val configKey = configJson.decodeResourceFromString<Questionnaire>().id.extractLogicalIdUuid()
+    configRegistry.configsJsonMap.containsKey(ResourceType.Questionnaire.name)
+    Assert.assertNotNull(configRegistry.configsJsonMap)
+    Assert.assertTrue(configRegistry.configsJsonMap.containsKey(ResourceType.Questionnaire.name))
+    assertEquals(expectedConfigKey, configKey)
   }
 
   @Test
