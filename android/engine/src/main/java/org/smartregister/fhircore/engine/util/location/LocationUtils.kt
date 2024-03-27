@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.engine.util.location
 
 import android.annotation.SuppressLint
 import android.content.Context

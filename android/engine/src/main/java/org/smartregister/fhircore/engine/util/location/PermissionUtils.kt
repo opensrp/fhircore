@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.engine.util.location
 
 import android.Manifest
 import android.content.Context
@@ -66,5 +66,15 @@ object PermissionUtils {
     ) { result ->
       onResult(result.resultCode, result.data)
     }
+  }
+
+  fun hasFineLocationPermissions(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
+      PackageManager.PERMISSION_GRANTED
+  }
+
+  fun hasCoarseLocationPermissions(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
+      PackageManager.PERMISSION_GRANTED
   }
 }

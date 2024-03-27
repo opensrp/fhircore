@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.engine.util.location
 
 import android.Manifest
 import junit.framework.TestCase.assertFalse
@@ -24,8 +24,8 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 class PermissionsUtilsTest : RobolectricTest() {
   private val activityController: ActivityController<HiltActivityForTest> =

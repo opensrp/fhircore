@@ -23,13 +23,13 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.rule.GrantPermissionRule
 import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -66,6 +66,13 @@ class AppMainActivityTest {
     return@TestRule base
   }
 
+  @get:Rule
+  val permissionRule: GrantPermissionRule =
+    GrantPermissionRule.grant(
+      android.Manifest.permission.ACCESS_FINE_LOCATION,
+      android.Manifest.permission.ACCESS_NETWORK_STATE,
+    )
+
   @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 2) val composeTestRule = createAndroidComposeRule<AppMainActivity>()
@@ -86,7 +93,6 @@ class AppMainActivityTest {
         it.navHostFragment.navController.currentDestination?.id,
       )
     }
-
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
   }
 
