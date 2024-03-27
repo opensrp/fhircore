@@ -28,6 +28,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -62,11 +63,11 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -158,8 +159,8 @@ constructor(
     fhirEngine.search<R>(search).map { it.resource }
 
   /**
-   * Saves a resource in the database. It also updates the [Resource.meta.lastUpdated] and generates
-   * the [Resource.id] if it is missing before saving the resource.
+   * Saves a resource in the database. It also updates the [Resource.meta] _lastUpdated and
+   * generates the [Resource.id] if it is missing before saving the resource.
    *
    * By default, mandatory Resource tags for sync are added but this can be disabled through the
    * param [addResourceTags]
@@ -420,7 +421,7 @@ constructor(
   ) {
     val activeResource = filterActiveResources?.find { it.resourceType == resourceConfig.resource }
     if (!filterActiveResources.isNullOrEmpty() && activeResource?.active == true) {
-      filter(TokenClientParam(RegisterRepository.ACTIVE), { value = of(true) })
+      filter(TokenClientParam(ACTIVE), { value = of(true) })
     }
 
     resourceConfig.dataQueries?.forEach { dataQuery ->
@@ -805,16 +806,16 @@ constructor(
    * @param resources - The list of resources to be filtered. Note that it only contains resources
    *   of a single type.
    */
-  fun filterResourcesByFhirPathExpression(
+  private fun filterResourcesByFhirPathExpression(
     resourceFilterExpressions: List<ResourceFilterExpression>?,
     resources: List<Resource>,
   ): List<Resource> {
     val resourceFilterExpressionForCurrentResourceType =
       resourceFilterExpressions?.firstOrNull {
-        !resources.isNullOrEmpty() && (resources[0].resourceType == it.resourceType)
+        resources.isNotEmpty() && (resources[0].resourceType == it.resourceType)
       }
     return with(resourceFilterExpressionForCurrentResourceType) {
-      if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
+      if ((this == null) || conditionalFhirPathExpressions.isEmpty()) {
         resources
       } else {
         resources.filter { resource ->
@@ -834,7 +835,7 @@ constructor(
 
   @VisibleForTesting
   suspend fun closeResource(resource: Resource, eventWorkflow: EventWorkflow) {
-    var conf: Configuration =
+    val conf: Configuration =
       Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
     val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
@@ -849,17 +850,14 @@ constructor(
                   updateExpression.value,
                 )
               // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-              if (
-                updateExpression.jsonPathExpression.startsWith("\$") &&
-                  updateExpression.value != null
-              ) {
+              if (updateExpression.jsonPathExpression.startsWith("\$")) {
                 set(updateExpression.jsonPathExpression, updateValue)
               }
               if (
                 updateExpression.jsonPathExpression.startsWith(
                   resource.resourceType.name,
                   ignoreCase = true,
-                ) && updateExpression.value != null
+                )
               ) {
                 set(
                   updateExpression.jsonPathExpression.replace(
@@ -887,7 +885,7 @@ constructor(
     withContext(dispatcherProvider.io()) { fhirEngine.update(updatedResource as Resource) }
   }
 
-  fun getJsonContent(jsonElement: JsonElement): Any? {
+  private fun getJsonContent(jsonElement: JsonElement): Any? {
     return when (jsonElement) {
       is JsonPrimitive -> jsonElement.jsonPrimitive.content
       is JsonObject -> jsonElement.jsonObject
@@ -1008,6 +1006,52 @@ constructor(
     return secondaryRepositoryResourceDataLinkedList
   }
 
+  suspend fun retrieveUniqueIdAssignmentResource(
+    uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?,
+  ): Resource? {
+    if (uniqueIdAssignmentConfig != null) {
+      val search =
+        Search(uniqueIdAssignmentConfig.resource).apply {
+          uniqueIdAssignmentConfig.dataQueries.forEach {
+            filterBy(dataQuery = it, configComputedRuleValues = emptyMap())
+          }
+          if (uniqueIdAssignmentConfig.resource == ResourceType.Group) {
+            filter(TokenClientParam(ACTIVE), { value = of(true) })
+          }
+          if (uniqueIdAssignmentConfig.sortConfigs != null) {
+            sort(uniqueIdAssignmentConfig.sortConfigs)
+          } else {
+            sort(
+              DateClientParam(LAST_UPDATED),
+              Order.DESCENDING,
+            )
+          }
+        }
+
+      val resources = search<Resource>(search)
+      val idResources =
+        if (uniqueIdAssignmentConfig.resourceFilterExpression != null) {
+          resources.filter { resource ->
+            val (conditionalFhirPathExpressions, matchAll) =
+              uniqueIdAssignmentConfig.resourceFilterExpression
+            if (matchAll) {
+              conditionalFhirPathExpressions.all {
+                fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+              }
+            } else {
+              conditionalFhirPathExpressions.any {
+                fhirPathDataExtractor.extractValue(resource, it).toBoolean()
+              }
+            }
+          }
+        } else {
+          resources
+        }
+      return idResources.firstOrNull()
+    }
+    return null
+  }
+
   /**
    * A wrapper data class to hold search results. All related resources are flattened into one Map
    * including the nested related resources as required by the Rules Engine facts.
@@ -1021,7 +1065,7 @@ constructor(
     const val SNOMED_SYSTEM = "http://hl7.org/fhir/R4B/valueset-condition-clinical.html"
     const val PATIENT_CONDITION_RESOLVED_CODE = "resolved"
     const val PATIENT_CONDITION_RESOLVED_DISPLAY = "Resolved"
-    const val PNC_CONDITION_TO_CLOSE_RESOURCE_ID = "pncConditionToClose"
-    const val SICK_CHILD_CONDITION_TO_CLOSE_RESOURCE_ID = "sickChildConditionToClose"
+    const val LAST_UPDATED = "_lastUpdated"
+    const val ACTIVE = "active"
   }
 }

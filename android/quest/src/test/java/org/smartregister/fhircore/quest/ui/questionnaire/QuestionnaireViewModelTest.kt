@@ -46,6 +46,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.Basic
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -76,6 +77,7 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
@@ -1144,4 +1146,120 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
   }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldUpdateGroupResourceWhenIDIsUsed() = runTest {
+    val linkId = "phn"
+    val uniqueIdAssignmentConfig =
+      UniqueIdAssignmentConfig(
+        linkId = linkId,
+        idFhirPathExpression = "",
+        resource = ResourceType.Group,
+      )
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "sample_config_123",
+        uniqueIdAssignment = uniqueIdAssignmentConfig,
+      )
+    val group =
+      Group().apply {
+        id = "grp1"
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("1234"),
+            BooleanType(false),
+          ),
+        )
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(Coding()).setText("phn"),
+            CodeableConcept(Coding()).setText("12345"),
+            BooleanType(false),
+          ),
+        )
+      }
+
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType("1234"))
+              },
+            )
+          },
+        )
+      }
+
+    questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+    coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
+    questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+      questionnaireConfig,
+      questionnaireResponse,
+    )
+    Assert.assertTrue(group.characteristic.first().exclude)
+    Assert.assertFalse(group.characteristic.last().exclude)
+    Assert.assertTrue(group.active)
+  }
+
+  @Test
+  fun testRetireUsedQuestionnaireUniqueIdShouldDeactivateGroupResourceWhenAllIDsAreUsed() =
+    runTest {
+      val linkId = "phn"
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = linkId,
+          idFhirPathExpression = "",
+          resource = ResourceType.Group,
+        )
+      val questionnaireConfig =
+        QuestionnaireConfig(
+          id = "sample_config_123",
+          uniqueIdAssignment = uniqueIdAssignmentConfig,
+        )
+      val group =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(Coding()).setText("phn"),
+              CodeableConcept(Coding()).setText("1234"),
+              BooleanType(false),
+            ),
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(Coding()).setText("phn"),
+              CodeableConcept(Coding()).setText("1235"),
+              BooleanType(true),
+            ),
+          )
+        }
+
+      val questionnaireResponse =
+        extractionQuestionnaireResponse().apply {
+          addItem(
+            QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+              addAnswer(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                  setValue(StringType("1234"))
+                },
+              )
+            },
+          )
+        }
+
+      questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+      coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
+      questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+        questionnaireConfig,
+        questionnaireResponse,
+      )
+
+      Assert.assertTrue(group.characteristic.first().exclude)
+      Assert.assertTrue(group.characteristic.last().exclude)
+      Assert.assertFalse(group.active)
+    }
 }
