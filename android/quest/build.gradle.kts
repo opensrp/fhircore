@@ -262,13 +262,6 @@ android {
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
     }
 
-    create("diabetesCompassTz") {
-      dimension = "apps"
-      applicationIdSuffix = ".diabetesCompassTz"
-      versionNameSuffix = "-diabetesCompassTz"
-      manifestPlaceholders["appLabel"] = "Gothomis-C"
-    }
-
     create("diabetesCompassClinic") {
       dimension = "apps"
       applicationIdSuffix = ".diabetesCompassClinic"
