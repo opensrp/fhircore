@@ -482,7 +482,7 @@ constructor(
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     return resultBundle
   }
@@ -491,24 +491,56 @@ constructor(
     gatewayModeHeaderValue: String? = null,
     searchPath: String,
     patientRelatedResourceTypes: MutableList<ResourceType>,
+    currentPage: Int = 1,
   ) {
-    val resultBundle =
-      if (gatewayModeHeaderValue.isNullOrEmpty()) {
-        fhirResourceDataSource.getResource(searchPath)
-      } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(
-          gatewayModeHeaderValue,
-          searchPath,
-        )
+    val pageSize = 4
+    var nextPage = currentPage
+    var totalItemsProcessed = 0
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    while (true) {
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, nextPage)
+      val itemsCount = resultBundle.entry.size
+      totalItemsProcessed += itemsCount
+
+      processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+
+      when {
+        itemsCount == pageSize -> {
+          nextPage++
+        }
+        else -> break
+      }
+    }
+
+    if (totalItemsProcessed % pageSize != 0) {
+      val remainingItems = totalItemsProcessed % pageSize
+      val remainingPage = (totalItemsProcessed / pageSize) + 1
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, remainingPage)
+      processResultBundleEntries(
+        resultBundle.entry.takeLast(remainingItems),
+        patientRelatedResourceTypes,
+      )
+    }
+  }
+
+  private suspend fun fetchResourceBundle(
+    gatewayModeHeaderValue: String?,
+    searchPath: String,
+    currentPage: Int,
+  ): Bundle {
+    val url = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
+    return if (gatewayModeHeaderValue.isNullOrEmpty()) {
+      fhirResourceDataSource.getResource(url)
+    } else {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+    }
   }
 
   private suspend fun processResultBundleEntries(
-    resultBundle: Bundle,
+    resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    resultBundle.entry?.forEach { bundleEntryComponent ->
+    resultBundleEntries.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
           val bundle = bundleEntryComponent.resource as Bundle
@@ -711,7 +743,7 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          searchPath = "${resourceGroup.key}?$ID=${it.focus.extractId()}",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
