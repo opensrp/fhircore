@@ -493,25 +493,33 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
+    val pageSize = 4
     var nextPage = currentPage
-    var prevPage: Int? = null
+    var totalItemsProcessed = 0
 
     while (true) {
       val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, nextPage)
+      val itemsCount = resultBundle.entry.size
+      totalItemsProcessed += itemsCount
+
       processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
       when {
-        resultBundle.link.any { it.relation == "next" } -> {
+        itemsCount == pageSize -> {
           nextPage++
-          prevPage = nextPage - 1
         }
         else -> break
       }
     }
 
-    prevPage?.let {
-      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, it)
-      processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+    if (totalItemsProcessed % pageSize != 0) {
+      val remainingItems = totalItemsProcessed % pageSize
+      val remainingPage = (totalItemsProcessed / pageSize) + 1
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, remainingPage)
+      processResultBundleEntries(
+        resultBundle.entry.takeLast(remainingItems),
+        patientRelatedResourceTypes,
+      )
     }
   }
 
@@ -520,7 +528,7 @@ constructor(
     searchPath: String,
     currentPage: Int,
   ): Bundle {
-    val url = "$searchPath&_page=$currentPage&_count=4"
+    val url = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
     return if (gatewayModeHeaderValue.isNullOrEmpty()) {
       fhirResourceDataSource.getResource(url)
     } else {
