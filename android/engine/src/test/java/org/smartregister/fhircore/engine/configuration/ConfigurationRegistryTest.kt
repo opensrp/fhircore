@@ -731,11 +731,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 3) {
+    coVerify(exactly = 5) {
       fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
     }
 
-    assertEquals(3, requestPathArgumentSlot.size)
+    assertEquals(5, requestPathArgumentSlot.size)
 
     assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
     assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
@@ -804,11 +804,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
-      coVerify(exactly = 4) {
+      coVerify(exactly = 7) {
         fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
       }
 
-      assertEquals(4, requestPathArgumentSlot.size)
+      assertEquals(7, requestPathArgumentSlot.size)
 
       assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
       assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
