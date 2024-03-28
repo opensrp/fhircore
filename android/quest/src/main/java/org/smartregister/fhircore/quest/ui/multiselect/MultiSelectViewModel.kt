@@ -129,11 +129,17 @@ constructor(
 
   fun onTextChanged(searchTerm: String) {
     searchTextState.value = searchTerm
+    if (searchTerm.isEmpty() || searchTerm.isBlank()) {
+      rootTreeNodes.run {
+        clear()
+        addAll(_rootTreeNodes)
+      }
+    }
   }
 
   fun onSelectionDone(dismiss: () -> Unit) {
     viewModelScope.launch {
-      // Consider using a proto-datastore here
+      // TODO Consider using a proto-datastore here
       preferenceDataStore.write(
         PreferenceDataStore.SYNC_LOCATION_IDS,
         selectedNodes.map { "${it.key}:${it.value}" }.joinToString(","),
@@ -143,12 +149,10 @@ constructor(
   }
 
   fun search() {
-    rootTreeNodes.clear()
     val searchTerm = searchTextState.value
-    val rootTreeNodeMap = mutableMapOf<String, TreeNode<String>>()
-    if (searchTerm.isEmpty()) {
-      rootTreeNodes.addAll(_rootTreeNodes)
-    } else {
+    if (searchTerm.isNotEmpty() && searchTerm.isNotEmpty()) {
+      val rootTreeNodeMap = mutableMapOf<String, TreeNode<String>>()
+      rootTreeNodes.clear()
       _rootTreeNodes.forEach { rootTreeNode ->
         if (
           rootTreeNode.data.contains(searchTerm, true) &&

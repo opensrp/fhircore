@@ -46,6 +46,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
@@ -71,6 +72,7 @@ fun MultiSelectBottomSheetView(
   onSelectionDone: (() -> Unit) -> Unit,
   search: () -> Unit,
 ) {
+  val keyboardController = LocalSoftwareKeyboardController.current
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,13 +106,19 @@ fun MultiSelectBottomSheetView(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 8.dp),
           ) {
-            IconButton(onClick = { search() }, modifier = Modifier.size(28.dp)) {
-              Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "",
-              )
-            }
             if (searchTextState.value.isNotEmpty()) {
+              IconButton(
+                onClick = {
+                  keyboardController?.hide()
+                  search()
+                },
+                modifier = Modifier.size(28.dp),
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Search,
+                  contentDescription = "",
+                )
+              }
               IconButton(onClick = { onSearchTextChanged("") }, modifier = Modifier.size(28.dp)) {
                 Icon(
                   imageVector = Icons.Default.Close,
@@ -129,7 +137,13 @@ fun MultiSelectBottomSheetView(
             )
           }
         },
-        keyboardActions = KeyboardActions(onSearch = { search() }),
+        keyboardActions =
+          KeyboardActions(
+            onSearch = {
+              keyboardController?.hide()
+              search()
+            }
+          ),
         keyboardOptions =
           KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
       )
