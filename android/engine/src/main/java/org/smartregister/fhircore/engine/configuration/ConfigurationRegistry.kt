@@ -493,7 +493,7 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
-    val pageSize = 4
+    val pageSize = 200
     var nextPage = currentPage
     var totalItemsProcessed = 0
 
