@@ -36,7 +36,6 @@ import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -663,35 +662,24 @@ constructor(
     if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
     else this.filter { !it.isRevInclude && !it.resultAsCount }
 
+  /**
+   * Data queries for retrieving resources require the id to be provided in the format
+   * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
+   * up to the server the id is updated with history information e.g
+   * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
+   * [ResourceType/UUID] format and updated in the computedValuesMap
+   */
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val initialComputedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
-
-    /**
-     * Data queries for retrieving resources require the id to be provided in the format
-     * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
-     * up to the server the id is updated with history information e.g
-     * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
-     * [ResourceType/UUID] format and updated in the computedValuesMap
-     */
-    val computedValuesMap = mutableMapOf<String, Any>()
-    initialComputedValuesMap.forEach { entry ->
-      val valueString = entry.value.toString()
-      if ('/' in valueString) {
-        val resourceType = valueString.substringBefore('/')
-        val isResourceValid =
-          resourceType.lowercase() in ResourceType.values().map { it.name.lowercase() }
-        if (isResourceValid) {
-          computedValuesMap[entry.key] =
-            "${entry.value.toString().substringBefore("/")}/${
-              entry.value.toString().extractLogicalIdUuid()
+    val computedValuesMap =
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry ->
+      val initialValue = entry.value.toString()
+      if (initialValue.contains('/')) {
+            "${initialValue.substringBefore("/")}/${
+              initialValue.extractLogicalIdUuid()
             }"
-        } else {
-          computedValuesMap[entry.key] = valueString
-        }
       } else {
-        computedValuesMap[entry.key] = valueString
+        initialValue
       }
     }
 
