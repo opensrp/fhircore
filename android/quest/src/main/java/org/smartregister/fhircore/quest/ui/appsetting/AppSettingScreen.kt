@@ -147,7 +147,7 @@ fun AppSettingScreen(
         Button(
           onClick = { fetchConfiguration(context) },
           enabled = !showProgressBar && appId.isNotEmpty(),
-          modifier = modifier.fillMaxWidth(),
+          modifier = modifier.fillMaxWidth().testTag("test_tag"),
           colors =
             ButtonDefaults.buttonColors(
               disabledContentColor = Color.Gray,

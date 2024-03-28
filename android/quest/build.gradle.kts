@@ -77,7 +77,7 @@ android {
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
     testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
     testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
-      "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+      "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR,LOW-BATTERY"
 
     // The following argument makes the Android Test Orchestrator run its
     // "pm clear" command after each test invocation. This command ensures
@@ -382,7 +382,7 @@ dependencies {
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.play.services.location)
-  implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+  implementation(libs.profileinstaller)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
