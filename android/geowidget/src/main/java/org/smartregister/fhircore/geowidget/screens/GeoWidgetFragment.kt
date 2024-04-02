@@ -46,6 +46,7 @@ import io.ona.kujaku.views.KujakuMapView
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
+import org.smartregister.fhircore.engine.configuration.geowidget.MapLayerConfig
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
@@ -64,7 +65,7 @@ class GeoWidgetFragment : Fragment() {
     internal var onCancelAddingLocationCallback: () -> Unit = {}
     internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     internal var useGpsOnAddingLocation: Boolean = false
-    internal var mapLayers : List<MapLayer> = ArrayList()
+    internal var mapLayers : List<MapLayerConfig> = ArrayList()
     internal var shouldLocationButtonShow : Boolean = true
     internal var shouldPlaneSwitcherButtonShow : Boolean = true
 
@@ -135,18 +136,10 @@ class GeoWidgetFragment : Fragment() {
 
         baseLayerSwitcherPlugin.apply {
             mapLayers.forEach {
-                when (it) {
-                    is MapLayer.SatelliteLayer -> {
-                        addBaseLayer(MapBoxSatelliteLayer(),it.isDefault)
-                    }
-
-                    is MapLayer.StreetLayer -> {
-                        addBaseLayer(StreetsBaseLayer(requireContext()),it.isDefault)
-                    }
-
-                    is MapLayer.StreetSatelliteLayer -> {
-                        addBaseLayer(StreetSatelliteLayer(requireContext()),it.isDefault)
-                    }
+                when (it.pair.first) {
+                    MapLayer.STREET ->  addBaseLayer(MapBoxSatelliteLayer(),it.pair.second)
+                    MapLayer.SATELLITE -> addBaseLayer(StreetsBaseLayer(requireContext()),it.pair.second)
+                    MapLayer.STREET_SATELLITE ->  addBaseLayer(StreetSatelliteLayer(requireContext()),it.pair.second)
                 }
             }
 
@@ -279,7 +272,7 @@ class Builder {
     private var onCancelAddingLocationCallback: () -> Unit = {}
     private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
     private var useGpsOnAddingLocation: Boolean = false
-    private var mapLayers : List<MapLayer> = ArrayList()
+    private var mapLayers : List<MapLayerConfig> = ArrayList()
     private var shouldLocationButtonShow : Boolean = true
     private var shouldPlaneSwitcherButtonShow : Boolean = true
     fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
@@ -298,7 +291,7 @@ class Builder {
         this.useGpsOnAddingLocation = value
     }
 
-    fun setMapLayers(list : List<MapLayer>) = apply {
+    fun setMapLayers(list : List<MapLayerConfig>) = apply {
         this.mapLayers = list
     }
 

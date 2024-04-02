@@ -40,6 +40,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,6 +51,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -63,6 +65,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
@@ -190,7 +193,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 requireContext().showToast("on cancel adding location")
             }
             .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-                requireContext().showToast("open profile")
+                arrayListOf(geoWidgetConfiguration.details).handleClickEvent(findNavController())
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)

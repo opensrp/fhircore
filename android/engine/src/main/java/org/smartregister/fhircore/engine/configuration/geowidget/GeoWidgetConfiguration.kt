@@ -32,7 +32,7 @@ data class GeoWidgetConfiguration(
   val profileId: String,
   val topScreenSection: TopScreenSectionConfig?= null,
   val registrationQuestionnaire: QuestionnaireConfig,
-  val mapLayers : List<MapLayer> = arrayListOf(MapLayer.StreetLayer(true), MapLayer.StreetSatelliteLayer(false), MapLayer.SatelliteLayer(false)),
+  val mapLayers : List<MapLayerConfig> = listOf(MapLayerConfig()),
   val showLocation: Boolean = false,
   val showPlaneSwitcher: Boolean = false,
   val showAddLocation: Boolean = false,
@@ -40,13 +40,14 @@ data class GeoWidgetConfiguration(
   val details : SummaryBottomSheetConfig
 ) : Configuration()
 
-// FIXME : Use Data class and have a pair of Enum and Boolean
 @Serializable
-sealed class MapLayer {
-  data class StreetLayer(val isDefault: Boolean) : MapLayer()
-  data class SatelliteLayer(val isDefault: Boolean) : MapLayer()
-  data class StreetSatelliteLayer(val isDefault: Boolean) : MapLayer()
+enum class MapLayer {
+  STREET,
+  SATELLITE,
+  STREET_SATELLITE
 }
+@Serializable
+data class MapLayerConfig(val pair: Pair<MapLayer, Boolean> = Pair(MapLayer.STREET, true))
 
 @Serializable
 data class TopScreenSectionConfig(
