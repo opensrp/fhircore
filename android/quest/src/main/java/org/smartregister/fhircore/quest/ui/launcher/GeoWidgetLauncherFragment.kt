@@ -193,8 +193,8 @@ class GeoWidgetLauncherFragment : Fragment() {
                 requireContext().showToast("open profile")
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
-            .setLocationButtonVisibility(geoWidgetConfiguration.shouldShowLocationButton)
-            .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.shouldShowPlaneSwitcherButton)
+            .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
+            .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
             .build()
     }
 

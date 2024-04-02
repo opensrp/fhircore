@@ -49,8 +49,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.configuration.geowidget.TopScreenSection
+import org.smartregister.fhircore.engine.configuration.geowidget.TopScreenSectionConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -81,7 +82,7 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
-  topScreenSection: TopScreenSection ?= null,
+  topScreenSection: TopScreenSectionConfig ?= null,
   onClick: (ToolbarClickEvent) -> Unit
 ) {
   Column(
@@ -113,7 +114,7 @@ fun TopScreenSection(
         color = Color.White,
         modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
       )
-      if (topScreenSection?.showToggleButton == true) {
+      if (topScreenSection?.menuIcons?.first()?.actions?.isNotEmpty() == true) {
         Icon(
           imageVector = Icons.Default.LegendToggle,
           contentDescription = FILTER,
@@ -255,12 +256,6 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
     isFilterIconEnabled = true,
     onClick = {},
     isSearchBarVisible = true,
-    topScreenSection = TopScreenSection(
-        showToggleButton = true,
-        screenTitle = "",
-        toggleIconConfig = ImageConfig(),
-        searchBar =  null,
-        toggleAction =  null)
   )
 }
 
@@ -276,11 +271,5 @@ fun TopScreenSectionWithToggleIconPreview() {
     isFilterIconEnabled = false,
     onClick = {},
     isSearchBarVisible = true,
-    topScreenSection = TopScreenSection(
-        showToggleButton = true,
-        screenTitle = "",
-        toggleIconConfig = ImageConfig(),
-        searchBar =  null,
-        toggleAction =  null)
   )
 }

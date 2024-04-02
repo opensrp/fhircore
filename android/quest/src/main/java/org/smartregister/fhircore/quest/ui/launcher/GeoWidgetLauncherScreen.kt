@@ -64,7 +64,7 @@ fun GeoWidgetLauncherScreen(
                 * by default isSearchBarVisible is visible
                 * */
                 TopScreenSection(
-                    title = geoWidgetConfiguration.topScreenSection?.screenTitle ?: "",
+                    title = geoWidgetConfiguration.topScreenSection?.title ?: "",
                     searchText = "",
                     filteredRecordsCount = 1,
                     isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
@@ -85,7 +85,7 @@ fun GeoWidgetLauncherScreen(
 
                         ToolbarClickEvent.FilterData -> {}
                         ToolbarClickEvent.Toggle -> {
-                            geoWidgetConfiguration.topScreenSection?.toggleAction?.handleClickEvent(
+                            geoWidgetConfiguration.topScreenSection?.menuIcons?.first()?.actions?.handleClickEvent(
                                 navController = navController
                             )
                         }

@@ -58,8 +58,8 @@ open class LoginActivity : BaseMultiLanguageActivity() {
     val cancelBackgroundSync =
       intent.extras?.getBoolean(TokenAuthenticator.CANCEL_BACKGROUND_SYNC, false) ?: false
     if (cancelBackgroundSync) workManager.cancelAllWorkByTag(AppSyncWorker::class.java.name)
-
-    navigateToScreen()
+    navigateToHome()
+//    navigateToScreen()
     setContent { AppTheme { LoginScreen(loginViewModel = loginViewModel) } }
   }
 

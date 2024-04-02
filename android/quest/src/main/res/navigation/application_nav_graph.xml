@@ -91,5 +91,23 @@
         android:id="@+id/userInsightScreenFragment"
         android:name="org.smartregister.fhircore.quest.ui.usersetting.UserInsightScreenFragment"
         android:label="fragment_user_insight_screen"
-        tools:layout="@layout/fragment_user_insight_screen" />
+        />
+
+
+    <dialog
+        android:id="@+id/summaryBottomSheetFragment"
+        android:name="org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment" >
+        <argument
+            android:name="geoWidgetId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="householdRegistrationMap"/>
+
+        <argument
+            android:name="summaryBottomSheetConfig"
+            app:argType="org.smartregister.fhircore.engine.configuration.geowidget.SummaryBottomSheetConfig"
+            app:nullable="true" />
+    </dialog>
+
+
 </navigation>

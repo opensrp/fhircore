@@ -115,7 +115,7 @@ fun RegisterScreen(
               filterActions?.handleClickEvent(navController)
             }
             ToolbarClickEvent.Toggle -> {
-              registerUiState.registerConfiguration?.topScreenSection?.toggleAction?.handleClickEvent(
+              registerUiState.registerConfiguration?.topScreenSection?.menuIcons?.first()?.actions?.handleClickEvent(
                 navController = navController
               )
             }
