@@ -58,6 +58,7 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
             onSearchTextChanged = multiSelectViewModel::onTextChanged,
             onSelectionDone = multiSelectViewModel::onSelectionDone,
             search = multiSelectViewModel::search,
+            isLoading = multiSelectViewModel.flag,
           )
         }
       }

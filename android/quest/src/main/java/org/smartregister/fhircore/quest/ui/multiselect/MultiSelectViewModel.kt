@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.state.ToggleableState
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.fhir.logicalId
@@ -49,11 +50,13 @@ constructor(
   val searchTextState: MutableState<String> = mutableStateOf("")
   val rootTreeNodes: SnapshotStateList<TreeNode<String>> = SnapshotStateList()
   val selectedNodes: SnapshotStateMap<String, ToggleableState> = SnapshotStateMap()
+  val flag = MutableLiveData(false)
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
   fun populateLookupMap(multiSelectViewConfig: MultiSelectViewConfig) {
     // Mark previously selected nodes
     viewModelScope.launch {
+      flag.postValue(true)
       val previouslySelectedNodes =
         preferenceDataStore.read(PreferenceDataStore.SYNC_LOCATION_IDS).firstOrNull()
       if (!previouslySelectedNodes.isNullOrEmpty()) {
@@ -121,7 +124,7 @@ constructor(
             data = data,
           )
         }
-
+      flag.postValue(false)
       _rootTreeNodes = TreeBuilder.buildTrees(lookupItems, rootNodeIds)
       rootTreeNodes.addAll(_rootTreeNodes)
     }

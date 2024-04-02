@@ -30,10 +30,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -56,6 +58,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.MutableLiveData
+import com.google.accompanist.placeholder.placeholder
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
@@ -71,97 +75,106 @@ fun MultiSelectBottomSheetView(
   onSearchTextChanged: (String) -> Unit,
   onSelectionDone: (() -> Unit) -> Unit,
   search: () -> Unit,
+  isLoading: MutableLiveData<Boolean>,
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
-  Column(modifier = Modifier.fillMaxWidth()) {
-    Row(
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
-    ) {
-      Text(
-        text = if (title.isNullOrEmpty()) stringResource(R.string.select_location) else title,
-        textAlign = TextAlign.Start,
-        fontWeight = FontWeight.Bold,
-        fontSize = 16.sp,
-      )
-      Icon(
-        imageVector = Icons.Filled.Clear,
-        contentDescription = null,
-        modifier = Modifier.clickable { onDismiss() },
-      )
-    }
-    Divider(color = DividerColor, thickness = 1.dp)
-    Box(
-      modifier =
-        Modifier.background(color = Color.Transparent).padding(vertical = 16.dp, horizontal = 8.dp),
-    ) {
-      OutlinedTextField(
-        value = searchTextState.value,
-        onValueChange = { value -> onSearchTextChanged(value) },
-        modifier = Modifier.fillMaxWidth(),
-        textStyle = TextStyle(fontSize = 18.sp),
-        trailingIcon = {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp),
-          ) {
-            if (searchTextState.value.isNotEmpty()) {
-              IconButton(
-                onClick = {
-                  keyboardController?.hide()
-                  search()
-                },
-                modifier = Modifier.size(28.dp),
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Search,
-                  contentDescription = "",
-                )
-              }
-              IconButton(onClick = { onSearchTextChanged("") }, modifier = Modifier.size(28.dp)) {
-                Icon(
-                  imageVector = Icons.Default.Close,
-                  contentDescription = "",
-                )
+  Scaffold(
+    topBar = {
+      Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
+        ) {
+          Text(
+            text = if (title.isNullOrEmpty()) stringResource(R.string.select_location) else title,
+            textAlign = TextAlign.Start,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+          )
+          Icon(
+            imageVector = Icons.Filled.Clear,
+            contentDescription = null,
+            modifier = Modifier.clickable { onDismiss() },
+          )
+        }
+        Divider(color = DividerColor, thickness = 1.dp)
+        OutlinedTextField(
+          value = searchTextState.value,
+          onValueChange = { value -> onSearchTextChanged(value) },
+          modifier =
+            Modifier.background(color = Color.Transparent)
+              .padding(vertical = 16.dp, horizontal = 8.dp)
+              .fillMaxWidth(),
+          textStyle = TextStyle(fontSize = 18.sp),
+          trailingIcon = {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              modifier = Modifier.padding(horizontal = 8.dp),
+            ) {
+              if (searchTextState.value.isNotEmpty()) {
+                IconButton(
+                  onClick = {
+                    keyboardController?.hide()
+                    search()
+                  },
+                  modifier = Modifier.size(28.dp),
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "",
+                  )
+                }
+                IconButton(onClick = { onSearchTextChanged("") }, modifier = Modifier.size(28.dp)) {
+                  Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "",
+                  )
+                }
               }
             }
-          }
-        },
-        singleLine = true,
-        placeholder = {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-              color = Color(0xff757575),
-              text = stringResource(id = R.string.search),
-            )
-          }
-        },
-        keyboardActions =
-          KeyboardActions(
-            onSearch = {
-              keyboardController?.hide()
-              search()
+          },
+          singleLine = true,
+          placeholder = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Text(
+                color = Color(0xff757575),
+                text = stringResource(id = R.string.search),
+              )
             }
-          ),
-        keyboardOptions =
-          KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
-      )
-    }
-
-    if (rootTreeNodes.isNotEmpty()) {
-      LazyColumn(modifier = Modifier.padding(horizontal = 8.dp)) {
+          },
+          keyboardActions =
+            KeyboardActions(
+              onSearch = {
+                keyboardController?.hide()
+                search()
+              },
+            ),
+          keyboardOptions =
+            KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Search),
+        )
+      }
+    },
+  ) {
+    Box(modifier = Modifier.padding(it)) {
+      if (isLoading.value == true) {
+        CircularProgressIndicator()
+      }
+      LazyColumn(
+        modifier = Modifier.padding(horizontal = 8.dp),
+      ) {
         items(rootTreeNodes, key = { item -> item.id }) {
-          MultiSelectView(
-            rootTreeNode = it,
-            selectedNodes = selectedNodes,
-          ) { treeNode ->
-            Column { Text(text = treeNode.data) }
+          Column {
+            MultiSelectView(
+              rootTreeNode = it,
+              selectedNodes = selectedNodes,
+            ) { treeNode ->
+              Column { Text(text = treeNode.data) }
+            }
           }
         }
-
         item {
-          if (selectedNodes.isNotEmpty()) {
+          if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
             Button(
               onClick = { onSelectionDone(onDismiss) },
               modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
