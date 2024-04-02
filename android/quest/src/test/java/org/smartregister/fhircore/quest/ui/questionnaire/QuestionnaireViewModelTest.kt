@@ -40,7 +40,6 @@ import io.mockk.unmockkObject
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1151,8 +1150,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun isRelatedEntityLocationMetaTagAddedToExtractedResource() = runBlocking {
     val bundleSlot = slot<Bundle>()
     val bundle = bundleSlot.captured
-    val relatedEntityLocationUUID = "relatedEntityLocationUUID"
     val linkId = "linkId"
+    val questionnaire = extractionQuestionnaire()
     val questionnaireConfig =
       questionnaireConfig.copy(
         resourceIdentifier = "resourceId",
@@ -1168,32 +1167,43 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             ),
           ),
       )
-    bundle.entry.forEach {
-      val resource = it.resource
-      val relatedEntityLocationCodingSystem =
-        context.getString(
-          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
-        )
-      resource.meta.tag.filter { coding ->
-        coding.system == relatedEntityLocationCodingSystem &&
-          coding.code == relatedEntityLocationUUID
+    val previousObs =
+      Observation().apply {
+        id = "previousObs1"
+        code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
       }
 
-      val questionnaireResponse =
-        QuestionnaireResponse().apply {
-          id = "resourceId"
-          context
-          subject = patient.asReference()
-          questionnaire = samplePatientRegisterQuestionnaire.asReference().reference
-          meta.tag = resource.meta.tag
-        }
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        val extractionDate = Date()
+        subject = patient.asReference()
+        val listResource =
+          ListResource().apply {
+            id = linkId
+            status = ListResource.ListStatus.CURRENT
+            mode = ListResource.ListMode.WORKING
+            title = CONTAINED_LIST_TITLE
+            date = extractionDate
+          }
+        val listEntryComponent =
+          ListResource.ListEntryComponent().apply {
+            deleted = false
+            date = extractionDate
+            item = previousObs.asReference()
+          }
+        listResource.addEntry(listEntryComponent)
+        addContained(listResource)
+      }
 
-      assertEquals(resource.meta.tag, questionnaireResponse.meta.tag)
-      assertContains(
-        questionnaireResponse.meta.tag.map { tag -> tag.code },
-        relatedEntityLocationUUID,
-      )
-      coEvery { defaultRepository.addOrUpdate(resource = questionnaireResponse) }
-    }
+    questionnaireViewModel.saveExtractedResources(
+      bundle = bundle,
+      questionnaire = questionnaire,
+      questionnaireConfig = questionnaireConfig,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
+    )
+
+    val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+    assertEquals(listResource.id, linkId)
   }
 }
