@@ -167,7 +167,7 @@ fun LoginPage(
         )
         Text(
           color = LoginDarkColor,
-          text = stringResource(id = R.string.app_name),
+          text = stringResource(id = com.google.android.fhir.R.string.app_name),
           fontWeight = FontWeight.Bold,
           fontSize = 32.sp,
           textAlign = TextAlign.Center,
