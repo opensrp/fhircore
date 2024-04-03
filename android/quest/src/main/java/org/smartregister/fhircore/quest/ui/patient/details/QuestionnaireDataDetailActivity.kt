@@ -33,7 +33,6 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.quest.configuration.view.DataDetailsListViewConfiguration
 import org.smartregister.fhircore.quest.configuration.view.ResultDetailsNavigationConfiguration
-import org.smartregister.fhircore.quest.util.QuestConfigClassification
 
 @AndroidEntryPoint
 class QuestionnaireDataDetailActivity :
@@ -62,13 +61,13 @@ class QuestionnaireDataDetailActivity :
       onFormItemClicked.observe(detailActivity, detailActivity::launchQuestionnaireForm)
     }
 
-//    detailConfig =
-//      configurationRegistry.retrieveConfiguration(
-//        configClassification =
-//          QuestConfigClassification.valueOf(
-//            intent.getStringExtra(CLASSIFICATION_ARG)!!.uppercase(),
-//          ),
-//      )
+    //    detailConfig =
+    //      configurationRegistry.retrieveConfiguration(
+    //        configClassification =
+    //          QuestConfigClassification.valueOf(
+    //            intent.getStringExtra(CLASSIFICATION_ARG)!!.uppercase(),
+    //          ),
+    //      )
 
     configureViews(detailConfig)
     loadData()
@@ -101,8 +100,7 @@ class QuestionnaireDataDetailActivity :
     }
   }
 
-  fun getResultDetailsNavigationOptions() =
-    ResultDetailsNavigationConfiguration()
+  fun getResultDetailsNavigationOptions() = ResultDetailsNavigationConfiguration()
 
   override fun configureViews(viewConfiguration: DataDetailsListViewConfiguration) {
     viewModel.updateViewConfigurations(viewConfiguration)

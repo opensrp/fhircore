@@ -68,7 +68,7 @@ sealed class ProfileViewData(
     val practitioners: List<Practitioner> = emptyList(),
   ) : ProfileViewData(name = name, logicalId = logicalId, identifier = identifier) {
     val tasksCompleted =
-     currentCarePlan != null &&
+      currentCarePlan != null &&
         tasks.isNotEmpty() &&
         tasks.all { it.subtitleStatus == Task.TaskStatus.COMPLETED.name }
 

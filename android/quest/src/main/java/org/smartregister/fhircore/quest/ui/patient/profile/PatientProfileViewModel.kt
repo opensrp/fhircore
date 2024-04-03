@@ -29,6 +29,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,7 +63,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.ProfileViewData
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.ProfileViewDataMapper
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
-import javax.inject.Inject
 
 @HiltViewModel
 class PatientProfileViewModel

@@ -36,14 +36,12 @@ import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -310,9 +308,7 @@ abstract class TracingRegisterDao(
     val patient = defaultRepository.loadResource<Patient>(resourceId)
     return patient?.let {
       val metaCodingSystemTag =
-        configurationRegistry
-          .getAppConfigs()
-          .patientTypeFilterTagViaMetaCodingSystem
+        configurationRegistry.getAppConfigs().patientTypeFilterTagViaMetaCodingSystem
       val tasks = validTasks(patient)
 
       val attempt = tracingRepository.getTracingAttempt(patient, tasks)
@@ -451,8 +447,7 @@ abstract class TracingRegisterDao(
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,
       name = this.extractName(),
-      identifier =
-        this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value,
+      identifier = this.extractOfficialIdentifier(),
       gender = this.gender,
       familyName = this.extractFamilyName(),
       healthStatus =

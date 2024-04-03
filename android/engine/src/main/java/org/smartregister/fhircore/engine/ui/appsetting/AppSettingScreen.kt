@@ -47,124 +47,99 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 
 @Composable
 fun AppSettingScreen(
-    modifier: Modifier = Modifier,
-    appVersionPair: Pair<Int, String>? = null,
-    goToHome: () -> Unit,
-    retry: () -> Unit,
-    state: DataLoadState<Boolean>,
+  modifier: Modifier = Modifier,
+  appVersionPair: Pair<Int, String>? = null,
+  goToHome: () -> Unit,
+  retry: () -> Unit,
+  state: DataLoadState<Boolean>,
 ) {
-    val context = LocalContext.current
-    val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
+  val context = LocalContext.current
+  val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
 
-    LaunchedEffect(state) {
-        if (state is DataLoadState.Success) {
-            goToHome()
-        }
+  LaunchedEffect(state) {
+    if (state is DataLoadState.Success) {
+      goToHome()
     }
+  }
 
+  Column(
+    modifier = modifier.fillMaxSize().padding(16.dp),
+  ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
+      verticalArrangement = Arrangement.Center,
+      modifier = modifier.weight(1f).padding(horizontal = 20.dp),
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = modifier
-                .weight(1f)
-                .padding(horizontal = 20.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                fontSize = 32.sp,
-                modifier = modifier
-                    .padding(vertical = 8.dp)
-                    .align(Alignment.CenterHorizontally),
-            )
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (state) {
-                    is DataLoadState.Error -> {
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center)
-                        ) {
-                            Text(
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colors.error,
-                                text = stringResource(id = getMessageFromException(state.exception)),
-                                modifier =
-                                modifier
-                                    .wrapContentWidth()
-                                    .padding(vertical = 10.dp)
-                                    .align(Alignment.CenterHorizontally)
-                                    .testTag(LOGIN_ERROR_TEXT_TAG),
-                            )
-                            Button(onClick = {
-                                retry()
-                            }) {
-                                Text(text = "Retry")
-                            }
-                        }
-
-                    }
-
-                    is DataLoadState.Success -> {
-                        Text(text = "Data loaded successfully")
-                    }
-
-                    is DataLoadState.Loading -> {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.align(Alignment.Center)
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = modifier.padding(bottom = 16.dp),
-                                strokeWidth = 1.6.dp,
-                            )
-                            Text(
-                                text = "Loading Configurations from server, this might take a while...",
-                                textAlign = TextAlign.Center
-                            )
-                        }
-
-                    }
-                }
+      Text(
+        text = stringResource(R.string.app_name),
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        fontSize = 32.sp,
+        modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
+      )
+      Box(modifier = Modifier.fillMaxSize()) {
+        when (state) {
+          is DataLoadState.Error -> {
+            Column(
+              Modifier.fillMaxWidth().align(Alignment.Center),
+            ) {
+              Text(
+                fontSize = 14.sp,
+                color = MaterialTheme.colors.error,
+                text = stringResource(id = getMessageFromException(state.exception)),
+                modifier =
+                  modifier
+                    .wrapContentWidth()
+                    .padding(vertical = 10.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .testTag(LOGIN_ERROR_TEXT_TAG),
+              )
+              Button(onClick = { retry() }) { Text(text = "Retry") }
             }
-
-
+          }
+          is DataLoadState.Success -> {
+            Text(text = "Data loaded successfully")
+          }
+          is DataLoadState.Loading -> {
+            Column(
+              verticalArrangement = Arrangement.Center,
+              horizontalAlignment = Alignment.CenterHorizontally,
+              modifier = Modifier.align(Alignment.Center),
+            ) {
+              CircularProgressIndicator(
+                modifier = modifier.padding(bottom = 16.dp),
+                strokeWidth = 1.6.dp,
+              )
+              Text(
+                text = "Loading Configurations from server, this might take a while...",
+                textAlign = TextAlign.Center,
+              )
+            }
+          }
         }
-        Text(
-            color = Color.Gray,
-            fontSize = 16.sp,
-            text = stringResource(id = R.string.app_version, versionCode, versionName),
-            modifier = modifier
-                .padding(16.dp)
-                .wrapContentWidth()
-                .align(Alignment.End),
-        )
+      }
     }
+    Text(
+      color = Color.Gray,
+      fontSize = 16.sp,
+      text = stringResource(id = R.string.app_version, versionCode, versionName),
+      modifier = modifier.padding(16.dp).wrapContentWidth().align(Alignment.End),
+    )
+  }
 }
 
-
 fun getMessageFromException(ex: Exception): Int {
-    return when (ex) {
-        is InternetConnectionException -> {
-            R.string.error_loading_config_no_internet
-        }
-
-        is ServerException -> {
-            R.string.error_loading_config_general
-        }
-
-        is ConfigurationErrorException -> {
-            R.string.error_loading_config_http_error
-        }
-
-        else -> {
-            R.string.error_loading_config_http_error
-        }
+  return when (ex) {
+    is InternetConnectionException -> {
+      R.string.error_loading_config_no_internet
     }
+    is ServerException -> {
+      R.string.error_loading_config_general
+    }
+    is ConfigurationErrorException -> {
+      R.string.error_loading_config_http_error
+    }
+    else -> {
+      R.string.error_loading_config_http_error
+    }
+  }
 }

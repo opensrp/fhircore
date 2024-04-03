@@ -150,7 +150,9 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
             val outcome = value.outcomeReference.find { x -> x.reference.contains(id) }
             if (outcome != null) {
               carePlanToUpdate = carePlan.copy()
-              value.detail.status = if(task.status == Task.TaskStatus.ONHOLD) CarePlan.CarePlanActivityStatus.ONHOLD else CarePlan.CarePlanActivityStatus.COMPLETED
+              value.detail.status =
+                if (task.status == Task.TaskStatus.ONHOLD) CarePlan.CarePlanActivityStatus.ONHOLD
+                else CarePlan.CarePlanActivityStatus.COMPLETED
               value.outcomeReference.first().reference = "Task/${task.id}"
               carePlanToUpdate?.activity?.set(index, value)
               break

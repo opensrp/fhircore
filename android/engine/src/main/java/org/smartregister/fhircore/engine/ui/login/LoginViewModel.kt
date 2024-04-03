@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.jsonwebtoken.Jwts
+import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
@@ -50,8 +52,6 @@ import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.UnknownHostException
-import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel
@@ -67,7 +67,7 @@ constructor(
   val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
   val configurationRegistry: ConfigurationRegistry,
-  val appConfigs: AppConfigService
+  val appConfigs: AppConfigService,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -245,7 +245,11 @@ constructor(
     if (bundle.entry.isNullOrEmpty()) return
     val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
 
-    if (practitionerDetails.id == "${appConfigs.getBaseFhirUrl()}practitioner-details/Practitioner Not Found") throw PractitionerNotFoundException()
+    if (
+      practitionerDetails.id ==
+        "${appConfigs.getBaseFhirUrl()}practitioner-details/Practitioner Not Found"
+    )
+      throw PractitionerNotFoundException()
 
     val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
     val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()

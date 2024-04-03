@@ -270,14 +270,14 @@ fun Enumerations.AdministrativeGender.translateGender(context: Context) =
 
 fun Patient.extractSecondaryIdentifier(): String? {
   if (this.hasIdentifier()) {
-    return this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.SECONDARY }?.value
+    return this.identifier.lastOrNull { it.use == Identifier.IdentifierUse.SECONDARY }?.value
   }
   return null
 }
 
 fun Patient.extractOfficialIdentifier(): String? =
   if (this.hasIdentifier()) {
-    this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
+    this.identifier.lastOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value
   } else {
     null
   }

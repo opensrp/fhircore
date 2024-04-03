@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.ui.login
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 
 interface LoginService {
@@ -25,6 +24,5 @@ interface LoginService {
 
   fun navigateToHome()
 
-  fun navigateToPinLogin(goForSetup: Boolean = false) {
-  }
+  fun navigateToPinLogin(goForSetup: Boolean = false) {}
 }

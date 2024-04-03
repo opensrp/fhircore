@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.appfeature.model
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
 
 @Serializable
 data class AppFeatureConfig(

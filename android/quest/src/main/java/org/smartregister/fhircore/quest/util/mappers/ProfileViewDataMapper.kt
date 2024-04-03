@@ -23,11 +23,11 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.hl7.fhir.r4.model.CarePlan
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -93,27 +93,27 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           guardians = inputModel.guardians,
           currentCarePlan = inputModel.currentCarePlan,
           tasks =
-          inputModel.tasks.map {
-            PatientProfileRowItem(
-              id = it.outcomeReference.first().extractId(),
-              actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
-              title = "", // it.description,
-              subtitle = "", // context.getString(R.string.due_on,
-              // it.executionPeriod.start.makeItReadable()),
-              profileViewSection = PatientProfileViewSection.TASKS,
-              actionButtonIcon =
-                if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
-                  Icons.Filled.Check
-                } else Icons.Filled.Add,
-              actionIconColor =
-                if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
-                  SuccessColor
-                } else it.detail.status.retrieveColorCode(),
-              actionButtonColor = it.detail.status.retrieveColorCode(),
-              actionButtonText = it.getQuestionnaireName(),
-              subtitleStatus = it.detail.status.name,
-            )
-          },
+            inputModel.tasks.map {
+              PatientProfileRowItem(
+                id = it.outcomeReference.first().extractId(),
+                actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
+                title = "", // it.description,
+                subtitle = "", // context.getString(R.string.due_on,
+                // it.executionPeriod.start.makeItReadable()),
+                profileViewSection = PatientProfileViewSection.TASKS,
+                actionButtonIcon =
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
+                    Icons.Filled.Check
+                  } else Icons.Filled.Add,
+                actionIconColor =
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
+                    SuccessColor
+                  } else it.detail.status.retrieveColorCode(),
+                actionButtonColor = it.detail.status.retrieveColorCode(),
+                actionButtonText = it.getQuestionnaireName(),
+                subtitleStatus = it.detail.status.name,
+              )
+            },
           practitioners = inputModel.practitioners,
         )
       is ProfileData.DefaultProfileData ->

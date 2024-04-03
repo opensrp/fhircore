@@ -360,7 +360,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireSubmit() {
     lifecycleScope.launch {
-      saveProcessingAlertDialog = showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
+      saveProcessingAlertDialog =
+        showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
 
       val questionnaireResponse = getQuestionnaireResponse()
       if (!validQuestionnaireResponse(questionnaireResponse)) {
@@ -384,7 +385,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         }
       }
     }
-
   }
 
   fun onPostSave(
@@ -448,7 +448,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
- suspend fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+  suspend fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -508,7 +508,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     const val QUESTIONNAIRE_RESPONSE = "questionnaire-response"
     const val QUESTIONNAIRE_BACK_REFERENCE_KEY = "questionnaire-back-reference"
     const val QUESTIONNAIRE_ARG_BARCODE_KEY = "patient-barcode"
-    const val WHO_IDENTIFIER_SYSTEM = "WHO-HCID"
     const val QUESTIONNAIRE_AGE = "PR-age"
     const val QUESTIONNAIRE_LAUNCH_CONTEXTS =
       "org.smartregister.fhircore.engine.ui.questionnaire.launchContext"

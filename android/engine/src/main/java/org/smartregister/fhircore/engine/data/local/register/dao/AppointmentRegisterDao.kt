@@ -31,13 +31,10 @@ import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -54,6 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toHealthStatus
 
@@ -220,10 +218,7 @@ constructor(
     return RegisterData.AppointmentRegisterData(
       logicalId = appointment.logicalId,
       name = patient.extractName(),
-      identifier =
-        patient.identifier
-          .firstOrNull { identifier -> identifier.use == Identifier.IdentifierUse.OFFICIAL }
-          ?.value,
+      identifier = patient.extractOfficialIdentifier(),
       gender = patient.gender,
       age = patient.extractAge(),
       healthStatus =

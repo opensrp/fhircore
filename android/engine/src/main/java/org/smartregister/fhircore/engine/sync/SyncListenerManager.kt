@@ -28,16 +28,11 @@ import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.FhirConfiguration
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.register.dao.organisationCode
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
@@ -59,9 +54,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
 
-  private val syncConfig by lazy {
-    configurationRegistry.getSyncConfigs()
-  }
+  private val syncConfig by lazy { configurationRegistry.getSyncConfigs() }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
@@ -103,12 +96,12 @@ constructor(
       sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
-    val appConfig =
-      configurationRegistry.getAppConfigs()
+    val appConfig = configurationRegistry.getAppConfigs()
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now
-    syncConfig?.parameter
+    syncConfig
+      ?.parameter
       ?.map { it.resource }
       ?.forEach { sp ->
         val paramName = sp.name // e.g. organization

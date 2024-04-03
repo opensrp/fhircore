@@ -84,7 +84,10 @@ constructor(
                 carePlan.status = CarePlan.CarePlanStatus.COMPLETED
                 fhirEngine.update(carePlan)
               } else {
-                val index = carePlan.activity.indexOfFirst { activity -> activity.outcomeReference.firstOrNull()?.reference ==  it}
+                val index =
+                  carePlan.activity.indexOfFirst { activity ->
+                    activity.outcomeReference.firstOrNull()?.reference == it
+                  }
                 if (index != -1) {
                   val item = carePlan.activity?.get(index)
                   item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED

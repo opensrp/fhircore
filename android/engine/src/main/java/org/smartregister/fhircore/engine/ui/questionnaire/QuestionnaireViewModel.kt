@@ -52,7 +52,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -66,8 +65,6 @@ import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
-import org.smartregister.fhircore.engine.configuration.view.FormConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -177,11 +174,7 @@ constructor(
   }
 
   private fun loadQuestionnaireConfigFromRegistry(): List<QuestionnaireConfig>? {
-    return kotlin
-      .runCatching {
-        configurationRegistry.getFormConfigs()
-      }
-      .getOrNull()
+    return kotlin.runCatching { configurationRegistry.getFormConfigs() }.getOrNull()
   }
 
   private suspend fun loadQuestionnaireConfigFromAssets(
@@ -641,20 +634,8 @@ constructor(
       getPopulationResourcesFromIntent(intent, questionnaireLogicalId).toMutableList()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
-      loadPatient(patientId)?.apply {
-        if (identifier.isEmpty()) {
-          identifier =
-            mutableListOf(
-              Identifier().apply {
-                value = logicalId
-                use = Identifier.IdentifierUse.OFFICIAL
-                system = QuestionnaireActivity.WHO_IDENTIFIER_SYSTEM
-              },
-            )
-        }
-
-        resourcesList.add(this)
-      } ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
+      loadPatient(patientId)?.apply { resourcesList.add(this) }
+        ?: defaultRepository.loadResource<Group>(patientId)?.apply { resourcesList.add(this) }
 
       val bundleIndex = resourcesList.indexOfFirst { x -> x is Bundle }
       if (bundleIndex != -1) {

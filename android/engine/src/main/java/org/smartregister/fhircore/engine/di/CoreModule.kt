@@ -27,6 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -38,7 +39,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.worker.CoreSimpleWorkerContext
-import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
@@ -68,7 +68,7 @@ class CoreModule {
   @Singleton
   @Provides
   fun provideWorkerContextProvider(): SimpleWorkerContext {
-   return CoreSimpleWorkerContext()
+    return CoreSimpleWorkerContext()
   }
 
   @Singleton
@@ -80,7 +80,8 @@ class CoreModule {
 
   @Singleton
   @Provides
-  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager = KnowledgeManager.create(context)
+  fun provideKnowledgeManager(@ApplicationContext context: Context): KnowledgeManager =
+    KnowledgeManager.create(context)
 
   @Singleton
   @Provides

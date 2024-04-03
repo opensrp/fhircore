@@ -343,8 +343,7 @@ constructor(
       subjectType = ResourceType.Patient,
     )
 
-  private fun getRegisterDataFilters(id: String) =
-    listOf<SearchFilter>()
+  private fun getRegisterDataFilters(id: String) = listOf<SearchFilter>()
 
   companion object {
     const val FAMILY_CARE_PLAN = "family_care_plan"

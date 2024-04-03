@@ -22,6 +22,8 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
@@ -47,7 +49,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
-import org.smartregister.fhircore.engine.util.extension.clinicVisitOrder
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractAddressDistrict
 import org.smartregister.fhircore.engine.util.extension.extractAddressState
@@ -67,8 +68,6 @@ import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import timber.log.Timber
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class HivRegisterDao
@@ -148,7 +147,7 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
     val configuration = getApplicationConfiguration()
-val carePlan = patient.activeCarePlans().firstOrNull()
+    val carePlan = patient.activeCarePlans().firstOrNull()
 
     return ProfileData.HivProfileData(
       logicalId = patient.logicalId,
@@ -169,9 +168,11 @@ val carePlan = patient.activeCarePlans().firstOrNull()
       currentCarePlan = carePlan,
       healthStatus =
         patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
-      tasks = carePlan?.activity?.filter {
-        it.shouldShowOnProfile()
-      }?.sortedBy { it.detail.code.text.toBigIntegerOrNull() } ?: listOf(),
+      tasks =
+        carePlan
+          ?.activity
+          ?.filter { it.shouldShowOnProfile() }
+          ?.sortedBy { it.detail.code.text.toBigIntegerOrNull() } ?: listOf(),
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
@@ -441,5 +442,4 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
-fun SharedPreferencesHelper.organisationCode() =
-  read(ResourceType.Organization.name, null) ?: ""
+fun SharedPreferencesHelper.organisationCode() = read(ResourceType.Organization.name, null) ?: ""

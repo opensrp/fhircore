@@ -28,20 +28,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import dagger.Lazy
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlin.system.exitProcess
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.AppConfigClassification
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
-import javax.inject.Inject
-import kotlin.system.exitProcess
 
 @AndroidEntryPoint
-class LoginActivity :
-  BaseMultiLanguageActivity() {
+class LoginActivity : BaseMultiLanguageActivity() {
 
   @Inject lateinit var loginService: LoginService
 
@@ -79,7 +77,7 @@ class LoginActivity :
               intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)!!.trim() ==
                 loginViewModel.username.value?.trim()
 
-        if (isUpdatingCurrentAccount) {
+          if (isUpdatingCurrentAccount) {
             syncBroadcaster.get().runSync() // restart/resume sync
             setResult(Activity.RESULT_OK)
             finish() // Return to the previous activity
@@ -92,14 +90,14 @@ class LoginActivity :
       launchDialPad.observe(this@LoginActivity) { if (!it.isNullOrEmpty()) launchDialPad(it) }
 
       // Check if Pin enabled and stored then move to Pin login
-//      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
-//      val forceLoginViaUsername =
-//        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
-//      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
-//      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
-//        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
-//        loginService.navigateToPinLogin()
-//      }
+      //      val isPinEnabled = loginViewConfiguration.value?.enablePin ?: false
+      //      val forceLoginViaUsername =
+      //        loginViewModel.sharedPreferences.read(FORCE_LOGIN_VIA_USERNAME, false)
+      //      val lastPinExist = !secureSharedPreference.retrieveSessionPin().isNullOrEmpty()
+      //      if (isPinEnabled && lastPinExist && !forceLoginViaUsername) {
+      //        loginViewModel.sharedPreferences.write(FORCE_LOGIN_VIA_USERNAME, false)
+      //        loginService.navigateToPinLogin()
+      //      }
     }
   }
 

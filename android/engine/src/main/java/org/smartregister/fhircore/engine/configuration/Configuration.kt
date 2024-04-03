@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration
 
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
-import org.hl7.fhir.r4.model.Parameters
 import org.smartregister.fhircore.engine.appfeature.model.AppFeatureConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
@@ -34,38 +33,36 @@ import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireConfig
  *   RegisterViewConfigurations used in an application with two registers.
  */
 interface Configuration {
-    val appId: String
-    val classification: String
+  val appId: String
+  val classification: String
 }
 
 @Serializable
 data class AppConfiguration(
-    val appConfig: ApplicationConfiguration,
-    val appFeatures: AppFeatureConfig,
-    val syncConfig: SyncConfig,
-    val formConfigs: List<QuestionnaireConfig> = listOf(),
+  val appConfig: ApplicationConfiguration,
+  val appFeatures: AppFeatureConfig,
+  val syncConfig: SyncConfig,
+  val formConfigs: List<QuestionnaireConfig> = listOf(),
 )
-
 
 @Serializable
 data class SyncConfig(
-    @SerializedName("resourceType") var resourceType: String,
-    @SerializedName("classification") var classification: String,
-    @SerializedName("parameter") var parameter: ArrayList<Parameter> = arrayListOf()
-
+  @SerializedName("resourceType") var resourceType: String,
+  @SerializedName("classification") var classification: String,
+  @SerializedName("parameter") var parameter: ArrayList<Parameter> = arrayListOf(),
 )
 
 @Serializable
 data class Resource(
-    @SerializedName("resourceType") var resourceType: String,
-    @SerializedName("name") var name: String,
-    @SerializedName("code") var code: String,
-    @SerializedName("base") var base: ArrayList<String> = arrayListOf(),
-    @SerializedName("type") var type: String? = null,
-    @SerializedName("expression") var expression: String? = null
+  @SerializedName("resourceType") var resourceType: String,
+  @SerializedName("name") var name: String,
+  @SerializedName("code") var code: String,
+  @SerializedName("base") var base: ArrayList<String> = arrayListOf(),
+  @SerializedName("type") var type: String? = null,
+  @SerializedName("expression") var expression: String? = null,
 )
 
 @Serializable
 data class Parameter(
-    @SerializedName("resource") var resource: Resource
+  @SerializedName("resource") var resource: Resource,
 )
