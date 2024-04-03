@@ -1179,7 +1179,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = patient.asReference()
         val listResource =
           ListResource().apply {
-            id = linkId
+            id = UUID.randomUUID().toString()
             status = ListResource.ListStatus.CURRENT
             mode = ListResource.ListMode.WORKING
             title = CONTAINED_LIST_TITLE
