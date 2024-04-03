@@ -734,13 +734,14 @@ constructor(
   ) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
     val computedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry ->
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry
+        ->
         val initialValue = entry.value.toString()
-          if (initialValue.contains('/')) {
-            """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
-          } else {
-            initialValue
-          }
+        if (initialValue.contains('/')) {
+          """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
+        } else {
+          initialValue
+        }
       }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")

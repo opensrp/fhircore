@@ -957,39 +957,45 @@ class DefaultRepositoryTest : RobolectricTest() {
         subject = patient.asReference()
       }
 
-    val resourceConfig = ResourceConfig(
-      id = "carePlan-id",
-      resource = carePlan.resourceType,
-      configRules = listOf(
-        RuleConfig(
-          name = "patientId",
-          condition = "true",
-          actions = listOf(
-            "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
-          )
-        )
-      ),
-      dataQueries = listOf(
-        DataQuery(
-          paramName = "instantiates-canonical",
-          filterCriteria = listOf(
-            FilterCriterionConfig.ReferenceFilterCriterionConfig(
-              dataType = Enumerations.DataType.REFERENCE,
-              value = "PlanDefinition/cd39380b-2359-4b98-8ab9-df7f90fe9392"
-            )
-          )
-        ),
-        DataQuery(
-          paramName = "subject",
-          filterCriteria = listOf(
-            FilterCriterionConfig.ReferenceFilterCriterionConfig(
-              dataType = Enumerations.DataType.REFERENCE,
-              value = "patientId",
-            )
-          )
-        )
+    val resourceConfig =
+      ResourceConfig(
+        id = "carePlan-id",
+        resource = carePlan.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+          ),
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "instantiates-canonical",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "PlanDefinition/cd39380b-2359-4b98-8ab9-df7f90fe9392",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "patientId",
+                  ),
+                ),
+            ),
+          ),
       )
-    )
 
     fhirEngine.create(patient, carePlan)
 
@@ -1020,55 +1026,63 @@ class DefaultRepositoryTest : RobolectricTest() {
         active = true
       }
 
-    val task = Task().apply {
-      id = "Task/e0bd5cd6-5a36-45c2-8c32-1dac77909179"
-      status = Task.TaskStatus.READY
-      `for` = patient.asReference()
-      executionPeriod.end =  Date(java.time.LocalDate.parse("2024-04-03").toEpochDay())
-    }
+    val task =
+      Task().apply {
+        id = "Task/e0bd5cd6-5a36-45c2-8c32-1dac77909179"
+        status = Task.TaskStatus.READY
+        `for` = patient.asReference()
+        executionPeriod.end = Date(java.time.LocalDate.parse("2024-04-03").toEpochDay())
+      }
 
-    val resourceConfig = ResourceConfig(
-      resource = task.resourceType,
-      configRules = listOf(
-        RuleConfig(
-          name = "patientId",
-          condition = "true",
-          actions = listOf(
-            "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))"
+    val resourceConfig =
+      ResourceConfig(
+        resource = task.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+            RuleConfig(
+              name = "taskEnd",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('taskEnd', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))",
+                ),
+            ),
           ),
-        ),
-        RuleConfig(
-          name = "taskEnd",
-          condition = "true",
-          actions = listOf(
-            "data.put('taskEnd', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
-          )
-        )
-      ),
-      dataQueries = listOf(
-        DataQuery(
-          paramName = "subject",
-          filterCriteria = listOf(
-            FilterCriterionConfig.ReferenceFilterCriterionConfig(
-              dataType = Enumerations.DataType.REFERENCE,
-              computedRule = "patientId",
-            )
-          )
-        ),
-        DataQuery(
-          paramName = "period",
-          filterCriteria = listOf(
-            FilterCriterionConfig.DateFilterCriterionConfig(
-              dataType = Enumerations.DataType.DATETIME,
-              valueAsDateTime = true,
-              computedRule = "2024-04-03",
-              value = "2024-04-03",
-              prefix = ParamPrefixEnum.LESSTHAN
-            )
-          )
-        )
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    computedRule = "patientId",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "period",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.DateFilterCriterionConfig(
+                    dataType = Enumerations.DataType.DATETIME,
+                    valueAsDateTime = true,
+                    computedRule = "2024-04-03",
+                    value = "2024-04-03",
+                    prefix = ParamPrefixEnum.LESSTHAN,
+                  ),
+                ),
+            ),
+          ),
       )
-    )
 
     fhirEngine.create(patient, task)
 
@@ -1082,7 +1096,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepository.updateResourcesRecursively(
       resourceConfig = resourceConfig,
       subject = patient,
-      eventWorkflow = eventWorkflow
+      eventWorkflow = eventWorkflow,
     )
 
     val resourceSlot = slot<Resource>()
