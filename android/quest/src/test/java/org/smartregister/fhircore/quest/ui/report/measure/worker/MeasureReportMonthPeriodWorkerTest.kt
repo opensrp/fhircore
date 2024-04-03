@@ -17,13 +17,20 @@
 package org.smartregister.fhircore.quest.ui.report.measure.worker
 
 import android.app.Application
+import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
+import androidx.work.workDataOf
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
+import io.mockk.spyk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -33,6 +40,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -41,7 +49,8 @@ class MeasureReportMonthPeriodWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  private val defaultRepository: DefaultRepository = mockk(relaxed = true)
+
+  private var defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val measureReportRepository: MeasureReportRepository = mockk(relaxed = true)
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk(relaxed = true)
@@ -54,9 +63,49 @@ class MeasureReportMonthPeriodWorkerTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
+    val inputData = workDataOf()
     measureReportMonthPeriodWorker =
-      TestListenableWorkerBuilder<MeasureReportMonthPeriodWorker>(context).build()
+      TestListenableWorkerBuilder<MeasureReportMonthPeriodWorker>(
+        context
+      ).setInputData(inputData)
+        .setWorkerFactory(MeasureReportMonthPeriodWorkerFactory())
+        .build()
+
+    defaultRepository = spyk(
+      DefaultRepository(
+        fhirEngine = fhirEngine,
+        dispatcherProvider = dispatcherProvider,
+        sharedPreferencesHelper = mockk(),
+        configurationRegistry = configurationRegistry,
+        configService = mockk(),
+        configRulesExecutor = mockk(),
+        fhirPathDataExtractor = mockk(),
+        parser = mockk()
+      )
+    )
   }
 
-  @Test fun `test MeasureReportMonthPeriodWorker doWork() returns success`() = runTest {}
+  @Test fun `test MeasureReportMonthPeriodWorker doWork() returns success`() = runTest {
+
+  }
+
+  inner class MeasureReportMonthPeriodWorkerFactory: WorkerFactory() {
+    override fun createWorker(
+      appContext: Context,
+      workerClassName: String,
+      workerParameters: WorkerParameters
+    ): ListenableWorker {
+      return MeasureReportMonthPeriodWorker(
+        context = context,
+        workerParams = workerParameters,
+        fhirEngine = fhirEngine,
+        fhirOperator = fhirOperator,
+        defaultRepository = defaultRepository,
+        dispatcherProvider = dispatcherProvider,
+        measureReportRepository = measureReportRepository,
+        configurationRegistry = configurationRegistry
+      )
+    }
+
+  }
 }
