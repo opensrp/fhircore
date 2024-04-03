@@ -734,7 +734,7 @@ constructor(
   ) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
     val computedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry,
         ->
         val initialValue = entry.value.toString()
         if (initialValue.contains('/')) {
