@@ -943,22 +943,23 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testUpdateResourcesClosesResource() = runTest {
+  fun testUpdateResources() = runTest {
     val patient =
       Patient().apply {
-        id = "6c9553f4-f237-498c-b500-058883841d51"
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
         active = true
       }
 
     val carePlan =
       CarePlan().apply {
-        id = "3e04863c-41cc-47a4-b57e-eb1cc4e00ef8"
+        id = "CarePlan/3e04863c-41cc-47a4-b57e-eb1cc4e00ef8"
         status = CarePlan.CarePlanStatus.ACTIVE
         subject = patient.asReference()
       }
 
     val resourceConfig = ResourceConfig(
-      resource = ResourceType.CarePlan,
+      id = "carePlan-id",
+      resource = carePlan.resourceType,
       configRules = listOf(
         RuleConfig(
           name = "patientId",
@@ -991,7 +992,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     )
 
     fhirEngine.create(patient, carePlan)
-    coEvery { fhirEngine.update(any()) } just runs
 
     val updatedValues =
       UpdateWorkflowValueConfig(
@@ -1005,34 +1005,30 @@ class DefaultRepositoryTest : RobolectricTest() {
       eventWorkflow = eventWorkflow,
     )
 
-    val carePlanSlot = slot<CarePlan>()
-//    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-    Assert.assertEquals("3e04863c-41cc-47a4-b57e-eb1cc4e00ef8", carePlanSlot.captured.id)
-    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as CarePlan
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("3e04863c-41cc-47a4-b57e-eb1cc4e00ef8", captured.logicalId)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, captured.status)
   }
 
   @Test
   fun testUpdateResourcesRecursively() = runTest {
     val patient =
       Patient().apply {
-        id = "6c9553f4-f237-498c-b500-058883841d51"
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
         active = true
       }
 
-//    val carePlan =
-//      CarePlan().apply {
-//        id = "3e04863c-41cc-47a4-b57e-eb1cc4e00ef8"
-//        status = CarePlan.CarePlanStatus.ACTIVE
-//        subject = patient.asReference()
-//      }
-
     val task = Task().apply {
-      id = "e0bd5cd6-5a36-45c2-8c32-1dac77909179"
+      id = "Task/e0bd5cd6-5a36-45c2-8c32-1dac77909179"
       status = Task.TaskStatus.READY
+      `for` = patient.asReference()
+      executionPeriod.end =  Date(java.time.LocalDate.parse("2024-04-03").toEpochDay())
     }
 
     val resourceConfig = ResourceConfig(
-      resource = ResourceType.Task,
+      resource = task.resourceType,
       configRules = listOf(
         RuleConfig(
           name = "patientId",
@@ -1042,11 +1038,11 @@ class DefaultRepositoryTest : RobolectricTest() {
           ),
         ),
         RuleConfig(
-          name = "taskToday",
+          name = "taskEnd",
           condition = "true",
           actions = listOf(
-            "data.put('taskToday', dateService.addOrSubtractYearFromCurrentDate(0,'-'))"
-          ),
+            "data.put('taskEnd', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))"
+          )
         )
       ),
       dataQueries = listOf(
@@ -1055,16 +1051,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           filterCriteria = listOf(
             FilterCriterionConfig.ReferenceFilterCriterionConfig(
               dataType = Enumerations.DataType.REFERENCE,
-              value = "patientId",
-            )
-          )
-        ),
-        DataQuery(
-          paramName = " based-on",
-          filterCriteria = listOf(
-            FilterCriterionConfig.ReferenceFilterCriterionConfig(
-              dataType = Enumerations.DataType.REFERENCE,
-              value = "PlanDefinition/cd39380b-2359-4b98-8ab9-df7f90fe9392"
+              computedRule = "patientId",
             )
           )
         ),
@@ -1074,7 +1061,8 @@ class DefaultRepositoryTest : RobolectricTest() {
             FilterCriterionConfig.DateFilterCriterionConfig(
               dataType = Enumerations.DataType.DATETIME,
               valueAsDateTime = true,
-              computedRule = "taskToday",
+              computedRule = "2024-04-03",
+              value = "2024-04-03",
               prefix = ParamPrefixEnum.LESSTHAN
             )
           )
@@ -1083,13 +1071,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     )
 
     fhirEngine.create(patient, task)
-    coEvery { fhirEngine.update(any()) } just runs
-
-//    val updatedValues =
-//      UpdateWorkflowValueConfig(
-//        jsonPathExpression = "CarePlan.status",
-//        value = JsonPrimitive("completed"),
-//      )
 
     val updatedValues =
       UpdateWorkflowValueConfig(
@@ -1097,27 +1078,18 @@ class DefaultRepositoryTest : RobolectricTest() {
         value = JsonPrimitive("completed"),
       )
 
-    val eventWorkflow = EventWorkflow(
-      updateValues = listOf(updatedValues),
-      eventResources = listOf(resourceConfig)
-      )
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow
+    )
 
-//    defaultRepository.updateResourcesRecursively(
-//      resourceConfig = resourceConfig ,
-//      subject = patient,
-//      eventWorkflow = eventWorkflow
-//    )
-//
-//    defaultRepository.updateResourcesRecursively(
-//      resourceConfig = resourceConfig,
-//      subject = patient,
-//      eventWorkflow = eventWorkflow,
-//    )
-//
-//    val carePlanSlot = slot<CarePlan>()
-//    coVerify { fhirEngine.update(capture(carePlanSlot)) }
-//    Assert.assertEquals("3e04863c-41cc-47a4-b57e-eb1cc4e00ef8", carePlanSlot.captured.id)
-//    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as Task
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("e0bd5cd6-5a36-45c2-8c32-1dac77909179", captured.id)
+    Assert.assertEquals(Task.TaskStatus.COMPLETED, captured.status)
   }
 
   @Test
