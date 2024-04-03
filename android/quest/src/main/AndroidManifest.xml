@@ -25,18 +25,6 @@
         <activity
             android:name=".ui.family.remove.family.RemoveFamilyQuestionnaireActivity"
             android:exported="false" />
-        <activity
-            android:name=".ui.patient.register.PatientRegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.QuestPatientDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.QuestionnaireDataDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.patient.details.SimpleDetailsActivity"
-            android:exported="false" />
         <activity android:name=".ui.main.AppMainActivity" />
         <activity android:name=".ui.patient.remove.HivPatientQuestionnaireActivity"
             android:theme="@style/AppTheme"

@@ -166,7 +166,7 @@ fun TopSection(
       placeholder = {
         Text(
           color = GreyTextColor,
-          text = stringResource(R.string.search_hint),
+          text = stringResource(org.smartregister.fhircore.engine.R.string.search_hint),
         )
       },
       modifier =

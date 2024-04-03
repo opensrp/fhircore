@@ -24,21 +24,49 @@ sealed class MainNavigationScreen(
   val route: String,
   val showInBottomNav: Boolean = false,
 ) {
-  object Home : MainNavigationScreen(R.string.clients, R.drawable.ic_home, "homeRoute", true)
+  object Home :
+    MainNavigationScreen(
+      org.smartregister.fhircore.engine.R.string.clients,
+      org.smartregister.fhircore.engine.R.drawable.ic_home,
+      "homeRoute",
+      true
+    )
 
-  object Tasks : MainNavigationScreen(R.string.tasks, R.drawable.ic_tasks, "tasksRoute", true)
+  object Tasks :
+    MainNavigationScreen(
+      org.smartregister.fhircore.engine.R.string.tasks,
+      org.smartregister.fhircore.engine.R.drawable.ic_tasks,
+      "tasksRoute",
+      true
+    )
 
   object Reports :
-    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, "reportsRoute", true)
+    MainNavigationScreen(
+      org.smartregister.fhircore.engine.R.string.reports,
+      org.smartregister.fhircore.engine.R.drawable.ic_reports,
+      "reportsRoute",
+      true
+    )
 
   object Settings :
-    MainNavigationScreen(R.string.settings, R.drawable.ic_settings, "settingsRoute", true)
+    MainNavigationScreen(
+      org.smartregister.fhircore.engine.R.string.settings,
+      R.drawable.ic_settings,
+      "settingsRoute",
+      true
+    )
 
   object PatientProfile :
-    MainNavigationScreen(titleResource = R.string.profile, route = "patientProfileRoute")
+    MainNavigationScreen(
+      titleResource = org.smartregister.fhircore.engine.R.string.profile,
+      route = "patientProfileRoute"
+    )
 
   object TracingProfile :
-    MainNavigationScreen(titleResource = R.string.profile, route = "tracingProfileRoute")
+    MainNavigationScreen(
+      titleResource = org.smartregister.fhircore.engine.R.string.profile,
+      route = "tracingProfileRoute"
+    )
 
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
 

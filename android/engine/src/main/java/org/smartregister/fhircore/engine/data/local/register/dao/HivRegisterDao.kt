@@ -305,8 +305,18 @@ constructor(
       }
   }
 
-  internal suspend fun Patient.activeCarePlans() =
-    patientCarePlan(this.logicalId).filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
+  internal suspend fun Patient.activeCarePlans(): List<CarePlan> {
+    patientCarePlan(this.logicalId)
+      .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
+      .apply {
+        val sortByLastUpdated = sortedBy { it.meta.lastUpdated }
+        return if (size > 1 || size == 1) {
+          listOf(sortByLastUpdated.first())
+        } else {
+          listOf()
+        }
+      }
+  }
 
   internal suspend fun patientCarePlan(patientId: String) =
     defaultRepository.searchResourceFor<CarePlan>(
@@ -378,7 +388,7 @@ constructor(
       .map { defaultRepository.loadResource(it.other) }
 
   private fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.getAppConfigs()!!
+    return configurationRegistry.getAppConfigs()
   }
 
   suspend fun removePatient(patientId: String) {

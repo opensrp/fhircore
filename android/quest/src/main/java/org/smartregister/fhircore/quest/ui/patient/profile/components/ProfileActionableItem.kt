@@ -404,7 +404,7 @@ fun ProfileActionableItemForUpcomingServicesPreview() {
         title = "ANC facility visit",
         subtitle = "22-May-2021",
         profileViewSection = PatientProfileViewSection.UPCOMING_SERVICES,
-        startIcon = R.drawable.gm_calendar_today_24,
+        startIcon = com.google.android.fhir.datacapture.R.drawable.gm_calendar_today_24,
         startIconBackgroundColor = WarningColor.copy(alpha = 0.7f),
       ),
       onActionClick = { _, _ -> },

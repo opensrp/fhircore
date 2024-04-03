@@ -23,17 +23,18 @@ import org.dtree.fhircore.dataclerk.ui.main.AppMainActivity
 import org.smartregister.fhircore.engine.ui.login.LoginService
 
 class DataClerkLoginService @Inject constructor() : LoginService {
-
-  override lateinit var loginActivity: AppCompatActivity
-
-  override fun navigateToHome() {
-    loginActivity.run {
-      startActivity(
-        Intent(loginActivity, AppMainActivity::class.java).apply {
+  override fun navigateToHome(startingActivity: AppCompatActivity) {
+    startingActivity.run {
+      val homeIntent =
+        Intent(this, AppMainActivity::class.java).apply {
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        },
-      )
-      finish()
+        }
+      this.startActivity(homeIntent)
+      this.finish()
     }
+  }
+
+  override fun activateAuthorisedFeatures() {
+    // no-op
   }
 }

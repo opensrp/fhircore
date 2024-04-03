@@ -30,14 +30,17 @@ constructor(
   private val defaultRepository: DefaultRepository,
 ) {
   suspend fun fetchConfigFromRemote() {
-    fhirResourceDataSource
-      .search(
-        ResourceType.Binary.name,
-        mapOf(
-          Pair("_id", appConfigService.getAppId()),
-        ),
-      )
-      .entry
-      .forEach { defaultRepository.save(it.resource) }
+    val binaryResources =
+      fhirResourceDataSource
+        .search(
+          ResourceType.Binary.name,
+          mapOf(
+            Pair("_id", appConfigService.getAppId()),
+          ),
+        )
+        .entry
+        .map { it.resource }
+
+    defaultRepository.saveLocalOnly(*binaryResources.toTypedArray())
   }
 }

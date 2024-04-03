@@ -226,13 +226,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         ) {
           super.onFragmentViewCreated(fm, f, v, savedInstanceState)
           if (f is QuestionnaireFragment) {
-            v.findViewById<Button>(R.id.submit_questionnaire)?.apply {
-              layoutParams.width =
-                ViewGroup.LayoutParams
-                  .MATCH_PARENT // Override by Styles xml does not seem to work for this layout
-              // param
-              text = submitButtonText()
-            }
+            v.findViewById<Button>(com.google.android.fhir.datacapture.R.id.submit_questionnaire)
+              ?.apply {
+                layoutParams.width =
+                  ViewGroup.LayoutParams
+                    .MATCH_PARENT // Override by Styles xml does not seem to work for this layout
+                // param
+                text = submitButtonText()
+              }
           }
         }
       },
@@ -360,11 +361,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireSubmit() {
     lifecycleScope.launch {
-      saveProcessingAlertDialog =
-        showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
-
       val questionnaireResponse = getQuestionnaireResponse()
-      if (!validQuestionnaireResponse(questionnaireResponse)) {
+      val isQuestionnaireResponseValid: Boolean
+      withContext(dispatcherProvider.unconfined()) {
+        isQuestionnaireResponseValid = validQuestionnaireResponse(questionnaireResponse)
+      }
+
+      if (!isQuestionnaireResponseValid) {
         saveProcessingAlertDialog.dismiss()
 
         AlertDialogue.showErrorAlert(
@@ -374,7 +377,6 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         )
         return@launch
       }
-
       handleQuestionnaireResponse(questionnaireResponse)
 
       questionnaireViewModel.extractionProgress.observe(this@QuestionnaireActivity) { result ->
