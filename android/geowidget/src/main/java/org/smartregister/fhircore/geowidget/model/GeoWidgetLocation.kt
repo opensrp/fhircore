@@ -20,7 +20,12 @@ data class GeoWidgetLocation(
   val id: String = "",
   val name: String = "",
   val position: Position? = null,
-  val color: String = ""
+  val parentLocationId: String = "",
+  val status: String = "",
+  val type: String? = "",
+  val typeText: String? = "",
+  val visitStatus: String? = "not_started"
+
 )
 
 data class Position(

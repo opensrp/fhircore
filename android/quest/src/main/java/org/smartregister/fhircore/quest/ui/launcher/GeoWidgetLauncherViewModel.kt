@@ -38,12 +38,10 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
-import org.smartregister.fhircore.quest.ui.register.RegisterEvent
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import timber.log.Timber
 import javax.inject.Inject
@@ -81,23 +79,33 @@ constructor(
                 val startingIndex = index * PAGE_SIZE
                 val search = Search(ResourceType.Location, PAGE_SIZE, startingIndex)
 
-              defaultRepository.search<Location>(search).forEach { location ->
-                  if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
-                      val geoWidgetLocation = GeoWidgetLocation(
-                          id = location.id,
-                          name = location.name ?: "",
-                          position = Position(
-                              location.position.latitude.toDouble(),
-                              location.position.longitude.toDouble()
-                          ),
-                          // TODO: add logic to decide the color of location
-                      )
-                      addLocationToFlow(geoWidgetLocation)
-                  }
-              }
-          }
-      }
-  }
+                defaultRepository.search<Location>(search).forEach { location ->
+                    if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
+                        val geoWidgetLocation = GeoWidgetLocation(
+                            id = location.id,
+                            name = location.name ?: "",
+                            position = Position(
+                                location.position.latitude.toDouble(),
+                                location.position.longitude.toDouble()
+                            ),
+                            status = location.status.name,
+                            type = location.type.find { codeableConcept ->
+                                codeableConcept.coding[0].system == "http://terminology.hl7.org/CodeSystem/v3-RoleCode" && codeableConcept.coding[0].code != "work"
+                            }?.coding?.get(0)?.code ?: "",
+                            typeText = location.type.find { codeableConcept ->
+                                codeableConcept.coding[0].system == "http://terminology.hl7.org/CodeSystem/v3-RoleCode" && codeableConcept.coding[0].code != "work"
+                            }?.coding?.get(0)?.display ?: "",
+                            parentLocationId = location.partOf.reference,
+                            // TODO: add logic to decide the color of location
+                            visitStatus = arrayListOf("completed", "in_progress", "not_started").random()
+                        )
+                        Timber.i("GeoWidgetLocation Type: ${geoWidgetLocation.type}")
+                        addLocationToFlow(geoWidgetLocation)
+                    }
+                }
+            }
+        }
+    }
 
     fun checkSelectedLocation() {
         //check preference if location/region is already selected otherwise show dialog to select location

@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -35,6 +35,9 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.expressions.Expression
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +55,8 @@ import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
 import org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.position
 import timber.log.Timber
 import java.util.LinkedList
@@ -118,6 +123,7 @@ class GeoWidgetFragment : Fragment() {
             getMapAsync { mapboxMap ->
                 mapboxMap.setStyle(builder) { style ->
                     geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
+                    addIconsLayer(style)
                     addMapStyle(style)
                     if (geoJsonSource != null && featureCollection != null) {
                         geoJsonSource!!.setGeoJson(featureCollection)
@@ -127,6 +133,33 @@ class GeoWidgetFragment : Fragment() {
 
             setOnAddLocationListener(this)
             setOnClickLocationListener(this)
+        }
+    }
+
+    private fun addIconsLayer(mMapboxMapStyle: Style) {
+        val dynamicIconSize = Expression.interpolate(
+            Expression.linear(), Expression.zoom(),
+            Expression.literal(0.98f), Expression.literal(0.9f)
+        )
+
+        val servicePointTypeMap: Map<String, ServicePointType> = geoWidgetViewModel.getServicePointKeyToType()
+        for ((key, servicePointType) in servicePointTypeMap) {
+            val icon: Bitmap = ResourceUtils.drawableToBitmap(
+                ResourcesCompat.getDrawable(
+                    resources, servicePointType.drawableId, requireContext().theme
+                )!!
+            )
+            mMapboxMapStyle.addImage(key, icon)
+            val symbolLayer = SymbolLayer(
+                String.format("%s.layer", key),
+                getString(R.string.data_set_quest)
+            )
+            symbolLayer.setProperties(
+                PropertyFactory.iconImage(key), PropertyFactory.iconSize(dynamicIconSize),
+                PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
+            )
+            symbolLayer.setFilter(Expression.eq(Expression.get("type"), servicePointType.name.lowercase()))
+            mMapboxMapStyle.addLayer(symbolLayer)
         }
     }
 
@@ -282,6 +315,7 @@ class Builder {
     private var mapLayers : List<MapLayer> = ArrayList()
     private var shouldLocationButtonShow : Boolean = true
     private var shouldPlaneSwitcherButtonShow : Boolean = true
+    private var onStyleLoadedCallback : Boolean = true
     fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
         this.onAddLocationCallback = onAddLocationCallback
     }
@@ -309,7 +343,6 @@ class Builder {
     fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
         this.shouldPlaneSwitcherButtonShow = show
     }
-
     fun build(): GeoWidgetFragment {
         return GeoWidgetFragment().apply {
             this.onAddLocationCallback = this@Builder.onAddLocationCallback
