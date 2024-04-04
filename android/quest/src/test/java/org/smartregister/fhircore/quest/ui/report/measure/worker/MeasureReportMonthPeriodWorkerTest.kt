@@ -30,9 +30,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -40,7 +40,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.app.fakes.Faker
-import org.smartregister.fhircore.quest.coroutine.CoroutineTestRule
 import org.smartregister.fhircore.quest.data.report.measure.MeasureReportRepository
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
@@ -48,7 +47,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 class MeasureReportMonthPeriodWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
-
 
   private var defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val measureReportRepository: MeasureReportRepository = mockk(relaxed = true)
@@ -66,34 +64,38 @@ class MeasureReportMonthPeriodWorkerTest : RobolectricTest() {
     val inputData = workDataOf()
     measureReportMonthPeriodWorker =
       TestListenableWorkerBuilder<MeasureReportMonthPeriodWorker>(
-        context
-      ).setInputData(inputData)
+          context,
+        )
+        .setInputData(inputData)
         .setWorkerFactory(MeasureReportMonthPeriodWorkerFactory())
         .build()
 
-    defaultRepository = spyk(
-      DefaultRepository(
-        fhirEngine = fhirEngine,
-        dispatcherProvider = dispatcherProvider,
-        sharedPreferencesHelper = mockk(),
-        configurationRegistry = configurationRegistry,
-        configService = mockk(),
-        configRulesExecutor = mockk(),
-        fhirPathDataExtractor = mockk(),
-        parser = mockk()
+    defaultRepository =
+      spyk(
+        DefaultRepository(
+          fhirEngine = fhirEngine,
+          dispatcherProvider = dispatcherProvider,
+          sharedPreferencesHelper = mockk(),
+          configurationRegistry = configurationRegistry,
+          configService = mockk(),
+          configRulesExecutor = mockk(),
+          fhirPathDataExtractor = mockk(),
+          parser = mockk(),
+        ),
       )
-    )
   }
 
-  @Test fun `test MeasureReportMonthPeriodWorker doWork() returns success`() = runTest {
-
+  @Test
+  fun `test MeasureReportMonthPeriodWorker doWork() returns success`() = runTest {
+    val result = measureReportMonthPeriodWorker.doWork()
+    Assert.assertEquals(result, ListenableWorker.Result.success())
   }
 
-  inner class MeasureReportMonthPeriodWorkerFactory: WorkerFactory() {
+  inner class MeasureReportMonthPeriodWorkerFactory : WorkerFactory() {
     override fun createWorker(
       appContext: Context,
       workerClassName: String,
-      workerParameters: WorkerParameters
+      workerParameters: WorkerParameters,
     ): ListenableWorker {
       return MeasureReportMonthPeriodWorker(
         context = context,
@@ -103,9 +105,8 @@ class MeasureReportMonthPeriodWorkerTest : RobolectricTest() {
         defaultRepository = defaultRepository,
         dispatcherProvider = dispatcherProvider,
         measureReportRepository = measureReportRepository,
-        configurationRegistry = configurationRegistry
+        configurationRegistry = configurationRegistry,
       )
     }
-
   }
 }
