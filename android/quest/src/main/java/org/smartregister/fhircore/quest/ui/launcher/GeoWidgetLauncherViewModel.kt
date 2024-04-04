@@ -17,17 +17,22 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.content.Context
+import android.text.format.DateUtils.isToday
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import ca.uhn.fhir.rest.gclient.ReferenceClientParam
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
@@ -39,6 +44,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
 import org.smartregister.fhircore.geowidget.model.Position
@@ -81,6 +87,23 @@ constructor(
 
                 defaultRepository.search<Location>(search).forEach { location ->
                     if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
+                        val searchRelatedResources =
+                            Search(ResourceType.Encounter).apply {
+                                val reference : ReferenceParamFilterCriterion.() -> Unit = {
+                                    value = location.logicalId.asReference(location.resourceType).reference
+                                }
+                                val filters = arrayListOf(reference)
+                                filter(
+                                    ReferenceClientParam("location"),
+                                    *filters.toTypedArray(),
+                                )
+                            }
+                        var visitStatus = "not_started"
+                        defaultRepository.search<Encounter>(searchRelatedResources).forEach { encounter ->
+                            if (encounter.type[0].coding[0].code == "SVISIT" && isToday(encounter.period.start.time)) {
+                                visitStatus = encounter.status.display.replace(" ", "_").lowercase()
+                            }
+                        }
                         val geoWidgetLocation = GeoWidgetLocation(
                             id = location.id,
                             name = location.name ?: "",
@@ -97,9 +120,8 @@ constructor(
                             }?.coding?.get(0)?.display ?: "",
                             parentLocationId = location.partOf.reference,
                             // TODO: add logic to decide the color of location
-                            visitStatus = arrayListOf("completed", "in_progress", "not_started").random()
+                            visitStatus = visitStatus
                         )
-                        Timber.i("GeoWidgetLocation Type: ${geoWidgetLocation.type}")
                         addLocationToFlow(geoWidgetLocation)
                     }
                 }
@@ -162,11 +184,11 @@ constructor(
 
     fun onEvent(event: GeoWidgetEvent) =
         when (event) {
-        is GeoWidgetEvent.SearchServicePoints -> {
-            //TODO: here the search bar query will be processed
-            ""
+            is GeoWidgetEvent.SearchServicePoints -> {
+                //TODO: here the search bar query will be processed
+                ""
+            }
         }
-    }
 
     /** Adds coordinates into the correct action parameter as [ActionParameter.value] if the [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. **/
     private fun addMatchingCoordinatesToActionParameters(
@@ -182,7 +204,7 @@ constructor(
             .filter {
                 it.paramType == ActionParameterType.PREPOPULATE && it.dataType == Enumerations.DataType.STRING
             }.map {
-                return@map when(it.key) {
+                return@map when (it.key) {
                     KEY_LATITUDE -> it.copy(value = latitude.toString())
                     KEY_LONGITUDE -> it.copy(value = longitude.toString())
                     else -> it

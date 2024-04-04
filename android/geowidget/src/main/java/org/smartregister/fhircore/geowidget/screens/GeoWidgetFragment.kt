@@ -151,6 +151,7 @@ class GeoWidgetFragment : Fragment() {
             )
             mMapboxMapStyle.addImage(key, icon)
             val symbolLayer = SymbolLayer(
+                // TODO: Refactor to string constant
                 String.format("%s.layer", key),
                 getString(R.string.data_set_quest)
             )
@@ -158,6 +159,7 @@ class GeoWidgetFragment : Fragment() {
                 PropertyFactory.iconImage(key), PropertyFactory.iconSize(dynamicIconSize),
                 PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
             )
+            // TODO: Refactor "type" to string constant
             symbolLayer.setFilter(Expression.eq(Expression.get("type"), servicePointType.name.lowercase()))
             mMapboxMapStyle.addLayer(symbolLayer)
         }
