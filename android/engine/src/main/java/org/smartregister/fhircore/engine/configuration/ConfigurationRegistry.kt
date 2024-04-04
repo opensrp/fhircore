@@ -390,20 +390,6 @@ constructor(
     retrieveConfiguration(ConfigType.Application)
   }
 
-  // temp function for testing purposes
-  fun getFakeImplementationGuide() : ImplementationGuide {
-    return ImplementationGuide().apply {
-      url = "ImplementationGuide/1"
-      name = "testImplementationGuide"
-      definition = ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
-        resource = mutableListOf(
-          ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
-            Reference().apply { reference = "Composition" }
-          )
-        )
-      }
-    }
-  }
 
   /**
    * Fetch non-patient Resources for the application that are not application configurations
@@ -427,8 +413,17 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
 
-      val compositionResource = fetchRemoteComposition(parsedAppId)
+      val compositionRef = implementationGuideResource
+        ?.retrieveImplementationGuideDefinitionResources()
+        ?.get(0)
+        ?.reference
+        ?.reference
+
+      val compositionVersion = compositionRef?.substringAfterLast('/', "")
+
+      val compositionResource = fetchRemoteComposition(parsedAppId, compositionVersion)
 
 
       compositionResource?.let { composition ->
@@ -485,16 +480,16 @@ constructor(
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
-//      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
-      val implementationGuideResource = getFakeImplementationGuide()
+      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
+
 
       val compositionRef = implementationGuideResource
-        .retrieveImplementationGuideDefinitionResources()
-        .get(0)
-        .reference
-        .reference
+        ?.retrieveImplementationGuideDefinitionResources()
+          ?.get(0)
+        ?.reference
+          ?.reference
 
-      val compositionVersion = compositionRef.substringAfterLast('/')
+      val compositionVersion = compositionRef?.substringAfterLast('/')
     }
   }
 
@@ -515,10 +510,10 @@ constructor(
 
   suspend fun fetchRemoteComposition(appId: String?, version:String? = null): Composition? {
     Timber.i("Fetching configs for app $appId")
-    val urlPath = if(version == null ) {
+    val urlPath = if(version.isNullOrEmpty()) {
       "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
     } else {
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}={$appId}_history/$version"
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId/_history/$version"
     }
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
