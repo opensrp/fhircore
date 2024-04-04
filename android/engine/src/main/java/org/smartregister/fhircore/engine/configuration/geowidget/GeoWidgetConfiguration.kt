@@ -32,7 +32,7 @@ data class GeoWidgetConfiguration(
   val profileId: String,
   val topScreenSection: TopScreenSectionConfig?= null,
   val registrationQuestionnaire: QuestionnaireConfig,
-  val mapLayers : List<MapLayerConfig> = listOf(MapLayerConfig()),
+  val mapLayers : List<MapLayerConfig> = listOf(MapLayerConfig(Pair(MapLayer.STREET, true))),
   val showLocation: Boolean = false,
   val showPlaneSwitcher: Boolean = false,
   val showAddLocation: Boolean = false,
@@ -47,7 +47,7 @@ enum class MapLayer {
   STREET_SATELLITE
 }
 @Serializable
-data class MapLayerConfig(val pair: Pair<MapLayer, Boolean> = Pair(MapLayer.STREET, true))
+data class MapLayerConfig(val pair: Pair<MapLayer, Boolean>)
 
 @Serializable
 data class TopScreenSectionConfig(
