@@ -6,6 +6,8 @@ Examples are rows, columns, cards, and buttons.
 
 ## LIST widget
 
+![list](/img/config_types/listui.png)
+
 ### Flex alignment widgets
 
 To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
@@ -123,10 +125,18 @@ sortConfig | Configuration used for sorting LIST widget resource | no | |
 fhirPathExpression | This is the fhir path expression of a given resource | no | |
 relatedResources | resource that is part of the base resource  | no | |
 
-![list](/img/config_types/listui.png)
+### Goals of List Widget
+   - Displays of listed data
+   - Supports pagination of data
+   - Gives ability to scroll
 
 ## How to use COMPOUND_TEXT
-Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
+
+![text](/img/config_types/compound_text.png)
+
+Compound text is a widget that is used to display text of different properties on the user interface
+
+The below json code defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
 
  ``` json
 [
@@ -177,12 +187,17 @@ textCase | Determines how the text style should be. The text cases are `UPPER_CA
 fontSize | Determines how the text size in float.| | Float |
 maxLine | It defines the maximum number of lines you would like the text to be displayed.| | Int |
 
-
-![text](/img/config_types/compound_text.png)
+### Goals of Compound Text Widget
+ - Display text of different properties
 
 
 ## How to use BUTTON
-Defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
+
+![button](/img/config_types/buttons.png)
+
+Buttons are often used to perform actions when clicked, in fhircore the same use case applies most actions are performed on button click.
+
+The json below defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
  ``` json
  [
    {
@@ -253,12 +268,14 @@ On top of the above properties, you need to add  Image config properties see a `
 ```
  The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
 
-![button](/img/config_types/buttons.png)
-
-
+### Goals of a Button
+ The main aim of a button is to provide a way to perform separate action when it is clicked.
 
 ## SERVICE_CARD widgets
-Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
+
+![serviceCard](/img/config_types/service_card.png)
+
+Service Card displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
 
  ``` json
 {
@@ -350,9 +367,14 @@ below.
   "serviceMemberIcons": "@{serviceMemberIcons}"
 }
 ```
-![serviceCard](/img/config_types/service_card.png)
+### Goals of service card
+ - To display patient details and tasks.
+ - Ability to display icon based on the reference provided.
 
 ## COLUMN widgets
+
+![column](/img/config_types/column.png)
+
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
 
 ``` json
@@ -399,10 +421,15 @@ children | A list of ViewProperties objects that represents the child views of t
 showDivider | show divider is a boolean variable the gives the capability to show divider within the column if its needed | | String |
 action | A list of ActionConfig that represents the child actions that can be performed within the column | | emptyList() |
 
-![column](/img/config_types/column.png)
+### Goals of COLUMN
+ -  To arrange data or even views in a vertical manner.
+
 
 ## IMAGE widget
-Displays icons or images.
+
+![image](/img/config_types/image.png)
+
+Displays icons or images.The below json shows how image widget can be configured.
 ``` json
 {
   "viewType": "IMAGE",
@@ -437,12 +464,14 @@ clickable | Determines whether the view is clickable | | false |
 visible | A String value that determines whether the view should be visible | Yes| true |
 weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
 
-
-![image](/img/config_types/image.png)
+### Goals of Image Widget
+    -   The main aim is just to show the icon and image.
 
 ## ROW widgets
-The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
 
+![row](/img/config_types/row.png)
+
+The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
 
 ```json
 {
@@ -495,10 +524,12 @@ arrangement |  Specifies the arrangement of the children views within the row. |
 wrapContent |  If set to true, the row's width and height will adjust to wrap its content tightly. | | false |
 children |   A list of **ViewProperties** objects representing the children views within the row. | | emptyList()|
 
-![row](/img/config_types/row.png)
 
 ## VIEW Widget
-Defines the hierarchical stucture of views to be rendered. It contains various properties that define its appearance and behavior.
+
+![view](/img/config_types/view.png)
+
+Defines the hierarchical structure of views to be rendered. It contains various properties that define its appearance and behavior.
 
 ``` json
 "views": [
@@ -560,9 +591,10 @@ fillMaxHeight | It indicates whether the view should attempt to occupy the maxim
 clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
 visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
 
-![view](/img/config_types/view.png)
 
 ### Divider Widget
+
+![divider](/img/config_types/divider_ui.png)
 
 The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI).
 It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
@@ -588,8 +620,6 @@ thickness | The width of the Divider. | No | 0.5 |
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
 visible | A string value that determines whether the view should be visible | No| true |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
-
-![divider](/img/config_types/divider_ui.png)
 
 ## Spacer Widget
 
