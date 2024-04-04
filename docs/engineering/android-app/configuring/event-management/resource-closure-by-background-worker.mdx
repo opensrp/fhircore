@@ -51,6 +51,23 @@ This is achieved by use of the `EventWorkFlow` config. The `EventWorkFlow` confi
             }
           ]
         }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].code",
+          "value": "370996005",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].system",
+          "value": "http://www.snomed.org/",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].display",
+          "value": "resolved",
+          "resourceType": "Condition"
+        }
       ]
     }
   ]
@@ -127,3 +144,16 @@ It specifies which field and values to filter the resources by.
 key |The resource field to apply the filter on | yes |  |
 value | The value that the resource field should match for the filter to pass | yes |  |
 
+### UpdateValue properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+jsonPathExpression | JsonPath representation of the resource field to update | yes |  |
+value | The value to update the resource field with | yes |  |
+resourceType | The name of the resource type to be updated | yes |  |
+
+### Resource Filter Expression properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+conditionalFhirPathExpressions | Criteria to filter which resources when only a subset of the fetched resources need to be updated e.g only update tasks whose status is not completed | yes |  |
+matchAll | Determines whether all conditional FhirPath expressions should evaluate to true | no | true |
+resourceType | The name of the resource type to be updated | yes |  |
