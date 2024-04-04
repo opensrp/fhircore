@@ -1192,13 +1192,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           },
         )
       }
-
-    questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+    questionnaireViewModel.uniqueIdResource = group
     coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
     questionnaireViewModel.retireUsedQuestionnaireUniqueId(
       questionnaireConfig,
       questionnaireResponse,
     )
+
+    coVerify(exactly = 1) { defaultRepository.addOrUpdate(resource = group) }
     Assert.assertTrue(group.characteristic.first().exclude)
     Assert.assertFalse(group.characteristic.last().exclude)
     Assert.assertTrue(group.active)
@@ -1226,16 +1227,17 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             Group.GroupCharacteristicComponent(
               CodeableConcept(Coding()).setText("phn"),
               CodeableConcept(Coding()).setText("1234"),
-              BooleanType(false),
+              BooleanType(true),
             ),
           )
           addCharacteristic(
             Group.GroupCharacteristicComponent(
               CodeableConcept(Coding()).setText("phn"),
               CodeableConcept(Coding()).setText("1235"),
-              BooleanType(true),
+              BooleanType(false),
             ),
           )
+          this.quantity = 1
         }
 
       val questionnaireResponse =
@@ -1244,22 +1246,84 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
               addAnswer(
                 QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
-                  setValue(StringType("1234"))
+                  setValue(StringType("1235"))
                 },
               )
             },
           )
         }
 
-      questionnaireViewModel.uniqueIdResourcePair = Pair("1234", group)
+      questionnaireViewModel.uniqueIdResource = group
       coEvery { defaultRepository.addOrUpdate(resource = group) } just runs
       questionnaireViewModel.retireUsedQuestionnaireUniqueId(
         questionnaireConfig,
         questionnaireResponse,
       )
 
+      coVerify(exactly = 1) { defaultRepository.addOrUpdate(resource = group) }
       Assert.assertTrue(group.characteristic.first().exclude)
       Assert.assertTrue(group.characteristic.last().exclude)
       Assert.assertFalse(group.active)
     }
+    @Test
+    fun testGroupResourceShouldNotBeUpdatedWhenCustomUniqueIDsAreUsed() =
+            runTest {
+                val linkId = "phn"
+                val uniqueIdAssignmentConfig =
+                        UniqueIdAssignmentConfig(
+                                linkId = linkId,
+                                idFhirPathExpression = "",
+                                resource = ResourceType.Group,
+                        )
+                val questionnaireConfig =
+                        QuestionnaireConfig(
+                                id = "sample_config_123",
+                                uniqueIdAssignment = uniqueIdAssignmentConfig,
+                        )
+                val group =
+                        Group().apply {
+                            id = "grp2"
+                            addCharacteristic(
+                                    Group.GroupCharacteristicComponent(
+                                            CodeableConcept(Coding()).setText("phn"),
+                                            CodeableConcept(Coding()).setText("1234"),
+                                            BooleanType(true),
+                                    ),
+                            )
+                            addCharacteristic(
+                                    Group.GroupCharacteristicComponent(
+                                            CodeableConcept(Coding()).setText("phn"),
+                                            CodeableConcept(Coding()).setText("1235"),
+                                            BooleanType(false),
+                                    ),
+                            )
+                            this.quantity = 1
+                        }
+
+                val questionnaireResponse =
+                        extractionQuestionnaireResponse().apply {
+                            addItem(
+                                    QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(linkId)).apply {
+                                        addAnswer(
+                                                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                                                    setValue(StringType("CUSTID123456"))
+                                                },
+                                        )
+                                    },
+                            )
+                        }
+
+                questionnaireViewModel.uniqueIdResource = group
+                questionnaireViewModel.retireUsedQuestionnaireUniqueId(
+                        questionnaireConfig,
+                        questionnaireResponse,
+                )
+
+                coVerify(exactly = 0) { defaultRepository.addOrUpdate(resource = group) }
+                Assert.assertTrue(group.characteristic.first().exclude)
+                Assert.assertFalse(group.characteristic.last().exclude)
+                Assert.assertFalse(group.active)
+            }
+
+
 }
