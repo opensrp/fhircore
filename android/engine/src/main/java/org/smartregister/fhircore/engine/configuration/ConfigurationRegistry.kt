@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
@@ -95,7 +96,6 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
-  val configurationRegistry: ConfigurationRegistry,
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -387,8 +387,9 @@ constructor(
   }
 
   private val applicationConfiguration: ApplicationConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(ConfigType.Application)
+    retrieveConfiguration(ConfigType.Application)
   }
+
 
   /**
    * Fetch non-patient Resources for the application that are not application configurations
@@ -412,9 +413,18 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-      val compositionResource = fetchRemoteComposition(parsedAppId)
+      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
 
-      val implementationGuideResource = fetchRemoteComposition(applicationConfiguration.implementationGuideUrl)
+      val compositionRef = implementationGuideResource
+        ?.retrieveImplementationGuideDefinitionResources()
+        ?.get(0)
+        ?.reference
+        ?.reference
+
+      val compositionVersion = compositionRef?.substringAfterLast('/', "")
+
+      val compositionResource = fetchRemoteComposition(parsedAppId, compositionVersion)
+
 
       compositionResource?.let { composition ->
         composition
@@ -472,49 +482,14 @@ constructor(
       val compositionResource = fetchRemoteComposition(parsedAppId)
       val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
 
-      implementationGuideResource?.let { implementationGuide ->
-        implementationGuide
-          .retrieveImplementationGuideDefinitionResources()
-          .asSequence()
-          .filter {
-            it.hasReference() && it.reference.hasReferenceElement()
-          } // is focus.identifier a necessary check
-          .groupBy { section ->
-            section.reference.reference.substringBefore(
-              TYPE_REFERENCE_DELIMITER,
-              missingDelimiterValue = "",
-            )
-          }
-          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-          .forEach { entry: Map.Entry<String, List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>> ->
-            if (entry.key == ResourceType.List.name) {
-              processCompositionListResources(
-                entry,
-                patientRelatedResourceTypes = patientRelatedResourceTypes,
-              )
-            } else {
-              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEach { parentIt ->
-                Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
-                )
-                processCompositionManifestResources(
-                  entry.key,
-                  parentIt.map { sectionComponent -> sectionComponent.reference.extractId() },
-                  patientRelatedResourceTypes,
-                )
-              }
-            }
-          }
+      val compositionRef = implementationGuideResource
+        ?.retrieveImplementationGuideDefinitionResources()
+          ?.get(0)
+        ?.reference
+          ?.reference
 
-        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
-
-        // Save ImplementationGuide after fetching the referenced composition resource
-        addOrUpdate(implementationGuideResource)
-
-        Timber.d("Done fetching application configurations remotely")
-      }
+      val compositionVersion = compositionRef?.substringAfterLast('/')
     }
   }
 
@@ -533,10 +508,13 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteComposition(appId: String?): Composition? {
+  suspend fun fetchRemoteComposition(appId: String?, version:String? = null): Composition? {
     Timber.i("Fetching configs for app $appId")
-    val urlPath =
+    val urlPath = if(version.isNullOrEmpty()) {
       "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
+    } else {
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId/_history/$version"
+    }
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
