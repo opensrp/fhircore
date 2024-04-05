@@ -493,49 +493,45 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
-    val pageSize = 200
-    var nextPage = currentPage
-    var totalItemsProcessed = 0
+    var currentPageUrl = "$searchPath&_page=$currentPage&_count=4"
 
-    while (true) {
-      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, nextPage)
-      val itemsCount = resultBundle.entry.size
-      totalItemsProcessed += itemsCount
 
+    // Fetch pages until there are no more next pages
+    while (currentPageUrl.isNotBlank()) {
+      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, currentPageUrl)
       processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
-      when {
-        itemsCount == pageSize -> {
-          nextPage++
-        }
-        else -> break
+
+      // Extract the URL for the next page from the links
+      currentPageUrl = resultBundle.getLink("next").url ?: ""
+
+
+      // If next page URL is not available, it means we have fetched all pages
+      if (currentPageUrl.isBlank()) {
+        break
+      }
+
+      // Extracting page number from URL to increment it for the next page
+      val regex = Regex(".*&_page=(\\d+).*")
+      val matchResult = regex.matchEntire(currentPageUrl)
+      val nextPage = matchResult?.groupValues?.get(1)?.toIntOrNull()
+      nextPage?.let {
+        currentPageUrl = currentPageUrl.replace("_page=$nextPage", "_page=${nextPage + 1}")
       }
     }
-
-    if (totalItemsProcessed % pageSize != 0) {
-      val remainingItems = totalItemsProcessed % pageSize
-      val remainingPage = (totalItemsProcessed / pageSize) + 1
-      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath, remainingPage)
-      processResultBundleEntries(
-        resultBundle.entry.takeLast(remainingItems),
-        patientRelatedResourceTypes,
-      )
-    }
   }
+
 
   private suspend fun fetchResourceBundle(
     gatewayModeHeaderValue: String?,
     searchPath: String,
-    currentPage: Int,
   ): Bundle {
-    val url = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
     return if (gatewayModeHeaderValue.isNullOrEmpty()) {
-      fhirResourceDataSource.getResource(url)
+      fhirResourceDataSource.getResource(searchPath)
     } else {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, url)
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
     }
   }
-
   private suspend fun processResultBundleEntries(
     resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
