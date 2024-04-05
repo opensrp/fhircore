@@ -383,11 +383,11 @@ fun isValidResourceType(resourceCode: String): Boolean {
   }
 }
 
-fun ImplementationGuide.retrieveImplementationGuideDefinitionResources(): List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent> {
-  val resources = mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
-  this.definition.resource.forEach {
-    resources.add(it)
-  }
+fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
+  List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent> {
+  val resources =
+    mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
+  this.definition.resource.forEach { resources.add(it) }
   return resources
 }
 

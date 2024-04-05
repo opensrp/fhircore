@@ -47,7 +47,6 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
-import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
@@ -413,18 +412,19 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
+      val implementationGuideResource =
+        fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
 
-      val compositionRef = implementationGuideResource
-        ?.retrieveImplementationGuideDefinitionResources()
-        ?.get(0)
-        ?.reference
-        ?.reference
+      val compositionRef =
+        implementationGuideResource
+          ?.retrieveImplementationGuideDefinitionResources()
+          ?.get(0)
+          ?.reference
+          ?.reference
 
       val compositionVersion = compositionRef?.substringAfterLast('/', "")
 
       val compositionResource = fetchRemoteComposition(parsedAppId, compositionVersion)
-
 
       compositionResource?.let { composition ->
         composition
@@ -472,28 +472,9 @@ constructor(
     }
   }
 
-  @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResourcesXXX(isInitialLogin: Boolean = true) {
-    // Reset configurations before loading new ones
-    configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-      val compositionResource = fetchRemoteComposition(parsedAppId)
-      val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
-
-
-      val compositionRef = implementationGuideResource
-        ?.retrieveImplementationGuideDefinitionResources()
-          ?.get(0)
-        ?.reference
-          ?.reference
-
-      val compositionVersion = compositionRef?.substringAfterLast('/')
-    }
-  }
-
-  suspend fun fetchRemoteImplementationGuide(implementationGuideUrl: String?): ImplementationGuide? {
+  suspend fun fetchRemoteImplementationGuide(
+    implementationGuideUrl: String?
+  ): ImplementationGuide? {
     Timber.i("Fetching ImplementationGuide $implementationGuideUrl")
     val urlPath =
       "${ResourceType.ImplementationGuide.name}?${ImplementationGuide.URL}=$implementationGuideUrl&_count=$DEFAULT_COUNT"
@@ -508,13 +489,14 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteComposition(appId: String?, version:String? = null): Composition? {
+  suspend fun fetchRemoteComposition(appId: String?, version: String? = null): Composition? {
     Timber.i("Fetching configs for app $appId")
-    val urlPath = if(version.isNullOrEmpty()) {
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
-    } else {
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId/_history/$version"
-    }
+    val urlPath =
+      if (version.isNullOrEmpty()) {
+        "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
+      } else {
+        "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId/_history/$version"
+      }
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
