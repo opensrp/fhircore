@@ -493,18 +493,15 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
-    var currentPageUrl = "$searchPath&_page=$currentPage&_count=4"
-
+    var currentPageUrl = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
 
     // Fetch pages until there are no more next pages
     while (currentPageUrl.isNotBlank()) {
       val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, currentPageUrl)
       processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
-
       // Extract the URL for the next page from the links
       currentPageUrl = resultBundle.getLink("next").url ?: ""
-
 
       // If next page URL is not available, it means we have fetched all pages
       if (currentPageUrl.isBlank()) {
@@ -521,7 +518,6 @@ constructor(
     }
   }
 
-
   private suspend fun fetchResourceBundle(
     gatewayModeHeaderValue: String?,
     searchPath: String,
@@ -532,6 +528,7 @@ constructor(
       fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
     }
   }
+
   private suspend fun processResultBundleEntries(
     resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
