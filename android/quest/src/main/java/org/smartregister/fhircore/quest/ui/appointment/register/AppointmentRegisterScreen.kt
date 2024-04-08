@@ -185,7 +185,7 @@ fun FilterAppointmentsModal(
           ) {
             Text(
               text =
-                stringResource(id = org.smartregister.fhircore.engine.R.string.cancel).uppercase()
+                stringResource(id = org.smartregister.fhircore.engine.R.string.cancel).uppercase(),
             )
           }
 

@@ -111,7 +111,7 @@ fun MeasureReportResultPage(
       modifier =
         modifier
           .background(
-            color = colorResource(id = org.smartregister.fhircore.engine.R.color.backgroundGray)
+            color = colorResource(id = org.smartregister.fhircore.engine.R.color.backgroundGray),
           )
           .fillMaxSize(),
     ) {
@@ -123,8 +123,8 @@ fun MeasureReportResultPage(
               .background(
                 color =
                   colorResource(
-                    id = org.smartregister.fhircore.engine.R.color.light_gray_background
-                  )
+                    id = org.smartregister.fhircore.engine.R.color.light_gray_background,
+                  ),
               )
               .padding(12.dp)
               .wrapContentWidth(),

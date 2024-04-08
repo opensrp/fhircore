@@ -136,8 +136,9 @@ fun PatientRegisterScreen(
               enabled = !firstTimeSync,
             ) {
               Text(
-                text = stringResource(org.smartregister.fhircore.engine.R.string.register_new_client),
-                modifier = modifier.padding(8.dp)
+                text =
+                  stringResource(org.smartregister.fhircore.engine.R.string.register_new_client),
+                modifier = modifier.padding(8.dp),
               )
             }
           }

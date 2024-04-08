@@ -32,6 +32,6 @@ abstract class ConfigServiceModule {
 
   @Binds
   abstract fun providesAppConfigService(
-    questAppConfigService: QuestAppConfigService
+    questAppConfigService: QuestAppConfigService,
   ): AppConfigService
 }

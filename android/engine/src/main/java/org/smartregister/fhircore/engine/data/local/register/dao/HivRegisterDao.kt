@@ -452,4 +452,6 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
-fun SharedPreferencesHelper.organisationCode() = read(ResourceType.Organization.name, null) ?: ""
+fun SharedPreferencesHelper.organisationCode() =
+  read<List<String>>(key = ResourceType.Organization.name, decodeWithGson = true)?.firstOrNull()
+    ?: ""

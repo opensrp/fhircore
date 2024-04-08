@@ -124,7 +124,7 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:knowledge:0.1.0-alpha03-preview3-SNAPSHOT") {
+  api("org.dtree.android.fhir:knowledge:0.1.0-alpha0392") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
@@ -136,6 +136,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.smartregister", module = "knowledge")
   }
 
   // Hilt - Dependency Injection
@@ -183,7 +184,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
-  api("org.smartregister:data-capture:1.1.0-preview6-SNAPSHOT") {
+  api("org.dtree.android.fhir:data-capture:1.1.0-alpha01") {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
@@ -197,6 +198,7 @@ dependencies {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.smartregister", module = "knowledge")
   }
 
   api("com.google.code.gson:gson:2.10.1")
