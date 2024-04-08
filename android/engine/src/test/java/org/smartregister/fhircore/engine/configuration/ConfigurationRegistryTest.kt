@@ -727,6 +727,18 @@ class ConfigurationRegistryTest : RobolectricTest() {
           Bundle.BundleLinkComponent().apply { relation = "next" },
         )
       }
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        "List?_id=46464&_page=2&_count=200",
+      )
+    } returns
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply { relation = "next" },
+        )
+      }
 
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
