@@ -21,8 +21,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class GeoWidgetConfiguration(
@@ -36,8 +38,9 @@ data class GeoWidgetConfiguration(
   val showLocation: Boolean = false,
   val showPlaneSwitcher: Boolean = false,
   val showAddLocation: Boolean = false,
-  val resourceConfig: FhirResourceConfig? = null,
-  val details : SummaryBottomSheetConfig
+  val resourceConfig: FhirResourceConfig,
+  val servicePointConfig: ServicePointConfig?, //TODO: Provide defaults
+  val bottomSheetView: List<ViewProperties>// TODO: change the view type
 ) : Configuration()
 
 @Serializable
@@ -54,4 +57,9 @@ data class TopScreenSectionConfig(
   val searchBar: RegisterContentConfig?,
   val title: String,
   val menuIcons: List<ImageProperties>? = null
+)
+
+@Serializable
+data class ServicePointConfig(
+  val rules: List<RuleConfig>
 )

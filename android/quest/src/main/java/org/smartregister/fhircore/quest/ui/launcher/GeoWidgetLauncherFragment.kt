@@ -173,7 +173,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         showSetLocationDialog()
         setOnQuestionnaireSubmissionListener()
         setLocationFromDbCollector()
-        geoWidgetLauncherViewModel.checkSelectedLocation()
+        geoWidgetLauncherViewModel.checkSelectedLocation(geoWidgetConfiguration.resourceConfig)
         Timber.i("GeoWidgetLauncherFragment onViewCreated")
     }
 

@@ -11793,7 +11793,7 @@
       "id": "marine-label-md-pt",
       "type": "symbol",
       "metadata": {
-        "mapbox:group": "1444856087950.3635"
+        "mapbox:group": "14448560879503635"
       },
       "source": "composite",
       "source-layer": "marine_label",
@@ -12383,9 +12383,41 @@
       ],
       "layout": {},
       "paint": {
-        "circle-radius": 10,
-        "circle-color": "hsl(0, 71%, 50%)",
-        "circle-stroke-width": 1
+        "circle-radius": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          7.0,
+          13,
+          13.0,
+          15
+        ],
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "visitStatus"
+          ],
+          [
+            "in_progress"
+          ],
+          "hsl(45.1,62.5%,50.8%)",
+          [
+            "finished"
+          ],
+          "hsl(101.6,66.8%,44.9%)",
+          [
+            "not_started"
+          ],
+          "hsl(0, 0%, 64%)",
+          "hsl(100, 100%, 100%)"
+        ],
+        "circle-stroke-width": 2,
+        "circle-opacity": 1
       }
     },
     {
