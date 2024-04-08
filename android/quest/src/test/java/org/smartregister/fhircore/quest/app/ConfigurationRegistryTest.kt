@@ -177,6 +177,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         addEntry().apply {
           this.resource = ListResource().apply { ListResource@ this.id = "123456" }
         }
+        link.add(
+          Bundle.BundleLinkComponent().apply { relation = "next" },
+        )
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
