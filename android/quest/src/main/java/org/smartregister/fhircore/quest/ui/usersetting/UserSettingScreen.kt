@@ -125,6 +125,7 @@ fun UserSettingScreen(
   allowP2PSync: Boolean,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
+  impGuideVersion: String? = null,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -380,6 +381,16 @@ fun UserSettingScreen(
           modifier = modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally),
         )
 
+        if (impGuideVersion != null) {
+          Text(
+            color = contentColor,
+            fontSize = 16.sp,
+            text = stringResource(id = R.string.ig_version, impGuideVersion),
+            modifier =
+              modifier.padding(bottom = 12.dp, top = 2.dp).align(Alignment.CenterHorizontally),
+          )
+        }
+
         Text(
           color = contentColor,
           fontSize = 16.sp,
@@ -496,5 +507,6 @@ fun UserSettingPreview() {
     allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
+    impGuideVersion = "10",
   )
 }
