@@ -720,10 +720,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "list-entries",
         "List?_id=46464&_page=1&_count=200",
       )
-    } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource))
-      link.add(Bundle.BundleLinkComponent().apply {
-        relation = "next"
-      })}
+    } returns
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply { relation = "next" },
+        )
+      }
 
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
@@ -796,9 +799,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
                   },
                 ),
             )
-          link.add(Bundle.BundleLinkComponent().apply {
-            relation = "next"
-          })
+          link.add(
+            Bundle.BundleLinkComponent().apply { relation = "next" },
+          )
         }
 
       coEvery { fhirEngine.get(any(), any()) } throws
@@ -810,11 +813,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       val requestPathArgumentSlot = mutableListOf<Resource>()
 
-      coVerify(exactly = 4){
+      coVerify(exactly = 4) {
         fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
       }
 
-      assertEquals(4,requestPathArgumentSlot.size)
+      assertEquals(4, requestPathArgumentSlot.size)
 
       assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
       assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
