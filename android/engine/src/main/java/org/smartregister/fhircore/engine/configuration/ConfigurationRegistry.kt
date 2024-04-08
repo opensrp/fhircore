@@ -493,28 +493,19 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
     currentPage: Int = 1,
   ) {
-    var currentPageUrl = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
+    val currentPageUrl = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
 
-    // Fetch pages until there are no more next pages
-    while (currentPageUrl.isNotBlank()) {
-      val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, currentPageUrl)
-      processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+    val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, currentPageUrl)
+    val nextPageUrl = resultBundle.getLink("next").url ?: ""
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
-      // Extract the URL for the next page from the links
-      currentPageUrl = resultBundle.getLink("next").url ?: ""
-
-      // If next page URL is not available, it means we have fetched all pages
-      if (currentPageUrl.isBlank()) {
-        break
-      }
-
-      // Extracting page number from URL to increment it for the next page
-      val regex = Regex(".*&_page=(\\d+).*")
-      val matchResult = regex.matchEntire(currentPageUrl)
-      val nextPage = matchResult?.groupValues?.get(1)?.toIntOrNull()
-      nextPage?.let {
-        currentPageUrl = currentPageUrl.replace("_page=$nextPage", "_page=${nextPage + 1}")
-      }
+    if (nextPageUrl.isNotEmpty()) {
+      processCompositionManifestResources(
+        gatewayModeHeaderValue,
+        nextPageUrl,
+        patientRelatedResourceTypes,
+        currentPage + 1,
+      )
     }
   }
 
