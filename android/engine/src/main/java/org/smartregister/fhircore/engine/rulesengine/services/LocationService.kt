@@ -49,7 +49,7 @@ class LocationService(
 
   fun calculateDistanceByGpsLocation(location: Resource): String {
     val currentLocation = generateLocation(location)
-    //use injected co-routine dispatcher
+    // use injected co-routine dispatcher
     CoroutineScope(Dispatchers.IO).launch {
       fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -115,7 +115,7 @@ class LocationService(
   }
 
   fun writeLocation(
-      location: LocationCoordinate,
+    location: LocationCoordinate,
   ) {
     sharedPreferences.write(
       key = SharedPreferenceKey.GEO_LOCATION.name,

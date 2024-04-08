@@ -257,7 +257,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     )
   }
 
-
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Succeeded -> {

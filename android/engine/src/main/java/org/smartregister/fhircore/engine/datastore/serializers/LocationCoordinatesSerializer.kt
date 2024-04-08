@@ -17,14 +17,14 @@
 package org.smartregister.fhircore.engine.datastore.serializers
 
 import androidx.datastore.core.Serializer
+import java.io.InputStream
+import java.io.OutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
-import java.io.InputStream
-import java.io.OutputStream
 
 object LocationCoordinatesSerializer : Serializer<LocationCoordinate> {
 
@@ -47,9 +47,9 @@ object LocationCoordinatesSerializer : Serializer<LocationCoordinate> {
     withContext(Dispatchers.IO) {
       output.write(
         Json.encodeToString(
-          serializer = LocationCoordinate.serializer(),
-          value = t,
-        )
+            serializer = LocationCoordinate.serializer(),
+            value = t,
+          )
           .encodeToByteArray(),
       )
     }
