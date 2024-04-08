@@ -196,8 +196,9 @@ fun ChangeFamilyHeadBottomSheet(
               backgroundColor =
                 colorResource(
                   id =
-                    if (isEnabled) org.smartregister.fhircore.engine.R.color.colorPrimary
-                    else R.color.white
+                    if (isEnabled) {
+                      org.smartregister.fhircore.engine.R.color.colorPrimary
+                    } else R.color.white,
                 ),
             ),
         ) {
@@ -206,8 +207,9 @@ fun ChangeFamilyHeadBottomSheet(
             color =
               colorResource(
                 id =
-                  if (isEnabled) R.color.white
-                  else org.smartregister.fhircore.engine.R.color.colorPrimary
+                  if (isEnabled) {
+                    R.color.white
+                  } else org.smartregister.fhircore.engine.R.color.colorPrimary,
               ),
             text =
               stringResource(id = org.smartregister.fhircore.engine.R.string.str_save).uppercase(),

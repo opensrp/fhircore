@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import timber.log.Timber
@@ -105,6 +106,9 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
   fun resetSharedPrefs() {
     prefs.edit()?.clear()?.apply()
   }
+
+  fun organisationCode() =
+    read<List<String>>(key = ResourceType.Organization.name, decodeWithGson = true)?.firstOrNull()
 
   companion object {
     const val PREFS_NAME = "params"

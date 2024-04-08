@@ -33,11 +33,9 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.data.local.register.dao.organisationCode
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.data.remote.model.response.UserClaimInfo
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
-import org.smartregister.fhircore.engine.util.extension.decodeJson
 import timber.log.Timber
 
 /**
@@ -91,8 +89,8 @@ constructor(
 
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
-    val authenticatedUserInfo =
-      sharedPreferencesHelper.read(USER_INFO_SHARED_PREFERENCE_KEY, null)?.decodeJson<UserInfo>()
+    val userInfo =
+      sharedPreferencesHelper.read<UserClaimInfo>(SharedPreferenceKey.USER_CLAIM_INFO.name)
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val appConfig = configurationRegistry.getAppConfigs()
@@ -108,8 +106,8 @@ constructor(
         val paramExpression = sp.expression
         val expressionValue =
           when (paramName) {
-            ConfigurationRegistry.ORGANIZATION -> authenticatedUserInfo?.organization
-            ConfigurationRegistry.PUBLISHER -> authenticatedUserInfo?.questionnairePublisher
+            ConfigurationRegistry.ORGANIZATION -> userInfo?.organization
+            ConfigurationRegistry.PUBLISHER -> userInfo?.questionnairePublisher
             ConfigurationRegistry.ID -> paramExpression
             ConfigurationRegistry.COUNT -> appConfig.count
             else -> null

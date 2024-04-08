@@ -29,4 +29,5 @@ enum class SharedPreferenceKey {
   LOGIN_CREDENTIAL_KEY,
   LOGIN_PIN_KEY,
   LAST_PURGE_KEY,
+  USER_CLAIM_INFO,
 }

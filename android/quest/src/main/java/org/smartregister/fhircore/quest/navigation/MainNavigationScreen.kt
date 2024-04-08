@@ -29,7 +29,7 @@ sealed class MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.clients,
       org.smartregister.fhircore.engine.R.drawable.ic_home,
       "homeRoute",
-      true
+      true,
     )
 
   object Tasks :
@@ -37,7 +37,7 @@ sealed class MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.tasks,
       org.smartregister.fhircore.engine.R.drawable.ic_tasks,
       "tasksRoute",
-      true
+      true,
     )
 
   object Reports :
@@ -45,7 +45,7 @@ sealed class MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.reports,
       org.smartregister.fhircore.engine.R.drawable.ic_reports,
       "reportsRoute",
-      true
+      true,
     )
 
   object Settings :
@@ -53,19 +53,19 @@ sealed class MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.settings,
       R.drawable.ic_settings,
       "settingsRoute",
-      true
+      true,
     )
 
   object PatientProfile :
     MainNavigationScreen(
       titleResource = org.smartregister.fhircore.engine.R.string.profile,
-      route = "patientProfileRoute"
+      route = "patientProfileRoute",
     )
 
   object TracingProfile :
     MainNavigationScreen(
       titleResource = org.smartregister.fhircore.engine.R.string.profile,
-      route = "tracingProfileRoute"
+      route = "tracingProfileRoute",
     )
 
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")

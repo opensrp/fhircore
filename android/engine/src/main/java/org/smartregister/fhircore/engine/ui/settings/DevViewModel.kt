@@ -117,6 +117,7 @@ constructor(
     return mapOf(Pair("Questionnaire", questionnaire), Pair("StructureMap", structureMaps))
   }
 
+  // TODO: Fix refetch logic
   fun fetchDetails() {
     try {
       viewModelScope.launch @ExcludeFromJacocoGeneratedReport {

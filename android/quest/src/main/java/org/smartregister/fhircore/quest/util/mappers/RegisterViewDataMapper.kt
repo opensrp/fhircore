@@ -62,7 +62,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
           status =
             context.getString(
               org.smartregister.fhircore.engine.R.string.date_last_visited,
-              inputModel.lastSeen
+              inputModel.lastSeen,
             ),
           serviceButtonActionable = false,
           serviceButtonBackgroundColor =

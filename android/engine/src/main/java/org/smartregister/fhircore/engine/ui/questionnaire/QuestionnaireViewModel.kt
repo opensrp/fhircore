@@ -66,7 +66,6 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 import org.smartregister.fhircore.engine.util.AssetUtil
@@ -74,7 +73,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.TracingHelpers
-import org.smartregister.fhircore.engine.util.USER_INFO_SHARED_PREFERENCE_KEY
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.assertSubject
@@ -120,10 +118,6 @@ constructor(
   private lateinit var questionnaireConfig: QuestionnaireConfig
 
   private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
-  private val authenticatedUserInfo by lazy {
-    sharedPreferencesHelper.read<UserInfo>(USER_INFO_SHARED_PREFERENCE_KEY)
-  }
 
   private val practitionerId: String? by lazy {
     sharedPreferencesHelper
@@ -199,7 +193,7 @@ constructor(
   }
 
   fun appendOrganizationInfo(resource: Resource) {
-    authenticatedUserInfo?.organization?.let { org ->
+    sharedPreferencesHelper.organisationCode()?.let { org ->
       val organizationRef =
         Reference().apply { reference = "${ResourceType.Organization.name}/$org" }
 
@@ -409,7 +403,7 @@ constructor(
     questionnaireResponse.subject =
       when (subjectType) {
         ResourceType.Organization.name ->
-          authenticatedUserInfo?.organization?.asReference(ResourceType.Organization)
+          sharedPreferencesHelper.organisationCode()?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
   }

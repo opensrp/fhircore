@@ -48,11 +48,11 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_system
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_system,
               )
             display =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_display
+                org.smartregister.fhircore.engine.R.string.sync_strategy_careteam_display,
               )
           },
       ),
@@ -62,11 +62,11 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_location_system
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_system,
               )
             display =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_location_display
+                org.smartregister.fhircore.engine.R.string.sync_strategy_location_display,
               )
           },
       ),
@@ -76,11 +76,11 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_system
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_system,
               )
             display =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_display
+                org.smartregister.fhircore.engine.R.string.sync_strategy_organization_display,
               )
           },
       ),
@@ -90,11 +90,11 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_system
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_system,
               )
             display =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_display
+                org.smartregister.fhircore.engine.R.string.sync_strategy_practitioner_display,
               )
           },
         isResource = false,
@@ -105,7 +105,7 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
           Coding().apply {
             system =
               context.getString(
-                org.smartregister.fhircore.engine.R.string.sync_strategy_appid_system
+                org.smartregister.fhircore.engine.R.string.sync_strategy_appid_system,
               )
             code = BuildConfig.APP_ID
             display = context.getString(org.smartregister.fhircore.engine.R.string.application_id)
