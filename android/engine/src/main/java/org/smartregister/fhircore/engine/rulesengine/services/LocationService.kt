@@ -39,7 +39,7 @@ class LocationService(
 ) {
   lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
-  fun calculateDistanceByProvidedLocations(
+  fun calculateDistanceBetweenLocations(
     destination: Location,
     currentLocation: Location,
   ): String {
@@ -49,7 +49,7 @@ class LocationService(
 
   fun calculateDistanceByGpsLocation(location: Resource): String {
     val currentLocation = generateLocation(location)
-
+    //use injected co-routine dispatcher
     CoroutineScope(Dispatchers.IO).launch {
       fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
@@ -63,18 +63,18 @@ class LocationService(
         }
 
       retrievedLocation?.let {
-        writeLocation(LocationCoordinates(it.latitude, it.longitude, it.altitude, Instant.now()))
+        writeLocation(LocationCoordinate(it.latitude, it.longitude, it.altitude, Instant.now()))
       }
     }
 
-    val locationTest =
-      sharedPreferences.read<LocationCoordinates>(key = SharedPreferenceKey.GEO_LOCATION.name)
+    val locationCoordinate =
+      sharedPreferences.read<LocationCoordinate>(key = SharedPreferenceKey.GEO_LOCATION.name)
 
     val generatedLocation =
       Location("Generated location").apply {
-        if (locationTest != null && isWithinLast30Minutes(locationTest.timeStamp)) {
-          longitude = locationTest.longitude!!
-          latitude = locationTest.latitude!!
+        if (locationCoordinate != null && isWithinLast30Minutes(locationCoordinate.timeStamp)) {
+          longitude = locationCoordinate.longitude!!
+          latitude = locationCoordinate.latitude!!
         }
       }
 
@@ -83,7 +83,7 @@ class LocationService(
   }
 
   fun generateLocation(location: Resource): Location {
-    return (location as? org.hl7.fhir.r4.model.Location).let {
+    return (location as? FhirLocation).let {
       Location("CustomLocationProvider").apply {
         if (it != null) {
           longitude = it.position.longitude.toDouble()
@@ -115,7 +115,7 @@ class LocationService(
   }
 
   fun writeLocation(
-    location: LocationCoordinates,
+      location: LocationCoordinate,
   ) {
     sharedPreferences.write(
       key = SharedPreferenceKey.GEO_LOCATION.name,
@@ -124,7 +124,7 @@ class LocationService(
   }
 
   private fun isWithinLast30Minutes(timeStamp: Instant?): Boolean {
-    val thirtyMinutesAgo = Instant.now().minusSeconds(1800)
+    val thirtyMinutesAgo = Instant.now().minusSeconds(THIRTY_MINUTES_T0_SECONDS.toLong())
     return timeStamp != null && timeStamp > thirtyMinutesAgo
   }
 
@@ -137,5 +137,8 @@ class LocationService(
     }
 
     const val METERS_IN_A_KILOMETER = 1000
+    const val THIRTY_MINUTES_T0_SECONDS = 1800
   }
 }
+
+typealias FhirLocation = org.hl7.fhir.r4.model.Location

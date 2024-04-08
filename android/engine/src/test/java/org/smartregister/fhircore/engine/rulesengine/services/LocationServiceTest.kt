@@ -33,6 +33,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.adapter.InstantTypeAdapter
 
 @HiltAndroidTest
 class LocationServiceTest : RobolectricTest() {
@@ -60,7 +61,7 @@ class LocationServiceTest : RobolectricTest() {
 
     val currentLocation = generateTestLocations(latitude = 12.0, longitude = 25.0)
 
-    val result = locationService.calculateDistanceByProvidedLocations(destination, currentLocation)
+    val result = locationService.calculateDistanceBetweenLocations(destination, currentLocation)
     assertEquals("Unexpected distance calculation", "589.49 km", result)
   }
 
@@ -73,15 +74,15 @@ class LocationServiceTest : RobolectricTest() {
 
   @Test
   fun calculateDistancesByGpsLocation_shouldReturnCorrectDistance() {
-    val locationTest = LocationCoordinates(37.7749, -122.4194, 0.0, Instant.now())
-    locationService.writeLocation(locationTest)
+    val locationCoordinate = LocationCoordinate(37.7749, -122.4194, 0.0, Instant.now())
+    locationService.writeLocation(locationCoordinate)
     assertNotNull(
-      sharedPreferencesHelper.read<LocationCoordinates>(
+      sharedPreferencesHelper.read<LocationCoordinate>(
         key = SharedPreferenceKey.GEO_LOCATION.name,
       ),
     )
     val currentLocation =
-      org.hl7.fhir.r4.model.Location().apply {
+      FhirLocation().apply {
         name = "ServicePoint"
         position.latitude = BigDecimal(37.7749)
         position.longitude = BigDecimal(-122.4194)
@@ -91,3 +92,5 @@ class LocationServiceTest : RobolectricTest() {
     assertEquals("0.00 mtrs", "0.00 mtrs", result)
   }
 }
+
+typealias FhirLocation = org.hl7.fhir.r4.model.Location
