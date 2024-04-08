@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.util
 
-const val USER_INFO_SHARED_PREFERENCE_KEY = "user_info"
 const val LOGGED_IN_PRACTITIONER = "logged_in_practitioner"
 const val FORCE_LOGIN_VIA_USERNAME = "force_login_with_username"
 const val FORCE_LOGIN_VIA_USERNAME_FROM_PIN_SETUP = "force_login_with_username_from_pin_setup"

@@ -45,7 +45,6 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
@@ -452,6 +451,9 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
 
-fun SharedPreferencesHelper.organisationCode() =
-  read<List<String>>(key = ResourceType.Organization.name, decodeWithGson = true)?.firstOrNull()
-    ?: ""
+infix fun Patient.belongsTo(code: String) =
+  meta.tag.any {
+    it.code == code &&
+      it.system == HivRegisterDao.ORGANISATION_SYSTEM &&
+      it.display == HivRegisterDao.ORGANISATION_DISPLAY
+  }

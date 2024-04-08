@@ -35,11 +35,10 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AppConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
-import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.data.remote.model.response.UserClaimInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -65,10 +64,9 @@ constructor(
   val fhirResourceDataSource: FhirResourceDataSource,
   val defaultRepository: DefaultRepository,
   val tokenAuthenticator: TokenAuthenticator,
-  val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
   val configurationRegistry: ConfigurationRegistry,
-  val appConfigs: AppConfigService,
+  private val appConfigs: AppConfigService,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -118,14 +116,6 @@ constructor(
       _loginErrorState.postValue(errorState)
       Timber.e(it)
     }
-
-  private suspend fun fetchUserInfo(): Result<UserInfo?> =
-    runCatching { keycloakService.fetchUserInfo().body() }
-      .onFailure {
-        Timber.e(it)
-        _showProgressBar.postValue(false)
-        _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
-      }
 
   private suspend fun fetchPractitioner(keycloakUuid: String?): Result<Bundle> {
     val endpointResult =
@@ -197,11 +187,11 @@ constructor(
           val jwtParser = Jwts.parser()
           val jwt = accessTokenResult.getOrNull()!!.accessToken!!.substringBeforeLast('.').plus(".")
           val subClaim = jwtParser.parseClaimsJwt(jwt)
-          val keycloakUuid = subClaim.body["sub"].toString()
-          val practitionerDetailsResult = fetchPractitioner(keycloakUuid)
+          val userInfo = UserClaimInfo.parseFromClaims(subClaim.body)
+          val practitionerDetailsResult = fetchPractitioner(userInfo.keycloakUuid)
           if (practitionerDetailsResult.isFailure) return
 
-          savePractitionerDetails(practitionerDetailsResult.getOrDefault(Bundle()))
+          savePractitionerDetails(practitionerDetailsResult.getOrDefault(Bundle()), userInfo)
 
           _showProgressBar.postValue(false)
           updateNavigateHome(true)
@@ -242,7 +232,7 @@ constructor(
     _navigateToHome.postValue(navigateHome)
   }
 
-  suspend fun savePractitionerDetails(bundle: Bundle) {
+  suspend fun savePractitionerDetails(bundle: Bundle, userClaimInfo: UserClaimInfo) {
     if (bundle.entry.isNullOrEmpty()) return
     val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
 
@@ -271,27 +261,35 @@ constructor(
         practitionerRoles.toTypedArray() +
         practitioners.toTypedArray()
     defaultRepository.saveLocalOnly(*remoteResources)
-    with(sharedPreferences) {
-      write(ResourceType.CareTeam.name, careTeams.map { it.id.extractLogicalIdUuid() })
-      write(ResourceType.Organization.name, organizations.map { it.id.extractLogicalIdUuid() })
-      write(ResourceType.Location.name, locations.map { it.id.extractLogicalIdUuid() })
-    }
 
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      value =
+    with(sharedPreferences) {
+      val organisationIds = organizations.map { it.id.extractLogicalIdUuid() }
+      val practitionerId =
         practitionerDetails.fhirPractitionerDetails
           ?.practitioners
           ?.firstOrNull()
           ?.id
-          ?.extractLogicalIdUuid(),
-    )
-
-    sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
+          ?.extractLogicalIdUuid()
+      write(ResourceType.CareTeam.name, careTeams.map { it.id.extractLogicalIdUuid() })
+      write(ResourceType.Organization.name, organisationIds)
+      write(ResourceType.Location.name, locations.map { it.id.extractLogicalIdUuid() })
+      write(
+        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+        locationHierarchies,
+      )
+      write(
+        key = SharedPreferenceKey.PRACTITIONER_ID.name,
+        value = practitionerId,
+      )
+      write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
+      write(
+        SharedPreferenceKey.USER_CLAIM_INFO.name,
+        userClaimInfo.copy(
+          organization = organisationIds.firstOrNull() ?: userClaimInfo.organization,
+          practitionerId = practitionerId,
+        ),
+      )
+    }
   }
 
   fun loadLastLoggedInUsername() {
