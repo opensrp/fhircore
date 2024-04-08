@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -75,8 +76,16 @@ constructor(
     val locationDialog: LiveData<String> get() = _locationDialog
 
     // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
-    private fun retrieveLocations() {
+    private fun retrieveLocations(fhirResource: FhirResourceConfig) {
         viewModelScope.launch(dispatcherProvider.io()) {
+            /*val repositoryResourceDataList =
+                defaultRepository
+                    .searchResourcesRecursively(
+                        filterActiveResources = null,
+                        fhirResourceConfig = fhirResource,
+                        configRules = null,
+                        secondaryResourceConfigs = null,
+                    )*/
             val totalResource = defaultRepository.count(Search(ResourceType.Location))
 
             val totalIteration = ceil(totalResource / PAGE_SIZE.toDouble()).toInt()
@@ -104,7 +113,7 @@ constructor(
                                 visitStatus = encounter.status.display.replace(" ", "_").lowercase()
                             }
                         }
-                        val geoWidgetLocation = GeoWidgetLocation(
+                        val geoWidgetLocation = GeoWidgetLocation( // TODO: rename to Feature
                             id = location.id,
                             name = location.name ?: "",
                             position = Position(
@@ -129,11 +138,11 @@ constructor(
         }
     }
 
-    fun checkSelectedLocation() {
+    fun checkSelectedLocation(fhirResource: FhirResourceConfig) {
         //check preference if location/region is already selected otherwise show dialog to select location
         //through Location Selector Feature/Screen
         //todo - for now we are calling this method, once location Selector is developed, we can remove this line
-        retrieveLocations()
+        retrieveLocations(fhirResource)
     }
 
     private fun addLocationToFlow(location: GeoWidgetLocation) {

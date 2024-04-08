@@ -171,7 +171,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         showSetLocationDialog()
         setOnQuestionnaireSubmissionListener()
         setLocationFromDbCollector()
-        geoWidgetLauncherViewModel.checkSelectedLocation()
+        geoWidgetLauncherViewModel.checkSelectedLocation(geoWidgetConfiguration.resourceConfig)
         Timber.i("GeoWidgetLauncherFragment onViewCreated")
     }
 
@@ -191,6 +191,7 @@ class GeoWidgetLauncherFragment : Fragment() {
             }
             .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
                 requireContext().showToast("open profile")
+
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.shouldShowLocationButton)
