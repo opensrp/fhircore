@@ -39,7 +39,6 @@
       "Flag"
     ]
   },
-  "logQuestionnaireLocation": true,
   "eventWorkflows": [
     {
       "eventType": "RESOURCE_CLOSURE",
