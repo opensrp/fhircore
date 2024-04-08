@@ -23,6 +23,9 @@ import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.joda.time.LocalTime
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
 @HiltWorker
@@ -32,11 +35,19 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
   val fhirEngine: FhirEngine,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
+    val optimalHour = LocalTime().hourOfDay
     Timber.i("Running $NAME...")
-    ResourcePurger(fhirEngine)()
+    if (optimalHour < 6 || optimalHour > 17) {
+      sharedPreferencesHelper.write(
+        SharedPreferenceKey.LAST_PURGE_KEY.name,
+        System.currentTimeMillis(),
+      )
+      ResourcePurger(fhirEngine)()
+    }
     return Result.success()
   }
 

@@ -93,6 +93,7 @@
     <string name="tick">Tick</string>
     <string name="clients">Clients</string>
     <string name="logout">Log out</string>
+    <string name="last_purge" translatable="false">Last purged</string>
     <string name="application_id">Application ID</string>
     <string name="enter_app_id">Enter Application ID</string>
     <string name="app_id_sample" translatable="false">E.g. anc, covax, g6pd, jnj, quest</string>
