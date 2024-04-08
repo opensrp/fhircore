@@ -11,11 +11,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class SummaryBottomSheetFragment(
-    val navigationMenuConfigs: List<NavigationMenuConfig>? = emptyList(),
-    val title: String? = null,
-    val menuClickListener: (NavigationMenuConfig) -> Unit,
-) : BottomSheetDialogFragment() {
+class SummaryBottomSheetFragment : BottomSheetDialogFragment() {
 
 
     override fun onCreateView(
@@ -27,8 +23,7 @@ class SummaryBottomSheetFragment(
             setContent {
                 AppTheme {
                     BottomSheetContent(
-                        listImageProperties = arrayListOf(ImageProperties()),
-                        navController = findNavController()
+                        listImageProperties = arrayListOf(ImageProperties())
                     )
                 }
             }

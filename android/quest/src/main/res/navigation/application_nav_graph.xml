@@ -12,7 +12,7 @@
             android:name="geoWidgetId"
             app:argType="string"
             app:nullable="true"
-            android:defaultValue="householdRegistrationMap"/>
+            android:defaultValue="locationMap"/>
         <argument
             android:name="toolBarHomeNavigation"
             android:defaultValue="OPEN_DRAWER"
@@ -97,11 +97,17 @@
     <dialog
         android:id="@+id/summaryBottomSheetFragment"
         android:name="org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment" >
+
         <argument
             android:name="geoWidgetId"
             app:argType="string"
-            app:nullable="true"
-            android:defaultValue="householdRegistrationMap"/>
+            app:nullable="true" />
+
+        <argument
+            android:name="screenTitle"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
 
         <argument
             android:name="summaryBottomSheetConfig"

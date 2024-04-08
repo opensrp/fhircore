@@ -51,7 +51,6 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -193,7 +192,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 requireContext().showToast("on cancel adding location")
             }
             .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-                arrayListOf(geoWidgetConfiguration.details).handleClickEvent(findNavController())
+                geoWidgetConfiguration.bottomSheetDetails.handleClickEvent(findNavController())
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)

@@ -177,7 +177,8 @@ fun List<ActionConfig>.handleClickEvent(
         val args =
             bundleOf(
               NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
-              NavigationArg.GEO_WIDGET_ID to actionConfig.id
+              NavigationArg.GEO_WIDGET_ID to actionConfig.id,
+              NavigationArg.PARAMS to actionConfig.params
             )
         navController.navigate(MainNavigationScreen.SummaryBottomSheetFragment.route, args)
 

@@ -33,11 +33,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageShape
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextCase
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -195,6 +203,73 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               ),
             ),
         ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController(),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun CardViewImageWithItems() {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    CardView(
+      viewProperties =
+      CardViewProperties(
+        fillMaxWidth = true,
+        viewType = ViewType.CARD,
+        content =
+        listOf(
+          RowProperties(
+            viewType = ViewType.ROW,
+            alignment = ViewAlignment.START,
+            children =
+            listOf(
+              ImageProperties(
+                imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
+                backgroundColor = "dangerColor",
+                size = 80,
+                shape = ImageShape.CIRCLE,
+              ),
+              ColumnProperties(
+                viewType = ViewType.COLUMN,
+                weight = 0.7f,
+                children =
+                listOf(
+                  CompoundTextProperties(
+                    primaryText = "Richard Brown, M, 21",
+                    primaryTextColor = "#000000",
+                    primaryTextFontWeight = TextFontWeight.BOLD
+                  ),
+                  SpacerProperties(height = 8f),
+                  CompoundTextProperties(
+                    primaryText = "Richard Brown, M, 21",
+                    primaryTextColor = "#000000",
+                  ),
+                  SpacerProperties(height = 8f),
+                  CompoundTextProperties(
+                    secondaryText = "Service point description",
+                    primaryTextColor = "#000000",
+                  ),
+                  SpacerProperties(height = 16f),
+                  CompoundTextProperties(
+                    secondaryText = "Number of items",
+                    primaryTextColor = "#000000",
+                  ),
+                  ButtonProperties(
+                    status = "COMPLETED",
+                    viewType = ViewType.BUTTON,
+                    text = "COVID Vaccination",
+                    fillMaxWidth = false,
+                    alignment = ViewAlignment.START
+                  )
+                ),
+              ),
+            ),
+          ),
+
+        ),
+      ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
     )
