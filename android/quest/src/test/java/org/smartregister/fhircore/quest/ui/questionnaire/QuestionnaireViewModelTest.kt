@@ -37,7 +37,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -188,6 +187,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
         ),
       )
 
@@ -265,7 +265,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     // Verify QuestionnaireResponse was validated
-    verify {
+    coVerify {
       questionnaireViewModel.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -657,29 +657,31 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    // No answer provided
-    Assert.assertFalse(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-      ),
-    )
+    runBlocking {
+      // No answer provided
+      Assert.assertFalse(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse,
+          context,
+        ),
+      )
 
-    // With an answer provided
-    Assert.assertTrue(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse.apply {
-          itemFirstRep.answer =
-            listOf(
-              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                .setValue(StringType("Answer")),
-            )
-        },
-        context,
-      ),
-    )
+      // With an answer provided
+      Assert.assertTrue(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse.apply {
+            itemFirstRep.answer =
+              listOf(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                  .setValue(StringType("Answer")),
+              )
+          },
+          context,
+        ),
+      )
+    }
   }
 
   @Test
@@ -707,7 +709,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "http://smartreg.org/Library/123",
         patient.asReference().reference,
         null,
-        setOf(),
+        expressions = setOf(),
       )
     }
   }
