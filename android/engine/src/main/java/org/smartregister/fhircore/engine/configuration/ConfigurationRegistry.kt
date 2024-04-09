@@ -411,7 +411,7 @@ constructor(
     configCacheMap.clear()
 
     var compositionResource: Composition?
-    val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideUrl)
+    val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideId)
 
     if (implementationGuideResource != null) {
       compositionResource = getCompositionResourceFromImplementationGuide(implementationGuideResource)
@@ -424,6 +424,11 @@ constructor(
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
         val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
         compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
+        if (compositionResource != null) {
+          getResourcesFromComposition(compositionResource)
+        } else {
+          Timber.e("Composition resource not found")
+        }
       }
     }
   }
@@ -437,7 +442,7 @@ constructor(
       ?.reference
 
     val compositionIdWithHistory = compositionRef?.substringAfter('/')
-    val compositionId = compositionRef?.substringBefore('/')
+    val compositionId = compositionIdWithHistory?.substringBefore('/')
     val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
 
     return fetchRemoteCompositionById(compositionId, compositionVersion)
@@ -492,10 +497,10 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteImplementationGuide(implementationGuideUrl: String?): ImplementationGuide? {
-    Timber.i("Fetching ImplementationGuide $implementationGuideUrl")
+  suspend fun fetchRemoteImplementationGuide(implementationGuideId: String?): ImplementationGuide? {
+    Timber.i("Fetching ImplementationGuide $implementationGuideId")
     val urlPath =
-      "${ResourceType.ImplementationGuide.name}?${ImplementationGuide.URL}=$implementationGuideUrl&_count=$DEFAULT_COUNT"
+      "${ResourceType.ImplementationGuide.name}/$implementationGuideId"
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
