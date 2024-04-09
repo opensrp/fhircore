@@ -35,8 +35,11 @@ actions |  Action to be performed when once clicks on the display above. See act
 
 NB: Remember, a WORKFLOW can be launched anywhere on the app through an action. Either by a text, actionable button or image icon hence the above config can be used anywhere else.
 
+
+b. ### Resources to sync
 You also need to define which resources to be synced. This configuration should be added as part of Application configuration file under config-types/application
-b. ``` json
+
+``` json
       "deviceToDeviceSync": {
         "resourcesToSync": [
           "Group",
@@ -54,4 +57,5 @@ b. ``` json
         ]
       }
 ```
-A sample workflow of P2P looks like  ![P2P_SYNC](/img/p2p_sync/p2p.png),
+This can be simplified by a sample workflow show on the image below.
+![P2P_SYNC](/img/p2p-sync/p2p.png)
