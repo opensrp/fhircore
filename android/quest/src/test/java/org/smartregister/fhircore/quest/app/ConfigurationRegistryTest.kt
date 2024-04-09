@@ -101,17 +101,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchNonWorkflowConfigurations() = runBlocking {
-    val implementationGuide = ImplementationGuide().apply {
-      url = "ImplementationGuide/1"
-      name = "testImplementationGuide"
-      definition = ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
-        resource = mutableListOf(
-          ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
-            Reference().apply { reference = "Composition/12" }
-          )
-        )
+    val implementationGuide =
+      ImplementationGuide().apply {
+        url = "ImplementationGuide/1"
+        name = "testImplementationGuide"
+        definition =
+          ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
+            resource =
+              mutableListOf(
+                ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
+                  Reference().apply { reference = "Composition/_history/12" },
+                ),
+              )
+          }
       }
-    }
 
     val composition =
       Composition().apply {
@@ -132,8 +135,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns implementationGuide
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
+    coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
+      implementationGuide
+    coEvery { configurationRegistry.fetchRemoteComposition(any(), any()) } returns composition
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
@@ -144,6 +149,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchListResourceNonProxy() = runBlocking {
+    val implementationGuide =
+      ImplementationGuide().apply {
+        url = "ImplementationGuide/1"
+        name = "testImplementationGuide"
+        definition =
+          ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
+            resource =
+              mutableListOf(
+                ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
+                  Reference().apply { reference = "Composition" },
+                ),
+              )
+          }
+      }
+
     val composition =
       Composition().apply {
         addSection().apply {
@@ -161,8 +181,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
-
+    coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
+      implementationGuide
+    coEvery { configurationRegistry.fetchRemoteComposition(any(), any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
@@ -175,6 +196,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchListResource() = runBlocking {
+    val implementationGuide =
+      ImplementationGuide().apply {
+        url = "ImplementationGuide/1"
+        name = "testImplementationGuide"
+        definition =
+          ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
+            resource =
+              mutableListOf(
+                ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
+                  Reference().apply { reference = "Composition" },
+                ),
+              )
+          }
+      }
+
     val composition =
       Composition().apply {
         addSection().apply {
@@ -194,7 +230,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
+    coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
+      implementationGuide
+    coEvery { configurationRegistry.fetchRemoteComposition(any(), any()) } returns composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
