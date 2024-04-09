@@ -18,12 +18,14 @@ package org.smartregister.fhircore.engine.configuration.app
 
 import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
+import org.smartregister.fhircore.engine.auditEvent.AuditEventWorker
 import org.smartregister.fhircore.engine.sync.ResourceTag
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
@@ -118,5 +120,11 @@ interface ConfigService {
         ExistingPeriodicWorkPolicy.UPDATE,
         workRequest,
       )
+  }
+
+  fun scheduleAuditEvent(context: Context) {
+    val workRequest = OneTimeWorkRequestBuilder<AuditEventWorker>().build()
+
+    WorkManager.getInstance(context).enqueue(workRequest)
   }
 }

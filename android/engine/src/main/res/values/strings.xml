@@ -155,4 +155,5 @@
     <string name="error_loading_config_general">Error connecting to the server. Please contact the system administrator</string>
     <string name="re_fetch_practitioner">Re-fetch Practitioner</string>
     <string name="dev_menu">Dev Menu</string>
+    <string name="audit_event_system">http://dicom.nema.org/resources/ontology/DCM</string>
 </resources>

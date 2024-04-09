@@ -34,6 +34,7 @@ import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
@@ -61,9 +62,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
 
   @Inject lateinit var configService: ConfigService
 
+  @Inject lateinit var tokenAuthenticator: TokenAuthenticator
+
   val appMainViewModel by viewModels<AppMainViewModel>()
 
-  val authActivityLauncherForResult =
+  private val authActivityLauncherForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
       if (res.resultCode == Activity.RESULT_OK) {
         appMainViewModel.onEvent(AppMainEvent.ResumeSync)
@@ -75,6 +78,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
     setupTimeOutListener()
     setContent { AppTheme { MainScreen(appMainViewModel = appMainViewModel) } }
     syncBroadcaster.registerSyncListener(this, lifecycleScope)
+    scheduleAuthWorkers()
   }
 
   override fun onResume() {
@@ -168,6 +172,13 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       scheduleCheckForMissedAppointments(applicationContext)
       scheduleWelcomeServiceAppointments(applicationContext)
       scheduleWelcomeServiceToCarePlanForMissedAppointments(applicationContext)
+    }
+  }
+
+  private fun scheduleAuthWorkers() {
+    val isAuthenticated = tokenAuthenticator.sessionActive()
+    if (isAuthenticated) {
+      with(configService) { scheduleAuditEvent(applicationContext) }
     }
   }
 
