@@ -491,12 +491,9 @@ constructor(
     gatewayModeHeaderValue: String? = null,
     searchPath: String,
     patientRelatedResourceTypes: MutableList<ResourceType>,
-    currentPage: Int = 1,
   ) {
-    val currentPageUrl = "$searchPath&_page=$currentPage&_count=$DEFAULT_COUNT"
-
-    val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, currentPageUrl)
-    val nextPageUrl = resultBundle.getLink("next").url ?: ""
+    val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath)
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT).url ?: ""
     processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     if (nextPageUrl.isNotEmpty()) {
@@ -504,7 +501,6 @@ constructor(
         gatewayModeHeaderValue,
         nextPageUrl,
         patientRelatedResourceTypes,
-        currentPage + 1,
       )
     }
   }
@@ -727,7 +723,8 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}?$ID=${it.focus.extractId()}",
+          searchPath =
+            "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
@@ -786,6 +783,7 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+    const val PAGINATION_NEXT = "next"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
