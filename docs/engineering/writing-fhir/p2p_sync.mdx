@@ -1,0 +1,57 @@
+# Device P2P Sync configuration
+FhirCore android supports Device to device data sharing via Point-to-Point syncing.
+ Add P2P library as one of your dependencies. For the example in FhirCore, we use ```p2p-lib = "XXX-SNAPSHOT``` in the libs.version.toml file. Once done, sync your application to update the added library
+
+### Enabling p2p sync configuration
+This is done through two ways.
+a. Navigation configurations
+
+```json
+     {
+         "id": "p2p_sync",
+         "visible": true,
+         "display": "Transfer Data",
+         "menuIconConfig": {
+           "type": "local",
+           "reference": "ic_p2p"
+         },
+         "actions": [
+           {
+             "trigger": "ON_CLICK",
+             "workflow": "DEVICE_TO_DEVICE_SYNC",
+             "id": "navigateToP2PScreen"
+           }
+         ]
+       }
+```
+### Config properties of P2P Sync configs
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | uniquieId of your p2p_sync block | yes |  |
+visible | Boolean to show whether this is to be shown | yes | `apps` |
+display |  title text that should be shown on the device | yes | |
+menuIconConfig | The icon to be shown. This can be configured through ICON configuration. See widgets | No  |  |
+actions |  Action to be performed when once clicks on the display above. See actions parameters under questionnaire | yes | |
+
+NB: Remember, a WORKFLOW can be launched anywhere on the app through an action. Either by a text, actionable button or image icon hence the above config can be used anywhere else.
+
+You also need to define which resources to be synced. This configuration should be added as part of Application configuration file under config-types/application
+b. ``` json
+      "deviceToDeviceSync": {
+        "resourcesToSync": [
+          "Group",
+          "Patient",
+          "CarePlan",
+          "Task",
+          "Encounter",
+          "Observation",
+          "Condition",
+          "Questionnaire",
+          "QuestionnaireResponse",
+          "RelatedPerson",
+          "Flag",
+          "Immunization"
+        ]
+      }
+```
+A sample workflow of P2P looks like  ![P2P_SYNC](/img/p2p_sync/p2p.png),
