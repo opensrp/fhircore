@@ -1,54 +1,54 @@
-{
-  "resourceType": "ImplementationGuide",
-  "id": "12967310",
-  "url": "ImplementationGuide/fd76e175-a68a-436c-896e-e825a3970d2a",
-  "version": "0",
-  "name": "Quest Implementation Guide",
-  "status": "draft",
-  "packageId": "org.smartregister.fhircore",
-  "date": "2024-04-01",
-  "publisher": "Ona Systems, Inc.",
-  "fhirVersion": [
-    {
-      "code": {
-        "coding": [
-          {
-            "system": "http://hl7.org/fhir/FHIR-version",
-            "code": "4.3.0",
-            "display": "4.3.0"
-          }
-        ],
-        "text": "FHIR Release 4B."
-      }
-    }
-  ],
-  "useContext": {
-    "code": {
-      "coding": [
         {
-          "system": "http://terminology.hl7.org/CodeSystem/usage-context-type",
-          "code": "program",
-          "display": "Program"
+          "resourceType": "ImplementationGuide",
+          "id": "12967310",
+          "url": "ImplementationGuide/fd76e175-a68a-436c-896e-e825a3970d2a",
+          "version": "0",
+          "name": "Quest Implementation Guide",
+          "status": "draft",
+          "packageId": "org.smartregister.fhircore",
+          "date": "2024-04-01",
+          "publisher": "Ona Systems, Inc.",
+          "fhirVersion": [
+            {
+              "code": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/FHIR-version",
+                    "code": "4.3.0",
+                    "display": "4.3.0"
+                  }
+                ],
+                "text": "FHIR Release 4B."
+              }
+            }
+          ],
+          "useContext": {
+            "code": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/usage-context-type",
+                  "code": "program",
+                  "display": "Program"
+                }
+              ],
+              "text": "Program"
+            },
+            "valueRange": {
+              "low": {
+                "value": 1
+              },
+              "high": {
+                "value": 10
+              }
+            }
+          },
+          "definition": {
+            "resource": [
+              {
+                "reference": {
+                  "reference": "Composition/8294"
+                }
+              }
+            ]
+          }
         }
-      ],
-      "text": "Program"
-    },
-    "valueRange": {
-      "low": {
-        "value": 1
-      },
-      "high": {
-        "value": 10
-      }
-    }
-  },
-  "definition": {
-    "resource": [
-      {
-        "reference": {
-          "reference": "Composition/8294"
-        }
-      }
-    ]
-  }
-}

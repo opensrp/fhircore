@@ -159,7 +159,9 @@ class AppSettingViewModelTest : RobolectricTest() {
   @Test
   fun `fetchConfigurations() should call configurationRegistry#processResultBundleBinaries with correct values`() =
     runTest {
-      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) } returns
+      coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
+      } returns
         Composition().apply {
           addSection().apply {
             this.focus =
@@ -222,7 +224,7 @@ class AppSettingViewModelTest : RobolectricTest() {
 
       val binarySlot = slot<Binary>()
 
-      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteComposition(any()) }
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
       coVerify { fhirResourceDataSource.post(any(), any()) }
       coVerify { defaultRepository.createRemote(any(), any()) }
       coVerify {
@@ -472,8 +474,9 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
-    coEvery { appSettingViewModel.configurationRegistry.fetchRemoteComposition(appId) } returns
-      composition
+    coEvery {
+      appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(appId)
+    } returns composition
     coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
     coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any()) } just runs
     coEvery {

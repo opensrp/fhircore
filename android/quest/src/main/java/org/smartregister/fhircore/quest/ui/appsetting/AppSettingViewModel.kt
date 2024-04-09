@@ -105,7 +105,7 @@ constructor(
         Timber.i("Fetching configs for app $appId")
         val compositionResource =
           withContext(dispatcherProvider.io()) {
-            configurationRegistry.fetchRemoteComposition(appId)
+            configurationRegistry.fetchRemoteCompositionByAppId(appId)
           }
 
         if (compositionResource == null) {
