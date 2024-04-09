@@ -6,6 +6,8 @@ Examples are rows, columns, cards, and buttons.
 
 ## LIST widget
 
+The below image shows how different components are connected to work together with a list widget and how it looks like.
+
 ![list](/img/config_types/listui.png)
 
 ### Flex alignment widgets
@@ -128,7 +130,7 @@ relatedResources | resource that is part of the base resource  | no | |
 ### Goals of List Widget
    - Displays of listed data
    - Supports pagination of data
-   - Gives ability to scroll
+   - Gives ability to scroll multiple data.
 
 ## How to use COMPOUND_TEXT
 
@@ -269,7 +271,9 @@ On top of the above properties, you need to add  Image config properties see a `
  The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
 
 ### Goals of a Button
- The main aim of a button is to provide a way to perform separate action when it is clicked.
+  - The main aim of a button is to provide a way to perform action when it is clicked.
+  - Buttons provides the capability to launch a new action like logging in into the app.
+  - Buttons are used to complete an ongoing action like saving input user credentials to the database
 
 ## SERVICE_CARD widgets
 
@@ -369,7 +373,7 @@ below.
 ```
 ### Goals of service card
  - To display patient details and tasks.
- - Ability to display icon based on the reference provided.
+ - Give the ability to display icon based on the reference provided.
 
 ## COLUMN widgets
 
@@ -728,3 +732,6 @@ headerBackgroundColor | It specifies the header background color of the card it 
 headerAction | It specifies what the header action what it supposed to perform when it is clicked | | CompoundTextProperties |
 emptyContentMessage | It specifies what message should be displayed within the card when it has no content | | String |
 contentPadding | It specifies the card content spacing | | Int |
+
+### Goals of a card widget
+    -   Card widgets are used to group similar data together under a single view. Example when you want user contact details to be under a centralised place you can group those information like username, age, phone number, and country of residence under a single card.
