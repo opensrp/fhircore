@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -724,7 +725,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Bundle().apply {
         entry = listOf(BundleEntryComponent().setResource(listResource))
         link.add(
-          Bundle.BundleLinkComponent().apply { relation = "next" },
+          Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
         )
       }
     coEvery {
@@ -736,7 +737,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Bundle().apply {
         entry = listOf(BundleEntryComponent().setResource(listResource))
         link.add(
-          Bundle.BundleLinkComponent().apply { relation = "next" },
+          Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
         )
       }
 
@@ -812,7 +813,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
                 ),
             )
           link.add(
-            Bundle.BundleLinkComponent().apply { relation = "next" },
+            Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
           )
         }
 
