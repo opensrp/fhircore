@@ -20,6 +20,11 @@ fhirAuthArray.forEach { property ->
     ))
 }
 
+val dtreeRepositoryUsername: String? = localProperties.getProperty("dtreeRepositoryUsername")
+val dtreeRepositoryPassword: String? = localProperties.getProperty("dtreeRepositoryPassword")
+
+if (dtreeRepositoryUsername != null) extra.set("dtreeRepositoryUsername", dtreeRepositoryUsername)
+if (dtreeRepositoryPassword != null) extra.set("dtreeRepositoryPassword", dtreeRepositoryPassword)
 
 val keystoreProperties = readProperties((properties["keystorePropertiesFile"] ?: "${rootProject.projectDir}/keystore.properties").toString())
 

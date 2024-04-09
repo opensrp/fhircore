@@ -35,6 +35,19 @@ allprojects {
         mavenCentral()
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
         maven(url = "https://jcenter.bintray.com/")
+
+        if (project.extra.has("dtreeRepositoryUsername") && project.extra.has("dtreeRepositoryPassword")) {
+            maven {
+                url = uri("https://maven.pkg.github.com/d-tree-org/android-fhir")
+                name = "dtreeRepository"
+                credentials {
+                    username = project.extra["dtreeRepositoryUsername"]?.toString()
+                    password = project.extra["dtreeRepositoryPassword"]?.toString()
+                }
+            }
+        }
+
+        mavenLocal()
         maven {
             name = "fhirsdk"
             url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
@@ -45,7 +58,7 @@ allprojects {
 subprojects {
     apply {
         plugin("com.diffplug.spotless")
-        plugin(  "jacoco")
+        plugin("jacoco")
     }
 
     configure<SpotlessExtension> {
