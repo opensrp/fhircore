@@ -63,5 +63,6 @@ data class TopScreenSection(
 
 @Serializable
 data class ServicePointConfig(
-  val rules: List<RuleConfig> = emptyList()
+  val rules: List<RuleConfig> = emptyList(),
+  val servicePointProperties: Map<String, String> = emptyMap()
 )

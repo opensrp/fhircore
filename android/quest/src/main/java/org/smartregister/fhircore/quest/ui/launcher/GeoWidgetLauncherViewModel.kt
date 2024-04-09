@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
@@ -89,6 +90,10 @@ constructor(
                             ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
                             params = emptyMap(),
                         )
+                val servicePointProperties = mutableMapOf<String, Any>()
+                geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+                    servicePointProperties[key] = value.interpolate(resourceData.computedValuesMap)
+                }
                 if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
                     val feature = Feature(
                         id = location.id,
@@ -98,7 +103,7 @@ constructor(
                                 longitude = location.position.longitude.toDouble()
                             )
                         ),
-                        properties = resourceData.computedValuesMap
+                        properties = servicePointProperties
                     )
                     addLocationToFlow(feature)
                 }
