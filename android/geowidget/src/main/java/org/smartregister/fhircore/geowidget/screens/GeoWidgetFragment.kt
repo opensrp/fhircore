@@ -53,11 +53,12 @@ import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
 import org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
-import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
-import org.smartregister.fhircore.geowidget.util.extensions.position
+import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import timber.log.Timber
 import java.util.LinkedList
 
@@ -65,13 +66,13 @@ import java.util.LinkedList
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
     private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-    internal var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    internal var onAddLocationCallback: (Feature) -> Unit = {}
     internal var onCancelAddingLocationCallback: () -> Unit = {}
-    internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    internal var onClickLocationCallback: (Feature) -> Unit = {}
     internal var useGpsOnAddingLocation: Boolean = false
-    internal var mapLayers : List<MapLayer> = ArrayList()
-    internal var shouldLocationButtonShow : Boolean = true
-    internal var shouldPlaneSwitcherButtonShow : Boolean = true
+    internal var mapLayers: List<MapLayer> = ArrayList()
+    internal var shouldLocationButtonShow: Boolean = true
+    internal var shouldPlaneSwitcherButtonShow: Boolean = true
 
     private lateinit var mapView: KujakuMapView
     private var geoJsonSource: GeoJsonSource? = null
@@ -142,7 +143,8 @@ class GeoWidgetFragment : Fragment() {
             Expression.literal(0.98f), Expression.literal(0.9f)
         )
 
-        val servicePointTypeMap: Map<String, ServicePointType> = geoWidgetViewModel.getServicePointKeyToType()
+        val servicePointTypeMap: Map<String, ServicePointType> =
+            geoWidgetViewModel.getServicePointKeyToType()
         for ((key, servicePointType) in servicePointTypeMap) {
             val icon: Bitmap = ResourceUtils.drawableToBitmap(
                 ResourcesCompat.getDrawable(
@@ -160,7 +162,12 @@ class GeoWidgetFragment : Fragment() {
                 PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
             )
             // TODO: Refactor "type" to string constant
-            symbolLayer.setFilter(Expression.eq(Expression.get("type"), servicePointType.name.lowercase()))
+            symbolLayer.setFilter(
+                Expression.eq(
+                    Expression.get("type"),
+                    servicePointType.name.lowercase()
+                )
+            )
             mMapboxMapStyle.addLayer(symbolLayer)
         }
     }
@@ -172,15 +179,15 @@ class GeoWidgetFragment : Fragment() {
             mapLayers.forEach {
                 when (it) {
                     is MapLayer.SatelliteLayer -> {
-                        addBaseLayer(MapBoxSatelliteLayer(),it.isDefault)
+                        addBaseLayer(MapBoxSatelliteLayer(), it.isDefault)
                     }
 
                     is MapLayer.StreetLayer -> {
-                        addBaseLayer(StreetsBaseLayer(requireContext()),it.isDefault)
+                        addBaseLayer(StreetsBaseLayer(requireContext()), it.isDefault)
                     }
 
                     is MapLayer.StreetSatelliteLayer -> {
-                        addBaseLayer(StreetSatelliteLayer(requireContext()),it.isDefault)
+                        addBaseLayer(StreetSatelliteLayer(requireContext()), it.isDefault)
                     }
                 }
             }
@@ -205,12 +212,13 @@ class GeoWidgetFragment : Fragment() {
                 }
 
                 val point = (feature.geometry() as Point)
-                val geoWidgetLocation = GeoWidgetLocation(
+                val geoWidgetLocation = Feature(
                     id = feature.getStringProperty("id") ?: "",
-                    name = feature.getStringProperty("name") ?: "",
-                    position = Position(
-                        latitude = point.latitude(),
-                        longitude = point.longitude()
+                    geometry = Geometry(
+                        coordinates = Coordinates(
+                            latitude = point.latitude(),
+                            longitude = point.longitude()
+                        )
                     ),
                 )
 
@@ -227,9 +235,9 @@ class GeoWidgetFragment : Fragment() {
 
                 override fun onPointAdd(featureJSONObject: JSONObject?) {
                     featureJSONObject ?: return
-                    val position = featureJSONObject.position() ?: return
-                    val geoWidgetLocation = GeoWidgetLocation(position = position)
-                    onAddLocationCallback(geoWidgetLocation)
+                    val position = featureJSONObject.geometry() ?: return
+                    val feature = Feature(geometry = position)
+                    onAddLocationCallback(feature)
                 }
 
                 override fun onCancel() {
@@ -295,11 +303,11 @@ class GeoWidgetFragment : Fragment() {
         mapView.onSaveInstanceState(outState)
     }
 
-    fun addLocationToMap(location: GeoWidgetLocation) {
+    fun addLocationToMap(location: Feature) {
         geoWidgetViewModel.addLocationToMap(location)
     }
 
-    fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+    fun addLocationsToMap(locations: Set<Feature>) {
         geoWidgetViewModel.addLocationsToMap(locations)
     }
 
@@ -310,15 +318,15 @@ class GeoWidgetFragment : Fragment() {
 
 class Builder {
 
-    private var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    private var onAddLocationCallback: (Feature) -> Unit = {}
     private var onCancelAddingLocationCallback: () -> Unit = {}
-    private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+    private var onClickLocationCallback: (Feature) -> Unit = {}
     private var useGpsOnAddingLocation: Boolean = false
-    private var mapLayers : List<MapLayer> = ArrayList()
-    private var shouldLocationButtonShow : Boolean = true
-    private var shouldPlaneSwitcherButtonShow : Boolean = true
-    private var onStyleLoadedCallback : Boolean = true
-    fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+    private var mapLayers: List<MapLayer> = ArrayList()
+    private var shouldLocationButtonShow: Boolean = true
+    private var shouldPlaneSwitcherButtonShow: Boolean = true
+    private var onStyleLoadedCallback: Boolean = true
+    fun setOnAddLocationListener(onAddLocationCallback: (Feature) -> Unit) = apply {
         this.onAddLocationCallback = onAddLocationCallback
     }
 
@@ -326,7 +334,7 @@ class Builder {
         this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
     }
 
-    fun setOnClickLocationListener(onClickLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+    fun setOnClickLocationListener(onClickLocationCallback: (Feature) -> Unit) = apply {
         this.onClickLocationCallback = onClickLocationCallback
     }
 
@@ -334,17 +342,18 @@ class Builder {
         this.useGpsOnAddingLocation = value
     }
 
-    fun setMapLayers(list : List<MapLayer>) = apply {
+    fun setMapLayers(list: List<MapLayer>) = apply {
         this.mapLayers = list
     }
 
-    fun setLocationButtonVisibility(show : Boolean) = apply {
+    fun setLocationButtonVisibility(show: Boolean) = apply {
         this.shouldLocationButtonShow = show
     }
 
     fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
         this.shouldPlaneSwitcherButtonShow = show
     }
+
     fun build(): GeoWidgetFragment {
         return GeoWidgetFragment().apply {
             this.onAddLocationCallback = this@Builder.onAddLocationCallback
