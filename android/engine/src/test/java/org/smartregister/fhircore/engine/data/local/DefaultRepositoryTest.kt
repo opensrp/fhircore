@@ -824,7 +824,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
         status = Task.TaskStatus.READY
       }
-    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    val result = defaultRepository.filterResource(task, resourceConfig)
     Assert.assertTrue(result)
   }
 
@@ -840,7 +840,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
         status = Task.TaskStatus.READY
       }
-    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    val result = defaultRepository.filterResource(task, resourceConfig)
     Assert.assertFalse(result)
   }
 
@@ -852,7 +852,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         id = "37793d31-def5-40bd-a2e3-fdaf5a0ddc53"
         status = Task.TaskStatus.READY
       }
-    val result = defaultRepository.filterRelatedResource(task, resourceConfig)
+    val result = defaultRepository.filterResource(task, resourceConfig)
     Assert.assertTrue(result)
   }
 

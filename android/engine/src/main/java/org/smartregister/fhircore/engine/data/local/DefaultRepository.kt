@@ -696,7 +696,9 @@ constructor(
     val resources = fhirEngine.search<Resource>(search)
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it, resourceConfig)
+      if (filterResource(it, resourceConfig)) {
+        closeResource(it, resourceConfig)
+      }
     }
 
     // recursive related resources
@@ -715,7 +717,7 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        if (filterRelatedResource(resource, resourceConfig)) {
+        if (filterResource(resource, resourceConfig)) {
           closeResource(resource, resourceConfig)
         }
       }
@@ -753,8 +755,10 @@ constructor(
   /**
    * Filtering the Related Resources is achieved by use of the filterFhirPathExpression
    * configuration. It specifies which field and values to filter the resources by.
+   * This can also be used to filter Base Resources that meet a certain criteria by providing a
+   * fhirpath expression through the filterFhirPathExpression.
    */
-  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+  fun filterResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
     return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
       true
     } else {
