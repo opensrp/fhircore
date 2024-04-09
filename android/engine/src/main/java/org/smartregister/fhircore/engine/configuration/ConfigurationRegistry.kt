@@ -389,7 +389,6 @@ constructor(
     retrieveConfiguration(ConfigType.Application)
   }
 
-
   /**
    * Fetch non-patient Resources for the application that are not application configurations
    * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
@@ -411,10 +410,12 @@ constructor(
     configCacheMap.clear()
 
     var compositionResource: Composition?
-    val implementationGuideResource = fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideId)
+    val implementationGuideResource =
+      fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideId)
 
     if (implementationGuideResource != null) {
-      compositionResource = getCompositionResourceFromImplementationGuide(implementationGuideResource)
+      compositionResource =
+        getCompositionResourceFromImplementationGuide(implementationGuideResource)
       if (compositionResource != null) {
         getResourcesFromComposition(compositionResource)
       } else {
@@ -434,12 +435,15 @@ constructor(
   }
 
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun getCompositionResourceFromImplementationGuide(implementationGuide: ImplementationGuide): Composition? {
-    val compositionRef = implementationGuide
-      ?.retrieveImplementationGuideDefinitionResources()
-      ?.get(0) // assuming only the composition resource is referenced in the IG
-      ?.reference
-      ?.reference
+  suspend fun getCompositionResourceFromImplementationGuide(
+    implementationGuide: ImplementationGuide
+  ): Composition? {
+    val compositionRef =
+      implementationGuide
+        ?.retrieveImplementationGuideDefinitionResources()
+        ?.get(0) // assuming only the composition resource is referenced in the IG
+        ?.reference
+        ?.reference
 
     val compositionIdWithHistory = compositionRef?.substringAfter('/')
     val compositionId = compositionIdWithHistory?.substringBefore('/')
@@ -499,8 +503,7 @@ constructor(
 
   suspend fun fetchRemoteImplementationGuide(implementationGuideId: String?): ImplementationGuide? {
     Timber.i("Fetching ImplementationGuide $implementationGuideId")
-    val urlPath =
-      "${ResourceType.ImplementationGuide.name}/$implementationGuideId"
+    val urlPath = "${ResourceType.ImplementationGuide.name}/$implementationGuideId"
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
@@ -512,7 +515,7 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteCompositionByAppId(appId: String?, version:String? = null): Composition? {
+  suspend fun fetchRemoteCompositionByAppId(appId: String?, version: String? = null): Composition? {
     Timber.i("Fetching configs for app $appId")
     val urlPath =
       if (version.isNullOrEmpty()) {
@@ -531,14 +534,15 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteCompositionById(id: String?, version:String? = null): Composition? {
+  suspend fun fetchRemoteCompositionById(id: String?, version: String? = null): Composition? {
     Timber.i("Fetching composition: $id")
 
-    val urlPath = if(version.isNullOrEmpty()) {
-      "${ResourceType.Composition.name}/$id"
-    } else {
-      "${ResourceType.Composition.name}/$id/_history/$version"
-    }
+    val urlPath =
+      if (version.isNullOrEmpty()) {
+        "${ResourceType.Composition.name}/$id"
+      } else {
+        "${ResourceType.Composition.name}/$id/_history/$version"
+      }
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
