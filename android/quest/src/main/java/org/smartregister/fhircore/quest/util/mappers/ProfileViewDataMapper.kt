@@ -226,7 +226,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       else -> "ART Number"
     }
 
-  private fun Date.formatDob(): String = simpleDateFormat.format(this)
+  private fun Date?.formatDob(): String = if (this == null) "" else simpleDateFormat.format(this)
 
   companion object {
     const val DEFAULT_TASKS_COUNT = 5 // TODO Configure tasks to display

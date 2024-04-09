@@ -16,15 +16,29 @@
 
 package org.smartregister.fhircore.quest.ui.patient.register.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -48,6 +62,38 @@ fun RegisterList(
       RegisterRowItem(registerViewData = it!!, onRowClick = onRowClick)
     }
     pagingItems.apply {
+      val finishedLoading =
+        loadState.refresh !is LoadState.Loading &&
+          loadState.prepend !is LoadState.Loading &&
+          loadState.append !is LoadState.Loading
+
+      if (itemCount == 0 && finishedLoading) {
+        item {
+          Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize().padding(14.dp),
+          ) {
+            Box(
+              modifier =
+                Modifier.background(
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp),
+                  )
+                  .padding(24.dp),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.PersonSearch,
+                contentDescription = "",
+                tint = Color.LightGray,
+                modifier = Modifier.size(72.dp).align(Alignment.Center),
+              )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "List empty, nothing to show here", style = MaterialTheme.typography.h6)
+          }
+        }
+      }
       when {
         loadState.refresh is LoadState.Loading ->
           item { BoxedCircularProgressBar(progressMessage = progressMessage) }

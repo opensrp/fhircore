@@ -172,28 +172,31 @@ abstract class TracingRegisterDao(
         }
         .map { it.resource }
         .filter {
-          if (filters.age != null) {
-            val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
-            when (filters.age) {
-              TracingAgeFilterEnum.ZERO_TO_2 -> {
-                val date = Date.from(today.minusYears(2L).toInstant())
-                it.birthDate.after(date)
+          val isInRange =
+            if (filters.age != null) {
+              val today = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+              when (filters.age) {
+                TracingAgeFilterEnum.ZERO_TO_2 -> {
+                  val date = Date.from(today.minusYears(2L).toInstant())
+                  it.birthDate?.after(date)
+                }
+                TracingAgeFilterEnum.ZERO_TO_18 -> {
+                  val date = Date.from(today.minusYears(18L).toInstant())
+                  it.birthDate?.after(date)
+                }
+                TracingAgeFilterEnum.PLUS_18 -> {
+                  val date = Date.from(today.minusYears(18L).toInstant())
+                  it.birthDate?.before(date)
+                }
               }
-              TracingAgeFilterEnum.ZERO_TO_18 -> {
-                val date = Date.from(today.minusYears(18L).toInstant())
-                it.birthDate.after(date)
-              }
-              TracingAgeFilterEnum.PLUS_18 -> {
-                val date = Date.from(today.minusYears(18L).toInstant())
-                it.birthDate.time <= date.time
-              }
+            } else {
+              true
             }
-          } else {
-            true
-          }
+
+          isInRange ?: false
         }
 
-    val patientrefs =
+    val patientRefs =
       patients
         .map<Patient, (ReferenceParamFilterCriterion.() -> Unit)> {
           return@map { value = it.referenceValue() }
@@ -201,11 +204,11 @@ abstract class TracingRegisterDao(
         .toTypedArray()
 
     val tasks: List<Task> =
-      if (patientrefs.isNotEmpty()) {
+      if (patientRefs.isNotEmpty()) {
         fhirEngine
           .search<Task> {
             filtersForValidTask()
-            filter(Task.SUBJECT, *patientrefs, operation = Operation.OR)
+            filter(Task.SUBJECT, *patientRefs, operation = Operation.OR)
           }
           .map { it.resource }
           .filter {
