@@ -17,48 +17,42 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import androidx.lifecycle.ViewModel
-import com.mapbox.geojson.Feature
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.util.extensions.getGeoJsonGeometry
+import org.smartregister.fhircore.geowidget.util.extensions.getProperties
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  private val _featuresFlow: MutableStateFlow<Set<Feature>> =
+  private val _featuresFlow: MutableStateFlow<Set<com.mapbox.geojson.Feature>> =
     MutableStateFlow(setOf())
-  val featuresFlow: StateFlow<Set<Feature>> = _featuresFlow
+  val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
 
-  fun addLocationToMap(location: GeoWidgetLocation) {
-    val properties = JSONObject().apply {
-      put("id", location.id)
-      put("name", location.name)
-      put("parentId", location.parentLocationId)
-      put("status", location.status)
-      put("type", location.type)
-      put("typeText", location.typeText)
-      put("visitStatus", location.visitStatus)
-    }
-
-    val jsonFeature =
-      JSONObject().apply {
-        put("type", "Feature")
-        put("properties", properties)
-        put("geometry", location.getGeoJsonGeometry())
+  fun addLocationToMap(location: Feature) {
+      try {
+          val jsonFeature =
+              JSONObject().apply {
+                  put("type", "Feature")
+                  put("properties", location.getProperties())
+                  put("geometry", location.getGeoJsonGeometry())
+              }
+          val feature = com.mapbox.geojson.Feature.fromJson(jsonFeature.toString())
+          _featuresFlow.value = _featuresFlow.value + feature
+      } catch (e:Exception) {
+          Timber.e(e)
       }
-    val feature = Feature.fromJson(jsonFeature.toString())
-
-    _featuresFlow.value = _featuresFlow.value + feature
   }
 
-  fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+  fun addLocationsToMap(locations: Set<Feature>) {
     locations.forEach { location ->
       addLocationToMap(location)
     }

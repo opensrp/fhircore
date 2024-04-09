@@ -16,19 +16,20 @@
 
 package org.smartregister.fhircore.geowidget.model
 
-data class GeoWidgetLocation(
+data class Feature(
+  val geometry: Geometry? = null,
   val id: String = "",
-  val name: String = "",
-  val position: Position? = null,
-  val parentLocationId: String = "",
-  val status: String = "",
-  val type: String? = "",
-  val typeText: String? = "",
-  val visitStatus: String? = "not_started"
-
+  val properties: Map<String, Any> = emptyMap(),
+  val serverVersion: Int = 0,
+  val type: String = "Feature"
 )
 
-data class Position(
+data class Geometry(
+  val coordinates : Coordinates?,
+  val type: String = "Point"
+)
+
+data class Coordinates(
   val latitude: Double = 0.0,
   val longitude: Double = 0.0,
 )

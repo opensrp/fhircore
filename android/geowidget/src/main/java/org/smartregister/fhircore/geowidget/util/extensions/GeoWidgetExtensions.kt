@@ -18,21 +18,32 @@ package org.smartregister.fhircore.geowidget.util.extensions
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
-import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 
-fun GeoWidgetLocation.getGeoJsonGeometry(): JSONObject {
-  position ?: return JSONObject()
+fun Feature.getGeoJsonGeometry(): JSONObject {
+  geometry ?: return JSONObject()
 
-  val geometry = JSONObject()
+  val geometryObject = JSONObject()
 
-  geometry.put("type", "Point")
-  geometry.put("coordinates", JSONArray(arrayOf(position.longitude, position.latitude)))
-  return geometry
+  geometryObject.put("type", geometry.type)
+  geometryObject.put("coordinates", JSONArray(arrayOf(geometry.coordinates?.longitude, geometry.coordinates?.latitude)))
+  return geometryObject
 }
 
-fun JSONObject.position(): Position? {
+fun JSONObject.geometry(): Geometry? {
   return optJSONObject("geometry")?.run {
-    optJSONArray("coordinates")?.run { Position(optDouble(0), optDouble(1)) }
+    optJSONArray("coordinates")?.run { Geometry(Coordinates(optDouble(0), optDouble(1)) ) }
   }
+}
+
+fun Feature.getProperties(): JSONObject {
+  properties ?: return JSONObject()
+
+  val propertiesObject = JSONObject()
+  properties.forEach { key, value ->
+    propertiesObject.put(key, value)
+  }
+  return propertiesObject
 }
