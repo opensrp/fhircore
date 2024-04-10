@@ -22,8 +22,6 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
@@ -34,7 +32,6 @@ import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
@@ -63,10 +60,13 @@ import org.smartregister.fhircore.engine.util.extension.familyName
 import org.smartregister.fhircore.engine.util.extension.givenName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
 import timber.log.Timber
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class HivRegisterDao
@@ -284,45 +284,18 @@ constructor(
         }
       }
 
-  internal suspend fun Patient.activeTasks(): List<Task> {
-    return this.activeCarePlans()
-      .flatMap { it.activity }
-      .flatMap {
-        it.outcomeReference
-          .filter { outcomeRef -> outcomeRef.reference.startsWith(ResourceType.Task.name) }
-          .map { reference ->
-            val task = defaultRepository.loadResource(reference) as Task
-            task.apply {
-              if (
-                it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED &&
-                  status != Task.TaskStatus.COMPLETED
-              ) {
-                status = Task.TaskStatus.COMPLETED
-              }
-            }
-          }
-      }
-  }
-
   internal suspend fun Patient.activeCarePlans(): List<CarePlan> {
-    patientCarePlan(this.logicalId)
-      .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
-      .apply {
-        val sortByLastUpdated = sortedBy { it.meta.lastUpdated }
-        return if (size > 1 || size == 1) {
-          listOf(sortByLastUpdated.first())
-        } else {
-          listOf()
-        }
+    return fhirEngine
+      .search<CarePlan> {
+        filter(CarePlan.SUBJECT, { value = this@activeCarePlans.referenceValue() })
+        filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) })
       }
+      .asSequence()
+      .map { it.resource }
+      .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
+      .sortedBy { it.meta.lastUpdated }
+      .toList()
   }
-
-  internal suspend fun patientCarePlan(patientId: String) =
-    defaultRepository.searchResourceFor<CarePlan>(
-      subjectId = patientId,
-      subjectType = ResourceType.Patient,
-      subjectParam = CarePlan.SUBJECT,
-    )
 
   internal suspend fun Patient.practitioners(): List<Practitioner> {
     return generalPractitioner
@@ -338,13 +311,11 @@ constructor(
       .distinctBy { it.logicalId }
   }
 
-  internal suspend fun Patient.otherPatients() = this.fetchOtherPatients(this.logicalId)
-
   internal suspend fun Patient.otherChildren(): List<Resource> {
-    return this.fetchOtherPatients(this.logicalId)
+    return fetchOtherPatients(this.logicalId)
   }
 
-  internal suspend fun Patient.fetchOtherPatients(patientId: String): List<Resource> {
+  internal suspend fun fetchOtherPatients(patientId: String): List<Resource> {
     val list: ArrayList<Patient> = arrayListOf()
 
     val filteredItems =
@@ -450,10 +421,3 @@ suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
 
 suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
   patientConditions(patient.logicalId).activelyBreastfeeding()
-
-infix fun Patient.belongsTo(code: String) =
-  meta.tag.any {
-    it.code == code &&
-      it.system == HivRegisterDao.ORGANISATION_SYSTEM &&
-      it.display == HivRegisterDao.ORGANISATION_DISPLAY
-  }
