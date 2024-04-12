@@ -43,6 +43,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -178,7 +179,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
           this.resource = ListResource().apply { ListResource@ this.id = "123456" }
         }
         link.add(
-          Bundle.BundleLinkComponent().apply { relation = "next" },
+          Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
         )
       }
 

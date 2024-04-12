@@ -53,6 +53,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -685,6 +686,32 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-21\"}}]}",
       requestPathArgumentSlot.last().getPayload(),
     )
+  }
+
+  @Test
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
+    val expectedNextPageUrl = "List?_id=46464&_page=1&_count=200"
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+
+    val listJson =
+      context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+        it.readText()
+      }
+    val listResource = iParser.parseResource(listJson) as Bundle
+    val bundle =
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply {
+            relation = PAGINATION_NEXT
+            url = "List?_id=46464&_page=1&_count=200"
+          },
+        )
+      }
+    val nextPageUrl = bundle.getLink(PAGINATION_NEXT).url
+
+    assertNotNull(nextPageUrl)
+    assertEquals(expectedNextPageUrl, nextPageUrl)
   }
 
   @Test
