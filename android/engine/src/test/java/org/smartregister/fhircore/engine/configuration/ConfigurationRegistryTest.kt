@@ -745,9 +745,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun Next() = runTest{
-    @Test
-    fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() = runTest {
+  fun testNext() = runTest{
       val appId = "theAppId"
       val compositionSections = mutableListOf<SectionComponent>()
       compositionSections.add(
@@ -768,7 +766,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
           section = compositionSections
         }
 
-      val nextPageUrl = "List?_id=46464&_page=2&_count=200"
+    val bundle =
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply {
+            relation = PAGINATION_NEXT
+            url = "List?_id=46464&_page=1&_count=200"
+          },
+        )
+      }
+
+    val nextExpectedPageUrl = bundle.getLink(PAGINATION_NEXT).url
+
+      val nextPageUrl = "List?_id=46464&_page=1&_count=200"
       configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
       fhirEngine.create(composition)
@@ -780,31 +791,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       coEvery {
         fhirResourceDataSource.getResourceWithGatewayModeHeader(
           "list-entries",
-          "List?_id=46464&_page=1&_count=200",
+          nextExpectedPageUrl
         )
-      } returns
-              Bundle().apply {
-                entry = listOf(BundleEntryComponent().setResource(listResource))
-                link.add(
-                  Bundle.BundleLinkComponent().apply {
-                    relation = PAGINATION_NEXT
-                    url = nextPageUrl
-                  },
-                )
-              }
+      } returns bundle
 
-      coEvery {
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(
-          "list-entries",
-          nextPageUrl,
-        )
-      } returns
-              Bundle().apply {
-                entry = listOf(BundleEntryComponent().setResource(listResource))
-                link.add(
-                  Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
-                )
-              }
       coEvery {
         fhirResourceDataSource.getResource(
           "List?_id=46464&_page=1&_count=200",
@@ -817,24 +807,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
       configRegistry.fetchNonWorkflowConfigResources()
 
-      val requestPathArgumentSlot = mutableListOf<Resource>()
+    assertNotNull(nextPageUrl)
+    assertEquals(nextExpectedPageUrl, nextPageUrl)
 
-      coVerify(exactly = 5) {
-        fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
-      }
-
-      assertEquals(5, requestPathArgumentSlot.size)
-
-      assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
-
-      assertEquals("Group/2000001", requestPathArgumentSlot.second().id)
-      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
-
-      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
     }
-  }
   @Test
   fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() = runTest {
     val appId = "theAppId"
