@@ -255,11 +255,18 @@ android {
       manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
-    create("wdf") {
+    create("diabetesCompass") {
       dimension = "apps"
-      applicationIdSuffix = ".wdf"
-      versionNameSuffix = "-wdf"
+      applicationIdSuffix = ".diabetesCompass"
+      versionNameSuffix = "-diabetesCompass"
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
+    }
+
+    create("diabetesCompassClinic") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassClinic"
+      versionNameSuffix = "-diabetesCompassClinic"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass Clinic"
     }
 
     create("zeir") {
