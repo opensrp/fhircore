@@ -44,7 +44,6 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
-import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Resource
@@ -53,7 +52,6 @@ import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.OpenSrpApplication
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -385,10 +383,6 @@ constructor(
     return configFiles
   }
 
-  private val applicationConfiguration: ApplicationConfiguration by lazy {
-    retrieveConfiguration(ConfigType.Application)
-  }
-
   /**
    * Fetch non-patient Resources for the application that are not application configurations
    * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
@@ -408,141 +402,60 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
     // Reset configurations before loading new ones
     configCacheMap.clear()
-
-    var compositionResource: Composition?
-    val implementationGuideResource =
-      fetchRemoteImplementationGuide(applicationConfiguration.implementationGuideId)
-
-    if (implementationGuideResource != null) {
-      compositionResource =
-        getCompositionResourceFromImplementationGuide(implementationGuideResource)
-      if (compositionResource != null) {
-        getResourcesFromComposition(compositionResource)
-      } else {
-        Timber.e("Composition resource not found")
-      }
-    } else {
-      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-        val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-        compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
-        if (compositionResource != null) {
-          getResourcesFromComposition(compositionResource)
-        } else {
-          Timber.e("Composition resource not found")
-        }
-      }
-    }
-  }
-
-  @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun getCompositionResourceFromImplementationGuide(
-    implementationGuide: ImplementationGuide
-  ): Composition? {
-    val compositionRef =
-      implementationGuide
-        ?.retrieveImplementationGuideDefinitionResources()
-        ?.get(0) // assuming only the composition resource is referenced in the IG
-        ?.reference
-        ?.reference
-
-    val compositionIdWithHistory = compositionRef?.substringAfter('/')
-    val compositionId = compositionIdWithHistory?.substringBefore('/')
-    val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
-
-    return fetchRemoteCompositionById(compositionId, compositionVersion)
-  }
-
-  @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun getResourcesFromComposition(compositionResource: Composition?) {
-    val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-
-    compositionResource?.let { composition ->
-      composition
-        .retrieveCompositionSections()
-        .asSequence()
-        .filter {
-          it.hasFocus() && it.focus.hasReferenceElement()
-        } // is focus.identifier a necessary check
-        .groupBy { section ->
-          section.focus.reference.substringBefore(
-            TYPE_REFERENCE_DELIMITER,
-            missingDelimiterValue = "",
-          )
-        }
-        .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-        .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-          if (entry.key == ResourceType.List.name) {
-            processCompositionListResources(
-              entry,
-              patientRelatedResourceTypes = patientRelatedResourceTypes,
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      val compositionResource = fetchRemoteComposition(parsedAppId)
+      compositionResource?.let { composition ->
+        composition
+          .retrieveCompositionSections()
+          .asSequence()
+          .filter {
+            it.hasFocus() && it.focus.hasReferenceElement()
+          } // is focus.identifier a necessary check
+          .groupBy { section ->
+            section.focus.reference.substringBefore(
+              TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
             )
-          } else {
-            val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+          }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+            if (entry.key == ResourceType.List.name) {
+              processCompositionListResources(
+                entry,
+                patientRelatedResourceTypes = patientRelatedResourceTypes,
+              )
+            } else {
+              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-            chunkedResourceIdList.forEach { parentIt ->
-              Timber.d(
-                "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
-              )
-              processCompositionManifestResources(
-                entry.key,
-                parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
-                patientRelatedResourceTypes,
-              )
+              chunkedResourceIdList.forEach { parentIt ->
+                Timber.d(
+                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                )
+                processCompositionManifestResources(
+                  entry.key,
+                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
+                  patientRelatedResourceTypes,
+                )
+              }
             }
           }
-        }
 
-      saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
 
-      // Save composition after fetching all the referenced section resources
-      addOrUpdate(compositionResource)
+        // Save composition after fetching all the referenced section resources
+        addOrUpdate(compositionResource)
 
-      Timber.d("Done fetching application configurations remotely")
-    }
-  }
-
-  suspend fun fetchRemoteImplementationGuide(implementationGuideId: String?): ImplementationGuide? {
-    Timber.i("Fetching ImplementationGuide $implementationGuideId")
-    val urlPath = "${ResourceType.ImplementationGuide.name}/$implementationGuideId"
-
-    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
-      if (!it.hasResource()) {
-        Timber.w("No response for ImplementationGuide resource on path $urlPath")
-        return null
+        Timber.d("Done fetching application configurations remotely")
       }
-
-      it.resource as ImplementationGuide
     }
   }
 
-  suspend fun fetchRemoteCompositionByAppId(appId: String?, version: String? = null): Composition? {
+  suspend fun fetchRemoteComposition(appId: String?): Composition? {
     Timber.i("Fetching configs for app $appId")
     val urlPath =
-      if (version.isNullOrEmpty()) {
-        "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
-      } else {
-        "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId/_history/$version"
-      }
-
-    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
-      if (!it.hasResource()) {
-        Timber.w("No response for composition resource on path $urlPath")
-        return null
-      }
-
-      it.resource as Composition
-    }
-  }
-
-  suspend fun fetchRemoteCompositionById(id: String?, version: String? = null): Composition? {
-    Timber.i("Fetching composition: $id")
-
-    val urlPath =
-      if (version.isNullOrEmpty()) {
-        "${ResourceType.Composition.name}/$id"
-      } else {
-        "${ResourceType.Composition.name}/$id/_history/$version"
-      }
+      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
 
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
