@@ -165,7 +165,7 @@ fun UserSettingInsightScreen(
               stringResource(R.string.location) to location,
             )
           InsightInfoView(
-            title = stringResource(id = R.string.app_info),
+            title = stringResource(id = R.string.assignment_info),
             items = items,
           )
         }
@@ -179,7 +179,7 @@ fun UserSettingInsightScreen(
             stringResource(R.string.build_date) to buildDate,
           )
         InsightInfoView(
-          title = stringResource(id = R.string.assignment_info),
+          title = stringResource(id = R.string.app_info),
           items = items,
         )
       }
