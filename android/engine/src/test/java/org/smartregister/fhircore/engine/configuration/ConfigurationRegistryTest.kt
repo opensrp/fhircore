@@ -708,6 +708,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
+
+    val nextPageUrl = "List?_id=46464&_page=2&_count=200"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
@@ -725,13 +727,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Bundle().apply {
         entry = listOf(BundleEntryComponent().setResource(listResource))
         link.add(
-          Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
+          Bundle.BundleLinkComponent().apply {
+            relation = PAGINATION_NEXT
+            url = nextPageUrl
+          },
         )
       }
+
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
-        "List?_id=46464&_page=2&_count=200",
+        nextPageUrl,
       )
     } returns
       Bundle().apply {
@@ -740,7 +746,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
           Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
         )
       }
-
+    coEvery {
+      fhirResourceDataSource.getResource(
+        "List?_id=46464&_page=1&_count=200",
+      )
+    }
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
 
@@ -750,11 +760,11 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 3) {
+    coVerify(exactly = 5) {
       fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
     }
 
-    assertEquals(3, requestPathArgumentSlot.size)
+    assertEquals(5, requestPathArgumentSlot.size)
 
     assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
     assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
