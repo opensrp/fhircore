@@ -34,6 +34,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.io.File
 import java.net.URL
@@ -689,8 +690,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
-    val expectedNextPageUrl = "List?_id=46464&_page=1&_count=200"
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest{
+
+    val appId = "AppId"
+
+    val compositionSections = mutableListOf<SectionComponent>()
+    compositionSections.add(
+      SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+    )
+    val composition =
+      Composition().apply {
+        id = "composition-id-1"
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+    val expectedNextPageUrl = "List?_id=46464&_page=2&_count=200"
     val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
     val listJson =
@@ -704,16 +718,123 @@ class ConfigurationRegistryTest : RobolectricTest() {
         link.add(
           Bundle.BundleLinkComponent().apply {
             relation = PAGINATION_NEXT
-            url = "List?_id=46464&_page=1&_count=200"
+            url = "List?_id=46464&_page=2&_count=200"
           },
         )
       }
+
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    fhirEngine.create(composition)
+
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
+
+
     val nextPageUrl = bundle.getLink(PAGINATION_NEXT).url
+
+    coEvery { fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entry", nextPageUrl) } returns Bundle()
+
+    configRegistry.fetchNonWorkflowConfigResources()
+
+    coVerify { fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entry", nextPageUrl) }
 
     assertNotNull(nextPageUrl)
     assertEquals(expectedNextPageUrl, nextPageUrl)
   }
 
+  @Test
+  fun Next() = runTest{
+    @Test
+    fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() = runTest {
+      val appId = "theAppId"
+      val compositionSections = mutableListOf<SectionComponent>()
+      compositionSections.add(
+        SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+      )
+
+      val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+      val listJson =
+        context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+          it.readText()
+        }
+      val listResource = iParser.parseResource(listJson) as Bundle
+
+      val composition =
+        Composition().apply {
+          id = "composition-id-1"
+          identifier = Identifier().apply { value = appId }
+          section = compositionSections
+        }
+
+      val nextPageUrl = "List?_id=46464&_page=2&_count=200"
+      configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+      fhirEngine.create(composition)
+
+      coEvery {
+        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      } returns Bundle().apply { addEntry().resource = composition }
+
+      coEvery {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          "List?_id=46464&_page=1&_count=200",
+        )
+      } returns
+              Bundle().apply {
+                entry = listOf(BundleEntryComponent().setResource(listResource))
+                link.add(
+                  Bundle.BundleLinkComponent().apply {
+                    relation = PAGINATION_NEXT
+                    url = nextPageUrl
+                  },
+                )
+              }
+
+      coEvery {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          nextPageUrl,
+        )
+      } returns
+              Bundle().apply {
+                entry = listOf(BundleEntryComponent().setResource(listResource))
+                link.add(
+                  Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
+                )
+              }
+      coEvery {
+        fhirResourceDataSource.getResource(
+          "List?_id=46464&_page=1&_count=200",
+        )
+      }
+      coEvery { fhirEngine.get(any(), any()) } throws
+              ResourceNotFoundException(ResourceType.Group.name, "some-id")
+
+      coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
+
+      configRegistry.fetchNonWorkflowConfigResources()
+
+      val requestPathArgumentSlot = mutableListOf<Resource>()
+
+      coVerify(exactly = 5) {
+        fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
+      }
+
+      assertEquals(5, requestPathArgumentSlot.size)
+
+      assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
+      assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
+
+      assertEquals("Group/2000001", requestPathArgumentSlot.second().id)
+      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+
+      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
+      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+    }
+  }
   @Test
   fun testFetchNonWorkflowConfigListResourcesPersistsActualListEntryResources() = runTest {
     val appId = "theAppId"
