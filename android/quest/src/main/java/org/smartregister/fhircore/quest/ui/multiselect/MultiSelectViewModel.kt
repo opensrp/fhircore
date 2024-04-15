@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.multiselect
 
+import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -31,8 +32,9 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig
+import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
 import org.smartregister.fhircore.engine.ui.multiselect.TreeBuilder
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -44,7 +46,6 @@ class MultiSelectViewModel
 constructor(
   val defaultRepository: DefaultRepository,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val preferenceDataStore: PreferenceDataStore,
 ) : ViewModel() {
 
   val searchTextState: MutableState<String> = mutableStateOf("")
@@ -53,20 +54,13 @@ constructor(
   val flag = MutableLiveData(false)
   private var _rootTreeNodes: List<TreeNode<String>> = mutableListOf()
 
-  fun populateLookupMap(multiSelectViewConfig: MultiSelectViewConfig) {
+  fun populateLookupMap(context: Context, multiSelectViewConfig: MultiSelectViewConfig) {
     // Mark previously selected nodes
     viewModelScope.launch {
       flag.postValue(true)
-      val previouslySelectedNodes =
-        preferenceDataStore.read(PreferenceDataStore.SYNC_LOCATION_IDS).firstOrNull()
+      val previouslySelectedNodes = context.syncLocationIdsProtoStore.data.firstOrNull()
       if (!previouslySelectedNodes.isNullOrEmpty()) {
-        previouslySelectedNodes
-          .split(",")
-          .asSequence()
-          .map { it.split(":") }
-          .filter { it.size == 2 }
-          .map { Pair(it.first(), it.last()) }
-          .forEach { selectedNodes[it.first] = ToggleableState.valueOf(it.second) }
+        previouslySelectedNodes.forEach { selectedNodes[it.locationId] = it.toggleableState }
       }
 
       val resourcesMap =
@@ -81,30 +75,36 @@ constructor(
       val rootNodeIds = mutableSetOf<String>()
 
       val lookupItems: List<TreeNode<String>> =
-        resourcesMap.values.map {
+        resourcesMap.values.map { resource ->
           val parentId =
             fhirPathDataExtractor
               .extractValue(
-                it,
+                resource,
                 multiSelectViewConfig.parentIdFhirPathExpression,
               )
               .extractLogicalIdUuid()
           val data =
             fhirPathDataExtractor
               .extractValue(
-                it,
+                resource,
                 multiSelectViewConfig.contentFhirPathExpression,
               )
               .extractLogicalIdUuid()
-          // TODO use configuration to obtain root nodes
-          if (parentId.isEmpty()) {
-            rootNodeIds.add(it.logicalId)
+          val isRootNode =
+            fhirPathDataExtractor
+              .extractValue(
+                resource,
+                multiSelectViewConfig.rootNodeFhirPathExpression.key,
+              )
+              .equals(multiSelectViewConfig.rootNodeFhirPathExpression.value, ignoreCase = true)
+          if (isRootNode) {
+            rootNodeIds.add(resource.logicalId)
           }
 
           val parentResource = resourcesMap[parentId]
 
           TreeNode(
-            id = it.logicalId,
+            id = resource.logicalId,
             parent =
               if (parentResource != null) {
                 TreeNode(
@@ -140,13 +140,11 @@ constructor(
     }
   }
 
-  fun onSelectionDone(dismiss: () -> Unit) {
+  fun onSelectionDone(context: Context, dismiss: () -> Unit) {
     viewModelScope.launch {
-      // TODO Consider using a proto-datastore here
-      preferenceDataStore.write(
-        PreferenceDataStore.SYNC_LOCATION_IDS,
-        selectedNodes.map { "${it.key}:${it.value}" }.joinToString(","),
-      )
+      context.syncLocationIdsProtoStore.updateData {
+        selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
+      }
       dismiss()
     }
   }

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.multiselect
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
@@ -59,7 +61,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.MutableLiveData
-import com.google.accompanist.placeholder.placeholder
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
@@ -73,7 +74,7 @@ fun MultiSelectBottomSheetView(
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
   onSearchTextChanged: (String) -> Unit,
-  onSelectionDone: (() -> Unit) -> Unit,
+  onSelectionDone: (Context, () -> Unit) -> Unit,
   search: () -> Unit,
   isLoading: MutableLiveData<Boolean>,
 ) {
@@ -175,8 +176,9 @@ fun MultiSelectBottomSheetView(
         }
         item {
           if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
+            val context = LocalContext.current
             Button(
-              onClick = { onSelectionDone(onDismiss) },
+              onClick = { onSelectionDone(context, onDismiss) },
               modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
             ) {
               Text(

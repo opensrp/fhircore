@@ -47,6 +47,10 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
 
+  private val appConfig by lazy {
+    configurationRegistry.retrieveConfigurations<ApplicationConfiguration>(ConfigType.Application)
+  }
+
   private val syncConfig by lazy {
     configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
   }
@@ -159,6 +163,7 @@ constructor(
           }
       }
 
+    // Set Related Entity Location query params
     Timber.i("SYNC CONFIG $pairs")
 
     return mapOf(*pairs.toTypedArray())

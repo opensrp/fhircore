@@ -37,7 +37,7 @@ class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
     isCancelable = false
     val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
     if (multiSelectViewConfig != null) {
-      multiSelectViewModel.populateLookupMap(multiSelectViewConfig)
+      multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
     }
   }
 
