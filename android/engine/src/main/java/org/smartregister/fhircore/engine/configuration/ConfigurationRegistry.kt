@@ -458,7 +458,7 @@ constructor(
   ): ImplementationGuide? {
     Timber.i("Fetching ImplementationGuide config for app $appId version $version")
 
-    val urlPath = "ImplementationGuide?url=$appId&version=$version"
+    val urlPath = "ImplementationGuide?url=ImplementationGuide/$appId&version=$version"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for ImplementationGuide resource on path $urlPath")
