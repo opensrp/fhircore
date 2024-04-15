@@ -95,7 +95,16 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
+//  @AssistedInject
+//  ConfigSyncWorker(DataFetcher dataFetcher, @Assisted Config config) {
+//  @Assisted appContext: Context,
+//  @Assisted workerParams: WorkerParameters,
+//  val syncListenerManager: SyncListenerManager,
+//  private val openSrpFhirEngine: FhirEngine,
+//  private val appTimeStampContext: AppTimeStampContext,
+//}
   val configSyncWorker: ConfigSyncWorker,
+
   val syncBroadcaster: SyncBroadcaster
 ) {
 
