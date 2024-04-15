@@ -493,7 +493,8 @@ constructor(
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
     val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath)
-    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT).url ?: ""
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url ?: ""
+
     processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     if (nextPageUrl.isNotEmpty()) {
