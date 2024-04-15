@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
-import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
-class SummaryBottomSheetFragment : BottomSheetDialogFragment() {
+class SummaryBottomSheetFragment(private val summaryBottomSheetConfig: SummaryBottomSheetConfig) :
+    BottomSheetDialogFragment() {
 
 
     override fun onCreateView(
@@ -22,8 +21,10 @@ class SummaryBottomSheetFragment : BottomSheetDialogFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 AppTheme {
-                    BottomSheetContent(
-                        listImageProperties = arrayListOf(ImageProperties())
+                    SummaryBottomSheetView(
+                        properties = summaryBottomSheetConfig.bottomSheetView,
+                        resourceData = summaryBottomSheetConfig.resourceData,
+                        navController = findNavController()
                     )
                 }
             }
@@ -31,7 +32,7 @@ class SummaryBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
-        const val TAG = "NavigationBottomSheetTag"
+        const val TAG = "SummaryBottohSheetTag"
     }
 
 }

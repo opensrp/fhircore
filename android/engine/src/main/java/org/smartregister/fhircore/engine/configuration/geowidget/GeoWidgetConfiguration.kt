@@ -21,7 +21,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -40,7 +39,7 @@ data class GeoWidgetConfiguration(
   val showAddLocation: Boolean = false,
   val resourceConfig: FhirResourceConfig,
   val servicePointConfig: ServicePointConfig?, //TODO: Provide defaults
-  val bottomSheetView: List<ViewProperties>// TODO: change the view type
+  val bottomSheetConfig: SummaryBottomSheetConfig?= null
 ) : Configuration()
 
 @Serializable

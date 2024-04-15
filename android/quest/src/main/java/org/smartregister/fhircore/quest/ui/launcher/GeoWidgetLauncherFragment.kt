@@ -192,13 +192,16 @@ class GeoWidgetLauncherFragment : Fragment() {
                 requireContext().showToast("on cancel adding location")
             }
             .setOnClickLocationListener { feature: Feature ->
-                requireContext().showToast("open profile")
-
+                openBottomSheet(feature)
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
             .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
             .build()
+    }
+
+    private fun openBottomSheet(feature: Feature) {
+
     }
 
     private fun setOnQuestionnaireSubmissionListener() {
