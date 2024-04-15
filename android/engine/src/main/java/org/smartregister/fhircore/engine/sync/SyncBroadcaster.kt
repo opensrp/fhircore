@@ -28,8 +28,6 @@ import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
@@ -42,6 +40,8 @@ import kotlinx.coroutines.flow.shareIn
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
@@ -67,6 +67,15 @@ constructor(
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
     Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
+  }
+
+  /**
+   * Run one time sync. The [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]
+   * 's
+   */
+  suspend fun runConfigSync() = coroutineScope {
+    Timber.i("Running one time sync for Configuration...")
+    Sync.oneTimeSync<ConfigSyncWorker>(context).handleOneTimeSyncJobStatus(this)
   }
 
   /**

@@ -22,8 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.UnknownHostException
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -52,6 +50,8 @@ import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSecti
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
+import java.net.UnknownHostException
+import javax.inject.Inject
 
 @HiltViewModel
 class AppSettingViewModel
@@ -184,6 +184,7 @@ constructor(
   }
 
   suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
+    //retrofit
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
@@ -244,6 +245,7 @@ constructor(
   ): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
+    //retrofit call
     resourceIds.forEach {
       val responseBundle =
         fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")

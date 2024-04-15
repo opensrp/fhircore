@@ -25,16 +25,6 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.io.File
-import java.io.FileNotFoundException
-import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
-import java.util.LinkedList
-import java.util.Locale
-import java.util.PropertyResourceBundle
-import java.util.ResourceBundle
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -59,6 +49,9 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.sync.ConfigDownloadManager
+import org.smartregister.fhircore.engine.sync.ConfigSyncWorker
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -79,6 +72,16 @@ import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
 import timber.log.Timber
+import java.io.File
+import java.io.FileNotFoundException
+import java.net.UnknownHostException
+import java.nio.charset.StandardCharsets
+import java.util.LinkedList
+import java.util.Locale
+import java.util.PropertyResourceBundle
+import java.util.ResourceBundle
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConfigurationRegistry
@@ -92,6 +95,8 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
+  val configSyncWorker: ConfigSyncWorker,
+  val syncBroadcaster: SyncBroadcaster
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -104,6 +109,17 @@ constructor(
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
   private val jsonParser = fhirContext.newJsonParser()
+
+  //val configDownloadManager = ConfigDownloadManager.ConfigDownloadManagerImpl(emptyList())
+//
+//  internal class DownloadConfiguration(
+//    val downloader: Downloader,
+//    val conflictResolver: ConflictResolver,
+//  )
+//
+//  open class ConfigDownloadImpl: com.google.android.fhir.sync.download.Downloader (
+//
+//  )
 
   init {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -278,6 +294,11 @@ constructor(
             }
           if (iconConfigs.isNotEmpty()) {
             val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
+            // retrofit call
+
+            (configSyncWorker.getDownloadWorkManager() as ConfigDownloadManager).setupQueries(listOf("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT"))
+            //configDownloadManager.processResponse()
+            syncBroadcaster.runConfigSync()
             fhirResourceDataSource
               .getResource(
                 "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
@@ -451,6 +472,7 @@ constructor(
     }
   }
 
+//to change
   suspend fun fetchRemoteComposition(appId: String?): Composition? {
     Timber.i("Fetching configs for app $appId")
     val urlPath =
@@ -466,6 +488,7 @@ constructor(
     }
   }
 
+  // change Retrofit
   private suspend fun processCompositionManifestResources(
     resourceType: String,
     resourceIdList: List<String>,
@@ -652,6 +675,7 @@ constructor(
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
     resourceIds.forEach {
+      // retrofit call
       val responseBundle =
         fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")
       responseBundle.let {
@@ -697,6 +721,7 @@ constructor(
                     )
                   val resourceId = listEntryComponent.item.reference.extractLogicalIdUuid()
                   val listResourceUrlPath = "$resourceKey?$ID=$resourceId&_count=$DEFAULT_COUNT"
+                  // retrofit call
                   fhirResourceDataSource.getResource(listResourceUrlPath).entry.forEach {
                     listEntryResourceBundle ->
                     addOrUpdate(listEntryResourceBundle.resource)
