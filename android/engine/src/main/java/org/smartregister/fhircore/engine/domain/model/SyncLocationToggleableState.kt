@@ -22,5 +22,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SyncLocationToggleableState(
   val locationId: String,
-  val toggleableState: ToggleableState
+  val toggleableState: ToggleableState,
 )

@@ -40,17 +40,14 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private lateinit var syncListenerManager: SyncListenerManager
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var configService: ConfigService
 
-  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
-
+  private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var hiltActivityForTest: HiltActivityForTest
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
 
   @Before
   fun setUp() {
@@ -62,6 +59,8 @@ class SyncListenerManagerTest : RobolectricTest() {
         configService = configService,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
+        context = ApplicationProvider.getApplicationContext(),
+        dispatcherProvider = co,
       )
   }
 
