@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
+import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -81,9 +82,12 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.PATIENT_CONDITION_RESOLVED_DISPLAY
 import org.smartregister.fhircore.engine.data.local.DefaultRepository.Companion.SNOMED_SYSTEM
 import org.smartregister.fhircore.engine.domain.model.Code
+import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.FilterCriterionConfig
 import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -936,6 +940,170 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(carePlanSlot)) }
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", carePlanSlot.captured.id)
     Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, carePlanSlot.captured.status)
+  }
+
+  @Test
+  fun testUpdateResources() = runTest {
+    val patient =
+      Patient().apply {
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
+        active = true
+      }
+
+    val carePlan =
+      CarePlan().apply {
+        id = "CarePlan/3e04863c-41cc-47a4-b57e-eb1cc4e00ef8"
+        status = CarePlan.CarePlanStatus.ACTIVE
+        subject = patient.asReference()
+      }
+
+    val resourceConfig =
+      ResourceConfig(
+        id = "carePlan-id",
+        resource = carePlan.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+          ),
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "instantiates-canonical",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "PlanDefinition/cd39380b-2359-4b98-8ab9-df7f90fe9392",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    value = "patientId",
+                  ),
+                ),
+            ),
+          ),
+      )
+
+    fhirEngine.create(patient, carePlan)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "CarePlan.status",
+        value = JsonPrimitive("completed"),
+      )
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as CarePlan
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("3e04863c-41cc-47a4-b57e-eb1cc4e00ef8", captured.logicalId)
+    Assert.assertEquals(CarePlan.CarePlanStatus.COMPLETED, captured.status)
+  }
+
+  @Test
+  fun testUpdateResourcesRecursively() = runTest {
+    val patient =
+      Patient().apply {
+        id = "Patient/6c9553f4-f237-498c-b500-058883841d51"
+        active = true
+      }
+
+    val task =
+      Task().apply {
+        id = "Task/e0bd5cd6-5a36-45c2-8c32-1dac77909179"
+        status = Task.TaskStatus.READY
+        `for` = patient.asReference()
+        executionPeriod.end = Date(java.time.LocalDate.parse("2024-04-03").toEpochDay())
+      }
+
+    val resourceConfig =
+      ResourceConfig(
+        resource = task.resourceType,
+        configRules =
+          listOf(
+            RuleConfig(
+              name = "patientId",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id'))",
+                ),
+            ),
+            RuleConfig(
+              name = "taskEnd",
+              condition = "true",
+              actions =
+                listOf(
+                  "data.put('taskEnd', fhirPath.extractValue(Task, 'Task.executionPeriod.end'))",
+                ),
+            ),
+          ),
+        dataQueries =
+          listOf(
+            DataQuery(
+              paramName = "subject",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.ReferenceFilterCriterionConfig(
+                    dataType = Enumerations.DataType.REFERENCE,
+                    computedRule = "patientId",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "period",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.DateFilterCriterionConfig(
+                    dataType = Enumerations.DataType.DATETIME,
+                    valueAsDateTime = true,
+                    computedRule = "2024-04-03",
+                    value = "2024-04-03",
+                    prefix = ParamPrefixEnum.LESSTHAN,
+                  ),
+                ),
+            ),
+          ),
+      )
+
+    fhirEngine.create(patient, task)
+
+    val updatedValues =
+      UpdateWorkflowValueConfig(
+        jsonPathExpression = "Task.status",
+        value = JsonPrimitive("completed"),
+      )
+
+    val eventWorkflow = EventWorkflow(updateValues = listOf(updatedValues))
+    defaultRepository.updateResourcesRecursively(
+      resourceConfig = resourceConfig,
+      subject = patient,
+      eventWorkflow = eventWorkflow,
+    )
+
+    val resourceSlot = slot<Resource>()
+    val captured = resourceSlot.captured as Task
+    coVerify { fhirEngine.update(capture(resourceSlot)) }
+    Assert.assertEquals("e0bd5cd6-5a36-45c2-8c32-1dac77909179", captured.id)
+    Assert.assertEquals(Task.TaskStatus.COMPLETED, captured.status)
   }
 
   @Test
