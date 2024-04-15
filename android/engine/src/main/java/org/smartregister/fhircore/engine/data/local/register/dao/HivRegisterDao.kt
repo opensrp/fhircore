@@ -171,7 +171,7 @@ constructor(
         carePlan
           ?.activity
           ?.filter { it.shouldShowOnProfile() }
-          ?.sortedBy { it.detail.code.text.toBigIntegerOrNull() } ?: listOf(),
+          ?.sortedWith(compareBy(nullsLast()) { it?.detail?.code?.text?.toBigIntegerOrNull() }) ?: listOf(),
       conditions = patient.activeConditions(),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
