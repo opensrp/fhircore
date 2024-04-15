@@ -95,7 +95,7 @@ constructor(
                 }
                 if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
                     val feature = Feature(
-                        id = location.id,
+                        id = location.idElement.idPart,
                         geometry = Geometry(
                             coordinates = arrayListOf(
                                 Coordinates(
