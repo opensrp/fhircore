@@ -53,6 +53,8 @@ import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
 
+typealias QuestBuildConfig = org.smartregister.fhircore.quest.BuildConfig
+
 @HiltViewModel
 class AppSettingViewModel
 @Inject
@@ -93,30 +95,38 @@ constructor(
     if (!appId.isNullOrEmpty()) {
       when {
         hasDebugSuffix() -> loadConfigurations(context)
-        else -> fetchRemoteConfigurations(appId, context)
+        else -> fetchRemoteConfigurations(appId, QuestBuildConfig.VERSION_NAME, context)
       }
     }
   }
 
-  private fun fetchRemoteConfigurations(appId: String?, context: Context) {
+  private fun fetchRemoteConfigurations(appId: String?, appVersion: String?, context: Context) {
     viewModelScope.launch {
       try {
         showProgressBar.postValue(true)
-        Timber.i("Fetching configs for app $appId")
-        // versionCode hardcoded for testing in zeir stage
+
+        Timber.i("Fetching configs for app $appId version $appVersion")
+
         var compositionResource: Composition? = null
         try {
-          val implementationGuide = configurationRegistry.fetchRemoteImplementationGuide("2")
+          val implementationGuide =
+            configurationRegistry.fetchRemoteImplementationGuide(appId, appVersion)
 
           compositionResource =
             if (implementationGuide != null) {
-              // assume Composition is the only resource
-              val compositionVersion =
+              val compositionReference =
                 implementationGuide.definition.resource[0].reference.reference
-              configurationRegistry.fetchRemoteCompositionByVersion(appId, compositionVersion)
+
+              val compositionIdWithHistory = compositionReference?.substringAfter('/')
+              val compositionId = compositionIdWithHistory?.substringBefore('/')
+              val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
+
+              withContext(dispatcherProvider.io()) {
+                configurationRegistry.fetchRemoteCompositionById(compositionId, compositionVersion)
+              }
             } else {
               withContext(dispatcherProvider.io()) {
-                configurationRegistry.fetchRemoteComposition(appId)
+                configurationRegistry.fetchRemoteCompositionByAppId(appId)
               }
             }
         } catch (e: Exception) {

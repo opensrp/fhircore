@@ -405,7 +405,7 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-      val compositionResource = fetchRemoteComposition(parsedAppId)
+      val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
       compositionResource?.let { composition ->
         composition
           .retrieveCompositionSections()
@@ -452,44 +452,13 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteComposition(appId: String?): Composition? {
-    Timber.i("Fetching configs for app $appId")
-    val urlPath =
-      "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
-
-    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
-      if (!it.hasResource()) {
-        Timber.w("No response for composition resource on path $urlPath")
-        return null
-      }
-
-      it.resource as Composition
-    }
-  }
-
-  suspend fun fetchRemoteCompositionByVersion(
+  suspend fun fetchRemoteImplementationGuide(
     appId: String?,
-    compositionVersion: String?,
-  ): Composition? {
-    Timber.i("Fetching configs for app $appId with composition version $compositionVersion")
-    var compositionHistory = "/_history/$compositionVersion"
+    version: String?,
+  ): ImplementationGuide? {
+    Timber.i("Fetching ImplementationGuide config for app $appId version $version")
 
-    val urlPath =
-      "${ResourceType.Composition.name}$compositionHistory?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
-
-    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
-      if (!it.hasResource()) {
-        Timber.w("No response for composition resource on path $urlPath")
-        return null
-      }
-
-      it.resource as Composition
-    }
-  }
-
-  suspend fun fetchRemoteImplementationGuide(versionCode: String?): ImplementationGuide? {
-    Timber.i("Fetching implementationGuide for app")
-    val urlPath = "ImplementationGuide?version=$versionCode"
+    val urlPath = "ImplementationGuide?url=$appId&version=$version"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for ImplementationGuide resource on path $urlPath")
@@ -497,6 +466,35 @@ constructor(
       }
 
       it.resource as ImplementationGuide
+    }
+  }
+
+  suspend fun fetchRemoteCompositionById(
+    id: String?,
+    version: String?,
+  ): Composition? {
+    Timber.i("Fetching Composition config id $id version $version")
+    val urlPath = "Composition/$id/_history/$version"
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
+    }
+  }
+
+  suspend fun fetchRemoteCompositionByAppId(appId: String?): Composition? {
+    Timber.i("Fetching Composition config for app $appId")
+    val urlPath = "Composition?identifier=$appId&_count=$DEFAULT_COUNT"
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
     }
   }
 
