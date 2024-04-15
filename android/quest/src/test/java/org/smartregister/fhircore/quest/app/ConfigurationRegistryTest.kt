@@ -137,8 +137,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
       implementationGuide
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns
-      composition
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"

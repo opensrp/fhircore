@@ -74,7 +74,6 @@ import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
-import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -468,8 +467,10 @@ constructor(
     }
   }
 
-
-  suspend fun fetchRemoteCompositionByVersion(appId: String?, compositionVersion:String?): Composition? {
+  suspend fun fetchRemoteCompositionByVersion(
+    appId: String?,
+    compositionVersion: String?,
+  ): Composition? {
     Timber.i("Fetching configs for app $appId with composition version $compositionVersion")
     var compositionHistory = "/_history/$compositionVersion"
 
@@ -486,8 +487,7 @@ constructor(
     }
   }
 
-  suspend fun fetchRemoteImplementationGuide(versionCode: String?): ImplementationGuide?{
-
+  suspend fun fetchRemoteImplementationGuide(versionCode: String?): ImplementationGuide? {
     Timber.i("Fetching implementationGuide for app")
     val urlPath = "ImplementationGuide?version=$versionCode"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
@@ -498,8 +498,6 @@ constructor(
 
       it.resource as ImplementationGuide
     }
-
-
   }
 
   private suspend fun processCompositionManifestResources(
