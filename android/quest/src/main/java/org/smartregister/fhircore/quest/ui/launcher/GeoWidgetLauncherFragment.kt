@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -191,8 +192,9 @@ class GeoWidgetLauncherFragment : Fragment() {
             .setOnCancelAddingLocationListener {
                 requireContext().showToast("on cancel adding location")
             }
-            .setOnClickLocationListener { feature: Feature ->
-                openBottomSheet(feature)
+            .setOnClickLocationListener { feature: Feature, repositoryResourceData : RepositoryResourceData ->
+                //open bottom sheet directly here
+                ope
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
@@ -201,7 +203,7 @@ class GeoWidgetLauncherFragment : Fragment() {
     }
 
     private fun openBottomSheet(feature: Feature) {
-
+        geoWidgetConfiguration.summaryBottomSheetConfig.rules
     }
 
     private fun setOnQuestionnaireSubmissionListener() {

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.smartregister.fhircore.engine.configuration.geowidget.SummaryBottomSheetConfig
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 
 class SummaryBottomSheetFragment(private val summaryBottomSheetConfig: SummaryBottomSheetConfig) :
@@ -22,8 +23,8 @@ class SummaryBottomSheetFragment(private val summaryBottomSheetConfig: SummaryBo
             setContent {
                 AppTheme {
                     SummaryBottomSheetView(
-                        properties = summaryBottomSheetConfig.bottomSheetView,
-                        resourceData = summaryBottomSheetConfig.resourceData,
+                        properties = summaryBottomSheetConfig.views,
+                        resourceData = summaryBottomSheetConfig,
                         navController = findNavController()
                     )
                 }

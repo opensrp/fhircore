@@ -111,7 +111,7 @@
 
         <argument
             android:name="summaryBottomSheetConfig"
-            app:argType="org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetConfig"
+            app:argType="org.smartregister.fhircore.engine.configuration.geowidget.SummaryBottomSheetConfig"
             app:nullable="true" />
     </dialog>
 

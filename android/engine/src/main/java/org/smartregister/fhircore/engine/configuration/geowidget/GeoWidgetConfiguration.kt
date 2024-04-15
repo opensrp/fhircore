@@ -39,9 +39,10 @@ data class GeoWidgetConfiguration(
   val showAddLocation: Boolean = false,
   val resourceConfig: FhirResourceConfig,
   val servicePointConfig: ServicePointConfig?, //TODO: Provide defaults
-  val bottomSheetConfig: SummaryBottomSheetConfig?= null
+  val summaryBottomSheetConfig: SummaryBottomSheetConfig?= null
 ) : Configuration()
 
+//fixme - move it to engine,
 @Serializable
 enum class MapLayer {
   STREET,
@@ -51,6 +52,8 @@ enum class MapLayer {
 @Serializable
 data class MapLayerConfig(val pair: Pair<MapLayer, Boolean>)
 
+
+//fixme - move it to Engine, domain -> model package.
 @Serializable
 data class TopScreenSectionConfig(
   val searchBar: RegisterContentConfig?,
