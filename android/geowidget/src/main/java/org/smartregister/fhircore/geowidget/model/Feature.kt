@@ -25,7 +25,7 @@ data class Feature(
 )
 
 data class Geometry(
-  val coordinates : Coordinates?,
+  val coordinates : List<Coordinates>? = emptyList(),
   val type: String = "Point"
 )
 

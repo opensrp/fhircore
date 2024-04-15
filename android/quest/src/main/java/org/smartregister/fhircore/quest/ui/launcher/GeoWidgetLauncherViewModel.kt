@@ -46,7 +46,6 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -98,9 +97,11 @@ constructor(
                     val feature = Feature(
                         id = location.id,
                         geometry = Geometry(
-                            coordinates = Coordinates(
-                                latitude = location.position.latitude.toDouble(),
-                                longitude = location.position.longitude.toDouble()
+                            coordinates = arrayListOf(
+                                Coordinates(
+                                    latitude = location.position.latitude.toDouble(),
+                                    longitude = location.position.longitude.toDouble()
+                                )
                             )
                         ),
                         properties = servicePointProperties
@@ -119,7 +120,6 @@ constructor(
     }
 
     private fun addLocationToFlow(location: Feature) {
-        Timber.i("Location position lat: ${location.geometry?.coordinates?.latitude} and long: ${location.geometry?.coordinates?.longitude}")
         _locationsFlow.value = _locationsFlow.value + location
     }
 
@@ -136,9 +136,11 @@ constructor(
         val feature = Feature(
             id = location.id,
             geometry = Geometry(
-                coordinates = Coordinates(
-                    latitude = location.position.latitude.toDouble(),
-                    longitude = location.position.longitude.toDouble(),
+                coordinates = listOf(
+                    Coordinates(
+                        latitude = location.position.latitude.toDouble(),
+                        longitude = location.position.longitude.toDouble(),
+                    )
                 )
             ),
             // TODO: add initial color for location
@@ -152,8 +154,8 @@ constructor(
         context: Context,
     ) {
         val params = addMatchingCoordinatesToActionParameters(
-            feature.geometry?.coordinates?.latitude,
-            feature.geometry?.coordinates?.longitude,
+            feature.geometry?.coordinates?.get(0)?.latitude!!,
+            feature.geometry?.coordinates?.get(0)?.longitude,
             questionnaireConfig.extraParams
         )
         if (context is QuestionnaireHandler) {
