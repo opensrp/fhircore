@@ -60,6 +60,7 @@ import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
+import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
 import timber.log.Timber
 import java.util.LinkedList
 
@@ -198,24 +199,27 @@ class GeoWidgetFragment : Fragment() {
     private fun setOnClickLocationListener(mapView: KujakuMapView) {
         mapView.setOnFeatureClickListener(
             { featuresList ->
-                val feature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
-                if (feature.geometry() !is Point) {
+                val mapBoxFeature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
+                if (mapBoxFeature.geometry() !is Point) {
                     Timber.w("Only feature geometry of type Point is supported!")
                     return@setOnFeatureClickListener
                 }
 
-                val point = (feature.geometry() as Point)
-                val geoWidgetLocation = Feature(
-                    id = feature.getStringProperty("id") ?: "",
+                val point = (mapBoxFeature.geometry() as Point)
+                val feature = Feature(
+                    id = mapBoxFeature.id() ?: "",
                     geometry = Geometry(
-                        coordinates = Coordinates(
-                            latitude = point.latitude(),
-                            longitude = point.longitude()
+                        coordinates = listOf(
+                            Coordinates(
+                                latitude = point.latitude(),
+                                longitude = point.longitude()
+                            )
                         )
                     ),
+                    properties = mapBoxFeature.properties()?.asMap()?.featureProperties()!!
                 )
 
-                onClickLocationCallback(geoWidgetLocation)
+                onClickLocationCallback(feature)
             },
             "quest-data-points",
         )
