@@ -103,10 +103,25 @@ constructor(
       try {
         showProgressBar.postValue(true)
         Timber.i("Fetching configs for app $appId")
-        val compositionResource =
-          withContext(dispatcherProvider.io()) {
-            configurationRegistry.fetchRemoteCompositionByAppId(appId)
+        // versionCode hardcoded for testing in zeir stage
+        var compositionResource: Composition? = null
+        try {
+          val implementationGuide = configurationRegistry.fetchRemoteImplementationGuide("2")
+
+          compositionResource = if(implementationGuide!=null){
+            // assume Composition is the only resource
+            val compositionVersion = implementationGuide.definition.resource[0].reference.reference
+            configurationRegistry.fetchRemoteCompositionByVersion(appId, compositionVersion)
+
+          } else {
+            withContext(dispatcherProvider.io()) {
+              configurationRegistry.fetchRemoteComposition(appId)
+            }
           }
+        } catch (e: Exception){
+          Timber.e(e)
+        }
+
 
         if (compositionResource == null) {
           showProgressBar.postValue(false)

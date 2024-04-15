@@ -137,7 +137,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
       implementationGuide
-    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any(), any()) } returns
+    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns
       composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
@@ -184,7 +184,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
       implementationGuide
-    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any(), any()) } returns
+    coEvery { configurationRegistry.fetchRemoteCompositionWiByVersion(any(), any()) } returns
       composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
@@ -234,7 +234,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
     coEvery { configurationRegistry.fetchRemoteImplementationGuide(any()) } returns
       implementationGuide
-    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any(), any()) } returns
+    coEvery { configurationRegistry.fetchRemoteCompositionWiByVersion(any(), any()) } returns
       composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(

@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
 import org.hl7.fhir.r4.model.Resource
@@ -465,6 +466,40 @@ constructor(
 
       it.resource as Composition
     }
+  }
+
+
+  suspend fun fetchRemoteCompositionByVersion(appId: String?, compositionVersion:String?): Composition? {
+    Timber.i("Fetching configs for app $appId with composition version $compositionVersion")
+    var compositionHistory = "/_history/$compositionVersion"
+
+    val urlPath =
+      "${ResourceType.Composition.name}$compositionHistory?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
+
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for composition resource on path $urlPath")
+        return null
+      }
+
+      it.resource as Composition
+    }
+  }
+
+  suspend fun fetchRemoteImplementationGuide(versionCode: String?): ImplementationGuide?{
+
+    Timber.i("Fetching implementationGuide for app")
+    val urlPath = "ImplementationGuide?version=$versionCode"
+    return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
+      if (!it.hasResource()) {
+        Timber.w("No response for ImplementationGuide resource on path $urlPath")
+        return null
+      }
+
+      it.resource as ImplementationGuide
+    }
+
+
   }
 
   private suspend fun processCompositionManifestResources(
