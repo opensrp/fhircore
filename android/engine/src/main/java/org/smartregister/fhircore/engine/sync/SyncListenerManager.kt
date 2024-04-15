@@ -24,6 +24,7 @@ import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -163,4 +164,5 @@ constructor(
 
     return mapOf(*pairs.toTypedArray())
   }
+
 }

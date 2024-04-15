@@ -27,6 +27,7 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import org.hl7.fhir.r4.model.ResourceType
 
 @HiltWorker
 class ConfigSyncWorker
@@ -34,7 +35,6 @@ class ConfigSyncWorker
 constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val syncListenerManager: SyncListenerManager,
   private val openSrpFhirEngine: FhirEngine,
   private val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
@@ -42,12 +42,29 @@ constructor(
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
-    ConfigDownloadManager(
-      syncParams = syncListenerManager.loadSyncParams(),
+    OpenSrpDownloadManager(
+      syncParams = loadConfigSyncParams(),
       context = appTimeStampContext,
     )
 
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
+
+
+
+  fun loadConfigSyncParams(): Map<ResourceType, Map<String, String>> {
+
+    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+
+    pairs.add(
+      Pair(
+        ResourceType.StructureMap,
+        mapOf("_count" to "37"),
+      ),
+    )
+
+    // GET /StructureMap?_count=37
+    return mapOf(*pairs.toTypedArray())
+  }
 }

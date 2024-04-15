@@ -103,7 +103,6 @@ constructor(
 //  private val openSrpFhirEngine: FhirEngine,
 //  private val appTimeStampContext: AppTimeStampContext,
 //}
-  val configSyncWorker: ConfigSyncWorker,
 
   val syncBroadcaster: SyncBroadcaster
 ) {
@@ -305,7 +304,7 @@ constructor(
             val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
             // retrofit call
 
-            (configSyncWorker.getDownloadWorkManager() as ConfigDownloadManager).setupQueries(listOf("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT"))
+           // (configSyncWorker.getDownloadWorkManager() as ConfigDownloadManager).setupQueries(listOf("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT"))
             //configDownloadManager.processResponse()
             syncBroadcaster.runConfigSync()
             fhirResourceDataSource
@@ -429,6 +428,9 @@ constructor(
    */
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
+    Timber.d("####### running config sync")
+    syncBroadcaster.runConfigSync()
+
     // Reset configurations before loading new ones
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
