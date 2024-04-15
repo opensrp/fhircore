@@ -1,8 +1,8 @@
 {
   "resourceType": "ImplementationGuide",
   "id": "12967310",
-  "url": "ImplementationGuide/fd76e175-a68a-436c-896e-e825a3970d2a",
-  "version": "0",
+  "url": "ImplementationGuide/quest",
+  "version": "1.1.0",
   "name": "quest",
   "title": "Quest Implementation Guide",
   "status": "draft",
