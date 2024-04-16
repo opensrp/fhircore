@@ -132,6 +132,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       lifecycleScope.launch {
         retrieveAppMainUiState()
         if (isDeviceOnline()) {
+          // TODO do not schedule sync until location selected when strategy is
+          // RelatedEntityLocation (for EUSM)
+          // TODO use applicationConfiguration.usePractitionerAssignedLocationOnSync
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         } else {
           showToast(
