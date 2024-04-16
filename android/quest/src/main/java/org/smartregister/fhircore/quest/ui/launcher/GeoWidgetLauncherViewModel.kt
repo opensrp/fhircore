@@ -71,6 +71,8 @@ constructor(
     // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
     private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
         viewModelScope.launch(dispatcherProvider.io()) {
+            // TODO: Loading all the data with the related resources may impact performance. This
+            //  needs to be refactored in future
             val repositoryResourceDataList =
                 defaultRepository
                     .searchResourcesRecursively(

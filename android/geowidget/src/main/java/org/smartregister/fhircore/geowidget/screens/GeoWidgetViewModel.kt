@@ -37,7 +37,7 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     MutableStateFlow(setOf())
   val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
 
-  fun addLocationToMap(feature: Feature) {
+  private fun addLocationToMap(feature: Feature) {
       try {
           val jsonFeature =
               JSONObject().apply {
@@ -48,7 +48,7 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
                   put("serverVersion", feature.serverVersion)
               }
           val mapBoxfeature = com.mapbox.geojson.Feature.fromJson(jsonFeature.toString())
-          _featuresFlow.value = _featuresFlow.value + mapBoxfeature
+          _featuresFlow.value += mapBoxfeature
       } catch (e:Exception) {
           Timber.e(e)
       }
