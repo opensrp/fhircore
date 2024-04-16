@@ -1211,7 +1211,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       assertTrue(
         resource.meta?.tag?.any {
           it.system == "https://smartregister.org/related-entity-location-tag-id"
-        } ?: false
+        } ?: false,
       )
     }
   }
