@@ -321,7 +321,6 @@ class Builder {
     private var mapLayers : List<MapLayerConfig> = ArrayList()
     private var shouldLocationButtonShow : Boolean = true
     private var shouldPlaneSwitcherButtonShow : Boolean = true
-    private var onStyleLoadedCallback : Boolean = true
     fun setOnAddLocationListener(onAddLocationCallback: (Feature) -> Unit) = apply {
         this.onAddLocationCallback = onAddLocationCallback
     }
