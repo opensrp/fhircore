@@ -21,7 +21,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,23 +32,21 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
+import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
-import org.smartregister.fhircore.geowidget.model.Position
-import org.smartregister.fhircore.quest.ui.register.RegisterEvent
+import org.smartregister.fhircore.engine.util.extension.interpolate
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import timber.log.Timber
 import javax.inject.Inject
-import kotlin.math.ceil
-
-const val PAGE_SIZE = 20
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -58,56 +55,73 @@ constructor(
     val defaultRepository: DefaultRepository,
     val dispatcherProvider: DispatcherProvider,
     val sharedPreferencesHelper: SharedPreferencesHelper,
+    val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
 
     private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
     val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
-    private val _locationsFlow: MutableStateFlow<Set<GeoWidgetLocation>> =
+    private val _locationsFlow: MutableStateFlow<Set<Feature>> =
         MutableStateFlow(setOf())
-    val locationsFlow: StateFlow<Set<GeoWidgetLocation>> = _locationsFlow
+    val locationsFlow: StateFlow<Set<Feature>> = _locationsFlow
 
     private val _locationDialog = MutableLiveData<String>()
     val locationDialog: LiveData<String> get() = _locationDialog
 
     // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
-    private fun retrieveLocations() {
+    private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
         viewModelScope.launch(dispatcherProvider.io()) {
-            val totalResource = defaultRepository.count(Search(ResourceType.Location))
+            // TODO: Loading all the data with the related resources may impact performance. This
+            //  needs to be refactored in future
+            val repositoryResourceDataList =
+                defaultRepository
+                    .searchResourcesRecursively(
+                        filterActiveResources = null,
+                        fhirResourceConfig = geoWidgetConfig.resourceConfig,
+                        configRules = null,
+                        secondaryResourceConfigs = null,
+                    )
 
-            val totalIteration = ceil(totalResource / PAGE_SIZE.toDouble()).toInt()
+            repositoryResourceDataList.forEach { repositoryResourceData ->
+                val location = repositoryResourceData.resource as Location
+                val resourceData =
+                    resourceDataRulesExecutor
+                        .processResourceData(
+                            repositoryResourceData = repositoryResourceData,
+                            ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
+                            params = emptyMap(),
+                        )
+                val servicePointProperties = mutableMapOf<String, Any>()
+                geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+                    servicePointProperties[key] = value.interpolate(resourceData.computedValuesMap)
+                }
+                if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
+                    val feature = Feature(
+                        id = location.idElement.idPart,
+                        geometry = Geometry(
+                            coordinates = arrayListOf(
+                                Coordinates(
+                                    latitude = location.position.latitude.toDouble(),
+                                    longitude = location.position.longitude.toDouble()
+                                )
+                            )
+                        ),
+                        properties = servicePointProperties
+                    )
+                    addLocationToFlow(feature)
+                }
+            }
+        }
+    }
 
-            repeat(totalIteration) { index ->
-                val startingIndex = index * PAGE_SIZE
-                val search = Search(ResourceType.Location, PAGE_SIZE, startingIndex)
-
-              defaultRepository.search<Location>(search).forEach { location ->
-                  if (location.hasPosition() && location.position.hasLatitude() && location.position.hasLongitude()) {
-                      val geoWidgetLocation = GeoWidgetLocation(
-                          id = location.id,
-                          name = location.name ?: "",
-                          position = Position(
-                              location.position.latitude.toDouble(),
-                              location.position.longitude.toDouble()
-                          ),
-                          // TODO: add logic to decide the color of location
-                      )
-                      addLocationToFlow(geoWidgetLocation)
-                  }
-              }
-          }
-      }
-  }
-
-    fun checkSelectedLocation() {
+    fun checkSelectedLocation(configuration: GeoWidgetConfiguration) {
         //check preference if location/region is already selected otherwise show dialog to select location
         //through Location Selector Feature/Screen
         //todo - for now we are calling this method, once location Selector is developed, we can remove this line
-        retrieveLocations()
+        retrieveLocations(configuration)
     }
 
-    private fun addLocationToFlow(location: GeoWidgetLocation) {
-        Timber.i("Location position lat: ${location.position?.latitude} and long: ${location.position?.longitude}")
+    private fun addLocationToFlow(location: Feature) {
         _locationsFlow.value = _locationsFlow.value + location
     }
 
@@ -121,26 +135,29 @@ constructor(
                 ?: return
         val location = getLocationFromDb(locationId.valueAsString) ?: return
 
-        val geoWidgetLocation = GeoWidgetLocation(
+        val feature = Feature(
             id = location.id,
-            name = location.name,
-            position = Position(
-                latitude = location.position.latitude.toDouble(),
-                longitude = location.position.longitude.toDouble(),
+            geometry = Geometry(
+                coordinates = listOf(
+                    Coordinates(
+                        latitude = location.position.latitude.toDouble(),
+                        longitude = location.position.longitude.toDouble(),
+                    )
+                )
             ),
             // TODO: add initial color for location
         )
-        addLocationToFlow(geoWidgetLocation)
+        addLocationToFlow(feature)
     }
 
     fun launchQuestionnaire(
         questionnaireConfig: QuestionnaireConfig,
-        geoWidgetLocation: GeoWidgetLocation,
+        feature: Feature,
         context: Context,
     ) {
         val params = addMatchingCoordinatesToActionParameters(
-            geoWidgetLocation.position?.latitude,
-            geoWidgetLocation.position?.longitude,
+            feature.geometry?.coordinates?.get(0)?.latitude!!,
+            feature.geometry?.coordinates?.get(0)?.longitude,
             questionnaireConfig.extraParams
         )
         if (context is QuestionnaireHandler) {
@@ -154,11 +171,11 @@ constructor(
 
     fun onEvent(event: GeoWidgetEvent) =
         when (event) {
-        is GeoWidgetEvent.SearchServicePoints -> {
-            //TODO: here the search bar query will be processed
-            ""
+            is GeoWidgetEvent.SearchServicePoints -> {
+                //TODO: here the search bar query will be processed
+                ""
+            }
         }
-    }
 
     /** Adds coordinates into the correct action parameter as [ActionParameter.value] if the [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. **/
     private fun addMatchingCoordinatesToActionParameters(
@@ -174,7 +191,7 @@ constructor(
             .filter {
                 it.paramType == ActionParameterType.PREPOPULATE && it.dataType == Enumerations.DataType.STRING
             }.map {
-                return@map when(it.key) {
+                return@map when (it.key) {
                     KEY_LATITUDE -> it.copy(value = latitude.toString())
                     KEY_LONGITUDE -> it.copy(value = longitude.toString())
                     else -> it

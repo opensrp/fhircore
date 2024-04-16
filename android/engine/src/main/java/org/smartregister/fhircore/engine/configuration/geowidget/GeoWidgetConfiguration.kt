@@ -22,8 +22,10 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.RuleConfig
 
 @Serializable
 data class GeoWidgetConfiguration(
@@ -37,7 +39,9 @@ data class GeoWidgetConfiguration(
   val shouldShowLocationButton: Boolean = false,
   val shouldShowPlaneSwitcherButton: Boolean = false,
   val shouldShowAddLocationButton: Boolean = false,
-  val resourceConfig: FhirResourceConfig? = null
+  val resourceConfig: FhirResourceConfig,
+  val servicePointConfig: ServicePointConfig?,
+  val bottomSheetView: List<ViewProperties>// TODO: change the view type
 ) : Configuration()
 
 //TODO : would need to change the type of class to use in the configuration
@@ -55,4 +59,10 @@ data class TopScreenSection(
   val screenTitle: String,
   val toggleIconConfig: ImageConfig,
   val showToggleButton: Boolean? = false
+)
+
+@Serializable
+data class ServicePointConfig(
+  val rules: List<RuleConfig> = emptyList(),
+  val servicePointProperties: Map<String, String> = emptyMap()
 )

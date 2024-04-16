@@ -12,7 +12,7 @@
             android:name="geoWidgetId"
             app:argType="string"
             app:nullable="true"
-            android:defaultValue="householdRegistrationMap"/>
+            android:defaultValue="locationMap"/>
         <argument
             android:name="toolBarHomeNavigation"
             android:defaultValue="OPEN_DRAWER"

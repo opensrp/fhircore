@@ -53,7 +53,7 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
@@ -171,26 +171,27 @@ class GeoWidgetLauncherFragment : Fragment() {
         showSetLocationDialog()
         setOnQuestionnaireSubmissionListener()
         setLocationFromDbCollector()
-        geoWidgetLauncherViewModel.checkSelectedLocation()
+        geoWidgetLauncherViewModel.checkSelectedLocation(geoWidgetConfiguration)
         Timber.i("GeoWidgetLauncherFragment onViewCreated")
     }
 
     private fun buildGeoWidgetFragment() {
         geoWidgetFragment = GeoWidgetFragment.builder()
             .setUseGpsOnAddingLocation(false)
-            .setOnAddLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-                if (geoWidgetLocation.position == null) return@setOnAddLocationListener
+            .setOnAddLocationListener { feature: Feature ->
+                if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
                 geoWidgetLauncherViewModel.launchQuestionnaire(
                     geoWidgetConfiguration.registrationQuestionnaire,
-                    geoWidgetLocation,
+                    feature,
                     activity?.tryUnwrapContext() as Context,
                 )
             }
             .setOnCancelAddingLocationListener {
                 requireContext().showToast("on cancel adding location")
             }
-            .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
+            .setOnClickLocationListener { feature: Feature ->
                 requireContext().showToast("open profile")
+
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.shouldShowLocationButton)

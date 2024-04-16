@@ -16,23 +16,66 @@
 
 package org.smartregister.fhircore.geowidget.util.extensions
 
+import com.google.gson.JsonElement
 import org.json.JSONArray
 import org.json.JSONObject
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
-import org.smartregister.fhircore.geowidget.model.Position
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 
-fun GeoWidgetLocation.getGeoJsonGeometry(): JSONObject {
-  position ?: return JSONObject()
+fun Feature.getGeoJsonGeometry(): JSONObject {
+    geometry ?: return JSONObject()
 
-  val geometry = JSONObject()
+    val geometryObject = JSONObject()
 
-  geometry.put("type", "Point")
-  geometry.put("coordinates", JSONArray(arrayOf(position.longitude, position.latitude)))
-  return geometry
+    /* TODO: Currently Geometry only supports type @Point. Point Geometry has coordinates with a JSONArray
+        having only 2 double values whereas any other Type has a different structure having JSONArray
+        with an Array of elements. See below examples
+        Point: {"geometry": { "type": "Point", "coordinates": [ 45.487, -25.208]}}
+        LineString: {"geometry": {"type": "LineString", "coordinates": [ [717, 1246.3812 ], [703.1146]]}}
+    */
+    geometryObject.put("type", geometry.type)
+    geometryObject.put(
+        "coordinates",
+        JSONArray(
+            arrayOf(
+                geometry.coordinates?.get(0)?.longitude,
+                geometry.coordinates?.get(0)?.latitude
+            )
+        )
+    )
+    return geometryObject
 }
 
-fun JSONObject.position(): Position? {
-  return optJSONObject("geometry")?.run {
-    optJSONArray("coordinates")?.run { Position(optDouble(0), optDouble(1)) }
-  }
+fun JSONObject.geometry(): Geometry? {
+    return optJSONObject("geometry")?.run {
+        optJSONArray("coordinates")?.run {
+            Geometry(
+                listOf(
+                    Coordinates(
+                        optDouble(0),
+                        optDouble(1)
+                    )
+                )
+            )
+        }
+    }
+}
+
+fun Map<String, JsonElement>.featureProperties(): Map<String, Any> {
+    val properties = hashMapOf<String, Any>()
+    forEach { (key, value) ->
+        properties[key] = value.asString
+    }
+    return properties
+}
+
+fun Feature.getProperties(): JSONObject {
+    properties ?: return JSONObject()
+
+    val propertiesObject = JSONObject()
+    properties.forEach { key, value ->
+        propertiesObject.put(key, value)
+    }
+    return propertiesObject
 }
