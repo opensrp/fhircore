@@ -63,13 +63,6 @@ import org.smartregister.fhircore.geowidget.model.TYPE
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
-import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.Feature
-import org.smartregister.fhircore.geowidget.model.Geometry
-import org.smartregister.fhircore.geowidget.model.ServicePointType
-import org.smartregister.fhircore.geowidget.util.ResourceUtils
-import org.smartregister.fhircore.geowidget.util.extensions.geometry
-import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
 import timber.log.Timber
 import java.util.LinkedList
 
@@ -308,10 +301,6 @@ class GeoWidgetFragment : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         mapView.onSaveInstanceState(outState)
-    }
-
-    fun addLocationToMap(location: Feature) {
-        geoWidgetViewModel.addLocationToMap(location)
     }
 
     fun addLocationsToMap(locations: Set<Feature>) {
