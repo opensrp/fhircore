@@ -69,6 +69,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Type
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -1205,5 +1206,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
     assertEquals(listResource.id, linkId)
+    val resource = listResource.entry.firstOrNull()?.item?.resource
+    if (resource != null) {
+      assertTrue(
+        resource.meta?.tag?.any {
+          it.system == "https://smartregister.org/related-entity-location-tag-id"
+        } ?: false
+      )
+    }
   }
 }
