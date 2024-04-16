@@ -57,6 +57,7 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.model.TYPE
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
@@ -155,7 +156,6 @@ class GeoWidgetFragment : Fragment() {
             icon?.let {
                 mMapboxMapStyle.addImage(key, icon)
                 val symbolLayer = SymbolLayer(
-                    // TODO: Refactor to string constant
                     String.format("%s.layer", key),
                     getString(R.string.data_set_quest)
                 )
@@ -163,10 +163,9 @@ class GeoWidgetFragment : Fragment() {
                     PropertyFactory.iconImage(key), PropertyFactory.iconSize(dynamicIconSize),
                     PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
                 )
-                // TODO: Refactor "type" to string constant
                 symbolLayer.setFilter(
                     Expression.eq(
-                        Expression.get("type"),
+                        Expression.get(TYPE),
                         servicePointType.name.lowercase()
                     )
                 )

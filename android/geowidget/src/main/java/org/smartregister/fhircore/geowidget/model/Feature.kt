@@ -21,15 +21,19 @@ data class Feature(
   val id: String = "",
   val properties: Map<String, Any> = emptyMap(),
   val serverVersion: Int = 0,
-  val type: String = "Feature"
+  val type: String = FEATURE
 )
 
 data class Geometry(
   val coordinates : List<Coordinates>? = emptyList(),
-  val type: String = "Point"
+  val type: String = POINT
 )
 
 data class Coordinates(
   val latitude: Double = 0.0,
   val longitude: Double = 0.0,
 )
+
+const val TYPE = "type"
+const val POINT = "Point"
+const val FEATURE = "Feature"

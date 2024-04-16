@@ -40,7 +40,7 @@ data class GeoWidgetConfiguration(
   val shouldShowPlaneSwitcherButton: Boolean = false,
   val shouldShowAddLocationButton: Boolean = false,
   val resourceConfig: FhirResourceConfig,
-  val servicePointConfig: ServicePointConfig?, //TODO: Provide defaults
+  val servicePointConfig: ServicePointConfig?,
   val bottomSheetView: List<ViewProperties>// TODO: change the view type
 ) : Configuration()
 
