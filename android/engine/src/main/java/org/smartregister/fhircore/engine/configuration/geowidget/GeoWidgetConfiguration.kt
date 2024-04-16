@@ -20,12 +20,10 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
-import org.smartregister.fhircore.engine.configuration.view.ViewProperties
-import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 
 @Serializable
 data class GeoWidgetConfiguration(
@@ -33,39 +31,29 @@ data class GeoWidgetConfiguration(
   override var configType: String = ConfigType.GeoWidget.name,
   val id: String,
   val profileId: String,
-  val topScreenSection: TopScreenSectionConfig?= null,
+  val topScreenSection: TopScreenSectionConfig? = null,
   val registrationQuestionnaire: QuestionnaireConfig,
-  val mapLayers : List<MapLayerConfig> = listOf(MapLayerConfig(Pair(MapLayer.STREET, true))),
+  val mapLayers: List<MapLayerConfig> = listOf(MapLayerConfig(MapLayer.STREET, true)),
   val showLocation: Boolean = false,
   val showPlaneSwitcher: Boolean = false,
   val showAddLocation: Boolean = false,
   val resourceConfig: FhirResourceConfig,
   val servicePointConfig: ServicePointConfig?,
-  val summaryBottomSheetConfig: SummaryBottomSheetConfig?= null,
-  val actions : List<ActionConfig>? = emptyList()
+  val summaryBottomSheetConfig: SummaryBottomSheetConfig? = null,
+  val actions: List<ActionConfig>? = emptyList(),
 ) : Configuration()
 
-//fixme - move it to engine,
 @Serializable
 enum class MapLayer {
   STREET,
   SATELLITE,
-  STREET_SATELLITE
+  STREET_SATELLITE,
 }
-@Serializable
-data class MapLayerConfig(val pair: Pair<MapLayer, Boolean>)
 
-
-//fixme - move it to Engine, domain -> model package.
-@Serializable
-data class TopScreenSectionConfig(
-  val searchBar: RegisterContentConfig?,
-  val title: String,
-  val menuIcons: List<ImageProperties>? = null
-)
+@Serializable data class MapLayerConfig(val layer: MapLayer, val active: Boolean)
 
 @Serializable
 data class ServicePointConfig(
   val rules: List<RuleConfig> = emptyList(),
-  val servicePointProperties: Map<String, String> = emptyMap()
+  val servicePointProperties: Map<String, String> = emptyMap(),
 )

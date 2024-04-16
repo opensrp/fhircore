@@ -54,14 +54,16 @@ sealed class MainNavigationScreen(
       route = org.smartregister.fhircore.quest.R.id.profileFragment,
     )
 
-  object GeoWidgetLauncher : MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment)
+  object GeoWidgetLauncher :
+    MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.geoWidgetLauncherFragment)
 
   object Insight :
     MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
 
   data object SummaryBottomSheetFragment :
     MainNavigationScreen(
-      route = org.smartregister.fhircore.quest.R.id.summaryBottomSheetFragment
+      route = org.smartregister.fhircore.quest.R.id.summaryBottomSheetFragment,
     )
+
   fun eventId(id: String) = route.toString() + "_" + id
 }

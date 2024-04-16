@@ -56,7 +56,4 @@ enum class ApplicationWorkflow {
 
   /** A workflow that copies text to keyboard */
   COPY_TEXT,
-
-  /** A workflow that opens details/summary in a bottomSheetDialogFragment */
-  SUMMARY_BOTTOM_SHEET
 }
