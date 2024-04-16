@@ -91,5 +91,14 @@
         android:id="@+id/userInsightScreenFragment"
         android:name="org.smartregister.fhircore.quest.ui.usersetting.UserInsightScreenFragment"
         android:label="fragment_user_insight_screen"
-        tools:layout="@layout/fragment_user_insight_screen" />
+        />
+
+
+    <dialog
+        android:id="@+id/summaryBottomSheetFragment"
+        android:name="org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment" >
+
+    </dialog>
+
+
 </navigation>

@@ -36,7 +36,6 @@ import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
-
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
 const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
 const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
@@ -46,88 +45,83 @@ const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestT
 
 @Composable
 fun GeoWidgetLauncherScreen(
-    modifier: Modifier = Modifier,
-    openDrawer: (Boolean) -> Unit,
-    onEvent: (GeoWidgetEvent) -> Unit,
-    navController: NavController,
-    toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-    fragmentManager: FragmentManager,
-    fragment: Fragment,
-    geoWidgetConfiguration: GeoWidgetConfiguration
+  modifier: Modifier = Modifier,
+  openDrawer: (Boolean) -> Unit,
+  onEvent: (GeoWidgetEvent) -> Unit,
+  navController: NavController,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  fragmentManager: FragmentManager,
+  fragment: Fragment,
+  geoWidgetConfiguration: GeoWidgetConfiguration,
 ) {
-
-    Scaffold(
-        topBar = {
-            Column {
-                /*
-                * Top section has toolbar and a results counts view
-                * by default isSearchBarVisible is visible
-                * */
-                TopScreenSection(
-                    title = geoWidgetConfiguration.topScreenSection?.screenTitle ?: "",
-                    searchText = "",
-                    filteredRecordsCount = 1,
-                    isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
-                    searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
-                    toolBarHomeNavigation = toolBarHomeNavigation,
-                    onSearchTextChanged = { searchText ->
-                        onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
-                    },
-                    isFilterIconEnabled = false,
-                    topScreenSection = geoWidgetConfiguration.topScreenSection
-                ) { event ->
-                    when (event) {
-                        ToolbarClickEvent.Navigate ->
-                            when (toolBarHomeNavigation) {
-                                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-                                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
-                            }
-
-                        ToolbarClickEvent.FilterData -> {}
-                        ToolbarClickEvent.Toggle -> {
-                            geoWidgetConfiguration.topScreenSection?.toggleAction?.handleClickEvent(
-                                navController = navController
-                            )
-                        }
-                    }
-                }
-
+  Scaffold(
+    topBar = {
+      Column {
+        /*
+         * Top section has toolbar and a results counts view
+         * by default isSearchBarVisible is visible
+         * */
+        TopScreenSection(
+          title = geoWidgetConfiguration.topScreenSection?.title ?: "",
+          searchText = "",
+          filteredRecordsCount = 1,
+          isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
+          searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
+          toolBarHomeNavigation = toolBarHomeNavigation,
+          onSearchTextChanged = { searchText ->
+            onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
+          },
+          isFilterIconEnabled = false,
+          topScreenSection = geoWidgetConfiguration.topScreenSection,
+        ) { event ->
+          when (event) {
+            ToolbarClickEvent.Navigate ->
+              when (toolBarHomeNavigation) {
+                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+              }
+            ToolbarClickEvent.FilterData -> {}
+            ToolbarClickEvent.Toggle -> {
+              // TODO each menu icon should handle their own click events
+              geoWidgetConfiguration.topScreenSection
+                ?.menuIcons
+                ?.first()
+                ?.actions
+                ?.handleClickEvent(
+                  navController = navController,
+                )
             }
+          }
         }
-    ) { innerPadding ->
-        Box(modifier = modifier.padding(innerPadding)) {
-            FragmentContainerView(
-                modifier = modifier,
-                fragmentManager = fragmentManager,
-                fragment = fragment
-            )
-        }
+      }
+    },
+  ) { innerPadding ->
+    Box(modifier = modifier.padding(innerPadding)) {
+      FragmentContainerView(
+        modifier = modifier,
+        fragmentManager = fragmentManager,
+        fragment = fragment,
+      )
     }
+  }
 }
 
 @Composable
 fun FragmentContainerView(
-    modifier: Modifier = Modifier,
-    fragmentManager: FragmentManager,
-    fragment: Fragment
+  modifier: Modifier = Modifier,
+  fragmentManager: FragmentManager,
+  fragment: Fragment,
 ) {
-    val viewId = remember { View.generateViewId() }
-    AndroidView(
-        modifier = modifier,
-        factory = { context ->
-            FrameLayout(context).apply {
-                id = viewId
-            }
-        }
-    )
-    DisposableEffect(fragmentManager, fragment) {
-        val transaction = fragmentManager.beginTransaction()
-        transaction.replace(viewId, fragment)
-        transaction.commitNow()
+  val viewId = remember { View.generateViewId() }
+  AndroidView(
+    modifier = modifier,
+    factory = { context -> FrameLayout(context).apply { id = viewId } },
+  )
+  DisposableEffect(fragmentManager, fragment) {
+    val transaction = fragmentManager.beginTransaction()
+    transaction.replace(viewId, fragment)
+    transaction.commitNow()
 
-        onDispose {
-            fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss()
-        }
-    }
+    onDispose { fragmentManager.beginTransaction().remove(fragment).commitNowAllowingStateLoss() }
+  }
 }
-

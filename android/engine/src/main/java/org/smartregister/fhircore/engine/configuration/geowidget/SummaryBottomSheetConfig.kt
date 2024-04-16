@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.configuration.geowidget
 
-sealed class ToolbarClickEvent {
-  data object FilterData : ToolbarClickEvent()
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 
-  data object Navigate : ToolbarClickEvent()
-
-  data object Toggle : ToolbarClickEvent()
-}
+@Serializable
+@Parcelize
+data class SummaryBottomSheetConfig(val views: List<ViewProperties>? = emptyList()) : Parcelable

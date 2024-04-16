@@ -78,17 +78,17 @@ fun RegisterScreen(
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
   navController: NavController,
-  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
   Scaffold(
     topBar = {
       Column {
-       /*
-       * Top section has toolbar and a results counts view
-       * by default isSearchBarVisible is visible
-       * */
+        /*
+         * Top section has toolbar and a results counts view
+         * by default isSearchBarVisible is visible
+         * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
@@ -102,7 +102,7 @@ fun RegisterScreen(
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
-          topScreenSection = registerUiState.registerConfiguration?.topScreenSection
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -115,9 +115,14 @@ fun RegisterScreen(
               filterActions?.handleClickEvent(navController)
             }
             ToolbarClickEvent.Toggle -> {
-              registerUiState.registerConfiguration?.topScreenSection?.toggleAction?.handleClickEvent(
-                navController = navController
-              )
+              registerUiState.registerConfiguration
+                ?.topScreenSection
+                ?.menuIcons
+                ?.first()
+                ?.actions
+                ?.handleClickEvent(
+                  navController = navController,
+                )
             }
           }
         }

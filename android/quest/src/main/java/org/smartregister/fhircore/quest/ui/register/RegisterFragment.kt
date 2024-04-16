@@ -162,14 +162,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
           ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
-                  openDrawer = openDrawer,
-                  onEvent = registerViewModel::onEvent,
-                  registerUiState = registerViewModel.registerUiState.value,
-                  searchText = registerViewModel.searchText,
-                  currentPage = registerViewModel.currentPage,
-                  pagingItems = pagingItems,
-                  navController = findNavController(),
-                  toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation
+                openDrawer = openDrawer,
+                onEvent = registerViewModel::onEvent,
+                registerUiState = registerViewModel.registerUiState.value,
+                searchText = registerViewModel.searchText,
+                currentPage = registerViewModel.currentPage,
+                pagingItems = pagingItems,
+                navController = findNavController(),
+                toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
               )
             }
           }
