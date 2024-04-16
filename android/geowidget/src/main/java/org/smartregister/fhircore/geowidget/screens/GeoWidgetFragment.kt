@@ -59,6 +59,14 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.model.TYPE
+import org.smartregister.fhircore.geowidget.util.ResourceUtils
+import org.smartregister.fhircore.geowidget.util.extensions.geometry
+import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
+import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
@@ -149,29 +157,29 @@ class GeoWidgetFragment : Fragment() {
         val servicePointTypeMap: Map<String, ServicePointType> =
             geoWidgetViewModel.getServicePointKeyToType()
         for ((key, servicePointType) in servicePointTypeMap) {
-            val icon: Bitmap = ResourceUtils.drawableToBitmap(
+            val icon: Bitmap? = ResourceUtils.drawableToBitmap(
                 ResourcesCompat.getDrawable(
                     resources, servicePointType.drawableId, requireContext().theme
                 )!!
             )
-            mMapboxMapStyle.addImage(key, icon)
-            val symbolLayer = SymbolLayer(
-                // TODO: Refactor to string constant
-                String.format("%s.layer", key),
-                getString(R.string.data_set_quest)
-            )
-            symbolLayer.setProperties(
-                PropertyFactory.iconImage(key), PropertyFactory.iconSize(dynamicIconSize),
-                PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
-            )
-            // TODO: Refactor "type" to string constant
-            symbolLayer.setFilter(
-                Expression.eq(
-                    Expression.get("type"),
-                    servicePointType.name.lowercase()
+            icon?.let {
+                mMapboxMapStyle.addImage(key, icon)
+                val symbolLayer = SymbolLayer(
+                    String.format("%s.layer", key),
+                    getString(R.string.data_set_quest)
                 )
-            )
-            mMapboxMapStyle.addLayer(symbolLayer)
+                symbolLayer.setProperties(
+                    PropertyFactory.iconImage(key), PropertyFactory.iconSize(dynamicIconSize),
+                    PropertyFactory.iconIgnorePlacement(false), PropertyFactory.iconAllowOverlap(false)
+                )
+                symbolLayer.setFilter(
+                    Expression.eq(
+                        Expression.get(TYPE),
+                        servicePointType.name.lowercase()
+                    )
+                )
+                mMapboxMapStyle.addLayer(symbolLayer)
+            }
         }
     }
 
@@ -201,6 +209,7 @@ class GeoWidgetFragment : Fragment() {
         mapView.setOnFeatureClickListener(
             { featuresList ->
                 val mapBoxFeature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
+                // TODO: Support other Geometry types as well other than Point
                 if (mapBoxFeature.geometry() !is Point) {
                     Timber.w("Only feature geometry of type Point is supported!")
                     return@setOnFeatureClickListener
