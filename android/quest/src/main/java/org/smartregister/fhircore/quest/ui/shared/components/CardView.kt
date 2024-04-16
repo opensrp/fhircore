@@ -226,9 +226,9 @@ private fun CardViewImageWithItems() {
             children =
             listOf(
               ImageProperties(
-                imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk"),
+                imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_appointments"),
                 backgroundColor = "dangerColor",
-                size = 80,
+                size = 70,
                 shape = ImageShape.CIRCLE,
               ),
               ColumnProperties(
@@ -261,7 +261,8 @@ private fun CardViewImageWithItems() {
                     viewType = ViewType.BUTTON,
                     text = "COVID Vaccination",
                     fillMaxWidth = false,
-                    alignment = ViewAlignment.START
+                    startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
+                    alignment = ViewAlignment.CENTER
                   )
                 ),
               ),

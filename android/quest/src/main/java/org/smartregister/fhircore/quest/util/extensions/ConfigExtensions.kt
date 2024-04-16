@@ -173,16 +173,6 @@ fun List<ActionConfig>.handleClickEvent(
           Toast.LENGTH_LONG,
         )
       }
-      ApplicationWorkflow.DETAILS_BOTTOM_SHEET -> {
-        val args =
-            bundleOf(
-              NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
-              NavigationArg.GEO_WIDGET_ID to actionConfig.id,
-              NavigationArg.PARAMS to actionConfig.params
-            )
-        navController.navigate(MainNavigationScreen.SummaryBottomSheetFragment.route, args)
-
-      }
       else -> return
     }
   }

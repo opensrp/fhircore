@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -70,7 +71,7 @@ class GeoWidgetFragment : Fragment() {
     private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
     internal var onAddLocationCallback: (Feature) -> Unit = {}
     internal var onCancelAddingLocationCallback: () -> Unit = {}
-    internal var onClickLocationCallback: (Feature) -> Unit = {}
+    internal var onClickLocationCallback: (Feature, FragmentManager) -> Unit = { feature: Feature, fragmentManager: FragmentManager -> }
     internal var useGpsOnAddingLocation: Boolean = false
     internal var mapLayers : List<MapLayerConfig> = ArrayList()
     internal var shouldLocationButtonShow : Boolean = true
@@ -219,7 +220,7 @@ class GeoWidgetFragment : Fragment() {
                     properties = mapBoxFeature.properties()?.asMap()?.featureProperties()!!
                 )
 
-                onClickLocationCallback(feature)
+                onClickLocationCallback(feature, parentFragmentManager)
             },
             "quest-data-points",
         )
@@ -317,7 +318,7 @@ class Builder {
 
     private var onAddLocationCallback: (Feature) -> Unit = {}
     private var onCancelAddingLocationCallback: () -> Unit = {}
-    private var onClickLocationCallback: (Feature) -> Unit = {}
+    private var onClickLocationCallback: (Feature, FragmentManager) -> Unit = { feature: Feature, fragmentManager: FragmentManager -> }
     private var useGpsOnAddingLocation: Boolean = false
     private var mapLayers : List<MapLayerConfig> = ArrayList()
     private var shouldLocationButtonShow : Boolean = true
@@ -331,7 +332,7 @@ class Builder {
         this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
     }
 
-    fun setOnClickLocationListener(onClickLocationCallback: (Feature) -> Unit) = apply {
+    fun setOnClickLocationListener(onClickLocationCallback: (Feature, FragmentManager) -> Unit) = apply {
         this.onClickLocationCallback = onClickLocationCallback
     }
 

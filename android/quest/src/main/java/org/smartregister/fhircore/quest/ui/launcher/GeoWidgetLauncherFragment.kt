@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -40,7 +41,6 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,10 +48,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
-import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -61,11 +62,11 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
-import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
@@ -75,13 +76,18 @@ import javax.inject.Inject
 class GeoWidgetLauncherFragment : Fragment() {
     @Inject
     lateinit var eventBus: EventBus
+
     @Inject
     lateinit var configurationRegistry: ConfigurationRegistry
     private lateinit var geoWidgetFragment: GeoWidgetFragment
     private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
     private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
     private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
-        configurationRegistry.retrieveConfiguration(ConfigType.GeoWidget, args.geoWidgetId, emptyMap())
+        configurationRegistry.retrieveConfiguration(
+            ConfigType.GeoWidget,
+            args.geoWidgetId,
+            emptyMap()
+        )
     }
     private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
@@ -148,7 +154,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                             )
                         },
                     ) { innerPadding ->
-                        Box(modifier = Modifier.padding(innerPadding) ) {
+                        Box(modifier = Modifier.padding(innerPadding)) {
 
                             val fragment = remember { geoWidgetFragment }
 
@@ -158,7 +164,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                                 navController = findNavController(),
                                 toolBarHomeNavigation = args.toolBarHomeNavigation,
                                 modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
-                                fragmentManager = childFragmentManager ,
+                                fragmentManager = childFragmentManager,
                                 fragment = fragment,
                                 geoWidgetConfiguration = geoWidgetConfiguration
                             )
@@ -192,18 +198,17 @@ class GeoWidgetLauncherFragment : Fragment() {
             .setOnCancelAddingLocationListener {
                 requireContext().showToast("on cancel adding location")
             }
-            .setOnClickLocationListener { feature: Feature, repositoryResourceData : RepositoryResourceData ->
-                //open bottom sheet directly here
-                ope
+            .setOnClickLocationListener { feature: Feature, parentFragmentManager : FragmentManager ->
+                SummaryBottomSheetFragment(
+                    geoWidgetConfiguration.summaryBottomSheetConfig!!,
+                    ResourceData(feature.id, ResourceType.Location, feature.properties)
+                ).run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
+
             }
             .setMapLayers(geoWidgetConfiguration.mapLayers)
             .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
             .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
             .build()
-    }
-
-    private fun openBottomSheet(feature: Feature) {
-        geoWidgetConfiguration.summaryBottomSheetConfig.rules
     }
 
     private fun setOnQuestionnaireSubmissionListener() {

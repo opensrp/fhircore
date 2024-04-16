@@ -58,5 +58,5 @@ enum class ApplicationWorkflow {
   COPY_TEXT,
 
   /** A workflow that opens details/summary in a bottomSheetDialogFragment */
-  DETAILS_BOTTOM_SHEET
+  SUMMARY_BOTTOM_SHEET
 }
