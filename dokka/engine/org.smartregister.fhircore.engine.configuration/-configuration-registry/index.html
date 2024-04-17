@@ -1,0 +1,547 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ConfigurationRegistry</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../index.html">
+                            OpenSRP
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":engine:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="engine::org.smartregister.fhircore.engine.configuration/ConfigurationRegistry///PointingToDeclaration//-78402031">
+  <div class="breadcrumbs"><a href="../../index.html">engine</a><span class="delimiter">/</span><a href="../index.html">org.smartregister.fhircore.engine.configuration</a><span class="delimiter">/</span><span class="current">ConfigurationRegistry</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Configuration</span><wbr><span><span>Registry</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Singleton///PointingToDeclaration/"><span class="token annotation builtin">Singleton</span></span></div></div><span class="token keyword">class </span><a href="index.html">ConfigurationRegistry</a>&nbsp;<span><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>fhirEngine<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fhirResourceDataSource<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.data.remote.fhir.resource/-fhir-resource-data-source/index.html">FhirResourceDataSource</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sharedPreferencesHelper<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dispatcherProvider<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>configService<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.configuration.app/-config-service/index.html">ConfigService</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>json<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/Json///PointingToDeclaration/">Json</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">openSrpApplication<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine/-open-srp-application/index.html">OpenSrpApplication</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1519154403%2FConstructors%2F-78402031" anchor-label="ConfigurationRegistry" id="1519154403%2FConstructors%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-configuration-registry.html"><span>Configuration</span><wbr><span><span>Registry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1519154403%2FConstructors%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fhirEngine<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span><span class="token punctuation">, </span></span><span class="parameter ">fhirResourceDataSource<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.data.remote.fhir.resource/-fhir-resource-data-source/index.html">FhirResourceDataSource</a><span class="token punctuation">, </span></span><span class="parameter ">sharedPreferencesHelper<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a><span class="token punctuation">, </span></span><span class="parameter ">configService<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.configuration.app/-config-service/index.html">ConfigService</a><span class="token punctuation">, </span></span><span class="parameter ">json<span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/Json///PointingToDeclaration/">Json</span><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">openSrpApplication<span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine/-open-srp-application/index.html">OpenSrpApplication</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-207711315%2FClasslikes%2F-78402031" anchor-label="Companion" id="-207711315%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-207711315%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1998955944%2FProperties%2F-78402031" anchor-label="configCacheMap" id="-1998955944%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="config-cache-map.html"><span>config</span><wbr><span>Cache</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1998955944%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="config-cache-map.html">configCacheMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="../-configuration/index.html">Configuration</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1706490829%2FProperties%2F-78402031" anchor-label="configService" id="-1706490829%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="config-service.html"><span>config</span><wbr><span><span>Service</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1706490829%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="config-service.html">configService</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.configuration.app/-config-service/index.html">ConfigService</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1408492687%2FProperties%2F-78402031" anchor-label="configsJsonMap" id="-1408492687%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configs-json-map.html"><span>configs</span><wbr><span>Json</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1408492687%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="configs-json-map.html">configsJsonMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="707368407%2FProperties%2F-78402031" anchor-label="context" id="707368407%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="context.html"><span><span>context</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="707368407%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="context.html">context</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1722784644%2FProperties%2F-78402031" anchor-label="dispatcherProvider" id="-1722784644%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="dispatcher-provider.html"><span>dispatcher</span><wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1722784644%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="dispatcher-provider.html">dispatcherProvider</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1097967431%2FProperties%2F-78402031" anchor-label="fhirEngine" id="1097967431%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-engine.html"><span>fhir</span><wbr><span><span>Engine</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1097967431%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-engine.html">fhirEngine</a><span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-505558634%2FProperties%2F-78402031" anchor-label="fhirResourceDataSource" id="-505558634%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-resource-data-source.html"><span>fhir</span><wbr><span>Resource</span><wbr><span>Data</span><wbr><span><span>Source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-505558634%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-resource-data-source.html">fhirResourceDataSource</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.data.remote.fhir.resource/-fhir-resource-data-source/index.html">FhirResourceDataSource</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="27273100%2FProperties%2F-78402031" anchor-label="json" id="27273100%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="json.html"><span><span>json</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="27273100%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="json.html">json</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.serialization.json/Json///PointingToDeclaration/">Json</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2100385413%2FProperties%2F-78402031" anchor-label="knowledgeManager" id="2100385413%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="knowledge-manager.html"><span>knowledge</span><wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2100385413%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">lateinit </span><span class="token keyword">var </span><a href="knowledge-manager.html">knowledgeManager</a><span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.knowledge/KnowledgeManager///PointingToDeclaration/">KnowledgeManager</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1651449491%2FProperties%2F-78402031" anchor-label="localizationHelper" id="-1651449491%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="localization-helper.html"><span>localization</span><wbr><span><span>Helper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1651449491%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="localization-helper.html">localizationHelper</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util.helper/-localization-helper/index.html">LocalizationHelper</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="510634725%2FProperties%2F-78402031" anchor-label="sharedPreferencesHelper" id="510634725%2FProperties%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shared-preferences-helper.html"><span>shared</span><wbr><span>Preferences</span><wbr><span><span>Helper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="510634725%2FProperties%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="shared-preferences-helper.html">sharedPreferencesHelper</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-145469596%2FFunctions%2F-78402031" anchor-label="addOrUpdate" id="-145469596%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-or-update.html"><span>add</span><wbr><span>Or</span><wbr><span><span>Update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-145469596%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="add-or-update.html">R</a><span class="token operator"> : </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token operator">&gt; </span><a href="add-or-update.html"><span class="token function">addOrUpdate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resource<span class="token operator">: </span><a href="add-or-update.html">R</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Update this stored resources with the passed resource, or create it if not found. If the resource is a Metadata Resource save it in the Knowledge Manager</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1418673064%2FFunctions%2F-78402031" anchor-label="clearConfigsCache" id="1418673064%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clear-configs-cache.html"><span>clear</span><wbr><span>Configs</span><wbr><span><span>Cache</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1418673064%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="clear-configs-cache.html"><span class="token function">clearConfigsCache</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1775106585%2FFunctions%2F-78402031" anchor-label="createOrUpdateRemote" id="1775106585%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-or-update-remote.html"><span>create</span><wbr><span>Or</span><wbr><span>Update</span><wbr><span><span>Remote</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1775106585%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="create-or-update-remote.html"><span class="token function">createOrUpdateRemote</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>resources<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Using this <span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span> and <a href="../../org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a>, for all passed resources, make sure they all have IDs or generate if they don't, then pass them to create.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="110219310%2FFunctions%2F-78402031" anchor-label="fetchLanguages" id="110219310%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../org.smartregister.fhircore.engine.util.extension/fetch-languages.html"><span>fetch</span><wbr><span><span>Languages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="110219310%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">ConfigurationRegistry</a><span class="token punctuation">.</span><a href="../../org.smartregister.fhircore.engine.util.extension/fetch-languages.html"><span class="token function">fetchLanguages</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.smartregister.fhircore.engine.domain.model/-language/index.html">Language</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-3742406%2FFunctions%2F-78402031" anchor-label="fetchNonWorkflowConfigResources" id="-3742406%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-non-workflow-config-resources.html"><span>fetch</span><wbr><span>Non</span><wbr><span>Workflow</span><wbr><span>Config</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-3742406%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="fetch-non-workflow-config-resources.html"><span class="token function">fetchNonWorkflowConfigResources</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">isInitialLogin<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Fetch non-patient Resources for the application that are not application configurations resources such as <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType.Questionnaire///PointingToDeclaration/{&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;:{&quot;key&quot;:&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;}}">ResourceType.Questionnaire</span> and <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType.StructureMap///PointingToDeclaration/{&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;:{&quot;key&quot;:&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;}}">ResourceType.StructureMap</span>. ( <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType.Binary///PointingToDeclaration/{&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;:{&quot;key&quot;:&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;}}">ResourceType.Binary</span> and <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType.Parameters///PointingToDeclaration/{&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;:{&quot;key&quot;:&quot;org.jetbrains.dokka.links.EnumEntryDRIExtra&quot;}}">ResourceType.Parameters</span> are currently the only FHIR HL7 resources used to represent application configurations). These non-patients resource identifiers are also set in the section components of the <span data-unresolved-link="org.hl7.fhir.r4.model/Composition///PointingToDeclaration/">Composition</span> resource.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="271602153%2FFunctions%2F-78402031" anchor-label="fetchRemoteComposition" id="271602153%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-remote-composition.html"><span>fetch</span><wbr><span>Remote</span><wbr><span><span>Composition</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="271602153%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="fetch-remote-composition.html"><span class="token function">fetchRemoteComposition</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">appId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Composition///PointingToDeclaration/">Composition</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-856079536%2FFunctions%2F-78402031" anchor-label="getConfigValueWithParam" id="-856079536%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-config-value-with-param.html"><span>get</span><wbr><span>Config</span><wbr><span>Value</span><wbr><span>With</span><wbr><span><span>Param</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-856079536%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-config-value-with-param.html"><span class="token function">getConfigValueWithParam</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">paramsMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">configKey<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">This function interpolates the value for the given <a href="get-config-value-with-param.html">configKey</a> by replacing the string placeholders e.g. {{ placeholder }} with value retrieved from the <a href="get-config-value-with-param.html">paramsMap</a> using <a href="get-config-value-with-param.html">configKey</a> as the key. If value is null the placeholder is returned</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1250810281%2FFunctions%2F-78402031" anchor-label="isNonProxy" id="1250810281%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-non-proxy.html"><span>is</span><wbr><span>Non</span><wbr><span><span>Proxy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1250810281%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.jetbrains.annotations/VisibleForTesting///PointingToDeclaration/"><span class="token annotation builtin">VisibleForTesting</span></span></div></div><span class="token keyword">fun </span><a href="is-non-proxy.html"><span class="token function">isNonProxy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1041869974%2FFunctions%2F-78402031" anchor-label="loadConfigurations" id="1041869974%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="load-configurations.html"><span>load</span><wbr><span><span>Configurations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1041869974%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="load-configurations.html"><span class="token function">loadConfigurations</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">appId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">configsLoadedCallback<span class="token operator">: </span><span class="token punctuation">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Populate application's configurations from the composition resource. Only Binary and Parameter Resources are used to represent application configurations. The <a href="config-cache-map.html">configCacheMap</a> is reset on every configs load.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1689854805%2FFunctions%2F-78402031" anchor-label="processResultBundleBinaries" id="1689854805%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="process-result-bundle-binaries.html"><span>process</span><wbr><span>Result</span><wbr><span>Bundle</span><wbr><span><span>Binaries</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1689854805%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="process-result-bundle-binaries.html"><span class="token function">processResultBundleBinaries</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">binary<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Binary///PointingToDeclaration/">Binary</span><span class="token punctuation">, </span></span><span class="parameter ">patientRelatedResourceTypes<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1815323384%2FFunctions%2F-78402031" anchor-label="retrieveConfiguration" id="1815323384%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-configuration.html"><span>retrieve</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1815323384%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="retrieve-configuration.html">T</a><span class="token operator"> : </span><a href="../-configuration/index.html">Configuration</a><span class="token operator">&gt; </span><a href="retrieve-configuration.html"><span class="token function">retrieveConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configType<span class="token operator">: </span><a href="../-config-type/index.html">ConfigType</a><span class="token punctuation">, </span></span><span class="parameter ">configId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">paramsMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>emptyMap()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="retrieve-configuration.html">T</a></div><div class="brief "><p class="paragraph">Retrieve configuration for the provided <a href="../-config-type/index.html">ConfigType</a>. The JSON retrieved from <a href="configs-json-map.html">configsJsonMap</a> can be directly converted to a FHIR resource or hard coded custom model. The filtering assumes you are passing data across screens, then later using it in DataQueries and to retrieve registerConfiguration. It is necessary to check that <a href="retrieve-configuration.html">paramsMap</a> is empty to confirm that the params used in the DataQuery are passed when retrieving the configurations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1585249971%2FFunctions%2F-78402031" anchor-label="retrieveConfigurations" id="1585249971%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-configurations.html"><span>retrieve</span><wbr><span><span>Configurations</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1585249971%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="retrieve-configurations.html">T</a><span class="token operator"> : </span><a href="../-configuration/index.html">Configuration</a><span class="token operator">&gt; </span><a href="retrieve-configurations.html"><span class="token function">retrieveConfigurations</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configType<span class="token operator">: </span><a href="../-config-type/index.html">ConfigType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="retrieve-configurations.html">T</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1314562840%2FFunctions%2F-78402031" anchor-label="retrieveResourceBundleConfiguration" id="-1314562840%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-resource-bundle-configuration.html"><span>retrieve</span><wbr><span>Resource</span><wbr><span>Bundle</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1314562840%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-resource-bundle-configuration.html"><span class="token function">retrieveResourceBundleConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">bundleName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/util/ResourceBundle.html">ResourceBundle</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Retrieve translation configuration for the provided <a href="retrieve-resource-bundle-configuration.html">bundleName</a>. The Bundle value is retrieved from <a href="configs-json-map.html">configsJsonMap</a> can be directly converted to a ResourceBundle.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-306251150%2FFunctions%2F-78402031" anchor-label="retrieveResourceConfiguration" id="-306251150%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-resource-configuration.html"><span>retrieve</span><wbr><span>Resource</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-306251150%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="retrieve-resource-configuration.html">T</a><span class="token operator"> : </span><span data-unresolved-link="org.hl7.fhir.r4.model/Base///PointingToDeclaration/">Base</span><span class="token operator">&gt; </span><a href="retrieve-resource-configuration.html"><span class="token function">retrieveResourceConfiguration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configType<span class="token operator">: </span><a href="../-config-type/index.html">ConfigType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="retrieve-resource-configuration.html">T</a></div><div class="brief "><p class="paragraph">Retrieve configuration for the provided <a href="../-config-type/index.html">ConfigType</a>. The JSON retrieved from <a href="configs-json-map.html">configsJsonMap</a> can be directly converted to a FHIR resource or hard coded custom model.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1459208020%2FFunctions%2F-78402031" anchor-label="saveSyncSharedPreferences" id="-1459208020%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="save-sync-shared-preferences.html"><span>save</span><wbr><span>Sync</span><wbr><span>Shared</span><wbr><span><span>Preferences</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1459208020%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="save-sync-shared-preferences.html"><span class="token function">saveSyncSharedPreferences</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resourceTypes<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1882001768%2FFunctions%2F-78402031" anchor-label="setNonProxy" id="1882001768%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-non-proxy.html"><span>set</span><wbr><span>Non</span><wbr><span><span>Proxy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1882001768%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="org.jetbrains.annotations/VisibleForTesting///PointingToDeclaration/"><span class="token annotation builtin">VisibleForTesting</span></span></div></div><span class="token keyword">fun </span><a href="set-non-proxy.html"><span class="token function">setNonProxy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nonProxy<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1499012431%2FFunctions%2F-78402031" anchor-label="writeToFile" id="1499012431%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-to-file.html"><span>write</span><wbr><span>To</span><wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1499012431%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="write-to-file.html"><span class="token function">writeToFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">resource<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
