@@ -198,6 +198,7 @@ maxLine | It defines the maximum number of lines you would like the text to be d
 OpenSRP uses buttons to perform actions when clicked.
 
 The below defines the configuration properties of a Button view, which is a view that can perform actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
+
  ``` json
  [
    {
@@ -276,9 +277,10 @@ On top of the above properties, you need to add  Image config properties see a `
 
 ![serviceCard](/img/config_types/service_card_ui.png)
 
+
 The Service Card widget displays Patient's details and other related services and tasks. In the example below, the details field within the SERVICE_CARD displays the patient's name and ID.
 
- ``` json
+``` json
 {
   "viewType": "COLUMN",
   "children": [
@@ -370,6 +372,7 @@ below.
 ```
 
 ### Goals of the SERVICE_CARD widget
+
  - To display patient details and tasks.
  - Give the ability to display icon based on the reference provided.
 
@@ -466,6 +469,7 @@ visible | A String value that determines whether the view should be visible | Ye
 weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
 
 ### Goals of the IMAGE widget
+
     -   The main aim is just to show the icon and image.
 
 ## ROW widgets
