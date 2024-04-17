@@ -20,20 +20,18 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.fhir.sync.SyncJobStatus
-import java.lang.ref.WeakReference
-import javax.inject.Inject
-import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Parameters
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
+import java.lang.ref.WeakReference
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * A singleton class that maintains a list of [OnSyncListener] that have been registered to listen
@@ -44,13 +42,31 @@ class SyncListenerManager
 @Inject
 constructor(
   val configService: ConfigService,
-  val configurationRegistry: ConfigurationRegistry,
+//  val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
 
-  private val syncConfig by lazy {
-    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-  }
+  //  private val syncConfig by lazy {
+//    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+//  }
+
+   var syncConfig: Parameters
+     get() {
+       return syncConfig
+     }
+     set(value) {
+       syncConfig = value
+     }
+
+  lateinit var testInit: ApplicationConfiguration
+
+  var  appConfiguration: ApplicationConfiguration
+    get() {
+      return appConfiguration
+    }
+    set(value) {
+      appConfiguration = value
+    }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
@@ -90,8 +106,8 @@ constructor(
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
-    val appConfig =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+    val appConfig = appConfiguration
+//      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }

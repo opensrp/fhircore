@@ -24,7 +24,15 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -49,9 +57,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.sync.ConfigDownloadManager
-import org.smartregister.fhircore.engine.sync.ConfigSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -95,15 +102,7 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
-//  @AssistedInject
-//  ConfigSyncWorker(DataFetcher dataFetcher, @Assisted Config config) {
-//  @Assisted appContext: Context,
-//  @Assisted workerParams: WorkerParameters,
-//  val syncListenerManager: SyncListenerManager,
-//  private val openSrpFhirEngine: FhirEngine,
-//  private val appTimeStampContext: AppTimeStampContext,
-//}
-
+  val syncListenerManager: SyncListenerManager,
   val syncBroadcaster: SyncBroadcaster
 ) {
 
@@ -117,17 +116,6 @@ constructor(
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
   private val jsonParser = fhirContext.newJsonParser()
-
-  //val configDownloadManager = ConfigDownloadManager.ConfigDownloadManagerImpl(emptyList())
-//
-//  internal class DownloadConfiguration(
-//    val downloader: Downloader,
-//    val conflictResolver: ConflictResolver,
-//  )
-//
-//  open class ConfigDownloadImpl: com.google.android.fhir.sync.download.Downloader (
-//
-//  )
 
   init {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
@@ -153,6 +141,11 @@ constructor(
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
+//      //if(syncListenerManager.testInit?)
+//      if(configType == ConfigType.Application)
+//        syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
+//      if(configType == ConfigType.Sync)
+//        syncListenerManager.syncConfig = configCacheMap[configKey] as Parameters
       return configCacheMap[configKey] as T
     }
     val decodedConfig =
@@ -163,6 +156,10 @@ constructor(
           template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
+//    if(configType == ConfigType.Application)
+//      syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
+//    if(configType == ConfigType.Sync)
+//      syncListenerManager.syncConfig = configCacheMap[configKey] as Parameters
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
@@ -203,6 +200,7 @@ constructor(
    */
   inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
     require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
+//    syncListenerManager.syncConfig = configsJsonMap.getValue(configType.name).decodeResourceFromString()
     return configsJsonMap.getValue(configType.name).decodeResourceFromString()
   }
 
@@ -306,7 +304,7 @@ constructor(
 
            // (configSyncWorker.getDownloadWorkManager() as ConfigDownloadManager).setupQueries(listOf("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT"))
             //configDownloadManager.processResponse()
-            syncBroadcaster.runConfigSync()
+//            syncBroadcaster.runConfigSync()
             fhirResourceDataSource
               .getResource(
                 "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
@@ -427,9 +425,10 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
+  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) = coroutineScope {
     Timber.d("####### running config sync")
     syncBroadcaster.runConfigSync()
+//    Sync.oneTimeSync<ConfigSyncWorker>(context).handleOneTimeConfigSyncJobStatus(this)
 
     // Reset configurations before loading new ones
     configCacheMap.clear()
@@ -824,5 +823,17 @@ constructor(
         ResourceType.Binary.name,
         ResourceType.Parameters,
       )
+  }
+
+
+  private fun kotlinx.coroutines.flow.Flow<CurrentSyncJobStatus>.handleOneTimeConfigSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    this.onEach {
+      syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+    }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
   }
 }
