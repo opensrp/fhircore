@@ -41,6 +41,7 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -865,5 +866,33 @@ class ResourceExtensionTest : RobolectricTest() {
       lastMetaTag?.system,
     )
     Assert.assertEquals(locationId, lastMetaTag?.code)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Encounter Resource`() {
+    val encounter = Encounter().apply { this.id = "123456" }
+    encounter.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", encounter.serviceProvider.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Location Resource`() {
+    val location = Location().apply { this.id = "123456" }
+    location.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", location.managingOrganization.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Group Resource`() {
+    val group = Group().apply { this.id = "123456" }
+    group.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", group.managingEntity.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Patient Resource`() {
+    val patient = Patient().apply { this.id = "123456" }
+    patient.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", patient.managingOrganization.reference)
   }
 }
