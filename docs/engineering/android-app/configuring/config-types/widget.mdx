@@ -6,13 +6,13 @@ Examples are rows, columns, cards, and buttons.
 
 ## LIST widget
 
-The below image shows how different components are connected to work together with a list widget and how it looks like.
+The below image shows how different components are connected to work together through the list widget.
 
 ![list](/img/config_types/list_ui.png)
 
 ### Flex alignment widgets
 
-To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
+To display items in the flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
 
 ``` json
 {
@@ -127,18 +127,17 @@ sortConfig | Configuration used for sorting LIST widget resource | no | |
 fhirPathExpression | This is the fhir path expression of a given resource | no | |
 relatedResources | resource that is part of the base resource  | no | |
 
-### Goals of List Widget
-   - Displays of listed data
-   - Supports pagination of data
-   - Gives ability to scroll multiple data.
+### Goals of the LIST widget
+   - Display data in a list format
+   - Support pagination of data
 
 ## How to use COMPOUND_TEXT
 
 ![text](/img/config_types/compound_text.png)
 
-Compound text is a widget that is used to display text of different properties on the user interface
+Compound text is a widget that is used to display text of different properties on the user interface.
 
-The below json code defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
+The below defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
 
  ``` json
 [
@@ -189,17 +188,16 @@ textCase | Determines how the text style should be. The text cases are `UPPER_CA
 fontSize | Determines how the text size in float.| | Float |
 maxLine | It defines the maximum number of lines you would like the text to be displayed.| | Int |
 
-### Goals of Compound Text Widget
+### Goals of the COMPOUND_TEXT Widget
  - Display text of different properties
-
 
 ## How to use BUTTON
 
 ![button](/img/config_types/button_ui.png)
 
-Buttons are often used to perform actions when clicked, in fhircore the same use case applies most actions are performed on button click.
+OpenSRP uses buttons to perform actions when clicked.
 
-The json below defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
+The below defines the configuration properties of a Button view, which is a view that can perform actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
  ``` json
  [
    {
@@ -213,7 +211,6 @@ The json below defines the configuration properties of a Button view, which is a
    }
  ]
 ```
-
 
 ### Config properties of BUTTON
 |Property | Description | Required | Default | Values |
@@ -270,16 +267,16 @@ On top of the above properties, you need to add  Image config properties see a `
 ```
  The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
 
-### Goals of a Button
+### Goals of the BUTTON widget
   - The main aim of a button is to provide a way to perform action when it is clicked.
-  - Buttons provides the capability to launch a new action like logging in into the app.
+  - Buttons provides the capability to launch a new action like logging into the app.
   - Buttons are used to complete an ongoing action like saving input user credentials to the database
 
 ## SERVICE_CARD widgets
 
 ![serviceCard](/img/config_types/service_card_ui.png)
 
-Service Card displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
+The Service Card widget displays Patient's details and other related services and tasks. In the example below, the details field within the SERVICE_CARD displays the patient's name and ID.
 
  ``` json
 {
@@ -371,7 +368,8 @@ below.
   "serviceMemberIcons": "@{serviceMemberIcons}"
 }
 ```
-### Goals of service card
+
+### Goals of the SERVICE_CARD widget
  - To display patient details and tasks.
  - Give the ability to display icon based on the reference provided.
 
@@ -425,9 +423,8 @@ children | A list of ViewProperties objects that represents the child views of t
 showDivider | show divider is a boolean variable the gives the capability to show divider within the column if its needed | | String |
 action | A list of ActionConfig that represents the child actions that can be performed within the column | | emptyList() |
 
-### Goals of COLUMN
- -  To arrange data or even views in a vertical manner.
-
+### Goals of the COLUMN widget
+ -  To arrange data or views vertically.
 
 ## IMAGE widget
 
@@ -468,7 +465,7 @@ clickable | Determines whether the view is clickable | | false |
 visible | A String value that determines whether the view should be visible | Yes| true |
 weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
 
-### Goals of Image Widget
+### Goals of the IMAGE widget
     -   The main aim is just to show the icon and image.
 
 ## ROW widgets
@@ -733,5 +730,5 @@ headerAction | It specifies what the header action what it supposed to perform w
 emptyContentMessage | It specifies what message should be displayed within the card when it has no content | | String |
 contentPadding | It specifies the card content spacing | | Int |
 
-### Goals of a card widget
-    -   Card widgets are used to group similar data together under a single view. Example when you want user contact details to be under a centralised place you can group those information like username, age, phone number, and country of residence under a single card.
+### Goals of the CARD widget
+    - CARD widgets are used to group similar data together in a single view. For example, when you want user contact details to be in a centralized place you can group that information, like username, age, phone number, and country of residence, under a single card.
