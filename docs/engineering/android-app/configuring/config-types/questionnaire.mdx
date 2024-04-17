@@ -51,6 +51,8 @@ actions    | A list of actions that you would like to be executed | yes if you a
 actions (trigger) | Defines when you want to launch the questions | yes |        |
 actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
 linkIds    | Contains configurations for linkIds for fields in the Questionnaires that are used to control application workflow and content; ranging from read only fields to fields used to capure location/barcode details. Each linkId is identified by a type (`READ_ONLY`, `LOCATION`, `BARCODE`, `IDENTIFIER`) | no |  |
+type | The item type, e.g. `date`, `choice` or `group`. A `group` type allows you to create a section within a questionnaire that controls and treats the items within the `group` as a single item. This is suitable for block sections that can be toggled based on condition or answer expression logic | no | null
+repeats | Boolean that controls whether an item is repeated or not, used to control a single item or group item that creates a repeated group | no | false
 
 ### Questionnaire config actions
 
@@ -58,7 +60,7 @@ linkIds    | Contains configurations for linkIds for fields in the Questionnaire
 "questionnaire": {
   "id": "questionnaire-uuid",
   "title": "Record sick child",
-  "resourceIdentifier": "@{patientId}", 
+  "resourceIdentifier": "@{patientId}",
   "linkIds": [
     {
       "linkId": "122d7ffe-3137-46b5-a28d-5c1a335c4899",
@@ -132,7 +134,7 @@ Data extraction happens during rules execution and is persisted in `computedValu
 
 For example, in the `underlying_conditions` questionnaire you would like to show or hide the Cancer option based on whether the patient has cancer or not. The solution would be to pass `has-cancer` BOOLEAN from `adult_profile_config` to `underlying_conditions`.
 
-Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed. 
+Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed.
 
 ### Cancer LAUNCH_QUESTIONAIRE
 #### Sample JSON
@@ -177,7 +179,7 @@ Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_con
 }
 ```
 
-On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
+On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below.
 ``` json
 {
     "extension": [ {
@@ -361,15 +363,15 @@ Here is a sample configuration for the unique identifier assignment:
 
 The configuration contains the following properties:
 
-**linkId** - The linkId for the targeted Questionnaire item 
+**linkId** - The linkId for the targeted Questionnaire item
 **idFhirPathExpression** - The FHIR path expression used to extract ID from a resource
 **readOnly** - Enable or disable editing of the field. Defaults to `true`
 **resource** - FHIR resource used to store generated unique IDs
 **sortConfigs** - For ordering resources. It is important to ensure the resources are ordered by last updated
 **resourceFilterExpression** - Extra configurations to apply filter via code on the declared Resource
 
-*NOTE:* If the `readOnly` configuration is set to false, the ID field in the Questionnaire becomes editable. If the prepopulated ID 
-is modified and a different ID is submitted with the Questionnaire, the prepopulated ID will not be marked as used. 
+*NOTE:* If the `readOnly` configuration is set to false, the ID field in the Questionnaire becomes editable. If the prepopulated ID
+is modified and a different ID is submitted with the Questionnaire, the prepopulated ID will not be marked as used.
 This means that it will still be prepopulated the next time the Questionnaire is launched.
 
 ## Characteristic-based Group resource for unique IDs
