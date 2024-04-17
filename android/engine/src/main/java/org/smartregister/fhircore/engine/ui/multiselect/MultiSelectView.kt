@@ -97,7 +97,7 @@ fun <T> MultiSelectCheckbox(
       TriStateCheckbox(
         state = selectedNodes[currentTreeNode.id] ?: ToggleableState.Off,
         onClick = {
-          selectedNodes[currentTreeNode.id] = ToggleableState(!checked.value)
+          selectedNodes[currentTreeNode.id] = ToggleableState(selectedNodes[currentTreeNode.id] != ToggleableState.On)
           checked.value = selectedNodes[currentTreeNode.id] == ToggleableState.On
 
           var toggleableState: ToggleableState
