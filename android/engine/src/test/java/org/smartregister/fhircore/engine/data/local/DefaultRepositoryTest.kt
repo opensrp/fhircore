@@ -25,6 +25,7 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Order
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -47,6 +48,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -74,6 +76,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
@@ -88,6 +91,7 @@ import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -1437,5 +1441,63 @@ class DefaultRepositoryTest : RobolectricTest() {
     runBlocking { defaultRepository.createRemote(false, resource) }
 
     coVerify { fhirEngine.create(resource, isLocalOnly = true) }
+  }
+
+  @Test
+  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() = runBlocking {
+    val coding = Coding().apply { code = "phn" }
+    val group1 =
+      Group().apply {
+        id = "grp1"
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(coding),
+            CodeableConcept(Coding().apply { code = "1234" }),
+            BooleanType(false),
+          ),
+        )
+        addCharacteristic(
+          Group.GroupCharacteristicComponent(
+            CodeableConcept(coding),
+            CodeableConcept(Coding().apply { code = "1235" }),
+            BooleanType(false),
+          ),
+        )
+      }
+
+    val group2 =
+      Group().apply {
+        id = "grp2"
+        active = false
+      }
+
+    fhirEngine.create(group1, group2)
+
+    val uniqueIdAssignmentConfig =
+      UniqueIdAssignmentConfig(
+        linkId = "phn",
+        idFhirPathExpression =
+          "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+        readOnly = true,
+        resource = ResourceType.Group,
+        sortConfigs =
+          listOf(
+            SortConfig(
+              paramName = "_lastUpdated",
+              dataType = Enumerations.DataType.DATE,
+              order = Order.DESCENDING,
+            ),
+          ),
+        resourceFilterExpression =
+          ResourceFilterExpression(
+            conditionalFhirPathExpressions =
+              listOf("Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'"),
+            matchAll = true,
+          ),
+      )
+    val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+    Assert.assertNotNull(resource)
+    Assert.assertTrue(resource is Group)
+    Assert.assertEquals("phn", (resource as Group).characteristicFirstRep.code.text)
   }
 }
