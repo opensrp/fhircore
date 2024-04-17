@@ -147,7 +147,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
     secureSharedPreferences.edit {
       putString(
         "${username}_${SharedPreferenceKey.LOGIN_PIN_SALT.name}",
-        Base64.getEncoder().encodeToString(randomSaltBytes)
+        Base64.getEncoder().encodeToString(randomSaltBytes),
       )
 
       putString("${username}_${SharedPreferenceKey.LOGIN_PIN_KEY.name}", hash)
@@ -159,7 +159,7 @@ class SecureSharedPreference @Inject constructor(@ApplicationContext val context
   fun retrieveSessionUserSalt(username: String) =
     secureSharedPreferences.getString(
       "${username}_${SharedPreferenceKey.LOGIN_PIN_SALT.name}",
-      null
+      null,
     )
 
   fun retrieveSessionUserPin(username: String) =

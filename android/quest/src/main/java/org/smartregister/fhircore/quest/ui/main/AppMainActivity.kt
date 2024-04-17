@@ -28,7 +28,7 @@ import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
@@ -134,7 +134,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         } else {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          showToast(
+            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       schedulePeriodicJobs()
@@ -160,8 +163,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       val extractedResourceIds =
         activityResult.data?.serializable(
           QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
-        ) as List<IdType>?
-          ?: emptyList()
+        ) as List<IdType>? ?: emptyList()
       val questionnaireConfig =
         activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
@@ -180,11 +182,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Glitch,
-      is SyncJobStatus.Finished,
-      is SyncJobStatus.Failed, -> {
+      is CurrentSyncJobStatus.Succeeded -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -193,12 +193,15 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             ),
           )
         }
-        if (syncJobStatus is SyncJobStatus.Glitch) {
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
-          } catch (nullPointerException: NullPointerException) {
-            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
-          }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
+          )
         }
       }
       else -> {

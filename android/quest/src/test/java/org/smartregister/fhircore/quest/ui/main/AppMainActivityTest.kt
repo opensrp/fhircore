@@ -22,6 +22,7 @@ import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
@@ -35,6 +36,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
+import java.time.OffsetDateTime
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -92,28 +94,12 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val viewModel = appMainActivity.appMainViewModel
     val initialSyncTime = viewModel.appMainUiState.value.lastSyncTime
 
-    appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
+    appMainActivity.onSync(
+      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD)),
+    )
 
     // Timestamp will only updated for Finished.
     Assert.assertEquals(initialSyncTime, viewModel.appMainUiState.value.lastSyncTime)
-  }
-
-  @Test
-  fun testOnSyncWithSyncStateGlitch() {
-    val viewModel = appMainActivity.appMainViewModel
-    val timestamp = "2022-05-19"
-    viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
-
-    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
-    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-
-    appMainActivity.onSync(syncJobStatus)
-
-    // Timestamp last sync timestamp not updated
-    Assert.assertEquals(
-      initialTimestamp,
-      viewModel.appMainUiState.value.lastSyncTime,
-    )
   }
 
   @Test
@@ -124,7 +110,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
       "2022-05-19",
     )
     val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
-    val syncJobStatus = SyncJobStatus.Failed(listOf())
+    val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
     appMainActivity.onSync(syncJobStatus)
 
     // Timestamp not update if status is Failed. Initial timestamp remains the same
@@ -134,18 +120,18 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateFailedWhenTimestampIsNotNull() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+    appMainActivity.onSync(CurrentSyncJobStatus.Failed(OffsetDateTime.now()))
     Assert.assertNotNull(viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
-  fun testOnSyncWithSyncStateFinished() {
+  fun testOnSyncWithSyncStateSucceded() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = SyncJobStatus.Finished()
-    appMainActivity.onSync(stateFinished)
+    val stateSucceded = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
+    appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
       viewModel.retrieveLastSyncTimestamp(),
     )
   }

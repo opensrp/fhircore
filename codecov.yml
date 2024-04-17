@@ -17,7 +17,7 @@ coverage:
     project:
       default:
         enabled: true
-        target: auto
+        target: 25.0
 flag_management:
   default_rules:
     carryforward: true

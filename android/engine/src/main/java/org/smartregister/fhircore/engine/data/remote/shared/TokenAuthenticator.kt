@@ -135,8 +135,7 @@ constructor(
       ?.plus(".")
       ?.let {
         (jwtParser.parseClaimsJwt(it).body["realm_access"] as Map<String, List<String>>)["roles"]
-      }
-      ?: emptyList()
+      } ?: emptyList()
   }
 
   /** This function checks if token is null or empty or expired */
@@ -306,8 +305,7 @@ constructor(
   fun sessionActive(): Boolean =
     findCurrentLoggedInAccount()?.let {
       isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE))
-    }
-      ?: false
+    } ?: false
 
   fun sessionActive(username: String) =
     findAccount(username)?.let { isTokenActive(accountManager.peekAuthToken(it, AUTH_TOKEN_TYPE)) }

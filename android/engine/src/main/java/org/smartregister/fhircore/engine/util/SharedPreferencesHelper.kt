@@ -35,7 +35,7 @@ class SharedPreferencesHelper
 constructor(
   @ApplicationContext val context: Context,
   val gson: Gson,
-  val secureSharedPreference: SecureSharedPreference
+  val secureSharedPreference: SecureSharedPreference,
 ) {
 
   val prefs: SharedPreferences by lazy {

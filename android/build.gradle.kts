@@ -6,22 +6,23 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
   dependencies {
-    classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
-    classpath("com.android.tools.build:gradle:7.1.3")
-    classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.coveralls.gradle.plugin)
+    classpath(libs.gradle)
+    classpath(libs.dokka.base)
   }
 }
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-  id("com.github.kt3k.coveralls") version "2.12.0"
-  id("org.jetbrains.kotlin.jvm") version "1.8.10"
+  alias(libs.plugins.org.jetbrains.kotlin.jvm)
+  alias(libs.plugins.kt3k.coveralls)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.dagger.hilt.android) apply false
   alias(libs.plugins.androidx.navigation.safeargs) apply false
   alias(libs.plugins.org.jetbrains.dokka)
   alias(libs.plugins.org.owasp.dependencycheck)
-  alias(libs.plugins.com.diffplug.spotless)
+  alias(libs.plugins.com.diffplug.spotless) apply false
+  alias(libs.plugins.android.junit5) apply false
 
 }
 
@@ -36,6 +37,7 @@ tasks.dokkaHtmlMultiModule {
 
 allprojects {
   repositories {
+    gradlePluginPortal()
     mavenLocal()
     google()
     mavenCentral()
@@ -56,18 +58,17 @@ subprojects {
   }
 
   configure<SpotlessExtension> {
-    val lintVersion = "0.49.0"
 
     kotlin {
       target("**/*.kt")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
     }
 
     kotlinGradle {
       target("*.gradle.kts")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
     }
 
@@ -89,16 +90,16 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.7")
+          "org.jacoco" -> useVersion(BuildConfigs.jacocoVersion)
         }
       }
     }
   }
 
-  tasks.withType<Test> {
+ tasks.withType<Test> {
     configure<JacocoTaskExtension> {
       isIncludeNoLocationClasses = true
-      excludes = listOf("jdk.internal.*")
+      excludes = listOf("jdk.internal.*", "**org.hl7*")
     }
   }
 }

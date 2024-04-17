@@ -167,8 +167,8 @@ fun ProfileScreen(
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
           )
         }
@@ -241,8 +241,8 @@ private fun RenderSimpleAppTopBar(
   ) {
     ViewRenderer(
       viewProperties = topBarConfig.content,
-      resourceData = profileUiState.resourceData
-          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      resourceData =
+        profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
     )
   }
@@ -355,6 +355,8 @@ private fun ProfileTopAppBarMenuAction(
             Image(
               imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
               tint = contentColor,
+              navController = navController,
+              resourceData = profileUiState.resourceData!!,
             )
             if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
             Text(text = overflowMenuItemConfig.title, color = contentColor)

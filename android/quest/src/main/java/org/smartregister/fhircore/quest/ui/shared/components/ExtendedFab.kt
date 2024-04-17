@@ -88,6 +88,8 @@ fun ExtendedFab(
           modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG),
           imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
           tint = if (firstFabEnabled) Color.White else DefaultColor,
+          navController = navController,
+          resourceData = resourceData,
         )
       }
       if (text.isNotEmpty()) {

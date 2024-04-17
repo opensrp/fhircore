@@ -26,9 +26,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.LoginConfig
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.login.APP_LOGO_TAG
 import org.smartregister.fhircore.quest.ui.login.APP_NAME_TEXT_TAG
 import org.smartregister.fhircore.quest.ui.login.ForgotPasswordDialog
@@ -77,7 +77,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     if (applicationConfiguration.loginConfig.showLogo) {
@@ -109,7 +108,6 @@ class LoginScreenTest {
         forgotPassword = { listenerObjectSpy.forgotPassword() },
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -150,7 +148,7 @@ class LoginScreenTest {
   fun testLoginFailsWithErrorFetchingUserMessage() {
     verifyErrorFetchingUser(
       LoginErrorState.ERROR_FETCHING_USER,
-      R.string.error_fetching_user_details,
+      org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
     )
   }
 
@@ -160,6 +158,29 @@ class LoginScreenTest {
       LoginErrorState.INVALID_OFFLINE_STATE,
       R.string.invalid_offline_login_state,
     )
+  }
+
+  @Test
+  fun testAppTitleLoginConfigShouldHideAppTitleWhenFalse() {
+    val appConfigs =
+      ApplicationConfiguration(
+        appTitle = "My app",
+        appId = "app/debug",
+        loginConfig = LoginConfig(showLogo = true, showAppTitle = false),
+      )
+    composeRule.setContent {
+      LoginPage(
+        applicationConfiguration = appConfigs,
+        username = "user",
+        onUsernameChanged = { listenerObjectSpy.onUsernameUpdated() },
+        password = "password",
+        onPasswordChanged = { listenerObjectSpy.onPasswordUpdated() },
+        forgotPassword = { listenerObjectSpy.forgotPassword() },
+        onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
+        appVersionPair = Pair(1, "1.0.1"),
+      )
+    }
+    composeRule.onNodeWithTag(APP_NAME_TEXT_TAG).assertDoesNotExist()
   }
 
   private fun verifyUnknownTextErrorMessage(loginErrorState: LoginErrorState, errorMessageId: Int) {
@@ -174,7 +195,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -197,7 +217,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -220,7 +239,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -240,7 +258,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule
@@ -260,7 +277,6 @@ class LoginScreenTest {
         onLoginButtonClicked = { listenerObjectSpy.attemptRemoteLogin() },
         loginErrorState = loginErrorState,
         appVersionPair = Pair(1, "1.0.1"),
-        dataMigrationInProgress = false,
       )
     }
     composeRule

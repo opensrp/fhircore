@@ -22,7 +22,7 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
-import com.google.android.fhir.sync.ResourceSyncException
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.testing.BindValue
@@ -30,21 +30,17 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.time.OffsetDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.ResponseBody.Companion.toResponseBody
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -61,7 +57,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -69,8 +64,6 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.main.AppMainActivity
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.interpolateActionParamsValue
-import retrofit2.HttpException
-import retrofit2.Response
 
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
@@ -130,7 +123,9 @@ class RegisterFragmentTest : RobolectricTest() {
     activityController.create().resume()
     mainActivity = activityController.get()
     navController =
-      TestNavHostController(mainActivity).apply { setGraph(R.navigation.application_nav_graph) }
+      TestNavHostController(mainActivity).apply {
+        setGraph(org.smartregister.fhircore.quest.R.navigation.application_nav_graph)
+      }
     Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(registerFragment, RegisterFragment::class.java.simpleName) }
@@ -148,7 +143,7 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncState() {
-    val syncJobStatus = SyncJobStatus.Finished()
+    val syncJobStatus = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
     coEvery { registerFragmentMock.onSync(syncJobStatus) } just runs
     registerFragmentMock.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentMock.onSync(syncJobStatus) }
@@ -175,10 +170,10 @@ class RegisterFragmentTest : RobolectricTest() {
   @Test
   @OptIn(ExperimentalMaterialApi::class, ExperimentalCoroutinesApi::class)
   fun `test On Sync Progress emits progress percentage`() = runTest {
-    val downloadProgressSyncStatus: SyncJobStatus.InProgress =
-      SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300)
-    val uploadProgressSyncStatus: SyncJobStatus.InProgress =
-      SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85)
+    val downloadProgressSyncStatus =
+      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD, 1000, 300))
+    val uploadProgressSyncStatus: CurrentSyncJobStatus.Running =
+      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.UPLOAD, 100, 85))
 
     val registerFragment = spyk(registerFragment)
 
@@ -193,10 +188,16 @@ class RegisterFragmentTest : RobolectricTest() {
     coVerify(exactly = 1) { registerViewModel.emitPercentageProgressState(85, true) }
 
     coVerify(exactly = 1) {
-      registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
+      registerFragment.emitPercentageProgress(
+        downloadProgressSyncStatus.inProgressSyncJob as SyncJobStatus.InProgress,
+        false,
+      )
     }
     coVerify(exactly = 1) {
-      registerFragment.emitPercentageProgress(uploadProgressSyncStatus, true)
+      registerFragment.emitPercentageProgress(
+        uploadProgressSyncStatus.inProgressSyncJob as SyncJobStatus.InProgress,
+        true,
+      )
     }
   }
 
@@ -211,8 +212,10 @@ class RegisterFragmentTest : RobolectricTest() {
 
       val registerFragment = spyk(registerFragment)
 
-      registerFragment.onSync(downloadProgressSyncStatus)
-      registerFragment.onSync(downloadProgressSyncStatusAfterGlitchReset)
+      registerFragment.onSync(CurrentSyncJobStatus.Running(downloadProgressSyncStatus))
+      registerFragment.onSync(
+        CurrentSyncJobStatus.Running(downloadProgressSyncStatusAfterGlitchReset),
+      )
 
       coVerify(exactly = 1) {
         registerFragment.emitPercentageProgress(downloadProgressSyncStatus, false)
@@ -267,52 +270,28 @@ class RegisterFragmentTest : RobolectricTest() {
 
   @Test
   fun testOnSyncWithFailedJobStatusNonAuthErrorRendersSyncFailedMessage() {
-    val syncJobStatus =
-      SyncJobStatus.Failed(
-        listOf(ResourceSyncException(ResourceType.Patient, Exception("Sync For Patient Failed"))),
-      )
+    val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
+    verify {
+      registerFragmentSpy.getString(
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
+      )
+    }
   }
 
   @Test
   fun testOnSyncWithFailedJobStatusNonAuthErrorNullExceptionsRendersSyncFailedMessage() {
-    val syncJobStatus: SyncJobStatus.Failed = mockk()
-
-    every { syncJobStatus.exceptions } throws NullPointerException()
+    val syncJobStatus: CurrentSyncJobStatus.Failed = mockk()
 
     val registerFragmentSpy = spyk(registerFragment)
     registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
     verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_completed_with_errors) }
-  }
-
-  @Test
-  fun testOnSyncWithFailedJobStatusAuthErrorRendersSyncUnauthorizedMessage() {
-    val syncJobStatus =
-      SyncJobStatus.Failed(
-        listOf(
-          ResourceSyncException(
-            ResourceType.Patient,
-            HttpException(
-              Response.error<Patient>(
-                "".toResponseBody("application/json".toMediaTypeOrNull()),
-                okhttp3.Response.Builder()
-                  .code(401)
-                  .message("Your credentials are undesirable")
-                  .protocol(Protocol.HTTP_1_1)
-                  .request(Request.Builder().url("http://fhircore.org/fhir/").build())
-                  .build(),
-              ),
-            ),
-          ),
-        ),
+    verify {
+      registerFragmentSpy.getString(
+        org.smartregister.fhircore.engine.R.string.sync_completed_with_errors,
       )
-    val registerFragmentSpy = spyk(registerFragment)
-    registerFragmentSpy.onSync(syncJobStatus = syncJobStatus)
-    verify { registerFragmentSpy.onSync(syncJobStatus) }
-    verify { registerFragmentSpy.getString(R.string.sync_unauthorised) }
+    }
   }
 }

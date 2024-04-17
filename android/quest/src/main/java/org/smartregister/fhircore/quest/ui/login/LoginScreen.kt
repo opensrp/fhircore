@@ -91,13 +91,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.quest.R
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -115,7 +114,6 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
   val password by loginViewModel.password.observeAsState("")
   val loginErrorState by loginViewModel.loginErrorState.observeAsState(null)
   val showProgressBar by loginViewModel.showProgressBar.observeAsState(false)
-  val dataMigrationInProgress by loginViewModel.dataMigrationInProgress.observeAsState(false)
   val context = LocalContext.current
 
   LoginPage(
@@ -129,7 +127,6 @@ fun LoginScreen(loginViewModel: LoginViewModel, appVersionPair: Pair<Int, String
     loginErrorState = loginErrorState,
     showProgressBar = showProgressBar,
     appVersionPair = appVersionPair,
-    dataMigrationInProgress = dataMigrationInProgress,
   )
 }
 
@@ -146,7 +143,6 @@ fun LoginPage(
   loginErrorState: LoginErrorState? = null,
   showProgressBar: Boolean = false,
   appVersionPair: Pair<Int, String>? = null,
-  dataMigrationInProgress: Boolean,
 ) {
   var showPassword by remember { mutableStateOf(false) }
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
@@ -170,13 +166,6 @@ fun LoginPage(
     color = Color.White,
     contentColor = contentColorFor(backgroundColor = Color.DarkGray),
   ) {
-    // TODO display percentage of data migration progress
-    if (dataMigrationInProgress) {
-      LoaderDialog(
-        dialogMessage = stringResource(id = R.string.migrating_data),
-        showPercentageProgress = false,
-      )
-    }
     if (showForgotPasswordDialog) {
       ForgotPasswordDialog(
         forgotPassword = forgotPassword,
@@ -198,23 +187,28 @@ fun LoginPage(
             modifier =
               modifier
                 .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
+                .requiredHeight(applicationConfiguration.loginConfig.logoHeight.dp)
+                .requiredWidth(applicationConfiguration.loginConfig.logoWidth.dp)
                 .testTag(APP_LOGO_TAG),
           )
         }
-        Text(
-          color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
-          text = applicationConfiguration.appTitle,
-          fontWeight = FontWeight.Bold,
-          fontSize = 32.sp,
-          modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 8.dp)
-              .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG),
-        )
+        if (
+          applicationConfiguration.appTitle.isNotEmpty() &&
+            applicationConfiguration.loginConfig.showAppTitle
+        ) {
+          Text(
+            color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
+            text = applicationConfiguration.appTitle,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(vertical = 8.dp)
+                .align(Alignment.CenterHorizontally)
+                .testTag(APP_NAME_TEXT_TAG),
+          )
+        }
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
         OutlinedTextField(
@@ -311,7 +305,9 @@ fun LoginPage(
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
+                  ),
                 )
               LoginErrorState.INVALID_OFFLINE_STATE ->
                 stringResource(
@@ -321,12 +317,12 @@ fun LoginPage(
               LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_matching_sync_strategy),
+                  stringResource(org.smartregister.fhircore.quest.R.string.error_matching_sync_strategy),
                 )
               LoginErrorState.UNAUTHORISED_PERMISSIONS ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.unauthorised_user_permissions),
+                  stringResource(org.smartregister.fhircore.quest.R.string.unauthorised_user_permissions),
                 ) // todo: improve message
             },
           modifier =
@@ -461,7 +457,6 @@ fun LoginScreenPreview() {
     forgotPassword = {},
     onLoginButtonClicked = {},
     appVersionPair = Pair(1, "0.0.1"),
-    dataMigrationInProgress = true,
   )
 }
 
@@ -482,6 +477,5 @@ fun LoginScreenPreviewDarkMode() {
     forgotPassword = {},
     onLoginButtonClicked = {},
     appVersionPair = Pair(1, "0.0.1"),
-    dataMigrationInProgress = false,
   )
 }

@@ -35,21 +35,20 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
-import retrofit2.HttpException
-import timber.log.Timber
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment(), OnSyncListener {
@@ -124,15 +123,17 @@ class UserSettingFragment : Fragment(), OnSyncListener {
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started ->
-        lifecycleScope.launch {
-          userSettingViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing)),
-          )
+      is CurrentSyncJobStatus.Running ->
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {
+            userSettingViewModel.emitSnackBarState(
+              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            )
+          }
         }
-      is SyncJobStatus.Finished -> {
+      is CurrentSyncJobStatus.Succeeded -> {
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
             SnackBarMessageConfig(
@@ -143,25 +144,13 @@ class UserSettingFragment : Fragment(), OnSyncListener {
           )
         }
       }
-      is SyncJobStatus.Failed -> {
-        val hasAuthError =
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-            syncJobStatus.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 401
-            }
-          } catch (nullPointerException: NullPointerException) {
-            false
-          }
-
+      is CurrentSyncJobStatus.Failed -> {
         lifecycleScope.launch {
           userSettingViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message =
                 getString(
-                  if (hasAuthError) {
-                    R.string.sync_unauthorised
-                  } else R.string.sync_completed_with_errors,
+                  R.string.sync_completed_with_errors,
                 ),
               duration = SnackbarDuration.Long,
               actionLabel = getString(R.string.ok).uppercase(),

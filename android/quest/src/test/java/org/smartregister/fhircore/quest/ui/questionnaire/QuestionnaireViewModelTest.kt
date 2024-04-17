@@ -37,7 +37,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
@@ -74,6 +73,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ExtractedResourceUniquePropertyExpression
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -100,9 +101,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel.Companion.CONTAINED_LIST_TITLE
 import org.smartregister.model.practitioner.FhirPractitionerDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import timber.log.Timber
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 class QuestionnaireViewModelTest : RobolectricTest() {
 
@@ -181,13 +180,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       spyk(
         QuestionnaireViewModel(
           defaultRepository = defaultRepository,
-          transformSupportServices = mockk(),
           dispatcherProvider = defaultRepository.dispatcherProvider,
-          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
-          fhirPathDataExtractor = fhirPathDataExtractor,
+          transformSupportServices = mockk(),
+          sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
         ),
       )
 
@@ -217,10 +217,26 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         // Use StructureMap for extraction
         extension = samplePatientRegisterQuestionnaire.extension
       }
-    val questionnaireResponse = extractionQuestionnaireResponse()
+    val theLinkId = "someLinkId"
+    val relatedEntityLocationCode = "awesome-location-uuid"
+    val questionnaireResponse =
+      extractionQuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType(relatedEntityLocationCode))
+              },
+            )
+          },
+        )
+      }
+    val updatedQuestionnaireConfig =
+      questionnaireConfig.copy(
+        linkIds = listOf(LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION)),
+      )
     val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission =
-      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse -> Timber.i(idsTypes.toString()) })
+    val onSuccessfulSubmission: (List<IdType>, QuestionnaireResponse) -> Unit = spyk()
 
     // Throw ResourceNotFoundException existing QuestionnaireResponse
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
@@ -244,16 +260,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       currentQuestionnaireResponse = questionnaireResponse,
       actionParameters = actionParameters,
       context = context,
-      questionnaireConfig = questionnaireConfig,
+      questionnaireConfig = updatedQuestionnaireConfig,
       onSuccessfulSubmission = onSuccessfulSubmission,
     )
 
     // Verify QuestionnaireResponse was validated
-    verify {
+    coVerify {
       questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
+        questionnaire = questionnaire,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
       )
     }
 
@@ -283,12 +299,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     // Verify that the questionnaire response and extracted resources were saved
     val bundleSlot = slot<Bundle>()
     // https://github.com/mockk/mockk/issues/352#issuecomment-592426549
-    coVerifyOrder {
+    coVerify {
       questionnaireViewModel.saveExtractedResources(
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
-        currentQuestionnaireResponse = questionnaireResponse,
+        questionnaireConfig = updatedQuestionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
       )
     }
 
@@ -301,10 +318,21 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val resource = it.resource
       Assert.assertNotNull(resource.id)
       Assert.assertNotNull(resource.meta.lastUpdated)
+
+      // Assert every resource contains Related Entity Location meta tag as configured
+      val relatedEntityLocationCodingSystem =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+
+      val relatedEntityLocationMetaTag =
+        resource.meta.tag.findLast { coding ->
+          coding.system == relatedEntityLocationCodingSystem &&
+            coding.code == relatedEntityLocationCode
+        }
+      Assert.assertNotNull(relatedEntityLocationMetaTag)
+
       coVerify { defaultRepository.addOrUpdate(addMandatoryTags = true, resource = resource) }
-      /*coVerify {
-        questionnaireViewModel.addMemberToConfiguredGroup(resource = resource, groupConfig = null)
-      }*/
     }
     // QuestionnaireResponse should have, subject and contained properties set then it's saved
     Assert.assertEquals("Patient/" + patient.logicalId, questionnaireResponse.subject.reference)
@@ -333,23 +361,23 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.generateCarePlan(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
       )
 
       questionnaireViewModel.executeCql(
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
-        questionnaireConfig = questionnaireConfig,
+        questionnaireConfig = updatedQuestionnaireConfig,
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
       )
 
-      questionnaireViewModel.softDeleteResources(questionnaireConfig)
+      questionnaireViewModel.softDeleteResources(updatedQuestionnaireConfig)
 
       onSuccessfulSubmission(capture(idsTypesSlot), questionnaireResponse)
     }
@@ -545,7 +573,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertEquals(20, itemValue?.primitiveValue()?.toInt())
 
     // Barcode linkId updated
-    val questionnaireBarcodeItem = questionnaire?.find(newQuestionnaireConfig.barcodeLinkId)
+    val questionnaireBarcodeItem =
+      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
     Assert.assertTrue(barCodeItemValue is StringType)
     Assert.assertEquals(
@@ -628,29 +657,31 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    // No answer provided
-    Assert.assertFalse(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-      ),
-    )
+    runBlocking {
+      // No answer provided
+      Assert.assertFalse(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse,
+          context,
+        ),
+      )
 
-    // With an answer provided
-    Assert.assertTrue(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse.apply {
-          itemFirstRep.answer =
-            listOf(
-              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                .setValue(StringType("Answer")),
-            )
-        },
-        context,
-      ),
-    )
+      // With an answer provided
+      Assert.assertTrue(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse.apply {
+            itemFirstRep.answer =
+              listOf(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                  .setValue(StringType("Answer")),
+              )
+          },
+          context,
+        ),
+      )
+    }
   }
 
   @Test
@@ -678,7 +709,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "http://smartreg.org/Library/123",
         patient.asReference().reference,
         null,
-        setOf(),
+        expressions = setOf(),
       )
     }
   }
@@ -1043,7 +1074,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle = extractedBundle,
       questionnaire = questionnaire,
       questionnaireConfig = questionnaireConfig,
-      currentQuestionnaireResponse = questionnaireResponse,
+      questionnaireResponse = questionnaireResponse,
+      context = context,
     )
 
     // The Observation ID for the extracted Obs should be the same as previousObs'Id

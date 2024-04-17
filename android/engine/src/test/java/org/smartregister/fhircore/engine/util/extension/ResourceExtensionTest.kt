@@ -16,6 +16,8 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
@@ -37,7 +39,9 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Period
@@ -55,6 +59,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.LinkIdConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
@@ -66,6 +73,8 @@ class ResourceExtensionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  private val context = ApplicationProvider.getApplicationContext<Application>()
 
   @Before
   fun setUp() {
@@ -806,5 +815,84 @@ class ResourceExtensionTest : RobolectricTest() {
 
     Assert.assertTrue(filteredTasks2.isNotEmpty())
     Assert.assertEquals(filteredTasks2.first().resource.logicalId, tasks.last().resource.logicalId)
+  }
+
+  @Test
+  fun testAppendRelatedEntityLocationUpdatesResourceMetadataTag() {
+    val group =
+      Group().apply {
+        id = "grp1"
+        meta.addTag(Coding("http://system254.url", "123", "Sample code"))
+      }
+    val theLinkId = "someLinkId"
+    val locationId = "awesome-location-uuid"
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "qr1"
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType(locationId))
+              },
+            )
+          },
+        )
+      }
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "someQuestionnaire",
+        linkIds =
+          listOf(
+            LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION),
+          ),
+      )
+
+    group.appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
+
+    Assert.assertEquals(2, group.meta.tag.size)
+
+    val firstMetaTag = group.meta.tag.firstOrNull()
+    Assert.assertNotNull(firstMetaTag)
+    Assert.assertEquals("http://system254.url", firstMetaTag?.system)
+    Assert.assertEquals("123", firstMetaTag?.code)
+
+    val lastMetaTag = group.meta.tag.lastOrNull()
+    Assert.assertNotNull(lastMetaTag)
+    Assert.assertEquals(
+      context.getString(
+        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+      ),
+      lastMetaTag?.system,
+    )
+    Assert.assertEquals(locationId, lastMetaTag?.code)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Encounter Resource`() {
+    val encounter = Encounter().apply { this.id = "123456" }
+    encounter.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", encounter.serviceProvider.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Location Resource`() {
+    val location = Location().apply { this.id = "123456" }
+    location.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", location.managingOrganization.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Group Resource`() {
+    val group = Group().apply { this.id = "123456" }
+    group.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", group.managingEntity.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Patient Resource`() {
+    val patient = Patient().apply { this.id = "123456" }
+    patient.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", patient.managingOrganization.reference)
   }
 }

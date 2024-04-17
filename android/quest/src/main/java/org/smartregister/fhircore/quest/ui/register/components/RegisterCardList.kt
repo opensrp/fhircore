@@ -61,7 +61,7 @@ fun RegisterCardList(
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
 ) {
-  LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
+  LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     items(
       count = pagingItems.itemCount,
       key = pagingItems.itemKey { it.baseResourceId },
