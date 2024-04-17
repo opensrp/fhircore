@@ -72,7 +72,6 @@ import org.hl7.fhir.r4.model.Task
 import org.joda.time.LocalDate
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
