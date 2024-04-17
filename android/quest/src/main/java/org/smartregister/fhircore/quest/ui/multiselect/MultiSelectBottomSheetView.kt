@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,6 +36,7 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -44,6 +46,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
@@ -60,7 +63,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.MutableLiveData
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.multiselect.MultiSelectView
 import org.smartregister.fhircore.engine.ui.multiselect.TreeNode
@@ -76,7 +78,7 @@ fun MultiSelectBottomSheetView(
   onSearchTextChanged: (String) -> Unit,
   onSelectionDone: (Context, () -> Unit) -> Unit,
   search: () -> Unit,
-  isLoading: MutableLiveData<Boolean>,
+  isLoading: State<Boolean?>,
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
   Scaffold(
@@ -157,9 +159,14 @@ fun MultiSelectBottomSheetView(
       }
     },
   ) {
-    Box(modifier = Modifier.padding(it)) {
+    Box(
+      modifier = Modifier.fillMaxSize().padding(it),
+      contentAlignment = Alignment.TopCenter,
+    ) {
       if (isLoading.value == true) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+          color = MaterialTheme.colors.primary,
+        )
       }
       LazyColumn(
         modifier = Modifier.padding(horizontal = 8.dp),
