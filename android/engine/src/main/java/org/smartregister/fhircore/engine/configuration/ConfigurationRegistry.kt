@@ -514,7 +514,7 @@ constructor(
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     return resultBundle
   }
@@ -524,23 +524,36 @@ constructor(
     searchPath: String,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    val resultBundle =
-      if (gatewayModeHeaderValue.isNullOrEmpty()) {
-        fhirResourceDataSource.getResource(searchPath)
-      } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(
-          gatewayModeHeaderValue,
-          searchPath,
-        )
+    val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath)
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url ?: ""
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+
+    if (nextPageUrl.isNotEmpty()) {
+      processCompositionManifestResources(
+        gatewayModeHeaderValue,
+        nextPageUrl,
+        patientRelatedResourceTypes,
+      )
+    }
+  }
+
+  private suspend fun fetchResourceBundle(
+    gatewayModeHeaderValue: String?,
+    searchPath: String,
+  ): Bundle {
+    return if (gatewayModeHeaderValue.isNullOrEmpty()) {
+      fhirResourceDataSource.getResource(searchPath)
+    } else {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
+    }
   }
 
   private suspend fun processResultBundleEntries(
-    resultBundle: Bundle,
+    resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    resultBundle.entry?.forEach { bundleEntryComponent ->
+    resultBundleEntries.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
           val bundle = bundleEntryComponent.resource as Bundle
@@ -743,7 +756,8 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          searchPath =
+            "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
@@ -802,6 +816,7 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+    const val PAGINATION_NEXT = "next"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
