@@ -73,3 +73,62 @@ the below example shows how you can set today as the maximum value of a date pic
             }
      ],
 ```
+
+### Working with Date of Birth as lower bound of the date picker range
+
+first you have to use the standard launch context for the questionnaire [here](http://hl7.org/fhir/uv/sdc/STU3/CodeSystem-launchContext.html).
+
+Indicate the code you are interested in for the example below we are interested in patient as this is where we can get date of birth.
+
+```json
+ "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.demo.smartregister.org/fhir/StructureMap/a-give-id"
+    },
+    {
+      "extension": [
+        {
+          "url": "name",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+            "code": "patient",
+            "display": "Patient"
+          }
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
+    }
+  ],
+```
+
+On the date picker how to reference patient dob as the min date,
+
+Using the code specified on the questionnaire launchContext at targetStructureMap level we can access the date of birth as indicated below.
+
+```json
+     "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "d/M/y"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "patient.birthDate"
+                    }
+                  }
+                ]
+              }
+          }
+     ],
+```
