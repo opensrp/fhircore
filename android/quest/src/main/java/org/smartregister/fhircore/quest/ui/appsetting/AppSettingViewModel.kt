@@ -95,7 +95,7 @@ constructor(
     if (!appId.isNullOrEmpty()) {
       when {
         hasDebugSuffix() -> loadConfigurations(context)
-        else -> fetchRemoteConfigurations(appId, QuestBuildConfig.VERSION_NAME, context)
+        else -> fetchRemoteConfigurations(appId, QuestBuildConfig.VERSION_NAME.substringBefore("-"), context)
       }
     }
   }
