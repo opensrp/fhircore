@@ -10,3 +10,66 @@ Date picker is a widget capable of date selection, you can specify the maximum a
 Maximum date can be any date may be three month to come or even today. This set the date upper limit to the specified value
 
 Minimum date can also be any date. That is three or four months ago , today or even a person date of birth.
+
+### Working with the `today()` function
+
+When setting the date picker range the `today()` function is used in most cases
+
+valueString allows you to state the format you want the date to take.
+
+using this url `http://hl7.org/fhir/StructureDefinition/minValue` more on documentation [Here](https://hl7.org/fhir/extensions/StructureDefinition-minValue.html) you can set the lower bound of the range for date element
+
+using this url `http://hl7.org/fhir/StructureDefinition/maxValue` more on documentation [Here](https://hl7.org/fhir/extensions/StructureDefinition-maxValue.html) you can set the upper bound of the range for date element
+
+_valueDate indicate that you are working with dates when working with date the `cqf calculated values` can be included this is an expression that determines a calculated value. More on  cqf calculatedValue [here](https://hl7.org/fhir/extensions/StructureDefinition-cqf-calculatedValue.html)
+
+valueExpression allows you to specify the language used which is `fhirpath` and the expression bit of it is where you now specify your minimum or maximum date, for instance the example below we have specified today as the min value using the `today()` function
+
+the below example shows how you can set today as the minimum value of a date picker
+
+```json
+   "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        }
+    ],
+```
+the below example shows how you can set today as the maximum value of a date picker
+
+```json
+     "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "d/M/y"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            }
+     ],
+```
