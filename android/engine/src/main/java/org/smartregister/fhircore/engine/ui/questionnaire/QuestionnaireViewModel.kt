@@ -258,6 +258,7 @@ constructor(
       tracer.startTrace(QUESTIONNAIRE_TRACE)
       // important to set response subject so that structure map can handle subject for all entities
       handleQuestionnaireResponseSubject(resourceId, questionnaire, questionnaireResponse)
+      Timber.e(jsonParser.encodeResourceToString(questionnaireResponse))
       val extras = mutableListOf<Resource>()
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
@@ -598,34 +599,19 @@ constructor(
     return bundle
   }
 
-  fun getPopulationResourcesFromIntent(
+  private fun getPopulationResourcesFromIntent(
     intent: Intent,
-    questionnaireLogicalId: String,
   ): List<Resource> {
-    val resourcesList = mutableListOf<Resource>()
-
-    intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.run {
-      val bundle = Bundle()
-      forEach {
-        val resource = jsonParser.parseResource(it) as Resource
-        if (resource !is Bundle) {
-          resourcesList.add(jsonParser.parseResource(it) as Resource)
-        } else {
-          bundle.entry.addAll(extractRelevantObservation(resource, questionnaireLogicalId).entry)
-        }
-      }
-      resourcesList.add(bundle)
-    }
-
-    return resourcesList
+    return  intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.map {
+      jsonParser.parseResource(it) as Resource
+    } ?: listOf()
   }
 
   open suspend fun getPopulationResources(
     intent: Intent,
     questionnaireLogicalId: String,
   ): Array<Resource> {
-    val resourcesList =
-      getPopulationResourcesFromIntent(intent, questionnaireLogicalId).toMutableList()
+    val resourcesList = getPopulationResourcesFromIntent(intent).toMutableList()
 
     intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_PATIENT_KEY)?.let { patientId ->
       loadPatient(patientId)?.apply { resourcesList.add(this) }

@@ -28,6 +28,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
+import androidx.compose.ui.text.toLowerCase
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -543,7 +544,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
               resourcesList.toCollection(ArrayList()),
             )
           }
-          launchContexts
+          val actualContexts = launchContexts.toMutableMap()
+          if (launchContexts.isEmpty()) {
+            populationResources.forEach {
+              actualContexts[it.resourceType.toString().lowercase()] = it
+            }
+          }
+          actualContexts
             .takeIf { it.isNotEmpty() }
             ?.let { kv ->
               val launchContextsBundlePairs =

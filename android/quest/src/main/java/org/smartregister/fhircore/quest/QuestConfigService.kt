@@ -83,7 +83,6 @@ class QuestConfigService @Inject constructor(@ApplicationContext val context: Co
                 org.smartregister.fhircore.engine.R.string.sync_strategy_organization_display,
               )
           },
-        isResource = false,
       ),
       ResourceTag(
         type = SharedPreferenceKey.PRACTITIONER_ID.name,
