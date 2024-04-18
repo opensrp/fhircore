@@ -69,7 +69,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.Type
 import org.junit.Assert
-import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -1244,12 +1243,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
             val resource = listResource.entry.firstOrNull()?.item?.resource
 
             assertEquals(listResource.id, linkId)
-            assertNotNull(
+            Assert.assertNotNull(
                 resource?.meta?.tag?.any {
                     it.code == metaTagId
                 },
             )
-            assertNotNull(resource?.meta?.tag?.any {
+            Assert.assertNotNull(resource?.meta?.tag?.any {
                 it.system == "https://smartregister.org/related-entity-location-tag-id"
             })
         }
