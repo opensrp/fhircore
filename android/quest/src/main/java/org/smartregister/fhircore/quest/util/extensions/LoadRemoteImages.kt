@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.Serializable
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.Configuration
@@ -47,7 +47,7 @@ fun ViewModel.loadImagesRecursively(
   fun loadIcons(view: ViewProperties) {
     when (view.viewType) {
       ViewType.IMAGE -> {
-        var imageProps = view as ImageProperties
+        val imageProps = view as ImageProperties
         if (
           !imageProps.imageConfig?.reference.isNullOrEmpty() &&
             imageProps.imageConfig?.type == ICON_TYPE_REMOTE
@@ -57,14 +57,16 @@ fun ViewModel.loadImagesRecursively(
               .reference!!
               .interpolate(computedValuesMap)
               .extractLogicalIdUuid()
-          viewModelScope.launch(dispatcher) {
-            registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-              imageProps.imageConfig?.decodedBitmap =
-                binary.data
-                  .decodeToString()
-                  .tryDecodeJson<ImageConfiguration>()
-                  ?.data
-                  ?.base64toBitmap()
+          runBlocking {
+            withTimeout(2000) {
+              registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+                imageProps.imageConfig?.decodedBitmap =
+                  binary.data
+                    .decodeToString()
+                    .tryDecodeJson<ImageConfiguration>()
+                    ?.data
+                    ?.base64toBitmap()
+              }
             }
           }
         }

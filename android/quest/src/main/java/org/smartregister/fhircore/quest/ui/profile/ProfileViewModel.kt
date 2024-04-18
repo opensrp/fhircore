@@ -119,7 +119,6 @@ constructor(
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
-      val testMap: Map<String, Any> = mutableMapOf()
       val resourceData =
         resourceDataRulesExecutor
           .processResourceData(
@@ -142,7 +141,6 @@ constructor(
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
-          testMap = testMap,
         )
         val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
         viewModelScope.launch {
