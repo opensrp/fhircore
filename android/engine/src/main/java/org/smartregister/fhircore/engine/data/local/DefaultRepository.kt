@@ -671,9 +671,17 @@ constructor(
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
           val includedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.included?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.included
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.revIncluded?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.revIncluded
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val theRelatedResourcesMap =
             mutableMapOf<ResourceType, List<Resource>>().apply {
               includedResources?.let { putAll(it) }
