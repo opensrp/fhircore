@@ -52,6 +52,8 @@ OPENSRP_APP_ID="demo"
 
 **Note:** It is required to configure your OAuth client as **public** hence there's no need for a _OAuth client secret_.
 
+Create an empty `keystore.properties` file in the path `/android/keystore.properties`. This file is already gitignored so you can set up credentials without leaking to git.
+
 ### Gateway vs Non Gateway backend
 The codebase supports building a release that uses the [FHIR Gateway backend](https://github.com/opensrp/fhir-gateway) and one that doesn't. The **proxy** mode is the _default_ but if your backend is not using the [FHIR Gateway](https://github.com/opensrp/fhir-gateway/releases) you need to specify this by switching to the correct build type variant. To switch between the two one needs to change to a variant with the `debugNonProxy` build type. e.g for the flavor `opensrp` select the variant `opensrpDebugNonProxy`
 

@@ -1,0 +1,72 @@
+# Specific use cases
+
+This section of the docs describes specific health care use cases and examples of how to configure FHIR content to be relevant to them.
+
+## Antenatal care (ANC)
+
+### Multiple births
+
+You can manage recording multiple births by using
+
+1. complex Questionnaires with repeated group functionality to create block sections that can be repeated for the n-times where n is the number of newborns to be registered,
+2. tasking approach that allows you to create mini-tasks for launching a newborn registration Questionnaire, each task will represent a new newborn due for registration hence dynamically generating tasks based on the total number of newborns.
+
+Either of the two options above can be configured to achieve multiple birth registration as explored below.
+
+#### Using repeated groups
+
+To create a repeated group Questionnaire, you will need to create a Questionnaire item of type `group` with the `repeat` attribute set to true. This approach assumes the following;
+
+- all the Questionnaire sections are answered at once, hence combining both pregnancy outcome questions together with newborn registration questions,
+- all data required to answer the complex Questionnaire is available from the start.
+
+1.  Create a new item of type group in the Questionnaire to hold the newborn registration questions then set the repeats to `true`
+
+```
+"linkId": "9bee02da-a0a0-4e1f-89ba-56d3c68ad765",
+"type": "group",
+"extension": [
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-minOccurs",
+        "valueInteger": 1
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-maxOccurs",
+        "valueInteger": 9
+    },
+    {
+        "url": "http://ehelse.no/fhir/StructureDefinition/repeatstext",
+        "valueString": "Add Child"
+    }
+],
+"required": false,
+"repeats": true,
+"text": "Add Child Details",
+```
+
+2. You can opt to use a single page Questionnaire that scrolls to targeted block sections or alternatively you can use a paginated Questionnaire
+
+#### Using a tasking approach
+
+Handling multiple births using the tasking approach requires one to generate child registration tasks using a linked PlanDefinition by defining an evaluation criteria on the ActivityDefinition of the linked PlanDefinition.
+Using a StructureMap to generate tasks by linking it in the action to create Tasks dynamically based on number children born. Below is a sample PlanDefinition ActivityDefinition action:
+
+```
+{
+    "prefix": "new-born-registration",
+    "priority": "routine",
+    "condition": [
+        {
+            "kind": "applicability",
+            "expression": {
+                "language": "text/fhirpath",
+                "expression": "fhirpath to evaluate criteria"
+            }
+        }
+    ],
+    "definitionCanonical": "#careplan-new-born-registration",
+    "transform": "http://hl7.org/fhir/StructureMap/uuid"
+}
+```
+
+To generate the tasks dynamically, evaluate the number of children born response from the context QuestionnaireResponse and use it to iterate to generate tasks matching the number of children.
