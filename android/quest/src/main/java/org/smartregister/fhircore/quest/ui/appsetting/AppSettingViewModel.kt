@@ -109,14 +109,15 @@ constructor(
 
         var compositionResource: Composition? = null
         try {
-          val implementationGuide =
+          val implementationGuideResource =
             configurationRegistry.fetchRemoteImplementationGuide(appId, appVersion)
 
           compositionResource =
-            if (implementationGuide != null) {
-              configurationRegistry.addOrUpdate(implementationGuide)
+            if (implementationGuideResource != null) {
+              configurationRegistry.addOrUpdate(implementationGuideResource)
+
               val compositionReference =
-                implementationGuide.definition.resource[0].reference.reference
+                implementationGuideResource.definition.resource[0].reference.reference
 
               val compositionIdWithHistory = compositionReference?.substringAfter('/')
               val compositionId = compositionIdWithHistory?.substringBefore('/')
