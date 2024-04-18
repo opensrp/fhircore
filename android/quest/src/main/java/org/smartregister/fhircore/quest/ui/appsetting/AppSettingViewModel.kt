@@ -114,6 +114,7 @@ constructor(
 
           compositionResource =
             if (implementationGuide != null) {
+              configurationRegistry.addOrUpdate(implementationGuide)
               val compositionReference =
                 implementationGuide.definition.resource[0].reference.reference
 
