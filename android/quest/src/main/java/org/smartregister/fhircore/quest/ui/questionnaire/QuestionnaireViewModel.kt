@@ -195,7 +195,7 @@ constructor(
         questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
           find(uniqueIdAssignmentConfig.linkId)?.apply {
             // Extract ID from a Group, should be modified in future to support other resources
-            val uniqueIdResource =
+            uniqueIdResource =
               defaultRepository.retrieveUniqueIdAssignmentResource(
                 questionnaireConfig.uniqueIdAssignment,
               )
