@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -183,8 +182,8 @@ fun ClickableImageIcon(
                 .fillMaxSize(0.9f),
             bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.tint(tint ?: imageProperties.imageConfig?.color.parseColor()),
+            alpha = 1.0f,
+            contentScale = ContentScale.Fit,
           )
         }
     }

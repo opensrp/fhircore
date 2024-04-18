@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
 import java.io.ByteArrayOutputStream
 
 fun Bitmap.encodeToByteArray(): ByteArray {
@@ -29,4 +30,9 @@ fun Bitmap.encodeToByteArray(): ByteArray {
 
 fun ByteArray.decodeToBitmap(offset: Int = 0): Bitmap {
   return BitmapFactory.decodeByteArray(this, offset, this.size)
+}
+
+fun String.base64toBitmap(offset: Int = 0): Bitmap {
+  val decodedBytes = Base64.decode(this, Base64.DEFAULT)
+  return BitmapFactory.decodeByteArray(decodedBytes, offset, decodedBytes.size)
 }

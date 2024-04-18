@@ -57,6 +57,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.loadImagesRecursively
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -118,6 +119,7 @@ constructor(
         registerRepository.loadProfileData(profileId, resourceId, fhirResourceConfig, paramsList)
       val paramsMap: Map<String, String> = paramsList.toParamDataMap()
       val profileConfigs = retrieveProfileConfiguration(profileId, paramsMap)
+      val testMap: Map<String, Any> = mutableMapOf()
       val resourceData =
         resourceDataRulesExecutor
           .processResourceData(
@@ -126,7 +128,6 @@ constructor(
             params = paramsMap,
           )
           .copy(listResourceDataMap = listResourceDataStateMap)
-
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
@@ -141,7 +142,20 @@ constructor(
           relatedResourcesMap = repositoryResourceData.relatedResourcesMap,
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
+          testMap = testMap,
         )
+        val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
+        viewModelScope.launch {
+          if (computedMap != null) {
+            loadImagesRecursively(
+              profileConfiguration.views,
+              this.coroutineContext,
+              registerRepository,
+              computedMap,
+              listProperties.id,
+            )
+          }
+        }
       }
     }
   }
@@ -150,7 +164,6 @@ constructor(
     profileId: String,
     paramsMap: Map<String, String>?,
   ): ProfileConfiguration {
-    // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
