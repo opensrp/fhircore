@@ -1148,7 +1148,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun isRelatedEntityLocationMetaTagAddedToExtractedResource() = runBlocking {
+  fun testSaveExtractedResourcesAddsRelatedEntityLocationMetaTagToExtractedResource() = runBlocking {
     val bundleSlot = slot<Bundle>()
     val bundle = bundleSlot.captured
     val linkId = "linkId"
