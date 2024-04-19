@@ -80,8 +80,8 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
     val CARE_TEAM_ID by lazy { stringPreferencesKey("careTeamId") }
     val ORGANIZATION_ID by lazy { stringPreferencesKey("organizationId") }
     val LOCATION_ID by lazy { stringPreferencesKey("locationId") }
-    val PRACTITIONER_LOCATION_NAME by lazy { stringPreferencesKey("locationId") }
-    val CARE_TEAM_NAME by lazy { stringPreferencesKey("locationId") }
-    val ORGANIZATION_NAME by lazy { stringPreferencesKey("locationId") }
+    val PRACTITIONER_LOCATION_NAME by lazy { stringPreferencesKey("practitionerLocationName") }
+    val CARE_TEAM_NAME by lazy { stringPreferencesKey("careTeamName") }
+    val ORGANIZATION_NAME by lazy { stringPreferencesKey("organizationName") }
   }
 }
