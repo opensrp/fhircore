@@ -107,6 +107,7 @@ constructor(
 
   init {
     Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+      Timber.e(throwable)
       Process.killProcess(Process.myPid())
     }
   }
