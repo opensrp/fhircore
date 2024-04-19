@@ -68,6 +68,14 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
     dataStore.edit { preferences -> preferences[key] = value }
   }
 
+  suspend fun <T> remove(key: Preferences.Key<T>) {
+    dataStore.edit { it.remove(key) }
+  }
+
+  suspend fun clear() {
+    dataStore.edit { it.clear() }
+  }
+
   companion object Keys {
     val APP_ID by lazy { stringPreferencesKey("appId") }
     val LANG by lazy { stringPreferencesKey("lang") }

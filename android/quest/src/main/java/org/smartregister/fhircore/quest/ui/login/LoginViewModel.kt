@@ -374,7 +374,7 @@ constructor(
 
         if (practitionerId.isNotEmpty()) {
           writePractitionerDetailsToPreference(
-            careTeam = careTeam, //ToDo: Rename these correctly = to careTeamNames
+            careTeam = careTeam,
             organization = organization,
             location = location,
             fhirPractitionerDetails = practitionerDetails,
@@ -436,7 +436,7 @@ constructor(
         key = PreferenceDataStore.PRACTITIONER_ID,
         value = fhirPractitionerDetails.fhirPractitionerDetails?.id?: "",
       )
-      //ToDo: This is an object
+      //ToDo: This is an object type
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_DETAILS.name,
         fhirPractitionerDetails,
@@ -444,6 +444,7 @@ constructor(
       preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ",") )
       preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
       preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))
+      //ToDo: This is an object type
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies,

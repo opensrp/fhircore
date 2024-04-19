@@ -42,7 +42,7 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(preferenceDataStore: PreferenceDataStore): List<Coding> {
+  fun provideResourceTags(preferenceDataStore: PreferenceDataStore,sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
       when (strategy.type) {

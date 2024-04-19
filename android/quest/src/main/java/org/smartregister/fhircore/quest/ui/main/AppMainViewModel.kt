@@ -167,6 +167,7 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
+        //TODO: Writes an object type --->AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
@@ -183,6 +184,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
+          //TODO: Writes an object type ---> OffsetDateTime
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),

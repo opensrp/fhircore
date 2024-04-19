@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
@@ -104,7 +105,7 @@ constructor(
   val fhirCarePlanGenerator: FhirCarePlanGenerator,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
   val transformSupportServices: TransformSupportServices,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
@@ -112,12 +113,12 @@ constructor(
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    sharedPreferencesHelper.read<List<String>>(ResourceType.Organization.name)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME,null)
   }
 
   private val practitionerId: String? by lazy {
-    sharedPreferencesHelper
-      .read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+    preferenceDataStore
+      .readOnce(PreferenceDataStore.PRACTITIONER_ID, null)
       ?.extractLogicalIdUuid()
   }
 
@@ -527,7 +528,7 @@ constructor(
     context: Context,
   ) =
     this?.apply {
-      appendOrganizationInfo(authenticatedOrganizationIds)
+      appendOrganizationInfo(authenticatedOrganizationIds?.split(","))
       appendPractitionerInfo(practitionerId)
       appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
       updateLastUpdated()

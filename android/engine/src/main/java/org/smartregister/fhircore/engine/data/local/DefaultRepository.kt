@@ -187,7 +187,7 @@ constructor(
         generateMissingId()
       }
       if (addResourceTags) {
-        val tags = configService.provideResourceTags(preferenceDataStore)
+        val tags = configService.provideResourceTags(preferenceDataStore = preferenceDataStore,sharedPreferencesHelper = sharedPreferencesHelper)
         tags.forEach {
           val existingTag = currentResource.meta.getTag(it.system, it.code)
           if (existingTag == null) {

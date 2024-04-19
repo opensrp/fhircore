@@ -30,6 +30,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
@@ -45,6 +46,7 @@ constructor(
   val configService: ConfigService,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore
 ) {
 
   private val syncConfig by lazy {
@@ -95,7 +97,7 @@ constructor(
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper = sharedPreferencesHelper, preferenceDataStore = preferenceDataStore)
 
     val relatedResourceTypes: List<String>? =
       sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)

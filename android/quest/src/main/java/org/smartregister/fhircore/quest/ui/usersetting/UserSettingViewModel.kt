@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -65,7 +66,8 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  //val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
@@ -88,24 +90,29 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
+
+  //TODO: Reads an object type ---> UserInfo
   fun retrieveUserInfo() =
     sharedPreferencesHelper.read<UserInfo>(
       key = SharedPreferenceKey.USER_INFO.name,
     )
 
   fun practitionerLocation() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_LOCATION, null)
 
   fun retrieveOrganization() =
-    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME, null)
 
-  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+  fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
+  //TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
   fun allowSwitchingLanguages() = languages.size > 1
 
+
+  //TODO: Reads an object type ---> AppMainEvent
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -140,6 +147,7 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
+        //TODO : Write an object type ---> AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           configurationRegistry.clearConfigsCache()
