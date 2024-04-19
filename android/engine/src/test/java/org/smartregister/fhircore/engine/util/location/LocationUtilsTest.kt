@@ -80,7 +80,7 @@ class LocationUtilsTest : RobolectricTest() {
       }
     fusedLocationProviderClient.setMockLocation(location)
 
-    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
+    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient)
     assertNotNull(result)
 
     assertEquals(location.latitude, result!!.latitude, 0.0)
@@ -96,7 +96,7 @@ class LocationUtilsTest : RobolectricTest() {
       }
     fusedLocationProviderClient.setMockLocation(location)
 
-    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
+    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient)
     assertEquals(location.latitude, result!!.latitude, 0.0)
     assertEquals(location.longitude, result.longitude, 0.0)
   }
@@ -108,9 +108,7 @@ class LocationUtilsTest : RobolectricTest() {
       coroutineContext.cancel()
     }
 
-    val result = runCatching {
-      LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
-    }
+    val result = runCatching { LocationUtils.getAccurateLocation(fusedLocationProviderClient) }
 
     assertEquals(true, result.isFailure)
     assertEquals(true, result.exceptionOrNull() is CancellationException)
