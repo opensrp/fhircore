@@ -54,53 +54,54 @@ fun GeoWidgetLauncherScreen(
   fragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
 ) {
-  Scaffold(
-    topBar = {
-      Column {
-        /*
-         * Top section has toolbar and a results counts view
-         * by default isSearchBarVisible is visible
-         * */
-        TopScreenSection(
-          title = geoWidgetConfiguration.topScreenSection?.screenTitle ?: "",
-          searchText = "",
-          filteredRecordsCount = 1,
-          isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
-          searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
-          toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { searchText ->
-            onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
-          },
-          isFilterIconEnabled = false,
-          topScreenSection = geoWidgetConfiguration.topScreenSection,
-        ) { event ->
-          when (event) {
-            ToolbarClickEvent.Navigate ->
-              when (toolBarHomeNavigation) {
-                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
-                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
-              }
-            ToolbarClickEvent.FilterData -> {}
-            ToolbarClickEvent.Toggle -> {
-              geoWidgetConfiguration.topScreenSection
-                ?.toggleAction
-                ?.handleClickEvent(
-                  navController = navController,
-                )
+
+    Scaffold(
+        topBar = {
+            Column {
+                /*
+                * Top section has toolbar and a results counts view
+                * by default isSearchBarVisible is visible
+                * */
+                TopScreenSection(
+                    title = geoWidgetConfiguration.topScreenSection?.title ?: "",
+                    searchText = "",
+                    filteredRecordsCount = 1,
+                    isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
+                    searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
+                    toolBarHomeNavigation = toolBarHomeNavigation,
+                    onSearchTextChanged = { searchText ->
+                        onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
+                    },
+                    isFilterIconEnabled = false,
+                    topScreenSection = geoWidgetConfiguration.topScreenSection,
+                    navController = navController
+                ) { event ->
+                    when (event) {
+                        ToolbarClickEvent.Navigate ->
+                            when (toolBarHomeNavigation) {
+                                ToolBarHomeNavigation.OPEN_DRAWER -> openDrawer(true)
+                                ToolBarHomeNavigation.NAVIGATE_BACK -> navController.popBackStack()
+                            }
+
+                        ToolbarClickEvent.FilterData -> {}
+
+                        is ToolbarClickEvent.Actions -> {
+                            event.actions.handleClickEvent(navController = navController)
+                        }
+                    }
+                }
+
             }
-          }
         }
-      }
-    },
-  ) { innerPadding ->
-    Box(modifier = modifier.padding(innerPadding)) {
-      FragmentContainerView(
-        modifier = modifier,
-        fragmentManager = fragmentManager,
-        fragment = fragment,
-      )
+    ) { innerPadding ->
+        Box(modifier = modifier.padding(innerPadding)) {
+            FragmentContainerView(
+                modifier = modifier,
+                fragmentManager = fragmentManager,
+                fragment = fragment
+            )
+        }
     }
-  }
 }
 
 @Composable

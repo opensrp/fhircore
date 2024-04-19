@@ -16,12 +16,15 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -33,6 +36,9 @@ import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.expressions.Expression
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
+import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import com.mapbox.turf.TurfMeasurement
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,24 +51,31 @@ import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
+import org.smartregister.fhircore.engine.configuration.geowidget.MapLayerConfig
 import org.smartregister.fhircore.geowidget.BuildConfig
 import org.smartregister.fhircore.geowidget.R
 import org.smartregister.fhircore.geowidget.baselayers.MapBoxSatelliteLayer
 import org.smartregister.fhircore.geowidget.baselayers.StreetSatelliteLayer
-import org.smartregister.fhircore.geowidget.model.Context
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
-import org.smartregister.fhircore.geowidget.model.Position
-import org.smartregister.fhircore.geowidget.util.extensions.position
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
+import org.smartregister.fhircore.geowidget.model.ServicePointType
+import org.smartregister.fhircore.geowidget.model.TYPE
+import org.smartregister.fhircore.geowidget.util.ResourceUtils
+import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
+import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import timber.log.Timber
 
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
   private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
-  internal var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  internal var onAddLocationCallback: (Feature) -> Unit = {}
   internal var onCancelAddingLocationCallback: () -> Unit = {}
-  internal var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  internal var onClickLocationCallback: (Feature, FragmentManager) -> Unit =
+    { feature: Feature, fragmentManager: FragmentManager ->
+    }
   internal var useGpsOnAddingLocation: Boolean = false
-  internal var mapLayers: List<MapLayer> = ArrayList()
+  internal var mapLayers: List<MapLayerConfig> = ArrayList()
   internal var shouldLocationButtonShow: Boolean = true
   internal var shouldPlaneSwitcherButtonShow: Boolean = true
 
@@ -115,6 +128,7 @@ class GeoWidgetFragment : Fragment() {
       getMapAsync { mapboxMap ->
         mapboxMap.setStyle(builder) { style ->
           geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
+          addIconsLayer(style)
           addMapStyle(style)
           if (geoJsonSource != null && featureCollection != null) {
             geoJsonSource!!.setGeoJson(featureCollection)
@@ -127,21 +141,60 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
+  private fun addIconsLayer(mMapboxMapStyle: Style) {
+    val dynamicIconSize =
+      Expression.interpolate(
+        Expression.linear(),
+        Expression.zoom(),
+        Expression.literal(0.98f),
+        Expression.literal(0.9f),
+      )
+
+    val servicePointTypeMap: Map<String, ServicePointType> =
+      geoWidgetViewModel.getServicePointKeyToType()
+    for ((key, servicePointType) in servicePointTypeMap) {
+      val icon: Bitmap? =
+        ResourceUtils.drawableToBitmap(
+          ResourcesCompat.getDrawable(
+            resources,
+            servicePointType.drawableId,
+            requireContext().theme,
+          )!!,
+        )
+      icon?.let {
+        mMapboxMapStyle.addImage(key, icon)
+        val symbolLayer =
+          SymbolLayer(
+            String.format("%s.layer", key),
+            getString(R.string.data_set_quest),
+          )
+        symbolLayer.setProperties(
+          PropertyFactory.iconImage(key),
+          PropertyFactory.iconSize(dynamicIconSize),
+          PropertyFactory.iconIgnorePlacement(false),
+          PropertyFactory.iconAllowOverlap(false),
+        )
+        symbolLayer.setFilter(
+          Expression.eq(
+            Expression.get(TYPE),
+            servicePointType.name.lowercase(),
+          ),
+        )
+        mMapboxMapStyle.addLayer(symbolLayer)
+      }
+    }
+  }
+
   private fun KujakuMapView.addMapStyle(style: Style) {
     val baseLayerSwitcherPlugin = BaseLayerSwitcherPlugin(this, style)
 
     baseLayerSwitcherPlugin.apply {
       mapLayers.forEach {
-        when (it) {
-          is MapLayer.SatelliteLayer -> {
-            addBaseLayer(MapBoxSatelliteLayer(), it.isDefault)
-          }
-          is MapLayer.StreetLayer -> {
-            addBaseLayer(StreetsBaseLayer(requireContext()), it.isDefault)
-          }
-          is MapLayer.StreetSatelliteLayer -> {
-            addBaseLayer(StreetSatelliteLayer(requireContext()), it.isDefault)
-          }
+        when (it.layer) {
+          MapLayer.STREET -> addBaseLayer(MapBoxSatelliteLayer(), it.active)
+          MapLayer.SATELLITE -> addBaseLayer(StreetsBaseLayer(requireContext()), it.active)
+          MapLayer.STREET_SATELLITE ->
+            addBaseLayer(StreetSatelliteLayer(requireContext()), it.active)
         }
       }
     }
@@ -157,32 +210,31 @@ class GeoWidgetFragment : Fragment() {
   private fun setOnClickLocationListener(mapView: KujakuMapView) {
     mapView.setOnFeatureClickListener(
       { featuresList ->
-        val feature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
-        if (feature.geometry() !is Point) {
+        val mapBoxFeature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
+        // TODO: Support other Geometry types as well other than Point
+        if (mapBoxFeature.geometry() !is Point) {
           Timber.w("Only feature geometry of type Point is supported!")
           return@setOnFeatureClickListener
         }
 
-        val point = (feature.geometry() as Point)
-        val geoWidgetLocation =
-          GeoWidgetLocation(
-            id = feature.getStringProperty("id") ?: "",
-            name = feature.getStringProperty("name") ?: "",
-            position =
-              Position(
-                latitude = point.latitude(),
-                longitude = point.longitude(),
+        val point = (mapBoxFeature.geometry() as Point)
+        val feature =
+          Feature(
+            id = mapBoxFeature.id() ?: "",
+            geometry =
+              Geometry(
+                coordinates =
+                  listOf(
+                    Coordinates(
+                      latitude = point.latitude(),
+                      longitude = point.longitude(),
+                    ),
+                  ),
               ),
-            contexts =
-              listOf(
-                Context(
-                  id = feature.getStringProperty("id") ?: "",
-                  type = feature.getStringProperty("type") ?: "",
-                ),
-              ),
+            properties = mapBoxFeature.properties()?.asMap()?.featureProperties()!!,
           )
 
-        onClickLocationCallback(geoWidgetLocation)
+        onClickLocationCallback(feature, parentFragmentManager)
       },
       "quest-data-points",
     )
@@ -195,9 +247,9 @@ class GeoWidgetFragment : Fragment() {
 
         override fun onPointAdd(featureJSONObject: JSONObject?) {
           featureJSONObject ?: return
-          val position = featureJSONObject.position() ?: return
-          val geoWidgetLocation = GeoWidgetLocation(position = position)
-          onAddLocationCallback(geoWidgetLocation)
+          val position = featureJSONObject.geometry() ?: return
+          val feature = Feature(geometry = position)
+          onAddLocationCallback(feature)
         }
 
         override fun onCancel() {
@@ -263,11 +315,7 @@ class GeoWidgetFragment : Fragment() {
     mapView.onSaveInstanceState(outState)
   }
 
-  fun addLocationToMap(location: GeoWidgetLocation) {
-    geoWidgetViewModel.addLocationToMap(location)
-  }
-
-  fun addLocationsToMap(locations: Set<GeoWidgetLocation>) {
+  fun addLocationsToMap(locations: Set<Feature>) {
     geoWidgetViewModel.addLocationsToMap(locations)
   }
 
@@ -278,15 +326,17 @@ class GeoWidgetFragment : Fragment() {
 
 class Builder {
 
-  private var onAddLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  private var onAddLocationCallback: (Feature) -> Unit = {}
   private var onCancelAddingLocationCallback: () -> Unit = {}
-  private var onClickLocationCallback: (GeoWidgetLocation) -> Unit = {}
+  private var onClickLocationCallback: (Feature, FragmentManager) -> Unit =
+    { feature: Feature, fragmentManager: FragmentManager ->
+    }
   private var useGpsOnAddingLocation: Boolean = false
-  private var mapLayers: List<MapLayer> = ArrayList()
+  private var mapLayers: List<MapLayerConfig> = ArrayList()
   private var shouldLocationButtonShow: Boolean = true
   private var shouldPlaneSwitcherButtonShow: Boolean = true
 
-  fun setOnAddLocationListener(onAddLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
+  fun setOnAddLocationListener(onAddLocationCallback: (Feature) -> Unit) = apply {
     this.onAddLocationCallback = onAddLocationCallback
   }
 
@@ -294,13 +344,14 @@ class Builder {
     this.onCancelAddingLocationCallback = onCancelAddingLocationCallback
   }
 
-  fun setOnClickLocationListener(onClickLocationCallback: (GeoWidgetLocation) -> Unit) = apply {
-    this.onClickLocationCallback = onClickLocationCallback
-  }
+  fun setOnClickLocationListener(onClickLocationCallback: (Feature, FragmentManager) -> Unit) =
+    apply {
+      this.onClickLocationCallback = onClickLocationCallback
+    }
 
   fun setUseGpsOnAddingLocation(value: Boolean) = apply { this.useGpsOnAddingLocation = value }
 
-  fun setMapLayers(list: List<MapLayer>) = apply { this.mapLayers = list }
+  fun setMapLayers(list: List<MapLayerConfig>) = apply { this.mapLayers = list }
 
   fun setLocationButtonVisibility(show: Boolean) = apply { this.shouldLocationButtonShow = show }
 

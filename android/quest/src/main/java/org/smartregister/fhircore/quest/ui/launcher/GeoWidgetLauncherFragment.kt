@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -48,18 +49,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.showToast
-import org.smartregister.fhircore.geowidget.model.GeoWidgetLocation
+import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetFragment
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
+import org.smartregister.fhircore.quest.ui.bottomsheet.SummaryBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
@@ -73,23 +77,22 @@ class GeoWidgetLauncherFragment : Fragment() {
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private lateinit var geoWidgetFragment: GeoWidgetFragment
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
+  private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(
+      ConfigType.GeoWidget,
+      args.geoWidgetId,
+      emptyMap(),
+    )
+  }
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    geoWidgetConfiguration = geoWidgetConfiguration()
     Timber.i("GeoWidgetLauncherFragment onCreate")
   }
-
-  private fun geoWidgetConfiguration(): GeoWidgetConfiguration =
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      args.geoWidgetId,
-    )
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -173,7 +176,7 @@ class GeoWidgetLauncherFragment : Fragment() {
     showSetLocationDialog()
     setOnQuestionnaireSubmissionListener()
     setLocationFromDbCollector()
-    geoWidgetLauncherViewModel.checkSelectedLocation()
+    geoWidgetLauncherViewModel.checkSelectedLocation(geoWidgetConfiguration)
     Timber.i("GeoWidgetLauncherFragment onViewCreated")
   }
 
@@ -181,23 +184,27 @@ class GeoWidgetLauncherFragment : Fragment() {
     geoWidgetFragment =
       GeoWidgetFragment.builder()
         .setUseGpsOnAddingLocation(false)
-        .setOnAddLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-          if (geoWidgetLocation.position == null) return@setOnAddLocationListener
-          geoWidgetLauncherViewModel.launchQuestionnaireWithParams(
-            geoWidgetLocation,
-            activity?.tryUnwrapContext() as Context,
+        .setOnAddLocationListener { feature: Feature ->
+          if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
+          geoWidgetLauncherViewModel.launchQuestionnaire(
             geoWidgetConfiguration.registrationQuestionnaire,
+            feature,
+            activity?.tryUnwrapContext() as Context,
           )
         }
         .setOnCancelAddingLocationListener {
           requireContext().showToast("on cancel adding location")
         }
-        .setOnClickLocationListener { geoWidgetLocation: GeoWidgetLocation ->
-          requireContext().showToast("open profile")
+        .setOnClickLocationListener { feature: Feature, parentFragmentManager: FragmentManager ->
+          SummaryBottomSheetFragment(
+              geoWidgetConfiguration.summaryBottomSheetConfig!!,
+              ResourceData(feature.id, ResourceType.Location, feature.properties),
+            )
+            .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
         }
         .setMapLayers(geoWidgetConfiguration.mapLayers)
-        .setLocationButtonVisibility(geoWidgetConfiguration.shouldShowLocationButton)
-        .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.shouldShowPlaneSwitcherButton)
+        .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
+        .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
   }
 

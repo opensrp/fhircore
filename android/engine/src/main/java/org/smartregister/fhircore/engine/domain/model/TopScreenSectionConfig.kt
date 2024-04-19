@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.engine.domain.model
 
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 
-sealed class ToolbarClickEvent {
-    data object FilterData : ToolbarClickEvent()
-
-    data object Navigate : ToolbarClickEvent()
-
-    data class Actions(val actions: List<ActionConfig>) : ToolbarClickEvent()
-}
+@Serializable
+data class TopScreenSectionConfig(
+  val searchBar: RegisterContentConfig?,
+  val title: String,
+  val menuIcons: List<ImageProperties>? = null,
+)

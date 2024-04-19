@@ -92,7 +92,7 @@ fun RegisterScreen(
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
-          title = registerUiState.screenTitle,
+          title = registerUiState.screenTitle ?: registerUiState.registerConfiguration?.topScreenSection?.title ?: "",
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
@@ -103,6 +103,7 @@ fun RegisterScreen(
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
+          navController = navController
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -114,13 +115,11 @@ fun RegisterScreen(
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
             }
-            ToolbarClickEvent.Toggle -> {
-              registerUiState.registerConfiguration
-                ?.topScreenSection
-                ?.toggleAction
-                ?.handleClickEvent(
-                  navController = navController,
-                )
+
+            is ToolbarClickEvent.Actions -> {
+              event.actions.handleClickEvent(
+                navController = navController
+              )
             }
           }
         }

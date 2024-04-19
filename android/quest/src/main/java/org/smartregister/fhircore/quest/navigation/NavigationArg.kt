@@ -25,6 +25,7 @@ object NavigationArg {
   const val QUESTIONNAIRE_CONFIG = "questionnaireConfig"
   const val RESOURCE_CONFIG = "resourceConfig"
   const val GEO_WIDGET_ID = "geoWidgetId"
+  const val DETAILS_BOTTOM_SHEET_CONFIG = "detailsBottomSheetConfig"
   const val REPORT_ID = "reportId"
   const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"

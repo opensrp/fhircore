@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.model
+package org.smartregister.fhircore.engine.configuration.geowidget
 
-data class GeoWidgetLocation(
-  val id: String = "",
-  val name: String = "",
-  val position: Position? = null,
-  val contexts: List<Context> = listOf(),
-)
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 
-data class Position(
-  val latitude: Double = 0.0,
-  val longitude: Double = 0.0,
-)
-
-data class Context(
-  val id: String = "", // the id of 'type'
-  val type: String = "", // Group, Patient, Healthcare Service
-)
+@Serializable
+@Parcelize
+data class SummaryBottomSheetConfig(val views: List<ViewProperties>? = emptyList()) : Parcelable

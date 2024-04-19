@@ -14,14 +14,26 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.event
+package org.smartregister.fhircore.geowidget.model
 
-import org.smartregister.fhircore.engine.domain.model.ActionConfig
+data class Feature(
+  val geometry: Geometry? = null,
+  val id: String = "",
+  val properties: Map<String, Any> = emptyMap(),
+  val serverVersion: Int = 0,
+  val type: String = FEATURE,
+)
 
-sealed class ToolbarClickEvent {
-    data object FilterData : ToolbarClickEvent()
+data class Geometry(
+  val coordinates: List<Coordinates>? = emptyList(),
+  val type: String = POINT,
+)
 
-    data object Navigate : ToolbarClickEvent()
+data class Coordinates(
+  val latitude: Double = 0.0,
+  val longitude: Double = 0.0,
+)
 
-    data class Actions(val actions: List<ActionConfig>) : ToolbarClickEvent()
-}
+const val TYPE = "type"
+const val POINT = "Point"
+const val FEATURE = "Feature"
