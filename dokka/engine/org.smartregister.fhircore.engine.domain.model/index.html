@@ -1,0 +1,538 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.smartregister.fhircore.engine.domain.model</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../index.html">
+                            OpenSRP
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":engine:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="engine::org.smartregister.fhircore.engine.domain.model////PointingToDeclaration//-78402031">
+  <div class="breadcrumbs"><a href="../index.html">engine</a><span class="delimiter">/</span><span class="current">org.smartregister.fhircore.engine.domain.model</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="1780662461%2FClasslikes%2F-78402031" anchor-label="ActionConfig" id="1780662461%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-action-config/index.html"><span>Action</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1780662461%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-action-config/index.html">ActionConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>trigger<span class="token operator">: </span><a href="../org.smartregister.fhircore.engine.configuration.workflow/-action-trigger/index.html">ActionTrigger</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>workflow<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>display<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rules<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-rule-config/index.html">RuleConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>questionnaire<span class="token operator">: </span><a href="../org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>managingEntity<span class="token operator">: </span><a href="../org.smartregister.fhircore.engine.configuration.profile/-managing-entity-config/index.html">ManagingEntityConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>params<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-action-parameter/index.html">ActionParameter</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resourceConfig<span class="token operator">: </span><a href="-fhir-resource-config/index.html">FhirResourceConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>toolBarHomeNavigation<span class="token operator">: </span><a href="-tool-bar-home-navigation/index.html">ToolBarHomeNavigation</a><span class="token operator"> = </span>ToolBarHomeNavigation.OPEN_DRAWER<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>popNavigationBackStack<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-827068326%2FClasslikes%2F-78402031" anchor-label="ActionParameter" id="-827068326%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-action-parameter/index.html"><span>Action</span><wbr><span><span>Parameter</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-827068326%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-action-parameter/index.html">ActionParameter</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>paramType<span class="token operator">: </span><a href="-action-parameter-type/index.html">ActionParameterType</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Enumerations.DataType///PointingToDeclaration/">Enumerations.DataType</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>linkId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-305051200%2FClasslikes%2F-78402031" anchor-label="ActionParameterType" id="-305051200%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-action-parameter-type/index.html"><span>Action</span><wbr><span>Parameter</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-305051200%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-action-parameter-type/index.html">ActionParameterType</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-action-parameter-type/index.html">ActionParameterType</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Represents different types of parameters that can be defined within the config actions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1603990136%2FClasslikes%2F-78402031" anchor-label="Code" id="-1603990136%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-code/index.html"><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1603990136%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Stable.html"><span class="token annotation builtin">Stable</span></a></div><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-code/index.html">Code</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>system<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>code<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>display<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1422691489%2FClasslikes%2F-78402031" anchor-label="CountResultConfig" id="-1422691489%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-count-result-config/index.html"><span>Count</span><wbr><span>Result</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1422691489%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-count-result-config/index.html">CountResultConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>sumCounts<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1507632497%2FClasslikes%2F-78402031" anchor-label="DataQuery" id="-1507632497%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-data-query/index.html"><span>Data</span><wbr><span><span>Query</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1507632497%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-data-query/index.html">DataQuery</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>paramName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>operation<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.search/Operation///PointingToDeclaration/">Operation</span><span class="token operator"> = </span>Operation.AND<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>filterCriteria<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-filter-criterion-config/index.html">FilterCriterionConfig</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="663251194%2FClasslikes%2F-78402031" anchor-label="FhirResourceConfig" id="663251194%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-fhir-resource-config/index.html"><span>Fhir</span><wbr><span>Resource</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="663251194%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-fhir-resource-config/index.html">FhirResourceConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>baseResource<span class="token operator">: </span><a href="-resource-config/index.html">ResourceConfig</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>relatedResources<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-resource-config/index.html">ResourceConfig</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief "><p class="paragraph">Represents FHIR resources used on the register. The <a href="-fhir-resource-config/base-resource.html">baseResource</a> is the main resource used which can be accompanied by <a href="-fhir-resource-config/related-resources.html">relatedResources</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1525491262%2FClasslikes%2F-78402031" anchor-label="FilterCriterionConfig" id="-1525491262%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-filter-criterion-config/index.html"><span>Filter</span><wbr><span>Criterion</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1525491262%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span><span class="token punctuation">(</span><span>with<span class="token operator"> = </span><a href="../org.smartregister.fhircore.engine.util.serializers/-filter-criterion-serializer/index.html">FilterCriterionSerializer::class</a></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-filter-criterion-config/index.html">FilterCriterionConfig</a> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1703181345%2FClasslikes%2F-78402031" anchor-label="KeyValueConfig" id="1703181345%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-key-value-config/index.html"><span>Key</span><wbr><span>Value</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1703181345%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-key-value-config/index.html">KeyValueConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1569614723%2FClasslikes%2F-78402031" anchor-label="Language" id="-1569614723%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-language/index.html"><span><span>Language</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1569614723%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-language/index.html">Language</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>tag<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>displayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2117030572%2FClasslikes%2F-78402031" anchor-label="NestedSearchConfig" id="-2117030572%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-nested-search-config/index.html"><span>Nested</span><wbr><span>Search</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2117030572%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-nested-search-config/index.html">NestedSearchConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>resourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>referenceParam<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataQueries<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-data-query/index.html">DataQuery</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="960982783%2FClasslikes%2F-78402031" anchor-label="OverflowMenuItemConfig" id="960982783%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-overflow-menu-item-config/index.html"><span>Overflow</span><wbr><span>Menu</span><wbr><span>Item</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="960982783%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-overflow-menu-item-config/index.html">OverflowMenuItemConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>confirmAction<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>icon<span class="token operator">: </span><a href="../org.smartregister.fhircore.engine.configuration.navigation/-image-config/index.html">ImageConfig</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>titleColor<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>BLACK_COLOR_HEX_CODE<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>backgroundColor<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>visible<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>showSeparator<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>enabled<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span>TRUE<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>actions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-action-config/index.html">ActionConfig</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1118215984%2FClasslikes%2F-78402031" anchor-label="QuestionnaireType" id="1118215984%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-questionnaire-type/index.html"><span>Questionnaire</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1118215984%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-questionnaire-type/index.html">QuestionnaireType</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-questionnaire-type/index.html">QuestionnaireType</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1643388833%2FClasslikes%2F-78402031" anchor-label="RelatedResourceCount" id="-1643388833%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-related-resource-count/index.html"><span>Related</span><wbr><span>Resource</span><wbr><span><span>Count</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1643388833%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Stable.html"><span class="token annotation builtin">Stable</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-related-resource-count/index.html">RelatedResourceCount</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>relatedResourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>parentResourceId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>count<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This model represent a count result for <a href="-repository-resource-data/index.html">RepositoryResourceData</a>. The <a href="-related-resource-count/parent-resource-id.html">parentResourceId</a> refers to the id of the parent resource that we are interested in counting it's related resources.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="829510355%2FClasslikes%2F-78402031" anchor-label="RepositoryResourceData" id="829510355%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-repository-resource-data/index.html"><span>Repository</span><wbr><span>Resource</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="829510355%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Stable.html"><span class="token annotation builtin">Stable</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-repository-resource-data/index.html">RepositoryResourceData</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>resourceRulesEngineFactId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resource<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>relatedResourcesMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>relatedResourcesCountMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-related-resource-count/index.html">RelatedResourceCount</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyMap()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>secondaryRepositoryResourceData<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-repository-resource-data/index.html">RepositoryResourceData</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This represent the outcome of a query performed via the Repository. The query performed can either return a count or map of <span data-unresolved-link="org.hl7.fhir.r4.model/Resource///PointingToDeclaration/">Resource</span>'s (including nested resources flattened in the map). The optional property <a href="-repository-resource-data/resource-rules-engine-fact-id.html">resourceRulesEngineFactId</a> that can be used as the key in the rules factory facts map (each fact is represented as a key-value pair). The key for the <a href="-repository-resource-data/related-resources-map.html">relatedResourcesMap</a> will either be the configured unique id for representing the resource(s) in Rules engine Facts map or the <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span>. <a href="-repository-resource-data/secondary-repository-resource-data.html">secondaryRepositoryResourceData</a> returns a list of independent resources (which may include nested resource(s)) that have NO relationship with the base <a href="-repository-resource-data/resource.html">resource</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1732978405%2FClasslikes%2F-78402031" anchor-label="ResourceConfig" id="1732978405%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-resource-config/index.html"><span>Resource</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1732978405%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-resource-config/index.html">ResourceConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resource<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>filterId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>searchParameter<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isRevInclude<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataQueries<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-data-query/index.html">DataQuery</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>relatedResources<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-resource-config/index.html">ResourceConfig</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sortConfigs<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-sort-config/index.html">SortConfig</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resultAsCount<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>countResultConfig<span class="token operator">: </span><a href="-count-result-config/index.html">CountResultConfig</a><span class="token operator">?</span><span class="token operator"> = </span>CountResultConfig()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nestedSearchResources<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-nested-search-config/index.html">NestedSearchConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>configRules<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-rule-config/index.html">RuleConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>planDefinitions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>attributesToUpdate<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-key-value-config/index.html">KeyValueConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>filterFhirPathExpressions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-key-value-config/index.html">KeyValueConfig</a><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>emptyList()</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div><div class="brief "><p class="paragraph">This is the data class used to hold configurations for FHIR resources used in Profile and Registers. The property <a href="-resource-config/resource.html">resource</a> represents the <span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span>. <a href="-resource-config/id.html">id</a> is a unique name used as key in the rules engine fact's map. <a href="-resource-config/result-as-count.html">resultAsCount</a> property is used to indicate whether to perform count SQL query or not. Count queries return a count whereas search queries return the result of SQL SELECT statement.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1124660477%2FClasslikes%2F-78402031" anchor-label="ResourceData" id="1124660477%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-resource-data/index.html"><span>Resource</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1124660477%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/compose/runtime/Stable.html"><span class="token annotation builtin">Stable</span></a></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-resource-data/index.html">ResourceData</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>baseResourceId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>baseResourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>computedValuesMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>listResourceDataMap<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-resource-data/index.html">ResourceData</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Represent the resource types that are used on a Register.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1473937975%2FClasslikes%2F-78402031" anchor-label="ResourceFilterExpression" id="1473937975%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-resource-filter-expression/index.html"><span>Resource</span><wbr><span>Filter</span><wbr><span><span>Expression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1473937975%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-resource-filter-expression/index.html">ResourceFilterExpression</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>conditionalFhirPathExpressions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>matchAll<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>resourceType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/ResourceType///PointingToDeclaration/">ResourceType</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1446630286%2FClasslikes%2F-78402031" anchor-label="RoundingStrategy" id="1446630286%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rounding-strategy/index.html"><span>Rounding</span><wbr><span><span>Strategy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1446630286%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-rounding-strategy/index.html">RoundingStrategy</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-rounding-strategy/index.html">RoundingStrategy</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Represents different types of rounding strategies that can be applied to Decimal numbers within the application</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="130410551%2FClasslikes%2F-78402031" anchor-label="RuleConfig" id="130410551%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rule-config/index.html"><span>Rule</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="130410551%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-rule-config/index.html">RuleConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>description<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>priority<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">1</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>condition<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">"true"</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>actions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1017052741%2FClasslikes%2F-78402031" anchor-label="ServiceMemberIcon" id="1017052741%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-service-member-icon/index.html"><span>Service</span><wbr><span>Member</span><wbr><span><span>Icon</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1017052741%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-service-member-icon/index.html">ServiceMemberIcon</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-service-member-icon/index.html">ServiceMemberIcon</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-875086618%2FClasslikes%2F-78402031" anchor-label="ServiceStatus" id="-875086618%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-service-status/index.html"><span>Service</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-875086618%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-service-status/index.html">ServiceStatus</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-service-status/index.html">ServiceStatus</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-727552695%2FClasslikes%2F-78402031" anchor-label="SnackBarMessageConfig" id="-727552695%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-snack-bar-message-config/index.html"><span>Snack</span><wbr><span>Bar</span><wbr><span>Message</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-727552695%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-snack-bar-message-config/index.html">SnackBarMessageConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>actionLabel<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>duration<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/compose/material/SnackbarDuration.html">SnackbarDuration</a><span class="token operator"> = </span>SnackbarDuration.Short<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>snackBarActions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-action-config/index.html">ActionConfig</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()</span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a>, <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-306039467%2FClasslikes%2F-78402031" anchor-label="SortConfig" id="-306039467%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-sort-config/index.html"><span>Sort</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-306039467%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-sort-config/index.html">SortConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>paramName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dataType<span class="token operator">: </span><span data-unresolved-link="org.hl7.fhir.r4.model/Enumerations.DataType///PointingToDeclaration/">Enumerations.DataType</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>order<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir.search/Order///PointingToDeclaration/">Order</span><span class="token operator"> = </span>Order.ASCENDING<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>fhirPathExpression<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1883375935%2FClasslikes%2F-78402031" anchor-label="ToolBarHomeNavigation" id="1883375935%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-tool-bar-home-navigation/index.html"><span>Tool</span><wbr><span>Bar</span><wbr><span>Home</span><wbr><span><span>Navigation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1883375935%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-tool-bar-home-navigation/index.html">ToolBarHomeNavigation</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-tool-bar-home-navigation/index.html">ToolBarHomeNavigation</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1505169547%2FClasslikes%2F-78402031" anchor-label="TopBarConfig" id="-1505169547%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-top-bar-config/index.html"><span>Top</span><wbr><span>Bar</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1505169547%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="kotlinx.serialization/Serializable///PointingToDeclaration/"><span class="token annotation builtin">Serializable</span></span></div></div><span class="token keyword">data </span><span class="token keyword">class </span><a href="-top-bar-config/index.html">TopBarConfig</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>title<span class="token operator">: </span><a href="../org.smartregister.fhircore.engine.configuration.view/-compound-text-properties/index.html">CompoundTextProperties</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>collapsible<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>content<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../org.smartregister.fhircore.engine.configuration.view/-view-properties/index.html">ViewProperties</a><span class="token operator">&gt;</span><span class="token operator"> = </span>emptyList()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>toolBarHomeNavigation<span class="token operator">: </span><a href="-tool-bar-home-navigation/index.html">ToolBarHomeNavigation</a><span class="token operator"> = </span>ToolBarHomeNavigation.NAVIGATE_BACK<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>showOverflowMenu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">true</span></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a>, <a href="https://developer.android.com/reference/kotlin/java/io/Serializable.html">Serializable</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1629646390%2FClasslikes%2F-78402031" anchor-label="ViewType" id="1629646390%2FClasslikes%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-view-type/index.html"><span>View</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1629646390%2FClasslikes%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-view-type/index.html">ViewType</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="-view-type/index.html">ViewType</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Represents different types of views that can be rendered via compose</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-13709316%2FFunctions%2F-78402031" anchor-label="isDefault" id="-13709316%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-default.html"><span>is</span><wbr><span><span>Default</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-13709316%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">.</span><a href="is-default.html"><span class="token function">isDefault</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-282821831%2FFunctions%2F-78402031" anchor-label="isEditable" id="-282821831%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-editable.html"><span>is</span><wbr><span><span>Editable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-282821831%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">.</span><a href="is-editable.html"><span class="token function">isEditable</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1134888503%2FFunctions%2F-78402031" anchor-label="isReadOnly" id="1134888503%2FFunctions%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-read-only.html"><span>is</span><wbr><span>Read</span><wbr><span><span>Only</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1134888503%2FFunctions%2F-78402031"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":engine:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../org.smartregister.fhircore.engine.configuration/-questionnaire-config/index.html">QuestionnaireConfig</a><span class="token punctuation">.</span><a href="is-read-only.html"><span class="token function">isReadOnly</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
