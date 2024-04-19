@@ -1232,14 +1232,16 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
       val resource = listResource.entry.firstOrNull()?.item?.resource
 
-      assertEquals(listResource.id, linkId)
-      Assert.assertNotNull(
-        resource?.meta?.tag?.any { it.code == metaTagId },
-      )
-      Assert.assertNotNull(
-        resource?.meta?.tag?.any {
+      val resourceMetaTagId = resource?.meta?.tag?.filter { it.code == metaTagId }
+      val resourceMetaTag =
+        resource?.meta?.tag?.filter {
           it.system == "https://smartregister.org/related-entity-location-tag-id"
-        },
+        }
+
+      assertEquals(listResource.id, linkId)
+      Assert.assertNotNull(resourceMetaTagId)
+      Assert.assertNotNull(
+        resourceMetaTag,
       )
     }
 }
