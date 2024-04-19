@@ -696,7 +696,7 @@ constructor(
       .runCatching { fhirEngine.search<Resource>(search) }
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
-        //TODO Remove once issue resolved by Google team
+          // TODO Remove once issue resolved by Google team
           val includedResources: Map<ResourceType, List<Resource>>? =
             currentSearchResult.included
               ?.values
