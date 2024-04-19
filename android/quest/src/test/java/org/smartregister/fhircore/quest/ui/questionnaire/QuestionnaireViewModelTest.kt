@@ -1229,19 +1229,35 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         context = context,
       )
 
+      // Extract tags manually
       val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
       val resource = listResource.entry.firstOrNull()?.item?.resource
 
-      val resourceMetaTagId = resource?.meta?.tag?.filter { it.code == metaTagId }
-      val resourceMetaTag =
-        resource?.meta?.tag?.filter {
-          it.system == "https://smartregister.org/related-entity-location-tag-id"
-        }
+      // Assert
+      Assert.assertNotNull(listResource)
+      Assert.assertNotNull(resource)
 
-      assertEquals(listResource.id, linkId)
-      Assert.assertNotNull(resourceMetaTagId)
-      Assert.assertNotNull(
-        resourceMetaTag,
-      )
+      // Check if the meta tag id exists
+      var metaTagIdExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.code == metaTagId) {
+          metaTagIdExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(metaTagIdExists)
+
+      // Check if the related entity location meta tag exists
+      var relatedEntityLocationMetaTagExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.system == "https://smartregister.org/related-entity-location-tag-id") {
+          relatedEntityLocationMetaTagExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(relatedEntityLocationMetaTagExists)
+
+      // Assert that the listResource id matches the linkId
+      assertEquals(linkId, listResource.id)
     }
 }
