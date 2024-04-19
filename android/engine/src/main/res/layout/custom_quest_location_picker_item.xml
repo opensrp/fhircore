@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Location Picker" />
+
+    <org.smartregister.fhircore.engine.ui.questionnaire.items.LocationPickerView
+        android:id="@+id/location_picker_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Click to select location" />
+
+    <com.google.android.fhir.datacapture.views.MediaView android:id="@+id/item_media"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</LinearLayout>

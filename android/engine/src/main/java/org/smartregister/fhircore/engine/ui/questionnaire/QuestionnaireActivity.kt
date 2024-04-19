@@ -28,7 +28,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -43,7 +42,6 @@ import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Encounter
@@ -59,7 +57,6 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showConfirmAlert
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue.showProgressAlert
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl.DEFAULT_PROVIDER
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.FieldType
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -69,6 +66,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
@@ -188,7 +186,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .setQuestionnaire(questionnaireString)
         .showReviewPageBeforeSubmit(questionnaire.isPaginated)
         .setShowSubmitButton(true)
-        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl.DEFAULT_PROVIDER)
         .setIsReadOnly(questionnaireType.isReadOnly())
     questionnaireResponse?.let {
       it.distinctifyLinkId()
