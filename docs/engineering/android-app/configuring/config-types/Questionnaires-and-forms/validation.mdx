@@ -1,15 +1,15 @@
-# Validation
+# Form Validation
 
-There are many ways in which one can test questionnaire components like `date-picker` and one of this way is validation testing which is
-a way of gathering information to ensure the intended use and interpretation of a given component is met.
+There are many ways to validate questionnaire components and widgets e.g. `date-picker`, `numeric field` among others, one of the ways to achieve thise is through the use
+of `StructureDefinition` extensions to set value constraints.
 
 ## Validation on questionnaire's Date picker
 
-Date picker is a widget capable of date selection, you can specify the maximum and minimum dates to act as a range of dates to pick on.
+Date picker is a widget that support date selection, you can specify the  minimum and maximum dates to act as a range of dates to pick from.
 
-Maximum date can be any date may be three month to come or even today. This set the date upper limit to the specified value
+Both Maximum and Minimum date can be any date either in the future or past e.g. three month to come, three months past or even today. This set the date upper limit to the specified value
 
-Minimum date can also be any date. That is three or four months ago , today or even a person date of birth.
+It is required that the `minDate` is set as an earlier/lower date to `MaxDate`
 
 ### Working with the `today()` function
 
@@ -84,7 +84,7 @@ Indicate the code you are interested in for the example below we are interested 
  "extension": [
     {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-      "valueCanonical": "https://fhir.demo.smartregister.org/fhir/StructureMap/a-give-id"
+      "valueCanonical": "https://fhir.demo.smartregister.org/fhir/StructureMap/a-given-id"
     },
     {
       "extension": [
