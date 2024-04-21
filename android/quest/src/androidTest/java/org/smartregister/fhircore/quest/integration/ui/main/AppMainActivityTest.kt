@@ -69,7 +69,7 @@ class AppMainActivityTest {
   @get:Rule
   val permissionRule: GrantPermissionRule =
     GrantPermissionRule.grant(
-      android.Manifest.permission.ACCESS_FINE_LOCATION
+      android.Manifest.permission.ACCESS_FINE_LOCATION,
     )
 
   @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
