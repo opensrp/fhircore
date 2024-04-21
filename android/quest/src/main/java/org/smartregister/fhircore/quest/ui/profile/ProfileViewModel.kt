@@ -142,16 +142,19 @@ constructor(
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
         )
-        val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
-        viewModelScope.launch {
-          if (computedMap != null) {
-            loadImagesRecursively(
-              profileConfiguration.views,
-              this.coroutineContext,
-              registerRepository,
-              computedMap,
-              listProperties.id,
-            )
+        if (
+          listResourceDataStateMap[listProperties.id] != null &&
+            listResourceDataStateMap[listProperties.id]?.size!! > 0
+        ) {
+          val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
+          viewModelScope.launch {
+            if (computedMap != null) {
+              loadImagesRecursively(
+                profileConfiguration.views,
+                registerRepository,
+                computedMap,
+              )
+            }
           }
         }
       }

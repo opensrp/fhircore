@@ -16,8 +16,6 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
-import androidx.lifecycle.ViewModel
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.Serializable
@@ -37,12 +35,10 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 
-fun ViewModel.loadImagesRecursively(
+fun loadImagesRecursively(
   views: List<ViewProperties>,
-  dispatcher: CoroutineContext,
   registerRepository: RegisterRepository,
   computedValuesMap: Map<String, Any>,
-  listId: String,
 ) {
   fun loadIcons(view: ViewProperties) {
     when (view.viewType) {
