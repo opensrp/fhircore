@@ -140,12 +140,11 @@ constructor(
     }
   }
 
-  fun onSelectionDone(context: Context, dismiss: () -> Unit) {
+  fun saveSelectedLocations(context: Context) {
     viewModelScope.launch {
       context.syncLocationIdsProtoStore.updateData {
         selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
       }
-      dismiss()
     }
   }
 

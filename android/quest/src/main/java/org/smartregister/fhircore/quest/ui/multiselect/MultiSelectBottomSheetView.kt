@@ -76,7 +76,7 @@ fun MultiSelectBottomSheetView(
   onDismiss: () -> Unit,
   searchTextState: MutableState<String>,
   onSearchTextChanged: (String) -> Unit,
-  onSelectionDone: (Context, () -> Unit) -> Unit,
+  onSelectionDone: () -> Unit,
   search: () -> Unit,
   isLoading: State<Boolean?>,
 ) {
@@ -191,9 +191,8 @@ fun MultiSelectBottomSheetView(
           }
           item {
             if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
-              val context = LocalContext.current
               Button(
-                onClick = { onSelectionDone(context, onDismiss) },
+                onClick = { onSelectionDone() },
                 modifier = Modifier
                   .fillMaxWidth()
                   .padding(vertical = 16.dp, horizontal = 8.dp),

@@ -424,10 +424,11 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+            isFirstTimeSync = false, // TODO: Refactor the initial syn dialog logic
+//            isFirstTimeSync =
+//              sharedPreferencesHelper
+//                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+//                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,

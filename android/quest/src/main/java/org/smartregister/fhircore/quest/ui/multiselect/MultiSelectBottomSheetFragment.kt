@@ -20,49 +20,70 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 
 @AndroidEntryPoint
 class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
 
-  val bottomSheetArgs by navArgs<MultiSelectBottomSheetFragmentArgs>()
-  val multiSelectViewModel by viewModels<MultiSelectViewModel>()
+    val bottomSheetArgs by navArgs<MultiSelectBottomSheetFragmentArgs>()
+    val multiSelectViewModel by viewModels<MultiSelectViewModel>()
+    private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    isCancelable = false
-    val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
-    if (multiSelectViewConfig != null) {
-      multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
-    }
-  }
-
-  override fun onCreateView(
-    inflater: LayoutInflater,
-    container: ViewGroup?,
-    savedInstanceState: Bundle?,
-  ): View {
-    return ComposeView(requireContext()).apply {
-      setContent {
-        AppTheme {
-          MultiSelectBottomSheetView(
-            rootTreeNodes = multiSelectViewModel.rootTreeNodes,
-            selectedNodes = multiSelectViewModel.selectedNodes,
-            title = bottomSheetArgs.screenTitle,
-            onDismiss = { dismiss() },
-            searchTextState = multiSelectViewModel.searchTextState,
-            onSearchTextChanged = multiSelectViewModel::onTextChanged,
-            onSelectionDone = multiSelectViewModel::onSelectionDone,
-            search = multiSelectViewModel::search,
-            isLoading = multiSelectViewModel.flag.observeAsState(),
-          )
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        isCancelable = false
+        val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
+        if (multiSelectViewConfig != null) {
+            multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
         }
-      }
     }
-  }
+
+    private fun onSelectionDone() {
+        multiSelectViewModel.saveSelectedLocations(requireContext())
+        appMainViewModel.run {
+            if (requireContext().isDeviceOnline()) {
+                triggerSync()
+            } else {
+                requireContext().showToast(
+                    getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+                    Toast.LENGTH_LONG,
+                )
+            }
+        }
+        dismiss()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                AppTheme {
+                    MultiSelectBottomSheetView(
+                        rootTreeNodes = multiSelectViewModel.rootTreeNodes,
+                        selectedNodes = multiSelectViewModel.selectedNodes,
+                        title = bottomSheetArgs.screenTitle,
+                        onDismiss = { dismiss() },
+                        searchTextState = multiSelectViewModel.searchTextState,
+                        onSearchTextChanged = multiSelectViewModel::onTextChanged,
+                        onSelectionDone = ::onSelectionDone,
+                        search = multiSelectViewModel::search,
+                        isLoading = multiSelectViewModel.flag.observeAsState(),
+                    )
+                }
+            }
+        }
+    }
 }
