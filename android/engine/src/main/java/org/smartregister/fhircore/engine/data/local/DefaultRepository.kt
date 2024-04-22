@@ -68,7 +68,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -433,7 +432,7 @@ constructor(
   ) {
     val activeResource = filterActiveResources?.find { it.resourceType == resourceConfig.resource }
     if (!filterActiveResources.isNullOrEmpty() && activeResource?.active == true) {
-      filter(TokenClientParam(RegisterRepository.ACTIVE), { value = of(true) })
+      filter(TokenClientParam(ACTIVE), { value = of(true) })
     }
 
     resourceConfig.dataQueries?.forEach { dataQuery ->
@@ -1054,7 +1053,8 @@ constructor(
   }
 
   suspend fun retrieveUniqueIdAssignmentResource(
-          uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?, computedValuesMap: Map<String, Any>
+    uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?,
+    computedValuesMap: Map<String, Any>,
   ): Resource? {
     if (uniqueIdAssignmentConfig != null) {
       val search =
@@ -1063,7 +1063,7 @@ constructor(
             filterBy(dataQuery = it, configComputedRuleValues = computedValuesMap)
           }
           if (uniqueIdAssignmentConfig.resource == ResourceType.Group) {
-            filter(TokenClientParam(RegisterRepository.ACTIVE), { value = of(true) })
+            filter(TokenClientParam(ACTIVE), { value = of(true) })
           }
           if (uniqueIdAssignmentConfig.sortConfigs != null) {
             sort(uniqueIdAssignmentConfig.sortConfigs)

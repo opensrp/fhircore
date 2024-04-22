@@ -197,7 +197,8 @@ constructor(
             // Extract ID from a Group, should be modified in future to support other resources
             uniqueIdResource =
               defaultRepository.retrieveUniqueIdAssignmentResource(
-                questionnaireConfig.uniqueIdAssignment, questionnaireComputedValues
+                questionnaireConfig.uniqueIdAssignment,
+                questionnaireComputedValues,
               )
 
             val extractedId =
