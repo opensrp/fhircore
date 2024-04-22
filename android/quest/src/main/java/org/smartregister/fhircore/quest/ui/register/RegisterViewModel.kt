@@ -221,15 +221,12 @@ constructor(
         ?.mapValues { it.value.first() }
 
     // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
+    val baseResourceRegisterFilterField = registerDataFilterFieldsMap?.get(baseResource.filterId)
     val newBaseResourceDataQueries =
       createQueriesForRegisterFilter(
-        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries,
-        qrItemMap,
+        dataQueries = baseResourceRegisterFilterField?.dataQueries,
+        qrItemMap = qrItemMap,
       )
-
-    Timber.i(
-      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}",
-    )
 
     val newRelatedResources =
       createFilterRelatedResources(
@@ -238,19 +235,30 @@ constructor(
         qrItemMap = qrItemMap,
       )
 
-    Timber.i(
-      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}",
-    )
-
+    val fhirResourceConfig =
+      FhirResourceConfig(
+        baseResource =
+          baseResource.copy(
+            dataQueries = newBaseResourceDataQueries ?: baseResource.dataQueries,
+            nestedSearchResources =
+              baseResourceRegisterFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+                nestedSearchConfig.copy(
+                  dataQueries =
+                    createQueriesForRegisterFilter(
+                      dataQueries = nestedSearchConfig.dataQueries,
+                      qrItemMap = qrItemMap,
+                    ),
+                )
+              } ?: baseResource.nestedSearchResources,
+          ),
+        relatedResources = newRelatedResources,
+      )
     registerFilterState.value =
       RegisterFilterState(
         questionnaireResponse = questionnaireResponse,
-        fhirResourceConfig =
-          FhirResourceConfig(
-            baseResource = baseResource.copy(dataQueries = newBaseResourceDataQueries),
-            relatedResources = newRelatedResources,
-          ),
+        fhirResourceConfig = fhirResourceConfig,
       )
+    Timber.i("New ResourceConfig for register data filter: ${fhirResourceConfig.encodeJson()}")
   }
 
   private fun createFilterRelatedResources(
@@ -259,20 +267,31 @@ constructor(
     qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ): List<ResourceConfig> {
     val newRelatedResources =
-      relatedResources.map {
+      relatedResources.map { resourceConfig: ResourceConfig ->
+        val registerFilterField = registerDataFilterFieldsMap?.get(resourceConfig.filterId)
         val newDataQueries =
           createQueriesForRegisterFilter(
-            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries,
-            qrItemMap,
+            dataQueries = registerFilterField?.dataQueries,
+            qrItemMap = qrItemMap,
           )
-        it.copy(
-          dataQueries = newDataQueries,
+        resourceConfig.copy(
+          dataQueries = newDataQueries ?: resourceConfig.dataQueries,
           relatedResources =
             createFilterRelatedResources(
               registerDataFilterFieldsMap = registerDataFilterFieldsMap,
-              relatedResources = it.relatedResources,
+              relatedResources = resourceConfig.relatedResources,
               qrItemMap = qrItemMap,
             ),
+          nestedSearchResources =
+            registerFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+              nestedSearchConfig.copy(
+                dataQueries =
+                  createQueriesForRegisterFilter(
+                    dataQueries = nestedSearchConfig.dataQueries,
+                    qrItemMap = qrItemMap,
+                  ),
+              )
+            } ?: resourceConfig.nestedSearchResources,
         )
       }
     return newRelatedResources
@@ -424,11 +443,14 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync = false, // TODO: Refactor the initial syn dialog logic
 //            isFirstTimeSync =
 //              sharedPreferencesHelper
-//                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
+//                .read(
+//                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+//                  null,
+//                )
 //                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+            isFirstTimeSync = false, // TODO: Refactor the initial syn dialog logic
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
