@@ -16,13 +16,16 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main
 
+import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.rule.GrantPermissionRule
 import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
@@ -57,7 +60,7 @@ class AppMainActivityTest {
   @get:Rule(order = 0)
   val initWorkManager = TestRule { base, _ ->
     WorkManagerTestInitHelper.initializeTestWorkManager(
-      ApplicationProvider.getApplicationContext(),
+      getApplicationContext(),
       Configuration.Builder()
         .setMinimumLoggingLevel(Log.DEBUG)
         .setExecutor(SynchronousExecutor())
@@ -83,6 +86,15 @@ class AppMainActivityTest {
   @Before
   fun setUp() {
     hiltRule.inject()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      getInstrumentation()
+        .uiAutomation
+        .executeShellCommand(
+          "pm grant " +
+            getApplicationContext<Context>().packageName +
+            " android.permission.ACCESS_FINE_LOCATION",
+        )
+    }
   }
 
   @Test
