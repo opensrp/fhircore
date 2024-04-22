@@ -1009,13 +1009,13 @@ constructor(
   }
 
   suspend fun retrieveUniqueIdAssignmentResource(
-    uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?,
+    uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?, computedValuesMap: Map<String, Any>
   ): Resource? {
     if (uniqueIdAssignmentConfig != null) {
       val search =
         Search(uniqueIdAssignmentConfig.resource).apply {
           uniqueIdAssignmentConfig.dataQueries.forEach {
-            filterBy(dataQuery = it, configComputedRuleValues = emptyMap())
+            filterBy(dataQuery = it, configComputedRuleValues = computedValuesMap)
           }
           if (uniqueIdAssignmentConfig.resource == ResourceType.Group) {
             filter(TokenClientParam(ACTIVE), { value = of(true) })
