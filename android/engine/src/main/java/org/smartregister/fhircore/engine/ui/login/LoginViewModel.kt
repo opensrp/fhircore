@@ -198,6 +198,7 @@ constructor(
         }
       }
     } catch (ex: Exception) {
+      Timber.e(ex)
       if (ex is PractitionerNotFoundException) {
         _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
       } else {
@@ -273,10 +274,6 @@ constructor(
       write(ResourceType.CareTeam.name, careTeams.map { it.id.extractLogicalIdUuid() })
       write(ResourceType.Organization.name, organisationIds)
       write(ResourceType.Location.name, locations.map { it.id.extractLogicalIdUuid() })
-      write(
-        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies,
-      )
       write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerId,

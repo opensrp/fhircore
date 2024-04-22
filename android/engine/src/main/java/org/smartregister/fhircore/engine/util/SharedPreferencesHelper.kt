@@ -18,12 +18,16 @@ package org.smartregister.fhircore.engine.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.gson.Gson
 import com.google.gson.JsonIOException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
+import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -33,6 +37,7 @@ import timber.log.Timber
 class SharedPreferencesHelper
 @Inject
 constructor(@ApplicationContext val context: Context, val gson: Gson) {
+  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   val prefs: SharedPreferences by lazy {
     context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

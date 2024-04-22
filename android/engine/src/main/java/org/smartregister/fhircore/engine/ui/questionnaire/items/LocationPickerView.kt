@@ -3,9 +3,12 @@ package org.smartregister.fhircore.engine.ui.questionnaire.items
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Spinner
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.CoroutineScope
 import org.smartregister.fhircore.engine.R
 
 class LocationPickerView(
