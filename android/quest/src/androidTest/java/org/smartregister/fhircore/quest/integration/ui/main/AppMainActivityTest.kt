@@ -66,7 +66,8 @@ class AppMainActivityTest {
     return@TestRule base
   }
 
-  @get:Rule
+  @Rule
+  @JvmField
   val permissionRule: GrantPermissionRule =
     GrantPermissionRule.grant(
       android.Manifest.permission.ACCESS_FINE_LOCATION,
