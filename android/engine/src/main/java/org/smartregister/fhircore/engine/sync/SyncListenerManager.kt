@@ -19,12 +19,12 @@ package org.smartregister.fhircore.engine.sync
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -44,13 +44,14 @@ constructor(
   val configService: ConfigService,
 //  val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val fhirEngine: FhirEngine
 ) {
 
   //  private val syncConfig by lazy {
 //    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 //  }
 
-   var syncConfig: Parameters
+   private var syncConfig: Parameters
      get() {
        return syncConfig
      }
@@ -58,15 +59,6 @@ constructor(
        syncConfig = value
      }
 
-  lateinit var testInit: ApplicationConfiguration
-
-  var  appConfiguration: ApplicationConfiguration
-    get() {
-      return appConfiguration
-    }
-    set(value) {
-      appConfiguration = value
-    }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
@@ -102,12 +94,15 @@ constructor(
     }
   }
 
+  fun linkSyncConfig(syncConfigParameters: Parameters) {
+    syncConfig = syncConfigParameters
+  }
+
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
-    val appConfig = appConfiguration
-//      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+//    val appConfig = configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
@@ -136,7 +131,7 @@ constructor(
                 }
                 ?.code
             ConfigurationRegistry.ID -> paramExpression
-            ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
+            ConfigurationRegistry.COUNT -> ConfigurationRegistry.DEFAULT_COUNT .toString()
             else -> null
           }?.let {
             // replace the evaluated value into expression for complex expressions

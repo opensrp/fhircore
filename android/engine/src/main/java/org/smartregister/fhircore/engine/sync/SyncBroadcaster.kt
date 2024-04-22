@@ -73,8 +73,34 @@ constructor(
    * 's
    */
   suspend fun runConfigSync() = coroutineScope {
-    Timber.i("Running one time sync for Configuration...")
-    Sync.oneTimeSync<ConfigSyncWorker>(context).handleOneTimeSyncJobStatus(this)
+    Timber.d("#### runConfigSync for Configuration...")
+    val testFlow = Sync.oneTimeSync<ConfigSyncWorker>(context)
+      testFlow.handleConfigSyncJobStatus(this)
+      testFlow.collect {
+        Timber.d("#### runConfigSync for Content Configuration...")
+        run {
+          val testFlow2 = Sync.oneTimeSync<ContentSyncWorker>(context)
+            testFlow2.handleContentSyncJobStatus(this)
+            testFlow2.collect{
+              Timber.d("#### flow2 collected for Content Configuration...")
+            }
+        }
+    }
+  }
+
+
+  /**
+   * Run one time sync. The [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]
+   * 's
+   */
+  suspend fun runContentSync() = coroutineScope {
+    Timber.d("#### Running one time sync for Content Configuration...")
+    val mF = Sync.oneTimeSync<ContentSyncWorker>(context)
+      mF.handleContentSyncJobStatus(this)
+      mF.collect( {_lastJob ->
+
+      })
+
   }
 
   /**
@@ -102,6 +128,7 @@ constructor(
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener ->
           onSyncListener.onSync(it.currentSyncJobStatus)
+          Timber.d("#### sb job listener ps done")
         }
       }
       .catch { throwable -> Timber.e("Encountered an error during periodic sync:", throwable) }
@@ -114,9 +141,46 @@ constructor(
   ) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+      Timber.d("#### sb job listener 0 done")
       }
       .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
       .launchIn(coroutineScope)
   }
+
+
+  private fun Flow<CurrentSyncJobStatus>.handleConfigSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("#### sB handleConfigSyncJobStatus")
+    this.onEach {
+      syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+      Timber.d("#### sb job listener done")
+      //runContentSync()
+    }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
+
+  }
+
+
+  private fun Flow<CurrentSyncJobStatus>.handleContentSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("#### sB handleContentSyncJobStatus")
+    this.onEach {
+      syncListenerManager.onSyncListeners.forEach {
+        onSyncListener -> onSyncListener.onSync(it)
+      }
+      Timber.d("#### sb job listener 2 done")
+    }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
+
+  }
+
+
+
 }

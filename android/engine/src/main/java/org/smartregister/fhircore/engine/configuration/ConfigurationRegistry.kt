@@ -25,9 +25,11 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.Sync
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
@@ -44,6 +46,7 @@ import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
@@ -57,7 +60,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.sync.ConfigSyncWorker
+import org.smartregister.fhircore.engine.sync.ContentSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -103,7 +107,7 @@ constructor(
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
   val syncListenerManager: SyncListenerManager,
-  val syncBroadcaster: SyncBroadcaster
+  //val syncBroadcaster: SyncBroadcaster
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -144,8 +148,8 @@ constructor(
 //      //if(syncListenerManager.testInit?)
 //      if(configType == ConfigType.Application)
 //        syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
-//      if(configType == ConfigType.Sync)
-//        syncListenerManager.syncConfig = configCacheMap[configKey] as Parameters
+      if(configType == ConfigType.Sync)
+        syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
       return configCacheMap[configKey] as T
     }
     val decodedConfig =
@@ -158,8 +162,8 @@ constructor(
         .decodeJson<T>(jsonInstance = json)
 //    if(configType == ConfigType.Application)
 //      syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
-//    if(configType == ConfigType.Sync)
-//      syncListenerManager.syncConfig = configCacheMap[configKey] as Parameters
+    if(configType == ConfigType.Sync)
+      syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
@@ -274,8 +278,10 @@ constructor(
     appId: String,
     context: Context,
     configsLoadedCallback: (Boolean) -> Unit = {},
-  ) {
+  ) = coroutineScope {
     // Reset configurations before loading new ones
+
+    val coroutineScope = this
     configCacheMap.clear()
 
     // For appId that ends with suffix /debug e.g. app/debug, we load configurations from assets
@@ -300,17 +306,17 @@ constructor(
             }
           if (iconConfigs.isNotEmpty()) {
             val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
-            // retrofit call
 
+            Sync.oneTimeSync<ConfigSyncWorker>(context).handleConfigSyncJobStatus(coroutineScope)
+            // retrofit call
            // (configSyncWorker.getDownloadWorkManager() as ConfigDownloadManager).setupQueries(listOf("${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT"))
-            //configDownloadManager.processResponse()
-//            syncBroadcaster.runConfigSync()
-            fhirResourceDataSource
-              .getResource(
-                "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
-              )
-              .entry
-              .forEach { addOrUpdate(it.resource) }
+
+//            fhirResourceDataSource
+//              .getResource(
+//                "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
+//              )
+//              .entry
+//              .forEach { addOrUpdate(it.resource) }
           }
           populateConfigurationsMap(
             composition = this,
@@ -427,8 +433,20 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) = coroutineScope {
     Timber.d("####### running config sync")
-    syncBroadcaster.runConfigSync()
-//    Sync.oneTimeSync<ConfigSyncWorker>(context).handleOneTimeConfigSyncJobStatus(this)
+
+    Timber.d("#### runConfigSync for Configuration...")
+    val testFlow = Sync.oneTimeSync<ConfigSyncWorker>(context)
+    testFlow.handleConfigSyncJobStatus(this)
+    testFlow.collect {
+      Timber.d("#### runConfigSync for Content Configuration...")
+      run {
+        val testFlow2 = Sync.oneTimeSync<ContentSyncWorker>(context)
+        testFlow2.handleContentSyncJobStatus(this)
+        testFlow2.collect{
+          Timber.d("#### flow2 collected for Content Configuration...")
+        }
+      }
+    }
 
     // Reset configurations before loading new ones
     configCacheMap.clear()
@@ -488,6 +506,8 @@ constructor(
     val urlPath =
       "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
 
+    val testComp =  fhirEngine.get(ResourceType.Composition, appId!!)
+    println("testComp #### - " + jsonParser.encodeResourceToString(testComp))
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
@@ -839,13 +859,29 @@ constructor(
         ResourceType.Parameters,
       )
   }
-
-
-  private fun kotlinx.coroutines.flow.Flow<CurrentSyncJobStatus>.handleOneTimeConfigSyncJobStatus(
+  private fun Flow<CurrentSyncJobStatus>.handleConfigSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
+    Timber.d("#### sB handleConfigSyncJobStatus")
     this.onEach {
       syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
+      Timber.d("#### sb job listener done")
+      //runContentSync()
+    }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
+  }
+
+  private fun Flow<CurrentSyncJobStatus>.handleContentSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("#### sB handleContentSyncJobStatus")
+    this.onEach {
+      syncListenerManager.onSyncListeners.forEach {
+          onSyncListener -> onSyncListener.onSync(it)
+      }
+      Timber.d("#### sb job listener 2 done")
     }
       .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)

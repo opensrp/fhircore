@@ -47,7 +47,6 @@ import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -70,6 +69,8 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
+import timber.log.Timber
+import javax.inject.Inject
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -197,7 +198,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
               SnackBarMessageConfig(message = getString(R.string.syncing)),
             )
           }
+          Timber.d("#### registerFrag sync config currentJOb running")
         } else {
+          Timber.d("#### registerFrag sync config currentJOb running")
           emitPercentageProgress(
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
             (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
@@ -215,6 +218,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
+        Timber.d("#### registerFrag sync config currentJOb succeed")
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
@@ -229,6 +233,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
+        Timber.d("#### registerFrag sync config currentJOb failed")
       }
       else -> {
         // Do nothing

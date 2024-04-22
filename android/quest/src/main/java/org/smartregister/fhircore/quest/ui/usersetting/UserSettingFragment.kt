@@ -38,7 +38,6 @@ import androidx.navigation.findNavController
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
@@ -49,6 +48,8 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
+import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UserSettingFragment : Fragment(), OnSyncListener {
@@ -132,6 +133,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
               SnackBarMessageConfig(message = getString(R.string.syncing)),
             )
           }
+          Timber.d("#### usF sync config currentJOb running")
         }
       is CurrentSyncJobStatus.Succeeded -> {
         lifecycleScope.launch {
@@ -143,6 +145,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
             ),
           )
         }
+        Timber.d("#### usF sync config currentJOb succeed")
       }
       is CurrentSyncJobStatus.Failed -> {
         lifecycleScope.launch {
@@ -157,6 +160,7 @@ class UserSettingFragment : Fragment(), OnSyncListener {
             ),
           )
         }
+        Timber.d("#### usF sync config currentJOb failed")
       }
       else -> {
         // Do nothing
