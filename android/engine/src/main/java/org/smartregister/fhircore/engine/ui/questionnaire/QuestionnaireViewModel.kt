@@ -602,9 +602,9 @@ constructor(
   private fun getPopulationResourcesFromIntent(
     intent: Intent,
   ): List<Resource> {
-    return  intent.getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)?.map {
-      jsonParser.parseResource(it) as Resource
-    } ?: listOf()
+    return intent
+      .getStringArrayListExtra(QuestionnaireActivity.QUESTIONNAIRE_POPULATION_RESOURCES)
+      ?.map { jsonParser.parseResource(it) as Resource } ?: listOf()
   }
 
   open suspend fun getPopulationResources(

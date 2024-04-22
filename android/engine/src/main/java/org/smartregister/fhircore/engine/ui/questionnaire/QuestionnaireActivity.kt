@@ -42,6 +42,7 @@ import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Encounter
@@ -66,7 +67,6 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
-import javax.inject.Inject
 
 /**
  * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
@@ -187,7 +187,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .showReviewPageBeforeSubmit(questionnaire.isPaginated)
         .setShowSubmitButton(true)
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
-          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl.DEFAULT_PROVIDER)
+          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl.DEFAULT_PROVIDER,
+        )
         .setIsReadOnly(questionnaireType.isReadOnly())
     questionnaireResponse?.let {
       it.distinctifyLinkId()

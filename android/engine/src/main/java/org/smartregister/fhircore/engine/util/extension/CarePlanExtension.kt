@@ -68,8 +68,7 @@ fun CarePlan.CarePlanActivityComponent.canBeCompleted() =
 fun CarePlan.CarePlanActivityComponent.getQuestionnaire() =
   detail.code.coding.firstOrNull()?.code?.split("/")?.lastOrNull()
 
-fun CarePlan.CarePlanActivityComponent.getQuestionnaireName(): String? =
-  detail.description
+fun CarePlan.CarePlanActivityComponent.getQuestionnaireName(): String? = detail.description
 
 fun CarePlan.CarePlanActivityComponent.isGuardianVisit(systemTag: String) =
   this.detail.reasonCode

@@ -23,8 +23,9 @@ import com.google.android.fhir.datacapture.extensions.asStringValue
 import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
 import org.smartregister.fhircore.engine.ui.questionnaire.items.LocationPickerViewHolderFactory
 
-class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(private val customQuestItemDataProvider: CustomQuestItemDataProvider) :
-  QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
+class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
+  private val customQuestItemDataProvider: CustomQuestItemDataProvider,
+) : QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
 
   override fun get(
     provider: String,
@@ -33,8 +34,9 @@ class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(private val 
     return QuestionnaireItemViewHolderFactoryMatchersProviderImpl(customQuestItemDataProvider)
   }
 
-  class QuestionnaireItemViewHolderFactoryMatchersProviderImpl(private val customQuestItemDataProvider: CustomQuestItemDataProvider) :
-    QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
+  class QuestionnaireItemViewHolderFactoryMatchersProviderImpl(
+    private val customQuestItemDataProvider: CustomQuestItemDataProvider,
+  ) : QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
 
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
@@ -46,13 +48,18 @@ class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(private val 
           }
         },
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
-          LocationPickerViewHolderFactory(customQuestItemDataProvider = customQuestItemDataProvider)
+          LocationPickerViewHolderFactory(
+            customQuestItemDataProvider = customQuestItemDataProvider,
+          ),
         ) { questionnaireItem ->
-          questionnaireItem.getExtensionByUrl(LocationPickerViewHolderFactory.WIDGET_EXTENSION)
+          questionnaireItem
+            .getExtensionByUrl(LocationPickerViewHolderFactory.WIDGET_EXTENSION)
             .let {
-              if (it == null) false else it.value.asStringValue() == LocationPickerViewHolderFactory.WIDGET_TYPE
+              if (it == null) {
+                false
+              } else it.value.asStringValue() == LocationPickerViewHolderFactory.WIDGET_TYPE
             }
-        }
+        },
       )
     }
 

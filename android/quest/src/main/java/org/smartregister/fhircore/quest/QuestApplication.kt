@@ -132,7 +132,9 @@ class QuestApplication :
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-          QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(customQuestItemDataProvider),
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
+              customQuestItemDataProvider,
+            ),
         )
     return configuration as DataCaptureConfig
   }

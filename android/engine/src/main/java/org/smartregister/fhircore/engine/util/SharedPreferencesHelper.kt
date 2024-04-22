@@ -26,8 +26,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.serialization.SerializationException
-import org.hl7.fhir.instance.model.api.IBaseResource
-import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -94,6 +92,10 @@ constructor(@ApplicationContext val context: Context, val gson: Gson) {
         null
       }
     }
+
+  inline fun <reified T> readJsonArray(key: String, typeToken: java.lang.reflect.Type): T {
+    return gson.fromJson(this.read(key, null), typeToken)
+  }
 
   /** Write any object by saving it as JSON */
   inline fun <reified T> write(key: String, value: T?, encodeWithGson: Boolean = true) {
