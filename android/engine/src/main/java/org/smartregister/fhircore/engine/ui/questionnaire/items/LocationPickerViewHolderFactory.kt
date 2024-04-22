@@ -26,6 +26,7 @@ import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemView
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.questionnaire.items.location.LocationPickerView
 
 class LocationPickerViewHolderFactory(
   val customQuestItemDataProvider: CustomQuestItemDataProvider,

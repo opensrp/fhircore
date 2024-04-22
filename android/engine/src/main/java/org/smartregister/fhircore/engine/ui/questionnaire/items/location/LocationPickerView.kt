@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.questionnaire.items
+package org.smartregister.fhircore.engine.ui.questionnaire.items.location
 
 import android.content.Context
 import android.text.Editable
@@ -29,17 +29,18 @@ import androidx.cardview.widget.CardView
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.LifecycleCoroutineScope
 import com.google.android.fhir.datacapture.views.HeaderView
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
-import org.smartregister.fhircore.engine.ui.questionnaire.items.location.LocationHierarchyAdapter
+import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
 
 class LocationPickerView(
   private val context: Context,
-  private val itemView: View,
+  itemView: View,
   private val lifecycleScope: LifecycleCoroutineScope,
 ) {
   private var customQuestItemDataProvider: CustomQuestItemDataProvider? = null
@@ -125,7 +126,7 @@ class LocationPickerView(
     rootLayout?.let { rootLayout ->
       val mainLayout =
         LayoutInflater.from(context).inflate(R.layout.custom_material_spinner, rootLayout, false)
-      val dropdown = mainLayout.findViewById<AutoCompleteTextView>(R.id.menu_auto_complete)
+      val dropdown = mainLayout.findViewById<MaterialAutoCompleteTextView>(R.id.menu_auto_complete)
       val layoutParams =
         LinearLayout.LayoutParams(
           ViewGroup.LayoutParams.MATCH_PARENT,
@@ -139,20 +140,30 @@ class LocationPickerView(
 
       dropdown.setOnItemClickListener { _, _, position, _ ->
         val selectedLocation = adapter.getItem(position)
-        if (selectedLocation != null && selectedLocation.children.isNotEmpty()) {
-          if (dropdownMap.containsKey(selectedLocation.identifier)) {
-            (dropdownMap[selectedLocation.identifier]?.adapter as LocationHierarchyAdapter?)
-              ?.updateLocations(selectedLocation.children)
-          } else {
-            dropdownMap[selectedLocation.identifier] = dropdown
-            updateLocationData(selectedLocation.children)
-          }
-        } else if (selectedLocation != null) {
-          this.selectedHierarchy = selectedLocation
-        }
+        onOptionSelected(selectedLocation, dropdown)
       }
 
       rootLayout.addView(mainLayout)
+
+      if (locations.size == 1) {
+        val selected = locations.first()
+        dropdown.setText(selected.name, false)
+        onOptionSelected(selected, dropdown)
+      }
+    }
+  }
+
+  private fun onOptionSelected(selectedLocation: LocationHierarchy?, dropdown: AutoCompleteTextView) {
+    if (selectedLocation != null && selectedLocation.children.isNotEmpty()) {
+      if (dropdownMap.containsKey(selectedLocation.identifier)) {
+        (dropdownMap[selectedLocation.identifier]?.adapter as LocationHierarchyAdapter?)
+          ?.updateLocations(selectedLocation.children)
+      } else {
+        dropdownMap[selectedLocation.identifier] = dropdown
+        updateLocationData(selectedLocation.children)
+      }
+    } else if (selectedLocation != null) {
+      this.selectedHierarchy = selectedLocation
     }
   }
 

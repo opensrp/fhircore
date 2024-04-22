@@ -32,8 +32,8 @@ class LocationHierarchyAdapter(
   override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
     val view =
       convertView
-        ?: LayoutInflater.from(context).inflate(android.R.layout.simple_spinner_item, parent, false)
-    val textView = view.findViewById<TextView>(android.R.id.text1)
+        ?: LayoutInflater.from(context).inflate(com.google.android.fhir.datacapture.R.layout.drop_down_list_item, parent, false)
+    val textView = view.findViewById<TextView>(com.google.android.fhir.datacapture.R.id.answer_option_textview)
 
     val location = getItem(position)
     textView.text = location?.name ?: ""
