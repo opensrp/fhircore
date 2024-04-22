@@ -66,7 +66,7 @@ constructor(
   val syncBroadcaster: SyncBroadcaster,
   val accountAuthenticator: AccountAuthenticator,
   val secureSharedPreference: SecureSharedPreference,
-  //val sharedPreferencesHelper: SharedPreferencesHelper,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
   val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
@@ -189,11 +189,13 @@ constructor(
 
       withContext(dispatcherProvider.io()) { fhirEngine.clearDatabase() }
 
+      // TODO: The clear part of datastore should be within the authenticator --->
       accountAuthenticator.invalidateSession {
         sharedPreferencesHelper.resetSharedPrefs()
         secureSharedPreference.resetSharedPrefs()
         context.getActivity()?.launchActivityWithNoBackStackHistory<AppSettingActivity>()
       }
+      preferenceDataStore.clear()
     }
   }
 

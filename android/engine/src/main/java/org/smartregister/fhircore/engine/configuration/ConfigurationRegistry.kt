@@ -56,12 +56,11 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.camelCase
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
@@ -86,7 +85,7 @@ class ConfigurationRegistry
 constructor(
   val fhirEngine: FhirEngine,
   val fhirResourceDataSource: FhirResourceDataSource,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DispatcherProvider,
   val configService: ConfigService,
   val json: Json,
@@ -401,7 +400,7 @@ constructor(
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
     // Reset configurations before loading new ones
     configCacheMap.clear()
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+    preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
@@ -596,7 +595,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
+          ?: "${openSrpApplication?.getFhirServerHost().toString().trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
   fun writeToFile(resource: Resource): File {
@@ -763,10 +762,10 @@ constructor(
     }
   }
 
-  fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      resourceTypes.distinctBy { it.name },
+  suspend fun saveSyncSharedPreferences(resourceTypes: List<ResourceType>) =
+    preferenceDataStore.write(
+      PreferenceDataStore.REMOTE_SYNC_RESOURCES,
+      resourceTypes.distinctBy { it.name }.joinToString(","),
     )
 
 

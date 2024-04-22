@@ -56,6 +56,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -92,6 +93,7 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val syncBroadcaster: SyncBroadcaster,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val configurationRegistry: ConfigurationRegistry,
   val registerRepository: RegisterRepository,
   val dispatcherProvider: DispatcherProvider,
@@ -103,7 +105,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, "")!!,
+            preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, "") ?:"",
           ),
       ),
     )
@@ -262,6 +264,8 @@ constructor(
       }
   }
 
+
+  //TODO : Read an object type ---> AppMainEvent
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -278,6 +282,7 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
+  //TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
