@@ -587,9 +587,9 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
           viewModelScope.launch(Dispatchers.IO) {
             expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
             questionnaire.item.flattened().filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
-              updateDependentQuestionnaireResponseItems(
+              updateQuestionnaireResponseItemWithCalculatedExpression(
                 qItem,
-                questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId },
+                questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId } ?: QuestionnaireResponseItemComponent(),
               )
             }
             pages = getQuestionnairePages()
@@ -633,6 +633,25 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
             }
           }
       }
+  }
+
+  private suspend fun updateQuestionnaireResponseItemWithCalculatedExpression(
+    questionnaireItem: QuestionnaireItemComponent,
+    questionnaireResponseItem: QuestionnaireResponseItemComponent,
+  ) {
+    val calculatedAnswer = expressionEvaluator
+      .evaluateCalculatedExpression(
+        questionnaireItem,
+        questionnaireResponseItem,
+      )
+    if (calculatedAnswer.second.isEmpty()) return
+    if (modifiedQuestionnaireResponseItemSet.contains(questionnaireResponseItem)) return
+    if (questionnaireResponseItem.answer.hasDifferentAnswerSet(calculatedAnswer.second)) {
+      questionnaireResponseItem.answer =
+        calculatedAnswer.second.map {
+          QuestionnaireResponseItemAnswerComponent().apply { value = it }
+        }
+    }
   }
 
   private suspend fun resolveCqfExpression(
