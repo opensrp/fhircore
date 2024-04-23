@@ -27,6 +27,7 @@ import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.rule.GrantPermissionRule
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
 import androidx.work.Configuration
@@ -58,6 +59,10 @@ import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_LOGOUT
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
 class AppMainActivityTest {
+  @JvmField
+  @Rule
+  val mRuntimePermissionRule: GrantPermissionRule =
+    GrantPermissionRule.grant(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
   @get:Rule(order = 0)
   val initWorkManager = TestRule { base, _ ->
