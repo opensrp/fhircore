@@ -602,4 +602,19 @@ class AppSettingViewModelTest : RobolectricTest() {
         slot.captured,
       )
     }
+
+  @Test
+  fun `fetchConfigurations() with an ImplementationGuide present`() {
+
+  }
+
+  @Test
+  fun `fetchConfigurations() without ImplementationGuide should fetch composition resource directly`() {
+
+  }
+
+  @Test
+  fun `fetchConfigurations() without both ImplementationGuide and Composition should fail with a message to the user`(){
+
+  }
 }
