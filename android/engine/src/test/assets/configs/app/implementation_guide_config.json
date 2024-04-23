@@ -1,7 +1,7 @@
 {
   "resourceType": "ImplementationGuide",
   "id": "12967310",
-  "url": "ImplementationGuide/quest",
+  "url": "https://fhir.zeir.smartregister.org/fhir/ImplementationGuide/quest",
   "version": "1.1.0",
   "name": "quest",
   "title": "Quest Implementation Guide",
