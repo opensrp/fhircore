@@ -124,7 +124,7 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.dtree.android.fhir:knowledge:0.1.0-alpha0393") {
+  api("org.dtree.android.fhir:knowledge:0.1.0-alpha0394") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
@@ -184,7 +184,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
-  api("org.dtree.android.fhir:data-capture:1.1.0-alpha02") {
+  api("org.dtree.android.fhir:data-capture:1.1.0-alpha04") {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")

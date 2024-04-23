@@ -446,7 +446,6 @@ constructor(
       questionnaire = questionnaire,
       questionnaireResponse = questionnaireResponse,
       StructureMapExtractionContext(
-        context = context,
         transformSupportServices = transformSupportServices,
         structureMapProvider = retrieveStructureMapProvider(),
         workerContext = simpleWorkerContext,
