@@ -34,8 +34,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
+import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
@@ -44,6 +47,8 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -78,6 +83,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var protoDataStore: ProtoDataStore
+
   @Inject lateinit var eventBus: EventBus
   lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
@@ -85,6 +92,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
   private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
 
   override val startForResult =
     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -195,12 +203,18 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private fun setupLocationServices() {
+    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
     if (!LocationUtils.isLocationEnabled(this)) {
       openLocationServicesSettings()
     }
 
     if (!hasLocationPermissions()) {
       launchLocationPermissionsDialog()
+    }
+
+    if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+      fetchLocation()
     }
   }
 
@@ -239,8 +253,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     locationPermissionLauncher =
       PermissionUtils.getLocationPermissionLauncher(
         this,
-        onFineLocationPermissionGranted = {},
-        onCoarseLocationPermissionGranted = {},
+        onFineLocationPermissionGranted = { fetchLocation() },
+        onCoarseLocationPermissionGranted = { fetchLocation() },
         onLocationPermissionDenied = {
           Toast.makeText(
               this,
@@ -257,6 +271,29 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         Manifest.permission.ACCESS_COARSE_LOCATION,
       ),
     )
+  }
+
+
+  fun fetchLocation() {
+    val context = this
+    lifecycleScope.launch {
+      val retrievedLocation =
+        if (PermissionUtils.hasFineLocationPermissions(context)) {
+          LocationUtils.getAccurateLocation(fusedLocationClient)
+        } else if (PermissionUtils.hasCoarseLocationPermissions(context)) {
+          LocationUtils.getApproximateLocation(fusedLocationClient)
+        } else {
+          null
+        }
+      retrievedLocation?.let {
+        protoDataStore.writeLocationCoordinates(
+          LocationCoordinate(it.latitude, it.longitude, it.altitude, Instant.now()),
+        )
+      }
+      if (retrievedLocation == null) {
+        this@AppMainActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
+      }
+    }
   }
 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {

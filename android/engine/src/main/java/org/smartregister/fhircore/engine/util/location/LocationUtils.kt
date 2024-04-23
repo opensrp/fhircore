@@ -25,11 +25,9 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 object LocationUtils {
@@ -42,65 +40,55 @@ object LocationUtils {
   }
 
   @SuppressLint("MissingPermission")
-  suspend fun getAccurateLocation(
-    fusedLocationClient: FusedLocationProviderClient,
-    coroutineContext: CoroutineContext,
-  ): Location? {
-    return withContext(coroutineContext) {
-      suspendCoroutine<Location> { continuation ->
-        fusedLocationClient
-          .getCurrentLocation(
-            LocationRequest.PRIORITY_HIGH_ACCURACY,
-            object : CancellationToken() {
-              override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                CancellationTokenSource().token
+  suspend fun getAccurateLocation(fusedLocationClient: FusedLocationProviderClient): Location {
+    return suspendCoroutine { continuation ->
+      fusedLocationClient
+        .getCurrentLocation(
+          LocationRequest.PRIORITY_HIGH_ACCURACY,
+          object : CancellationToken() {
+            override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+              CancellationTokenSource().token
 
-              override fun isCancellationRequested() = false
-            },
-          )
-          .addOnSuccessListener { location: Location? ->
-            if (location != null) {
-              Timber.d(
-                "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
-              )
-              continuation.resume(location)
-            }
+            override fun isCancellationRequested() = false
+          },
+        )
+        .addOnSuccessListener { location: Location? ->
+          if (location != null) {
+            Timber.d(
+              "Accurate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+            )
+            continuation.resume(location)
           }
-          .addOnFailureListener { e ->
-            Timber.e(e, "Failed to get accurate location")
-            continuation.resumeWithException(e)
-          }
-      }
+        }
+        .addOnFailureListener { e ->
+          Timber.e(e, "Failed to get accurate location")
+          continuation.resumeWithException(e)
+        }
     }
   }
 
   @SuppressLint("MissingPermission")
-  suspend fun getApproximateLocation(
-    fusedLocationClient: FusedLocationProviderClient,
-    coroutineContext: CoroutineContext,
-  ): Location? {
-    return withContext(coroutineContext) {
-      suspendCoroutine<Location> { continuation ->
-        fusedLocationClient
-          .getCurrentLocation(
-            LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY,
-            object : CancellationToken() {
-              override fun onCanceledRequested(p0: OnTokenCanceledListener) =
-                CancellationTokenSource().token
+  suspend fun getApproximateLocation(fusedLocationClient: FusedLocationProviderClient): Location {
+    return suspendCoroutine { continuation ->
+      fusedLocationClient
+        .getCurrentLocation(
+          LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY,
+          object : CancellationToken() {
+            override fun onCanceledRequested(p0: OnTokenCanceledListener) =
+              CancellationTokenSource().token
 
-              override fun isCancellationRequested() = false
-            },
-          )
-          .addOnSuccessListener { location: Location? ->
-            if (location != null) {
-              Timber.d(
-                "Approximate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
-              )
-              continuation.resume(location)
-            }
+            override fun isCancellationRequested() = false
+          },
+        )
+        .addOnSuccessListener { location: Location? ->
+          if (location != null) {
+            Timber.d(
+              "Approximate location - lat: ${location.latitude}; long: ${location.longitude}; alt: ${location.altitude}",
+            )
+            continuation.resume(location)
           }
-          .addOnFailureListener { e -> continuation.resumeWithException(e) }
-      }
+        }
+        .addOnFailureListener { e -> continuation.resumeWithException(e) }
     }
   }
 }

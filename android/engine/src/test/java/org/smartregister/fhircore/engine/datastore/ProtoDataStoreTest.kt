@@ -30,7 +30,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
 import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
-import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinates
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 
 @HiltAndroidTest
 internal class ProtoDataStoreTest : RobolectricTest() {
@@ -88,7 +88,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testReadLocationCoordinates() {
-    val expectedPreferencesValue = LocationCoordinates()
+    val expectedPreferencesValue = LocationCoordinate()
     runTest {
       protoDataStore.locationCoordinates.map { dataStoreValue ->
         assert(dataStoreValue == expectedPreferencesValue)
@@ -98,7 +98,7 @@ internal class ProtoDataStoreTest : RobolectricTest() {
 
   @Test
   fun testWriteLocationCoordinates() {
-    val valueToWrite = LocationCoordinates(37.7749, -122.4194, 0.0, Instant.now())
+    val valueToWrite = LocationCoordinate(37.7749, -122.4194, 0.0, Instant.now())
     runTest {
       protoDataStore.writeLocationCoordinates(valueToWrite)
       protoDataStore.locationCoordinates.map { assert(it == valueToWrite) }

@@ -29,7 +29,7 @@ import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.datastore.serializers.LocationCoordinatesSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
-import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinates
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
@@ -49,7 +49,7 @@ val Context.userInfoProtoStore: DataStore<UserInfo> by
     serializer = UserInfoDataStoreSerializer,
   )
 
-val Context.locationCoordinatesDatastore: DataStore<LocationCoordinates> by
+val Context.locationCoordinatesDatastore: DataStore<LocationCoordinate> by
   dataStore(
     fileName = LOCATION_COORDINATES_DATASTORE_JSON,
     serializer = LocationCoordinatesSerializer,
@@ -61,7 +61,7 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
   val practitioner =
     context.practitionerProtoStore.data.catch { exception ->
       if (exception is IOException) {
-        Timber.tag(TAG).e(exception, "Error reading practitioner details preferences.")
+        Timber.e(exception, "Error reading practitioner details preferences.")
         emit(PractitionerDetails())
       } else {
         throw exception
@@ -80,7 +80,7 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
   val userInfo =
     context.userInfoProtoStore.data.catch { exception ->
       if (exception is IOException) {
-        Timber.tag(TAG).e(exception, "Error reading practitioner details preferences.")
+        Timber.e(exception, "Error reading user information details preferences.")
         emit(UserInfo())
       } else {
         throw exception
@@ -98,14 +98,14 @@ class ProtoDataStore @Inject constructor(@ApplicationContext val context: Contex
   val locationCoordinates =
     context.locationCoordinatesDatastore.data.catch { exception ->
       if (exception is IOException) {
-        Timber.tag(TAG).e(exception, "Error reading practitioner details preferences.")
-        emit(LocationCoordinates())
+        Timber.e(exception, "Error reading location co-ordinates details.")
+        emit(LocationCoordinate())
       } else {
         throw exception
       }
     }
 
-  suspend fun writeLocationCoordinates(locationCoordinatesDetails: LocationCoordinates) {
+  suspend fun writeLocationCoordinates(locationCoordinatesDetails: LocationCoordinate) {
     context.locationCoordinatesDatastore.updateData { locationCoordinatesData ->
       locationCoordinatesData.copy(
         longitude = locationCoordinatesDetails.longitude,

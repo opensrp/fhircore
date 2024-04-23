@@ -19,35 +19,39 @@ package org.smartregister.fhircore.engine.datastore.serializers
 import androidx.datastore.core.Serializer
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.apache.commons.lang3.SerializationException
-import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinates
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
-object LocationCoordinatesSerializer : Serializer<LocationCoordinates> {
+object LocationCoordinatesSerializer : Serializer<LocationCoordinate> {
 
-  override val defaultValue: LocationCoordinates
-    get() = LocationCoordinates()
+  override val defaultValue: LocationCoordinate
+    get() = LocationCoordinate()
 
-  override suspend fun readFrom(input: InputStream): LocationCoordinates {
+  override suspend fun readFrom(input: InputStream): LocationCoordinate {
     return try {
       Json.decodeFromString(
-        deserializer = LocationCoordinates.serializer(),
+        deserializer = LocationCoordinate.serializer(),
         string = input.readBytes().decodeToString(),
       )
-    } catch (e: SerializationException) {
-      Timber.tag(SerializerConstants.PROTOSTORE_SERIALIZER_TAG).d(e)
+    } catch (serializationException: SerializationException) {
+      Timber.e(serializationException)
       defaultValue
     }
   }
 
-  override suspend fun writeTo(t: LocationCoordinates, output: OutputStream) {
-    output.write(
-      Json.encodeToString(
-          serializer = LocationCoordinates.serializer(),
-          value = t,
-        )
-        .encodeToByteArray(),
-    )
+  override suspend fun writeTo(t: LocationCoordinate, output: OutputStream) {
+    withContext(Dispatchers.IO) {
+      output.write(
+        Json.encodeToString(
+            serializer = LocationCoordinate.serializer(),
+            value = t,
+          )
+          .encodeToByteArray(),
+      )
+    }
   }
 }

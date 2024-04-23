@@ -68,11 +68,10 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider,
+  val locationService: LocationService,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
-  val locationService =
-    LocationService.create(context, configurationRegistry.sharedPreferencesHelper)
 
   /**
    * This function executes the actions defined in the [Rule] s generated from the provided list of

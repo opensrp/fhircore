@@ -16,14 +16,20 @@
 
 package org.smartregister.fhircore.quest.integration.ui.main
 
+import android.content.Context
+import android.os.Build
 import android.util.Log
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.rule.GrantPermissionRule
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
 import androidx.work.Configuration
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
@@ -53,11 +59,15 @@ import org.smartregister.fhircore.quest.ui.usersetting.USER_SETTING_ROW_LOGOUT
 @OptIn(ExperimentalMaterialApi::class)
 @HiltAndroidTest
 class AppMainActivityTest {
+  @JvmField
+  @Rule
+  val mRuntimePermissionRule: GrantPermissionRule =
+    GrantPermissionRule.grant(android.Manifest.permission.ACCESS_FINE_LOCATION)
 
   @get:Rule(order = 0)
   val initWorkManager = TestRule { base, _ ->
     WorkManagerTestInitHelper.initializeTestWorkManager(
-      ApplicationProvider.getApplicationContext(),
+      getApplicationContext(),
       Configuration.Builder()
         .setMinimumLoggingLevel(Log.DEBUG)
         .setExecutor(SynchronousExecutor())
@@ -65,13 +75,6 @@ class AppMainActivityTest {
     )
     return@TestRule base
   }
-
-  @get:Rule
-  val permissionRule: GrantPermissionRule =
-    GrantPermissionRule.grant(
-      android.Manifest.permission.ACCESS_FINE_LOCATION,
-      android.Manifest.permission.ACCESS_NETWORK_STATE,
-    )
 
   @get:Rule(order = 1) val hiltRule = HiltAndroidRule(this)
 
@@ -83,11 +86,21 @@ class AppMainActivityTest {
   @Before
   fun setUp() {
     hiltRule.inject()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      getInstrumentation()
+        .uiAutomation
+        .executeShellCommand(
+          "pm grant " +
+            getApplicationContext<Context>().packageName +
+            "android.Manifest.permission.ACCESS_FINE_LOCATION",
+        )
+    }
   }
 
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       Assert.assertEquals(
         R.id.registerFragment,
         it.navHostFragment.navController.currentDestination?.id,
@@ -99,6 +112,7 @@ class AppMainActivityTest {
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(R.id.userSettingFragment)
     }
 
@@ -111,6 +125,7 @@ class AppMainActivityTest {
     val resourceConfig = FhirResourceConfig(baseResource = patientResourceConfig)
 
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(
         R.id.profileFragment,
         bundleOf(
@@ -134,6 +149,7 @@ class AppMainActivityTest {
   @Test
   fun navigationToMeasureReportFragmentShouldShowMeasureReportScreen() {
     composeTestRule.activityRule.scenario.onActivity {
+      grantPermission()
       it.navHostFragment.navController.navigate(
         R.id.measureReportFragment,
         bundleOf(
@@ -144,5 +160,27 @@ class AppMainActivityTest {
     }
 
     composeTestRule.onNodeWithTag(SCREEN_TITLE).assertIsDisplayed()
+  }
+}
+
+fun grantPermission() {
+  val instrumentation = InstrumentationRegistry.getInstrumentation()
+  if (Build.VERSION.SDK_INT >= 23) {
+    val allowPermission =
+      UiDevice.getInstance(instrumentation)
+        .findObject(
+          UiSelector()
+            .text(
+              when {
+                Build.VERSION.SDK_INT == 23 -> "Allow"
+                Build.VERSION.SDK_INT <= 28 -> "ALLOW"
+                Build.VERSION.SDK_INT == 29 -> "Allow only while using the app"
+                else -> "While using the app"
+              },
+            ),
+        )
+    if (allowPermission.exists()) {
+      allowPermission.click()
+    }
   }
 }

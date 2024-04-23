@@ -18,28 +18,38 @@ package org.smartregister.fhircore.engine.rulesengine.services
 
 import android.content.Context
 import android.location.Location
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Resource
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.datastore.ProtoDataStore
+import org.smartregister.fhircore.engine.datastore.locationCoordinatesDatastore
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getAccurateLocation
 import org.smartregister.fhircore.engine.util.location.LocationUtils.getApproximateLocation
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasCoarseLocationPermissions
 import org.smartregister.fhircore.engine.util.location.PermissionUtils.hasFineLocationPermissions
 
-class LocationService(
-  @ApplicationContext val context: Context,
-  val sharedPreferences: SharedPreferencesHelper,
-) {
-  lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+typealias FhirLocation = org.hl7.fhir.r4.model.Location
 
-  fun calculateDistanceByProvidedLocations(
+@Singleton
+class LocationService
+@Inject
+constructor(
+  @ApplicationContext val context: Context,
+  val dispatcherProvider: DispatcherProvider,
+  val protoDataStore: ProtoDataStore,
+) {
+
+  private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+
+  fun calculateDistanceBetweenLocations(
     destination: Location,
     currentLocation: Location,
   ): String {
@@ -49,32 +59,30 @@ class LocationService(
 
   fun calculateDistanceByGpsLocation(location: Resource): String {
     val currentLocation = generateLocation(location)
-
-    CoroutineScope(Dispatchers.IO).launch {
-      fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-
+    CoroutineScope(dispatcherProvider.main()).launch {
       val retrievedLocation =
         if (hasFineLocationPermissions(context)) {
-          getAccurateLocation(fusedLocationProviderClient, Dispatchers.IO)
+          getAccurateLocation(fusedLocationProviderClient)
         } else if (hasCoarseLocationPermissions(context)) {
-          getApproximateLocation(fusedLocationProviderClient, Dispatchers.IO)
+          getApproximateLocation(fusedLocationProviderClient)
         } else {
           null
         }
 
       retrievedLocation?.let {
-        writeLocation(LocationCoordinates(it.latitude, it.longitude, it.altitude, Instant.now()))
+        protoDataStore.writeLocationCoordinates(
+          LocationCoordinate(it.latitude, it.longitude, it.altitude, Instant.now()),
+        )
       }
     }
 
-    val locationTest =
-      sharedPreferences.read<LocationCoordinates>(key = SharedPreferenceKey.GEO_LOCATION.name)
+    val locationCoordinate = runBlocking { context.locationCoordinatesDatastore.data.firstOrNull() }
 
     val generatedLocation =
-      Location("Generated location").apply {
-        if (locationTest != null && isWithinLast30Minutes(locationTest.timeStamp)) {
-          longitude = locationTest.longitude!!
-          latitude = locationTest.latitude!!
+      Location("").apply {
+        if (locationCoordinate != null) {
+          longitude = locationCoordinate.longitude!!
+          latitude = locationCoordinate.latitude!!
         }
       }
 
@@ -82,9 +90,9 @@ class LocationService(
     return formatDistance(distanceInMeters)
   }
 
-  fun generateLocation(location: Resource): Location {
-    return (location as? org.hl7.fhir.r4.model.Location).let {
-      Location("CustomLocationProvider").apply {
+  private fun generateLocation(location: Resource): Location {
+    return (location as? FhirLocation).let {
+      Location("").apply {
         if (it != null) {
           longitude = it.position.longitude.toDouble()
           latitude = it.position.latitude.toDouble()
@@ -93,16 +101,16 @@ class LocationService(
     }
   }
 
-  private fun calculateDistance(locationA: Location, locationB: Location): Float {
-    val resultArray = FloatArray(1)
+  private fun calculateDistance(startLocation: Location, endLocation: Location): Float {
+    val results = FloatArray(1)
     Location.distanceBetween(
-      locationA.latitude,
-      locationA.longitude,
-      locationB.latitude,
-      locationB.longitude,
-      resultArray,
+      startLocation.latitude,
+      startLocation.longitude,
+      endLocation.latitude,
+      endLocation.longitude,
+      results,
     )
-    return resultArray[0]
+    return results[0]
   }
 
   private fun formatDistance(distanceInMeters: Float): String {
@@ -114,28 +122,13 @@ class LocationService(
     }
   }
 
-  fun writeLocation(
-    location: LocationCoordinates,
-  ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.GEO_LOCATION.name,
-      value = location,
-    )
-  }
-
   private fun isWithinLast30Minutes(timeStamp: Instant?): Boolean {
-    val thirtyMinutesAgo = Instant.now().minusSeconds(1800)
+    val thirtyMinutesAgo = Instant.now().minusSeconds(THIRTY_MINUTES_T0_SECONDS.toLong())
     return timeStamp != null && timeStamp > thirtyMinutesAgo
   }
 
   companion object {
-    fun create(
-      context: Context,
-      sharedPreferencesHelper: SharedPreferencesHelper,
-    ): LocationService {
-      return LocationService(context, sharedPreferencesHelper)
-    }
-
     const val METERS_IN_A_KILOMETER = 1000
+    const val THIRTY_MINUTES_T0_SECONDS = 1800
   }
 }
