@@ -1,0 +1,573 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>UserSettingViewModel</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../index.html">
+                            OpenSRP
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":quest:dokkaHtmlPartial/zeirRelease">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="quest::org.smartregister.fhircore.quest.ui.usersetting/UserSettingViewModel///PointingToDeclaration//-288241585">
+  <div class="breadcrumbs"><a href="../../index.html">quest</a><span class="delimiter">/</span><a href="../index.html">org.smartregister.fhircore.quest.ui.usersetting</a><span class="delimiter">/</span><span class="current">UserSettingViewModel</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>User</span><wbr><span>Setting</span><wbr><span>View</span><wbr><span><span>Model</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">UserSettingViewModel</a>&nbsp;<span><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>fhirEngine<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>syncBroadcaster<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.sync/-sync-broadcaster/index.html">SyncBroadcaster</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>accountAuthenticator<span class="token operator">: </span><a href="../../org.smartregister.fhircore.quest.ui.login/-account-authenticator/index.html">AccountAuthenticator</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>secureSharedPreference<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-secure-shared-preference/index.html">SecureSharedPreference</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>sharedPreferencesHelper<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>configurationRegistry<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>workManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/work/WorkManager.html">WorkManager</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>dispatcherProvider<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a></span></span><span class="token punctuation">)</span> : <a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/ViewModel.html">ViewModel</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1514981432%2FConstructors%2F-288241585" anchor-label="UserSettingViewModel" id="1514981432%2FConstructors%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-user-setting-view-model.html"><span>User</span><wbr><span>Setting</span><wbr><span>View</span><wbr><span><span>Model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1514981432%2FConstructors%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fhirEngine<span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span><span class="token punctuation">, </span></span><span class="parameter ">syncBroadcaster<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.sync/-sync-broadcaster/index.html">SyncBroadcaster</a><span class="token punctuation">, </span></span><span class="parameter ">accountAuthenticator<span class="token operator">: </span><a href="../../org.smartregister.fhircore.quest.ui.login/-account-authenticator/index.html">AccountAuthenticator</a><span class="token punctuation">, </span></span><span class="parameter ">secureSharedPreference<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-secure-shared-preference/index.html">SecureSharedPreference</a><span class="token punctuation">, </span></span><span class="parameter ">sharedPreferencesHelper<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a><span class="token punctuation">, </span></span><span class="parameter ">configurationRegistry<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a><span class="token punctuation">, </span></span><span class="parameter ">workManager<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/work/WorkManager.html">WorkManager</a><span class="token punctuation">, </span></span><span class="parameter ">dispatcherProvider<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-615615449%2FProperties%2F-288241585" anchor-label="accountAuthenticator" id="-615615449%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="account-authenticator.html"><span>account</span><wbr><span><span>Authenticator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-615615449%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="account-authenticator.html">accountAuthenticator</a><span class="token operator">: </span><a href="../../org.smartregister.fhircore.quest.ui.login/-account-authenticator/index.html">AccountAuthenticator</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-782519255%2FProperties%2F-288241585" anchor-label="appVersionCode" id="-782519255%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="app-version-code.html"><span>app</span><wbr><span>Version</span><wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-782519255%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="app-version-code.html">appVersionCode</a><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1882568011%2FProperties%2F-288241585" anchor-label="appVersionName" id="1882568011%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="app-version-name.html"><span>app</span><wbr><span>Version</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1882568011%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="app-version-name.html">appVersionName</a><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1612148753%2FProperties%2F-288241585" anchor-label="buildDate" id="1612148753%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build-date.html"><span>build</span><wbr><span><span>Date</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1612148753%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="build-date.html">buildDate</a><span class="token operator">: </span><span data-unresolved-link="/<Error class: unknown class>///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2078482470%2FProperties%2F-288241585" anchor-label="configurationRegistry" id="-2078482470%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="configuration-registry.html"><span>configuration</span><wbr><span><span>Registry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2078482470%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="configuration-registry.html">configurationRegistry</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.configuration/-configuration-registry/index.html">ConfigurationRegistry</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1832357131%2FProperties%2F-288241585" anchor-label="dispatcherProvider" id="-1832357131%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="dispatcher-provider.html"><span>dispatcher</span><wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1832357131%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="dispatcher-provider.html">dispatcherProvider</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-dispatcher-provider/index.html">DispatcherProvider</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-820494656%2FProperties%2F-288241585" anchor-label="fhirEngine" id="-820494656%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fhir-engine.html"><span>fhir</span><wbr><span><span>Engine</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-820494656%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="fhir-engine.html">fhirEngine</a><span class="token operator">: </span><span data-unresolved-link="com.google.android.fhir/FhirEngine///PointingToDeclaration/">FhirEngine</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1265419282%2FProperties%2F-288241585" anchor-label="languages" id="1265419282%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="languages.html"><span><span>languages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1265419282%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="languages.html">languages</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-language/index.html">Language</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1424943746%2FProperties%2F-288241585" anchor-label="progressBarState" id="1424943746%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="progress-bar-state.html"><span>progress</span><wbr><span>Bar</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1424943746%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="progress-bar-state.html">progressBarState</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/MutableLiveData.html">MutableLiveData</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1658988330%2FProperties%2F-288241585" anchor-label="secureSharedPreference" id="-1658988330%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="secure-shared-preference.html"><span>secure</span><wbr><span>Shared</span><wbr><span><span>Preference</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1658988330%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="secure-shared-preference.html">secureSharedPreference</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-secure-shared-preference/index.html">SecureSharedPreference</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="38453260%2FProperties%2F-288241585" anchor-label="sharedPreferencesHelper" id="38453260%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="shared-preferences-helper.html"><span>shared</span><wbr><span>Preferences</span><wbr><span><span>Helper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="38453260%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="shared-preferences-helper.html">sharedPreferencesHelper</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.util/-shared-preferences-helper/index.html">SharedPreferencesHelper</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1386816028%2FProperties%2F-288241585" anchor-label="showDBResetConfirmationDialog" id="1386816028%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="show-d-b-reset-confirmation-dialog.html"><span>show</span><wbr><span>DBReset</span><wbr><span>Confirmation</span><wbr><span><span>Dialog</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1386816028%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="show-d-b-reset-confirmation-dialog.html">showDBResetConfirmationDialog</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/MutableLiveData.html">MutableLiveData</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1282416774%2FProperties%2F-288241585" anchor-label="showProgressIndicatorFlow" id="-1282416774%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="show-progress-indicator-flow.html"><span>show</span><wbr><span>Progress</span><wbr><span>Indicator</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1282416774%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="show-progress-indicator-flow.html">showProgressIndicatorFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/MutableStateFlow///PointingToDeclaration/">MutableStateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="456895251%2FProperties%2F-288241585" anchor-label="snackBarStateFlow" id="456895251%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="snack-bar-state-flow.html"><span>snack</span><wbr><span>Bar</span><wbr><span>State</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="456895251%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="snack-bar-state-flow.html">snackBarStateFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-snack-bar-message-config/index.html">SnackBarMessageConfig</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1647832986%2FProperties%2F-288241585" anchor-label="syncBroadcaster" id="1647832986%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sync-broadcaster.html"><span>sync</span><wbr><span><span>Broadcaster</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1647832986%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="sync-broadcaster.html">syncBroadcaster</a><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.sync/-sync-broadcaster/index.html">SyncBroadcaster</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1164425850%2FProperties%2F-288241585" anchor-label="unsyncedResourcesMutableSharedFlow" id="-1164425850%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="unsynced-resources-mutable-shared-flow.html"><span>unsynced</span><wbr><span>Resources</span><wbr><span>Mutable</span><wbr><span>Shared</span><wbr><span><span>Flow</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1164425850%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="unsynced-resources-mutable-shared-flow.html">unsyncedResourcesMutableSharedFlow</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/MutableSharedFlow///PointingToDeclaration/">MutableSharedFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="50026481%2FProperties%2F-288241585" anchor-label="workManager" id="50026481%2FProperties%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="work-manager.html"><span>work</span><wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="50026481%2FProperties%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">val </span><a href="work-manager.html">workManager</a><span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/work/WorkManager.html">WorkManager</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="264516373%2FFunctions%2F-288241585" anchor-label="addCloseable" id="264516373%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#264516373%2FFunctions%2F-288241585"><span>add</span><wbr><span><span>Closeable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="264516373%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#264516373%2FFunctions%2F-288241585"><span class="token function">addCloseable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html"><span class="token annotation builtin">NonNull</span></a>&nbsp;</span>p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Closeable.html">Closeable</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1279405527%2FFunctions%2F-288241585" anchor-label="allowSwitchingLanguages" id="1279405527%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="allow-switching-languages.html"><span>allow</span><wbr><span>Switching</span><wbr><span><span>Languages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1279405527%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="allow-switching-languages.html"><span class="token function">allowSwitchingLanguages</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-773782165%2FFunctions%2F-288241585" anchor-label="emitSnackBarState" id="-773782165%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="emit-snack-bar-state.html"><span>emit</span><wbr><span>Snack</span><wbr><span>Bar</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-773782165%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="emit-snack-bar-state.html"><span class="token function">emitSnackBarState</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">snackBarMessageConfig<span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.domain.model/-snack-bar-message-config/index.html">SnackBarMessageConfig</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="258901930%2FFunctions%2F-288241585" anchor-label="enabledDeviceToDeviceSync" id="258901930%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enabled-device-to-device-sync.html"><span>enabled</span><wbr><span>Device</span><wbr><span>To</span><wbr><span>Device</span><wbr><span><span>Sync</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="258901930%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="enabled-device-to-device-sync.html"><span class="token function">enabledDeviceToDeviceSync</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1830778165%2FFunctions%2F-288241585" anchor-label="fetchUnsyncedResources" id="1830778165%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="fetch-unsynced-resources.html"><span>fetch</span><wbr><span>Unsynced</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1830778165%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="fetch-unsynced-resources.html"><span class="token function">fetchUnsyncedResources</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1869039540%2FFunctions%2F-288241585" anchor-label="loadSelectedLanguage" id="1869039540%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="load-selected-language.html"><span>load</span><wbr><span>Selected</span><wbr><span><span>Language</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1869039540%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="load-selected-language.html"><span class="token function">loadSelectedLanguage</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-645286813%2FFunctions%2F-288241585" anchor-label="onEvent" id="-645286813%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-event.html"><span>on</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-645286813%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="on-event.html"><span class="token function">onEvent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../-user-settings-event/index.html">UserSettingsEvent</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1328231522%2FFunctions%2F-288241585" anchor-label="practitionerLocation" id="-1328231522%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="practitioner-location.html"><span>practitioner</span><wbr><span><span>Location</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1328231522%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="practitioner-location.html"><span class="token function">practitionerLocation</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-622502378%2FFunctions%2F-288241585" anchor-label="resetAppData" id="-622502378%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reset-app-data.html"><span>reset</span><wbr><span>App</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-622502378%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="reset-app-data.html"><span class="token function">resetAppData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">This function clears all the data for the app from the device, cancels all background tasks, deletes the logged in user account from device accounts and finally clear all data stored in shared preferences.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="975986563%2FFunctions%2F-288241585" anchor-label="retrieveCareTeam" id="975986563%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-care-team.html"><span>retrieve</span><wbr><span>Care</span><wbr><span><span>Team</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="975986563%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-care-team.html"><span class="token function">retrieveCareTeam</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="227668740%2FFunctions%2F-288241585" anchor-label="retrieveLastSyncTimestamp" id="227668740%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-last-sync-timestamp.html"><span>retrieve</span><wbr><span>Last</span><wbr><span>Sync</span><wbr><span><span>Timestamp</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="227668740%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-last-sync-timestamp.html"><span class="token function">retrieveLastSyncTimestamp</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1723626242%2FFunctions%2F-288241585" anchor-label="retrieveOrganization" id="-1723626242%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-organization.html"><span>retrieve</span><wbr><span><span>Organization</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1723626242%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-organization.html"><span class="token function">retrieveOrganization</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1927351256%2FFunctions%2F-288241585" anchor-label="retrieveUserInfo" id="1927351256%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-user-info.html"><span>retrieve</span><wbr><span>User</span><wbr><span><span>Info</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1927351256%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-user-info.html"><span class="token function">retrieveUserInfo</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../engine/org.smartregister.fhircore.engine.data.remote.model.response/-user-info/index.html">UserInfo</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1349916485%2FFunctions%2F-288241585" anchor-label="retrieveUsername" id="-1349916485%2FFunctions%2F-288241585" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease"></a>
+          <div class="table-row" data-filterable-current=":quest:dokkaHtmlPartial/zeirRelease" data-filterable-set=":quest:dokkaHtmlPartial/zeirRelease">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="retrieve-username.html"><span>retrieve</span><wbr><span><span>Username</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1349916485%2FFunctions%2F-288241585"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":quest:dokkaHtmlPartial/zeirRelease"><div class="symbol monospace"><span class="token keyword">fun </span><a href="retrieve-username.html"><span class="token function">retrieveUsername</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
