@@ -68,8 +68,9 @@ class SyncBroadcasterTest : RobolectricTest() {
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        context = ApplicationProvider.getApplicationContext(),
       )
 
     syncBroadcaster =

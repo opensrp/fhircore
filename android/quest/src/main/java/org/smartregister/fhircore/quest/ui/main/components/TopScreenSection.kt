@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -41,7 +42,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -236,26 +236,7 @@ fun SetupToolbarIcons(
             DropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false },
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text("Refresh")
-                    },
-                    onClick = { /* TODO */ },
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text("Settings")
-                    },
-                    onClick = { /* TODO */ },
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text("About")
-                    },
-                    onClick = { /* TODO */ },
-                )
-            }
+            ) {}
         }
     } else {
         menuIcons?.let {

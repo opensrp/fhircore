@@ -31,7 +31,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
-  val syncStrategies: List<String> = listOf(),
+  val syncStrategy: List<SyncStrategy> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
@@ -44,7 +44,17 @@ data class ApplicationConfiguration(
   val eventWorkflows: List<EventWorkflow> = emptyList(),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
   val launcherType: LauncherType = LauncherType.REGISTER,
+  val usePractitionerAssignedLocationOnSync: Boolean =
+    true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
+  // location selector
 ) : Configuration()
+
+enum class SyncStrategy {
+  Location,
+  CareTeam,
+  RelatedEntityLocation,
+  Organization,
+}
 
 enum class LocationLogOptions {
   QUESTIONNAIRE,

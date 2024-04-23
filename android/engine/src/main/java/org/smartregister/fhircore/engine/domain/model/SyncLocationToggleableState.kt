@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore.serializers
+package org.smartregister.fhircore.engine.domain.model
 
-object SerializerConstants {
-  const val PROTOSTORE_SERIALIZER_TAG = "Proto DataStore"
-}
+import androidx.compose.ui.state.ToggleableState
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class SyncLocationToggleableState(
+  val locationId: String,
+  val toggleableState: ToggleableState,
+)

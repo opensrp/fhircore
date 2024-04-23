@@ -28,13 +28,16 @@ import org.smartregister.fhircore.engine.datastore.mockdata.PractitionerDetails
 import org.smartregister.fhircore.engine.datastore.mockdata.UserInfo
 import org.smartregister.fhircore.engine.datastore.serializers.LocationCoordinatesSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
+import org.smartregister.fhircore.engine.datastore.serializers.SyncLocationIdDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
+import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
 private const val USER_INFO_DATASTORE_JSON = "user_info.json"
 private const val LOCATION_COORDINATES_DATASTORE_JSON = "location_coordinates.json"
+private const val SYNC_LOCATION_IDS = "sync_location_ids.json"
 private const val TAG = "Proto DataStore"
 
 val Context.practitionerProtoStore: DataStore<PractitionerDetails> by
@@ -53,6 +56,11 @@ val Context.locationCoordinatesDatastore: DataStore<LocationCoordinate> by
   dataStore(
     fileName = LOCATION_COORDINATES_DATASTORE_JSON,
     serializer = LocationCoordinatesSerializer,
+  )
+val Context.syncLocationIdsProtoStore: DataStore<List<SyncLocationToggleableState>> by
+  dataStore(
+    fileName = SYNC_LOCATION_IDS,
+    serializer = SyncLocationIdDataStoreSerializer,
   )
 
 @Singleton

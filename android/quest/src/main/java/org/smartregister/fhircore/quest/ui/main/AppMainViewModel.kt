@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.smartregister.fhircore.quest.ui.main
 
 import android.content.Context
@@ -352,6 +351,12 @@ constructor(
         )
       }
     }
+  }
+
+   fun triggerSync(){
+     viewModelScope.launch {
+       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+     }
   }
 
   companion object {

@@ -443,13 +443,14 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
-              sharedPreferencesHelper
-                .read(
-                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
-                  null,
-                )
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+//            isFirstTimeSync =
+//              sharedPreferencesHelper
+//                .read(
+//                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+//                  null,
+//                )
+//                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+            isFirstTimeSync = false, // TODO: Refactor the initial syn dialog logic
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
