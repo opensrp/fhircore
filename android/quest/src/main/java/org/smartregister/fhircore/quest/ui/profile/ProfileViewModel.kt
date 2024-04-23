@@ -57,6 +57,7 @@ import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.loadImagesRecursively
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -126,7 +127,6 @@ constructor(
             params = paramsMap,
           )
           .copy(listResourceDataMap = listResourceDataStateMap)
-
       profileUiState.value =
         ProfileUiState(
           resourceData = resourceData,
@@ -142,6 +142,21 @@ constructor(
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
         )
+        if (
+          listResourceDataStateMap[listProperties.id] != null &&
+            listResourceDataStateMap[listProperties.id]?.size!! > 0
+        ) {
+          val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
+          viewModelScope.launch {
+            if (computedMap != null) {
+              loadImagesRecursively(
+                profileConfiguration.views,
+                registerRepository,
+                computedMap,
+              )
+            }
+          }
+        }
       }
     }
   }
@@ -150,7 +165,6 @@ constructor(
     profileId: String,
     paramsMap: Map<String, String>?,
   ): ProfileConfiguration {
-    // Ensures profile configuration is initialized once
     if (!::profileConfiguration.isInitialized) {
       profileConfiguration =
         configurationRegistry.retrieveConfiguration(ConfigType.Profile, profileId, paramsMap)
