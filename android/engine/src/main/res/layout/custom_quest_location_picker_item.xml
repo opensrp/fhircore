@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="Select location" />
+            android:text="Describe Physical Locator" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout"

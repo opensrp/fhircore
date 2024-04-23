@@ -67,7 +67,10 @@ class LocationPickerView(
 
     cardView?.setOnClickListener { showDropdownDialog() }
     textInputEditText?.doAfterTextChanged { editable: Editable? ->
-      lifecycleScope.launch { physicalLocator = editable.toString() }
+      lifecycleScope.launch {
+        physicalLocator = editable.toString()
+        onUpdate()
+      }
     }
   }
 
@@ -111,7 +114,6 @@ class LocationPickerView(
   }
 
   private fun resetState() {
-    selectedHierarchy = null
     dropdownMap.clear()
   }
 
