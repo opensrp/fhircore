@@ -95,29 +95,29 @@ constructor(
     if (!appId.isNullOrEmpty()) {
       when {
         hasDebugSuffix() -> loadConfigurations(context)
-        else -> fetchRemoteConfigurations(appId, QuestBuildConfig.VERSION_NAME.substringBefore("-"), context)
+        else -> fetchRemoteConfigurations(appId, QuestBuildConfig.IG_CTX_QTY, context)
       }
     }
   }
 
-  private fun fetchRemoteConfigurations(appId: String?, appVersion: String?, context: Context) {
+  private fun fetchRemoteConfigurations(appId: String?, igCtxQty:String?, context: Context) {
     viewModelScope.launch {
       try {
         showProgressBar.postValue(true)
 
-        Timber.i("Fetching configs for app $appId version $appVersion")
+        Timber.i("Fetching configs for app $appId with highest context-quantity $igCtxQty")
 
         var compositionResource: Composition? = null
         try {
           val implementationGuideResource =
-            configurationRegistry.fetchRemoteImplementationGuide(appId, appVersion)
+            configurationRegistry.fetchRemoteImplementationGuideByAppId(appId, igCtxQty)
 
           compositionResource =
             if (implementationGuideResource != null) {
               configurationRegistry.addOrUpdate(implementationGuideResource)
 
               val compositionReference =
-                implementationGuideResource.definition.resource[0].reference.reference
+                implementationGuideResource.definition.resource[0]?.reference?.reference
 
               val compositionIdWithHistory = compositionReference?.substringAfter('/')
               val compositionId = compositionIdWithHistory?.substringBefore('/')

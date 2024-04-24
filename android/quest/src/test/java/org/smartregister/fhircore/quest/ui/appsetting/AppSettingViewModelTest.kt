@@ -49,15 +49,18 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -77,6 +80,7 @@ import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import retrofit2.HttpException
 import retrofit2.Response
+import java.net.URL
 
 @HiltAndroidTest
 @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,6 +98,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val configService = mockk<ConfigService>()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var appSettingViewModel: AppSettingViewModel
+  private lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
@@ -109,6 +114,25 @@ class AppSettingViewModelTest : RobolectricTest() {
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
+        ),
+      )
+
+    configurationRegistry =
+      spyk(
+        ConfigurationRegistry(
+          fhirEngine = fhirEngine,
+          fhirResourceDataSource = fhirResourceDataSource,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          dispatcherProvider = dispatcherProvider,
+          configService = mockk(),
+          json = Faker.json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
+          openSrpApplication =
+          object : OpenSrpApplication() {
+            override fun getFhirServerHost(): URL? {
+              return URL("http://my_test_fhirbase_url/fhir/")
+            }
+          },
         ),
       )
   }
@@ -604,12 +628,12 @@ class AppSettingViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun `fetchConfigurations() with an ImplementationGuide present`() {
+  fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() {
 
   }
 
   @Test
-  fun `fetchConfigurations() without ImplementationGuide should fetch composition resource directly`() {
+  fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() {
 
   }
 
