@@ -184,6 +184,10 @@ class AppSettingViewModelTest : RobolectricTest() {
   fun `fetchConfigurations() should call configurationRegistry#processResultBundleBinaries with correct values`() =
     runTest {
       coEvery {
+        appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any())
+      } returns null
+
+      coEvery {
         appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any())
       } returns
         Composition().apply {
@@ -498,6 +502,9 @@ class AppSettingViewModelTest : RobolectricTest() {
     coEvery { appSettingViewModel.loadConfigurations(any()) } just runs
     coEvery { appSettingViewModel.isNonProxy() } returns false
     coEvery { appSettingViewModel.appId } returns MutableLiveData(appId)
+    coEvery {
+      appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any())
+    } returns null
     coEvery {
       appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(appId)
     } returns composition
