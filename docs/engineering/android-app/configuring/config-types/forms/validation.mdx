@@ -1,0 +1,102 @@
+# Validation
+
+There are many ways to validate Questionnaire components and widgets, e.g. `date-picker`, `numeric field` among others.
+
+## Validation of Questionnaire's Date picker
+
+Date picker is a widget that supports date selection, you can specify the minimum and maximum ranges for selectable dates.
+The `minDate` must be before the `maxDate`.
+
+### Working with the `today()` function
+
+The `valueString` allows you to format the date.
+
+`_valueDate` indicates that you are working with dates when using [`cqf calculated values`](https://hl7.org/fhir/extensions/StructureDefinition-cqf-calculatedValue.html), which are expressions that determine a calculated value.
+
+`valueExpression` allows you to specify the `language` used, usually`fhirpath`, and `expression` is the formula to be evaluated.
+
+The below example shows how you can set today as the minimum value of a date picker:
+
+```json
+   "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        }
+    ],
+```
+
+### Loading a date in the date picker range
+
+In this example we will show how to load a patients birth date as the minimum value of a date picker.
+
+First you must use the [standard launch context](http://hl7.org/fhir/uv/sdc/STU3/CodeSystem-launchContext.html) for the Questionnaire. Then use `code` to define what resource to fetch the date from.
+
+```json
+ "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.demo.smartregister.org/fhir/StructureMap/a-given-id"
+    },
+    {
+      "extension": [
+        {
+          "url": "name",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+            "code": "patient",
+            "display": "Patient"
+          }
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext"
+    }
+  ],
+```
+
+On the date picker reference the Patient's date of birth as the minimum date by using the code specified in the Questionnaire launchContext at targetStructureMap level. We can access the date of birth as shown below:
+
+```json
+     "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "d/M/y"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/minValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "patient.birthDate"
+                    }
+                  }
+                ]
+              }
+          }
+     ],
+```
+
+ Some other examples are:
+ - To set the minimum value ninety days ago use the valueExpression `today() - 90 days`
+ - To set the maximum value five days in the future use `today() + 5 days`
