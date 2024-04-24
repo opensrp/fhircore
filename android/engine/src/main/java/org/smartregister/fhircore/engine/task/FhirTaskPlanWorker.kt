@@ -20,19 +20,10 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import org.hl7.fhir.r4.model.CarePlan
-import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.engine.util.extension.hasPastEnd
-import org.smartregister.fhircore.engine.util.extension.hasStarted
-import org.smartregister.fhircore.engine.util.extension.isLastTask
-import timber.log.Timber
+import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltWorker
 class FhirTaskPlanWorker
@@ -40,70 +31,15 @@ class FhirTaskPlanWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParams: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  private val fhirResourceUtil: FhirResourceUtil,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    Timber.i("Starting task scheduler")
-    // TODO: Update the CarePlan TaskStatus
-
-    // TODO also filter by date range for better performance
-    fhirEngine
-      .search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCode()) },
-          { value = of(Task.TaskStatus.READY.toCode()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCode()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCode()) },
-        )
-      }
-      .map { it.resource }
-      .filter {
-        it.status in
-          arrayOf(
-            Task.TaskStatus.REQUESTED,
-            Task.TaskStatus.READY,
-            Task.TaskStatus.ACCEPTED,
-            Task.TaskStatus.INPROGRESS,
-            Task.TaskStatus.RECEIVED,
-          )
-      }
-      .forEach { task ->
-        if (task.hasPastEnd()) {
-          task.status = Task.TaskStatus.FAILED
-          fhirEngine.update(task)
-          task.basedOn
-            .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-            ?.extractId()
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-              val carePlan = fhirEngine.get<CarePlan>(it)
-              if (carePlan.isLastTask(task)) {
-                carePlan.status = CarePlan.CarePlanStatus.COMPLETED
-                fhirEngine.update(carePlan)
-              } else {
-                val index =
-                  carePlan.activity.indexOfFirst { activity ->
-                    activity.outcomeReference.firstOrNull()?.reference == it
-                  }
-                if (index != -1) {
-                  val item = carePlan.activity?.get(index)
-                  item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED
-                  carePlan.activity[index] = item
-                  fhirEngine.update(carePlan)
-                }
-              }
-            }
-        } else if (task.hasStarted() && task.status != Task.TaskStatus.READY) {
-          task.status = Task.TaskStatus.READY
-          fhirEngine.update(task)
-        }
-      }
-
-    Timber.i("Done task scheduling")
-    return Result.success()
+    return withContext(dispatcherProvider.io()) {
+      fhirResourceUtil.expireOverdueTasks()
+      Result.success()
+    }
   }
 
   companion object {

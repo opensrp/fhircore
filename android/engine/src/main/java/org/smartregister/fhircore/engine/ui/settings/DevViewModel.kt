@@ -21,6 +21,12 @@ import android.content.Intent
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
@@ -37,12 +43,14 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.model.practitioner.PractitionerDetails
+import java.util.concurrent.TimeUnit
 
 @ExcludeFromJacocoGeneratedReport
 @HiltViewModel
@@ -135,6 +143,13 @@ constructor(
       println(e)
     }
   }
+
+    fun missedResource(context: Context) {
+        viewModelScope.launch {
+          WorkManager.getInstance(context)
+            .enqueueUniqueWork(FhirTaskPlanWorker.WORK_ID, ExistingWorkPolicy.REPLACE, OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build())
+        }
+    }
 }
 
 @ExcludeFromJacocoGeneratedReport

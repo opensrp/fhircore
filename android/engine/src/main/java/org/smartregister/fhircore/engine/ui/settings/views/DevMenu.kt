@@ -54,6 +54,12 @@ fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
     }
     Button(
       modifier = Modifier.fillMaxWidth(),
+      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.missedResource(context) },
+    ) {
+      Text(text = "Update missed tasks or appointments")
+    }
+    Button(
+      modifier = Modifier.fillMaxWidth(),
       onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() },
     ) {
       Text(text = "Test Fetch")
