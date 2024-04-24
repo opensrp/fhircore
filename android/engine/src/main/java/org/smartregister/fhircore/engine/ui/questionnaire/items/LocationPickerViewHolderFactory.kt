@@ -46,7 +46,7 @@ class LocationPickerViewHolderFactory(
           context.lifecycleScope.launch {
             if (value != null) {
               questionnaireViewItem.setAnswer(
-                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().setValue(value)
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().setValue(value),
               )
             } else {
               questionnaireViewItem.clearAnswer()

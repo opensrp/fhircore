@@ -155,7 +155,10 @@ class LocationPickerView(
     }
   }
 
-  private fun onOptionSelected(selectedLocation: LocationHierarchy?, dropdown: AutoCompleteTextView) {
+  private fun onOptionSelected(
+    selectedLocation: LocationHierarchy?,
+    dropdown: AutoCompleteTextView,
+  ) {
     if (selectedLocation != null && selectedLocation.children.isNotEmpty()) {
       if (dropdownMap.containsKey(selectedLocation.identifier)) {
         (dropdownMap[selectedLocation.identifier]?.adapter as LocationHierarchyAdapter?)
