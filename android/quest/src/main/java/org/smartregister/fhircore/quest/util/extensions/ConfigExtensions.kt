@@ -206,10 +206,6 @@ fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: Resou
 fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = true) =
   NavOptions.Builder().setPopUpTo(resId, inclusive, true).setLaunchSingleTop(singleOnTop).build()
 
-
-fun navOptions(resId: Int, inclusive: Boolean = false) =
-  NavOptions.Builder().setPopUpTo(resId, inclusive).build()
-
 /**
  * Function to convert the elements of an array that have paramType [ActionParameterType.PARAMDATA]
  * to a map of [ActionParameter.key] against [ActionParameter](value).
