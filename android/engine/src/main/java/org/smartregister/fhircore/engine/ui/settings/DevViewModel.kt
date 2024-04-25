@@ -146,7 +146,7 @@ constructor(
         .enqueueUniqueWork(
           FhirTaskPlanWorker.WORK_ID,
           ExistingWorkPolicy.REPLACE,
-          OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build()
+          OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build(),
         )
     }
   }

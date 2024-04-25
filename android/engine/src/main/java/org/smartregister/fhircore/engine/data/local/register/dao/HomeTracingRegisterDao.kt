@@ -25,6 +25,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
 
 @Singleton
 class HomeTracingRegisterDao
@@ -50,6 +51,6 @@ constructor(
 
   companion object {
     val taskCode: Coding =
-      Coding("https://d-tree.org/fhir/contact-tracing", "home-tracing", "Home Tracing")
+      Coding(SystemConstants.contactTracingSystem, "home-tracing", "Home Tracing")
   }
 }

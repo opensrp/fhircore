@@ -27,11 +27,10 @@ import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.Appointment
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.util.ReasonConstants
 import timber.log.Timber
 
 @HiltWorker
@@ -42,11 +41,6 @@ constructor(
   @Assisted workerParameters: WorkerParameters,
   val fhirEngine: FhirEngine,
 ) : CoroutineWorker(appContext, workerParameters) {
-  val welcomeServiceCodeableConcept =
-    CodeableConcept(Coding("https://d-tree.org", "Welcome", "Welcome Service")).apply {
-      text = "Welcome Service"
-    }
-
   override suspend fun doWork(): Result {
     Timber.i("Checking 'Welcome Service' appointments")
 
@@ -57,7 +51,7 @@ constructor(
             Appointment.STATUS,
             { value = of(Appointment.AppointmentStatus.PROPOSED.toCode()) },
           )
-          filter(Appointment.REASON_CODE, { value = of(welcomeServiceCodeableConcept) })
+          filter(Appointment.REASON_CODE, { value = of(ReasonConstants.WelcomeServiceCode) })
           filter(
             Appointment.DATE,
             {
