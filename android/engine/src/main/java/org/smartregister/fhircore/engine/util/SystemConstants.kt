@@ -20,22 +20,27 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 
 object SystemConstants {
-  const val reasonCodeSystem = "https://d-tree.org/fhir/reason-code"
-  const val baseUrl = "https://d-tree.org"
-  const val taskFilterTagSystem = "https://d-tree.org/fhir/task-filter-tag"
-  const val taskTaskOrderSystem = "https://d-tree.org/fhir/clinic-visit-task-order"
-  const val patientTypeFilterTagViaMetaCodingSystem = "https://d-tree.org/fhir/patient-meta-tag"
-  const val contactTracingSystem = "https://d-tree.org/fhir/contact-tracing"
-  const val observationCodeSystem = "https://d-tree.org/fhir/observation-codes"
-  const val carePlanReferenceSystem = "https://d-tree.org/fhir/careplan-reference"
+  const val REASON_CODE_SYSTEM = "https://d-tree.org/fhir/reason-code"
+  const val BASE_URL = "https://d-tree.org"
+  const val TASK_FILTER_TAG_SYSTEM = "https://d-tree.org/fhir/task-filter-tag"
+  const val TASK_TASK_ORDER_SYSTEM = "https://d-tree.org/fhir/clinic-visit-task-order"
+  const val PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM =
+    "https://d-tree.org/fhir/patient-meta-tag"
+  const val CONTACT_TRACING_SYSTEM = "https://d-tree.org/fhir/contact-tracing"
+  const val OBSERVATION_CODE_SYSTEM = "https://d-tree.org/fhir/observation-codes"
+  const val CARE_PLAN_REFERENCE_SYSTEM = "https://d-tree.org/fhir/careplan-reference"
 }
 
 object ReasonConstants {
   val WelcomeServiceCode =
-    CodeableConcept(Coding(SystemConstants.reasonCodeSystem, "Welcome", "Welcome Service")).apply {
-      text = "Welcome Service"
-    }
+    CodeableConcept(Coding(SystemConstants.REASON_CODE_SYSTEM, "Welcome", "Welcome Service"))
+      .apply { text = "Welcome Service" }
 
-  const val tracingOutComeCode = "tracing-outcome"
-  const val dateOfAgreedAppointmnet = "date-of-agreed-appointment"
+  val homeTracingCoding =
+    Coding(SystemConstants.CONTACT_TRACING_SYSTEM, "home-tracing", "Home Tracing")
+  val phoneTracingCoding =
+    Coding(SystemConstants.CONTACT_TRACING_SYSTEM, "phone-tracing", "Phone Tracing")
+
+  const val TRACING_OUTCOME_CODE = "tracing-outcome"
+  const val DATE_OF_AGREED_APPOINTMENT = "date-of-agreed-appointment"
 }

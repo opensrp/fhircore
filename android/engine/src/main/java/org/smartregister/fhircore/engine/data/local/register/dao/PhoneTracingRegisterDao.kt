@@ -24,8 +24,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.ReasonConstants.phoneTracingCoding
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.SystemConstants
 
 @Singleton
 class PhoneTracingRegisterDao
@@ -47,10 +47,5 @@ constructor(
     sharedPreferencesHelper,
   ) {
 
-  override val tracingCoding: Coding = taskCode
-
-  companion object {
-    val taskCode: Coding =
-      Coding(SystemConstants.contactTracingSystem, "phone-tracing", "Phone Tracing")
-  }
+  override val tracingCoding: Coding = phoneTracingCoding
 }

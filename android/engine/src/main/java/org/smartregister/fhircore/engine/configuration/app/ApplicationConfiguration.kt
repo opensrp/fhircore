@@ -33,8 +33,8 @@ data class ApplicationConfiguration(
   var appLogoIconResourceFile: String = "ic_default_logo",
   var count: String = ConfigurationRegistry.DEFAULT_COUNT,
   var patientTypeFilterTagViaMetaCodingSystem: String = "",
-  var taskOrderFilterTagViaMetaCodingSystem: String = SystemConstants.taskTaskOrderSystem,
-  var taskFilterTagViaMetaCodingSystem: String = SystemConstants.taskFilterTagSystem,
+  var taskOrderFilterTagViaMetaCodingSystem: String = SystemConstants.TASK_TASK_ORDER_SYSTEM,
+  var taskFilterTagViaMetaCodingSystem: String = SystemConstants.TASK_FILTER_TAG_SYSTEM,
   var registrationForm: String = "patient-demographic-registration",
 ) : Configuration
 

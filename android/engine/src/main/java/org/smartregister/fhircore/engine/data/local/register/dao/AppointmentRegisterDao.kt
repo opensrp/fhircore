@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
@@ -222,7 +223,7 @@ constructor(
         CodeableConcept().apply {
           addCoding(
             Coding().apply {
-              system = "https://d-tree.org"
+              system = SystemConstants.REASON_CODE_SYSTEM
               code = reasonCode
             },
           )

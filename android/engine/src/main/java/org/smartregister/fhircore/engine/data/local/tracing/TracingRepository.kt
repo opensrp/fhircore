@@ -158,9 +158,9 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
               of(
                 CodeableConcept(
                   Coding(
-                    SystemConstants.observationCodeSystem,
-                    ReasonConstants.tracingOutComeCode,
-                    ReasonConstants.tracingOutComeCode,
+                    SystemConstants.OBSERVATION_CODE_SYSTEM,
+                    ReasonConstants.TRACING_OUTCOME_CODE,
+                    ReasonConstants.TRACING_OUTCOME_CODE,
                   ),
                 ),
               )
@@ -171,7 +171,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
     outcomeObs
       .map { it.resource }
       .firstOrNull {
-        it.code.coding.any { coding -> coding.code == ReasonConstants.tracingOutComeCode }
+        it.code.coding.any { coding -> coding.code == ReasonConstants.TRACING_OUTCOME_CODE }
       }
       ?.let { obs ->
         conducted =
@@ -193,8 +193,8 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
               of(
                 CodeableConcept(
                   Coding(
-                    SystemConstants.observationCodeSystem,
-                    ReasonConstants.dateOfAgreedAppointmnet,
+                    SystemConstants.OBSERVATION_CODE_SYSTEM,
+                    ReasonConstants.DATE_OF_AGREED_APPOINTMENT,
                     "",
                   ),
                 ),
@@ -205,7 +205,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
     dateObs
       .map { it.resource }
       .firstOrNull {
-        it.code.coding.any { coding -> coding.code == ReasonConstants.dateOfAgreedAppointmnet }
+        it.code.coding.any { coding -> coding.code == ReasonConstants.DATE_OF_AGREED_APPOINTMENT }
       }
       ?.let {
         if (it.hasValueDateTimeType()) {
@@ -272,7 +272,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
           .firstOrNull { entry ->
             entry.flag.codingFirstRep.display ==
               lastAttempt.item.reference.extractLogicalIdUuid() &&
-              entry.flag.codingFirstRep.code == ReasonConstants.tracingOutComeCode
+              entry.flag.codingFirstRep.code == ReasonConstants.TRACING_OUTCOME_CODE
           }
           ?.flag
           ?.text

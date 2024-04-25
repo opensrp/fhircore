@@ -85,7 +85,7 @@ constructor(
 
         val carePlanId =
           task.meta.tag
-            .firstOrNull { it.system == SystemConstants.carePlanReferenceSystem }
+            .firstOrNull { it.system == SystemConstants.CARE_PLAN_REFERENCE_SYSTEM }
             ?.code
             ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 
