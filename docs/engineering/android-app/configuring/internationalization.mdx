@@ -1,0 +1,111 @@
+# Internationalization (i18n)
+
+On FHIR Core, we have three categories of entities that need localization:
+1. Android views
+2. App configs
+3. Content configs (FHIR Resources)
+4. Rule engine rules
+
+## Application localization
+
+### Android Views
+ The translations for these are found in the android app's `res/values/strings-*xml` files. These need to follow the [https://developer.android.com/guide/topics/resources/localization](android developer guidelines as documented here).
+As an example, for an app with English and French translations, the folder will contain `res/values/strings.xml`, the default english file and `res/values/strings-fr.xml` for the corresponding French translations.
+Note, for FHIR Core
+
+Default file in English.
+```xml
+#res/values/strings.xml
+<string name="first_name">First Name</string>
+```
+
+Translated file in Swahili
+
+```xml
+#res/values/strings-sw.xml
+<string name="first_name">Jina la kwanza</string>
+```
+
+### App Configs
+App config localization is required for the configuration files that define the UI and workflow of the configurable views we have on FHIR Core e.g. the Profile and Register configs. The language files are of the `.properties` format. By convention, the files are stored in the `project/app_configs/translations` folder for versioning. Once translations are in place they are then uploaded as Binary's and are therefore are encoded in Base64 format in line with the HL7 FHIR Spec here https://www.hl7.org/fhir/binary.html. These are then linked to the application via the Composition resource. Files are named in the format `strings_config.properties` for the default and `strings_sw_config.properties` for the swahili translations e.g.
+
+```json
+#app_configs/profiles/profile.json
+
+"searchBar": {
+    "visible": true,
+    "display": "{{ first.name }}",
+    "computedRules": [
+        "familyName",
+        "familyId"
+    ]
+}
+
+```
+
+Default
+```properties
+first.name=First Name
+```
+
+Swahili
+```properties
+first.name=Jina la kwanza
+```
+
+### Content Configs
+This covers Internationalization in the FHIR Resources e.g. Questionnaires. The FHIR Spec defines how localization is supported - https://www.hl7.org/fhir/languages.html. FHIR Core via the FHIR SDK Standard Data Capture library supports this implementation via the _Translation Extension_.
+
+An example of the First Name field in a Questionnaires that is localized in Swahili.
+
+```json
+              "text": "First Name",
+              "_text": {
+                "extension": [
+                  {
+                    "extension": [
+                      {
+                        "url": "lang",
+                        "valueCode": "sw"
+                      },
+                      {
+                        "url": "content",
+                        "valueString": "Jina la kwanza"
+                      }
+                    ],
+                    "url": "http://hl7.org/fhir/StructureDefinition/translation"
+                  }
+                ]
+              }
+```
+
+### Rule engine rules
+Special note for rules. Sometimes you need to have one part of the output as a calculated value before display. FHIR Core i18n supports wrapping the calculated expression variable using `@{`and `}` characters. e.g. 
+
+```json
+{
+  "viewType": "COMPOUND_TEXT",
+  "primaryText": "{{ task.start.date }}",
+  "primaryTextColor": "#5A5A5A",
+  "fontSize": 14.0
+}
+```
+
+Default
+```properties
+task.start.date=Start date: @{taskStartDate}
+```
+
+Swahili
+```properties
+task.start.date=Siku ya kuanza: @{taskStartDate}
+```
+
+
+## Translation Process via Transifex
+We use the Transifex service to manage the translation process. [Transifex](https://www.transifex.com/) is a well known platform that supports localization for many stacks including Android and is able to process files in different formats/extensions as used on FHIR Core. The process is such that we upload the default language files in the `xml`, `properties` formats and then the manual translators perform the localiztion on Transifex. The files are then synced back to the codebase for versioning.
+
+
+## Tooling
+- Efsity - FHIR Core Tooling supports the localization process for the App and Content configs by automating some aspects of it. For more see the documentation here : [FHIR Core Tooling Localization](https://github.com/onaio/fhir-tooling/tree/main/efsity#localization)
+- Transifex - This is the tool describe in the above section - Also check out https://www.transifex.com/
