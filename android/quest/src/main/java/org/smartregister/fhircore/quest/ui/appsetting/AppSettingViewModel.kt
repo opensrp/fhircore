@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
+import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGuideDefinitionResources
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
@@ -117,7 +118,7 @@ constructor(
               configurationRegistry.addOrUpdate(implementationGuideResource)
 
               val compositionReference =
-                implementationGuideResource.definition.resource[0]?.reference?.reference
+                implementationGuideResource.retrieveImplementationGuideDefinitionResources()[0].reference.reference
 
               val compositionIdWithHistory = compositionReference?.substringAfter('/')
               val compositionId = compositionIdWithHistory?.substringBefore('/')

@@ -634,7 +634,7 @@ class AppSettingViewModelTest : RobolectricTest() {
               )
           }
       }
-      val composition = Composition().apply { id = "123"  };
+      val composition = Composition().apply { id = "1"  };
       coEvery { appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any()) } returns implementationGuide
       coEvery { appSettingViewModel.configurationRegistry.addOrUpdate(any()) } just runs
       coEvery { appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any()) } returns composition
