@@ -180,12 +180,12 @@ fun UserSettingInsightScreen(
           )
         }
       }
-      val userName2 = null
+
       item {
-        if (userName2 != null && organization != null && careTeam != null && location != null) {
+        if (userName != null && organization != null && careTeam != null && location != null) {
           val items =
             listOf(
-              stringResource(id = R.string.username) to userName!!,
+              stringResource(id = R.string.username) to userName,
               stringResource(R.string.team_organization) to organization.take(10),
               stringResource(R.string.care_team) to careTeam,
               stringResource(R.string.location) to location,
@@ -207,6 +207,11 @@ fun UserSettingInsightScreen(
             items = items,
           )
         }
+      }
+      item {
+        Spacer(modifier = Modifier.height(16.dp))
+        Divider(color = dividerColor)
+        Spacer(modifier = Modifier.height(24.dp))
       }
 
       item {
