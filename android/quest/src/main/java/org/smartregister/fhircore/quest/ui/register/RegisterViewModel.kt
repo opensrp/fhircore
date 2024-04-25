@@ -45,6 +45,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -70,6 +71,7 @@ constructor(
   val registerRepository: RegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
 ) : ViewModel() {
@@ -443,7 +445,7 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync =
+            isFirstTimeSync = //TODO: Reads an object type ---> OffsetDateTime
               sharedPreferencesHelper
                 .read(
                   SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
