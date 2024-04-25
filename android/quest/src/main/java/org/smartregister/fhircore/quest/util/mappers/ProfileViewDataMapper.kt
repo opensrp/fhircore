@@ -229,7 +229,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       else -> DefaultColor
     }
 
-  fun HealthStatus.retrieveDisplayIdentifierKey(): String =
+  private fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
       HealthStatus.EXPOSED_INFANT -> "HCC Number"
       HealthStatus.CHILD_CONTACT,

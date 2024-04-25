@@ -22,6 +22,9 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
@@ -34,9 +37,6 @@ import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
-import java.util.Date
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class FhirResourceUtil
@@ -47,7 +47,9 @@ constructor(
 ) {
   suspend fun expireOverdueTasks() {
     Timber.i("Starting task scheduler")
-    val resourcesToUpdate = mutableListOf<Resource>()
+    val carePlanMap = mutableMapOf<String, CarePlan>()
+    val tasksToUpdate = mutableListOf<Resource>()
+
     fhirEngine
       .search<Task> {
         filter(
@@ -67,8 +69,9 @@ constructor(
           },
         )
       }
-      .map { it.resource }.filter {
-        it.hasPastEnd() // &&
+      .map { it.resource }
+      .filter {
+        it.hasPastEnd() &&
           it.status in
             arrayOf(
               Task.TaskStatus.REQUESTED,
@@ -81,11 +84,16 @@ constructor(
       .onEach { task ->
         task.status = Task.TaskStatus.FAILED
 
-        val carePlan = task.basedOn
-          .find { it.reference.startsWith(ResourceType.CarePlan.name) }
-          ?.extractId()
-          ?.let {
-            fhirEngine.get<CarePlan>(it)
+        val carePlanId =
+          task.basedOn.find { it.reference.startsWith(ResourceType.CarePlan.name) }?.extractId()
+
+        val carePlan =
+          carePlanId?.let { id ->
+            if (carePlanMap.containsKey(id)) {
+              carePlanMap[id]
+            } else {
+              runCatching { fhirEngine.get<CarePlan>(id) }.getOrNull()
+            }
           }
 
         if (carePlan != null) {
@@ -100,7 +108,7 @@ constructor(
                 item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED
                 carePlan.activity[index] = item
                 Timber.d("Updating carePlan: ${carePlan.referenceValue()}")
-                resourcesToUpdate.add(carePlan)
+                carePlanMap[carePlanId] = carePlan
               }
             }
             .onFailure {
@@ -111,11 +119,11 @@ constructor(
         }
 
         Timber.d("Updating task: ${task.referenceValue()}")
-        resourcesToUpdate.add(task)
+        tasksToUpdate.add(task)
       }
 
-    Timber.d("Going to expire ${resourcesToUpdate.size} tasks and carePlans")
-    fhirEngine.update(*resourcesToUpdate.toTypedArray())
+    Timber.d("Going to expire tasks = ${tasksToUpdate.size}  and carePlans = ${carePlanMap.size}")
+    fhirEngine.update(*(tasksToUpdate + carePlanMap.values).toTypedArray())
 
     Timber.i("Done task scheduling")
   }
@@ -137,8 +145,8 @@ constructor(
         .map { it.resource }
         .filter {
           it.hasStart() &&
-                  it.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
-                  it.status == Appointment.AppointmentStatus.BOOKED
+            it.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
+            it.status == Appointment.AppointmentStatus.BOOKED
         }
         .toTypedArray()
 

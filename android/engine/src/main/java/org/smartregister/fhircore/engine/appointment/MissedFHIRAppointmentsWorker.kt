@@ -40,7 +40,7 @@ constructor(
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
       fhirResourceUtil.handleMissedAppointment()
-       Result.success()
+      Result.success()
     }
   }
 
