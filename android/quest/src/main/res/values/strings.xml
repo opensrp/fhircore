@@ -138,4 +138,5 @@
     <string name="filter_patients_assigned">Patient Assignment</string>
     <string name="filter_patient_category">Patient Category</string>
     <string name="filter_appointment_reason">Appointment Reason</string>
+    <string name="clear_filter">Clear Filter</string>
 </resources>

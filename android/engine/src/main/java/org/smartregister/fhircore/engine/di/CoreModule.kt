@@ -29,6 +29,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
+import org.hl7.fhir.r4.model.Parameters
+import org.smartregister.fhircore.engine.auditEvent.AuditEventRepository
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -105,4 +107,11 @@ class CoreModule {
     defaultRepository: DefaultRepository,
     configurationRegistry: ConfigurationRegistry,
   ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
+
+  @Singleton
+  @Provides
+  fun provideAudiEventRepository(
+    defaultRepository: DefaultRepository,
+    sharedPreferencesHelper: SharedPreferencesHelper,
+  ): AuditEventRepository = AuditEventRepository(defaultRepository, sharedPreferencesHelper)
 }
