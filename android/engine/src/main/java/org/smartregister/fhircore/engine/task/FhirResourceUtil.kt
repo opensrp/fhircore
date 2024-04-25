@@ -29,10 +29,9 @@ import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Resource
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
-import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -85,7 +84,10 @@ constructor(
         task.status = Task.TaskStatus.FAILED
 
         val carePlanId =
-          task.basedOn.find { it.reference.startsWith(ResourceType.CarePlan.name) }?.extractId()
+          task.meta.tag
+            .firstOrNull { it.system == SystemConstants.carePlanReferenceSystem }
+            ?.code
+            ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 
         val carePlan =
           carePlanId?.let { id ->

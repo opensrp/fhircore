@@ -160,9 +160,9 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
                   Coding(
                     SystemConstants.observationCodeSystem,
                     ReasonConstants.tracingOutComeCode,
-                    ReasonConstants.tracingOutComeCode
-                  )
-                )
+                    ReasonConstants.tracingOutComeCode,
+                  ),
+                ),
               )
           },
           operation = Operation.OR,

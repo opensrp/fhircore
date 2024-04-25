@@ -27,6 +27,7 @@ object SystemConstants {
   const val patientTypeFilterTagViaMetaCodingSystem = "https://d-tree.org/fhir/patient-meta-tag"
   const val contactTracingSystem = "https://d-tree.org/fhir/contact-tracing"
   const val observationCodeSystem = "https://d-tree.org/fhir/observation-codes"
+  const val carePlanReferenceSystem = "https://d-tree.org/fhir/careplan-reference"
 }
 
 object ReasonConstants {
