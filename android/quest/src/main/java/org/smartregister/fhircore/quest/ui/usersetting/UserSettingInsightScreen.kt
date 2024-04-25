@@ -141,14 +141,13 @@ fun UserSettingInsightScreen(
           Divider(color = dividerColor)
           Spacer(modifier = Modifier.height(24.dp))
         }
-      }
-      else {
+      } else {
         item {
           Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
           ) {
             Text(
-              text =  stringResource(id = R.string.all_resources_synced),
+              text = stringResource(id = R.string.all_resources_synced),
               style = TextStyle(color = Color.Black, fontSize = 20.sp),
               fontWeight = FontWeight.Bold,
             )
@@ -195,8 +194,7 @@ fun UserSettingInsightScreen(
             title = stringResource(id = R.string.assignment_info),
             items = items,
           )
-        }
-        else {
+        } else {
           val items =
             listOf(
               stringResource(id = R.string.username) to "-",
