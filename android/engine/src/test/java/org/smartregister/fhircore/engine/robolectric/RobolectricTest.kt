@@ -40,13 +40,13 @@ abstract class RobolectricTest {
     val data = arrayOfNulls<Any>(1)
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
-      object : Observer<T> {
-        override fun onChanged(o: T?) {
-          data[0] = o
-          latch.countDown()
-          liveData.removeObserver(this)
-        }
-      }
+      Observer<T>
+      //        override fun onChanged(o: T?) {
+      //          data[0] = o
+      //          latch.countDown()
+      //          liveData.removeObserver(this)
+      //        }
+      { TODO("Not yet implemented") }
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
     @Suppress("UNCHECKED_CAST") return data[0] as T?

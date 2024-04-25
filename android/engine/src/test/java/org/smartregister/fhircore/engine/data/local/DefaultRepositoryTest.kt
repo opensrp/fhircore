@@ -604,7 +604,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepositorySpy.removeGroupMember(
       memberId,
       null,
-      patientMemberRep.resourceType.name,
+      patientMemberRep.resourceType,
       emptyMap()
     )
     Assert.assertFalse(patientMemberRep.active)
@@ -627,7 +627,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     defaultRepositorySpy.removeGroupMember(
       memberId,
       null,
-      patientMemberRep.resourceType.name,
+      patientMemberRep.resourceType,
       emptyMap()
     )
     Assert.assertTrue(patientMemberRep.active)
@@ -718,7 +718,7 @@ class DefaultRepositoryTest : RobolectricTest() {
       defaultRepository.removeGroupMember(
         memberId = memberId,
         groupId = groupId,
-        groupMemberResourceType = groupMemberResourceType,
+        memberResourceType = ResourceType.Patient,
         emptyMap()
       )
     }

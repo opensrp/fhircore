@@ -171,7 +171,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       val questionnaire =
         questionnaireViewModel.loadQuestionnaire(
           questionnaireConfig = questionnaireConfig,
-          prePopulationParams = prePopulationParams
+          prePopulationParams = prePopulationParams,
+          readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds
         )
       if (questionnaire == null) {
         showToast(getString(R.string.questionnaire_not_found))
