@@ -49,7 +49,6 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
@@ -134,8 +133,13 @@ constructor(
         sort(Appointment.DATE, Order.ASCENDING)
       }
 
+    val keySet = mutableSetOf<String>()
     return searchResults
-      .map { it.resource }
+      .mapNotNull {
+        if (keySet.contains(it.resource.logicalId)) return@mapNotNull null
+        keySet.add(it.resource.logicalId)
+        it.resource
+      }
       .filter {
         isAppointmentValid(
           appointment = it,
@@ -148,7 +152,7 @@ constructor(
 
   private suspend fun isAppointmentValid(
     appointment: Appointment,
-    reasonCode: String? = null,
+    reasonCode: CodeableConcept? = null,
     patientCategory: Iterable<HealthStatus>? = null,
     myPatients: Boolean = false,
   ): Boolean {
@@ -162,7 +166,9 @@ constructor(
 
     val appointmentReasonFilter =
       reasonCode == null ||
-        (appointment.reasonCode.flatMap { cc -> cc.coding }.any { c -> c.code == reasonCode })
+        (appointment.reasonCode
+          .flatMap { cc -> cc.coding }
+          .any { c -> c.code == reasonCode.coding.firstOrNull()?.code })
 
     return (appointment.status == Appointment.AppointmentStatus.BOOKED ||
       appointment.status == Appointment.AppointmentStatus.NOSHOW) &&
@@ -176,7 +182,7 @@ constructor(
 
   private fun Search.genericFilter(
     dateOfAppointment: Date? = null,
-    reasonCode: String? = null,
+    reasonCode: CodeableConcept? = null,
     patientCategory: Iterable<HealthStatus>? = null,
     myPatients: Boolean = false,
   ) {
@@ -219,16 +225,7 @@ constructor(
     }
 
     if (reasonCode != null) {
-      val codeAbleConcept =
-        CodeableConcept().apply {
-          addCoding(
-            Coding().apply {
-              system = SystemConstants.REASON_CODE_SYSTEM
-              code = reasonCode
-            },
-          )
-        }
-      filter(Appointment.REASON_CODE, { value = of(codeAbleConcept) })
+      filter(Appointment.REASON_CODE, { value = of(reasonCode) })
     }
 
     if (patientCategory != null) {
@@ -318,9 +315,13 @@ constructor(
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
-
+    val keySet = mutableSetOf<String>()
     return appointments
-      .map { it.resource }
+      .mapNotNull {
+        if (keySet.contains(it.resource.logicalId)) return@mapNotNull null
+        keySet.add(it.resource.logicalId)
+        it.resource
+      }
       .filter {
         it.status == Appointment.AppointmentStatus.BOOKED &&
           it.hasStart() &&

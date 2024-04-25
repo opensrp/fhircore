@@ -293,7 +293,7 @@ fun PatientProfileScreen(
               ),
             )
           },
-          enabled = profileViewData.tasksCompleted,
+          enabled = true,
         ) {
           Text(
             modifier = Modifier.padding(10.dp),
