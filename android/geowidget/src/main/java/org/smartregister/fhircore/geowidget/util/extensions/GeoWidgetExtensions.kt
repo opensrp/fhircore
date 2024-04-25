@@ -29,10 +29,10 @@ fun Feature.getGeoJsonGeometry(): JSONObject {
   val geometryObject = JSONObject()
 
   /* TODO: Currently Geometry only supports type @Point. Point Geometry has coordinates with a JSONArray
-     having only 2 double values whereas any other Type has a different structure having JSONArray
-     with an Array of elements. See below examples
-     Point: {"geometry": { "type": "Point", "coordinates": [ 45.487, -25.208]}}
-     LineString: {"geometry": {"type": "LineString", "coordinates": [ [717, 1246.3812 ], [703.1146]]}}
+    having only 2 double values whereas any other Type has a different structure having JSONArray
+    with an Array of elements. See below examples
+    Point: {"geometry": { "type": "Point", "coordinates": [ 45.487, -25.208]}}
+    LineString: {"geometry": {"type": "LineString", "coordinates": [ [717, 1246.3812 ], [703.1146]]}}
   */
   geometryObject.put("type", geometry.type)
   geometryObject.put(

@@ -28,7 +28,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Badge
 import androidx.compose.material.BadgedBox
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -84,279 +83,275 @@ const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 
 @Composable
 fun TopScreenSection(
-    modifier: Modifier = Modifier,
-    title: String,
-    isSearchBarVisible: Boolean,
-    searchText: String,
-    filteredRecordsCount: Long? = null,
-    searchPlaceholder: String? = null,
-    toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
-    onSearchTextChanged: (String) -> Unit,
-    isFilterIconEnabled: Boolean = false,
-    topScreenSection: TopScreenSectionConfig? = null,
-    navController: NavController,
-    onClick: (ToolbarClickEvent) -> Unit,
+  modifier: Modifier = Modifier,
+  title: String,
+  isSearchBarVisible: Boolean,
+  searchText: String,
+  filteredRecordsCount: Long? = null,
+  searchPlaceholder: String? = null,
+  toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
+  onSearchTextChanged: (String) -> Unit,
+  isFilterIconEnabled: Boolean = false,
+  topScreenSection: TopScreenSectionConfig? = null,
+  navController: NavController,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colors.primary),
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
+    Row(
+      modifier =
+        modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp, vertical = 16.dp)
+          .testTag(
+            TITLE_ROW_TEST_TAG,
+          ),
+      verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier =
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 16.dp)
-                .testTag(
-                    TITLE_ROW_TEST_TAG,
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                when (toolBarHomeNavigation) {
-                    ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
-                    ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
-                },
-                contentDescription = DRAWER_MENU,
-                tint = Color.White,
-                modifier =
-                modifier
-                    .clickable { onClick(ToolbarClickEvent.Navigate) }
-                    .testTag(TOP_ROW_ICON_TEST_TAG),
-            )
-            Text(
-                text = title,
-                fontSize = 20.sp,
-                color = Color.White,
-                modifier = modifier
-                    .padding(start = 8.dp)
-                    .weight(1f)
-                    .testTag(TOP_ROW_TEXT_TEST_TAG),
-            )
+      Icon(
+        when (toolBarHomeNavigation) {
+          ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
+          ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
+        },
+        contentDescription = DRAWER_MENU,
+        tint = Color.White,
+        modifier =
+          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
+      )
+      Text(
+        text = title,
+        fontSize = 20.sp,
+        color = Color.White,
+        modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
+      )
 
-            //if menu icons are more than two then we will add a overflow menu for other menu icons
-            // to support m3 guidelines https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
-            SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
+      // if menu icons are more than two then we will add a overflow menu for other menu icons
+      // to support m3 guidelines
+      // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
+      SetupToolbarIcons(topScreenSection?.menuIcons, navController, modifier, onClick)
 
-            if (isFilterIconEnabled) {
-                BadgedBox(
-                    modifier = Modifier.padding(end = 8.dp),
-                    badge = {
-                        if (filteredRecordsCount != null && filteredRecordsCount > -1) {
-                            Badge {
-                                Text(
-                                    text = if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
-                                    overflow = TextOverflow.Clip,
-                                    maxLines = 1,
-                                )
-                            }
-                        }
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.FilterAlt,
-                        contentDescription = FILTER,
-                        tint = Color.White,
-                        modifier =
-                        modifier
-                            .clickable { onClick(ToolbarClickEvent.FilterData) }
-                            .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-                    )
-                }
+      if (isFilterIconEnabled) {
+        BadgedBox(
+          modifier = Modifier.padding(end = 8.dp),
+          badge = {
+            if (filteredRecordsCount != null && filteredRecordsCount > -1) {
+              Badge {
+                Text(
+                  text = if (filteredRecordsCount > 99) "99+" else filteredRecordsCount.toString(),
+                  overflow = TextOverflow.Clip,
+                  maxLines = 1,
+                )
+              }
             }
+          },
+        ) {
+          Icon(
+            imageVector = Icons.Default.FilterAlt,
+            contentDescription = FILTER,
+            tint = Color.White,
+            modifier =
+              modifier
+                .clickable { onClick(ToolbarClickEvent.FilterData) }
+                .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
+          )
         }
-        if (isSearchBarVisible) {
-            OutlinedTextField(
-                colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
-                value = searchText,
-                onValueChange = { onSearchTextChanged(it) },
-                maxLines = 1,
-                singleLine = true,
-                placeholder = {
-                    Text(
-                        color = GreyTextColor,
-                        text = searchPlaceholder ?: stringResource(R.string.search_hint),
-                        modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
-                    )
-                },
-                modifier =
-                modifier
-                    .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(size = 10.dp))
-                    .background(Color.White)
-                    .testTag(OUTLINED_BOX_TEST_TAG),
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        SEARCH,
-                        modifier = modifier.testTag(LEADING_ICON_TEST_TAG),
-                    )
-                },
-                trailingIcon = {
-                    if (searchText.isNotEmpty()) {
-                        IconButton(
-                            onClick = { onSearchTextChanged("") },
-                            modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Clear,
-                                CLEAR,
-                                tint = Color.Gray,
-                                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-                            )
-                        }
-                    }
-                },
-            )
-        }
+      }
     }
+    if (isSearchBarVisible) {
+      OutlinedTextField(
+        colors = TextFieldDefaults.outlinedTextFieldColors(textColor = Color.DarkGray),
+        value = searchText,
+        onValueChange = { onSearchTextChanged(it) },
+        maxLines = 1,
+        singleLine = true,
+        placeholder = {
+          Text(
+            color = GreyTextColor,
+            text = searchPlaceholder ?: stringResource(R.string.search_hint),
+            modifier = modifier.testTag(SEARCH_FIELD_TEST_TAG),
+          )
+        },
+        modifier =
+          modifier
+            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(size = 10.dp))
+            .background(Color.White)
+            .testTag(OUTLINED_BOX_TEST_TAG),
+        leadingIcon = {
+          Icon(
+            imageVector = Icons.Filled.Search,
+            SEARCH,
+            modifier = modifier.testTag(LEADING_ICON_TEST_TAG),
+          )
+        },
+        trailingIcon = {
+          if (searchText.isNotEmpty()) {
+            IconButton(
+              onClick = { onSearchTextChanged("") },
+              modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Clear,
+                CLEAR,
+                tint = Color.Gray,
+                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+              )
+            }
+          }
+        },
+      )
+    }
+  }
 }
 
 @Composable
 fun SetupToolbarIcons(
-    menuIcons: List<ImageProperties>?,
-    navController: NavController,
-    modifier: Modifier,
-    onClick: (ToolbarClickEvent) -> Unit
+  menuIcons: List<ImageProperties>?,
+  navController: NavController,
+  modifier: Modifier,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
-
-    if (menuIcons?.isNotEmpty() == true && menuIcons.size > 2) {
-        var menuExpanded by remember {
-            mutableStateOf(false)
-        }
-        Row {
-            RenderMenuIcons(
-                    menuIcons = menuIcons.take(2),
-                    navController = navController,
-                    modifier = modifier,
-                    onClick = onClick
-                )
-         //FIXME - Do not use material 3 library for now. We have to use dropdown menu to render the other menu icons
-
-        }
-    } else {
-        menuIcons?.let {
-            RenderMenuIcons(
-                menuIcons = it,
-                navController = navController,
-                modifier = modifier,
-                onClick = onClick
-            )
-        }
+  if (menuIcons?.isNotEmpty() == true && menuIcons.size > 2) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    Row {
+      RenderMenuIcons(
+        menuIcons = menuIcons.take(2),
+        navController = navController,
+        modifier = modifier,
+        onClick = onClick,
+      )
+      // FIXME - Do not use material 3 library for now. We have to use dropdown menu to render the
+      // other menu icons
     }
-
+  } else {
+    menuIcons?.let {
+      RenderMenuIcons(
+        menuIcons = it,
+        navController = navController,
+        modifier = modifier,
+        onClick = onClick,
+      )
+    }
+  }
 }
 
 @Composable
 fun RenderMenuIcons(
-    menuIcons: List<ImageProperties>,
-    navController: NavController,
-    modifier: Modifier,
-    onClick: (ToolbarClickEvent) -> Unit
+  menuIcons: List<ImageProperties>,
+  navController: NavController,
+  modifier: Modifier,
+  onClick: (ToolbarClickEvent) -> Unit,
 ) {
-    LazyRow (horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        items(menuIcons) {
-            Image(
-                imageProperties = ImageProperties(imageConfig = it.imageConfig),
-                navController = navController,
-                tint = Color.White,
-                modifier =
-                modifier
-                    .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
-                    .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
-            )
-        }
+  LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+    items(menuIcons) {
+      Image(
+        imageProperties = ImageProperties(imageConfig = it.imageConfig),
+        navController = navController,
+        tint = Color.White,
+        modifier =
+          modifier
+            .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
+            .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+      )
     }
+  }
 }
-
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
-    TopScreenSection(
-        title = "All Clients",
-        searchText = "Eddy",
-        filteredRecordsCount = 120,
-        onSearchTextChanged = {},
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        isFilterIconEnabled = true,
-        onClick = {},
-        isSearchBarVisible = true,
-        navController = rememberNavController()
-    )
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun TopScreenSectionWithFilterCountNinetyNinePreview() {
-    TopScreenSection(
-        title = "All Clients",
-        searchText = "Eddy",
-        filteredRecordsCount = 99,
-        onSearchTextChanged = {},
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        isFilterIconEnabled = true,
-        onClick = {},
-        isSearchBarVisible = true,
-        navController = rememberNavController()
-
-    )
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 99,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun TopScreenSectionNoFilterIconPreview() {
-    TopScreenSection(
-        title = "All Clients",
-        searchText = "Eddy",
-        onSearchTextChanged = {},
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        isFilterIconEnabled = false,
-        onClick = {},
-        isSearchBarVisible = true,
-        navController = rememberNavController(),
-        topScreenSection = TopScreenSectionConfig(
-            searchBar = null, title = "Service Point", menuIcons = arrayListOf(
-                ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points"))
-            )
-        )
-    )
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        title = "Service Point",
+        menuIcons =
+          arrayListOf(
+            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
+          ),
+      ),
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
-    TopScreenSection(
-        title = "All Clients",
-        searchText = "Eddy",
-        filteredRecordsCount = 120,
-        onSearchTextChanged = {},
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        isFilterIconEnabled = true,
-        onClick = {},
-        isSearchBarVisible = true,
-        navController = rememberNavController(),
-        topScreenSection = TopScreenSectionConfig(
-            searchBar = null, title = "Service Point", menuIcons = arrayListOf(
-                ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points"))
-            )
-        )
-    )
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = true,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+    topScreenSection =
+      TopScreenSectionConfig(
+        searchBar = null,
+        title = "Service Point",
+        menuIcons =
+          arrayListOf(
+            ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
+          ),
+      ),
+  )
 }
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 fun TopScreenSectionWithToggleIconPreview() {
-    TopScreenSection(
-        title = "All Clients",
-        searchText = "Eddy",
-        filteredRecordsCount = 120,
-        onSearchTextChanged = {},
-        toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
-        isFilterIconEnabled = false,
-        onClick = {},
-        isSearchBarVisible = true,
-        navController = rememberNavController()
-    )
+  TopScreenSection(
+    title = "All Clients",
+    searchText = "Eddy",
+    filteredRecordsCount = 120,
+    onSearchTextChanged = {},
+    toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
+    isFilterIconEnabled = false,
+    onClick = {},
+    isSearchBarVisible = true,
+    navController = rememberNavController(),
+  )
 }

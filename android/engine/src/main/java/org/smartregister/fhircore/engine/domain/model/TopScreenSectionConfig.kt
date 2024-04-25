@@ -23,6 +23,6 @@ import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 @Serializable
 data class TopScreenSectionConfig(
   val searchBar: RegisterContentConfig?,
-  val title: String?= null,
+  val title: String? = null,
   val menuIcons: List<ImageProperties>? = null,
 )

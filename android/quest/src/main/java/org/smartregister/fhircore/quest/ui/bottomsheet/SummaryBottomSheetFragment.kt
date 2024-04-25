@@ -31,34 +31,34 @@ import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.quest.R
 
 class SummaryBottomSheetFragment(
-    private val summaryBottomSheetConfig: SummaryBottomSheetConfig,
-    private val resourceData: ResourceData,
+  private val summaryBottomSheetConfig: SummaryBottomSheetConfig,
+  private val resourceData: ResourceData,
 ) : BottomSheetDialogFragment() {
 
+  override fun getTheme(): Int = R.style.BottomSheetDialogTheme
 
-    override fun getTheme(): Int = R.style.BottomSheetDialogTheme
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        BottomSheetDialog(requireContext(), theme)
+  override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+    BottomSheetDialog(requireContext(), theme)
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                AppTheme {
-                    SummaryBottomSheetView(
-                        properties = summaryBottomSheetConfig.views!!,
-                        resourceData = resourceData,
-                        navController = findNavController(),
-                    )
-                }
-            }
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?,
+  ): View {
+    return ComposeView(requireContext()).apply {
+      setContent {
+        AppTheme {
+          SummaryBottomSheetView(
+            properties = summaryBottomSheetConfig.views!!,
+            resourceData = resourceData,
+            navController = findNavController(),
+          )
         }
+      }
     }
+  }
 
-    companion object {
-        const val TAG = "SummaryBottomSheetTag"
-    }
+  companion object {
+    const val TAG = "SummaryBottomSheetTag"
+  }
 }
