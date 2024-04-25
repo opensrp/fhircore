@@ -41,7 +41,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -233,30 +232,8 @@ fun SetupToolbarIcons(
                     modifier = modifier,
                     onClick = onClick
                 )
+         //FIXME - Do not use material 3 library for now. We have to use dropdown menu to render the other menu icons
 
-            DropdownMenu(
-                expanded = menuExpanded,
-                onDismissRequest = { menuExpanded = false },
-            ) {
-                DropdownMenuItem(
-                    text = {
-                        Text("Refresh")
-                    },
-                    onClick = { /* TODO */ },
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text("Settings")
-                    },
-                    onClick = { /* TODO */ },
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text("About")
-                    },
-                    onClick = { /* TODO */ },
-                )
-            }
         }
     } else {
         menuIcons?.let {
