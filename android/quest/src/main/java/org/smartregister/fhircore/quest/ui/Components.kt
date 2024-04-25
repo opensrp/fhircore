@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.datepicker.MaterialDatePicker
 import java.util.Date
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 
 @Composable
 fun LocalDatePickerDialog(

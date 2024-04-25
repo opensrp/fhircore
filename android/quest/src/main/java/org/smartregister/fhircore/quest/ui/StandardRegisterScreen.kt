@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Badge
+import androidx.compose.material.BadgedBox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -55,6 +57,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
@@ -67,6 +70,8 @@ fun PageRegisterScreen(
   navController: NavHostController,
   registerViewModel: StandardRegisterViewModel,
   filterNavClickAction: () -> Unit,
+  activeFilters: List<FilterOption> = listOf(),
+  showFilterValues: Boolean = false,
 ) {
   val searchTextState = registerViewModel.searchText.collectAsState()
   val searchText by remember { searchTextState }
@@ -85,6 +90,7 @@ fun PageRegisterScreen(
         },
         onNavIconClick = { navController.popBackStack() },
         onFilterIconClick = filterNavClickAction,
+        activeFilters = activeFilters,
       )
     },
     bottomBar = {
@@ -110,9 +116,12 @@ fun PageRegisterScreen(
     Box(modifier = modifier.padding(innerPadding)) {
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
-      if (searchText.isNotEmpty()) {
+      if (searchText.isNotEmpty() || (showFilterValues && activeFilters.isNotEmpty())) {
         iModifier = Modifier.padding(top = 32.dp)
-        RegisterHeader(resultCount = pagingItems.itemCount)
+        RegisterHeader(
+          resultCount = if (searchText.isEmpty()) -1 else pagingItems.itemCount,
+          activeFilters = activeFilters,
+        )
       }
 
       val isRefreshing by registerViewModel.isRefreshing.collectAsState()
@@ -142,8 +151,11 @@ fun TopSection(
   onSearchTextChanged: (String) -> Unit,
   onNavIconClick: () -> Unit,
   onFilterIconClick: () -> Unit = {},
+  activeFilters: List<FilterOption> = listOf(),
 ) {
-  Column(modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary)) {
+  Column(
+    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+  ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       modifier = modifier.padding(vertical = 8.dp),
@@ -153,7 +165,15 @@ fun TopSection(
       }
       Text(text = title, fontSize = 20.sp, color = Color.White, modifier = Modifier.weight(1f))
       IconButton(onClick = onFilterIconClick) {
-        Icon(Icons.Filled.FilterList, contentDescription = "Filter", tint = Color.White)
+        BadgedBox(
+          badge = {
+            if (activeFilters.isNotEmpty()) {
+              Badge { Text(text = activeFilters.size.toString()) }
+            }
+          },
+        ) {
+          Icon(Icons.Filled.FilterList, contentDescription = "Filter", tint = Color.White)
+        }
       }
     }
 
@@ -196,5 +216,6 @@ fun PreviewTopSection() {
     onSearchTextChanged = {},
     onNavIconClick = {},
     onFilterIconClick = {},
+    activeFilters = listOf(),
   )
 }

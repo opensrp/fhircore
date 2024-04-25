@@ -48,15 +48,20 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.time.DateUtils
+import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.filter.DateFilterOption
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.StandardRegisterEvent
 import org.smartregister.fhircore.quest.ui.StandardRegisterViewModel
@@ -244,7 +249,15 @@ constructor(
         _filtersMutableStateFlow.update { newFilterState }
       }
       is StandardRegisterEvent.OpenProfile -> {
-        // No-op
+        val urlParams =
+          NavigationArg.bindArgumentsOf(
+            Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+            Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
+            Pair(NavigationArg.PATIENT_ID, event.patientId),
+          )
+        event.navController.navigate(
+          route = MainNavigationScreen.PatientProfile.route + urlParams,
+        )
       }
     }
   }
@@ -255,18 +268,40 @@ constructor(
     } else {
       configurationRegistry.context.resources.getString(R.string.search_progress_message)
     }
+
+  fun clearFilters() {
+    _filtersMutableStateFlow.update { AppointmentFilterState.default() }
+  }
 }
 
 data class AppointmentFilterState(
-  val date: AppointmentDate,
+  val date: DateFilterOption,
   val patients: AppointmentFilter<PatientAssignment>,
   val patientCategory: AppointmentFilter<PatientCategory>,
   val reason: AppointmentFilter<Reason>,
 ) {
+  fun toFilterList(): List<FilterOption> {
+    val activeFilters: MutableList<FilterOption> = mutableListOf()
+    val defaultState = default()
+    if (patients.selected != defaultState.patients.selected) {
+      activeFilters.add(patients.selected)
+    }
+    if (patientCategory.selected != defaultState.patientCategory.selected) {
+      activeFilters.add(patientCategory.selected)
+    }
+    if (reason.selected != defaultState.reason.selected) {
+      activeFilters.add(reason.selected)
+    }
+    if (!DateUtils.isSameDay(date.value, defaultState.date.value)) {
+      activeFilters.add(date)
+    }
+    return activeFilters
+  }
+
   companion object {
     fun default() =
       AppointmentFilterState(
-        date = AppointmentDate(Date()),
+        date = DateFilterOption(Date()),
         patients =
           AppointmentFilter(PatientAssignment.ALL_PATIENTS, PatientAssignment.values().asList()),
         patientCategory =

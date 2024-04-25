@@ -55,6 +55,7 @@ import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
@@ -278,6 +279,14 @@ constructor(
   fun isFirstTimeSync() =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
 
+  fun getActiveFilters(state: TracingRegisterFilterState): List<FilterOption> {
+    return state.toFilterList(healthModule)
+  }
+
+  fun clearFilters() {
+    _filtersMutableStateFlow.update { TracingRegisterFilterState.default(healthModule) }
+  }
+
   override fun progressMessage() =
     if (searchText.value.isEmpty()) {
       ""
@@ -292,6 +301,24 @@ data class TracingRegisterFilterState(
   val reason: TracingRegisterUiFilter<TracingReason>,
   val age: TracingRegisterUiFilter<AgeFilter>,
 ) {
+  fun toFilterList(healthModule: HealthModule): List<FilterOption> {
+    val activeFilters: MutableList<FilterOption> = mutableListOf()
+    val defaultState = default(healthModule)
+    if (patientAssignment.selected != defaultState.patientAssignment.selected) {
+      activeFilters.add(patientAssignment.selected)
+    }
+    if (patientCategory.selected != defaultState.patientCategory.selected) {
+      activeFilters.add(patientCategory.selected)
+    }
+    if (reason.selected != defaultState.reason.selected) {
+      activeFilters.add(reason.selected)
+    }
+    if (age.selected != defaultState.age.selected) {
+      activeFilters.add(age.selected)
+    }
+    return activeFilters
+  }
+
   companion object {
     fun default(healthModule: HealthModule) =
       when (healthModule) {

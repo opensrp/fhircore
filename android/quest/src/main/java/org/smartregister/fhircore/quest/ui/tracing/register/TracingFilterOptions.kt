@@ -16,8 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.register
 
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
-import org.smartregister.fhircore.quest.ui.FilterOption
 
 interface TracingFilterOption : FilterOption
 

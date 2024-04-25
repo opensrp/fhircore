@@ -86,7 +86,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
     val identifier: String? = null,
     val givenName: String = "",
     val familyName: String = "",
-    val birthdate: Date,
+    val birthdate: Date?,
     val age: String = birthdate.toAgeDisplay(),
     val gender: Enumerations.AdministrativeGender,
     val address: String,
@@ -109,7 +109,7 @@ sealed class ProfileData(open val logicalId: String, open val name: String) {
   data class TracingProfileData(
     override val logicalId: String,
     override val name: String,
-    val birthdate: Date,
+    val birthdate: Date?,
     val dueDate: Date?,
     val address: String,
     val identifier: String?,

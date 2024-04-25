@@ -16,11 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.appointment.register
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.util.extension.capitalizeFirstLetter
-import org.smartregister.fhircore.quest.ui.FilterOption
 
 interface AppointmentFilterOption : FilterOption
 
@@ -69,15 +66,6 @@ enum class Reason(val patientCategory: Array<PatientCategory>) : AppointmentFilt
 
   override fun text(): String =
     super.toString().lowercase().split("_").joinToString(" ") { it.capitalizeFirstLetter() }
-}
-
-class AppointmentDate(val value: Date) {
-  fun formmatted(): CharSequence =
-    SimpleDateFormat(FORMAT_STRING, Locale.getDefault()).format(value)
-
-  companion object {
-    private const val FORMAT_STRING = "dd - MM - yyyy"
-  }
 }
 
 data class AppointmentFilter<T : FilterOption>(val selected: T, val options: Iterable<T>)
