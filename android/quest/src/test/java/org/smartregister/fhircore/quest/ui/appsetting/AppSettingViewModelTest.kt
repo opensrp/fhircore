@@ -98,7 +98,6 @@ class AppSettingViewModelTest : RobolectricTest() {
   private val configService = mockk<ConfigService>()
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var appSettingViewModel: AppSettingViewModel
-  private lateinit var configurationRegistry: ConfigurationRegistry
 
   @Before
   fun setUp() {
@@ -114,25 +113,6 @@ class AppSettingViewModelTest : RobolectricTest() {
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,
-        ),
-      )
-
-    configurationRegistry =
-      spyk(
-        ConfigurationRegistry(
-          fhirEngine = fhirEngine,
-          fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
-          dispatcherProvider = dispatcherProvider,
-          configService = mockk(),
-          json = Faker.json,
-          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-          openSrpApplication =
-          object : OpenSrpApplication() {
-            override fun getFhirServerHost(): URL? {
-              return URL("http://my_test_fhirbase_url/fhir/")
-            }
-          },
         ),
       )
   }
@@ -636,16 +616,51 @@ class AppSettingViewModelTest : RobolectricTest() {
 
   @Test
   fun `fetchConfigurations() with an ImplementationGuide should call fetchRemoteCompositionById()`() {
-
+    runBlocking {
+      appSettingViewModel.run {
+        onApplicationIdChanged("app")
+        fetchConfigurations(context)
+      }
+      val implementationGuide = ImplementationGuide().apply {
+        url = "ImplementationGuide/1"
+        name = "testImplementationGuide"
+        definition =
+          ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
+            resource =
+              mutableListOf(
+                ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
+                  Reference().apply { reference = "Composition/_history/1" },
+                ),
+              )
+          }
+      }
+      val composition = Composition().apply { id = "123"  };
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any()) } returns implementationGuide
+      coEvery { appSettingViewModel.configurationRegistry.addOrUpdate(any()) } just runs
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any()) } returns composition
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any())} just runs
+      coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+      appSettingViewModel.fetchConfigurations(context)
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionById(any(), any()) }
+    }
   }
+
 
   @Test
   fun `fetchConfigurations() without ImplementationGuide should call fetchRemoteCompositionByAppId()`() {
-
-  }
-
-  @Test
-  fun `fetchConfigurations() without both ImplementationGuide and Composition should fail with a message to the user`(){
+    runBlocking {
+      appSettingViewModel.run {
+        onApplicationIdChanged("app")
+        fetchConfigurations(context)
+      }
+      val composition = Composition().apply { id = "123"  };
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteImplementationGuideByAppId(any(), any()) } returns null
+      coEvery { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
+      coEvery { appSettingViewModel.configurationRegistry.saveSyncSharedPreferences(any())} just runs
+      coEvery { appSettingViewModel.defaultRepository.createRemote(any(), any()) } just runs
+      appSettingViewModel.fetchConfigurations(context)
+      coVerify { appSettingViewModel.configurationRegistry.fetchRemoteCompositionByAppId(any()) }
+    }
 
   }
 }
