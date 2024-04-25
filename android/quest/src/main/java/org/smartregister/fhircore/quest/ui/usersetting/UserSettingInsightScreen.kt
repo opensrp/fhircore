@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,6 +45,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.primarySurface
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -140,6 +142,30 @@ fun UserSettingInsightScreen(
           Spacer(modifier = Modifier.height(24.dp))
         }
       }
+      else {
+        item {
+          Row(
+            verticalAlignment = Alignment.CenterVertically
+          ) {
+            Text(
+              text =  stringResource(id = R.string.all_resources_synced),
+              style = TextStyle(color = Color.Black, fontSize = 20.sp),
+              fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = null,
+              tint = Color.Green,
+            )
+          }
+        }
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
+      }
       item {
         if (fullName != null && team != null && locality != null) {
           val items =
@@ -155,14 +181,28 @@ fun UserSettingInsightScreen(
           )
         }
       }
+      val userName2 = null
       item {
-        if (userName != null && organization != null && careTeam != null && location != null) {
+        if (userName2 != null && organization != null && careTeam != null && location != null) {
           val items =
             listOf(
-              stringResource(id = R.string.username) to userName,
+              stringResource(id = R.string.username) to userName!!,
               stringResource(R.string.team_organization) to organization.take(10),
               stringResource(R.string.care_team) to careTeam,
               stringResource(R.string.location) to location,
+            )
+          InsightInfoView(
+            title = stringResource(id = R.string.assignment_info),
+            items = items,
+          )
+        }
+        else {
+          val items =
+            listOf(
+              stringResource(id = R.string.username) to "-",
+              stringResource(R.string.team_organization) to "-",
+              stringResource(R.string.care_team) to "-",
+              stringResource(R.string.location) to "-",
             )
           InsightInfoView(
             title = stringResource(id = R.string.assignment_info),

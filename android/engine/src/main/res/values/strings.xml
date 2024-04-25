@@ -159,6 +159,7 @@
     <string name="device_info">Device info</string>
     <string name="refresh">Refresh</string>
     <string name="unsynced_resources">Unsynced Resources</string>
+    <string name="all_resources_synced">All resources synced</string>
     <string name="synced_statistics">Synced Statistics</string>
     <string name="all_data_synced">All data synced</string>
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
