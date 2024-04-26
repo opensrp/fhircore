@@ -24,7 +24,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
@@ -76,7 +75,6 @@ import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
-import org.smartregister.fhircore.engine.util.extension.updateFrom
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -405,24 +403,6 @@ constructor(
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-      // if (isInitialLogin) return null
-      val filterResourceList =
-        listOf(
-          ResourceType.Questionnaire.name,
-          ResourceType.StructureMap.name,
-          ResourceType.List.name,
-          ResourceType.PlanDefinition.name,
-          ResourceType.Library.name,
-          ResourceType.Measure.name,
-          ResourceType.Basic.name,
-          ResourceType.Binary.name,
-          ResourceType.ActivityDefinition.name,
-          ResourceType.CodeSystem.name,
-          ResourceType.ConceptMap.name,
-          ResourceType.StructureDefinition.name,
-          ResourceType.Device.name,
-          ResourceType.Parameters,
-        )
       val patientRelatedResourceTypes = mutableListOf<ResourceType>()
       val compositionResource = fetchRemoteComposition(parsedAppId)
       compositionResource?.let { composition ->
@@ -434,11 +414,11 @@ constructor(
           } // is focus.identifier a necessary check
           .groupBy { section ->
             section.focus.reference.substringBefore(
-              ConfigurationRegistry.TYPE_REFERENCE_DELIMITER,
+              TYPE_REFERENCE_DELIMITER,
               missingDelimiterValue = "",
             )
           }
-          .filter { entry -> entry.key in filterResourceList }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
           .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
             if (entry.key == ResourceType.List.name) {
               processCompositionListResources(
@@ -502,7 +482,7 @@ constructor(
               .toRequestBody(NetworkModule.JSON_MEDIA_TYPE),
         )
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
 
     return resultBundle
   }
@@ -512,23 +492,36 @@ constructor(
     searchPath: String,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    val resultBundle =
-      if (gatewayModeHeaderValue.isNullOrEmpty()) {
-        fhirResourceDataSource.getResource(searchPath)
-      } else
-        fhirResourceDataSource.getResourceWithGatewayModeHeader(
-          gatewayModeHeaderValue,
-          searchPath,
-        )
+    val resultBundle = fetchResourceBundle(gatewayModeHeaderValue, searchPath)
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url ?: ""
 
-    processResultBundleEntries(resultBundle, patientRelatedResourceTypes)
+    processResultBundleEntries(resultBundle.entry, patientRelatedResourceTypes)
+
+    if (nextPageUrl.isNotEmpty()) {
+      processCompositionManifestResources(
+        gatewayModeHeaderValue,
+        nextPageUrl,
+        patientRelatedResourceTypes,
+      )
+    }
+  }
+
+  private suspend fun fetchResourceBundle(
+    gatewayModeHeaderValue: String?,
+    searchPath: String,
+  ): Bundle {
+    return if (gatewayModeHeaderValue.isNullOrEmpty()) {
+      fhirResourceDataSource.getResource(searchPath)
+    } else {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
+    }
   }
 
   private suspend fun processResultBundleEntries(
-    resultBundle: Bundle,
+    resultBundleEntries: List<Bundle.BundleEntryComponent>,
     patientRelatedResourceTypes: MutableList<ResourceType>,
   ) {
-    resultBundle.entry?.forEach { bundleEntryComponent ->
+    resultBundleEntries.forEach { bundleEntryComponent ->
       when (bundleEntryComponent.resource) {
         is Bundle -> {
           val bundle = bundleEntryComponent.resource as Bundle
@@ -570,22 +563,17 @@ constructor(
   }
 
   /**
-   * Using this [FhirEngine] and [DispatcherProvider], update this stored resources with the passed
-   * resource, or create it if not found.
+   * Update this stored resources with the passed resource, or create it if not found. If the
+   * resource is a Metadata Resource save it in the Knowledge Manager
+   *
+   * Note
    */
   suspend fun <R : Resource> addOrUpdate(resource: R) {
     withContext(dispatcherProvider.io()) {
-      resource.updateLastUpdated()
       try {
-        fhirEngine.get(resource.resourceType, resource.logicalId).run {
-          fhirEngine.update(updateFrom(resource))
-        }
-      } catch (resourceNotFoundException: ResourceNotFoundException) {
-        try {
-          createRemote(resource)
-        } catch (sqlException: SQLException) {
-          Timber.e(sqlException)
-        }
+        createOrUpdateRemote(resource)
+      } catch (sqlException: SQLException) {
+        Timber.e(sqlException)
       }
 
       /**
@@ -611,7 +599,7 @@ constructor(
           ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
-  private fun writeToFile(resource: Resource): File {
+  fun writeToFile(resource: Resource): File {
     val fileName =
       if (resource is MetadataResource && resource.name != null) {
         resource.name
@@ -628,9 +616,11 @@ constructor(
    * Using this [FhirEngine] and [DispatcherProvider], for all passed resources, make sure they all
    * have IDs or generate if they don't, then pass them to create.
    *
+   * Note: The backing db API for fhirEngine.create(..,isLocalOnly) performs an UPSERT
+   *
    * @param resources vararg of resources
    */
-  suspend fun createRemote(vararg resources: Resource) {
+  suspend fun createOrUpdateRemote(vararg resources: Resource) {
     return withContext(dispatcherProvider.io()) {
       resources.onEach {
         it.updateLastUpdated()
@@ -691,7 +681,7 @@ constructor(
 
   fun clearConfigsCache() = configCacheMap.clear()
 
-  suspend fun processCompositionListResources(
+  private suspend fun processCompositionListResources(
     resourceGroup:
       Map.Entry<
         String,
@@ -734,19 +724,20 @@ constructor(
       resourceGroup.value.forEach {
         processCompositionManifestResources(
           gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-          searchPath = "${resourceGroup.key}/${it.focus.extractId()}",
+          searchPath =
+            "${resourceGroup.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
           patientRelatedResourceTypes = patientRelatedResourceTypes,
         )
       }
     }
   }
 
-  fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+  private fun FhirResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     this.baseResource.dependentResourceTypes(target)
     this.relatedResources.forEach { it.dependentResourceTypes(target) }
   }
 
-  fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
+  private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     target.add(resource)
     relatedResources.forEach { it.dependentResourceTypes(target) }
   }
@@ -793,5 +784,24 @@ constructor(
     const val ORGANIZATION = "organization"
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
+    const val PAGINATION_NEXT = "next"
+
+    /**
+     * The list of resources whose types can be synced down as part of the Composition configs.
+     * These are hardcoded as they are not meant to be easily configurable to avoid config vs data
+     * sync issues
+     */
+    val FILTER_RESOURCE_LIST =
+      listOf(
+        ResourceType.Questionnaire.name,
+        ResourceType.StructureMap.name,
+        ResourceType.List.name,
+        ResourceType.PlanDefinition.name,
+        ResourceType.Library.name,
+        ResourceType.Measure.name,
+        ResourceType.Basic.name,
+        ResourceType.Binary.name,
+        ResourceType.Parameters,
+      )
   }
 }

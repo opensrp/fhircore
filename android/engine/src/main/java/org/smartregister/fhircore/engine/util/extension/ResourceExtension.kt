@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -54,13 +55,16 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
+import org.hl7.fhir.r4.model.Type
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -124,9 +128,9 @@ fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
   parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
-  var extensionUpdateForm = listOf<Extension>()
+  var extensionUpdateFrom = listOf<Extension>()
   if (updatedResource is Patient) {
-    extensionUpdateForm = updatedResource.extension
+    extensionUpdateFrom = updatedResource.extension
   }
   var extension = listOf<Extension>()
   if (this is Patient) {
@@ -139,27 +143,27 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(jsonParser)))
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
     val meta = this.meta
-    val metaUpdateForm = this@updateFrom.meta
+    val metaUpdateFrom = this@updateFrom.meta
     if ((meta == null || meta.isEmpty)) {
-      if (metaUpdateForm != null) {
-        this.meta = metaUpdateForm
-        this.meta.tag = metaUpdateForm.tag
+      if (metaUpdateFrom != null) {
+        this.meta = metaUpdateFrom
+        this.meta.tag = metaUpdateFrom.tag
       }
     } else {
       val setOfTags = mutableSetOf<Coding>()
       setOfTags.addAll(meta.tag)
-      setOfTags.addAll(metaUpdateForm.tag)
+      setOfTags.addAll(metaUpdateFrom.tag)
       this.meta.tag = setOfTags.distinctBy { it.code + it.system }
     }
     if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
       if (extension.isEmpty()) {
-        if (extensionUpdateForm.isNotEmpty()) {
-          this.extension = extensionUpdateForm
+        if (extensionUpdateFrom.isNotEmpty()) {
+          this.extension = extensionUpdateFrom
         }
       } else {
         val setOfExtension = mutableSetOf<Extension>()
         setOfExtension.addAll(extension)
-        setOfExtension.addAll(extensionUpdateForm)
+        setOfExtension.addAll(extensionUpdateFrom)
         this.extension = setOfExtension.distinct()
       }
     }
@@ -301,6 +305,39 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
   }
 }
 
+fun Resource.appendRelatedEntityLocation(
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaireConfig: QuestionnaireConfig,
+  context: Context,
+) {
+  val locationCoding =
+    Coding().apply {
+      system =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+      display =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
+        )
+    }
+  questionnaireConfig.linkIds
+    ?.filter { it.type == LinkIdType.LOCATION }
+    ?.forEach { linkIdConfig ->
+      val answer: Type? = questionnaireResponse.find(linkIdConfig.linkId)?.answerFirstRep?.value
+      val locationId =
+        when (answer) {
+          is Reference -> answer.reference.extractLogicalIdUuid()
+          is StringType -> answer.value.extractLogicalIdUuid()
+          else -> null
+        }
+      val existingTag = this.meta.getTag(locationCoding.system, locationId)
+      if (!locationId.isNullOrEmpty() && existingTag == null) {
+        this.meta.addTag(locationCoding.apply { setCode(locationId) })
+      }
+    }
+}
+
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
   if (oldReference == null || oldReference.reference.isNullOrEmpty()) {
     newReference
@@ -384,14 +421,6 @@ fun String.resourceClassType(): Class<out Resource> =
  * 2. "Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4" returns "0acda8c9-3fa3-40ae-abcd-7d1fba7098b4".
  */
 fun String.extractLogicalIdUuid() = this.substringAfter("/").substringBefore("/")
-
-/**
- * This function extracts the resource id from a URL request e.g.
- * http://my-structuremap-url/fhir/StructureMap/123456 returns 123456 Note: NOT to be used as is
- * with urls that contain query parameters or any extra characters after the id
- */
-fun String.extractResourceId() =
-  this.substringAfterLast(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)
 
 /**
  * This suspend function updates the due date of the dependents of the current [Task], based on the

@@ -6,9 +6,13 @@ Examples are rows, columns, cards, and buttons.
 
 ## LIST widget
 
+The below image shows how different components are connected to work together through the list widget.
+
+![list](/img/config_types/list_ui.png)
+
 ### Flex alignment widgets
 
-To display items in flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
+To display items in the flexRow below sample JSON config works fine. Replace **COMPOUND_TEXT** with your preferred widget component. Please note, the below json borrows from **LIST** component properties
 
 ``` json
 {
@@ -102,6 +106,15 @@ emptyList | empty list json with a message to show in case the resource data to 
 registerCard | card to display widgets at | Yes |  |
 views | the desired widgets and their properties to be displayed | | |
 resources | the list resources to execute rules for | No but should be included if you want to display data as described in the sub-title|emptyList() |
+weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
+backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
+padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+borderRadius | Rounds the corners of the view's outer edge | | 0 |
+alignment | The alignment of the view within its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | false |
+visible | A String value that determines whether the view should be visible | Yes| true |
 
 ### Config properties of nested LIST
 |Property | Description | Required | Default |
@@ -111,9 +124,20 @@ relatedResourceId | Unique identifier for the relatedResources | no but highly r
 resourceType | The resource to to get/fetch data from e.g Task or Careplan | yes | |
 conditionalFhirPathExpression | FhirPathExpression to get to use when filtering the resource defined in resourceType section | no | app defaults to using relatedResources types and fhirPathexpression|
 sortConfig | Configuration used for sorting LIST widget resource | no | |
+fhirPathExpression | This is the fhir path expression of a given resource | no | |
+relatedResources | resource that is part of the base resource  | no | |
+
+### Goals of the LIST widget
+   - Display data in a list format
+   - Support pagination of data
 
 ## How to use COMPOUND_TEXT
-Defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
+
+![text](/img/config_types/compound_text.png)
+
+Compound text is a widget that is used to display text of different properties on the user interface.
+
+The below defines the configuration properties for a Compound Text view, which is a view that displays two text strings with an optional separator between them. This view can also have actions associated with each text string.
 
  ``` json
 [
@@ -159,9 +183,22 @@ secondaryTextFontWeight | The font weight of the secondary text | | [TextFontWei
 primaryTextActions | The list of actions associated with the primary text. If the list is empty, no actions will be displayed | | |
 secondaryTextActions | The list of actions associated with the secondary text. If the list is empty, no actions will be displayed | | |
 overflow | Determines how the text should be truncated if it is too long to fit | | [TextOverflow.ELLIPSIS] |
+colorOpacity | Determines how the text color should be in terms of color opacity | | Float |
+textCase | Determines how the text style should be. The text cases are `UPPER_CASE`, `LOWER_CASE`,  `CAMEL_CASE`, `TITLE_CASE` | | TextCase |
+fontSize | Determines how the text size in float.| | Float |
+maxLine | It defines the maximum number of lines you would like the text to be displayed.| | Int |
 
-##How to use BUTTON
-Defines the configuration properties of a Button view, which is a view that can do some actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
+### Goals of the COMPOUND_TEXT Widget
+ - Display text of different properties
+
+## How to use BUTTON
+
+![button](/img/config_types/button_ui.png)
+
+OpenSRP uses buttons to perform actions when clicked.
+
+The below defines the configuration properties of a Button view, which is a view that can perform actions when clicked. Additionally, the button can be styled using available properties such as `status`, `contentColor`, and `buttonType`
+
  ``` json
  [
    {
@@ -198,10 +235,52 @@ letterSpacing | The amount of space to be added between each letter of the butto
 buttonType | Specify the button size |  | ButtonType.MEDIUM | `TINY`, `MEDIUM`, `BIG` |
 contentColor | The content color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's content color. | No |  Null | |
 
-## SERVICE_CARD widgets
-Displays Patient's details ,other related services and tasks. The details field within the SERVICE_CARD display patient's name and ID.
+#### How to use button with icon and copy ability
+On top of the above properties, you need to add  Image config properties see a `startIcon config` *** IMAGE widget *** . This displays the icon before the button text
 
  ``` json
+       {
+                  "viewType": "BUTTON",
+                  "smallSized": "true",
+                  "text": "Button text",
+                  "status": "DUE",
+                  "visible": "visibility condition",
+                  "enabled": "enable condition",
+                  "startIcon": {
+                    "type": "local",
+                    "reference": "icon_name if local",
+                    "color": "icon color"
+                  },
+                  "actions": [
+                    {
+                      "trigger": "ON_CLICK",
+                      "workflow": "COPY_TEXT",
+                      "params": [
+                        {
+                          "paramType": "PARAMDATA",
+                          "key": "your copy key e.g myKey",
+                          "value": "The value to be copied"
+                        }
+                      ]
+                    }
+                  ]
+                }
+```
+ The data in the params section is transformed into resourceData and the value read in key-value and copied to the clipboard/keyboard
+
+### Goals of the BUTTON widget
+  - The main aim of a button is to provide a way to perform action when it is clicked.
+  - Buttons provides the capability to launch a new action like logging into the app.
+  - Buttons are used to complete an ongoing action like saving input user credentials to the database
+
+## SERVICE_CARD widgets
+
+![serviceCard](/img/config_types/service_card_ui.png)
+
+
+The Service Card widget displays Patient's details and other related services and tasks. In the example below, the details field within the SERVICE_CARD displays the patient's name and ID.
+
+``` json
 {
   "viewType": "COLUMN",
   "children": [
@@ -256,7 +335,7 @@ clickable | Determines whether the view is clickable | | true |
 visible | A String value that determines whether the view should be visible | Yes| true |
 details| A list of CompoundTextProperties that represent the details of the service card| yes | emptyList() |
 showVerticalDivider | A Boolean value that determines whether a vertical divider should be displayed in the service card view | Yes |  false |
-servicememberIcons | A String value that represents the icons for the service members associated with the service card | yes | null |
+service-memberIcons | A String value that represents the icons for the service members associated with the service card | yes | null |
 serviceButton | A ButtonProperties object that represents a button displayed in the service card | Yes | null |
 services | A list of ButtonProperties that represent the services associated with the service card | yes | null |
 actions | A list of ActionConfig objects that represent the actions that can be performed on the service card | yes | emptyList() |
@@ -292,8 +371,15 @@ below.
 }
 ```
 
+### Goals of the SERVICE_CARD widget
+
+ - To display patient details and tasks.
+ - Give the ability to display icon based on the reference provided.
 
 ## COLUMN widgets
+
+![column](/img/config_types/column.png)
+
 The column widgets are used to create a vertical layout container that can hold multiple child views. The purpose of the "COLUMN" is to arrange child views in a vertical column, with the child views stacked on top of one another in the order in which they are added.
 
 ``` json
@@ -328,8 +414,8 @@ weight | A 'Float' value that represents the type of view. The weight is used to
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No |  Null |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
 borderRadius | Rounds the corners of the view's outer edge | | 0 |
-alignment | The alignment of the view withins its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
-fillMaxWidth | Dertimines whether the view should fill its parent's width | | false |
+alignment | The alignment of the view within its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | false |
 fillMaxHeight | Determines whether the view should fill its parent's height | | false |
 clickable | Determines whether the view is clickable | | false |
 visible | A String value that determines whether the view should be visible | Yes| true |
@@ -337,9 +423,17 @@ spacedBy | An integer value that represents the spacing between the children vie
 wrapContent| A boolean value that represents whether the column should wrap its content or not | | false |
 arrangement | An enum value that represents the vertical arrangement of the child views of the column | | Null|
 children | A list of ViewProperties objects that represents the child views of the column | | emptyList()|
+showDivider | show divider is a boolean variable the gives the capability to show divider within the column if its needed | | String |
+action | A list of ActionConfig that represents the child actions that can be performed within the column | | emptyList() |
+
+### Goals of the COLUMN widget
+ -  To arrange data or views vertically.
 
 ## IMAGE widget
-Displays icons or images.
+
+![image](/img/config_types/image.png)
+
+Displays icons or images.The below json shows how image widget can be configured.
 ``` json
 {
   "viewType": "IMAGE",
@@ -366,10 +460,23 @@ size | Size of the image in pixels | | 24 |
 imageConfig | The property that points to the actual image. It can either point to a local drawable or a server side Binary file| | [ViewAlignment.None]|
 padding | Determines whether the view should fill its parent's width | | false |
 shape | Used to clip the image into a shape e.g into a circle or rectangle | | false |
+borderRadius | Rounds the corners of the view's outer edge | | 0 |
+alignment | The alignment of the view within its parent layout. This value is used to distribute the available space among multiple views | | [ViewAlignment.None]|
+fillMaxWidth | Determines whether the view should fill its parent's width | | false |
+fillMaxHeight | Determines whether the view should fill its parent's height | | false |
+clickable | Determines whether the view is clickable | | false |
+visible | A String value that determines whether the view should be visible | Yes| true |
+weight | A 'Float' value that represents the type of view. The weight is used to determine how much space the view should occupy in its parent container. |  | The default is 0 |
+
+### Goals of the IMAGE widget
+
+    -   The main aim is just to show the icon and image.
 
 ## ROW widgets
-The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
 
+![row](/img/config_types/row.png)
+
+The purpose of the row is to act as a container for organizing and laying out its child views horizontally.
 
 ```json
 {
@@ -422,8 +529,12 @@ arrangement |  Specifies the arrangement of the children views within the row. |
 wrapContent |  If set to true, the row's width and height will adjust to wrap its content tightly. | | false |
 children |   A list of **ViewProperties** objects representing the children views within the row. | | emptyList()|
 
+
 ## VIEW Widget
-Defines the hierarchical stucture of views to be rendered. It contains various properties that define its appearance and behavior.
+
+![view](/img/config_types/view.png)
+
+Defines the hierarchical structure of views to be rendered. It contains various properties that define its appearance and behavior.
 
 ``` json
 "views": [
@@ -485,7 +596,10 @@ fillMaxHeight | It indicates whether the view should attempt to occupy the maxim
 clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
 visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
 
+
 ### Divider Widget
+
+![divider](/img/config_types/divider.png)
 
 The Divider widget allows one to visually separate and organize different components within a graphical user interface (GUI).
 It creates a horizontal line that acts as a visual boundary, enhancing the overall aesthetics and user experience.
@@ -536,3 +650,89 @@ viewType | The type of widget that will be rendered in this case it is the `SPAC
 height | The height of the Spacer. | Yes | _ |
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
+
+## Personal Data Widgets
+Personal data widget, defines personal data like age to it's corresponding value in a more organised way.It takes a list of mapped items as input.It contains various properties that defines its behavior.
+
+```json
+{
+   "viewType":"PERSONAL_DATA",
+   "weight":1.0,
+   "personalDataItems":[
+      {
+         "label":{
+            "viewType":"COMPOUND_TEXT",
+            "primaryText":"@{runningBalance}",
+            "primaryTextColor":"#000000",
+            "primaryTextFontWeight":"SEMI_BOLD"
+         },
+         "displayValue":{
+            "viewType":"COMPOUND_TEXT",
+            "primaryText":"Available",
+            "fontSize":14,
+            "primaryTextColor":"#000000"
+         }
+      }
+   ]
+}
+```
+
+### Config properties of PERSONAL DATA WIDGET
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [PERSONAL_DATA]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
+personalDataItems | It indicate the list of two text that is label and its corresponding display value | | List |
+
+## Card Widget
+Card are used to represent single coherent piece of content
+
+```json
+{
+   "viewType":"CARD",
+   "header":{
+      "viewType":"COMPOUND_TEXT",
+      "primaryText":"HOUSEHOLD MEMBERS",
+      "primaryTextColor":"#6F7274",
+      "fontSize":18.0,
+      "padding":16
+   },
+   "contentPadding":0,
+   "content":[
+
+   ]
+}
+```
+
+### Config properties of CARD WIDGET
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. It acts as a discriminator to identify the type of view during runtime. | Yes | [PERSONAL_DATA]|
+weight |  It defines the weight of the view, which is typically used in layout containers with weighted distribution to control the amount of space a view occupies relative to other views.|  | Float |
+backgroundColor | t represents the background color of the view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+padding |  It defines the padding around the content of the view, in pixels. | No | Int |
+borderRadius |  It specifies the radius of the view's corners in pixels. Setting this property creates rounded corners for the view.| | Int |
+alignment | Specifies the alignment of the row's content within the row. | | [ViewAlignment]|
+fillMaxWidth | It indicates whether the view should attempt to occupy the maximum available width in its parent layout. | | Boolean |
+fillMaxHeight | It indicates whether the view should attempt to occupy the maximum available height in its parent layout. | | Boolean |
+clickable |  Indicates whether the view is clickable. If set to "true", the row can be interacted with and handle click events. | | String |
+visible | Specifies the visibility of the view. If set to "true", the row will be visible, otherwise, if set to "false", it will be hidden | | String |
+content | It indicate a section where you can specify the views to be included within the card it takes list of view properties| | emptyList() |
+cornerSize | It indicate the size of card corner bend  a card should have it is in integer form | | Int |
+elevation | It indicate the size of raise a card should have it is in integer form | | Int |
+header | It indicate the heading text of the card it can only be used when it is required | | CompoundTextProperties |
+headerBackgroundColor | It specifies the header background color of the card it takes the color code as a string | | String |
+headerAction | It specifies what the header action what it supposed to perform when it is clicked | | CompoundTextProperties |
+emptyContentMessage | It specifies what message should be displayed within the card when it has no content | | String |
+contentPadding | It specifies the card content spacing | | Int |
+
+### Goals of the CARD widget
+    - CARD widgets are used to group similar data together in a single view. For example, when you want user contact details to be in a centralized place you can group that information, like username, age, phone number, and country of residence, under a single card.

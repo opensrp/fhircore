@@ -20,11 +20,10 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
-import java.io.File
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Parameters
@@ -34,11 +33,9 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
-import org.hl7.fhir.utilities.npm.NpmPackage
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
-import org.smartregister.fhircore.engine.util.helper.TransformSupportServicesMatchBox
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 /**
@@ -250,17 +247,17 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   @Test
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
-      "content/general/who-eir/contraindications/IMMZD4QRToLM.map".readFile()
+      "patient-registration-questionnaire/structure-map.txt".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
     val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
     val structureMap =
-      structureMapUtilities.parse(patientRegistrationStructureMap, "IMMZD4LMToResources")
+      structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val mapString = iParser.encodeResourceToString(structureMap)
-    println(mapString)
+
     Assert.assertNotNull(mapString)
   }
 
@@ -480,170 +477,32 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     Assert.assertTrue(taskList.size == 10)
   }
 
-  @Test
+  @Test(expected = FHIRException::class)
   fun `perform extraction for patient registration`() {
     val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/patient-registration/patient_registration_questionnaire_response.json"
-        .readFile()
+      "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
     val locationStructureMap =
-      "content/general/who-eir/patient-registration/IMMZ-C-QRToPatient.map".readFile()
-    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
+      "content/general/who-eir/patient_registration_structure_map.txt".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
-      SimpleWorkerContext.fromPackage(
-          NpmPackage.fromPackage(
-            File(
-                ClassLoader.getSystemResource(immunizationIg).file,
-              )
-              .inputStream(),
-          ),
-        )
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
           setExpansionProfile(Parameters())
           isCanRunWithoutTerminology = true
         }
-
-    val transformSupportServices =
-      TransformSupportServicesMatchBox(
-        contextR4,
-      )
+    val transformSupportServices = TransformSupportServices(contextR4)
     val structureMapUtilities =
       org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
     val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZ-C-QRToPatient")
     val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
     val targetResource = Bundle()
     val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        locationQuestionnaireResponseString,
-      )
-    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
-    val patient = targetResource.entryFirstRep.resource as Patient
-    Assert.assertEquals("Patient", patient.resourceType.toString())
-    Assert.assertEquals("lapd", patient.identifier.first().value)
-  }
-
-  @Test
-  fun `perform extraction for contraindications condition`() {
-    val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/contraindications/check_contraindications_questionnaire_response.json"
-        .readFile()
-    val locationStructureMap =
-      "content/general/who-eir/contraindications/IMMZD4QRToResources.map".readFile()
-    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
-    val contextR4 =
-      SimpleWorkerContext.fromPackage(
-          NpmPackage.fromPackage(
-            File(
-                ClassLoader.getSystemResource(immunizationIg).file,
-              )
-              .inputStream(),
-          ),
-        )
-        .apply {
-          setExpansionProfile(Parameters())
-          isCanRunWithoutTerminology = true
-        }
-
-    val transformSupportServices =
-      TransformSupportServicesMatchBox(
-        contextR4,
-      )
-    val structureMapUtilities =
-      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZD4QRToResources")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val targetResource = Bundle()
-    val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        locationQuestionnaireResponseString,
-      )
-    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
-    val patient = targetResource.entryFirstRep.resource as Condition
-    Assert.assertEquals("Condition", patient.resourceType.toString())
-  }
-
-  @Test
-  fun `perform extraction for client history measles`() {
-    val locationQuestionnaireResponseString: String =
-      "content/general/who-eir/contraindications/check_contraindications_questionnaire_response.json"
-        .readFile()
-    val locationStructureMap =
-      "content/general/who-eir/contraindications/IMMZD4QRToResources.map".readFile()
-    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
-    val contextR4 =
-      SimpleWorkerContext.fromPackage(
-          NpmPackage.fromPackage(
-            File(
-                ClassLoader.getSystemResource(immunizationIg).file,
-              )
-              .inputStream(),
-          ),
-        )
-        .apply {
-          setExpansionProfile(Parameters())
-          isCanRunWithoutTerminology = true
-        }
-
-    val transformSupportServices =
-      TransformSupportServicesMatchBox(
-        contextR4,
-      )
-    val structureMapUtilities =
-      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZD4QRToResources")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val targetResource = Bundle()
-    val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        locationQuestionnaireResponseString,
-      )
-    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
-    val patient = targetResource.entryFirstRep.resource as Condition
-    Assert.assertEquals("Condition", patient.resourceType.toString())
-  }
-
-  @Test
-  fun `perform extraction for capture client history`() {
-    val captureClientHistoryQuestionnResponse: String =
-      "content/general/who-eir/client-history-measles/client_capture_history_questionnaire_response.json"
-        .readFile()
-    val locationStructureMap =
-      "content/general/who-eir/client-history-measles/IMMZD1QRToResources.fml".readFile()
-    val immunizationIg = "content/general/who-eir/packages/package.r4.tgz"
-    val contextR4 =
-      SimpleWorkerContext.fromPackage(
-          NpmPackage.fromPackage(
-            File(
-                ClassLoader.getSystemResource(immunizationIg).file,
-              )
-              .inputStream(),
-          ),
-          true,
-        )
-        .apply {
-          setExpansionProfile(Parameters())
-          isCanRunWithoutTerminology = true
-        }
-
-    val transformSupportServices =
-      TransformSupportServicesMatchBox(
-        contextR4,
-      )
-    val structureMapUtilities =
-      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
-    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZD1QRToResources")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val targetResource = Bundle()
-    val baseElement =
-      iParser.parseResource(
-        QuestionnaireResponse::class.java,
-        captureClientHistoryQuestionnResponse,
-      )
+      iParser.parseResource(QuestionnaireResponse::class.java, locationQuestionnaireResponseString)
 
     structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
 
     Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals("Patient", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
   }
 }

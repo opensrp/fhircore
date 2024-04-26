@@ -1,12 +1,9 @@
 import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `ktlint`
   id("com.android.library")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -18,12 +15,12 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = BuildConfigs.compileSdk
 
   namespace = "org.smartregister.fhircore.engine"
 
   defaultConfig {
-    minSdk = 26
+    minSdk = BuildConfigs.minSdk
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -65,7 +62,7 @@ android {
     dataBinding = true
     buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   packaging {
     resources.excludes.addAll(
@@ -103,7 +100,7 @@ android {
 
   lint { baseline = file("lint-baseline.xml") }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 }
 
 tasks.withType<Test> {
@@ -163,7 +160,7 @@ dependencies {
   api(libs.jjwt)
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
-  api(libs.material3)
+  //  api(libs.material3)
   api(libs.foundation)
   api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)
@@ -202,6 +199,13 @@ dependencies {
     exclude(group = "com.github.ben-manes.caffeine")
   }
   api(libs.contrib.barcode) {
+    isTransitive = true
+    exclude(group = "org.smartregister", module = "data-capture")
+    exclude(group = "ca.uhn.hapi.fhir")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "com.google.android.fhir", module = "engine")
+  }
+  api(libs.contrib.locationwidget) {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")

@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.register
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 
 @Serializable
 data class RegisterFilterConfig(
@@ -28,6 +29,7 @@ data class RegisterFilterConfig(
 
 @Serializable
 data class RegisterFilterField(
-  val dataQueries: List<DataQuery>,
   val filterId: String,
+  val dataQueries: List<DataQuery>? = null,
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
 ) : java.io.Serializable

@@ -38,6 +38,7 @@ import com.google.android.fhir.search.search
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
@@ -195,7 +196,11 @@ constructor(
     }
   }
 
-  suspend fun delete(resourceType: ResourceType, resourceId: String, softDelete: Boolean = false) {
+  suspend fun delete(
+    resourceType: ResourceType,
+    resourceId: String,
+    softDelete: Boolean = false,
+  ) {
     withContext(dispatcherProvider.io()) {
       if (softDelete) {
         val resource = fhirEngine.get(resourceType, resourceId)
@@ -272,7 +277,10 @@ constructor(
         ?.let { relatedPerson ->
           fhirEngine
             .search<Patient> {
-              filter(Patient.RES_ID, { value = of(relatedPerson.patient.extractId()) })
+              filter(
+                Patient.RES_ID,
+                { value = of(relatedPerson.patient.extractId()) },
+              )
             }
             .map { it.resource }
             .firstOrNull()
@@ -297,7 +305,11 @@ constructor(
         }
       val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
 
-      updateRelatedPersonDetails(relatedPerson, newPatient, managingEntityConfig.relationshipCode)
+      updateRelatedPersonDetails(
+        relatedPerson,
+        newPatient,
+        managingEntityConfig.relationshipCode,
+      )
 
       addOrUpdate(resource = relatedPerson)
 
@@ -503,7 +515,13 @@ constructor(
           search.count(
             onSuccess = {
               relatedResourceWrapper.relatedResourceCountMap[key] =
-                LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = it)) }
+                LinkedList<RelatedResourceCount>().apply {
+                  add(
+                    RelatedResourceCount(
+                      count = it,
+                    ),
+                  )
+                }
             },
             onFailure = {
               Timber.e(
@@ -535,7 +553,12 @@ constructor(
 
   protected suspend fun Search.count(
     onSuccess: (Long) -> Unit = {},
-    onFailure: (Throwable) -> Unit = { throwable -> Timber.e(throwable, "Error counting data") },
+    onFailure: (Throwable) -> Unit = { throwable ->
+      Timber.e(
+        throwable,
+        "Error counting data",
+      )
+    },
   ): Long =
     kotlin
       .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
@@ -577,7 +600,11 @@ constructor(
         onFailure = {
           Timber.e(
             it,
-            "Error retrieving count for ${baseResource.logicalId.asReference(baseResource.resourceType)} for related resource identified ID $key",
+            "Error retrieving count for ${
+                            baseResource.logicalId.asReference(
+                                baseResource.resourceType,
+                            )
+                        } for related resource identified ID $key",
           )
         },
       )
@@ -669,10 +696,19 @@ constructor(
       .runCatching { fhirEngine.search<Resource>(search) }
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
+          // TODO Remove once issue resolved by Google team
           val includedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.included?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.included
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.revIncluded?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.revIncluded
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val theRelatedResourcesMap =
             mutableMapOf<ResourceType, List<Resource>>().apply {
               includedResources?.let { putAll(it) }
@@ -708,7 +744,10 @@ constructor(
         }
       }
       .onFailure {
-        Timber.e(it, "Error fetching configured related resources: $relatedResourcesConfigsMap")
+        Timber.e(
+          it,
+          "Error fetching configured related resources: $relatedResourcesConfigsMap",
+        )
       }
   }
 
@@ -719,29 +758,29 @@ constructor(
       this.filter { !it.isRevInclude && !it.resultAsCount }
     }
 
+  /**
+   * Data queries for retrieving resources require the id to be provided in the format
+   * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
+   * up to the server the id is updated with history information e.g
+   * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
+   * [ResourceType/UUID] format and updated in the computedValuesMap
+   */
   suspend fun updateResourcesRecursively(
     resourceConfig: ResourceConfig,
     subject: Resource,
     eventWorkflow: EventWorkflow,
   ) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val initialComputedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
-
-    /**
-     * Data queries for retrieving resources require the id to be provided in the format
-     * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
-     * up to the server the id is updated with history information e.g
-     * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
-     * [ResourceType/UUID] format and updated in the computedValuesMap
-     */
-    val computedValuesMap = mutableMapOf<String, Any>()
-    initialComputedValuesMap.forEach { entry ->
-      computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${
-                    entry.value.toString().extractLogicalIdUuid()
-                }"
-    }
+    val computedValuesMap =
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry,
+        ->
+        val initialValue = entry.value.toString()
+        if (initialValue.contains('/')) {
+          """${initialValue.substringBefore("/")}/${initialValue.extractLogicalIdUuid()}"""
+        } else {
+          initialValue
+        }
+      }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
     val search =
@@ -756,7 +795,7 @@ constructor(
     val resources = fhirEngine.search<Resource>(search).map { it.resource }
     val filteredResources =
       filterResourcesByFhirPathExpression(
-        resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+        resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
         resources = resources,
       )
     filteredResources.forEach {
@@ -778,7 +817,7 @@ constructor(
     retrievedRelatedResources.relatedResourceMap.forEach { resourcesMap ->
       val filteredRelatedResources =
         filterResourcesByFhirPathExpression(
-          resourceFilterExpression = eventWorkflow.resourceFilterExpression,
+          resourceFilterExpressions = eventWorkflow.resourceFilterExpressions,
           resources = resourcesMap.value,
         )
 
@@ -793,11 +832,26 @@ constructor(
     }
   }
 
+  /**
+   * This function filters event management resources using a filter expression. For example when
+   * closing tasks we do not want to close `completed`tasks. The filter expression will be used to
+   * filter out completed tasks from the resources list
+   *
+   * @param resourceFilterExpressions - Contains the list of conditional FhirPath expressions used
+   *   for filtering resources. It also specifies the resource type that the filter expressions will
+   *   be applied to
+   * @param resources - The list of resources to be filtered. Note that it only contains resources
+   *   of a single type.
+   */
   fun filterResourcesByFhirPathExpression(
-    resourceFilterExpression: ResourceFilterExpression?,
+    resourceFilterExpressions: List<ResourceFilterExpression>?,
     resources: List<Resource>,
   ): List<Resource> {
-    return with(resourceFilterExpression) {
+    val resourceFilterExpressionForCurrentResourceType =
+      resourceFilterExpressions?.firstOrNull {
+        !resources.isNullOrEmpty() && (resources[0].resourceType == it.resourceType)
+      }
+    return with(resourceFilterExpressionForCurrentResourceType) {
       if ((this == null) || conditionalFhirPathExpressions.isNullOrEmpty()) {
         resources
       } else {
@@ -824,29 +878,42 @@ constructor(
 
     val updatedResourceDocument =
       jsonParse.apply {
-        eventWorkflow.updateValues.forEach { updateExpression ->
-          val updateValue =
-            getJsonContent(
-              updateExpression.value,
-            )
-          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
-          if (
-            updateExpression.jsonPathExpression.startsWith("\$") && updateExpression.value != null
-          ) {
-            set(updateExpression.jsonPathExpression, updateValue)
+        eventWorkflow.updateValues
+          .filter { it.resourceType == resource.resourceType }
+          .forEach { updateExpression ->
+            try {
+              val updateValue =
+                getJsonContent(
+                  updateExpression.value,
+                )
+              // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+              if (
+                updateExpression.jsonPathExpression.startsWith("\$") &&
+                  updateExpression.value != null
+              ) {
+                set(updateExpression.jsonPathExpression, updateValue)
+              }
+              if (
+                updateExpression.jsonPathExpression.startsWith(
+                  resource.resourceType.name,
+                  ignoreCase = true,
+                ) && updateExpression.value != null
+              ) {
+                set(
+                  updateExpression.jsonPathExpression.replace(
+                    resource.resourceType.name,
+                    "\$",
+                    ignoreCase = true,
+                  ),
+                  updateValue,
+                )
+              }
+            } catch (pathNotFoundException: PathNotFoundException) {
+              Timber.e(
+                "Error updating ${resource.resourceType.name} with ID ${resource.id} using jsonPath ${updateExpression.jsonPathExpression} and value ${updateExpression.value} ",
+              )
+            }
           }
-          if (
-            updateExpression.jsonPathExpression.startsWith(
-              resource.resourceType.name,
-              ignoreCase = true,
-            ) && updateExpression.value != null
-          ) {
-            set(
-              updateExpression.jsonPathExpression.replace(resource.resourceType.name, "\$"),
-              updateValue,
-            )
-          }
-        }
       }
 
     val resourceDefinition: Class<out IBaseResource>? =
@@ -927,7 +994,12 @@ constructor(
         .runCatching {
           withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
         }
-        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .onFailure {
+          Timber.e(
+            it,
+            "Error retrieving resources. Empty list returned by default",
+          )
+        }
         .getOrDefault(emptyList())
 
     return baseFhirResources.map { searchResult ->

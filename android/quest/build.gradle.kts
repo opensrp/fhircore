@@ -7,13 +7,10 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.json.JSONArray
 import org.json.JSONObject
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `project-properties`
+  `ktlint`
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -54,17 +51,17 @@ sonar {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = BuildConfigs.compileSdk
 
   val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
 
   namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
-    applicationId = "org.smartregister.opensrp"
-    minSdk = 26
-    versionCode = 7
-    versionName = "1.0.1"
+    applicationId = BuildConfigs.applicationId
+    minSdk = BuildConfigs.minSdk
+    versionCode = BuildConfigs.versionCode
+    versionName = BuildConfigs.versionName
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -164,7 +161,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.8" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -176,7 +173,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.11" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 
   lint { abortOnError = false }
 
@@ -258,11 +255,18 @@ android {
       manifestPlaceholders["appLabel"] = "VaksinatorKu"
     }
 
-    create("wdf") {
+    create("diabetesCompass") {
       dimension = "apps"
-      applicationIdSuffix = ".wdf"
-      versionNameSuffix = "-wdf"
+      applicationIdSuffix = ".diabetesCompass"
+      versionNameSuffix = "-diabetesCompass"
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
+    }
+
+    create("diabetesCompassClinic") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassClinic"
+      versionNameSuffix = "-diabetesCompassClinic"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass Clinic"
     }
 
     create("zeir") {
@@ -270,6 +274,13 @@ android {
       applicationIdSuffix = ".zeir"
       versionNameSuffix = "-zeir"
       manifestPlaceholders["appLabel"] = "ZEIR"
+    }
+
+    create("gizEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".gizeir"
+      versionNameSuffix = "-gizeir"
+      manifestPlaceholders["appLabel"] = "GIZ EIR"
     }
 
     create("engage") {
@@ -296,6 +307,12 @@ android {
       applicationIdSuffix = ".eusm"
       versionNameSuffix = "-eusm"
       manifestPlaceholders["appLabel"] = "EUSM"
+    }
+    create("demoEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".demoEir"
+      versionNameSuffix = "-demoEir"
+      manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
   }
 
@@ -378,8 +395,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-
-  implementation(kotlin("reflect"))
+  implementation(libs.play.services.location)
 
   // Annotation processors
   kapt(libs.hilt.compiler)

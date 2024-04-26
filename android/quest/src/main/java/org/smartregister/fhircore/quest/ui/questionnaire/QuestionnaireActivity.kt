@@ -16,34 +16,44 @@
 
 package org.smartregister.fhircore.quest.ui.questionnaire
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.os.Parcelable
+import android.provider.Settings
 import android.view.View
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.logicalId
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.Serializable
 import java.util.LinkedList
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.isEditable
 import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
@@ -51,20 +61,29 @@ import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
+import org.smartregister.fhircore.quest.util.LocationUtils
+import org.smartregister.fhircore.quest.util.PermissionUtils
+import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
 @AndroidEntryPoint
 class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
   val viewModel by viewModels<QuestionnaireViewModel>()
   private lateinit var questionnaireConfig: QuestionnaireConfig
   private lateinit var actionParameters: ArrayList<ActionParameter>
   private lateinit var viewBinding: QuestionnaireActivityBinding
   private var questionnaire: Questionnaire? = null
   private var alertDialog: AlertDialog? = null
+  private lateinit var fusedLocationClient: FusedLocationProviderClient
+  var currentLocation: Location? = null
+  private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
+  private lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
     setTheme(org.smartregister.fhircore.engine.R.style.AppTheme_Questionnaire)
     viewBinding = QuestionnaireActivityBinding.inflate(layoutInflater)
     setContentView(viewBinding.root)
@@ -97,6 +116,8 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
     if (savedInstanceState == null) renderQuestionnaire()
 
+    setupLocationServices()
+
     this.onBackPressedDispatcher.addCallback(
       this,
       object : OnBackPressedCallback(true) {
@@ -105,6 +126,103 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         }
       },
     )
+  }
+
+  fun setupLocationServices() {
+    if (
+      viewModel.applicationConfiguration.logGpsLocation.contains(LocationLogOptions.QUESTIONNAIRE)
+    ) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+      if (!LocationUtils.isLocationEnabled(this)) {
+        openLocationServicesSettings()
+      }
+
+      if (!hasLocationPermissions()) {
+        launchLocationPermissionsDialog()
+      }
+
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation(true)
+      }
+    }
+  }
+
+  fun hasLocationPermissions(): Boolean {
+    return PermissionUtils.checkPermissions(
+      this,
+      listOf(
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+      ),
+    )
+  }
+
+  fun openLocationServicesSettings() {
+    activityResultLauncher =
+      PermissionUtils.getStartActivityForResultLauncher(this) { resultCode, _ ->
+        if (resultCode == RESULT_OK || hasLocationPermissions()) {
+          fetchLocation()
+        }
+      }
+
+    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+    showLocationSettingsDialog(intent)
+  }
+
+  private fun showLocationSettingsDialog(intent: Intent) {
+    viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(false))
+    AlertDialog.Builder(this)
+      .setMessage(getString(R.string.location_services_disabled))
+      .setCancelable(true)
+      .setPositiveButton(getString(R.string.yes)) { _, _ -> activityResultLauncher.launch(intent) }
+      .setNegativeButton(getString(R.string.no)) { dialog, _ -> dialog.cancel() }
+      .show()
+  }
+
+  fun launchLocationPermissionsDialog() {
+    locationPermissionLauncher =
+      PermissionUtils.getLocationPermissionLauncher(
+        this,
+        onFineLocationPermissionGranted = { fetchLocation(true) },
+        onCoarseLocationPermissionGranted = { fetchLocation(false) },
+        onLocationPermissionDenied = {
+          Toast.makeText(
+              this,
+              getString(R.string.location_permissions_denied),
+              Toast.LENGTH_SHORT,
+            )
+            .show()
+          Timber.e("Location permissions denied")
+        },
+      )
+
+    locationPermissionLauncher.launch(
+      arrayOf(
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.ACCESS_COARSE_LOCATION,
+      ),
+    )
+  }
+
+  fun fetchLocation(highAccuracy: Boolean = true) {
+    lifecycleScope.launch {
+      try {
+        if (highAccuracy) {
+          currentLocation =
+            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
+        } else {
+          currentLocation =
+            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
+        }
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
+      } finally {
+        if (currentLocation == null) {
+          this@QuestionnaireActivity.showToast("Failed to get GPS location", Toast.LENGTH_LONG)
+        }
+      }
+    }
   }
 
   override fun onSaveInstanceState(outState: Bundle) {
@@ -163,6 +281,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder()
         .setQuestionnaire(questionnaire.json())
+        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+          OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
+        )
         .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
         .showRequiredText(questionnaireConfig.showRequiredText)
 
@@ -229,34 +350,43 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      val questionnaireResponse = retrieveQuestionnaireResponse()
+      lifecycleScope.launch {
+        val questionnaireResponse = retrieveQuestionnaireResponse()
 
-      // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
-        finish()
-      }
-      if (questionnaireResponse != null && questionnaire != null) {
-        viewModel.run {
-          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
-          handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
-            currentQuestionnaireResponse = questionnaireResponse,
-            questionnaireConfig = questionnaireConfig,
-            actionParameters = actionParameters,
-            context = this@QuestionnaireActivity,
-          ) { idTypes, questionnaireResponse ->
-            // Dismiss progress indicator dialog, submit result then finish activity
-            // TODO Ensure this dialog is dismissed even when an exception is encountered
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
-            setResult(
-              Activity.RESULT_OK,
-              Intent().apply {
-                putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
-                putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
-                putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
-              },
-            )
-            finish()
+        // Close questionnaire if opened in read only mode or if experimental
+        if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+          finish()
+        }
+        if (questionnaireResponse != null && questionnaire != null) {
+          viewModel.run {
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+
+            if (currentLocation != null) {
+              questionnaireResponse.contained.add(
+                ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+              )
+            }
+
+            handleQuestionnaireSubmission(
+              questionnaire = questionnaire!!,
+              currentQuestionnaireResponse = questionnaireResponse,
+              questionnaireConfig = questionnaireConfig,
+              actionParameters = actionParameters,
+              context = this@QuestionnaireActivity,
+            ) { idTypes, questionnaireResponse ->
+              // Dismiss progress indicator dialog, submit result then finish activity
+              // TODO Ensure this dialog is dismissed even when an exception is encountered
+              setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+              setResult(
+                Activity.RESULT_OK,
+                Intent().apply {
+                  putExtra(QUESTIONNAIRE_RESPONSE, questionnaireResponse as Serializable)
+                  putExtra(QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS, idTypes as Serializable)
+                  putExtra(QUESTIONNAIRE_CONFIG, questionnaireConfig as Parcelable)
+                },
+              )
+              finish()
+            }
           }
         }
       }
@@ -274,8 +404,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             .questionnaire_in_progress_alert_back_pressed_message,
         title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
         confirmButtonListener = {
-          retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-            viewModel.saveDraftQuestionnaire(questionnaireResponse)
+          lifecycleScope.launch {
+            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+            }
           }
         },
         confirmButtonText =
@@ -298,7 +430,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
+  private suspend fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
 

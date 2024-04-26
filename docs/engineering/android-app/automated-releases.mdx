@@ -57,18 +57,19 @@ Once a final code release is created, attach a generic flavor APK release e.g. `
 
 Flavors define custom names, icons, and default local properties (such as server versions). We use flavors when a particular project or use-cases requires this customization, such as a branded icon and name. When creating flavors do NOT include version numbers. The version of the flavor is defined by the code version.
 
-To add a flavor, add an entry to the `productFlavors` map in [`android/opensrp/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle). For example, to add a flavor called `new-flavor` add the map:
+To add a flavor, add an entry to the `productFlavors` map in [`android/opensrp/build.gradle`](https://github.com/opensrp/fhircore/blob/main/android/opensrp/build.gradle). For example, to add a flavor called `newFlavor` add the map:
 
 ```
-create("new-flavor") {
+create("newFlavor") {
     dimension = "apps"
     applicationIdSuffix = ".new-flavor"
     versionNameSuffix = "-new-flavor"
     manifestPlaceholders["appLabel"] = "New Flavor App Name"
 }
 ```
+ Note, flavor names should always be camel cased
 
-You can add the follow resources:
+You can add the following resources:
 
 Description|Location
 ---|---
@@ -76,41 +77,32 @@ App icon|`android/opensrp/src/new-flavor/res/drawable/ic_app_logo.png`
 
 Where the app icon is an image of the appropriate size
 
-## Release automation with tags
+## APK Release artifact via Github workflows
 
 As part of integrating Continuous Delivery(CD) into the development lifecycle, CI is set up to generate an APK.
 
-The configuration requires the tag to have the following parts/sections in order:
-* The prefix `v`
-* Followed by the _version_ in the format `[0-9]+.[0-9]+.[0-9]+[0-9a-zA-Z.-]+`
-* Followed by the product name: `-opensrp`
-* Followed by an optional _suffix_ depending on the release e.g. `-alpha`, `-rc`, `-beta` e.t.c
+To Generate an APK or AAB artifact from an existing snapshot of the codebase click on the Github actions tab.
 
-The following are all valid tags that will trigger the generation of the OpenSRP release APK
-> - v1.2.0-opensrp
-> - v1.2.0-opensrp-alpha
-> - v1.2.0-opensrp-beta
-> - v1.2.0-opensrp-rc1
+On the left panel select the Manual APK Release workflow.
+![](/img/manual-workflow-menu-item.png)
 
-**Note:** When creating a tag for the _OpenSRP Version 1.2.0 RC 5 release variant_, use the command:
+Click on _Run Workflow_
+![](/img/manual-workflow-run-button.png)
 
-```
-git tag -a v1.2.0-opensrp-rc5 -s && git push origin v1.2.0-opensrp-rc5
-```
+This pops up the dialog below where you need to provide inputs specific to your release.
+![](/img/manual-workflow-input-popup.png)
 
-When you run the command, you will be prompted to _add a message_. The message should be of the format:
+Input required:
+- Select the snapshot of the codebase from either a _branch_ or a _tag_. 
+- Select the build variant e.g. Release vs Debug variant
+- Enter the exact name of the the flavor e.g. sidBunda, zeir . [See current list of flavors here](https://github.com/opensrp/fhircore/blob/025125106b5467c26d32de9b60387429d0808548/android/quest/build.gradle.kts#L182).
+- If you need an *AAB* artifact check the box otherwise leave it unchecked to generate an *APK* artifact.
 
-| Template                                                       | Sample                                                                                                            |
-|----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <pre> TITLE <br/> - Release note 1<br/> - Release note 2</pre> | <pre> BETA RELEASE <br/> - Adds Login by PIN functionality <br/> - Fixes sync bug causing crash on install </pre> |
+Click on the *Run Workflow* button. This will trigger the action to run.
 
-**Note:** For convention, the TITLE should be _Capitalized_.
+After the action run is complete click on the last workflow run link.
+![](/img/manual-workflow-run-link.png)
 
-### Deleting a tag
-Sometimes you may want to delete a tag, e.g. if you push an incorrect tag, need to update the tag message etc.
+Scroll to the bottom to find the generated artifact download link. Click to download.
+![](/img/manual-workflow-release-artifact-link.png)
 
-For example, to delete the v1.2.0-opensrp-rc1 tag run the command:
-
-```
-git push --delete origin v1.2.0-opensrp-rc1 && git tag --delete v1.2.0-opensrp-rc1
-```

@@ -24,7 +24,7 @@ import com.google.android.fhir.search.Search
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.upload.LocalChangesFetchMode
 import com.google.android.fhir.sync.upload.SyncUploadProgress
-import com.google.android.fhir.sync.upload.UploadSyncResult
+import com.google.android.fhir.sync.upload.UploadRequestResult
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
 import java.net.URL
@@ -85,6 +85,12 @@ object Faker {
 
         override suspend fun purge(type: ResourceType, id: String, forcePurge: Boolean) {}
 
+        override suspend fun purge(
+          type: ResourceType,
+          ids: Set<String>,
+          forcePurge: Boolean,
+        ) {}
+
         override suspend fun <R : Resource> search(search: Search): List<SearchResult<R>> =
           emptyList()
 
@@ -97,7 +103,7 @@ object Faker {
 
         override suspend fun syncUpload(
           localChangesFetchMode: LocalChangesFetchMode,
-          upload: suspend (List<LocalChange>) -> UploadSyncResult,
+          upload: suspend (List<LocalChange>) -> Flow<UploadRequestResult>,
         ): Flow<SyncUploadProgress> {
           return flowOf()
         }

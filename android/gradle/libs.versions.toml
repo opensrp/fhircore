@@ -8,27 +8,28 @@ commonsJexl3 = "3.2.1"
 compressor = "3.0.1"
 constraintlayout = "2.1.4"
 constraintlayout-compose = "1.0.1"
-contrib-barcode = "0.1.0-beta3-preview5-SNAPSHOT"
+contrib-barcode = "0.1.0-beta3-preview7-SNAPSHOT"
+contrib-locationwidget = "0.1.0-alpha01-preview2-SNAPSHOT"
 converter-gson = "2.9.0"
 core-ktx = "1.12.0"
 android-x-test= "1.5.2"
 core-testing = "2.2.0"
 coverallsGradlePlugin = "2.12.0"
 cqfFhirCr = "3.0.0-PRE9"
-data-capture = "1.1.0-preview1-SNAPSHOT"
+data-capture = "1.1.0-preview8-SNAPSHOT"
 datastore = "1.0.0"
 desugar-jdk-libs = "2.0.4"
 dokkaBase = "1.8.20"
 easy-rules-jexl = "4.1.0"
 espresso-core = "3.5.1"
 fhir-common-utils = "1.0.0-SNAPSHOT"
-fhir-engine = "0.1.0-beta05-preview7.1-SNAPSHOT"
-foundation = "1.6.0"
+fhir-engine = "1.0.0-preview7.1-SNAPSHOT"
+foundation = "1.6.3"
 fragment-ktx = "1.6.2"
 glide = "4.16.0"
-gradle = "8.2.2"
+gradle = "8.3.1"
 gson = "2.10.1"
-hilt = "1.1.0"
+hilt = "1.2.0"
 jjwt = "0.9.1"
 joda-time = "2.10.14"
 json = "20230618"
@@ -36,27 +37,28 @@ jsonPath = "2.8.0"
 junit = "1.1.5"
 junit-jupiter = "5.9.1"
 junit-ktx = "1.1.5"
-knowledge = "0.1.0-alpha03-preview2-SNAPSHOT"
+knowledge = "0.1.0-alpha03-preview4-SNAPSHOT"
 kotlin = "1.9.22"
-kotlinx-coroutines = "1.7.2"
+kotlinx-coroutines = "1.7.3"
 kotlinx-serialization-json = "1.6.0"
 kujaku-library = "0.9.0"
-ktlint = "0.49.1"
+ktlint = "0.50.0"
 leakcanary-android = "2.10"
 lifecycle= "2.7.0"
 mapbox-sdk-turf = "4.8.0"
 material = "1.11.0"
-compose-material-icons = "1.6.0"
-material3 = "1.1.2"
+compose-material-icons = "1.6.3"
+material3 = "1.2.1"
 mockk = "1.13.8"
 mockk-android = "1.13.8"
 msg-simple = "1.2"
-navigation = "2.7.6"
+navigation = "2.7.7"
 okhttp = "4.12.0"
 okhttp-logging-interceptor = "4.11.0"
 orchestrator = "1.4.2"
 p2p-lib = "0.6.9-SNAPSHOT"
-paging = "3.2.1"
+androidx-paging = "3.2.0"
+playServicesLocation = "21.2.0"
 preference-ktx = "1.2.1"
 prettytime = "5.0.2.Final"
 retrofit = "2.9.0"
@@ -68,17 +70,16 @@ slf4j-nop = "1.7.36"
 spotlessPluginGradle = "6.25.0"
 stax-api = "1.0-2"
 timber = "5.0.1"
-ui = "1.6.0"
+ui = "1.6.3"
 work = "2.9.0"
-workflow = "0.1.0-alpha04-preview4.1-SNAPSHOT"
+workflow = "0.1.0-alpha04-preview8-SNAPSHOT"
 xercesImpl = "2.12.2"
-jetbrains = "1.8.20"
+jetbrains = "1.9.20"
 owasp = "8.2.1"
 kotlin-serialization = "1.8.10"
 dagger-hilt = "2.50"
-navigation-safeargs = "2.7.6"
 accompanist = "0.23.1"
-jetbrains-kotlin-jvm="1.8.10"
+jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
 
 [libraries]
@@ -94,6 +95,7 @@ compressor = { group = "id.zelory", name = "compressor", version.ref = "compress
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayout-compose" }
 contrib-barcode = { group = "org.smartregister", name = "contrib-barcode", version.ref = "contrib-barcode" }
+contrib-locationwidget = { group = "org.smartregister", name = "contrib-locationwidget", version.ref = "contrib-locationwidget" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "converter-gson" }
 core-desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar-jdk-libs" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -165,8 +167,9 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp-logging-interceptor" }
 orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "orchestrator" }
 p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-lib" }
-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
+paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidx-paging" }
+paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -197,7 +200,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 org-owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp" }
 dagger-hilt-android= { id = "com.google.dagger.hilt.android", version.ref = "dagger-hilt" }
 com-diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "spotlessPluginGradle" }
-androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation-safeargs" }
+androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 kt3k-coveralls = { id = "com.github.kt3k.coveralls", version.ref = "kt3k-coveralls-ver" }
 android-junit5 = {id="de.mannodermaus.android-junit5", version.ref="androidJunit5"}
 

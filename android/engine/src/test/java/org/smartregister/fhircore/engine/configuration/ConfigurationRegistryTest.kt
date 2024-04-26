@@ -32,8 +32,10 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.io.File
 import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -44,20 +46,22 @@ import org.hl7.fhir.r4.model.Bundle.BundleEntryComponent
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
-import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
@@ -69,6 +73,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -87,6 +92,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var configRegistry: ConfigurationRegistry
+  private lateinit var mockedContext: Context
+  private lateinit var mockedJsonParser: IParser
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -111,6 +118,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
             }
           },
       )
+    mockedContext = mockk()
+    mockedJsonParser = mockk()
     configRegistry.setNonProxy(false)
     Assert.assertNotNull(configRegistry)
   }
@@ -127,8 +136,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap["strings"] = "name.title=Mr.\n" + "gender.male=Male"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_en")
     Assert.assertNotNull(resource)
-    Assert.assertEquals("Mr.", resource?.getString("name.title"))
-    Assert.assertEquals("Male", resource?.getString("gender.male"))
+    assertEquals("Mr.", resource?.getString("name.title"))
+    assertEquals("Male", resource?.getString("gender.male"))
   }
 
   @Test
@@ -136,8 +145,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw")
     Assert.assertNotNull(resource)
-    Assert.assertEquals("Bwana.", resource?.getString("name.title"))
-    Assert.assertEquals("Kijana", resource?.getString("gender.male"))
+    assertEquals("Bwana.", resource?.getString("name.title"))
+    assertEquals("Kijana", resource?.getString("gender.male"))
   }
 
   @Test
@@ -145,8 +154,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw_KE")
     Assert.assertNotNull(resource)
-    Assert.assertEquals("Bwana.", resource?.getString("name.title"))
-    Assert.assertEquals("Kijana", resource?.getString("gender.male"))
+    assertEquals("Bwana.", resource?.getString("name.title"))
+    assertEquals("Kijana", resource?.getString("gender.male"))
   }
 
   @Test
@@ -155,7 +164,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap[ConfigType.Application.name] = "{\"appId\": \"${appId}\"}"
     val appConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
-    Assert.assertEquals(appId, appConfig.appId)
+    assertEquals(appId, appConfig.appId)
   }
 
   @Test
@@ -167,8 +176,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register)
-    Assert.assertEquals(appId, registerConfig.appId)
-    Assert.assertEquals(id, registerConfig.id)
+    assertEquals(appId, registerConfig.appId)
+    assertEquals(id, registerConfig.id)
   }
 
   @Test
@@ -182,8 +191,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, configId)
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
-    Assert.assertEquals(appId, registerConfig.appId)
-    Assert.assertEquals(id, registerConfig.id)
+    assertEquals(appId, registerConfig.appId)
+    assertEquals(id, registerConfig.id)
   }
 
   @Test
@@ -203,8 +212,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         mapOf(appId to paramAppId, id to paramId),
       )
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
-    Assert.assertEquals(paramAppId, registerConfig.appId)
-    Assert.assertEquals(paramId, registerConfig.id)
+    assertEquals(paramAppId, registerConfig.appId)
+    assertEquals(paramId, registerConfig.id)
   }
 
   @Test
@@ -282,10 +291,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 1) { fhirEngine.get(any(), any()) }
     coVerify(exactly = 1) { fhirEngine.create(capture(requestPathArgumentSlot)) }
-    Assert.assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
-    Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
+    assertEquals("composition-id-1", requestPathArgumentSlot.first().id)
+    assertEquals(ResourceType.Composition, requestPathArgumentSlot.first().resourceType)
   }
 
   @Test
@@ -350,8 +358,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") } returns
       bundle
 
-    coEvery { fhirEngine.update(any()) } returns Unit
-    coEvery { fhirEngine.get(ResourceType.List, testListId) } returns listResource
     coEvery {
       fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200")
     } returns bundle
@@ -364,7 +370,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.setNonProxy(true)
     configRegistry.fetchNonWorkflowConfigResources()
 
-    coVerify { fhirEngine.get(ResourceType.List, testListId) }
+    val createdResourceArgumentSlot = mutableListOf<Resource>()
+
+    coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
+    Assert.assertEquals(
+      "test-list-id",
+      createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
+    )
     coVerify { fhirResourceDataSource.getResource("$resourceKey?_id=$resourceId&_count=200") }
     coEvery { fhirResourceDataSource.getResource("$focusReference?_id=$focusReference") }
   }
@@ -416,7 +428,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.create(patient, isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
-      configRegistry.createRemote(patient)
+      configRegistry.createOrUpdateRemote(patient)
       coVerify { fhirEngine.create(patient, isLocalOnly = true) }
     }
   }
@@ -560,7 +572,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
 
     Assert.assertNotNull(applicationConfiguration)
-    Assert.assertEquals("thisApp", applicationConfiguration.appId)
+    assertEquals("thisApp", applicationConfiguration.appId)
     Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
     // Config cache map now contains application config
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
@@ -571,7 +583,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     Assert.assertNotNull(anotherApplicationConfig)
-    Assert.assertEquals("thisApp", anotherApplicationConfig.appId)
+    assertEquals("thisApp", anotherApplicationConfig.appId)
     Assert.assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
   }
 
@@ -618,7 +630,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
 
     Assert.assertNotNull(applicationConfiguration)
-    Assert.assertEquals("thisApp", applicationConfiguration.appId)
+    assertEquals("thisApp", applicationConfiguration.appId)
     Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
     // Config cache map now contains application config
 
@@ -641,7 +653,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     }
 
-    Assert.assertEquals(21, compositionSections.size)
+    assertEquals(21, compositionSections.size)
 
     val composition =
       Composition().apply {
@@ -664,15 +676,85 @@ class ConfigurationRegistryTest : RobolectricTest() {
       fhirResourceDataSource.post(capture(urlArgumentSlot), capture(requestPathArgumentSlot))
     }
 
-    Assert.assertEquals(2, requestPathArgumentSlot.size)
-    Assert.assertEquals(
+    assertEquals(2, requestPathArgumentSlot.size)
+    assertEquals(
       "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-1\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-2\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-3\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-4\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-5\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-6\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-7\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-8\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-9\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-10\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-11\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-12\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-13\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-14\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-15\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-16\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-17\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-18\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-19\"}},{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-20\"}}]}",
       requestPathArgumentSlot.first().getPayload(),
     )
-    Assert.assertEquals(
+    assertEquals(
       "{\"resourceType\":\"Bundle\",\"type\":\"batch\",\"entry\":[{\"request\":{\"method\":\"GET\",\"url\":\"StructureMap/id-21\"}}]}",
       requestPathArgumentSlot.last().getPayload(),
     )
+  }
+
+  @Test
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest {
+    val appId = "theAppId"
+    val compositionSections = mutableListOf<SectionComponent>()
+    compositionSections.add(
+      SectionComponent().apply { focus.reference = "${ResourceType.List.name}/46464" },
+    )
+
+    val iParser: IParser = FhirContext.forR4Cached().newJsonParser()
+    val listJson =
+      context.assets.open("sample_commodities_list_bundle.json").bufferedReader().use {
+        it.readText()
+      }
+    val listResource = iParser.parseResource(listJson) as Bundle
+
+    val composition =
+      Composition().apply {
+        id = "composition-id-1"
+        identifier = Identifier().apply { value = appId }
+        section = compositionSections
+      }
+
+    val bundle =
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply {
+            relation = PAGINATION_NEXT
+            url = "List?_id=46464&_page=2&_count=200"
+          },
+        )
+      }
+
+    val finalBundle =
+      Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
+
+    configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
+
+    fhirEngine.create(composition)
+
+    coEvery {
+      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+    } returns Bundle().apply { addEntry().resource = composition }
+
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        "List?_id=46464&_page=1&_count=200",
+      )
+    } returns bundle
+
+    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
+
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        nextPageUrlLink,
+      )
+    } returns finalBundle
+
+    configRegistry.fetchNonWorkflowConfigResources()
+
+    coVerify {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        nextPageUrlLink,
+      )
+    }
   }
 
   @Test
@@ -696,6 +778,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
         identifier = Identifier().apply { value = appId }
         section = compositionSections
       }
+
+    val nextPageUrl = "List?_id=46464&_page=2&_count=200"
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
     fhirEngine.create(composition)
@@ -705,9 +789,38 @@ class ConfigurationRegistryTest : RobolectricTest() {
     } returns Bundle().apply { addEntry().resource = composition }
 
     coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
-    } returns Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        "List?_id=46464&_page=1&_count=200",
+      )
+    } returns
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply {
+            relation = PAGINATION_NEXT
+            url = nextPageUrl
+          },
+        )
+      }
 
+    coEvery {
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(
+        "list-entries",
+        nextPageUrl,
+      )
+    } returns
+      Bundle().apply {
+        entry = listOf(BundleEntryComponent().setResource(listResource))
+        link.add(
+          Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
+        )
+      }
+    coEvery {
+      fhirResourceDataSource.getResource(
+        "List?_id=46464&_page=1&_count=200",
+      )
+    }
     coEvery { fhirEngine.get(any(), any()) } throws
       ResourceNotFoundException(ResourceType.Group.name, "some-id")
 
@@ -717,20 +830,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     val requestPathArgumentSlot = mutableListOf<Resource>()
 
-    coVerify(exactly = 3) {
+    coVerify(exactly = 5) {
       fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
     }
 
-    Assert.assertEquals(3, requestPathArgumentSlot.size)
+    assertEquals(5, requestPathArgumentSlot.size)
 
-    Assert.assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
+    assertEquals("Group/1000001", requestPathArgumentSlot.first().id)
+    assertEquals(ResourceType.Group, requestPathArgumentSlot.first().resourceType)
 
-    Assert.assertEquals("Group/2000001", requestPathArgumentSlot.second().id)
-    Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+    assertEquals("Group/2000001", requestPathArgumentSlot.second().id)
+    assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
 
-    Assert.assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-    Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+    assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
+    assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
   }
 
   @Test
@@ -764,7 +877,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
       } returns Bundle().apply { addEntry().resource = composition }
 
       coEvery {
-        fhirResourceDataSource.getResourceWithGatewayModeHeader("list-entries", "List/46464")
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          "List?_id=46464&_page=1&_count=200",
+        )
       } returns
         Bundle().apply {
           entry =
@@ -776,6 +892,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
                   },
                 ),
             )
+          link.add(
+            Bundle.BundleLinkComponent().apply { relation = PAGINATION_NEXT },
+          )
         }
 
       coEvery { fhirEngine.get(any(), any()) } throws
@@ -791,19 +910,19 @@ class ConfigurationRegistryTest : RobolectricTest() {
         fhirEngine.create(capture(requestPathArgumentSlot), isLocalOnly = true)
       }
 
-      Assert.assertEquals(4, requestPathArgumentSlot.size)
+      assertEquals(4, requestPathArgumentSlot.size)
 
-      Assert.assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
-      Assert.assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
+      assertEquals("Bundle/the-commodities-bundle-id", requestPathArgumentSlot.first().id)
+      assertEquals(ResourceType.Bundle, requestPathArgumentSlot.first().resourceType)
 
-      Assert.assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
-      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
+      assertEquals("Group/1000001", requestPathArgumentSlot.second().id)
+      assertEquals(ResourceType.Group, requestPathArgumentSlot.second().resourceType)
 
-      Assert.assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
-      Assert.assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
+      assertEquals("Group/2000001", requestPathArgumentSlot[2].id)
+      assertEquals(ResourceType.Group, requestPathArgumentSlot[2].resourceType)
 
-      Assert.assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
-      Assert.assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
+      assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
+      assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
     }
 
   @Test
@@ -825,8 +944,22 @@ class ConfigurationRegistryTest : RobolectricTest() {
         listResourceTypeToken,
       )
 
-    Assert.assertEquals(2, savedSyncResourceTypes.size)
-    Assert.assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    Assert.assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
+    assertEquals(2, savedSyncResourceTypes.size)
+    assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
+    assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
+  }
+
+  @Test
+  fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
+    val resource = Faker.buildPatient().apply { id = "1661662881" }
+    val expectedFileName = "1661662881.json"
+    every { mockedContext.filesDir } returns File(ArgumentMatchers.anyString())
+    every { mockedJsonParser.encodeResourceToString(any()) } returns
+      resource.encodeResourceToString()
+    val expectedEncodedResource = mockedJsonParser.encodeResourceToString(resource)
+
+    val resultFile = configRegistry.writeToFile(resource)
+    assertEquals(expectedFileName, resultFile.name)
+    assertEquals(expectedEncodedResource, resultFile.readText())
   }
 }
