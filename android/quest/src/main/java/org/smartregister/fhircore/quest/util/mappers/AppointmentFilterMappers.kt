@@ -59,7 +59,7 @@ fun transformAppointmentUiReasonToCode(uiReason: Reason): CodeableConcept? =
       Coding(SystemConstants.REASON_CODE_SYSTEM, "Refill", "Refill")
     )
     Reason.ROUTINE_VISIT -> CodeableConcept(
-      Coding(SystemConstants.REASON_CODE_SYSTEM, "ROUTINE", "Routine appointment")
+      Coding(SystemConstants.REASON_CODE_SYSTEM, "Routine", "Routine Visit")
     )
     Reason.VIRAL_LOAD_COLLECTION -> CodeableConcept(
       Coding(SystemConstants.REASON_CODE_SYSTEM, "vl", "Viral Load Collection")

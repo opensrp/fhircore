@@ -61,7 +61,7 @@ fun RegisterList(
   LazyColumn(modifier = modifier) {
     items(
       pagingItems.itemCount,
-      key = pagingItems.itemKey { it.logicalId },
+      key = pagingItems.itemKey { it.customKey ?: it.logicalId },
       contentType = pagingItems.itemContentType(),
     ) {
       RegisterRowItem(registerViewData = pagingItems[it]!!, onRowClick = onRowClick)

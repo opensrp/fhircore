@@ -133,6 +133,7 @@ class RegisterViewDataMapper @Inject constructor(@ApplicationContext val context
       is RegisterData.AppointmentRegisterData ->
         RegisterViewData(
           logicalId = inputModel.logicalId,
+          customKey = inputModel.appointmentLogicalId,
           title = inputModel.name,
           subtitle = "${inputModel.reasons.joinToString()}, ${inputModel.age}",
           registerType = RegisterData.AppointmentRegisterData::class,
