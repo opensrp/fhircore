@@ -181,11 +181,16 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        val userNameItem = stringResource(id = R.string.username) to (userName ?: "-")
+        val userNameItem =
+          stringResource(id = R.string.username) to
+            (if (userName.isNullOrEmpty()) "-" else userName!!)
         val organizationItem =
-          stringResource(R.string.team_organization) to (organization?.take(10) ?: "-")
-        val careTeamItem = stringResource(R.string.care_team) to (careTeam ?: "-")
-        val locationItem = stringResource(R.string.location) to (location ?: "-")
+          stringResource(R.string.team_organization) to
+            (if (organization.isNullOrEmpty()) "-" else organization.take(10))
+        val careTeamItem =
+          stringResource(R.string.care_team) to (if (careTeam.isNullOrEmpty()) "-" else careTeam)
+        val locationItem =
+          stringResource(R.string.location) to (if (location.isNullOrEmpty()) "-" else location)
 
         val items = listOf(userNameItem, organizationItem, careTeamItem, locationItem)
         InsightInfoView(
@@ -220,10 +225,13 @@ fun UserSettingInsightScreen(
       item {
         val items =
           listOf(
-            stringResource(R.string.manufacture) to Build.MANUFACTURER,
-            stringResource(R.string.device) to Build.DEVICE,
-            stringResource(R.string.os_version) to Build.VERSION.BASE_OS,
-            stringResource(R.string.device_date) to formatTimestamp(Build.TIME),
+            stringResource(R.string.manufacture) to
+              (if (Build.MANUFACTURER.isNullOrEmpty()) "-" else Build.MANUFACTURER),
+            stringResource(R.string.device) to
+              (if (Build.DEVICE.isNullOrEmpty()) "-" else Build.DEVICE),
+            stringResource(R.string.os_version) to
+              (if (Build.VERSION.BASE_OS.isNullOrEmpty()) "-" else Build.VERSION.BASE_OS),
+            stringResource(R.string.device_date) to (formatTimestamp(Build.TIME).ifEmpty { "-" }),
           )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),
