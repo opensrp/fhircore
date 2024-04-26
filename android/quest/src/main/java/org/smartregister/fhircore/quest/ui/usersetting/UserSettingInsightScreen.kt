@@ -180,33 +180,19 @@ fun UserSettingInsightScreen(
           )
         }
       }
-
       item {
-        if (userName != null && organization != null && careTeam != null && location != null) {
-          val items =
-            listOf(
-              stringResource(id = R.string.username) to userName,
-              stringResource(R.string.team_organization) to organization.take(10),
-              stringResource(R.string.care_team) to careTeam,
-              stringResource(R.string.location) to location,
-            )
-          InsightInfoView(
-            title = stringResource(id = R.string.assignment_info),
-            items = items,
-          )
-        } else {
-          val items =
-            listOf(
-              stringResource(id = R.string.username) to "-",
-              stringResource(R.string.team_organization) to "-",
-              stringResource(R.string.care_team) to "-",
-              stringResource(R.string.location) to "-",
-            )
-          InsightInfoView(
-            title = stringResource(id = R.string.assignment_info),
-            items = items,
-          )
-        }
+        val userName2 = null
+        val userNameItem = stringResource(id = R.string.username) to (userName2 ?: "-")
+        val organizationItem =
+          stringResource(R.string.team_organization) to (organization?.take(10) ?: "-")
+        val careTeamItem = stringResource(R.string.care_team) to (careTeam ?: "-")
+        val locationItem = stringResource(R.string.location) to (location ?: "-")
+
+        val items = listOf(userNameItem, organizationItem, careTeamItem, locationItem)
+        InsightInfoView(
+          title = stringResource(id = R.string.assignment_info),
+          items = items,
+        )
       }
       item {
         Spacer(modifier = Modifier.height(16.dp))
