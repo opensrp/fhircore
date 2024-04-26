@@ -181,8 +181,7 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        val userName2 = null
-        val userNameItem = stringResource(id = R.string.username) to (userName2 ?: "-")
+        val userNameItem = stringResource(id = R.string.username) to (userName ?: "-")
         val organizationItem =
           stringResource(R.string.team_organization) to (organization?.take(10) ?: "-")
         val careTeamItem = stringResource(R.string.care_team) to (careTeam ?: "-")
