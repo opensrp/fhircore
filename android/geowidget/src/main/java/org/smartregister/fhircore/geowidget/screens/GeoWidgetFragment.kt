@@ -76,8 +76,9 @@ class GeoWidgetFragment : Fragment() {
     }
   internal var useGpsOnAddingLocation: Boolean = false
   internal var mapLayers: List<MapLayerConfig> = ArrayList()
-  internal var shouldLocationButtonShow: Boolean = true
+  internal var showCurrentLocationButton: Boolean = true
   internal var shouldPlaneSwitcherButtonShow: Boolean = true
+  internal var showAddLocationButton: Boolean = true
 
   private lateinit var mapView: KujakuMapView
   private var geoJsonSource: GeoJsonSource? = null
@@ -136,7 +137,9 @@ class GeoWidgetFragment : Fragment() {
         }
       }
 
-      setOnAddLocationListener(this)
+      if (showAddLocationButton) {
+        setOnAddLocationListener(this)
+      }
       setOnClickLocationListener(this)
     }
   }
@@ -199,12 +202,11 @@ class GeoWidgetFragment : Fragment() {
       }
     }
 
-    if (shouldLocationButtonShow) {
-      showCurrentLocationBtn(true)
-    }
+    showCurrentLocationBtn(showCurrentLocationButton)
     if (shouldPlaneSwitcherButtonShow) {
       baseLayerSwitcherPlugin.show()
     }
+
   }
 
   private fun setOnClickLocationListener(mapView: KujakuMapView) {
@@ -333,8 +335,9 @@ class Builder {
     }
   private var useGpsOnAddingLocation: Boolean = false
   private var mapLayers: List<MapLayerConfig> = ArrayList()
-  private var shouldLocationButtonShow: Boolean = true
+  private var showCurrentLocationButton: Boolean = true
   private var shouldPlaneSwitcherButtonShow: Boolean = true
+  private var showAddLocationButton: Boolean = true
 
   fun setOnAddLocationListener(onAddLocationCallback: (Feature) -> Unit) = apply {
     this.onAddLocationCallback = onAddLocationCallback
@@ -353,8 +356,9 @@ class Builder {
 
   fun setMapLayers(list: List<MapLayerConfig>) = apply { this.mapLayers = list }
 
-  fun setLocationButtonVisibility(show: Boolean) = apply { this.shouldLocationButtonShow = show }
+  fun showCurrentLocationButtonVisibility(show: Boolean) = apply { this.showCurrentLocationButton = show }
 
+  fun setAddLocationButtonVisibility(show: Boolean) = apply { this.showAddLocationButton = show }
   fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
     this.shouldPlaneSwitcherButtonShow = show
   }
@@ -366,8 +370,9 @@ class Builder {
       this.onClickLocationCallback = this@Builder.onClickLocationCallback
       this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
       this.mapLayers = this@Builder.mapLayers
-      this.shouldLocationButtonShow = this@Builder.shouldLocationButtonShow
+      this.showCurrentLocationButton = this@Builder.showCurrentLocationButton
       this.shouldPlaneSwitcherButtonShow = this@Builder.shouldPlaneSwitcherButtonShow
+      this.showAddLocationButton = this@Builder.showAddLocationButton
     }
   }
 }
