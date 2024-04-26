@@ -184,6 +184,7 @@ class GeoWidgetLauncherFragment : Fragment() {
     geoWidgetFragment =
       GeoWidgetFragment.builder()
         .setUseGpsOnAddingLocation(false)
+        .setAddLocationButtonVisibility(geoWidgetConfiguration.showAddLocation)
         .setOnAddLocationListener { feature: Feature ->
           if (feature.geometry?.coordinates == null) return@setOnAddLocationListener
           geoWidgetLauncherViewModel.launchQuestionnaire(
@@ -203,7 +204,7 @@ class GeoWidgetLauncherFragment : Fragment() {
             .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
         }
         .setMapLayers(geoWidgetConfiguration.mapLayers)
-        .setLocationButtonVisibility(geoWidgetConfiguration.showLocation)
+        .showCurrentLocationButtonVisibility(geoWidgetConfiguration.showLocation)
         .setPlaneSwitcherButtonVisibility(geoWidgetConfiguration.showPlaneSwitcher)
         .build()
   }
