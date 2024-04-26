@@ -25,6 +25,8 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.ResourceSyncException
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -115,11 +117,15 @@ constructor(
   private fun traceSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Failed,
-      is SyncJobStatus.Succeeded, -> {
+      is SyncJobStatus.Succeeded -> {
+        if (syncJobStatus is SyncJobStatus.Failed) {
+          syncJobStatus.exceptions.forEachIndexed { _, resourceSyncException ->
+            Firebase.crashlytics.recordException(resourceSyncException.exception)
+          }
+        }
         tracer.putAttribute(SYNC_TRACE, SYNC_ATTR_RESULT, syncJobStatus::class.java.simpleName)
         tracer.stopTrace(SYNC_TRACE)
       }
-      is SyncJobStatus.InProgress -> {}
       is SyncJobStatus.Started -> {
         tracer.startTrace(SYNC_TRACE)
         tracer.putAttribute(
@@ -128,6 +134,7 @@ constructor(
           if (isInitialSync()) SYNC_ATTR_TYPE_INITIAL else SYNC_ATTR_TYPE_SUBSEQUENT,
         )
       }
+      else -> {}
     }
   }
 

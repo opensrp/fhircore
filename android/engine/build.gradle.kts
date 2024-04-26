@@ -9,6 +9,7 @@ plugins {
   id("de.mannodermaus.android-junit5")
   id("com.google.dagger.hilt.android")
   id("org.jetbrains.kotlin.android")
+  id("com.google.firebase.crashlytics")
 }
 
 kotlin { jvmToolchain(17) }
@@ -217,6 +218,7 @@ dependencies {
 
   implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
   implementation("com.google.firebase:firebase-perf-ktx")
+  implementation("com.google.firebase:firebase-crashlytics-ktx")
 
   implementation("androidx.core:core-splashscreen:1.0.0")
 
