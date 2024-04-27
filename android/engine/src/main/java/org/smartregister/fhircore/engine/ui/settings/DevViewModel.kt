@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.StructureMap
+import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -151,9 +152,9 @@ constructor(
     viewModelScope.launch {
       WorkManager.getInstance(context)
         .enqueueUniqueWork(
-          FhirTaskPlanWorker.WORK_ID,
+          MissedFHIRAppointmentsWorker.NAME,
           ExistingWorkPolicy.REPLACE,
-          OneTimeWorkRequestBuilder<ProposedWelcomeServiceAppointmentsWorker>().build(),
+          OneTimeWorkRequestBuilder<MissedFHIRAppointmentsWorker>().build(),
         )
       WorkManager.getInstance(context)
         .enqueueUniqueWork(
@@ -168,7 +169,7 @@ constructor(
     viewModelScope.launch {
       WorkManager.getInstance(context)
         .enqueueUniqueWork(
-          FhirTaskPlanWorker.WORK_ID,
+          ProposedWelcomeServiceAppointmentsWorker.NAME,
           ExistingWorkPolicy.REPLACE,
           OneTimeWorkRequestBuilder<ProposedWelcomeServiceAppointmentsWorker>().build(),
         )

@@ -40,6 +40,7 @@ import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -58,6 +59,7 @@ constructor(
   @ApplicationContext val appContext: Context,
   private val fhirEngine: FhirEngine,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val defaultRepository: DefaultRepository
 ) {
 
   private val currentPractitioner by lazy {
@@ -188,9 +190,10 @@ constructor(
           appointment
         }
 
-    fhirEngine.update(*(missedAppointments + tracingTasksToAdd).toTypedArray())
+    defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
+    fhirEngine.update(*missedAppointments.toTypedArray())
 
-    Timber.i("Updated ${missedAppointments.size} missed appointments")
+    Timber.i("Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}")
   }
 
   suspend fun handleWelcomeServiceAppointmentWorker() {
@@ -261,8 +264,11 @@ constructor(
         }
         .map { it.first }
 
+    defaultRepository.create(addResourceTags = true, *tracingTasks.toTypedArray())
     bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
     cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
+
+    Timber.i("proposedAppointmentsToBook: ${proposedAppointmentsToBook.size}, proposedAppointmentsToCancel: ${proposedAppointmentsToCancel.size}, tracing tasks: ${tracingTasks.size}")
   }
 
   private suspend fun bookWelcomeService(appointments: Array<Appointment>) {
@@ -296,7 +302,7 @@ constructor(
       meta =
         Meta().apply {
           tag =
-            listOf(
+            mutableListOf(
               if (hasPhone) {
                 ReasonConstants.phoneTracingCoding
               } else ReasonConstants.homeTracingCoding,
