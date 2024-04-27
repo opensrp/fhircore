@@ -60,6 +60,12 @@ fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
     }
     Button(
       modifier = Modifier.fillMaxWidth(),
+      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.interruptedResource(context) },
+    ) {
+      Text(text = "Update interrupted treatment")
+    }
+    Button(
+      modifier = Modifier.fillMaxWidth(),
       onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() },
     ) {
       Text(text = "Test Fetch")

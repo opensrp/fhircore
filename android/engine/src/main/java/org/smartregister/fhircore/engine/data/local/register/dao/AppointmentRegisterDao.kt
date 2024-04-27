@@ -16,15 +16,11 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
-import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Calendar
 import java.util.Date
@@ -32,7 +28,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
@@ -55,7 +50,6 @@ import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromM
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.safeSubList
-import org.smartregister.fhircore.engine.util.extension.toHealthStatus
 
 @Singleton
 class AppointmentRegisterDao
@@ -107,7 +101,9 @@ constructor(
     val patient =
       appointment.patientRef()?.let { defaultRepository.loadResource(it) as Patient }
         ?: return false
-    return patient.meta.tag.any { coding -> coding.code in categories.map { it.name.lowercase().replace("_", "-") } }
+    return patient.meta.tag.any { coding ->
+      coding.code in categories.map { it.name.lowercase().replace("_", "-") }
+    }
   }
 
   private suspend fun searchAppointments(
@@ -229,23 +225,25 @@ constructor(
     }
 
     // TODO: look into this further
-//    if (patientCategory != null) {
-//      val patientTypeFilterTag = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-//
-//      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
-//        patientCategory.map { healthStatus ->
-//          val coding: Coding =
-//            Coding().apply {
-//              system = patientTypeFilterTag
-//              code = healthStatus.name.lowercase().replace("_", "-")
-//            }
-//          return@map { value = of(coding) }
-//        }
-//
-//      has<Patient>(Appointment.PATIENT) {
-//        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
-//      }
-//    }
+    //    if (patientCategory != null) {
+    //      val patientTypeFilterTag =
+    // applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+    //
+    //      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+    //        patientCategory.map { healthStatus ->
+    //          val coding: Coding =
+    //            Coding().apply {
+    //              system = patientTypeFilterTag
+    //              code = healthStatus.name.lowercase().replace("_", "-")
+    //            }
+    //          return@map { value = of(coding) }
+    //        }
+    //
+    //      has<Patient>(Appointment.PATIENT) {
+    //        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation =
+    // Operation.OR)
+    //      }
+    //    }
   }
 
   private suspend fun transformAppointment(appointment: Appointment): RegisterData {

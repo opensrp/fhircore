@@ -32,6 +32,7 @@ object SystemConstants {
 }
 
 object ReasonConstants {
+  // TODO: change code  to "welcome-service"
   val WelcomeServiceCode =
     CodeableConcept(Coding(SystemConstants.REASON_CODE_SYSTEM, "Welcome", "Welcome Service"))
       .apply { text = "Welcome Service" }
@@ -40,6 +41,11 @@ object ReasonConstants {
     Coding(SystemConstants.CONTACT_TRACING_SYSTEM, "home-tracing", "Home Tracing")
   val phoneTracingCoding =
     Coding(SystemConstants.CONTACT_TRACING_SYSTEM, "phone-tracing", "Phone Tracing")
+
+  var missedAppointmentTracingCode =
+    Coding(SystemConstants.REASON_CODE_SYSTEM, "missed-appointment", "Missed Appointment")
+  var interruptedTreatmentTracingCode =
+    Coding(SystemConstants.REASON_CODE_SYSTEM, "interrupted-treatment", "Interrupted Treatment")
 
   const val TRACING_OUTCOME_CODE = "tracing-outcome"
   const val DATE_OF_AGREED_APPOINTMENT = "date-of-agreed-appointment"

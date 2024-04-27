@@ -20,18 +20,11 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import ca.uhn.fhir.rest.param.ParamPrefixEnum
-import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import org.hl7.fhir.r4.model.Appointment
-import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.IdType
-import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.util.ReasonConstants
-import timber.log.Timber
+import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.task.FhirResourceUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 @HiltWorker
 class ProposedWelcomeServiceAppointmentsWorker
@@ -39,78 +32,14 @@ class ProposedWelcomeServiceAppointmentsWorker
 constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
-  val fhirEngine: FhirEngine,
+  private val fhirResourceUtil: FhirResourceUtil,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParameters) {
   override suspend fun doWork(): Result {
-    Timber.i("Checking 'Welcome Service' appointments")
-
-    val proposedAppointments =
-      fhirEngine
-        .search<Appointment> {
-          filter(
-            Appointment.STATUS,
-            { value = of(Appointment.AppointmentStatus.PROPOSED.toCode()) },
-          )
-          filter(Appointment.REASON_CODE, { value = of(ReasonConstants.WelcomeServiceCode) })
-          filter(
-            Appointment.DATE,
-            {
-              value = of(DateTimeType.today())
-              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            },
-          )
-        }
-        .map { it.resource }
-        .filter {
-          it.hasStart() &&
-            it.hasSupportingInformation() &&
-            it.supportingInformation.any { reference ->
-              reference.referenceElement.resourceType == ResourceType.Appointment.name
-            }
-        }
-        .map {
-          val supportFinishVisitAppointmentRef =
-            it.supportingInformation.first { reference ->
-              reference.referenceElement.resourceType == ResourceType.Appointment.name
-            }
-          val supportFinishVisitAppointmentRefId =
-            IdType(supportFinishVisitAppointmentRef.reference).idPart
-          val supportFinishVisitAppointment =
-            fhirEngine.get<Appointment>(supportFinishVisitAppointmentRefId)
-          Pair(it, supportFinishVisitAppointment)
-        }
-
-    val proposedAppointmentsToCancel =
-      proposedAppointments
-        .filter {
-          val finishVisitAppointment = it.second
-          finishVisitAppointment.status == Appointment.AppointmentStatus.FULFILLED
-        }
-        .map { it.first }
-
-    val proposedAppointmentsToBook =
-      proposedAppointments
-        .filter {
-          val finishVisitAppointment = it.second
-          finishVisitAppointment.status in
-            arrayOf(Appointment.AppointmentStatus.NOSHOW, Appointment.AppointmentStatus.BOOKED)
-        }
-        .map { it.first }
-
-    bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
-    cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
-
-    return Result.success()
-  }
-
-  private suspend fun bookWelcomeService(appointments: Array<Appointment>) {
-    appointments.forEach { it.status = Appointment.AppointmentStatus.BOOKED }
-    fhirEngine.update(*appointments)
-  }
-
-  private suspend fun cancelWelcomeService(appointments: Array<Appointment>) {
-    appointments.forEach { it.status = Appointment.AppointmentStatus.CANCELLED }
-    fhirEngine.update(*appointments)
+    return withContext(dispatcherProvider.io()) {
+      fhirResourceUtil.handleWelcomeServiceAppointmentWorker()
+      Result.success()
+    }
   }
 
   companion object {

@@ -22,16 +22,30 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
+import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.Meta
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
+import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
+import org.smartregister.fhircore.engine.util.ReasonConstants
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.SystemConstants
+import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.toCoding
@@ -43,7 +57,16 @@ class FhirResourceUtil
 constructor(
   @ApplicationContext val appContext: Context,
   private val fhirEngine: FhirEngine,
+  val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
+
+  private val currentPractitioner by lazy {
+    sharedPreferencesHelper.read(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      defaultValue = null,
+    )
+  }
+
   suspend fun expireOverdueTasks() {
     Timber.i("Starting task scheduler")
     val carePlanMap = mutableMapOf<String, CarePlan>()
@@ -132,6 +155,7 @@ constructor(
 
   suspend fun handleMissedAppointment() {
     Timber.i("Checking missed Appointments")
+    val tracingTasksToAdd = mutableListOf<Task>()
     val missedAppointments =
       fhirEngine
         .search<Appointment> {
@@ -144,21 +168,157 @@ constructor(
             },
           )
         }
-        .map { it.resource }
-        .filter {
-          it.hasStart() &&
-            it.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
-            it.status == Appointment.AppointmentStatus.BOOKED
-        }
-        .toTypedArray()
+        .mapNotNull {
+          val appointment = it.resource
 
-    updateNoShow(missedAppointments)
+          if (
+            !(appointment.hasStart() &&
+              appointment.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
+              appointment.status == Appointment.AppointmentStatus.BOOKED)
+          ) {
+            return@mapNotNull null
+          }
+
+          appointment.status = Appointment.AppointmentStatus.NOSHOW
+
+          addToTracingList(appointment, ReasonConstants.missedAppointmentTracingCode)?.let { task ->
+            tracingTasksToAdd.add(task)
+          }
+
+          appointment
+        }
+
+    fhirEngine.update(*(missedAppointments + tracingTasksToAdd).toTypedArray())
 
     Timber.i("Updated ${missedAppointments.size} missed appointments")
   }
 
-  private suspend fun updateNoShow(appointments: Array<Appointment>) {
-    appointments.forEach { it.status = Appointment.AppointmentStatus.NOSHOW }
+  suspend fun handleWelcomeServiceAppointmentWorker() {
+    Timber.i("Checking 'Welcome Service' appointments")
+    val tracingTasks = mutableListOf<Task>()
+
+    val proposedAppointments =
+      fhirEngine
+        .search<Appointment> {
+          filter(
+            Appointment.STATUS,
+            { value = of(Appointment.AppointmentStatus.PROPOSED.toCode()) },
+          )
+          filter(Appointment.REASON_CODE, { value = of(ReasonConstants.WelcomeServiceCode) })
+          filter(
+            Appointment.DATE,
+            {
+              value = of(DateTimeType.today())
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+            },
+          )
+        }
+        .map { it.resource }
+        .filter {
+          it.hasStart() &&
+            it.hasSupportingInformation() &&
+            it.supportingInformation.any { reference ->
+              reference.referenceElement.resourceType == ResourceType.Appointment.name
+            }
+        }
+        .map {
+          val supportFinishVisitAppointmentRef =
+            it.supportingInformation.first { reference ->
+              reference.referenceElement.resourceType == ResourceType.Appointment.name
+            }
+          val supportFinishVisitAppointmentRefId =
+            IdType(supportFinishVisitAppointmentRef.reference).idPart
+          val supportFinishVisitAppointment =
+            fhirEngine.get<Appointment>(supportFinishVisitAppointmentRefId)
+          Pair(it, supportFinishVisitAppointment)
+        }
+
+    val proposedAppointmentsToCancel =
+      proposedAppointments
+        .filter {
+          val finishVisitAppointment = it.second
+          finishVisitAppointment.status == Appointment.AppointmentStatus.FULFILLED
+        }
+        .map { it.first }
+
+    val proposedAppointmentsToBook =
+      proposedAppointments
+        .filter {
+          val finishVisitAppointment = it.second
+          val isValid =
+            finishVisitAppointment.status in
+              arrayOf(Appointment.AppointmentStatus.NOSHOW, Appointment.AppointmentStatus.BOOKED)
+
+          if (isValid) {
+            addToTracingList(
+                finishVisitAppointment,
+                ReasonConstants.interruptedTreatmentTracingCode
+              )
+              ?.let { task -> tracingTasks.add(task) }
+          }
+
+          isValid
+        }
+        .map { it.first }
+
+    bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
+    cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
+  }
+
+  private suspend fun bookWelcomeService(appointments: Array<Appointment>) {
+    appointments.forEach { it.status = Appointment.AppointmentStatus.BOOKED }
     fhirEngine.update(*appointments)
+  }
+
+  private suspend fun cancelWelcomeService(appointments: Array<Appointment>) {
+    appointments.forEach { it.status = Appointment.AppointmentStatus.CANCELLED }
+    fhirEngine.update(*appointments)
+  }
+
+  private suspend fun addToTracingList(appointment: Appointment, coding: Coding): Task? {
+    val patientRef =
+      appointment.participant
+        .firstOrNull { it.hasActor() && it.actor.reference.contains(ResourceType.Patient.name) }
+        ?.actor
+        ?.extractId() ?: return null
+    val patient = fhirEngine.get<Patient>(patientRef)
+    return createTracingTask(
+      patient,
+      currentPractitioner!!.asReference(ResourceType.Practitioner),
+      coding,
+    )
+  }
+
+  private fun createTracingTask(patient: Patient, practitioner: Reference, coding: Coding): Task {
+    val hasPhone = patient.hasTelecom()
+    val now = Calendar.getInstance().time
+    return Task().apply {
+      meta =
+        Meta().apply {
+          tag =
+            listOf(
+              if (hasPhone) {
+                ReasonConstants.phoneTracingCoding
+              } else ReasonConstants.homeTracingCoding,
+            )
+        }
+      status = Task.TaskStatus.READY
+      intent = Task.TaskIntent.PLAN
+      priority = Task.TaskPriority.ROUTINE
+      authoredOn = now
+      lastModified = now
+      code =
+        CodeableConcept(
+          Coding("http://snomed.info/sct", "225368008", "Contact tracing (procedure)"),
+        )
+      `for` = patient.asReference()
+      owner = practitioner
+      executionPeriod = Period().apply { start = now }
+      reasonCode =
+        CodeableConcept(
+            coding,
+          )
+          .apply { text = coding.display }
+    }
   }
 }
