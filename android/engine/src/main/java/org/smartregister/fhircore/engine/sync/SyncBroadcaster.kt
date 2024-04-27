@@ -117,7 +117,7 @@ constructor(
   private fun traceSync(syncJobStatus: SyncJobStatus) {
     when (syncJobStatus) {
       is SyncJobStatus.Failed,
-      is SyncJobStatus.Succeeded -> {
+      is SyncJobStatus.Succeeded, -> {
         if (syncJobStatus is SyncJobStatus.Failed) {
           syncJobStatus.exceptions.forEachIndexed { _, resourceSyncException ->
             Firebase.crashlytics.recordException(resourceSyncException.exception)

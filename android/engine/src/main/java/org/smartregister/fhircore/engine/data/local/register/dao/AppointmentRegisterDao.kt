@@ -107,7 +107,7 @@ constructor(
     val patient =
       appointment.patientRef()?.let { defaultRepository.loadResource(it) as Patient }
         ?: return false
-    return patient.meta.tag.any { coding -> coding.toHealthStatus() in categories }
+    return patient.meta.tag.any { coding -> coding.code in categories.map { it.name.lowercase().replace("_", "-") } }
   }
 
   private suspend fun searchAppointments(
@@ -228,34 +228,24 @@ constructor(
       filter(Appointment.REASON_CODE, { value = of(reasonCode) })
     }
 
-    if (patientCategory != null) {
-      val patientTypeFilterTag = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-
-      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
-        patientCategory.flatMap { healthStatus ->
-          val coding: Coding =
-            Coding().apply {
-              system = patientTypeFilterTag
-              code = healthStatus.name.lowercase().replace("_", "-")
-            }
-          val alternativeCoding: Coding =
-            Coding().apply {
-              system = patientTypeFilterTag
-              code = healthStatus.name.lowercase()
-            }
-
-          return@flatMap listOf<Coding>(coding, alternativeCoding).map<
-            Coding,
-            TokenParamFilterCriterion.() -> Unit,
-          > { c ->
-            { value = of(c) }
-          }
-        }
-
-      has<Patient>(Appointment.PATIENT) {
-        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
-      }
-    }
+    // TODO: look into this further
+//    if (patientCategory != null) {
+//      val patientTypeFilterTag = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+//
+//      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+//        patientCategory.map { healthStatus ->
+//          val coding: Coding =
+//            Coding().apply {
+//              system = patientTypeFilterTag
+//              code = healthStatus.name.lowercase().replace("_", "-")
+//            }
+//          return@map { value = of(coding) }
+//        }
+//
+//      has<Patient>(Appointment.PATIENT) {
+//        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
+//      }
+//    }
   }
 
   private suspend fun transformAppointment(appointment: Appointment): RegisterData {
