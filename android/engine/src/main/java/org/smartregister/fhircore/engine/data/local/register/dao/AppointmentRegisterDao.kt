@@ -219,8 +219,8 @@ constructor(
 
     if (myPatients && currentPractitioner != null) {
       filter(
-        Appointment.PRACTITIONER,
-        { value = currentPractitioner!!.asReference(ResourceType.Appointment).reference },
+        Appointment.ACTOR,
+        { value = currentPractitioner!!.asReference(ResourceType.Practitioner).reference },
       )
     }
 
