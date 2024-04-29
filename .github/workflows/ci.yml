@@ -14,7 +14,7 @@ env:
 
 jobs:
   engine-tests:
-    runs-on: macos-latest
+    runs-on: macos-13
     strategy:
       matrix:
         api-level: [30]
@@ -94,7 +94,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F engine -f "engine/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   geowidget-tests:
-    runs-on: macos-latest
+    runs-on: macos-13
     strategy:
       matrix:
         api-level: [30]
@@ -174,7 +174,7 @@ jobs:
         run:  bash <(curl -s https://codecov.io/bash) -F geowidget -f "geowidget/build/reports/jacoco/fhircoreJacocoReport/fhircoreJacocoReport.xml"
 
   quest-tests:
-    runs-on: macos-latest
+    runs-on: macos-13
     strategy:
       matrix:
         api-level: [30]
