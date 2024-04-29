@@ -477,10 +477,15 @@ constructor(
     return defaultRepository.loadRelatedPersons(patientId)
   }
 
-  suspend fun loadScheduledAppointments(patientId: String): Iterable<Appointment> {
+  private suspend fun loadScheduledAppointments(patientId: String): Iterable<Appointment> {
     return fhirEngine
       .search<Appointment> {
-        filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+        filter(
+          Appointment.STATUS,
+          { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) },
+          { value = of(Appointment.AppointmentStatus.WAITLIST.toCode()) },
+          operation = Operation.OR,
+        )
       }
       .map { it.resource }
       // filter on patient subject
@@ -492,7 +497,8 @@ constructor(
         }
       }
       .filter {
-        it.status == Appointment.AppointmentStatus.BOOKED &&
+        (it.status == Appointment.AppointmentStatus.BOOKED ||
+          it.status == Appointment.AppointmentStatus.WAITLIST) &&
           it.hasStart() &&
           it.start.after(
             Date.from(

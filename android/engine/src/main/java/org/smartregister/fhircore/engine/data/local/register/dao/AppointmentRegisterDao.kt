@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
@@ -167,6 +168,7 @@ constructor(
           .any { c -> c.code == reasonCode.coding.firstOrNull()?.code })
 
     return (appointment.status == Appointment.AppointmentStatus.BOOKED ||
+      appointment.status == Appointment.AppointmentStatus.WAITLIST ||
       appointment.status == Appointment.AppointmentStatus.NOSHOW) &&
       appointment.hasStart() &&
       patientAssignmentFilter &&
@@ -185,7 +187,9 @@ constructor(
     filter(
       Appointment.STATUS,
       { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) },
+      { value = of(Appointment.AppointmentStatus.WAITLIST.toCode()) },
       { value = of(Appointment.AppointmentStatus.NOSHOW.toCode()) },
+      operation = Operation.OR,
     )
 
     if (dateOfAppointment != null) {

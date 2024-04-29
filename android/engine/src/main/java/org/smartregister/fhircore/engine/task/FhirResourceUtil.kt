@@ -20,8 +20,11 @@ import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
@@ -48,6 +51,7 @@ import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
+import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.toCoding
 import timber.log.Timber
@@ -59,7 +63,7 @@ constructor(
   @ApplicationContext val appContext: Context,
   private val fhirEngine: FhirEngine,
   val sharedPreferencesHelper: SharedPreferencesHelper,
-  val defaultRepository: DefaultRepository
+  val defaultRepository: DefaultRepository,
 ) {
 
   private val currentPractitioner by lazy {
@@ -161,7 +165,12 @@ constructor(
     val missedAppointments =
       fhirEngine
         .search<Appointment> {
-          filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
+          filter(
+            Appointment.STATUS,
+            { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) },
+            { value = of(Appointment.AppointmentStatus.WAITLIST.toCode()) },
+            operation = Operation.OR,
+          )
           filter(
             Appointment.DATE,
             {
@@ -176,15 +185,24 @@ constructor(
           if (
             !(appointment.hasStart() &&
               appointment.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
-              appointment.status == Appointment.AppointmentStatus.BOOKED)
+              (appointment.status == Appointment.AppointmentStatus.BOOKED ||
+                appointment.status == Appointment.AppointmentStatus.WAITLIST))
           ) {
             return@mapNotNull null
           }
 
-          appointment.status = Appointment.AppointmentStatus.NOSHOW
+          val today = LocalDate.now()
+          val tracingDate =
+            LocalDate.from(appointment.start.plusDays(7).toInstant().atZone(ZoneId.systemDefault()))
 
-          addToTracingList(appointment, ReasonConstants.missedAppointmentTracingCode)?.let { task ->
-            tracingTasksToAdd.add(task)
+          if (today.isAfter(tracingDate) || today.isEqual(tracingDate)) {
+            appointment.status = Appointment.AppointmentStatus.NOSHOW
+            addToTracingList(appointment, ReasonConstants.missedAppointmentTracingCode)?.let { task,
+              ->
+              tracingTasksToAdd.add(task)
+            }
+          } else {
+            appointment.status = Appointment.AppointmentStatus.WAITLIST
           }
 
           appointment
@@ -193,7 +211,9 @@ constructor(
     defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
     fhirEngine.update(*missedAppointments.toTypedArray())
 
-    Timber.i("Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}")
+    Timber.i(
+      "Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}",
+    )
   }
 
   suspend fun handleWelcomeServiceAppointmentWorker() {
@@ -255,7 +275,7 @@ constructor(
           if (isValid) {
             addToTracingList(
                 finishVisitAppointment,
-                ReasonConstants.interruptedTreatmentTracingCode
+                ReasonConstants.interruptedTreatmentTracingCode,
               )
               ?.let { task -> tracingTasks.add(task) }
           }
@@ -268,7 +288,9 @@ constructor(
     bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
     cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
 
-    Timber.i("proposedAppointmentsToBook: ${proposedAppointmentsToBook.size}, proposedAppointmentsToCancel: ${proposedAppointmentsToCancel.size}, tracing tasks: ${tracingTasks.size}")
+    Timber.i(
+      "proposedAppointmentsToBook: ${proposedAppointmentsToBook.size}, proposedAppointmentsToCancel: ${proposedAppointmentsToCancel.size}, tracing tasks: ${tracingTasks.size}",
+    )
   }
 
   private suspend fun bookWelcomeService(appointments: Array<Appointment>) {
