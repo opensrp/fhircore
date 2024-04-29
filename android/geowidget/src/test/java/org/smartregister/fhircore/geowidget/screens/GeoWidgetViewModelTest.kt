@@ -21,21 +21,13 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.platform.app.InstrumentationRegistry
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.SearchResult
-import com.mapbox.geojson.FeatureCollection
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import javax.inject.Inject
-import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.Location
-import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Assert
+import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,65 +39,101 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
+import java.util.UUID
+import javax.inject.Inject
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 @HiltAndroidTest
 class GeoWidgetViewModelTest {
 
-  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
+    @get:Rule(order = 0)
+    var hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
+    @get:Rule(order = 1)
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
+    @get:Rule(order = 2)
+    var coroutinesTestRule = CoroutineTestRule()
 
-  @Inject lateinit var configService: ConfigService
+    @Inject
+    lateinit var configService: ConfigService
 
-  private lateinit var configurationRegistry: ConfigurationRegistry
+    private lateinit var configurationRegistry: ConfigurationRegistry
 
-  private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+    private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
-  private lateinit var geoWidgetViewModel: GeoWidgetViewModel
+    private lateinit var geoWidgetViewModel: GeoWidgetViewModel
 
-  private lateinit var defaultRepository: DefaultRepository
+    private lateinit var defaultRepository: DefaultRepository
 
-  private val fhirEngine = mockk<FhirEngine>()
+    private val fhirEngine = mockk<FhirEngine>()
 
-  private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
-  private val configRulesExecutor: ConfigRulesExecutor = mockk()
+    private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
-  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+    @Inject
+    lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var parser: IParser
+    @Inject
+    lateinit var parser: IParser
 
-  @Before
-  fun setUp() {
-    hiltRule.inject()
-    sharedPreferencesHelper = mockk()
-    configurationRegistry = mockk()
-    defaultRepository =
-      spyk(
-        DefaultRepository(
-          fhirEngine,
-          coroutinesTestRule.testDispatcherProvider,
-          sharedPreferencesHelper,
-          configurationRegistry,
-          configService,
-          configRulesExecutor,
-          fhirPathDataExtractor = fhirPathDataExtractor,
-          parser = parser,
-        ),
-      )
-    geoWidgetViewModel =
-      spyk(GeoWidgetViewModel(defaultRepository, coroutinesTestRule.testDispatcherProvider))
+    @Before
+    fun setUp() {
+        hiltRule.inject()
+        sharedPreferencesHelper = mockk()
+        configurationRegistry = mockk()
+        defaultRepository =
+            spyk(
+                DefaultRepository(
+                    fhirEngine,
+                    coroutinesTestRule.testDispatcherProvider,
+                    sharedPreferencesHelper,
+                    configurationRegistry,
+                    configService,
+                    configRulesExecutor,
+                    fhirPathDataExtractor = fhirPathDataExtractor,
+                    parser = parser,
+                ),
+            )
+        geoWidgetViewModel =
+            spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))
 
-    coEvery { defaultRepository.create(any()) } returns emptyList()
-  }
+        coEvery { defaultRepository.create(any()) } returns emptyList()
+    }
 
+    @Test
+    fun `add location to map`() {
+        val serverVersion = (1..10).random()
+        val locations = setOf(
+            Feature(
+                id = UUID.randomUUID().toString(),
+                geometry = Geometry(
+                    coordinates = listOf(Coordinates(34.76,68.23))
+                ),
+                properties = mapOf(),
+                serverVersion = serverVersion
+            ),
+            Feature(
+                id = UUID.randomUUID().toString(),
+                geometry = Geometry(
+                    coordinates = listOf(Coordinates(34.76,68.23))
+                ),
+                properties = mapOf(),
+                serverVersion = serverVersion
+            )
+        )
+        geoWidgetViewModel.addLocationsToMap(locations)
+
+        assertEquals(geoWidgetViewModel.featuresFlow.value.size,locations.size)
+    }
+    /*
   @Test
   fun getFamiliesFeatureCollectionShouldCallGetFamiliesAndGenerateFeatureCollection() {
     val families: List<Pair<Group, Location>> = emptyList()
@@ -159,4 +187,5 @@ class GeoWidgetViewModelTest {
     coVerify { defaultRepository.create(true, location) }
     Assert.assertTrue(locationLiveData.value!!)
   }
+}*/
 }

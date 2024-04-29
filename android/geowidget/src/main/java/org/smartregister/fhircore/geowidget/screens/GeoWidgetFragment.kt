@@ -49,6 +49,7 @@ import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import java.util.LinkedList
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayerConfig
@@ -80,6 +81,14 @@ class GeoWidgetFragment : Fragment() {
   internal var shouldPlaneSwitcherButtonShow: Boolean = true
 
   private lateinit var mapView: KujakuMapView
+  @VisibleForTesting
+  internal var kujakuMapView: KujakuMapView? = null
+    get() {
+      return mapView
+    }
+    set(value) {
+      field = value
+    }
   private var geoJsonSource: GeoJsonSource? = null
   private var featureCollection: FeatureCollection? = null
 
