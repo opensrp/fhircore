@@ -14,7 +14,7 @@ env:
 
 jobs:
   engine-tests:
-    runs-on: macos-latest
+    runs-on: macos-13
     strategy:
       matrix:
         api-level: [30]
