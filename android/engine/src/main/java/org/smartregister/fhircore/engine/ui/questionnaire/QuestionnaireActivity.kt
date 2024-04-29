@@ -137,6 +137,14 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         fragment.whenResumed { loadProgress.dismiss() }
       }
     }
+
+    questionnaireViewModel.extractionProgress.observe(this) { result ->
+      if (result is ExtractionProgress.Success) {
+        onPostSave(true, result.questionnaireResponse, result.extras)
+      } else {
+        onPostSave(false, (result as ExtractionProgress.Failed).questionnaireResponse)
+      }
+    }
   }
 
   fun updateViews() {
@@ -180,7 +188,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         .setShowSubmitButton(true)
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(DEFAULT_PROVIDER)
         .setIsReadOnly(questionnaireType.isReadOnly())
-    questionnaireResponse?.let {
+    questionnaireResponse.let {
       it.distinctifyLinkId()
       //        Timber.e(it.encodeResourceToString())
       questionnaireFragmentBuilder.setQuestionnaireResponse(it.encodeResourceToString())
@@ -310,23 +318,22 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun showFormSubmissionConfirmAlert() {
-    if (questionnaire.experimental) {
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_test_only_message,
-        title = R.string.questionnaire_alert_test_only_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_test_only_button_title,
-      )
-    } else {
-      showConfirmAlert(
-        context = this,
-        message = R.string.questionnaire_alert_submit_message,
-        title = R.string.questionnaire_alert_submit_title,
-        confirmButtonListener = { handleQuestionnaireSubmit() },
-        confirmButtonText = R.string.questionnaire_alert_submit_button_title,
-      )
-    }
+    showConfirmAlert(
+      context = this,
+      message =
+        if (questionnaire.experimental) {
+          R.string.questionnaire_alert_test_only_message
+        } else R.string.questionnaire_alert_submit_message,
+      title =
+        if (questionnaire.experimental) {
+          R.string.questionnaire_alert_test_only_title
+        } else R.string.questionnaire_alert_submit_title,
+      confirmButtonListener = { handleQuestionnaireSubmit() },
+      confirmButtonText =
+        if (questionnaire.experimental) {
+          R.string.questionnaire_alert_test_only_button_title
+        } else R.string.questionnaire_alert_submit_button_title,
+    )
   }
 
   fun getQuestionnaireResponse(): QuestionnaireResponse {
@@ -343,28 +350,18 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
-
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
-
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title,
-      )
-      return
-    }
-
-    handleQuestionnaireResponse(questionnaireResponse)
-
-    questionnaireViewModel.extractionProgress.observe(this) { result ->
-      if (result is ExtractionProgress.Success) {
-        onPostSave(true, questionnaireResponse, result.extras)
-      } else {
-        onPostSave(false, questionnaireResponse)
+    getQuestionnaireResponse()
+      .takeIf { validQuestionnaireResponse(it) }
+      ?.let { handleQuestionnaireResponse(it) }
+      ?: {
+        saveProcessingAlertDialog.dismiss().also {
+          AlertDialogue.showErrorAlert(
+            this,
+            R.string.questionnaire_alert_invalid_message,
+            R.string.questionnaire_alert_invalid_title,
+          )
+        }
       }
-    }
   }
 
   fun onPostSave(
