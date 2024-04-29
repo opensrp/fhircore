@@ -617,7 +617,6 @@ constructor(
             questionnaireResponse = questionnaireResponse,
             structureMapExtractionContext =
               StructureMapExtractionContext(
-                context = context,
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.substringAfterLast("/")?.let {
