@@ -107,7 +107,7 @@ constructor(
         showProgressBar.postValue(true)
 
         Timber.i(
-          "Fetching configs for app $appId with highest context-quantity ${QuestBuildConfig.VERSION_CODE}"
+          "Fetching configs for app $appId with highest context-quantity ${QuestBuildConfig.VERSION_CODE}",
         )
 
         var compositionResource: Composition? = null
@@ -115,7 +115,7 @@ constructor(
           val implementationGuideResource =
             configurationRegistry.fetchRemoteImplementationGuideByAppId(
               appId,
-              QuestBuildConfig.VERSION_CODE
+              QuestBuildConfig.VERSION_CODE,
             )
 
           compositionResource =
