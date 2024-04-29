@@ -125,7 +125,7 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.dtree.android.fhir:knowledge:0.1.0-alpha0394") {
+  api("org.smartregister:knowledge:0.1.0-alpha03-preview4-SNAPSHOT") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
@@ -185,7 +185,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
-  api("org.dtree.android.fhir:data-capture:1.1.0-alpha04") {
+  api("org.smartregister:data-capture:1.1.0-preview8-SNAPSHOT") {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
@@ -195,7 +195,7 @@ dependencies {
 
   api("org.smartregister:common:0.1.0-alpha05-preview3-SNAPSHOT") { isTransitive = true }
 
-  api("org.smartregister:engine:1.0.0-preview5-SNAPSHOT") {
+  api("org.smartregister:engine:1.0.0-preview7.1-SNAPSHOT") {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
