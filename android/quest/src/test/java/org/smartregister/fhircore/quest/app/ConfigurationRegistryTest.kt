@@ -165,8 +165,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns
-      composition
+    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
@@ -179,7 +178,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchListResource() = runBlocking {
-   val composition =
+    val composition =
       Composition().apply {
         addSection().apply {
           this.focus =
@@ -201,8 +200,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns
-      composition
+    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,

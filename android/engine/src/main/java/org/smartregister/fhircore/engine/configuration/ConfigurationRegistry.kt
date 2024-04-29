@@ -454,11 +454,12 @@ constructor(
 
   suspend fun fetchRemoteImplementationGuideByAppId(
     appId: String?,
-    igCtxQty: String?,
+    appVersionCode: Int?,
   ): ImplementationGuide? {
-    Timber.i("Fetching ImplementationGuide config for app $appId version $igCtxQty")
+    Timber.i("Fetching ImplementationGuide config for app $appId version $appVersionCode")
 
-    val urlPath = "ImplementationGuide?&name=$appId&context-quantity=le$igCtxQty&_sort=-context-quantity&_count=1"
+    val urlPath =
+      "ImplementationGuide?&name=$appId&context-quantity=le$appVersionCode&_sort=-context-quantity&_count=1"
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for ImplementationGuide resource on path $urlPath")
