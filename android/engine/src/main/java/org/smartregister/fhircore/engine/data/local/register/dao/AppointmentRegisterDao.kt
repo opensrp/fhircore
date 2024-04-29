@@ -197,22 +197,7 @@ constructor(
         Appointment.DATE,
         {
           value = of(DateTimeType(dateOfAppointment))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        },
-      )
-      filter(
-        Appointment.DATE,
-        {
-          value =
-            of(
-              DateTimeType(dateOfAppointment).apply {
-                add(
-                  Calendar.DATE,
-                  1,
-                )
-              },
-            )
-          prefix = ParamPrefixEnum.LESSTHAN
+          prefix = ParamPrefixEnum.EQUAL
         },
       )
     }
