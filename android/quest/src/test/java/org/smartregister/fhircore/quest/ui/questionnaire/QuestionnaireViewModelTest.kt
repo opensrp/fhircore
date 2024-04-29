@@ -51,6 +51,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
@@ -1017,6 +1018,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val flag = Flag().apply { this.id = "123456" }
     flag.appendPractitionerInfo("12345")
     Assert.assertEquals("Practitioner/12345", flag.author.reference)
+  }
+
+  @Test
+  fun testAddPractitionerInfoAppendedCorrectlyOnConsentResource() {
+    val consent = Consent().apply { this.id = "123456" }
+    consent.appendPractitionerInfo("12345")
+    Assert.assertEquals("Practitioner/12345", consent.performer.first().reference)
   }
 
   @Test
