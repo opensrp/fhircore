@@ -33,7 +33,7 @@ fun Feature.getGeoJsonGeometry(): JSONObject {
   with an Array of elements. See below examples
   Point: {"geometry": { "type": "Point", "coordinates": [ 45.487, -25.208]}}
   LineString: {"geometry": {"type": "LineString", "coordinates": [ [717, 1246.3812 ], [703.1146]]}}
-  */
+   */
   geometryObject.put("type", geometry.type)
   geometryObject.put(
     "coordinates",
