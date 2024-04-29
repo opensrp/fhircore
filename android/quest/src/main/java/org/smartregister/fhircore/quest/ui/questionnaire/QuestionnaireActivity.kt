@@ -353,70 +353,75 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       QuestionnaireFragment.SUBMIT_REQUEST_KEY,
       this,
     ) { _, _ ->
-      val questionnaireResponse = retrieveQuestionnaireResponse()
+      lifecycleScope.launch {
+        val questionnaireResponse = retrieveQuestionnaireResponse()
 
-      // Close questionnaire if opened in read only mode or if experimental
-      if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
-        finish()
-      }
-      if (questionnaireResponse != null && questionnaire != null) {
-        viewModel.run {
-          setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
+        // Close questionnaire if opened in read only mode or if experimental
+        if (questionnaireConfig.isReadOnly() || questionnaire?.experimental == true) {
+          finish()
+        }
+        if (questionnaireResponse != null && questionnaire != null) {
+          viewModel.run {
+            setProgressState(QuestionnaireProgressState.ExtractionInProgress(true))
 
-          if (currentLocation != null) {
-            questionnaireResponse.contained.add(
-              ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
-            )
-          }
+            if (currentLocation != null) {
+              questionnaireResponse.contained.add(
+                ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+              )
+            }
 
-          handleQuestionnaireSubmission(
-            questionnaire = questionnaire!!,
-            currentQuestionnaireResponse = questionnaireResponse,
-            questionnaireConfig = questionnaireConfig,
-            actionParameters = actionParameters,
-            context = this@QuestionnaireActivity,
-          ) { idTypes, questionnaireResponse, extractedValidationErrors ->
-            // Dismiss progress indicator dialog, submit result then finish activity
-            // TODO Ensure this dialog is dismissed even when an exception is encountered
-            setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
+            handleQuestionnaireSubmission(
+              questionnaire = questionnaire!!,
+              currentQuestionnaireResponse = questionnaireResponse,
+              questionnaireConfig = questionnaireConfig,
+              actionParameters = actionParameters,
+              context = this@QuestionnaireActivity,
+            ) { idTypes, questionnaireResponse, extractedValidationErrors ->
+              // Dismiss progress indicator dialog, submit result then finish activity
+              // TODO Ensure this dialog is dismissed even when an exception is encountered
+              setProgressState(QuestionnaireProgressState.ExtractionInProgress(false))
 
-            if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
-              val message =
-                if (extractedValidationErrors.isEmpty()) {
-                  "Questionnaire submitted and saved successfully with no validation errors"
-                } else {
-                  """
+              if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
+                val message =
+                  if (extractedValidationErrors.isEmpty()) {
+                    "Questionnaire submitted and saved successfully with no validation errors"
+                  } else {
+                    """
                     Questionnaire `${questionnaire?.referenceValue()}` was submitted but had the following validation errors
                     
-                    ${buildString { extractedValidationErrors.forEach {
-                                        appendLine("${it.key}: ")
-                                        append(it.value)
-                                        appendLine()
-                                    }
-                                    }}
+                    ${
+                                            buildString {
+                                                extractedValidationErrors.forEach {
+                                                    appendLine("${it.key}: ")
+                                                    append(it.value)
+                                                    appendLine()
+                                                }
+                                            }
+                                        }
                                     """
-                    .trimIndent()
-                }
+                      .trimIndent()
+                  }
 
-              AlertDialogue.showInfoAlert(
-                this@QuestionnaireActivity,
-                message,
-                "Questionnaire submitted",
-                {
-                  it.dismiss()
-                  finishOnQuestionnaireSubmission(
-                    questionnaireResponse,
-                    idTypes,
-                    questionnaireConfig,
-                  )
-                },
-              )
-            } else {
-              finishOnQuestionnaireSubmission(
-                questionnaireResponse,
-                idTypes,
-                questionnaireConfig,
-              )
+                AlertDialogue.showInfoAlert(
+                  this@QuestionnaireActivity,
+                  message,
+                  "Questionnaire submitted",
+                  {
+                    it.dismiss()
+                    finishOnQuestionnaireSubmission(
+                      questionnaireResponse,
+                      idTypes,
+                      questionnaireConfig,
+                    )
+                  },
+                )
+              } else {
+                finishOnQuestionnaireSubmission(
+                  questionnaireResponse,
+                  idTypes,
+                  questionnaireConfig,
+                )
+              }
             }
           }
         }
@@ -451,8 +456,10 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
             .questionnaire_in_progress_alert_back_pressed_message,
         title = org.smartregister.fhircore.engine.R.string.questionnaire_alert_back_pressed_title,
         confirmButtonListener = {
-          retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
-            viewModel.saveDraftQuestionnaire(questionnaireResponse)
+          lifecycleScope.launch {
+            retrieveQuestionnaireResponse()?.let { questionnaireResponse ->
+              viewModel.saveDraftQuestionnaire(questionnaireResponse)
+            }
           }
         },
         confirmButtonText =
@@ -475,7 +482,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
   }
 
-  private fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
+  private suspend fun retrieveQuestionnaireResponse(): QuestionnaireResponse? =
     (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) as QuestionnaireFragment?)
       ?.getQuestionnaireResponse()
 

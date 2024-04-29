@@ -16,13 +16,8 @@
 
 package org.smartregister.fhircore.engine
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
-import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
@@ -70,12 +65,10 @@ import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 class FhirExtractionTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
   val fhirEngine: FhirEngine = mockk()
-  val context = ApplicationProvider.getApplicationContext<Context>()
 
   @Inject lateinit var transformSupportServices: TransformSupportServices
-  lateinit var structureMapUtilities: StructureMapUtilities
+  private lateinit var structureMapUtilities: StructureMapUtilities
   private val defaultRepository: DefaultRepository = mockk()
-  private val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
 
   @Before
   fun setup() {
@@ -100,7 +93,6 @@ class FhirExtractionTest : RobolectricTest() {
           questionnaireResponse = questionnaireResponse,
           structureMapExtractionContext =
             StructureMapExtractionContext(
-              context = context,
               structureMapProvider = { _, _ -> resources.structureMap },
               transformSupportServices = transformSupportServices,
             ),
@@ -190,7 +182,6 @@ class FhirExtractionTest : RobolectricTest() {
           questionnaireResponse = questionnaireResponse,
           structureMapExtractionContext =
             StructureMapExtractionContext(
-              context = context,
               structureMapProvider = { _, _ -> resources.structureMap },
               transformSupportServices = transformSupportServices,
             ),
