@@ -205,16 +205,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             appMainViewModel.onTaskComplete(System.currentTimeMillis().toString())
           }
           it.startsWith(ResourceType.Task.name) -> {
-            lifecycleScope.launch(Dispatchers.IO) {
-              val encounterStatus =
-                data.getStringExtra(QUESTIONNAIRE_RES_ENCOUNTER)?.let { code ->
-                  Encounter.EncounterStatus.fromCode(code)
-                }
-              fhirCarePlanGenerator.completeTask(
-                it.asReference(ResourceType.Task).extractId(),
-                encounterStatus,
-              )
-            }
             appMainViewModel.onTaskComplete(
               data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM),
             )

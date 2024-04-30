@@ -21,6 +21,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.DateUtils
 import org.smartregister.fhircore.engine.util.DateUtils.isToday
 import org.smartregister.fhircore.engine.util.DateUtils.today
+import org.smartregister.fhircore.engine.util.SystemConstants
 
 const val GUARDIAN_VISIT_CODE = "guardian-visit"
 const val CLINICAL_VISIT_ORDER_CODE_REGEX_FORMAT = "clinic-visit-task-order-\\d*\\.?\\d*\$"
@@ -62,4 +63,11 @@ fun Task.extractedTracingCategoryIsPhone(filterTag: String): Boolean {
   } else {
     tagList.last().code.equals("phone-tracing")
   }
+}
+
+fun Task.getCarePlanId(): String? {
+  return meta.tag
+      .firstOrNull { it.system == SystemConstants.CARE_PLAN_REFERENCE_SYSTEM }
+      ?.code
+      ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 }

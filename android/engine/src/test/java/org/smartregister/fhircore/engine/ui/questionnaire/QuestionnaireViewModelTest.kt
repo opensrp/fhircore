@@ -461,10 +461,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       val questionnaireResponse = QuestionnaireResponse()
 
       questionnaireViewModel.extractAndSaveResources(
-        context = context,
-        resourceId = "12345",
-        questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire,
+          context = context,
+          resourceId = "12345",
+          questionnaireResponse = questionnaireResponse,
+          questionnaire = questionnaire,
+          backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
 
       coVerify { defaultRepo.addOrUpdate(resource = patient) }
@@ -497,10 +498,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireResponse = QuestionnaireResponse().apply { subject = Reference("12345") }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
-      resourceId = null,
-      questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire,
+        context = context,
+        resourceId = null,
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     coVerify { defaultRepo.addOrUpdate(resource = any()) }
@@ -522,10 +524,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
-      resourceId = "12345",
-      questionnaireResponse = QuestionnaireResponse(),
-      questionnaire = questionnaire,
+        context = context,
+        resourceId = "12345",
+        questionnaireResponse = QuestionnaireResponse(),
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     coVerify(timeout = 2000) {
@@ -560,11 +563,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
-      resourceId = "12345",
-      questionnaireResponse = QuestionnaireResponse(),
-      questionnaireType = QuestionnaireType.EDIT,
-      questionnaire = questionnaire,
+        context = context,
+        resourceId = "12345",
+        questionnaireResponse = QuestionnaireResponse(),
+        questionnaireType = QuestionnaireType.EDIT,
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     coVerifyOrder {
@@ -797,10 +801,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     runBlocking {
       questionnaireViewModel.extractAndSaveResources(
-        context = ApplicationProvider.getApplicationContext(),
-        resourceId = null,
-        questionnaireResponse = questionnaireResponse,
-        questionnaire = questionnaire,
+          context = ApplicationProvider.getApplicationContext(),
+          resourceId = null,
+          questionnaireResponse = questionnaireResponse,
+          questionnaire = questionnaire,
+          backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
 
@@ -886,11 +891,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireViewModel.editQuestionnaireResponse = oldQuestionnaireResponse
     questionnaireViewModel.extractAndSaveResources(
-      context,
-      resourceId = "12345",
-      questionnaireResponse = questionnaireResponse,
-      questionnaireType = QuestionnaireType.EDIT,
-      questionnaire = questionnaire,
+        context,
+        resourceId = "12345",
+        questionnaireResponse = questionnaireResponse,
+        questionnaireType = QuestionnaireType.EDIT,
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     verify { questionnaireResponse.retainMetadata(oldQuestionnaireResponse) }
@@ -1033,10 +1039,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
-      resourceId = "0993ldsfkaljlsnldm",
-      questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire,
+        context = context,
+        resourceId = "0993ldsfkaljlsnldm",
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }
@@ -1079,10 +1086,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     coEvery { questionnaireViewModel.saveQuestionnaireResponse(any(), any()) } just runs
 
     questionnaireViewModel.extractAndSaveResources(
-      context = context,
-      resourceId = "0993ldsfkaljlsnldm",
-      questionnaireResponse = questionnaireResponse,
-      questionnaire = questionnaire,
+        context = context,
+        resourceId = "0993ldsfkaljlsnldm",
+        questionnaireResponse = questionnaireResponse,
+        questionnaire = questionnaire,
+        backReference = intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
 
     coVerify(exactly = 1, timeout = 2000) { questionnaireViewModel.saveBundleResources(any()) }

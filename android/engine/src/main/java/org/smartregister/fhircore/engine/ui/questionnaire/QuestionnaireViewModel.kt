@@ -81,7 +81,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
 import org.smartregister.fhircore.engine.util.extension.find
-import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -253,6 +252,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
     questionnaire: Questionnaire,
+    backReference: String?,
   ) {
     viewModelScope.launch(dispatcherProvider.io()) {
       tracer.startTrace(QUESTIONNAIRE_TRACE)
@@ -263,6 +263,7 @@ constructor(
       if (questionnaire.isExtractionCandidate()) {
         val bundle = performExtraction(context, questionnaire, questionnaireResponse)
         questionnaireResponse.contained = mutableListOf()
+
         bundle.entry.forEach { bundleEntry ->
           // add organization to entities representing individuals in registration questionnaire
           if (bundleEntry.resource.resourceType.isIn(ResourceType.Patient, ResourceType.Group)) {
@@ -339,10 +340,10 @@ constructor(
         if (questionnaireType.isEditMode() && editQuestionnaireResponse != null) {
           editQuestionnaireResponse!!.deleteRelatedResources(defaultRepository)
         }
-        extractCarePlan(questionnaireResponse, bundle)
       } else {
         saveQuestionnaireResponse(questionnaire, questionnaireResponse)
       }
+      updateCarePlanAndTask(extras, backReference)
       tracer.stopTrace(QUESTIONNAIRE_TRACE)
       viewModelScope.launch(Dispatchers.Main) {
         extractionProgress.postValue(ExtractionProgress.Success(extras))
@@ -370,28 +371,6 @@ constructor(
     }
   }
 
-  suspend fun extractCarePlan(questionnaireResponse: QuestionnaireResponse, bundle: Bundle) {
-    val subject =
-      questionnaireResponse.findSubject(bundle)
-        ?: defaultRepository.loadResource(questionnaireResponse.subject)
-
-    questionnaireConfig.planDefinitions.forEach { planId ->
-      val data =
-        Bundle().apply {
-          bundle.entry.map { this.addEntry(it) }
-
-          addEntry().resource = questionnaireResponse
-        }
-
-      kotlin
-        .runCatching { fhirCarePlanGenerator.generateCarePlan(planId, subject, data) }
-        .onFailure {
-          Timber.e(it)
-          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-        }
-    }
-  }
-
   /**
    * Sets questionnaireResponse subject with proper subject-type defined in questionnaire with an
    * existing resourceId or organization or null
@@ -408,6 +387,19 @@ constructor(
           sharedPreferencesHelper.organisationCode()?.asReference(ResourceType.Organization)
         else -> resourceId?.asReference(ResourceType.valueOf(subjectType))
       }
+  }
+
+  private suspend fun updateCarePlanAndTask(extras: List<Resource>, backReference: String?) {
+    if (backReference != null) {
+      extras.forEach {
+        if (it is Encounter) {
+          fhirCarePlanGenerator.completeTask(
+            backReference.asReference(ResourceType.Task).extractId(),
+            it.status,
+          )
+        }
+      }
+    }
   }
 
   suspend fun saveQuestionnaireResponse(

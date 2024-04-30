@@ -446,12 +446,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify {
       questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
-        any(),
-        any(),
-        any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+          any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }
@@ -471,12 +472,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify(timeout = 2000) {
       questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
-        any(),
-        any(),
-        any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+          any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }
@@ -505,12 +507,13 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
 
     verify(inverse = true) {
       questionnaireViewModel.extractAndSaveResources(
-        any(),
-        any(),
-        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
-        any(),
-        any(),
-        any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_GROUP_KEY),
+          any(),
+          any(),
+          any(),
+          intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }
