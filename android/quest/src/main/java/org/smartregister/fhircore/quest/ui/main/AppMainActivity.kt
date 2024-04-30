@@ -28,9 +28,7 @@ import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.max
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -42,7 +40,6 @@ import org.smartregister.fhircore.engine.ui.base.AlertDialogue
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_BACK_REFERENCE_KEY
-import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity.Companion.QUESTIONNAIRE_RES_ENCOUNTER
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
@@ -205,16 +202,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
             appMainViewModel.onTaskComplete(System.currentTimeMillis().toString())
           }
           it.startsWith(ResourceType.Task.name) -> {
-            lifecycleScope.launch(Dispatchers.IO) {
-              val encounterStatus =
-                data.getStringExtra(QUESTIONNAIRE_RES_ENCOUNTER)?.let { code ->
-                  Encounter.EncounterStatus.fromCode(code)
-                }
-              fhirCarePlanGenerator.completeTask(
-                it.asReference(ResourceType.Task).extractId(),
-                encounterStatus,
-              )
-            }
             appMainViewModel.onTaskComplete(
               data.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_ARG_FORM),
             )

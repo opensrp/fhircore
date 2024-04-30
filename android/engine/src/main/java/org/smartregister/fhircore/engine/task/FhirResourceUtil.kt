@@ -47,9 +47,9 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.getCarePlanId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
 import org.smartregister.fhircore.engine.util.extension.plusDays
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -112,11 +112,7 @@ constructor(
       .onEach { task ->
         task.status = Task.TaskStatus.FAILED
 
-        val carePlanId =
-          task.meta.tag
-            .firstOrNull { it.system == SystemConstants.CARE_PLAN_REFERENCE_SYSTEM }
-            ?.code
-            ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+        val carePlanId = task.getCarePlanId()
 
         val carePlan =
           carePlanId?.let { id ->

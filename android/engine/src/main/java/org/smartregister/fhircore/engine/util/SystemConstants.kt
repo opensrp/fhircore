@@ -29,6 +29,7 @@ object SystemConstants {
   const val CONTACT_TRACING_SYSTEM = "https://d-tree.org/fhir/contact-tracing"
   const val OBSERVATION_CODE_SYSTEM = "https://d-tree.org/fhir/observation-codes"
   const val CARE_PLAN_REFERENCE_SYSTEM = "https://d-tree.org/fhir/careplan-reference"
+  const val QUESTIONNAIRE_REFERENCE_SYSTEM = "https://d-tree.org/fhir/procedure-code"
 }
 
 object ReasonConstants {

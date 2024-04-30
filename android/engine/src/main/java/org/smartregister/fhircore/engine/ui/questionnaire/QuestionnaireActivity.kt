@@ -368,14 +368,15 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   }
 
   open fun handleQuestionnaireSubmit() {
-    saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
+    saveProcessingAlertDialog =
+      showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
     val doHandleQuestionnaireResponse = suspend {
       getQuestionnaireResponse()
         .takeIf { validQuestionnaireResponse(it) }
         ?.let { handleQuestionnaireResponse(it) }
         ?: saveProcessingAlertDialog.dismiss().also {
           AlertDialogue.showErrorAlert(
-            this,
+            this@QuestionnaireActivity,
             R.string.questionnaire_alert_invalid_message,
             R.string.questionnaire_alert_invalid_title,
           )
@@ -463,6 +464,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
       questionnaireType = questionnaireType,
+      backReference = intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
   }
 
