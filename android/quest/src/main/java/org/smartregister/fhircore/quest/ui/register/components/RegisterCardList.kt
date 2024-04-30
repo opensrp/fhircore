@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemsIndexed
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
@@ -60,13 +61,17 @@ fun RegisterCardList(
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
 ) {
-  LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
-    itemsIndexed(pagingItems) { _, item ->
+  LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
+    items(
+      count = pagingItems.itemCount,
+      key = pagingItems.itemKey { it.baseResourceId },
+      contentType = pagingItems.itemContentType(),
+    ) { index ->
       // Register card UI rendered dynamically should be wrapped in a column
       Column(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         ViewRenderer(
           viewProperties = registerCardConfig.views,
-          resourceData = item!!,
+          resourceData = pagingItems[index]!!,
           navController = navController,
         )
       }
@@ -101,6 +106,7 @@ fun RegisterCardList(
           resultCount = pagingItems.itemCount,
           currentPage = currentPage.value.plus(1),
           pagesCount = registerUiState.pagesCount,
+          fabActions = registerUiState.registerConfiguration?.fabActions,
           previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
           nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
         )

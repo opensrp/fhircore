@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,17 @@ import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dagger.hilt.testing.TestInstallIn
+import io.mockk.spyk
 import javax.inject.Singleton
-import org.smartregister.fhircore.engine.di.DispatcherModule
 import org.smartregister.fhircore.engine.di.FhirEngineModule
-import org.smartregister.fhircore.engine.di.NetworkModule
 
-@Module(includes = [NetworkModule::class, DispatcherModule::class])
+@Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [FhirEngineModule::class])
 class FakeFhirEngineModule {
 
   @Provides
   @Singleton
   fun provideFhirEngine(@ApplicationContext context: Context): FhirEngine {
-    return FhirEngineProvider.getInstance(context)
+    return spyk(FhirEngineProvider.getInstance(context))
   }
 }

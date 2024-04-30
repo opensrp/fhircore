@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,12 +73,16 @@ data class FhirResourceConfig(
  * [CountResultConfig.sumCounts] is set to true, all the related resources counts are computed once
  * via one query. However there may be scenarios to return count for each related resource e.g. for
  * every Patient in a Group, return their Tasks count.
+ *
+ * [filterId] Refers to a unique ID used to identify the Resource in data filter screen (The data
+ * filter screen renders a questionnaire with the linkIds for the content to be filtered)
  */
 @Serializable
 @Parcelize
 data class ResourceConfig(
   val id: String? = null,
   val resource: ResourceType,
+  val filterId: String? = null,
   val searchParameter: String? = null,
   val isRevInclude: Boolean = true,
   val dataQueries: List<DataQuery>? = null,
@@ -90,6 +94,7 @@ data class ResourceConfig(
   val configRules: @RawValue List<RuleConfig>? = emptyList(),
   val planDefinitions: List<String>? = null,
   val attributesToUpdate: List<KeyValueConfig>? = emptyList(),
+  val filterFhirPathExpressions: List<KeyValueConfig>? = emptyList(),
 ) : Parcelable, java.io.Serializable
 
 @Serializable

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,10 @@ class MeasureReportPagingSource(
     return registerRepository.fhirEngine.search(xFhirQuery).map {
       resourceDataRulesExecutor.processResourceData(
         repositoryResourceData =
-          RepositoryResourceData(resourceRulesEngineFactId = it.resourceType.name, resource = it),
+          RepositoryResourceData(
+            resourceRulesEngineFactId = it.resource.resourceType.name,
+            resource = it.resource,
+          ),
         ruleConfigs = registerConfiguration.registerCard.rules,
         params = emptyMap(),
       )

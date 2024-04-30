@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.task.FhirResourceUtil
 import org.smartregister.fhircore.engine.task.FhirTaskStatusUpdateWorker
-import org.smartregister.fhircore.engine.task.FhirTaskUtil
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -60,9 +61,11 @@ class WorkManagerExtensionsTest : RobolectricTest() {
 
   @Inject lateinit var fhirEngine: FhirEngine
 
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var defaultRepository: DefaultRepository
   private lateinit var fhirTaskStatusUpdateWorker: FhirTaskStatusUpdateWorker
-  private val fhirTaskUtil: FhirTaskUtil = mockk(relaxed = true)
+  private val fhirResourceUtil: FhirResourceUtil = mockk(relaxed = true)
 
   @Before
   fun setup() {
@@ -99,9 +102,8 @@ class WorkManagerExtensionsTest : RobolectricTest() {
       return FhirTaskStatusUpdateWorker(
         appContext = appContext,
         workerParams = workerParameters,
-        fhirTaskUtil = fhirTaskUtil,
-        dispatcherProvider =
-          this@WorkManagerExtensionsTest.coroutineTestRule.testDispatcherProvider,
+        fhirResourceUtil = fhirResourceUtil,
+        dispatcherProvider = dispatcherProvider,
       )
     }
   }

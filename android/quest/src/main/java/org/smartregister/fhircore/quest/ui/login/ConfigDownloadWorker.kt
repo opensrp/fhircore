@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import dagger.assisted.AssistedInject
 import java.net.UnknownHostException
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.DataMigration
 import retrofit2.HttpException
 
 @HiltWorker
@@ -36,12 +38,16 @@ constructor(
   @Assisted val workerParams: WorkerParameters,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
+  val defaultRepository: DefaultRepository,
+  val dataMigration: DataMigration,
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
+    val isInitialLogin = inputData.getBoolean(IS_INITIAL_LOGIN, true)
     return withContext(dispatcherProvider.io()) {
       try {
-        configurationRegistry.fetchNonWorkflowConfigResources()
+        configurationRegistry.fetchNonWorkflowConfigResources(isInitialLogin)
+        dataMigration.migrate()
         Result.success()
       } catch (httpException: HttpException) {
         Result.failure()
@@ -49,5 +55,9 @@ constructor(
         Result.failure()
       }
     }
+  }
+
+  companion object {
+    const val IS_INITIAL_LOGIN = "isInitialLogin"
   }
 }

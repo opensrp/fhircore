@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Reference
@@ -49,6 +50,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.lastOffset
 
@@ -57,11 +59,15 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
   @get:Rule(order = 1) val coroutineTestRule = CoroutineTestRule()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   private val defaultRepository: DefaultRepository = mockk(relaxed = true)
   private val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true)
   private val sharedPreferencesHelper: SharedPreferencesHelper = mockk()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var fhirCompleteCarePlanWorker: FhirCompleteCarePlanWorker
+  private val fhirResourceUtil: FhirResourceUtil = mockk()
 
   @Before
   fun setUp() {
@@ -112,6 +118,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 
@@ -156,6 +163,7 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         status = Task.TaskStatus.CANCELLED
       }
     coEvery { fhirCarePlanGenerator.getTask(any()) } returnsMany listOf(task1, task2)
+    coEvery { fhirResourceUtil.closeRelatedResources(any()) } just runs
 
     Assert.assertEquals(CarePlan.CarePlanStatus.ACTIVE, carePlan.status)
 
@@ -246,7 +254,8 @@ class FhirCompleteCarePlanWorkerTest : RobolectricTest() {
         fhirCarePlanGenerator = fhirCarePlanGenerator,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
+        fhirResourceUtil = fhirResourceUtil,
       )
     }
   }

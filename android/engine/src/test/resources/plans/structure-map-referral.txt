@@ -29,7 +29,7 @@ group ExtractTasks(
                task.executionPeriod = period,
                task.priority = 'routine',
                task.description = 'Sick Child Referral Task',
-               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.id.replaceMatches('/_history/.*', '')),
+               task.for = create('Reference') as ref, ref.reference = evaluate(subject, $this.type().name + '/' + $this.id.replaceMatches('/_history/.*', '')),
                // should refer to plandefinition since referral has no careplan
                task.basedOn = create('Reference') as ref, ref.reference = evaluate(careplan, $this.instantiatesCanonical.first()),
                task.authoredOn = evaluate(subject, now()),

@@ -1,0 +1,124 @@
+---
+sidebar_label: App flavors
+---
+
+# How to Add/Modify App Flavors
+
+## Product Flavors Configuration
+
+Product flavors are a way to create different versions of the same application with distinct features or characteristics. Each product flavor represents a different version of the application, and you can configure various aspect of the app for each flavor. To set this up, navigate to `fhircore > android > quest > Gradle scripts > build.gradle.kts` in the `quest` module.
+
+## Configuration Details
+
+### `flavorDimensions` Declaration
+
+The `flavorDimensions` variable is used to declare dimensions for product flavors. In the provided code snippet, a new dimension named "apps" is added to the existing flavor dimensions.
+
+```
+flavorDimensions += "apps"
+```
+
+### `productFlavors` Configuration
+
+The `productFlavors` block is used to define different flavors of the Android application.
+
+```
+productFlavors {
+    create("opensrp") {
+        dimension = "apps"
+        manifestPlaceholders["appLabel"] = "OpenSRP"
+        isDefault = true
+    }
+}
+```
+
+The product flavors are easily modigied to the specified app flavor e.g.
+
+```
+create("afyayangu") {
+      dimension = "apps"
+      applicationIdSuffix = ".afyayangu"
+      versionNameSuffix = "-afyayangu"
+      manifestPlaceholders["appLabel"] = "Afya Yangu"
+    }
+```
+
+### Config properties of productFlavors
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+create () | Block defining the product flavor | yes |  |
+dimension | Specifies that the `app` flavor belongs to the "apps" dimension | yes | `apps` |
+manifestPlaceholders["appLabel"] |  Sets a placeholder in the `build.gradle.kts` file. This is often used to customize values in the manifest based on the flavor. In this case, the appLabel placeholder is set to "app flavor." | yes | |
+isDefault | : Marks the "opensrp" flavor as the default flavor. This means that if no flavor is specified during the build, the "opensrp" flavor will be used by default. |  |  |
+applicationIdSuffix |  Used to append a suffix to the applicationId for a specific product flavor or build type. This is particularly useful when you want to create multiple variants of your app with slight variations, such as different flavors for testing, preview, or other environments. |  | |
+
+### Android Application Variants Configuration
+
+Integrate this code snippet into your Android Gradle build file and plce it within the `android` block.
+
+```
+android {
+    // ... other configuration ...
+
+    applicationVariants.all {
+        val variant = this
+        variant.resValue("string", "authenticator_account_type", "\"${applicationId}\"")
+        variant.resValue(
+          "string",
+          "app_name",
+          "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
+        )
+    }
+}
+```
+
+The provided code snippet operates within the context of `applicationVariants.all`, iterating over all application variants. It customizes two string resources: `authenticator_account_type` and `app_name`.`variant.resValue("string", "authenticator_account_type", "\"${applicationId}\"")`
+This line sets the `authenticator_account_type` string resource dynamically for each variant. Here's a breakdown:
+
+- `variant`: Represents the current application variant in the iteration.
+
+- `resValue("string", "authenticator_account_type", "\"${applicationId}\"")`: Defines a string resource with the name "authenticator_account_type" and assigns its value as the applicationId of the current variant. The` \"${applicationId}\" `syntax ensures that the `applicationId` is enclosed in double quotes.
+
+- `variant.resValue("string", "app_name", "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"")`
+
+    - This line sets the `app_name` string resource dynamically for each variant. Here's a breakdown:
+
+- `resValue("string", "app_name", "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"")`: Defines a string resource with the name `app_name` and assigns its value as the `appLabel` specified in the manifest placeholders of the current variant. The `\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"` syntax ensures that the `appLabel` is enclosed in double quotes.
+
+> **Note:** This code block is placed within the Gradle file to avoid conflicts with other configurations.
+
+One can also define the type of build variant one needs to work with eg: `debugNonProxy`,`debug`, `release`, etc. Integrate the below code snippet to the `android` block in the Gradle file.
+
+```
+android {
+    // ... other configuration ...
+
+    buildTypes {
+        create("debugNonProxy") { initWith(getByName("debug")) }
+
+        getByName("release") {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+}
+```
+
+`create("debugNonProxy") { initWith(getByName("debug")) }`
+
+- This line creates a new custom build variant named "debugNonProxy" by inheriting configurations from the existing "debug" variant. Here's a breakdown:
+
+- `create("debugNonProxy")`: Defines a new build variant with the name "debugNonProxy".
+
+- `{ initWith(getByName("debug")) }`: Initializes the "debugNonProxy" variant by inheriting configurations from the "debug" variant. This allows "debugNonProxy" to share properties and settings with "debug" while still providing the flexibility to customize its behavior.
+
+`getByName("release") { ... }`
+
+  - This block customizes the "release" build variant by modifying certain configurations:
+
+- `isMinifyEnabled = false`: Disables code shrinking and obfuscation by setting minification to false.
+
+- `proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")`: Specifies ProGuard rules files for the "release" variant. ProGuard is a code shrinker and obfuscator for Java projects.
+
+- `signingConfig = signingConfigs.getByName("release")`: Associates the signing configuration named "release" with the "release" variant. This ensures that the "release" variant is signed with the specified signing configuration

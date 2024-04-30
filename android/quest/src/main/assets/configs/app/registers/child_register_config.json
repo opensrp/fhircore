@@ -176,7 +176,7 @@
               "visible": "@{showMemberTasks}",
               "text": "@{taskDescription}",
               "status": "@{serviceStatus}",
-              "smallSized": true,
+              "buttonType": "TINY",
               "actions": [
                 {
                   "trigger": "ON_CLICK",

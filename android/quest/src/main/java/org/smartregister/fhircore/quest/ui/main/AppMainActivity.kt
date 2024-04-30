@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import javax.inject.Inject
@@ -44,7 +43,6 @@ import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.addDateTimeIndex
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
@@ -136,7 +134,10 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         if (isDeviceOnline()) {
           syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
         } else {
-          showToast(getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          showToast(
+            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       schedulePeriodicJobs()
@@ -147,10 +148,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onResume()
     navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
-
-    appMainViewModel.viewModelScope.launch(dispatcherProvider.io()) {
-      fhirEngine.addDateTimeIndex()
-    }
   }
 
   override fun onPause() {
@@ -166,8 +163,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       val extractedResourceIds =
         activityResult.data?.serializable(
           QuestionnaireActivity.QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS,
-        ) as List<IdType>?
-          ?: emptyList()
+        ) as List<IdType>? ?: emptyList()
       val questionnaireConfig =
         activityResult.data?.parcelable(QuestionnaireActivity.QUESTIONNAIRE_CONFIG)
           as QuestionnaireConfig?
@@ -186,25 +182,26 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     }
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Glitch,
-      is SyncJobStatus.Finished,
-      is SyncJobStatus.Failed, -> {
+      is CurrentSyncJobStatus.Succeeded -> {
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
-              syncJobStatus,
-              formatLastSyncTimestamp(syncJobStatus.timestamp),
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
         }
-        if (syncJobStatus is SyncJobStatus.Glitch) {
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message.toString() })
-          } catch (nullPointerException: NullPointerException) {
-            Timber.w("No exceptions reported on Sync Failure ", nullPointerException)
-          }
+      }
+      is CurrentSyncJobStatus.Failed -> {
+        appMainViewModel.run {
+          onEvent(
+            AppMainEvent.UpdateSyncState(
+              state = syncJobStatus,
+              lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
+            ),
+          )
         }
       }
       else -> {

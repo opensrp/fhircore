@@ -17,7 +17,7 @@ code "Pregnancy code": '77386006' from "SNOMED" display 'Pregnant'
 code "Underage code": '410599005' from "SNOMED" display 'Minor'
 
 code "G6PD code": '86859003' from "SNOMED" display 'G6PD Enzyme'
-code "Haemoglobin code": '259695003' from "SNOMED" display 'Haemoglobin'
+code "Haemoglobin code": '259695003' from "SNOMED" display 'Hemoglobin'
 code "active": 'active' from "ConditionClinicalStatusCodes"
 
 code "g6pdStatusCode": '9024005' from "SNOMED" display 'G6PD Status'
@@ -128,7 +128,7 @@ define "medicationRequest": MedicationRequest {
      medication: "medication",
      doNotPerform: "medicationNotPrescribed",
      reasonCode: { CreateConcept("medicationReasonCode") },
-     dosageInstruction: { "dosage" }
+     dosageInstruction: if "dosage" is null then null else { "dosage" }
 }
 
 // output to save or display by the engine or parser

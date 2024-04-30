@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -288,13 +288,12 @@ constructor(
                 subjects.addAll(measureReportRepository.fetchSubjects(config))
 
                 // If a practitioner Id is available, add it to the list of subjects
-                if (practitionerId?.isNotBlank() == true) {
+                if (practitionerId?.isNotBlank() == true && subjects.isEmpty()) {
                   subjects.add("${Practitioner().resourceType.name}/$practitionerId")
                 }
 
                 val existingReports =
-                  retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine = fhirEngine,
+                  fhirEngine.retrievePreviouslyGeneratedMeasureReports(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     measureUrl = config.url,
@@ -304,9 +303,13 @@ constructor(
                 val existingValidReports = mutableListOf<MeasureReport>()
 
                 existingReports
-                  ?.groupBy { it.subject.reference }
-                  ?.forEach { entry ->
-                    if (entry.value.size > 1 && entry.value.distinctBy { it.measure }.size <= 1) {
+                  .groupBy { it.subject.reference }
+                  .forEach { entry ->
+                    if (
+                      entry.value.size > 1 &&
+                        entry.value.distinctBy { it.measure }.size > 1 &&
+                        entry.value.distinctBy { it.type }.size > 1
+                    ) {
                       return@forEach
                     } else {
                       existingValidReports.addAll(entry.value)
@@ -320,7 +323,8 @@ constructor(
                     .parseDate(SDF_YYYY_MM_DD)!!
                     .formatDate(SDF_YYYY_MMM)
                     .contentEquals(Date().formatDate(SDF_YYYY_MMM)) ||
-                    existingValidReports.isEmpty()
+                    existingValidReports.isEmpty() ||
+                    existingValidReports.size != subjects.size
                 ) {
                   withContext(dispatcherProvider.io()) {
                     fhirEngine.loadCqlLibraryBundle(fhirOperator, config.url)

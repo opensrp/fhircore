@@ -1,0 +1,215 @@
+# Resource closure using configured questionnaires
+
+Event management implementation provides the ability to configure a questionnaire so that we can state which resources to close when it is submitted.
+
+Some use cases would be -
+* Closing CarePlans and Tasks for a patient/family when they are removed.
+* Closing child-related CarePlans and Tasks if a patient's age is updated to more than 5 years.
+* Closing ANC CarePlan and Tasks when a pregnancy outcome form is submitted.
+
+This is achieved by use of the `EventWorkFlow` config.
+
+## Sample event workflow configuration
+``` json
+
+{
+  "eventWorkflows": [
+    {
+      "eventType": "RESOURCE_CLOSURE",
+      "eventResources": [
+        {
+          "id": "sickChildConditionToBeClosed",
+          "resource": "Condition",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(CarePlan, 'CarePlan.subject.reference'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "code",
+              "filterCriteria": [
+                {
+                  "dataType": "CODEABLECONCEPT",
+                  "value": {
+                    "system": "http://snomed.info/sct",
+                    "code": "275142008"
+                  }
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "carePlanToBeClosed",
+          "resource": "CarePlan",
+          "configRules": [
+            {
+              "name": "patientId",
+              "condition": "true",
+              "actions": [
+                "data.put('patientId', fhirPath.extractValue(Patient, 'Patient.id').contains('Patient') ? fhirPath.extractValue(Patient, 'Patient.id') : 'Patient/' +  fhirPath.extractValue(Patient, 'Patient.id'))"
+              ]
+            }
+          ],
+          "dataQueries": [
+            {
+              "paramName": "instantiates-canonical",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "value": "PlanDefinition/dc-diabetes-screening-intervention"
+                }
+              ]
+            },
+            {
+              "paramName": "subject",
+              "filterCriteria": [
+                {
+                  "dataType": "REFERENCE",
+                  "computedRule": "patientId"
+                }
+              ]
+            }
+          ],
+          "relatedResources": [
+            {
+              "resource": "Task",
+              "searchParameter": "based-on"
+            }
+          ]
+        }
+      ],
+      "updateValues": [
+        {
+          "jsonPathExpression": "Task.status",
+          "value": "cancelled",
+          "resourceType": "Task"
+        },
+        {
+          "jsonPathExpression": "CarePlan.status",
+          "value": "completed",
+          "resourceType": "CarePlan"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].code",
+          "value": "370996005",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].system",
+          "value": "http://www.snomed.org/",
+          "resourceType": "Condition"
+        },
+        {
+          "jsonPathExpression": "Condition.clinicalStatus.coding[0].display",
+          "value": "resolved",
+          "resourceType": "Condition"
+        }
+      ],
+      "resourceFilterExpressions": [
+        {
+          "conditionalFhirPathExpressions": [
+            "Task.status != 'completed'"
+          ],
+          "resourceType": "Task"
+        }
+      ]
+    }
+  ]
+}
+
+```
+
+The current implementation eventWorkflow config only handle closure of resources, hence the event type defaults to `RESOURCE_CLOSURE`. This implementation can be expanded in future to handle other types of events.
+
+The trigger conditions determine whether to close resources depending on the the result of evaluating the fhirpath expressions.
+The fhirpath expressions can be run against
+1. The subject of the questionnaire e.g `Patient.active`
+2. The Bundle resource which contains the `QuestionnaireResponse`, the `subject` as well as additional resources. An example expression would be `%resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()`
+3. A combination of both the `subject` and `Bundle` e.g `Patient.active AND %resource.entry.where(resource is QuestionnaireResponse).resource.where(questionnaire = 'Questionnaire/450cb100-0c5b-47c6-9f33-2830a79be726').exists()`
+
+The event resources define which resource is eligible for closure as well as any related resources.
+
+The data queries define how to search for and filter the resources from the database.
+
+Once the resources have been retrieved from the database, the next step is to close the resources by updating the values of certain fields. For the current implementation this has been done in the code. This is not configurable at this point.
+Closure of any resource that has not been handled will need an update to the code that performs resource closure.
+
+The following table contains the values for each field that is required to close a resource.field
+
+| Resource | Field | Value |
+| :---         |     :---      |           :--- |
+| Careplan  | status     | Completed   |
+| Task     | status      | cancelled      |
+|      | lastModified      | current date      |
+| Condition     |   Condition.clinicalStatus    |  code:370996005, display:resolved, system: http://www.snomed.org/   |
+| Procedure     |  Procedure.status     |  stopped     |
+| ServiceRequest     |  status     |   revoked |
+
+
+## EventWorkflows properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOURCE_CLOSURE is supported for now |
+triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
+eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
+eventResources | A list of resources to close(Type of ResourceConfig) |    yes
+updateValues | Defines a list of jsonPath expressions for the fields to update as well as the values to use | yes
+resourceFilterExpressions | A list of FhirPath expressions used to filter which resources to close | no
+
+### Trigger condition properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+eventResourceId | UniqueId of resource that the trigger conditions are applied to | yes | RESOURCE_CLOSURE is supported for now |
+conditionalFhirPathExpressions | criteria to ensure we only close the intended resources | yes |     |
+matchAll |  Determines whether all conditional fhirpath expressions should evaluate to true |  no   |          True     |
+|        |  `True` - Close resources only when all fhirpath expressions evaluate to true  |     |               |
+|        |  `False` - Close resources when one or more fhirpath expressions evaluate to true  |     |               |
+
+### Event Resource Properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id |uniqueId of resource id to be closed  | yes |  |
+resource | The type of resource  | yes |  |
+configRules | Rules to be that are executed to populate dynamic values such as a patient id   | no |  |
+dataQueries | Configs used to represent how resources to be closed are retrieved from the database  | yes |  |
+relatedResources | Configs that represent how to fetch related resources e.g Tasks linked to a CarePlan | no |  |
+
+### DataQuery properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+paramName | String representation of the resource field to search on | yes |  |
+operation | Logical SQL operation to perform i.e AND, OR | yes | AND |
+filterCriteria | Configs that represent the datatype and value for filtering data | yes |  |
+
+### UpdateValue properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+jsonPathExpression | JsonPath representation of the resource field to update | yes |  |
+value | The value to update the resource field with | yes |  |
+resourceType | The name of the resource type to be updated | yes |  |
+
+### Resource Filter Expression properties
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+conditionalFhirPathExpressions | Criteria to filter which resources when only a subset of the fetched resources need to be updated e.g only update tasks whose status is not completed | yes |  |
+matchAll | Determines whether all conditional FhirPath expressions should evaluate to true | no | true |
+resourceType | The name of the resource type to be updated | yes |  |
+
+
+

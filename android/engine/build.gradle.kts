@@ -1,11 +1,9 @@
+import Dependencies.removeIncompatibleDependencies
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
-
 plugins {
+  `jacoco-report`
+  `ktlint`
   id("com.android.library")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -17,11 +15,12 @@ plugins {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = BuildConfigs.compileSdk
+
+  namespace = "org.smartregister.fhircore.engine"
 
   defaultConfig {
-    minSdk = 26
-    targetSdk = 33
+    minSdk = BuildConfigs.minSdk
     testInstrumentationRunner = "org.smartregister.fhircore.engine.EngineTestRunner"
     consumerProguardFiles("consumer-rules.pro")
     buildConfigField(
@@ -32,7 +31,7 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
 
     create("debugNonProxy") {
       initWith(getByName("debug"))
@@ -50,21 +49,22 @@ android {
   }
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility")
   }
   buildFeatures {
     compose = true
     viewBinding = true
     dataBinding = true
+    buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "license.html",
@@ -98,7 +98,9 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  lint { baseline = file("lint-baseline.xml") }
+
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 }
 
 tasks.withType<Test> {
@@ -114,6 +116,7 @@ configurations {
     exclude(group = "javax", module = "javaee-api")
     exclude(group = "xml-apis")
     exclude(group = "xpp3")
+    removeIncompatibleDependencies()
   }
 }
 
@@ -126,7 +129,6 @@ dependencies {
   implementation(libs.appcompat)
   implementation(libs.material)
   implementation(libs.constraintlayout)
-  implementation(libs.constraintlayout.compose)
   implementation(libs.fragment.ktx)
   implementation(libs.security.crypto)
   implementation(libs.cardview)
@@ -135,69 +137,41 @@ dependencies {
   implementation(libs.compressor)
   implementation(libs.xercesImpl)
   implementation(libs.msg.simple)
-  implementation(libs.cqf.cql.engine)
-  implementation(libs.cql.engine.jackson)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
   implementation(libs.slf4j.nop)
-  implementation(libs.cqf.cql.evaluator) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.builder) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.plandefinition) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
-  implementation(libs.cql.evaluator.dagger) {
-    exclude(group = "com.github.ben-manes.caffeine")
-    exclude(group = "ca.uhn.hapi.fhir")
-  }
+
+  api(libs.bundles.datastore.kt)
+  api(libs.bundles.navigation)
+  api(libs.bundles.materialicons)
+  api(libs.bundles.compose)
+  api(libs.bundles.lifecycle)
+  api(libs.bundles.accompanist)
+  api(libs.bundles.coroutines)
+  api(libs.bundles.retrofit2)
+  api(libs.bundles.okhttp3)
+  api(libs.bundles.paging)
+  api(libs.ui)
 
   // Shared dependencies
   api(libs.glide)
-  api(libs.knowledger)
+  api(libs.knowledge) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.p2p.lib)
   api(libs.jjwt)
-  api(libs.fhir.common.utils)
-  api(libs.lifecycle.livedata.ktx)
-  api(libs.lifecycle.viewmodel.ktx)
-  api(libs.ui)
-  api(libs.ui.tooling)
+  api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
-  api(libs.navigation.fragment.ktx)
-  api(libs.navigation.ui.ktx)
-  api(libs.navigation.compose)
-  api(libs.navigation.testing)
-  api(libs.material.icons.extended)
-  api(libs.material.icons.core)
-  api(libs.material3)
+  //  api(libs.material3)
   api(libs.foundation)
-  api(libs.hilt.navigation.compose)
-  api(libs.lifecycle.viewmodel.compose)
-  api(libs.paging.compose)
-  api(libs.activity.compose)
+  api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)
-  api(libs.accompanist.flowlayout)
-  api(libs.accompanist.placeholder)
   api(libs.work.runtime.ktx)
   api(libs.prettytime)
-  api(libs.kotlinx.coroutines.core)
-  api(libs.kotlinx.coroutines.android)
   api(libs.kotlin.reflect)
   api(libs.stax.api)
-  api(libs.caffeine)
   api(libs.gson)
   api(libs.timber)
-  api(libs.retrofit)
   api(libs.converter.gson)
-  api(libs.retrofit.mock)
-  api(libs.retrofit2.kotlinx.serialization.converter)
-  api(libs.okhttp)
-  api(libs.okhttp.logging.interceptor)
+  api(libs.json.path)
   api(libs.commons.jexl3) { exclude(group = "commons-logging", module = "commons-logging") }
   api(libs.easy.rules.jexl) {
     exclude(group = "commons-logging", module = "commons-logging")
@@ -207,18 +181,31 @@ dependencies {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
+  }
+  api(libs.cqf.fhir.cr) {
+    isTransitive = true
+    exclude(group = "org.codelibs", module = "xpp3")
+    exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
   api(libs.workflow) {
     isTransitive = true
     exclude(group = "xerces")
     exclude(group = "com.github.java-json-tools")
     exclude(group = "org.codehaus.woodstox")
-    exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
   }
   api(libs.contrib.barcode) {
+    isTransitive = true
+    exclude(group = "org.smartregister", module = "data-capture")
+    exclude(group = "ca.uhn.hapi.fhir")
+    exclude(group = "com.google.android.fhir", module = "common")
+    exclude(group = "com.google.android.fhir", module = "engine")
+  }
+  api(libs.contrib.locationwidget) {
     isTransitive = true
     exclude(group = "org.smartregister", module = "data-capture")
     exclude(group = "ca.uhn.hapi.fhir")
@@ -236,40 +223,57 @@ dependencies {
   kapt(libs.dagger.hilt.compiler)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Test dependencies
   testImplementation(libs.work.runtime.ktx)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
-  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.json)
-  testImplementation(libs.kotlinx.coroutines.debug)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.work.testing)
 
   // To run only on debug builds
   debugImplementation(libs.ui.test.manifest)
   debugImplementation(libs.fragment.testing)
+  debugImplementation(libs.ui.tooling)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.benchmark.junit)
 
+  /**
+   * This is an SDK Dependency graph bug workaround file HAPI FHIR Dependencies missing at runtime
+   * after building FHIRCore application module
+   *
+   * To be included in the engine/build.gradle.kts file via apply {}
+   */
+  implementation(Dependencies.HapiFhir.structuresR4) { exclude(module = "junit") }
+  implementation(Dependencies.HapiFhir.guavaCaching)
+  implementation(Dependencies.HapiFhir.validationR4)
+  implementation(Dependencies.HapiFhir.validation) {
+    exclude(module = "commons-logging")
+    exclude(module = "httpclient")
+  }
+
+  constraints {
+    Dependencies.hapiFhirConstraints().forEach { (libName, constraints) ->
+      api(libName, constraints)
+    }
+  }
+
+  /** End SDK Dependency Graph workaround * */
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,13 +33,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.accompanist.flowlayout.FlowRow
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
@@ -57,6 +59,7 @@ import org.smartregister.fhircore.quest.util.extensions.conditional
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CompoundText(
   modifier: Modifier = Modifier,
@@ -93,6 +96,7 @@ fun CompoundText(
           resourceData = resourceData,
           navController = navController,
           overflow = compoundTextProperties.overflow,
+          letterSpacing = compoundTextProperties.letterSpacing,
         )
       }
       // Separate the primary and secondary text
@@ -123,6 +127,7 @@ fun CompoundText(
           navController = navController,
           resourceData = resourceData,
           overflow = compoundTextProperties.overflow,
+          letterSpacing = compoundTextProperties.letterSpacing,
         )
       }
     }
@@ -147,6 +152,7 @@ private fun CompoundTextPart(
   navController: NavController,
   resourceData: ResourceData,
   overflow: TextOverFlow?,
+  letterSpacing: Int = 0,
 ) {
   Text(
     text =
@@ -157,7 +163,8 @@ private fun CompoundTextPart(
         TextCase.TITLE_CASE -> text.capitalize()
         null -> text
       }.removeExtraWhiteSpaces(),
-    color = textColor?.parseColor()?.copy(alpha = colorOpacity)
+    color =
+      textColor?.parseColor()?.copy(alpha = colorOpacity)
         ?: DefaultColor.copy(alpha = colorOpacity),
     modifier =
       modifier
@@ -168,7 +175,7 @@ private fun CompoundTextPart(
         )
         .clip(RoundedCornerShape(borderRadius.dp))
         .background(backgroundColor.parseColor())
-        .padding(4.dp),
+        .padding(0.dp),
     fontSize = fontSize.sp,
     fontWeight = textFontWeight.fontWeight,
     textAlign =
@@ -185,6 +192,7 @@ private fun CompoundTextPart(
         TextOverFlow.VISIBLE -> TextOverflow.Visible
         else -> TextOverflow.Ellipsis
       },
+    style = TextStyle(letterSpacing = letterSpacing.sp),
   )
 }
 

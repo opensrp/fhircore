@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@ class TransformSupportServicesTest : RobolectricTest() {
   @Test
   fun `createType() should return ImmunizationProtocol when given Immunization_VaccinationProtocol`() {
     Assert.assertTrue(
-      transformSupportServices.createType("", "Immunization_VaccinationProtocol")
+      transformSupportServices.createType("", "Immunization_AppliedProtocol")
         is Immunization.ImmunizationProtocolAppliedComponent,
     )
   }

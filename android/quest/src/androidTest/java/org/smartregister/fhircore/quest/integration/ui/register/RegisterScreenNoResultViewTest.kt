@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,13 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.spyk
-import io.mockk.verify
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
-import org.smartregister.fhircore.quest.HiltActivityForTest
+import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG
@@ -41,8 +40,6 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 
 @HiltAndroidTest
 class RegisterScreenNoResultViewTest {
-
-  private val mockListener: () -> Unit = spyk({})
 
   @get:Rule val hiltRule = HiltAndroidRule(this)
 
@@ -55,6 +52,8 @@ class RegisterScreenNoResultViewTest {
 
   @Test
   fun registerScreenRendersNoRegistersViewCorrectly() {
+    var clicked = false
+
     composeTestRule.setContent {
       NoRegisterDataView(
         noResults =
@@ -63,7 +62,7 @@ class RegisterScreenNoResultViewTest {
             message = "This is message",
             actionButton = NavigationMenuConfig(display = "Button Text", id = "1"),
           ),
-        onClick = mockListener,
+        onClick = { clicked = true },
       )
     }
     composeTestRule
@@ -90,7 +89,7 @@ class RegisterScreenNoResultViewTest {
       composeTestRule.onNodeWithTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG, useUnmergedTree = true)
     changeRow.assertExists()
     changeRow.performClick()
-    verify { mockListener() }
+    Assert.assertTrue(clicked)
 
     composeTestRule
       .onNodeWithTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG, useUnmergedTree = true)

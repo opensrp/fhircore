@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
 import android.graphics.Bitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCA
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
+import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnArrangement
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -57,9 +58,7 @@ import org.smartregister.fhircore.quest.ui.shared.components.SIDE_MENU_ITEM_REMO
 class ViewGeneratorTest {
 
   @get:Rule val composeRule = createComposeRule()
-
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-  private val resourceData = mockk<ResourceData>(relaxed = true, relaxUnitFun = true)
+  private val resourceData = ResourceData("", ResourceType.Patient, emptyMap())
 
   @Test
   fun canGenerateServiceCardViewCorrectly() {
@@ -83,11 +82,11 @@ class ViewGeneratorTest {
                 visible = "true",
                 status = ServiceStatus.DUE.name,
                 text = "Next visit 09-10-2022",
-                smallSized = false,
+                buttonType = ButtonType.BIG,
               ),
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithText("Upcoming household service").assertExists().assertIsDisplayed()
@@ -112,7 +111,7 @@ class ViewGeneratorTest {
               ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -138,7 +137,7 @@ class ViewGeneratorTest {
             viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -170,7 +169,7 @@ class ViewGeneratorTest {
             viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -202,7 +201,7 @@ class ViewGeneratorTest {
             viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithTag(COLUMN_DIVIDER_TEST_TAG).assertExists()
@@ -255,7 +254,7 @@ class ViewGeneratorTest {
             viewType = ViewType.COLUMN,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithText("Richard Brown, M, 29", useUnmergedTree = true).assertDoesNotExist()
@@ -282,7 +281,7 @@ class ViewGeneratorTest {
             viewType = ViewType.ROW,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -314,7 +313,7 @@ class ViewGeneratorTest {
             viewType = ViewType.ROW,
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -340,7 +339,7 @@ class ViewGeneratorTest {
               ),
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithText("Sex").assertIsDisplayed()
@@ -351,12 +350,19 @@ class ViewGeneratorTest {
   fun testImageIsRenderedFromLocalAsset() {
     composeRule.setContent {
       GenerateView(
-        properties = ImageProperties(imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk")),
+        properties =
+          ImageProperties(
+            imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_walk", color = "#FFF000"),
+            text = "Copy text",
+          ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
-    composeRule.onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG).assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(SIDE_MENU_ITEM_LOCAL_ICON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
@@ -372,11 +378,11 @@ class ViewGeneratorTest {
               ),
           ),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
-      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
+      .onNodeWithTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
       .assertIsDisplayed()
   }

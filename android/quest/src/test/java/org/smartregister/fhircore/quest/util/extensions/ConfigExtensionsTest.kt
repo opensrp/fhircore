@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -27,6 +31,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlin.test.assertEquals
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -42,6 +47,8 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -82,7 +89,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -91,6 +98,66 @@ class ConfigExtensionsTest : RobolectricTest() {
       resourceConfig,
       slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsTrue() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 2384 }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsFalse() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = false,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = null,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
   }
 
   @Test
@@ -115,7 +182,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -220,6 +287,63 @@ class ConfigExtensionsTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+  }
+
+  @Test
+  fun testLaunchDiallerOnClick() {
+    val patientWithPhoneNumber = patient.copy()
+    patientWithPhoneNumber.apply {
+      addTelecom(
+        ContactPoint().apply { this.value = "0700000000" },
+      )
+    }
+
+    val computedValuesWithPhoneNumberMutable = resourceData.computedValuesMap.toMutableMap()
+    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] =
+      patientWithPhoneNumber.telecom.first().value
+    val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
+
+    val resourceDataWithPhoneNumber =
+      ResourceData(
+        baseResourceId = patient.logicalId,
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = computedValuesWithPhoneNumber,
+      )
+
+    val clickAction =
+      ActionConfig(
+        id = "diallerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_DIALLER.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "patientPhoneNumber",
+              value = "@{patientPhoneNumber}",
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
+      )
+
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceDataWithPhoneNumber,
+      ) // make a clicking action
+
+    // make sure no errors thrown when the new activity is started. should return nothing
+    every { context.startActivity(any()) } returns Unit
+
+    // make sure correct function with correct signature is called
+    verify {
+      context.startActivity(
+        withArg {
+          assertEquals(it.action, Intent.ACTION_DIAL)
+          assertEquals(it.data, Uri.parse("tel:0700000000"))
+        },
+        null,
+      )
+    }
   }
 
   @Test
@@ -392,5 +516,33 @@ class ConfigExtensionsTest : RobolectricTest() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap())
+  }
+
+  @Test
+  fun testShowToastWhenAnImageWithActionParamsIsPressed() {
+    val context = mockk<Context>(relaxed = true)
+    val navController = NavController(context)
+    val mockClipboardManager = mockk<ClipboardManager>()
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.COPY_TEXT.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "copyText",
+              paramType = ActionParameterType.PARAMDATA,
+              value = "https://my-url",
+            ),
+          ),
+      )
+    val text = "Link ${clickAction.params.first().value} copied successfully"
+    every { context.getSystemService(Context.CLIPBOARD_SERVICE) } returns mockClipboardManager
+    every {
+      context.getString(R.string.copy_text_success_message, clickAction.params.first().value)
+    } returns text
+    every { mockClipboardManager.setPrimaryClip(any()) } returns Unit
+    listOf(clickAction).handleClickEvent(navController, resourceData, context = context)
+    verify { context.showToast(text, Toast.LENGTH_LONG) }
   }
 }

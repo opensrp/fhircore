@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.smartregister.fhircore.quest.integration.ui.register.components
 
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -25,12 +26,11 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
-import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.navigation.testing.TestNavHostController
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
@@ -53,9 +53,9 @@ class RegisterCardListTest {
       val pagingItems = flowOf(PagingData.from(listOf<ResourceData>())).collectAsLazyPagingItems()
 
       RegisterCardList(
-        registerCardConfig = mockk(),
+        registerCardConfig = RegisterCardConfig(),
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
@@ -67,61 +67,23 @@ class RegisterCardListTest {
   }
 
   @Test
-  fun testRegisterCardListShouldHaveTwoItems() {
+  fun testRegisterCardListShouldHaveThreeItems() {
     composeTestRule.setContent {
       val config =
         RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
 
-      val data = listOf(ResourceData("1", ResourceType.Patient, mockk()))
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
 
       val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
 
       RegisterCardList(
         registerCardConfig = config,
         pagingItems = pagingItems,
-        navController = mockk(),
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = rememberLazyListState(),
         onEvent = {},
         registerUiState = RegisterUiState(),
         currentPage = mutableStateOf(1),
-      )
-    }
-
-    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(2)
-
-    composeTestRule
-      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
-      .onChildren()
-      .onFirst()
-      .assert(hasText("Patient 1"))
-
-    composeTestRule
-      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
-      .onChildren()
-      .onLast()
-      .assertExists()
-      .assertIsDisplayed()
-  }
-
-  @Test
-  fun testRegisterCardListWithPaginationShouldHaveThreeItems() {
-    composeTestRule.setContent {
-      val config =
-        RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
-
-      val data = listOf(ResourceData("1", ResourceType.Patient, mockk()))
-
-      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
-
-      RegisterCardList(
-        registerCardConfig = config,
-        pagingItems = pagingItems,
-        navController = mockk(),
-        lazyListState = rememberLazyListState(),
-        onEvent = {},
-        registerUiState = RegisterUiState(),
-        currentPage = mutableStateOf(1),
-        showPagination = true,
       )
     }
 
@@ -132,12 +94,61 @@ class RegisterCardListTest {
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testRegisterCardListWithPaginationShouldHaveFourItems() {
+    composeTestRule.setContent {
+      val config =
+        RegisterCardConfig(views = listOf(CompoundTextProperties(primaryText = "Patient 1")))
+
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+
+      RegisterCardList(
+        registerCardConfig = config,
+        pagingItems = pagingItems,
+        navController = TestNavHostController(LocalContext.current),
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
+        registerUiState = RegisterUiState(),
+        currentPage = mutableStateOf(1),
+        showPagination = true,
+      )
+    }
+
+    composeTestRule.onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG).onChildren().assertCountEquals(4)
 
     composeTestRule
       .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
       .onChildren()
-      .onLast()
-      .assertExists()
-      .assertIsDisplayed()
+      .onFirst()
+      .assert(hasText("Patient 1"))
+  }
+
+  @Test
+  fun testRegisterCardListShouldRenderLoadingIndicatorIfPagingItemsIsEmpty() {
+    composeTestRule.setContent {
+      val pagingItems = flowOf(PagingData.empty<ResourceData>()).collectAsLazyPagingItems()
+
+      RegisterCardList(
+        registerCardConfig = RegisterCardConfig(),
+        pagingItems = pagingItems,
+        navController = TestNavHostController(LocalContext.current),
+        lazyListState = rememberLazyListState(),
+        onEvent = {},
+        registerUiState = RegisterUiState(),
+        currentPage = mutableStateOf(1),
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(REGISTER_CARD_LIST_TEST_TAG)
+      .onChildren()
+      .onFirst()
+      .onChildren()
+      .onFirst()
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -35,8 +35,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.DIVIDER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.shared.components.ServiceCard
 
 class ServiceCardTest {
-
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
   private val resourceData = ResourceData("id", ResourceType.Patient, emptyMap())
 
   @get:Rule val composeRule = createComposeRule()
@@ -47,7 +45,7 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule
@@ -63,7 +61,7 @@ class ServiceCardTest {
         serviceCardProperties =
           initTestServiceCardProperties(serviceStatus = ServiceStatus.OVERDUE.name, text = "1"),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithText("1", useUnmergedTree = true).assertExists().assertIsDisplayed()
@@ -75,22 +73,10 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(visible = "false"),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithText("Next visit 09-10-2022", useUnmergedTree = true).assertDoesNotExist()
-  }
-
-  @Test
-  fun canShowVerticalDivider() {
-    composeRule.setContent {
-      ServiceCard(
-        serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = true),
-        resourceData = resourceData,
-        navController = navController,
-      )
-    }
-    composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertExists().assertIsDisplayed()
   }
 
   @Test
@@ -99,7 +85,7 @@ class ServiceCardTest {
       ServiceCard(
         serviceCardProperties = initTestServiceCardProperties(showVerticalDivider = false),
         resourceData = resourceData,
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
       )
     }
     composeRule.onNodeWithTag(DIVIDER_TEST_TAG).assertDoesNotExist()
@@ -111,7 +97,6 @@ class ServiceCardTest {
     showVerticalDivider: Boolean = false,
     serviceStatus: String = ServiceStatus.UPCOMING.name,
     text: String = "Next visit 09-10-2022",
-    smallSized: Boolean = false,
     visible: String = "true",
   ): ServiceCardProperties {
     return ServiceCardProperties(
@@ -143,7 +128,6 @@ class ServiceCardTest {
           visible = visible,
           status = serviceStatus,
           text = text,
-          smallSized = smallSized,
         ),
     )
   }

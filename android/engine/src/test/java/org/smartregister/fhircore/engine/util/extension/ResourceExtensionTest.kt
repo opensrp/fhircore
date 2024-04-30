@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,20 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.app.Application
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.util.Date
-import junit.framework.Assert.assertEquals
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -35,24 +39,47 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Period
 import org.hl7.fhir.r4.model.Quantity
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
 import org.hl7.fhir.r4.model.UriType
 import org.json.JSONObject
 import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.LinkIdConfig
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
+@HiltAndroidTest
 class ResourceExtensionTest : RobolectricTest() {
+
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  private val context = ApplicationProvider.getApplicationContext<Application>()
+
+  @Before
+  fun setUp() {
+    hiltAndroidRule.inject()
+  }
 
   @Test
   fun `JSONObject#updateFrom() should ignore nulls and update fields`() {
@@ -730,5 +757,142 @@ class ResourceExtensionTest : RobolectricTest() {
     Assert.assertFalse(questionnaire.item[0].readOnly)
     Assert.assertTrue(questionnaire.item[1].readOnly)
     Assert.assertTrue(questionnaire.item[2].readOnly)
+  }
+
+  @Test
+  fun testFilterByExpression() {
+    val tasks =
+      listOf(
+        RepositoryResourceData(
+          resource =
+            Task().apply {
+              id = "Task/task1"
+              description = "New Task"
+              status = Task.TaskStatus.READY
+              executionPeriod =
+                Period().apply {
+                  start = Date().plusMonths(-1)
+                  end = Date().plusDays(-1)
+                }
+              addBasedOn(Reference("care1"))
+            },
+        ),
+        RepositoryResourceData(
+          resource =
+            Task().apply {
+              id = "Task/task2"
+              description = "Another task"
+              status = Task.TaskStatus.READY
+              executionPeriod =
+                Period().apply {
+                  start = Date().plusMonths(-1)
+                  end = Date().plusDays(-1)
+                }
+              addBasedOn(Reference("CarePlan/care2"))
+            },
+        ),
+      )
+
+    // Task with malformed basedOn references
+    val filteredTasks =
+      tasks.filterByFhirPathExpression(
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        conditionalFhirPathExpressions =
+          listOf("Task.basedOn[0].reference.startsWith('CarePlan').not()"),
+        matchAll = true,
+      )
+
+    Assert.assertTrue(filteredTasks.isNotEmpty())
+    Assert.assertEquals(filteredTasks.first().resource.logicalId, tasks.first().resource.logicalId)
+
+    // Task with correct basedOn references
+    val filteredTasks2 =
+      tasks.filterByFhirPathExpression(
+        fhirPathDataExtractor = fhirPathDataExtractor,
+        conditionalFhirPathExpressions = listOf("Task.basedOn[0].reference.startsWith('CarePlan')"),
+        matchAll = true,
+      )
+
+    Assert.assertTrue(filteredTasks2.isNotEmpty())
+    Assert.assertEquals(filteredTasks2.first().resource.logicalId, tasks.last().resource.logicalId)
+  }
+
+  @Test
+  fun testAppendRelatedEntityLocationUpdatesResourceMetadataTag() {
+    val group =
+      Group().apply {
+        id = "grp1"
+        meta.addTag(Coding("http://system254.url", "123", "Sample code"))
+      }
+    val theLinkId = "someLinkId"
+    val locationId = "awesome-location-uuid"
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        id = "qr1"
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent(StringType(theLinkId)).apply {
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                setValue(StringType(locationId))
+              },
+            )
+          },
+        )
+      }
+    val questionnaireConfig =
+      QuestionnaireConfig(
+        id = "someQuestionnaire",
+        linkIds =
+          listOf(
+            LinkIdConfig(linkId = theLinkId, LinkIdType.LOCATION),
+          ),
+      )
+
+    group.appendRelatedEntityLocation(questionnaireResponse, questionnaireConfig, context)
+
+    Assert.assertEquals(2, group.meta.tag.size)
+
+    val firstMetaTag = group.meta.tag.firstOrNull()
+    Assert.assertNotNull(firstMetaTag)
+    Assert.assertEquals("http://system254.url", firstMetaTag?.system)
+    Assert.assertEquals("123", firstMetaTag?.code)
+
+    val lastMetaTag = group.meta.tag.lastOrNull()
+    Assert.assertNotNull(lastMetaTag)
+    Assert.assertEquals(
+      context.getString(
+        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+      ),
+      lastMetaTag?.system,
+    )
+    Assert.assertEquals(locationId, lastMetaTag?.code)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Encounter Resource`() {
+    val encounter = Encounter().apply { this.id = "123456" }
+    encounter.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", encounter.serviceProvider.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Location Resource`() {
+    val location = Location().apply { this.id = "123456" }
+    location.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", location.managingOrganization.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Group Resource`() {
+    val group = Group().apply { this.id = "123456" }
+    group.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", group.managingEntity.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Patient Resource`() {
+    val patient = Patient().apply { this.id = "123456" }
+    patient.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", patient.managingOrganization.reference)
   }
 }

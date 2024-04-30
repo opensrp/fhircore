@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,12 +89,17 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
 
     val toolbar =
       Toolbar(requireContext()).apply {
-        popupTheme = R.style.AppTheme
+        popupTheme = org.smartregister.fhircore.engine.R.style.AppTheme
         visibility = View.VISIBLE
         navigationIcon =
           ContextCompat.getDrawable(context, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
         setLayoutParams(layoutParams)
-        setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.colorPrimary))
+        setBackgroundColor(
+          ContextCompat.getColor(
+            requireContext(),
+            org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
+        )
         setNavigationOnClickListener { findNavController().popBackStack() }
       }
     kujakuMapView =
@@ -147,7 +152,11 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
           val coordinates = featureJSONObject.coordinates() ?: return
 
           val geoWidgetActivity = requireContext()
-          Toast.makeText(geoWidgetActivity, getString(R.string.please_wait), Toast.LENGTH_LONG)
+          Toast.makeText(
+              geoWidgetActivity,
+              getString(org.smartregister.fhircore.engine.R.string.please_wait),
+              Toast.LENGTH_LONG,
+            )
             .show()
 
           val location: Location = generateLocation(featureJSONObject, coordinates)
@@ -186,9 +195,9 @@ open class GeoWidgetFragment : Fragment(), Observer<FeatureCollection> {
     )
   }
 
-  override fun onChanged(featureCollection: FeatureCollection?) {
+  override fun onChanged(value: FeatureCollection) {
     Timber.e("Feature collection loaded")
-    this.featureCollection = featureCollection
+    this.featureCollection = value
 
     geoJsonSource?.also { source ->
       featureCollection?.also { collection ->

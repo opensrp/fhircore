@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,48 +16,54 @@
 
 package org.smartregister.fhircore.quest
 
-import android.app.Application
-import android.content.Intent
 import android.database.CursorWindow
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.components.SingletonComponent
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
 import io.sentry.android.fragment.FragmentLifecycleIntegration
 import java.net.URL
 import javax.inject.Inject
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
-import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
-import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
 import timber.log.Timber
 
 @HiltAndroidApp
-class QuestApplication : Application(), DataCaptureConfig.Provider, Configuration.Provider {
-  @Inject lateinit var workerFactory: HiltWorkerFactory
+class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Configuration.Provider {
+  @EntryPoint
+  @InstallIn(SingletonComponent::class)
+  interface HiltWorkerFactoryEntryPoint {
+    fun workerFactory(): HiltWorkerFactory
+  }
 
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
   private var configuration: DataCaptureConfig? = null
+
+  private var fhirServerHost: URL? = null
 
   override fun onCreate() {
     super.onCreate()
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
+    } else {
+      Timber.plant(ReleaseTree())
     }
 
     if (BuildConfig.DEBUG.not()) {
-      // TODO, strip out global exception handling - potential for ANR in prod
-      // Tracked under https://github.com/opensrp/fhircore/issues/2488
-      // Thread.setDefaultUncaughtExceptionHandler(globalExceptionHandler)
       initSentryMonitoring()
     }
 
@@ -90,7 +96,7 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
           ),
         )
         try {
-          options.environment = URL(BuildConfig.FHIR_BASE_URL)?.getSubDomain()?.replace('-', '.')
+          options.environment = URL(BuildConfig.FHIR_BASE_URL).getSubDomain().replace('-', '.')
         } catch (e: Exception) {
           Timber.e(e)
         }
@@ -112,33 +118,16 @@ class QuestApplication : Application(), DataCaptureConfig.Provider, Configuratio
     return configuration as DataCaptureConfig
   }
 
-  override fun getWorkManagerConfiguration(): Configuration =
+  override val workManagerConfiguration: Configuration =
     Configuration.Builder()
       .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
-      .setWorkerFactory(workerFactory)
+      .setWorkerFactory(
+        EntryPoints.get(this, HiltWorkerFactoryEntryPoint::class.java).workerFactory(),
+      )
       .build()
 
-  private val globalExceptionHandler =
-    Thread.UncaughtExceptionHandler { _: Thread, e: Throwable -> handleUncaughtException(e) }
-
-  /**
-   * This method captures all uncaught exceptions in the app and redirects to the Launch Page in the
-   * case that the exception was thrown on the main thread This will therefore prevent any app
-   * crashes so we need some more handling for reporting the errors once we have a crash manager
-   * installed
-   *
-   * TODO add crash reporting when a crash reporting tool is selected e.g. Fabric Crashlytics or
-   * Sentry
-   */
-  private fun handleUncaughtException(e: Throwable) {
-    showToast(this.getString(R.string.error_occurred))
-    Timber.e(e)
-
-    if (Looper.myLooper() == Looper.getMainLooper()) {
-      val intent = Intent(applicationContext, AppSettingActivity::class.java)
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-      startActivity(intent)
-    }
+  override fun getFhirServerHost(): URL? {
+    fhirServerHost = fhirServerHost ?: URL(BuildConfig.FHIR_BASE_URL)
+    return fhirServerHost
   }
 }

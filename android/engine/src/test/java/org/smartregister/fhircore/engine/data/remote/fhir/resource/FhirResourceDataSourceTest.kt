@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,17 @@ class FhirResourceDataSourceTest {
           mapOf("identifier" to "19292929"),
         ),
       )
+    }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testPostShouldRetrieveResource() {
+    runTest {
+      val bundle = Bundle()
+      coEvery { resourceService.post(any(), any()) } returns bundle
+      val result = fhirResourceDataSource.post("http://fake.url", mockk())
+      Assert.assertEquals(bundle, result)
     }
   }
 }
