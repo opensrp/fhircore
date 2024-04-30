@@ -86,7 +86,7 @@ fun transformAppointmentUiReasonToCode(uiReason: Reason): CodeableConcept? =
         Coding(
           SystemConstants.REASON_CODE_SYSTEM,
           "welcome-service-follow-up",
-          "Index Case Testing"
+          "Index Case Testing",
         ),
       )
     Reason.TB_HISTORY_REGIMEN ->
@@ -94,7 +94,7 @@ fun transformAppointmentUiReasonToCode(uiReason: Reason): CodeableConcept? =
         Coding(
           SystemConstants.REASON_CODE_SYSTEM,
           "tb_history_and_regimen",
-          "Welcome Service Follow Up"
+          "Welcome Service Follow Up",
         ),
       )
     else -> null
