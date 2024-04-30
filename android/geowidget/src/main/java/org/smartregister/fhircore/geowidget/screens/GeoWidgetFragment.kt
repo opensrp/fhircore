@@ -77,7 +77,7 @@ class GeoWidgetFragment : Fragment() {
   internal var useGpsOnAddingLocation: Boolean = false
   internal var mapLayers: List<MapLayerConfig> = ArrayList()
   internal var showCurrentLocationButton: Boolean = true
-  internal var shouldPlaneSwitcherButtonShow: Boolean = true
+  internal var showPlaneSwitcherButton: Boolean = true
   internal var showAddLocationButton: Boolean = true
 
   private lateinit var mapView: KujakuMapView
@@ -203,7 +203,7 @@ class GeoWidgetFragment : Fragment() {
     }
 
     showCurrentLocationBtn(showCurrentLocationButton)
-    if (shouldPlaneSwitcherButtonShow) {
+    if (showPlaneSwitcherButton) {
       baseLayerSwitcherPlugin.show()
     }
 
@@ -336,7 +336,7 @@ class Builder {
   private var useGpsOnAddingLocation: Boolean = false
   private var mapLayers: List<MapLayerConfig> = ArrayList()
   private var showCurrentLocationButton: Boolean = true
-  private var shouldPlaneSwitcherButtonShow: Boolean = true
+  private var showPlaneSwitcherButton: Boolean = true
   private var showAddLocationButton: Boolean = true
 
   fun setOnAddLocationListener(onAddLocationCallback: (Feature) -> Unit) = apply {
@@ -360,7 +360,7 @@ class Builder {
 
   fun setAddLocationButtonVisibility(show: Boolean) = apply { this.showAddLocationButton = show }
   fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
-    this.shouldPlaneSwitcherButtonShow = show
+    this.showPlaneSwitcherButton = show
   }
 
   fun build(): GeoWidgetFragment {
@@ -371,7 +371,7 @@ class Builder {
       this.useGpsOnAddingLocation = this@Builder.useGpsOnAddingLocation
       this.mapLayers = this@Builder.mapLayers
       this.showCurrentLocationButton = this@Builder.showCurrentLocationButton
-      this.shouldPlaneSwitcherButtonShow = this@Builder.shouldPlaneSwitcherButtonShow
+      this.showPlaneSwitcherButton = this@Builder.showPlaneSwitcherButton
       this.showAddLocationButton = this@Builder.showAddLocationButton
     }
   }
