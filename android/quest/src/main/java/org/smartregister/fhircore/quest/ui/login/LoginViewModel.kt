@@ -207,7 +207,7 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    //ToDo : This is an object
+    //ToDo : This is an object --->Practitioner Details
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
@@ -411,7 +411,7 @@ constructor(
     }
   }
 
-  //ToDo : This is an object
+  //ToDo : This is an object ----> userinfo
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
@@ -436,7 +436,7 @@ constructor(
         key = PreferenceDataStore.PRACTITIONER_ID,
         value = fhirPractitionerDetails.fhirPractitionerDetails?.id?: "",
       )
-      //ToDo: This is an object type
+      //ToDo: This is an object type ----> pratictioner details
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_DETAILS.name,
         fhirPractitionerDetails,
@@ -444,7 +444,7 @@ constructor(
       preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ",") )
       preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
       preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))
-      //ToDo: This is an object type
+      //ToDo: This is an object type ----> Location hierarchy
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies,

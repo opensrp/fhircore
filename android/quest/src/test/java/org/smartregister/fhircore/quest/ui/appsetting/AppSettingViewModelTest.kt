@@ -65,6 +65,7 @@ import org.smartregister.fhircore.engine.configuration.profile.ProfileConfigurat
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -85,6 +86,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var fhirEngine: FhirEngine
 
@@ -105,7 +107,7 @@ class AppSettingViewModelTest : RobolectricTest() {
         AppSettingViewModel(
           fhirResourceDataSource = fhirResourceDataSource,
           defaultRepository = defaultRepository,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           configService = configService,
           configurationRegistry = Faker.buildTestConfigurationRegistry(),
           dispatcherProvider = dispatcherProvider,

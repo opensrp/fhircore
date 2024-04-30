@@ -38,9 +38,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.Dispatcher
 import kotlin.coroutines.CoroutineContext
 
-//const val DATASTORE_NAME = "preferences_datastore"
-//val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = DATASTORE_NAME)
-
 @Singleton
 class PreferenceDataStore @Inject constructor(@ApplicationContext val context: Context, val dataStore: DataStore<Preferences>) {
   fun <T> read(key: Preferences.Key<T>) =

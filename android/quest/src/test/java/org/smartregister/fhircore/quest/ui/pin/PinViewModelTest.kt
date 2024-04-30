@@ -37,6 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -53,6 +54,7 @@ class PinViewModelTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   private val sharedPreferenceHelper: SharedPreferencesHelper = mockk(relaxUnitFun = true)
+  private val preferenceDataStore: PreferenceDataStore = mockk(relaxUnitFun = true)
   private var secureSharedPreference: SecureSharedPreference = mockk(relaxUnitFun = true)
   private val configurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var pinViewModel: PinViewModel
@@ -63,7 +65,7 @@ class PinViewModelTest : RobolectricTest() {
     pinViewModel =
       PinViewModel(
         secureSharedPreference = secureSharedPreference,
-        sharedPreferences = sharedPreferenceHelper,
+        preferenceDataStore = preferenceDataStore,
         configurationRegistry = configurationRegistry,
         dispatcherProvider = dispatcherProvider,
       )

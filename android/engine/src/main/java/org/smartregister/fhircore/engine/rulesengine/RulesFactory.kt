@@ -38,6 +38,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -325,27 +326,26 @@ constructor(
      * configs.
      */
     fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
-      val key = SharedPreferenceKey.valueOf(practitionerKey)
       try {
-        return when (key) {
-          SharedPreferenceKey.PRACTITIONER_ID ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_ID.name,
+        return when (practitionerKey) {
+          PreferenceDataStore.PRACTITIONER_ID.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.PRACTITIONER_ID,
               "",
             )
-          SharedPreferenceKey.CARE_TEAM ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.CARE_TEAM.name,
+          PreferenceDataStore.CARE_TEAM_NAME.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.CARE_TEAM_NAME,
               "",
             )
-          SharedPreferenceKey.ORGANIZATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.ORGANIZATION.name,
+          PreferenceDataStore.ORGANIZATION_NAME.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.ORGANIZATION_NAME,
               "",
             )
-          SharedPreferenceKey.PRACTITIONER_LOCATION ->
-            configurationRegistry.sharedPreferencesHelper.read(
-              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+          PreferenceDataStore.PRACTITIONER_LOCATION.name ->
+            configurationRegistry.preferenceDataStore.readOnce(
+              PreferenceDataStore.PRACTITIONER_LOCATION_NAME,
               "",
             )
           else -> ""

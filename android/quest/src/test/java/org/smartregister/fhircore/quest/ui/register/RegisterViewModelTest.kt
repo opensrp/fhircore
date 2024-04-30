@@ -48,6 +48,7 @@ import org.smartregister.fhircore.engine.configuration.register.RegisterFilterFi
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -72,6 +73,7 @@ class RegisterViewModelTest : RobolectricTest() {
   private lateinit var registerViewModel: RegisterViewModel
   private lateinit var registerRepository: RegisterRepository
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private val registerId = "register101"
   private val screenTitle = "Register 101"
 
@@ -87,6 +89,7 @@ class RegisterViewModelTest : RobolectricTest() {
           registerRepository = registerRepository,
           configurationRegistry = configurationRegistry,
           sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           dispatcherProvider = dispatcherProvider,
           resourceDataRulesExecutor = resourceDataRulesExecutor,
         ),

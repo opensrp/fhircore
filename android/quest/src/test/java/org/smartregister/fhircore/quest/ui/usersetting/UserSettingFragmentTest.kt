@@ -37,6 +37,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -59,6 +60,7 @@ class UserSettingFragmentTest : RobolectricTest() {
   private val resourceService: FhirResourceService = mockk()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private var configService: ConfigService
   private var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -68,6 +70,7 @@ class UserSettingFragmentTest : RobolectricTest() {
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
+    preferenceDataStore = PreferenceDataStore(context = context, dataStore = mockk())
     configService = AppConfigService(context = context)
     fhirResourceDataSource = spyk(FhirResourceDataSource(resourceService))
   }
@@ -95,6 +98,7 @@ class UserSettingFragmentTest : RobolectricTest() {
         accountAuthenticator = accountAuthenticator,
         secureSharedPreference = secureSharedPreference,
         sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore,
         configurationRegistry = configurationRegistry,
         workManager = mockk(relaxed = true),
         dispatcherProvider = dispatcherProvider,

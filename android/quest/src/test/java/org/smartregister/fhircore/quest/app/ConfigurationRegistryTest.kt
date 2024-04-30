@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.app
 
 import android.content.Context
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -46,6 +47,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -60,6 +62,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   private lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var fhirEngine: FhirEngine
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+  private lateinit var preferenceDataStore: PreferenceDataStore
   private val secureSharedPreference = mockk<SecureSharedPreference>()
   private val application: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService =
@@ -80,7 +83,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         ConfigurationRegistry(
           fhirEngine = fhirEngine,
           fhirResourceDataSource = fhirResourceDataSource,
-          sharedPreferencesHelper = sharedPreferencesHelper,
+          preferenceDataStore = preferenceDataStore,
           dispatcherProvider = dispatcherProvider,
           configService = mockk(),
           json = Faker.json,
