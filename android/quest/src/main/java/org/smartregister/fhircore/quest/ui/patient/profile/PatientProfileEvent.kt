@@ -31,6 +31,8 @@ sealed class PatientProfileEvent {
   data class OpenTaskForm(val context: Context, val taskFormId: String, val taskId: String) :
     PatientProfileEvent()
 
+  data class FinishVisit(val context: Context, val formId: String) : PatientProfileEvent()
+
   data class OverflowMenuClick(
     val navController: NavHostController,
     val context: Context,
