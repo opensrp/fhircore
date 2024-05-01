@@ -178,7 +178,7 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
   }
 
   private fun taskStatusToCarePlanActivityStatus(
-    status: Task.TaskStatus
+    status: Task.TaskStatus,
   ): CarePlan.CarePlanActivityStatus {
     return when (status) {
       Task.TaskStatus.ONHOLD -> CarePlan.CarePlanActivityStatus.ONHOLD

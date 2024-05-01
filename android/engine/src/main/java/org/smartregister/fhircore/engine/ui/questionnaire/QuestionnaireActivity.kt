@@ -148,9 +148,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
     questionnaireViewModel.extractionProgress.observe(this) { result ->
       if (result is ExtractionProgress.Success) {
-        onPostSave(true, result.questionnaireResponse, result.extras)
+        onExtractionSuccess(result.questionnaireResponse, result.extras)
       } else {
-        onPostSave(false, (result as ExtractionProgress.Failed).questionnaireResponse)
+        result as ExtractionProgress.Failed
+        onExtractionFailed(result.questionnaireResponse, result.exception)
       }
     }
   }
@@ -385,19 +386,28 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     lifecycleScope.launch { doHandleQuestionnaireResponse() }
   }
 
-  fun onPostSave(
-    result: Boolean,
+  private fun onExtractionSuccess(
     questionnaireResponse: QuestionnaireResponse,
-    extras: List<Resource>? = null,
+    extras: List<Resource>? = null
   ) {
     dismissSaveProcessing()
-    if (result) {
-      // Put Sync Here
-      syncBroadcaster.runSync()
-      postSaveSuccessful(questionnaireResponse, extras)
-    } else {
-      Timber.e("An error occurred during extraction")
-    }
+    syncBroadcaster.runSync()
+    postSaveSuccessful(questionnaireResponse, extras)
+  }
+
+  private fun onExtractionFailed(questionnaireResponse: QuestionnaireResponse, err: Throwable) {
+    dismissSaveProcessing()
+    Timber.e("An error occurred during '${questionnaireResponse.questionnaire}' extraction: $err")
+    showConfirmAlert(
+      context = this,
+      message = R.string.error_extraction,
+      title =
+        if (questionnaire.experimental) {
+          R.string.questionnaire_alert_test_only_title
+        } else R.string.questionnaire_alert_submit_title,
+      confirmButtonListener = { handleQuestionnaireSubmit() },
+      confirmButtonText = R.string.retry_extraction,
+    )
   }
 
   open fun populateInitialValues(questionnaire: Questionnaire) = Unit

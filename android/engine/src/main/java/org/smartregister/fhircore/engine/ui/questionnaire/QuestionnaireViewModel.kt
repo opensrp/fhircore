@@ -112,7 +112,6 @@ constructor(
   @Inject lateinit var fhirCarePlanGenerator: FhirCarePlanGenerator
 
   val extractionProgress = MutableLiveData<ExtractionProgress>()
-  val questionnaireResponseLiveData = MutableLiveData<QuestionnaireResponse?>(null)
 
   val extractionProgressMessage = MutableLiveData<String>()
 
@@ -284,6 +283,7 @@ constructor(
           )
         extractionProgress.postValue(ExtractionProgress.Success(questionnaireResponse, extras))
       } catch (e: Exception) {
+        Timber.e(e)
         extractionProgress.postValue(ExtractionProgress.Failed(questionnaireResponse, e))
       }
     }
@@ -377,7 +377,6 @@ constructor(
       }
 
       saveQuestionnaireResponse(questionnaire, questionnaireResponse)
-      questionnaireResponseLiveData.postValue(questionnaireResponse)
       // TODO https://github.com/opensrp/fhircore/issues/900
       // reassess following i.e. deleting/updating older resources because one resource
       // might have generated other flow in subsequent followups
