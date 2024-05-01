@@ -395,17 +395,17 @@ constructor(
     try {
       /** Get a FHIR [Resource] in the local storage. */
       var resource = fhirEngine.get(source.resourceType, source.id)
-
       /** Increment [Resource.meta] versionId of [source]. */
-      val versionId = resource.meta.versionId.toInt().plus(1).toString()
-      /** Append passed [Resource.meta] to the [source]. */
-      resource.addTags(source.meta.tag)
-      /** Assign [Resource.meta] versionId of [source]. */
-      resource = resource.copy().apply { meta.versionId = versionId }
-      /** Delete a FHIR [source] in the local storage. */
-      fhirEngine.delete(resource.resourceType, resource.id)
-      /** Recreate a FHIR [source] in the local storage. */
-      fhirEngine.create(resource)
+      resource.meta.versionId?.toInt()?.plus(1)?.let {
+        /** Append passed [Resource.meta] to the [source]. */
+        resource.addTags(source.meta.tag)
+        /** Assign [Resource.meta] versionId of [source]. */
+        resource = resource.copy().apply { meta.versionId = "$it" }
+        /** Delete a FHIR [source] in the local storage. */
+        fhirEngine.delete(resource.resourceType, resource.id)
+        /** Recreate a FHIR [source] in the local storage. */
+        fhirEngine.create(resource)
+      }
     } catch (e: Exception) {
       Timber.e(e)
     }
