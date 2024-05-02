@@ -475,7 +475,7 @@ constructor(
           if (bundleEntryComponent.resource != null) {
             addOrUpdateRemote(bundleEntryComponent.resource)
             Timber.d(
-              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.id}"
+              "Fetched and processed resources ${bundleEntryComponent.resource.resourceType}/${bundleEntryComponent.resource.logicalId}"
             )
           }
         }

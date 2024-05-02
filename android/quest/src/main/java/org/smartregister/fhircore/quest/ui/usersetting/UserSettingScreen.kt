@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -141,7 +144,7 @@ fun UserSettingScreen(
       )
     }
   ) {
-    Column(modifier = modifier.background(Color.White)) {
+    Column(modifier = modifier.background(Color.White).verticalScroll(rememberScrollState())) {
       if (!username.isNullOrEmpty()) {
         Column(
           modifier = modifier.background(Color.White).padding(vertical = 24.dp).fillMaxWidth(),
@@ -311,7 +314,7 @@ fun UserSettingScreen(
         modifier =
           modifier.background(color = colorResource(id = R.color.backgroundGray)).fillMaxWidth()
       ) {
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Image(
           painterResource(R.drawable.logo_fhir_core),
