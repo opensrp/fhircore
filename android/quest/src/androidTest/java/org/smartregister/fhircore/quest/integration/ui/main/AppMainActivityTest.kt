@@ -1,4 +1,4 @@
-  /*
+/*
  * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -98,7 +98,6 @@ class AppMainActivityTest {
     }
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
   }
-
 
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
