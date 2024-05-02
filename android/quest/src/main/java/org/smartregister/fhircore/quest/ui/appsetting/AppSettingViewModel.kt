@@ -110,39 +110,36 @@ constructor(
           "Fetching configs for app $appId with highest context-quantity ${QuestBuildConfig.VERSION_CODE}",
         )
 
-        var compositionResource: Composition? = null
-        try {
-          val implementationGuideResource =
-            configurationRegistry.fetchRemoteImplementationGuideByAppId(
-              appId,
-              QuestBuildConfig.VERSION_CODE,
-            )
+        val compositionResource: Composition?
 
-          compositionResource =
-            if (implementationGuideResource != null) {
-              configurationRegistry.addOrUpdate(implementationGuideResource)
+        val implementationGuideResource =
+          configurationRegistry.fetchRemoteImplementationGuideByAppId(
+            appId,
+            QuestBuildConfig.VERSION_CODE,
+          )
 
-              val compositionReference =
-                implementationGuideResource
-                  .retrieveImplementationGuideDefinitionResources()[0]
-                  .reference
-                  .reference
+        compositionResource =
+          if (implementationGuideResource != null) {
+            configurationRegistry.addOrUpdate(implementationGuideResource)
 
-              val compositionIdWithHistory = compositionReference?.substringAfter('/')
-              val compositionId = compositionIdWithHistory?.substringBefore('/')
-              val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
+            val compositionReference =
+              implementationGuideResource
+                .retrieveImplementationGuideDefinitionResources()[0]
+                .reference
+                .reference
 
-              withContext(dispatcherProvider.io()) {
-                configurationRegistry.fetchRemoteCompositionById(compositionId, compositionVersion)
-              }
-            } else {
-              withContext(dispatcherProvider.io()) {
-                configurationRegistry.fetchRemoteCompositionByAppId(appId)
-              }
+            val compositionIdWithHistory = compositionReference?.substringAfter('/')
+            val compositionId = compositionIdWithHistory?.substringBefore('/')
+            val compositionVersion = compositionIdWithHistory?.substringAfterLast('/', "")
+
+            withContext(dispatcherProvider.io()) {
+              configurationRegistry.fetchRemoteCompositionById(compositionId, compositionVersion)
             }
-        } catch (e: Exception) {
-          Timber.e(e)
-        }
+          } else {
+            withContext(dispatcherProvider.io()) {
+              configurationRegistry.fetchRemoteCompositionByAppId(appId)
+            }
+          }
 
         if (compositionResource == null) {
           showProgressBar.postValue(false)
