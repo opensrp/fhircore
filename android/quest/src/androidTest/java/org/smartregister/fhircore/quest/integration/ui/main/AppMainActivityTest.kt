@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -87,7 +87,6 @@ class AppMainActivityTest {
     hiltRule.inject()
   }
 
-  @Ignore("Grant permission")
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
@@ -100,7 +99,7 @@ class AppMainActivityTest {
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
   }
 
-  @Ignore("Grant permission")
+
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
