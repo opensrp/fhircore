@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
@@ -894,5 +895,12 @@ class ResourceExtensionTest : RobolectricTest() {
     val patient = Patient().apply { this.id = "123456" }
     patient.appendOrganizationInfo(listOf("Organization/12345"))
     Assert.assertEquals("Organization/12345", patient.managingOrganization.reference)
+  }
+
+  @Test
+  fun `test Organization Info Appended on Consent Resource`() {
+    val consent = Consent().apply { this.id = "123456" }
+    consent.appendOrganizationInfo(listOf("Organization/12345"))
+    Assert.assertEquals("Organization/12345", consent.organization.first().reference)
   }
 }
