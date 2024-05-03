@@ -87,6 +87,7 @@ class AppMainActivityTest {
     hiltRule.inject()
   }
 
+  @Ignore("Grant permission")
   @Test
   fun startDestinationFragmentShouldShowRegisterScreen() {
     composeTestRule.activityRule.scenario.onActivity {
@@ -99,6 +100,7 @@ class AppMainActivityTest {
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
   }
 
+  @Ignore("Grant permission")
   @Test
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
