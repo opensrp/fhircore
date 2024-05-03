@@ -1,0 +1,869 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>engine</title>
+<link href="../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../scripts/sourceset_dependencies.js" async></script>
+<link href="../styles/style.css" rel="Stylesheet">
+<link href="../styles/main.css" rel="Stylesheet">
+<link href="../styles/prism.css" rel="Stylesheet">
+<link href="../styles/logo-styles.css" rel="Stylesheet">
+<link href="../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../scripts/main.js" defer></script>
+<script type="text/javascript" src="../scripts/prism.js" async></script>
+<script type="text/javascript" src="../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../index.html">
+                            OpenSRP
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":engine:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" id="content" pageids="engine::////PointingToDeclaration//-78402031">
+  <div class="breadcrumbs"></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>engine</span></span></h1>
+  </div>
+  <h2 class="">Packages</h2>
+  <div class="table"><a data-name="1793022332%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine" id="1793022332%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine/index.html">org.smartregister.fhircore.engine</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1793022332%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1255227426%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.auth" id="-1255227426%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.auth/index.html">org.smartregister.fhircore.engine.auth</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1255227426%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-664856188%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration" id="-664856188%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration/index.html">org.smartregister.fhircore.engine.configuration</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-664856188%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1421807113%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.app" id="-1421807113%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.app/index.html">org.smartregister.fhircore.engine.configuration.app</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1421807113%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-732162000%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.event" id="-732162000%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.event/index.html">org.smartregister.fhircore.engine.configuration.event</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-732162000%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2091929429%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.geowidget" id="-2091929429%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.geowidget/index.html">org.smartregister.fhircore.engine.configuration.geowidget</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2091929429%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="261899876%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.migration" id="261899876%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.migration/index.html">org.smartregister.fhircore.engine.configuration.migration</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="261899876%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2042128062%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.navigation" id="-2042128062%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.navigation/index.html">org.smartregister.fhircore.engine.configuration.navigation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2042128062%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1586762369%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.profile" id="-1586762369%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.profile/index.html">org.smartregister.fhircore.engine.configuration.profile</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1586762369%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1853520913%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.register" id="1853520913%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.register/index.html">org.smartregister.fhircore.engine.configuration.register</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1853520913%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="796462034%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.report.measure" id="796462034%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.report.measure/index.html">org.smartregister.fhircore.engine.configuration.report.measure</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="796462034%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-317083757%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.view" id="-317083757%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.view/index.html">org.smartregister.fhircore.engine.configuration.view</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-317083757%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1041843667%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.configuration.workflow" id="-1041843667%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.configuration.workflow/index.html">org.smartregister.fhircore.engine.configuration.workflow</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1041843667%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-513998004%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.cql" id="-513998004%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.cql/index.html">org.smartregister.fhircore.engine.cql</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-513998004%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1777355107%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.local" id="-1777355107%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.local/index.html">org.smartregister.fhircore.engine.data.local</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1777355107%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-61437160%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.local.register" id="-61437160%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.local.register/index.html">org.smartregister.fhircore.engine.data.local.register</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-61437160%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1636819266%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.remote.auth" id="1636819266%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.remote.auth/index.html">org.smartregister.fhircore.engine.data.remote.auth</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1636819266%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="310500635%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.remote.fhir.resource" id="310500635%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.remote.fhir.resource/index.html">org.smartregister.fhircore.engine.data.remote.fhir.resource</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="310500635%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2087537280%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.remote.model.response" id="-2087537280%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.remote.model.response/index.html">org.smartregister.fhircore.engine.data.remote.model.response</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2087537280%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1461567553%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.data.remote.shared" id="-1461567553%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.data.remote.shared/index.html">org.smartregister.fhircore.engine.data.remote.shared</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1461567553%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="413224645%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.datastore" id="413224645%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.datastore/index.html">org.smartregister.fhircore.engine.datastore</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="413224645%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2009464255%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.datastore.mockdata" id="-2009464255%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.datastore.mockdata/index.html">org.smartregister.fhircore.engine.datastore.mockdata</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2009464255%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1627708600%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.datastore.serializers" id="1627708600%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.datastore.serializers/index.html">org.smartregister.fhircore.engine.datastore.serializers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1627708600%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="466725243%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.di" id="466725243%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.di/index.html">org.smartregister.fhircore.engine.di</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="466725243%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1722333429%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.domain.model" id="1722333429%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.domain.model/index.html">org.smartregister.fhircore.engine.domain.model</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1722333429%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="792436674%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.domain.repository" id="792436674%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.domain.repository/index.html">org.smartregister.fhircore.engine.domain.repository</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="792436674%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-372439302%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.domain.util" id="-372439302%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.domain.util/index.html">org.smartregister.fhircore.engine.domain.util</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-372439302%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="641456928%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.p2p.dao" id="641456928%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.p2p.dao/index.html">org.smartregister.fhircore.engine.p2p.dao</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="641456928%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-234430521%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.rulesengine" id="-234430521%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.rulesengine/index.html">org.smartregister.fhircore.engine.rulesengine</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-234430521%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1733103831%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.rulesengine.services" id="-1733103831%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.rulesengine.services/index.html">org.smartregister.fhircore.engine.rulesengine.services</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1733103831%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1558781167%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.sync" id="-1558781167%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.sync/index.html">org.smartregister.fhircore.engine.sync</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1558781167%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1122225531%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.task" id="1122225531%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.task/index.html">org.smartregister.fhircore.engine.task</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1122225531%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-763909319%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.ui.base" id="-763909319%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.ui.base/index.html">org.smartregister.fhircore.engine.ui.base</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-763909319%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1588061296%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.ui.bottomsheet" id="1588061296%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.ui.bottomsheet/index.html">org.smartregister.fhircore.engine.ui.bottomsheet</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1588061296%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-590872898%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.ui.components" id="-590872898%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.ui.components/index.html">org.smartregister.fhircore.engine.ui.components</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-590872898%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-370747369%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.ui.components.register" id="-370747369%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.ui.components.register/index.html">org.smartregister.fhircore.engine.ui.components.register</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-370747369%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-767037595%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.ui.theme" id="-767037595%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.ui.theme/index.html">org.smartregister.fhircore.engine.ui.theme</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-767037595%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="631584184%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util" id="631584184%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util/index.html">org.smartregister.fhircore.engine.util</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="631584184%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1782777367%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.annotation" id="-1782777367%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.annotation/index.html">org.smartregister.fhircore.engine.util.annotation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1782777367%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="639696585%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.extension" id="639696585%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.extension/index.html">org.smartregister.fhircore.engine.util.extension</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="639696585%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1946602102%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.fhirpath" id="-1946602102%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.fhirpath/index.html">org.smartregister.fhircore.engine.util.fhirpath</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1946602102%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1214088792%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.helper" id="-1214088792%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.helper/index.html">org.smartregister.fhircore.engine.util.helper</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214088792%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="532606763%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.serializers" id="532606763%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.serializers/index.html">org.smartregister.fhircore.engine.util.serializers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="532606763%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-186425460%2FPackages%2F-78402031" anchor-label="org.smartregister.fhircore.engine.util.test" id="-186425460%2FPackages%2F-78402031" data-filterable-set=":engine:dokkaHtmlPartial/release"></a>
+    <div class="table-row" data-filterable-current=":engine:dokkaHtmlPartial/release" data-filterable-set=":engine:dokkaHtmlPartial/release">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="org.smartregister.fhircore.engine.util.test/index.html">org.smartregister.fhircore.engine.util.test</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-186425460%2FPackages%2F-78402031"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">androidJvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
