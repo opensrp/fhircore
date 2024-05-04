@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
-import android.os.Process
 import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
@@ -116,12 +115,6 @@ constructor(
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
   private val jsonParser = fhirContext.newJsonParser()
-
-  init {
-    Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-      Process.killProcess(Process.myPid())
-    }
-  }
 
   /**
    * Retrieve configuration for the provided [ConfigType]. The JSON retrieved from [configsJsonMap]
