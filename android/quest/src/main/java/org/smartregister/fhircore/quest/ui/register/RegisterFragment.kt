@@ -198,9 +198,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               SnackBarMessageConfig(message = getString(R.string.syncing)),
             )
           }
-          Timber.d("#### registerFrag sync config currentJOb running")
         } else {
-          Timber.d("#### registerFrag sync config currentJOb running")
           emitPercentageProgress(
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
             (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
@@ -218,7 +216,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
-        Timber.d("#### registerFrag sync config currentJOb succeed")
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
@@ -233,7 +230,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
-        Timber.d("#### registerFrag sync config currentJOb failed")
       }
       else -> {
         // Do nothing
