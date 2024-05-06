@@ -67,7 +67,7 @@ fun Task.extractedTracingCategoryIsPhone(filterTag: String): Boolean {
 
 fun Task.getCarePlanId(): String? {
   return meta.tag
-      .firstOrNull { it.system == SystemConstants.CARE_PLAN_REFERENCE_SYSTEM }
-      ?.code
-      ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
+    .firstOrNull { it.system == SystemConstants.CARE_PLAN_REFERENCE_SYSTEM }
+    ?.code
+    ?.substringAfterLast(delimiter = '/', missingDelimiterValue = "")
 }

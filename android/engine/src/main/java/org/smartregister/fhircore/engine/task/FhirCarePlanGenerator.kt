@@ -18,7 +18,6 @@ package org.smartregister.fhircore.engine.task
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
-import com.google.android.fhir.search.search
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,7 +34,6 @@ import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.utils.FHIRPathEngine
 import org.hl7.fhir.r4.utils.StructureMapUtilities
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getCarePlanId
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -179,12 +177,17 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
     }
   }
 
-  private fun taskStatusToCarePlanActivityStatus(status: Task.TaskStatus): CarePlan.CarePlanActivityStatus {
-    return when(status) {
-      Task.TaskStatus.ONHOLD -> CarePlan.CarePlanActivityStatus.ONHOLD
-      Task.TaskStatus.ACCEPTED -> CarePlan.CarePlanActivityStatus.INPROGRESS
-      Task.TaskStatus.COMPLETED ->  CarePlan.CarePlanActivityStatus.COMPLETED
-      else -> CarePlan.CarePlanActivityStatus.UNKNOWN
+  private fun taskStatusToCarePlanActivityStatus(
+    status: Task.TaskStatus,
+  ): CarePlan.CarePlanActivityStatus {
+    return when (status) {
+      Task.TaskStatus.FAILED,
+      Task.TaskStatus.CANCELLED, -> CarePlan.CarePlanActivityStatus.CANCELLED
+      Task.TaskStatus.COMPLETED,
+      Task.TaskStatus.ONHOLD,
+      Task.TaskStatus.INPROGRESS,
+      Task.TaskStatus.ENTEREDINERROR, -> CarePlan.CarePlanActivityStatus.fromCode(status.toCode())
+      else -> CarePlan.CarePlanActivityStatus.NULL
     }
   }
 }

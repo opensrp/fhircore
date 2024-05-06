@@ -362,7 +362,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   open fun handleQuestionnaireSubmit() {
     lifecycleScope.launch {
-      saveProcessingAlertDialog = showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
+      saveProcessingAlertDialog =
+        showProgressAlert(this@QuestionnaireActivity, R.string.form_progress_message)
 
       val questionnaireResponse = getQuestionnaireResponse()
       val isQuestionnaireResponseValid: Boolean
@@ -471,7 +472,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       resourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_PATIENT_KEY),
       groupResourceId = intent.getStringExtra(QUESTIONNAIRE_ARG_GROUP_KEY),
       questionnaireType = questionnaireType,
-      backReference = intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY)
+      backReference = intent.getStringExtra(QUESTIONNAIRE_BACK_REFERENCE_KEY),
     )
   }
 
