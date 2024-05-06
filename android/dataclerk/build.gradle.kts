@@ -31,6 +31,7 @@ android {
     buildConfigField("String", "FHIR_BASE_URL", """"${project.extra["FHIR_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CIENT_ID", """"${project.extra["OAUTH_CIENT_ID"]}"""")
+    buildConfigField("String", "APP_ID", """"${project.extra["APP_ID"]}"""")
     buildConfigField(
       "String",
       "OAUTH_CLIENT_SECRET",
@@ -153,9 +154,25 @@ dependencies {
   implementation("androidx.compose.material3:material3")
   implementation("androidx.paging:paging-compose:3.2.1")
 
+  implementation("com.github.anrwatchdog:anrwatchdog:1.4.0")
+
   // Hilt - Dependency Injection
   implementation("com.google.dagger:hilt-android:${Deps.versions.hiltVersion}")
   kapt("com.google.dagger:hilt-compiler:${Deps.versions.hiltVersion}")
+
+  testImplementation(Deps.junit5_api)
+  testRuntimeOnly(Deps.junit5_engine)
+  testRuntimeOnly(Deps.junit5_engine_vintage)
+  testImplementation(Deps.robolectric)
+  testImplementation(Deps.atsl.core)
+  testImplementation(Deps.atsl.ext_junit)
+  testImplementation(Deps.atsl.ext_junit_ktx)
+  testImplementation(Deps.coroutines.test)
+  testImplementation(Deps.androidx.core_test)
+  debugImplementation(Deps.fragment_testing)
+  releaseImplementation(Deps.fragment_testing)
+  testImplementation(Deps.mockk)
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
   // analytics
   implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
@@ -164,16 +181,16 @@ dependencies {
   implementation("com.google.firebase:firebase-crashlytics-ktx")
   implementation("com.google.firebase:firebase-analytics-ktx")
 
-  testImplementation("junit:junit:4.13.2")
-  androidTestImplementation("androidx.test.ext:junit:1.1.5")
-  androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-  androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.01"))
-  androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+  // Hilt test dependencies
   testImplementation("com.google.dagger:hilt-android-testing:${Deps.versions.hiltVersion}")
-  kaptTest("com.google.dagger:hilt-compiler:${Deps.versions.hiltVersion}")
+  kaptTest("com.google.dagger:hilt-android-compiler:${Deps.versions.hiltVersion}")
 
-  debugImplementation("androidx.compose.ui:ui-tooling")
+  androidTestImplementation(Deps.atsl.ext_junit)
+  androidTestImplementation(Deps.atsl.espresso)
   debugImplementation("androidx.compose.ui:ui-test-manifest")
+  testImplementation("androidx.compose.ui:ui-test-junit4")
+  //     debugImplementation because LeakCanary should only run in debug builds.
+  //    debugImplementation "com.squareup.leakcanary:leakcanary-android:2.7"
 }
 
 kapt { correctErrorTypes = true }
