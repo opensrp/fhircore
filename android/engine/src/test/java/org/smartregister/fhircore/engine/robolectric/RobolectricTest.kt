@@ -21,15 +21,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.clearAllMocks
-import java.io.File
-import java.io.FileReader
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
+import java.io.File
+import java.io.FileReader
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
@@ -40,13 +40,13 @@ abstract class RobolectricTest {
     val data = arrayOfNulls<Any>(1)
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
-      Observer<T>
-      //        override fun onChanged(o: T?) {
-      //          data[0] = o
-      //          latch.countDown()
-      //          liveData.removeObserver(this)
-      //        }
-      { TODO("Not yet implemented") }
+      object : Observer<T> {
+        override fun onChanged(o: T) {
+          data[0] = o
+          latch.countDown()
+          liveData.removeObserver(this)
+        }
+      }
     liveData.observeForever(observer)
     latch.await(3, TimeUnit.SECONDS)
     @Suppress("UNCHECKED_CAST") return data[0] as T?
