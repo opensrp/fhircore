@@ -871,6 +871,7 @@ constructor(
         val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
         val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         val compositionResource = fhirEngine.searchCompositionByIdentifier(parsedAppId)
+        Timber.d("compositionResource = " + jsonParser.encodeResourceToString(compositionResource))
         compositionResource?.let { composition ->
           composition
             .retrieveCompositionSections()
@@ -917,6 +918,20 @@ constructor(
 
                   Timber.d("#### compositionList size ${compositionListParamPairs.size}")
                   syncParamSource.compositionListSyncParameters = mapOf(*compositionListParamPairs.toTypedArray())
+
+                  val compListFlow2 = Sync.oneTimeSync<CompositionListSyncWorker>(context)
+                  compListFlow2.handleCompositionListSyncJobStatus(coroutineScope)
+                  compListFlow2.collect{ compListJobStatus ->
+                    Timber.d("#### compListFlow2 collected  $compListJobStatus")
+                    when(compListJobStatus) {
+                      is CurrentSyncJobStatus.Succeeded -> {
+                        Timber.d("#### compListJobStatus succeeded")
+                        processCompositionListResult()
+                      }else -> {
+                      Timber.d("#### compListJobStatus other than succeeded")
+                    }
+                    }
+                  }
 
                 } else {
 
@@ -1003,25 +1018,12 @@ constructor(
             }
             saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
         }
-
-
-        val compListFlow2 = Sync.oneTimeSync<CompositionListSyncWorker>(context)
-        compListFlow2.handleCompositionListSyncJobStatus(coroutineScope)
-        compListFlow2.collect{ compListJobStatus ->
-          Timber.d("#### compListFlow2 collected  $compListJobStatus")
-          when(compListJobStatus) {
-            is CurrentSyncJobStatus.Succeeded -> {
-              Timber.d("#### compListJobStatus succeeded")
-            }else -> {
-            Timber.d("#### compListJobStatus other than succeeded")
-          }
-          }
-        }
-
       }
-
-
     }
+  }
+
+  private suspend fun processCompositionListResult(){
+    Timber.e("#### process result of compositionList for next call")
   }
 
   private fun Flow<CurrentSyncJobStatus>.handleCompositionListSyncJobStatus(
