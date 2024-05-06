@@ -29,7 +29,8 @@ class SyncParamSource
 constructor(
     @ApplicationContext val context: Context
 ) {
-    var configSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap();
-    var compositionListSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap();
-
+    var compositionSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
+    var compositionListSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
+    var compositionConfigSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
+    var compositionManifestSyncPairs : Map<ResourceType, Map<String, String>> = emptyMap()
 }

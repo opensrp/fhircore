@@ -20,36 +20,23 @@ import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.download.DownloadRequest
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import com.google.android.fhir.sync.download.ResourceSearchParams
-import org.hl7.fhir.r4.model.Meta
-import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import java.util.Date
-import java.util.LinkedList
+import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 class ConfigDownloadManager(
   syncParams: ResourceSearchParams,
-  val context: ResourceParamsBasedDownloadWorkManager.TimestampContext,
-  private val queries: List<String> = listOf(""), // set empty
+  val context: ResourceParamsBasedDownloadWorkManager.TimestampContext
 ) : DownloadWorkManager {
-  private var urls = LinkedList(queries)
 
-  public fun setupQueries(queries: List<String>){
-    urls = LinkedList(queries)
-  }
-  override suspend fun getNextRequest(): DownloadRequest? =
-    urls.poll()?.let { DownloadRequest.of(it) }
+  private val downloadWorkManager = ResourceParamsBasedDownloadWorkManager(syncParams, context)
 
-  override suspend fun getSummaryRequestUrls() =
-    queries
-      .stream()
-      .map { ResourceType.fromCode(it.substringBefore("?")) to it.plus("?_summary=count") }
-      .toList()
-      .toMap()
+  override suspend fun getNextRequest(): DownloadRequest? = downloadWorkManager.getNextRequest()
+
+  override suspend fun getSummaryRequestUrls(): Map<ResourceType, String> =
+    downloadWorkManager.getSummaryRequestUrls()
 
   override suspend fun processResponse(response: Resource): Collection<Resource> {
-    val patient = Patient().setMeta(Meta().setLastUpdated(Date()))
-    return listOf(patient)
+    return downloadWorkManager.processResponse(response).onEach { it.updateLastUpdated() }
   }
-
 }

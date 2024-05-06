@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -53,7 +54,9 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.sync.CompositionConfigSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionListSyncWorker
+import org.smartregister.fhircore.engine.sync.CompositionManifestSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncParamSource
@@ -421,177 +424,7 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) = coroutineScope {
     Timber.d("#### 1 running fetchNonWorkflowConfig sync")
-
-    val compConfigFlow1 = Sync.oneTimeSync<CompositionSyncWorker>(context)
-    compConfigFlow1.handleCompositionConfigSyncJobStatus(this)
-    compConfigFlow1.collect { compConfigFlowJobStatus ->
-      Timber.d("#### configFlow1 collect ... $compConfigFlowJobStatus ")
-
-      when (compConfigFlowJobStatus) {
-        is CurrentSyncJobStatus.Succeeded -> {
-          Timber.d("#### compConfigFlowJobStatus succeeded")
-
-          run {
-
-            val compositionListParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
-            sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-              val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-              val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-              val compositionResource = fhirEngine.searchCompositionByIdentifier(parsedAppId)
-              compositionResource?.let { composition ->
-                composition
-                  .retrieveCompositionSections()
-                  .asSequence()
-                  .filter {
-                    it.hasFocus() && it.focus.hasReferenceElement()
-                  } // is focus.identifier a necessary check
-                  .groupBy { section ->
-                    section.focus.reference.substringBefore(
-                      TYPE_REFERENCE_DELIMITER,
-                      missingDelimiterValue = "",
-                    )
-                  }
-                  .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-                  .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-                    if (entry.key == ResourceType.List.name) {
-                      if (isNonProxy()) {
-                        val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-                        chunkedResourceIdList.forEach {
-
-                          val resourceIds: List<String> =
-                            it.map { sectionComponent -> sectionComponent.focus.extractId() }
-                          val resourceType = entry.key
-                          if (isNonProxy()) {
-                            resourceIds.forEach {
-                              compositionListParamPairs.add(
-                                Pair(
-                                  ResourceType.fromCode(resourceType),
-                                  mapOf(Composition.SP_RES_ID to it),
-                                ),
-                              )
-                            }
-                          } else {
-                            resourceIds.forEach {
-                              compositionListParamPairs.add(
-                                Pair(
-                                  ResourceType.fromCode(resourceType),
-                                  mapOf(Composition.SP_RES_ID to it),
-                                ),
-                              )
-                            }
-                          }
-                        }
-
-                        Timber.d("#### compositionList size ${compositionListParamPairs.size}")
-                        syncParamSource.compositionListSyncParameters = mapOf(*compositionListParamPairs.toTypedArray())
-
-                      } else {
-
-                        Timber.d("#### else condition compositionList size ${compositionListParamPairs.size}")
-//                    entry.value.forEach {
-//                      processCompositionManifestResources(
-//                        gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-//                        searchPath =
-//                        "${entry.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
-//                        patientRelatedResourceTypes = patientRelatedResourceTypes,
-//                      )
-//                    }
-                      }
-                    } else {
-//                  val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-//
-//                  chunkedResourceIdList.forEach { parentIt ->
-//                    Timber.d(
-//                      "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
-//                    )
-//                    processCompositionManifestResources(
-//                      entry.key,
-//                      parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
-//                      patientRelatedResourceTypes,
-//                    )
-//                  }
-                    }
-                  }
-
-//            saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
-
-              }
-
-            }
-          }
-
-
-          val compListFlow2 = Sync.oneTimeSync<CompositionListSyncWorker>(context)
-          compListFlow2.handleCompositionListSyncJobStatus(this@coroutineScope)
-          compListFlow2.collect{ compListJobStatus ->
-            Timber.d("#### compListFlow2 collected  $compListJobStatus")
-            when(compListJobStatus) {
-              is CurrentSyncJobStatus.Succeeded -> {
-                Timber.d("#### compListJobStatus succeeded")
-              }else -> {
-              Timber.d("#### compListJobStatus other than succeeded")
-              }
-            }
-          }
-        } else -> {
-          Timber.d("#### compConfigFlowJobStatus other than succeeded")
-        }
-      }
-
-
-    }
-
-//    // Reset configurations before loading new ones
-//    configCacheMap.clear()
-//    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-//      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
-//      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
-//      val compositionResource = fetchRemoteComposition(parsedAppId)
-//      compositionResource?.let { composition ->
-//        composition
-//          .retrieveCompositionSections()
-//          .asSequence()
-//          .filter {
-//            it.hasFocus() && it.focus.hasReferenceElement()
-//          } // is focus.identifier a necessary check
-//          .groupBy { section ->
-//            section.focus.reference.substringBefore(
-//              TYPE_REFERENCE_DELIMITER,
-//              missingDelimiterValue = "",
-//            )
-//          }
-//          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
-//          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
-//            if (entry.key == ResourceType.List.name) {
-//              processCompositionListResources(
-//                entry,
-//                patientRelatedResourceTypes = patientRelatedResourceTypes,
-//              )
-//            } else {
-//              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
-//
-//              chunkedResourceIdList.forEach { parentIt ->
-//                Timber.d(
-//                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
-//                )
-//                processCompositionManifestResources(
-//                  entry.key,
-//                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
-//                  patientRelatedResourceTypes,
-//                )
-//              }
-//            }
-//          }
-//
-//        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
-//
-//        // Save composition after fetching all the referenced section resources
-//        addOrUpdate(compositionResource)
-//
-//        Timber.d("Done fetching application configurations remotely")
-//      }
-//    }
+    fetchCompositionConfig(this)
   }
 
 //to change
@@ -953,14 +786,261 @@ constructor(
         ResourceType.Parameters,
       )
   }
-  private fun Flow<CurrentSyncJobStatus>.handleCompositionConfigSyncJobStatus(
+
+  private suspend fun fetchCompositionConfig(coroutineScope: CoroutineScope) {
+    val compConfigFlow1 = Sync.oneTimeSync<CompositionSyncWorker>(context)
+    compConfigFlow1.handleCompositionSyncJobStatus(coroutineScope)
+    compConfigFlow1.collect { compConfigFlowJobStatus ->
+      Timber.d("#### configFlow1 collect ... $compConfigFlowJobStatus ")
+      when (compConfigFlowJobStatus) {
+        is CurrentSyncJobStatus.Succeeded -> {
+          Timber.d("#### compConfigFlowJobStatus succeeded")
+          fetchCompositionList(coroutineScope)
+        } else -> {
+        Timber.d("#### compConfigFlowJobStatus other than succeeded")
+        // do nothing
+        }
+      }
+    }
+
+//    // Reset configurations before loading new ones
+//    configCacheMap.clear()
+//    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+//      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+//      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+//      val compositionResource = fetchRemoteComposition(parsedAppId)
+//      compositionResource?.let { composition ->
+//        composition
+//          .retrieveCompositionSections()
+//          .asSequence()
+//          .filter {
+//            it.hasFocus() && it.focus.hasReferenceElement()
+//          } // is focus.identifier a necessary check
+//          .groupBy { section ->
+//            section.focus.reference.substringBefore(
+//              TYPE_REFERENCE_DELIMITER,
+//              missingDelimiterValue = "",
+//            )
+//          }
+//          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+//          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+//            if (entry.key == ResourceType.List.name) {
+//              processCompositionListResources(
+//                entry,
+//                patientRelatedResourceTypes = patientRelatedResourceTypes,
+//              )
+//            } else {
+//              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+//
+//              chunkedResourceIdList.forEach { parentIt ->
+//                Timber.d(
+//                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+//                )
+//                processCompositionManifestResources(
+//                  entry.key,
+//                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
+//                  patientRelatedResourceTypes,
+//                )
+//              }
+//            }
+//          }
+//
+//        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+//
+//        // Save composition after fetching all the referenced section resources
+//        addOrUpdate(compositionResource)
+//
+//        Timber.d("Done fetching application configurations remotely")
+//      }
+//    }
+  }
+
+  private fun Flow<CurrentSyncJobStatus>.handleCompositionSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
     Timber.d("#### confRegistry handleConfigSyncJobStatus")
 
   }
 
+  private suspend fun fetchCompositionList(coroutineScope: CoroutineScope){
+    run {
+
+      val compositionListParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+
+      sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+        val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+        val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+        val compositionResource = fhirEngine.searchCompositionByIdentifier(parsedAppId)
+        compositionResource?.let { composition ->
+          composition
+            .retrieveCompositionSections()
+            .asSequence()
+            .filter {
+              it.hasFocus() && it.focus.hasReferenceElement()
+            } // is focus.identifier a necessary check
+            .groupBy { section ->
+              section.focus.reference.substringBefore(
+                TYPE_REFERENCE_DELIMITER,
+                missingDelimiterValue = "",
+              )
+            }
+            .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+            .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+              if (entry.key == ResourceType.List.name) {
+                if (isNonProxy()) {
+                  val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+                  chunkedResourceIdList.forEach {
+
+                    val resourceIds: List<String> =
+                      it.map { sectionComponent -> sectionComponent.focus.extractId() }
+                    val resourceType = entry.key
+                    if (isNonProxy()) {
+                      resourceIds.forEach {
+                        compositionListParamPairs.add(
+                          Pair(
+                            ResourceType.fromCode(resourceType),
+                            mapOf(Composition.SP_RES_ID to it),
+                          ),
+                        )
+                      }
+                    } else {
+                      resourceIds.forEach {
+                        compositionListParamPairs.add(
+                          Pair(
+                            ResourceType.fromCode(resourceType),
+                            mapOf(Composition.SP_RES_ID to it),
+                          ),
+                        )
+                      }
+                    }
+                  }
+
+                  Timber.d("#### compositionList size ${compositionListParamPairs.size}")
+                  syncParamSource.compositionListSyncParameters = mapOf(*compositionListParamPairs.toTypedArray())
+
+                } else {
+
+                  val compositionManifestParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+
+                  Timber.d("#### else condition compositionList size ${compositionListParamPairs.size}")
+                    entry.value.forEach {
+
+
+                      compositionManifestParamPairs.add(
+                        Pair(
+                          ResourceType.fromCode(entry.key),
+                          mapOf(Composition.SP_RES_ID to it.focus.extractId()),
+                        ),
+                      )
+
+//                      processCompositionManifestResources(
+//                        gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
+//                        searchPath =
+//                        "${entry.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
+//                        patientRelatedResourceTypes = patientRelatedResourceTypes,
+//                      )
+                    }
+
+                  syncParamSource.compositionManifestSyncPairs =  mapOf(*compositionManifestParamPairs.toTypedArray())
+                  Timber.d("#### compositionManifestSyncPairs size - ${compositionManifestParamPairs.size}")
+                  val compositionManifestFlow4 = Sync.oneTimeSync<CompositionManifestSyncWorker>(context)
+                  compositionManifestFlow4.handleCompositionManifestSyncJobStatus(coroutineScope)
+                  compositionManifestFlow4.collect{ compManifestJobStatus ->
+                    Timber.d("#### compositionManifestFlow4 collected  $compManifestJobStatus")
+                    when(compManifestJobStatus) {
+                      is CurrentSyncJobStatus.Succeeded -> {
+                        Timber.d("#### compositionManifestFlow4 JobStatus succeeded")
+                      }else -> {
+                      Timber.d("#### compositionManifestFlow4 JobStatus other than succeeded")
+                    }
+                    }
+                  }
+                }
+              } else {
+
+                val compositionConfigParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+
+                  val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+                  chunkedResourceIdList.forEach { parentIt ->
+                    Timber.d(
+                      "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                    )
+                    val resourceIds: List<String> =
+                      parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
+                    val resourceType = entry.key
+                    resourceIds.forEach {
+                      compositionConfigParamPairs.add(
+                        Pair(
+                          ResourceType.fromCode(resourceType),
+                          mapOf(Composition.SP_RES_ID to it),
+                        ),
+                      )
+                    }
+
+                    syncParamSource.compositionConfigSyncParameters =  mapOf(*compositionConfigParamPairs.toTypedArray())
+                    Timber.d("#### compositionConfigSyncParameters size - ${compositionConfigParamPairs.size}")
+                    val compositionConfigFlow3 = Sync.oneTimeSync<CompositionConfigSyncWorker>(context)
+                    compositionConfigFlow3.handleCompositionConfigSyncJobStatus(coroutineScope)
+                    compositionConfigFlow3.collect{ compListJobStatus ->
+                      Timber.d("#### compConfigFlow3 collected  $compListJobStatus")
+                      when(compListJobStatus) {
+                        is CurrentSyncJobStatus.Succeeded -> {
+                          Timber.d("#### compConfigFlow3 JobStatus succeeded")
+                        }else -> {
+                        Timber.d("#### compConfigFlow3 JobStatus other than succeeded")
+                      }
+                      }
+                    }
+
+//                    processCompositionManifestResources(
+//                      entry.key,
+//                      parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
+//                      patientRelatedResourceTypes,
+//                    )
+                  }
+              }
+            }
+            saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+        }
+
+
+        val compListFlow2 = Sync.oneTimeSync<CompositionListSyncWorker>(context)
+        compListFlow2.handleCompositionListSyncJobStatus(coroutineScope)
+        compListFlow2.collect{ compListJobStatus ->
+          Timber.d("#### compListFlow2 collected  $compListJobStatus")
+          when(compListJobStatus) {
+            is CurrentSyncJobStatus.Succeeded -> {
+              Timber.d("#### compListJobStatus succeeded")
+            }else -> {
+            Timber.d("#### compListJobStatus other than succeeded")
+          }
+          }
+        }
+
+      }
+
+
+    }
+  }
+
   private fun Flow<CurrentSyncJobStatus>.handleCompositionListSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("#### confRegistry handleCompositionListSyncJobStatus")
+
+  }
+
+
+  private fun Flow<CurrentSyncJobStatus>.handleCompositionConfigSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("#### confRegistry handleCompositionListSyncJobStatus")
+
+  }
+
+
+  private fun Flow<CurrentSyncJobStatus>.handleCompositionManifestSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
     Timber.d("#### confRegistry handleCompositionListSyncJobStatus")
