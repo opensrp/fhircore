@@ -26,7 +26,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
@@ -37,7 +36,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
-import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
@@ -54,7 +53,7 @@ class SyncBroadcasterTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
-  @Inject lateinit var dispatcherProvider: DispatcherProvider
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
@@ -71,6 +70,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = sharedPreferencesHelper,
         context = ApplicationProvider.getApplicationContext(),
+        dispatcherProvider = dispatcherProvider,
       )
 
     syncBroadcaster =
@@ -84,8 +84,6 @@ class SyncBroadcasterTest : RobolectricTest() {
         ),
       )
   }
-
-  @Test fun testRunSyncWorksAsExpected() = runTest {}
 
   @Test
   fun testLoadSyncParamsShouldLoadFromConfiguration() {

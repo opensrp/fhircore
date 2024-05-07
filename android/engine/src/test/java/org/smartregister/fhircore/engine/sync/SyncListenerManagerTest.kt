@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
@@ -43,6 +44,8 @@ class SyncListenerManagerTest : RobolectricTest() {
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var hiltActivityForTest: HiltActivityForTest
@@ -60,7 +63,7 @@ class SyncListenerManagerTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = co,
+        dispatcherProvider = dispatcherProvider,
       )
   }
 
