@@ -44,7 +44,7 @@ data class ApplicationConfiguration(
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
   val usePractitionerAssignedLocationOnSync: Boolean =
     true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
-          // location selector
+  // location selector
 ) : Configuration()
 
 enum class SyncStrategy {

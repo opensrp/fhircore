@@ -31,8 +31,8 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
-import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -139,9 +139,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
           // if we need to trigger sync based on assigned locations or not
           if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-            if (applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                            syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true)
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            ) {
               triggerSync()
+            }
           } else {
             triggerSync()
           }

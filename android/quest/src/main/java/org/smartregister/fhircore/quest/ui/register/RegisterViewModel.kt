@@ -454,9 +454,10 @@ constructor(
                   SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
                   null,
                 )
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L
-                      // Do not show progress dialog if initial sync is disabled
-                      && applicationConfiguration.usePractitionerAssignedLocationOnSync,
+                .isNullOrEmpty() &&
+                _totalRecordsCount.longValue == 0L &&
+                // Do not show progress dialog if initial sync is disabled
+                applicationConfiguration.usePractitionerAssignedLocationOnSync,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,

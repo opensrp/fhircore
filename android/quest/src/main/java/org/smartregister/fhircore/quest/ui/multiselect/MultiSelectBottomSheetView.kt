@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.multiselect
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +51,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.state.ToggleableState
@@ -87,9 +85,7 @@ fun MultiSelectBottomSheetView(
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 16.dp),
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 16.dp),
         ) {
           Text(
             text = if (title.isNullOrEmpty()) stringResource(R.string.select_location) else title,
@@ -108,10 +104,9 @@ fun MultiSelectBottomSheetView(
           value = searchTextState.value,
           onValueChange = { value -> onSearchTextChanged(value) },
           modifier =
-          Modifier
-            .background(color = Color.Transparent)
-            .padding(vertical = 16.dp, horizontal = 8.dp)
-            .fillMaxWidth(),
+            Modifier.background(color = Color.Transparent)
+              .padding(vertical = 16.dp, horizontal = 8.dp)
+              .fillMaxWidth(),
           textStyle = TextStyle(fontSize = 18.sp),
           trailingIcon = {
             Row(
@@ -163,9 +158,7 @@ fun MultiSelectBottomSheetView(
     },
   ) {
     Box(
-      modifier = Modifier
-        .fillMaxSize()
-        .padding(it),
+      modifier = Modifier.fillMaxSize().padding(it),
       contentAlignment = Alignment.TopCenter,
     ) {
       if (isLoading.value == true) {
@@ -193,9 +186,7 @@ fun MultiSelectBottomSheetView(
             if (selectedNodes.isNotEmpty() && rootTreeNodes.isNotEmpty()) {
               Button(
                 onClick = { onSelectionDone() },
-                modifier = Modifier
-                  .fillMaxWidth()
-                  .padding(vertical = 16.dp, horizontal = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
               ) {
                 Text(
                   text = stringResource(id = R.string.sync_data).uppercase(),

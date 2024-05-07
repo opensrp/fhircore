@@ -36,54 +36,55 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 @AndroidEntryPoint
 class MultiSelectBottomSheetFragment() : BottomSheetDialogFragment() {
 
-    val bottomSheetArgs by navArgs<MultiSelectBottomSheetFragmentArgs>()
-    val multiSelectViewModel by viewModels<MultiSelectViewModel>()
-    private val appMainViewModel by activityViewModels<AppMainViewModel>()
+  val bottomSheetArgs by navArgs<MultiSelectBottomSheetFragmentArgs>()
+  val multiSelectViewModel by viewModels<MultiSelectViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        isCancelable = false
-        val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
-        if (multiSelectViewConfig != null) {
-            multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
-        }
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    isCancelable = false
+    val multiSelectViewConfig = bottomSheetArgs.multiSelectViewConfig
+    if (multiSelectViewConfig != null) {
+      multiSelectViewModel.populateLookupMap(requireContext(), multiSelectViewConfig)
     }
+  }
 
-    private fun onSelectionDone() {
-        multiSelectViewModel.saveSelectedLocations(requireContext())
-        appMainViewModel.run {
-            if (requireContext().isDeviceOnline()) {
-                triggerSync()
-            } else {
-                requireContext().showToast(
-                    getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-                    Toast.LENGTH_LONG,
-                )
-            }
-        }
-        dismiss()
+  private fun onSelectionDone() {
+    multiSelectViewModel.saveSelectedLocations(requireContext())
+    appMainViewModel.run {
+      if (requireContext().isDeviceOnline()) {
+        triggerSync()
+      } else {
+        requireContext()
+          .showToast(
+            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
+      }
     }
+    dismiss()
+  }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        return ComposeView(requireContext()).apply {
-            setContent {
-                AppTheme {
-                    MultiSelectBottomSheetView(
-                        rootTreeNodes = multiSelectViewModel.rootTreeNodes,
-                        selectedNodes = multiSelectViewModel.selectedNodes,
-                        title = bottomSheetArgs.screenTitle,
-                        onDismiss = { dismiss() },
-                        searchTextState = multiSelectViewModel.searchTextState,
-                        onSearchTextChanged = multiSelectViewModel::onTextChanged,
-                        onSelectionDone = ::onSelectionDone,
-                        search = multiSelectViewModel::search,
-                        isLoading = multiSelectViewModel.flag.observeAsState(),
-                    )
-                }
-            }
+  override fun onCreateView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?,
+  ): View {
+    return ComposeView(requireContext()).apply {
+      setContent {
+        AppTheme {
+          MultiSelectBottomSheetView(
+            rootTreeNodes = multiSelectViewModel.rootTreeNodes,
+            selectedNodes = multiSelectViewModel.selectedNodes,
+            title = bottomSheetArgs.screenTitle,
+            onDismiss = { dismiss() },
+            searchTextState = multiSelectViewModel.searchTextState,
+            onSearchTextChanged = multiSelectViewModel::onTextChanged,
+            onSelectionDone = ::onSelectionDone,
+            search = multiSelectViewModel::search,
+            isLoading = multiSelectViewModel.flag.observeAsState(),
+          )
         }
+      }
     }
+  }
 }

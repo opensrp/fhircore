@@ -336,6 +336,12 @@ constructor(
     }
   }
 
+  fun triggerSync() {
+    viewModelScope.launch {
+      syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+    }
+  }
+
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
@@ -352,12 +358,6 @@ constructor(
         )
       }
     }
-  }
-
-   fun triggerSync(){
-     viewModelScope.launch {
-       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
-     }
   }
 
   companion object {
