@@ -219,92 +219,80 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testHandleQuestionnaireSubmissionDoesNotSaveExtractedResourcesContainingInvalidWhenInDebug() {
-    mockkObject(ResourceMapper)
-    mockkObject(Timber)
-    val questionnaire =
-      extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
-    val questionnaireResponse = extractionQuestionnaireResponse()
-    val actionParameters = emptyList<ActionParameter>()
-    val onSuccessfulSubmission =
-      spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse, _: Map<String, String> ->
-        Timber.i(idsTypes.toString())
-      })
-    coEvery {
-      ResourceMapper.extract(
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        structureMapExtractionContext = any(),
-      )
-    } returns
-      Bundle().apply {
-        addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              patient.apply {
-                addLink().apply {
-                  other = Reference("Group/1234")
-                  type = Patient.LinkType.REFER
+  fun testHandleQuestionnaireSubmissionHasValidationErrorsExtractedResourcesContainingInvalidWhenInDebug() =
+    runTest {
+      mockkObject(ResourceMapper)
+      val questionnaire =
+        extractionQuestionnaire().apply { extension = samplePatientRegisterQuestionnaire.extension }
+      val questionnaireResponse = extractionQuestionnaireResponse()
+      val actionParameters = emptyList<ActionParameter>()
+      val onSuccessfulSubmission =
+        spyk({ idsTypes: List<IdType>, _: QuestionnaireResponse, _: Map<String, String> ->
+          Timber.i(idsTypes.toString())
+        })
+      coEvery {
+        ResourceMapper.extract(
+          questionnaire = questionnaire,
+          questionnaireResponse = questionnaireResponse,
+          structureMapExtractionContext = any(),
+        )
+      } returns
+        Bundle().apply {
+          addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                patient.apply {
+                  addLink().apply {
+                    other = Reference("Group/1234")
+                    type = Patient.LinkType.REFER
+                  }
                 }
-              }
-          },
+            },
+          )
+        }
+      coEvery { defaultRepository.addOrUpdate(any(Boolean::class), any<Resource>()) } just runs
+      coEvery { defaultRepository.loadResource(any<String>(), ResourceType.Patient) } returns
+        Patient()
+
+      questionnaireViewModel.handleQuestionnaireSubmission(
+        questionnaire = questionnaire,
+        currentQuestionnaireResponse = questionnaireResponse,
+        actionParameters = actionParameters,
+        context = context,
+        questionnaireConfig = questionnaireConfig,
+        onSuccessfulSubmission = onSuccessfulSubmission,
+      )
+
+      // Verify QuestionnaireResponse was validated
+      coVerify {
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse,
+          context,
         )
       }
-
-    questionnaireViewModel.handleQuestionnaireSubmission(
-      questionnaire = questionnaire,
-      currentQuestionnaireResponse = questionnaireResponse,
-      actionParameters = actionParameters,
-      context = context,
-      questionnaireConfig = questionnaireConfig,
-      onSuccessfulSubmission = onSuccessfulSubmission,
-    )
-
-    // Verify QuestionnaireResponse was validated
-    coVerify {
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-      )
-    }
-    // Verify perform extraction was invoked
-    coVerify {
-      questionnaireViewModel.performExtraction(
-        extractByStructureMap = true,
-        questionnaire = questionnaire,
-        questionnaireResponse = questionnaireResponse,
-        context = context,
-      )
-    }
-
-    if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
-      val errorMessageSlot = slot<String>()
-      verify { Timber.e(capture(errorMessageSlot)) }
-      Assert.assertTrue(
-        errorMessageSlot.captured.contains(
-          "The type 'Group' implied by the reference URL Group/1234 is not a valid Target for this element (must be one of [Patient, RelatedPerson]) - Patient.link[0].other",
-          ignoreCase = true,
-        ),
-      )
-
-      coVerify(exactly = 0) {
-        questionnaireViewModel.saveExtractedResources(
-          bundle = any<Bundle>(),
+      // Verify perform extraction was invoked
+      coVerify {
+        questionnaireViewModel.performExtraction(
+          extractByStructureMap = true,
           questionnaire = questionnaire,
-          questionnaireConfig = questionnaireConfig,
           questionnaireResponse = questionnaireResponse,
           context = context,
         )
       }
-      coVerify(exactly = 0) {
-        questionnaireViewModel.updateResourcesLastUpdatedProperty(
-          actionParameters,
+
+      if (BuildConfig.BUILD_TYPE.contains("debug", ignoreCase = true)) {
+        val errorMessageSlot = slot<Map<String, String>>()
+        verify { onSuccessfulSubmission(any(), any(), capture(errorMessageSlot)) }
+        Assert.assertTrue(
+          errorMessageSlot.captured.values
+            .joinToString("\n")
+            .contains(
+              "The type 'Group' implied by the reference URL Group/1234 is not a valid Target for this element (must be one of [Patient, RelatedPerson]) - Patient.link[0].other",
+              ignoreCase = true,
+            ),
         )
       }
-
-      coVerify(exactly = 0) { onSuccessfulSubmission(any(), questionnaireResponse, any()) }
-    } else {
       coVerify {
         questionnaireViewModel.saveExtractedResources(
           bundle = any<Bundle>(),
@@ -321,10 +309,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
       coVerify { onSuccessfulSubmission(any(), questionnaireResponse, any()) }
+      unmockkObject(ResourceMapper)
     }
-    unmockkObject(Timber)
-    unmockkObject(ResourceMapper)
-  }
 
   // TODO Write integration test for QuestionnaireActivity to compliment this unit test;
   @Test
@@ -489,6 +475,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         subject = capture(subjectSlot),
         bundle = capture(bundleSlot),
         questionnaireConfig = updatedQuestionnaireConfig,
+        validationErrorsMap = any(),
       )
 
       questionnaireViewModel.executeCql(
@@ -496,6 +483,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         bundle = capture(bundleSlot),
         questionnaire = questionnaire,
         questionnaireConfig = updatedQuestionnaireConfig,
+        validationErrorsMap = any(),
       )
 
       fhirCarePlanGenerator.conditionallyUpdateResourceStatus(
