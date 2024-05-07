@@ -54,7 +54,6 @@ enum class SyncStrategy {
   CareTeam,
   RelatedEntityLocation,
   Organization,
-  Practitioner,
 }
 
 enum class LocationLogOptions {
