@@ -813,7 +813,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSoftDeleteShouldTriggerDefaultRepositoryRemoveGroupFunction() {
+  fun testSoftDeleteShouldTriggerDefaultRepositoryRemoveGroupFunction() = runTest {
     val theQuestionnaireConfig =
       QuestionnaireConfig(
         id = samplePatientRegisterQuestionnaire.id,
@@ -837,7 +837,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSoftDeleteShouldTriggerDefaultRepositoryRemoveGroupMemberFunction() {
+  fun testSoftDeleteShouldTriggerDefaultRepositoryRemoveGroupMemberFunction() = runTest {
     val theQuestionnaireConfig =
       QuestionnaireConfig(
         id = samplePatientRegisterQuestionnaire.id,
@@ -864,7 +864,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testSoftDeleteShouldTriggerDefaultRepositoryUpdateResourceFunction() {
+  fun testSoftDeleteShouldTriggerDefaultRepositoryUpdateResourceFunction() = runTest {
     val patient = Faker.buildPatient()
     val theQuestionnaireConfig =
       QuestionnaireConfig(

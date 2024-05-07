@@ -892,7 +892,7 @@ constructor(
    * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
    * or [QuestionnaireConfig.removeResource] config properties.
    */
-  fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
+  suspend fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
         groupId = questionnaireConfig.groupResource!!.groupIdentifier,
@@ -922,40 +922,40 @@ constructor(
     }
   }
 
-  private fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
+  private suspend fun removeGroup(
+    groupId: String,
+    removeGroup: Boolean,
+    deactivateMembers: Boolean,
+  ) {
     if (removeGroup) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroup(
-            groupId = groupId,
-            isDeactivateMembers = deactivateMembers,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroup(
+          groupId = groupId,
+          isDeactivateMembers = deactivateMembers,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
 
-  private fun removeGroupMember(
+  private suspend fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
     memberResourceType: ResourceType?,
     removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroupMember(
-            memberId = memberId,
-            groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroupMember(
+          memberId = memberId,
+          groupId = groupIdentifier,
+          groupMemberResourceType = memberResourceType,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
