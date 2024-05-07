@@ -1,0 +1,55 @@
+{
+  "resourceType": "ImplementationGuide",
+  "id": "12967310",
+  "url": "https://fhir.zeir.smartregister.org/fhir/ImplementationGuide/quest",
+  "version": "1.1.0",
+  "name": "quest",
+  "title": "Quest Implementation Guide",
+  "status": "draft",
+  "packageId": "org.smartregister.fhircore",
+  "date": "2024-04-01",
+  "publisher": "Ona Systems, Inc.",
+  "fhirVersion": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/FHIR-version",
+            "code": "4.3.0",
+            "display": "4.3.0"
+          }
+        ],
+        "text": "FHIR Release 4B."
+      }
+    }
+  ],
+  "useContext": {
+    "code": {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/usage-context-type",
+          "code": "program",
+          "display": "Program"
+        }
+      ],
+      "text": "Program"
+    },
+    "valueRange": {
+      "low": {
+        "value": 1
+      },
+      "high": {
+        "value": 10
+      }
+    }
+  },
+  "definition": {
+    "resource": [
+      {
+        "reference": {
+          "reference": "Composition/8294"
+        }
+      }
+    ]
+  }
+}
