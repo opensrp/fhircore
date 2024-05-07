@@ -43,6 +43,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,8 +70,6 @@ import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
-import retrofit2.HttpException
-import timber.log.Timber
 
 @ExperimentalMaterialApi
 @AndroidEntryPoint
@@ -189,17 +188,23 @@ class RegisterFragment : Fragment(), OnSyncListener {
     registerViewModel.searchText.value = "" // Clear the search term
   }
 
-  override fun onSync(syncJobStatus: SyncJobStatus) {
+  override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
-      is SyncJobStatus.Started ->
-        lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(message = getString(R.string.syncing)),
+      is CurrentSyncJobStatus.Running ->
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.Started) {
+          lifecycleScope.launch {
+            registerViewModel.emitSnackBarState(
+              SnackBarMessageConfig(message = getString(R.string.syncing)),
+            )
+          }
+        } else {
+          emitPercentageProgress(
+            syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
+            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
+              SyncOperation.UPLOAD,
           )
         }
-      is SyncJobStatus.InProgress ->
-        emitPercentageProgress(syncJobStatus, syncJobStatus.syncOperation == SyncOperation.UPLOAD)
-      is SyncJobStatus.Succeeded -> {
+      is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -211,28 +216,14 @@ class RegisterFragment : Fragment(), OnSyncListener {
           )
         }
       }
-      is SyncJobStatus.Failed -> {
+      is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
+        syncJobStatus.toString()
         // Show error message in snackBar message
-        val hasAuthError =
-          try {
-            Timber.e(syncJobStatus.exceptions.joinToString { it.exception.message ?: "" })
-            syncJobStatus.exceptions.any {
-              it.exception is HttpException && (it.exception as HttpException).code() == 401
-            }
-          } catch (nullPointerException: NullPointerException) {
-            false
-          }
-
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
-              message =
-                getString(
-                  if (hasAuthError) {
-                    R.string.sync_unauthorised
-                  } else R.string.sync_completed_with_errors,
-                ),
+              message = getString(R.string.sync_completed_with_errors),
               duration = SnackbarDuration.Long,
               actionLabel = getString(R.string.ok).uppercase(),
             ),

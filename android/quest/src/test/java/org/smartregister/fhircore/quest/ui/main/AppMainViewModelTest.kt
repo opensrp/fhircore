@@ -23,7 +23,7 @@ import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -170,7 +170,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventUpdateSyncStates() {
     // Simulate sync state Finished
     val syncFinishedTimestamp = OffsetDateTime.now()
-    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Succeeded>()
+    val syncFinishedSyncJobStatus = mockk<CurrentSyncJobStatus.Succeeded>()
     every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
     appMainViewModel.onEvent(

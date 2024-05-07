@@ -37,10 +37,10 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkObject
-import io.mockk.verify
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -188,6 +188,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           fhirOperator = fhirOperator,
           fhirPathDataExtractor = fhirPathDataExtractor,
+          configurationRegistry = configurationRegistry,
         ),
       )
 
@@ -253,7 +254,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         structureMapExtractionContext = any(),
       )
     } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
 
     questionnaireViewModel.handleQuestionnaireSubmission(
       questionnaire = questionnaire,
@@ -265,7 +270,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     )
 
     // Verify QuestionnaireResponse was validated
-    verify {
+    coVerify {
       questionnaireViewModel.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
@@ -351,8 +356,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val idsTypesSlot = slot<List<IdType>>()
 
     // Mock result for subject (Patient) that is reloaded via loadResource function
-    coEvery { questionnaireViewModel.loadResource(ResourceType.Patient, patient.logicalId) } returns
-      patient
+    coEvery {
+      questionnaireViewModel.loadResource(
+        ResourceType.Patient,
+        patient.logicalId,
+      )
+    } returns patient
 
     // Verify other function calls in order of execution after saving resources
     coVerifyOrder {
@@ -408,7 +417,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         structureMapExtractionContext = any(),
       )
     } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
     val bundle =
       questionnaireViewModel.performExtraction(
         extractByStructureMap = true,
@@ -429,7 +442,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val theQuestionnaireResponse = extractionQuestionnaireResponse()
 
     coEvery { ResourceMapper.extract(questionnaire, theQuestionnaireResponse) } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
     val bundle =
       questionnaireViewModel.performExtraction(
         extractByStructureMap = false,
@@ -657,29 +674,31 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         )
       }
 
-    // No answer provided
-    Assert.assertFalse(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse,
-        context,
-      ),
-    )
+    runBlocking {
+      // No answer provided
+      Assert.assertFalse(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse,
+          context,
+        ),
+      )
 
-    // With an answer provided
-    Assert.assertTrue(
-      questionnaireViewModel.validateQuestionnaireResponse(
-        questionnaire,
-        questionnaireResponse.apply {
-          itemFirstRep.answer =
-            listOf(
-              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
-                .setValue(StringType("Answer")),
-            )
-        },
-        context,
-      ),
-    )
+      // With an answer provided
+      Assert.assertTrue(
+        questionnaireViewModel.validateQuestionnaireResponse(
+          questionnaire,
+          questionnaireResponse.apply {
+            itemFirstRep.answer =
+              listOf(
+                QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
+                  .setValue(StringType("Answer")),
+              )
+          },
+          context,
+        ),
+      )
+    }
   }
 
   @Test
@@ -707,7 +726,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         "http://smartreg.org/Library/123",
         patient.asReference().reference,
         null,
-        setOf(),
+        expressions = setOf(),
       )
     }
   }
@@ -964,7 +983,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoAppendedCorrectlyOnEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     encounter.appendPractitionerInfo("12345")
-    Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
+    Assert.assertEquals(
+      "Practitioner/12345",
+      encounter.participant.first().individual.reference,
+    )
   }
 
   @Test
@@ -1063,7 +1085,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
-    coEvery { fhirEngine.get(ResourceType.Observation, previousObs.logicalId) } returns previousObs
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Observation,
+        previousObs.logicalId,
+      )
+    } returns previousObs
     coEvery { fhirEngine.get(ResourceType.Observation, newObservation.logicalId) } returns
       newObservation
     coEvery { fhirEngine.update(resource = anyVararg()) } just runs
@@ -1142,4 +1169,95 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
   }
+
+  @Test
+  fun testSaveExtractedResourcesAddsRelatedEntityLocationMetaTagToExtractedResource() =
+    runBlocking {
+      val bundleSlot = slot<Bundle>()
+      val bundle = bundleSlot.captured
+      val linkId = "linkId"
+      val metaTagId = "UUId123"
+      val questionnaire = extractionQuestionnaire()
+      val questionnaireConfig =
+        questionnaireConfig.copy(
+          resourceIdentifier = "resourceId",
+          resourceType = ResourceType.Location,
+          saveQuestionnaireResponse = false,
+          type = "EDIT",
+          linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
+          extractedResourceUniquePropertyExpressions =
+            listOf(
+              ExtractedResourceUniquePropertyExpression(
+                ResourceType.Location,
+                "Observation.code.where(coding.code='obs1').coding.code",
+              ),
+            ),
+        )
+      val previousObs =
+        Observation().apply {
+          id = "previousObs1"
+          code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
+        }
+
+      val questionnaireResponse =
+        extractionQuestionnaireResponse().apply {
+          val extractionDate = Date()
+          subject = patient.asReference()
+          val listResource =
+            ListResource().apply {
+              id = metaTagId
+              status = ListResource.ListStatus.CURRENT
+              mode = ListResource.ListMode.WORKING
+              title = CONTAINED_LIST_TITLE
+              date = extractionDate
+            }
+          val listEntryComponent =
+            ListResource.ListEntryComponent().apply {
+              deleted = false
+              date = extractionDate
+              item = previousObs.asReference()
+            }
+          listResource.addEntry(listEntryComponent)
+          addContained(listResource)
+        }
+
+      questionnaireViewModel.saveExtractedResources(
+        bundle = bundle,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+      )
+
+      // Extract tags manually
+      val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+      val resource = listResource.entry.firstOrNull()?.item?.resource
+
+      // Assert
+      Assert.assertNotNull(listResource)
+      Assert.assertNotNull(resource)
+
+      // Check if the meta tag id exists
+      var metaTagIdExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.code == metaTagId) {
+          metaTagIdExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(metaTagIdExists)
+
+      // Check if the related entity location meta tag exists
+      var relatedEntityLocationMetaTagExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.system == "https://smartregister.org/related-entity-location-tag-id") {
+          relatedEntityLocationMetaTagExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(relatedEntityLocationMetaTagExists)
+
+      // Assert that the listResource id matches the linkId
+      assertEquals(linkId, listResource.id)
+    }
 }
