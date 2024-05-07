@@ -63,6 +63,7 @@ import org.hl7.fhir.r4.model.Type
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -533,3 +534,11 @@ fun List<RepositoryResourceData>.filterByFhirPathExpression(
     }
   }
 }
+
+/**
+ * This function extracts the resource id from a URL request e.g.
+ * http://my-structuremap-url/fhir/StructureMap/123456 returns 123456 Note: NOT to be used as is
+ * with urls that contain query parameters or any extra characters after the id
+ */
+fun String.extractResourceId() =
+  this.substringAfterLast(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER)

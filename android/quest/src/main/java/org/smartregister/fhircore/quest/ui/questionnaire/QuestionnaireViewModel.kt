@@ -43,7 +43,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
-import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
@@ -553,21 +552,22 @@ constructor(
   ): Bundle =
     kotlin
       .runCatching {
-        val worker = getFhirSdkSimpleWorkerContext()
+        val workerContext = SimpleWorkerContext()
+        workerContext.isAllowLoadingDuplicates = true
         if (extractByStructureMap) {
           ResourceMapper.extract(
             questionnaire = questionnaire,
             questionnaireResponse = questionnaireResponse,
             structureMapExtractionContext =
               StructureMapExtractionContext(
-                context = context,
-                transformSupportServices = TransformSupportServicesMatchBox(worker),
+                workerContext = workerContext,
+                transformSupportServices = TransformSupportServicesMatchBox(workerContext),
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.extractResourceId()?.let { structureMapId ->
                     defaultRepository
                       .search<StructureDefinition>(Search(ResourceType.StructureDefinition))
-                      .forEach(worker::cacheResource)
-                    loadStructureMapDependencyTree(structureMapId)
+                      .forEach(workerContext::cacheResource)
+                    loadStructureMapDependencyTree(structureMapId, workerContext)
                   }
                 },
               ),
@@ -916,35 +916,21 @@ constructor(
    */
   private suspend fun loadStructureMapDependencyTree(
     structureMapId: String,
+    simpleWorkerContext: SimpleWorkerContext
   ): StructureMap? {
     val structureMap = defaultRepository.loadResource<StructureMap>(structureMapId)
     structureMap?.also { structureMapIterator ->
-      getFhirSdkSimpleWorkerContext().cacheResource(structureMapIterator)
+        simpleWorkerContext.cacheResource(structureMapIterator)
 
       structureMapIterator.import?.let { canonicalTypes ->
         canonicalTypes.forEach { structureMapUrl ->
           structureMapUrl.value?.extractResourceId()?.let { structureMapId ->
-            loadStructureMapDependencyTree(structureMapId)
+            loadStructureMapDependencyTree(structureMapId, simpleWorkerContext)
           }
         }
       }
     }
     return structureMap
-  }
-
-  /**
-   * This function uses Kotlin reflection API to retrieve the simpleWorkerContext instance in use by
-   * the FHIR SDK
-   *
-   * @return [SimpleWorkerContext]
-   */
-  private fun getFhirSdkSimpleWorkerContext(): SimpleWorkerContext {
-    val dataCaptureConfig =
-      (sharedPreferencesHelper.context as QuestApplication).getDataCaptureConfig()
-    return (dataCaptureConfig.javaClass.kotlin.memberProperties
-        .find { it.name == "simpleWorkerContext" }
-        ?.get(dataCaptureConfig) as SimpleWorkerContext)
-      .apply { isAllowLoadingDuplicates = true }
   }
 
   /**
