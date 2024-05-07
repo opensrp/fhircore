@@ -60,7 +60,7 @@ constructor(
 
   private fun loadConfigSyncParams(): Map<ResourceType, Map<String, String>> {
 
-    Timber.d("#### loadConfigSyncParams")
+    Timber.d("#### loadCompositionSyncParams")
 //    return syncParamSource.configSyncParameters
     val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 

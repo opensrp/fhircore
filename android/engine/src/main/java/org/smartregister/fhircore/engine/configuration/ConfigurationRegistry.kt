@@ -984,6 +984,7 @@ constructor(
                     val resourceIds: List<String> =
                       parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
                     val resourceType = entry.key
+                    Timber.d("#### compositionConfigParamPairs adding resourceType - $resourceType")
                     resourceIds.forEach {
                       compositionConfigParamPairs.add(
                         Pair(

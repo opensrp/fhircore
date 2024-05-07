@@ -56,7 +56,7 @@ constructor(
        return syncConfig
      }
      set(value) {
-       syncConfig = value
+       this.syncConfig = value
      }
 
 
@@ -95,7 +95,7 @@ constructor(
   }
 
   fun linkSyncConfig(syncConfigParameters: Parameters) {
-    syncConfig = syncConfigParameters
+    this.syncConfig = syncConfigParameters
   }
 
   /** Retrieve registry sync params */
