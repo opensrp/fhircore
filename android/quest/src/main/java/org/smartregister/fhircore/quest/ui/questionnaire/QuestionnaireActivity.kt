@@ -33,7 +33,8 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.QuestionnaireFragment
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -278,69 +279,83 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
       )
       finish()
     }
-    val questionnaireFragmentBuilder =
-      QuestionnaireFragment.builder()
-        .setQuestionnaire(questionnaire.json())
-        .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
-          OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
-        )
-        .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
-        .showRequiredText(questionnaireConfig.showRequiredText)
 
     val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
     val resourceType =
       questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
     val resourceIdentifier = questionnaireConfig.resourceIdentifier
 
-    if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
-      // Add subject and other configured resource to launchContext
-      val launchContextResources =
-        LinkedList<Resource>().apply {
+    // Add subject and other configured resource to launchContext
+    val launchContextResources =
+      LinkedList<Resource>().apply {
+        if (resourceType != null && !resourceIdentifier.isNullOrEmpty()) {
           viewModel.loadResource(resourceType, resourceIdentifier)?.let { add(it) }
-          addAll(
-            // Exclude the subject resource its already added
-            viewModel.retrievePopulationResources(
-              actionParameters.filterNot {
-                it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
-                  resourceType == it.resourceType &&
-                  resourceIdentifier.equals(it.value, ignoreCase = true)
-              },
-            ),
-          )
+          val actionParametersExcludingSubject =
+            actionParameters.filterNot {
+              it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+                resourceType == it.resourceType &&
+                resourceIdentifier.equals(it.value, ignoreCase = true)
+            }
+          addAll(viewModel.retrievePopulationResources(actionParametersExcludingSubject))
+        } else {
+          addAll(viewModel.retrievePopulationResources(actionParameters))
         }
-
-      if (launchContextResources.isNotEmpty()) {
-        questionnaireFragmentBuilder.setQuestionnaireLaunchContextMap(
-          launchContextResources.associate {
-            Pair(it.resourceType.name.lowercase(), it.encodeResourceToString())
-          },
-        )
+      }
+    val launchContextStringMap =
+      launchContextResources.associate {
+        Pair(it.resourceType.name.lowercase(), it.encodeResourceToString())
       }
 
-      // Populate questionnaire with latest QuestionnaireResponse
-      if (questionnaireConfig.isEditable()) {
-        val latestQuestionnaireResponse =
-          viewModel.searchLatestQuestionnaireResponse(
+    // Populate questionnaire with initial default values
+    ResourceMapper.populate(
+      questionnaire,
+      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
+    )
+
+    // Populate questionnaire with latest QuestionnaireResponse
+    val questionnaireResponse: QuestionnaireResponse?
+
+    if (
+      resourceType != null &&
+        !resourceIdentifier.isNullOrEmpty() &&
+        questionnaireConfig.isEditable()
+    ) {
+      val validQuestionnaireResponse =
+        viewModel
+          .searchLatestQuestionnaireResponse(
             resourceId = resourceIdentifier,
             resourceType = resourceType,
             questionnaireId = questionnaire.logicalId,
           )
-
-        val questionnaireResponse =
+          ?.takeIf { viewModel.validateQuestionnaireResponse(questionnaire, it, this) }
+      questionnaireResponse =
+        if (validQuestionnaireResponse != null) {
           QuestionnaireResponse().apply {
-            item = latestQuestionnaireResponse?.item
+            item = validQuestionnaireResponse.item
             // Clearing the text prompts the SDK to re-process the content, which includes HTML
             clearText()
           }
-
-        if (viewModel.validateQuestionnaireResponse(questionnaire, questionnaireResponse, this)) {
-          questionnaireFragmentBuilder.setQuestionnaireResponse(questionnaireResponse.json())
         } else {
           showToast(getString(R.string.error_populating_questionnaire))
+          null
         }
-      }
+    } else {
+      questionnaireResponse = null
     }
-    return questionnaireFragmentBuilder
+
+    return QuestionnaireFragment.builder()
+      .setQuestionnaire(questionnaire.json())
+      .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
+        OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
+      )
+      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
+      .showRequiredText(questionnaireConfig.showRequiredText)
+      .apply {
+        launchContextStringMap
+          .takeIf { it.isNotEmpty() }
+          ?.let { setQuestionnaireLaunchContextMap(it) }
+        questionnaireResponse?.let { setQuestionnaireResponse(it.json()) }
+      }
   }
 
   private fun Resource.json(): String = this.encodeResourceToString()
