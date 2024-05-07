@@ -263,6 +263,13 @@ android {
       manifestPlaceholders["appLabel"] = "ECD"
     }
 
+    create("ecdHack") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecdHack"
+      versionNameSuffix = "-ecdHack"
+      manifestPlaceholders["appLabel"] = "ECD Hack"
+    }
+
     create("diabetesCompass") {
       dimension = "apps"
       applicationIdSuffix = ".diabetesCompass"
