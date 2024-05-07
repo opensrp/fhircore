@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addTags
 import org.smartregister.fhircore.engine.util.extension.filterBy
 import org.smartregister.fhircore.engine.util.extension.filterByResourceTypeId
+import org.smartregister.fhircore.engine.util.extension.generateCreatedOn
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.generateMissingVersionId
 import org.smartregister.fhircore.engine.util.extension.loadPatientImmunizations
@@ -191,6 +192,7 @@ constructor(
       resource.onEach {
         it.generateMissingId()
         it.generateMissingVersionId()
+        it.generateCreatedOn()
         if (addResourceTags) {
           it.addTags(configService.provideResourceTags(sharedPreferencesHelper))
         }

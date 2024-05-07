@@ -23,6 +23,7 @@ object SystemConstants {
   const val REASON_CODE_SYSTEM = "https://d-tree.org/fhir/reason-code"
   const val BASE_URL = "https://d-tree.org"
   const val TASK_FILTER_TAG_SYSTEM = "https://d-tree.org/fhir/task-filter-tag"
+  const val RESOURCE_CREATED_ON_TAG_SYSTEM = "https://d-tree.org/fhir/created-on-tag"
   const val TASK_TASK_ORDER_SYSTEM = "https://d-tree.org/fhir/clinic-visit-task-order"
   const val PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM =
     "https://d-tree.org/fhir/patient-meta-tag"
