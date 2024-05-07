@@ -50,8 +50,10 @@ import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
@@ -1260,4 +1262,39 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       // Assert that the listResource id matches the linkId
       assertEquals(linkId, listResource.id)
     }
+
+  @Test
+  fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaire() = runTest {
+    val questionnaireWithDefaultDate =
+      Questionnaire().apply {
+        id = questionnaireConfig.id
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "defaultedDate"
+            type = Questionnaire.QuestionnaireItemType.DATE
+            addExtension(
+              Extension(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "today()"
+                },
+              ),
+            )
+          },
+        )
+      }
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      questionnaireWithDefaultDate
+
+    questionnaireViewModel.populateQuestionnaire(
+      questionnaireWithDefaultDate,
+      questionnaireConfig,
+      emptyList(),
+    )
+    val initialValueDate =
+      questionnaireWithDefaultDate.item.first { it.linkId == "defaultedDate" }.initial.first().value
+        as DateType
+    Assert.assertTrue(initialValueDate.isToday)
+  }
 }
