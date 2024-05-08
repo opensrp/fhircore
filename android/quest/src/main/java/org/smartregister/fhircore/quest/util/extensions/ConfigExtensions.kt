@@ -249,10 +249,10 @@ suspend fun loadRemoteImagesBitmaps(
   registerRepository: RegisterRepository,
   computedValuesMap: Map<String, Any>,
 ) {
-  suspend fun loadIcons(view: ViewProperties) {
-    when (view.viewType) {
+  suspend fun ViewProperties.loadIcons() {
+    when (this.viewType) {
       ViewType.IMAGE -> {
-        val imageProps = view as ImageProperties
+        val imageProps = this as ImageProperties
         if (
           !imageProps.imageConfig?.reference.isNullOrEmpty() &&
             imageProps.imageConfig?.type == ICON_TYPE_REMOTE
@@ -273,25 +273,25 @@ suspend fun loadRemoteImagesBitmaps(
         }
       }
       ViewType.ROW -> {
-        val container = view as RowProperties
-        container.children.forEach { childView -> loadIcons(childView) }
+        val container = this as RowProperties
+        container.children.forEach { it.loadIcons() }
       }
       ViewType.COLUMN -> {
-        val container = view as ColumnProperties
-        container.children.forEach { childView -> loadIcons(childView) }
+        val container = this as ColumnProperties
+        container.children.forEach { it.loadIcons() }
       }
       ViewType.CARD -> {
-        val card = view as CardViewProperties
-        card.content.forEach { contentView -> loadIcons(contentView) }
+        val card = this as CardViewProperties
+        card.content.forEach { it.loadIcons() }
       }
       ViewType.LIST -> {
-        val list = view as ListProperties
-        list.registerCard.views.forEach { contentView -> loadIcons(contentView) }
+        val list = this as ListProperties
+        list.registerCard.views.forEach { it.loadIcons() }
       }
       else -> {
         // Handle any other view types if needed
       }
     }
   }
-  views.forEach { view -> loadIcons(view) }
+  views.forEach { it.loadIcons() }
 }
