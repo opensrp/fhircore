@@ -183,8 +183,8 @@ fun ClickableImageIcon(
                 .fillMaxSize(0.9f),
             bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.tint(tint ?: imageProperties.imageConfig?.color.parseColor()),
+            alpha = 1.0f,
+            contentScale = ContentScale.Fit,
           )
         }
     }

@@ -26,19 +26,36 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Binary
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.base64toBitmap
 import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
@@ -198,3 +215,83 @@ fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
     ?.associate { it.key to it.value } ?: emptyMap()
+
+fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
+  coroutineScope: CoroutineScope,
+  registerRepository: RegisterRepository,
+) {
+  this.forEach {
+    val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
+    coroutineScope.launch() {
+      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+        it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+      }
+    }
+  }
+}
+
+fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
+  coroutineScope: CoroutineScope,
+  registerRepository: RegisterRepository,
+) {
+  this.forEach {
+    val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
+    coroutineScope.launch() {
+      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+        it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
+      }
+    }
+  }
+}
+
+suspend fun loadRemoteImagesBitmaps(
+  views: List<ViewProperties>,
+  registerRepository: RegisterRepository,
+  computedValuesMap: Map<String, Any>,
+) {
+  suspend fun loadIcons(view: ViewProperties) {
+    when (view.viewType) {
+      ViewType.IMAGE -> {
+        val imageProps = view as ImageProperties
+        if (
+          !imageProps.imageConfig?.reference.isNullOrEmpty() &&
+            imageProps.imageConfig?.type == ICON_TYPE_REMOTE
+        ) {
+          val resourceId =
+            imageProps.imageConfig!!
+              .reference!!
+              .interpolate(computedValuesMap)
+              .extractLogicalIdUuid()
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            imageProps.imageConfig?.decodedBitmap =
+              binary.data
+                .decodeToString()
+                .tryDecodeJson<ImageConfiguration>()
+                ?.data
+                ?.base64toBitmap()
+          }
+        }
+      }
+      ViewType.ROW -> {
+        val container = view as RowProperties
+        container.children.forEach { childView -> loadIcons(childView) }
+      }
+      ViewType.COLUMN -> {
+        val container = view as ColumnProperties
+        container.children.forEach { childView -> loadIcons(childView) }
+      }
+      ViewType.CARD -> {
+        val card = view as CardViewProperties
+        card.content.forEach { contentView -> loadIcons(contentView) }
+      }
+      ViewType.LIST -> {
+        val list = view as ListProperties
+        list.registerCard.views.forEach { contentView -> loadIcons(contentView) }
+      }
+      else -> {
+        // Handle any other view types if needed
+      }
+    }
+  }
+  views.forEach { view -> loadIcons(view) }
+}

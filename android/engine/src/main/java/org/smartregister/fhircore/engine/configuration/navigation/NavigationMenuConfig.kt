@@ -21,6 +21,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -52,6 +53,14 @@ data class ImageConfig(
     )
   }
 }
+
+@Serializable
+data class ImageConfiguration(
+  val id: String,
+  override val resourceType: String,
+  val contentType: String,
+  val data: String,
+) : Configuration()
 
 const val ICON_TYPE_LOCAL = "local"
 const val ICON_TYPE_REMOTE = "remote"
