@@ -24,7 +24,6 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
@@ -44,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
+import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
@@ -62,7 +62,6 @@ import org.smartregister.fhircore.engine.util.extension.familyName
 import org.smartregister.fhircore.engine.util.extension.givenName
 import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
@@ -146,7 +145,7 @@ constructor(
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
     val configuration = getApplicationConfiguration()
-    val carePlan = patient.activeCarePlans().firstOrNull()
+    val carePlan = patient.activeCarePlans(fhirEngine).firstOrNull()
 
     return ProfileData.HivProfileData(
       logicalId = patient.logicalId,
@@ -284,19 +283,6 @@ constructor(
           emptyList()
         }
       }
-
-  internal suspend fun Patient.activeCarePlans(): List<CarePlan> {
-    return fhirEngine
-      .search<CarePlan> {
-        filter(CarePlan.SUBJECT, { value = this@activeCarePlans.referenceValue() })
-        filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) })
-      }
-      .asSequence()
-      .map { it.resource }
-      .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
-      .sortedBy { it.meta.lastUpdated }
-      .toList()
-  }
 
   internal suspend fun Patient.practitioners(): List<Practitioner> {
     return generalPractitioner

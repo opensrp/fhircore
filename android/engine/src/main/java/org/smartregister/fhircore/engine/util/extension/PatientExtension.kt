@@ -17,10 +17,13 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
@@ -304,4 +307,17 @@ fun Patient.extractHealthStatusFromMeta(filterTag: String): HealthStatus {
     this.meta.tag.filter { it.system.equals(filterTag, true) }.filterNot { it.code.isNullOrBlank() }
   if (filterTag.isEmpty() || tagList.isEmpty()) return HealthStatus.DEFAULT
   return tagList.map { it.toHealthStatus() }.minByOrNull { it.priority() }!!
+}
+
+suspend fun Patient.activeCarePlans(fhirEngine: FhirEngine): List<CarePlan> {
+  return fhirEngine
+    .search<CarePlan> {
+      filter(CarePlan.SUBJECT, { value = this@activeCarePlans.referenceValue() })
+      filter(CarePlan.STATUS, { value = of(CarePlan.CarePlanStatus.ACTIVE.toCode()) })
+    }
+    .asSequence()
+    .map { it.resource }
+    .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
+    .sortedBy { it.meta.lastUpdated }
+    .toList()
 }
