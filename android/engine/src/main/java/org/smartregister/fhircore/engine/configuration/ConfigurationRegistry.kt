@@ -429,6 +429,75 @@ constructor(
   }
 
 
+  /**
+   * Fetch non-patient Resources for the application that are not application configurations
+   * resources such as [ResourceType.Questionnaire] and [ResourceType.StructureMap]. (
+   * [ResourceType.Binary] and [ResourceType.Parameters] are currently the only FHIR HL7 resources
+   * used to represent application configurations). These non-patients resource identifiers are also
+   * set in the section components of the [Composition] resource.
+   *
+   * This function retrieves the composition based on the appId and groups the non-patient resources
+   * ( [ResourceType.Questionnaire] or [ResourceType.StructureMap]) based on their type.
+   *
+   * Searching is done using the _id search parameter of these not patient resources; the
+   * composition section components are grouped by resource type ,then the ids concatenated (as
+   * comma separated values), thus generating a search query like the following 'Resource
+   * Type'?_id='comma,separated,list,of,ids'
+   */
+  @Throws(UnknownHostException::class, HttpException::class)
+  suspend fun fetchNonWorkflowConfigResourcesMain(isInitialLogin: Boolean = true) {
+    // Reset configurations before loading new ones
+    configCacheMap.clear()
+    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
+      val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
+      val patientRelatedResourceTypes = mutableListOf<ResourceType>()
+      val compositionResource = fetchRemoteCompositionByAppId(parsedAppId)
+      compositionResource?.let { composition ->
+        composition
+          .retrieveCompositionSections()
+          .asSequence()
+          .filter {
+            it.hasFocus() && it.focus.hasReferenceElement()
+          } // is focus.identifier a necessary check
+          .groupBy { section ->
+            section.focus.reference.substringBefore(
+              TYPE_REFERENCE_DELIMITER,
+              missingDelimiterValue = "",
+            )
+          }
+          .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
+          .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+            if (entry.key == ResourceType.List.name) {
+              processCompositionListResources(
+                entry,
+                patientRelatedResourceTypes = patientRelatedResourceTypes,
+              )
+            } else {
+              val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+
+              chunkedResourceIdList.forEach { parentIt ->
+                Timber.d(
+                  "#### Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                )
+                processCompositionManifestResources(
+                  entry.key,
+                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
+                  patientRelatedResourceTypes,
+                )
+              }
+            }
+          }
+
+        saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
+
+        // Save composition after fetching all the referenced section resources
+        addOrUpdate(compositionResource)
+
+        Timber.d("Done fetching application configurations remotely")
+      }
+    }
+  }
+
     suspend fun fetchRemoteImplementationGuideByAppId(
         appId: String?,
         appVersionCode: Int?,
