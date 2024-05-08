@@ -42,13 +42,11 @@ allprojects {
     google()
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
     apply(plugin = "org.owasp.dependencycheck")
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")
-    }
-    configurations.all{
-      resolutionStrategy.force ("com.google.android.gms:play-services-location:19.0.1")
     }
   }
 }
