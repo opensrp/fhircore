@@ -47,6 +47,7 @@ import org.hl7.fhir.r4.model.Timing
 import org.json.JSONException
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
@@ -214,6 +215,12 @@ fun Resource.generateMissingId() {
 
 fun Resource.generateMissingVersionId() {
   meta.versionId = meta.versionId ?: 1.toString()
+}
+
+fun Resource.generateCreatedOn() {
+  meta.addTag(
+    Coding(SystemConstants.RESOURCE_CREATED_ON_TAG_SYSTEM, Date().asDdMmYyyy(), "Created on"),
+  )
 }
 
 fun Resource.updateLastUpdated() {

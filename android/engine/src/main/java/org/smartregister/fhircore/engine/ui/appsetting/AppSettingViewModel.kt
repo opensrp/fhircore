@@ -83,7 +83,7 @@ constructor(
           _loadState.postValue(DataLoadState.Error(ServerException()))
         } else {
           _loadState.postValue(
-            DataLoadState.Error(ConfigurationErrorException(httpException.message))
+            DataLoadState.Error(ConfigurationErrorException(httpException.message)),
           )
         }
       } catch (e: Exception) {

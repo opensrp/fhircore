@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.dtree.fhircore.dataclerk.R
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
+import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -155,12 +156,13 @@ constructor(
 
   private fun getString(resId: Int) = context.resources.getString(resId)
 
-  fun editPatient(context: Context) {
+  fun editPatient(context: Context, patientDetail: PatientItem) {
     QuestionnaireActivity.launchQuestionnaire(
       context = context,
       questionnaireId = EDIT_PROFILE_FORM,
       clientIdentifier = patientId,
       questionnaireType = QuestionnaireType.EDIT,
+      populationResources = patientDetail.populateResources,
     )
   }
 

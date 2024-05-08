@@ -77,7 +77,8 @@ fun CarePlan.CarePlanActivityComponent.isGuardianVisit(systemTag: String) =
 
 fun CarePlan.CarePlanActivityComponent.shouldShowOnProfile(): Boolean {
   return (this.detail.status == CarePlan.CarePlanActivityStatus.SCHEDULED ||
-      this.detail.status == CarePlan.CarePlanActivityStatus.ONHOLD)
+      this.detail.status == CarePlan.CarePlanActivityStatus.ONHOLD ||
+      this.detail.status == CarePlan.CarePlanActivityStatus.CANCELLED)
     .not()
 }
 

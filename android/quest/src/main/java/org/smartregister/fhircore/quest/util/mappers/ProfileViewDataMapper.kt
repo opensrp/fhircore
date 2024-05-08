@@ -222,7 +222,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
 
   private fun CarePlan.CarePlanActivityStatus.retrieveColorCode(): Color =
     when (this) {
-      CarePlan.CarePlanActivityStatus.INPROGRESS -> InfoColor
+      CarePlan.CarePlanActivityStatus.NOTSTARTED -> InfoColor
       CarePlan.CarePlanActivityStatus.CANCELLED -> OverdueColor
       CarePlan.CarePlanActivityStatus.STOPPED -> OverdueColor
       CarePlan.CarePlanActivityStatus.COMPLETED -> DefaultColor

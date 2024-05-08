@@ -388,7 +388,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
 
   private fun onExtractionSuccess(
     questionnaireResponse: QuestionnaireResponse,
-    extras: List<Resource>? = null
+    extras: List<Resource>? = null,
   ) {
     dismissSaveProcessing()
     syncBroadcaster.runSync()

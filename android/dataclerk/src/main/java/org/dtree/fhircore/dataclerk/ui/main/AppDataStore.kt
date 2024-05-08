@@ -32,6 +32,7 @@ import java.util.Date
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -39,9 +40,11 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
@@ -62,7 +65,6 @@ constructor(
 
   suspend fun loadPatients(page: Int = 1): List<PatientItem> {
     Timber.e("Page: $page")
-    // TODO: replace with _tag search when update is out
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
@@ -71,15 +73,33 @@ constructor(
         from = (page - 1) * 20
       }
       .map { it.resource }
-      .map { inputModel ->
-        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
-        inputModel.toPatientItem(getApplicationConfiguration())
-      }
+      .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
   }
 
   suspend fun getPatient(patientId: String): PatientItem {
     val patient = fhirEngine.get<Patient>(patientId)
-    return patient.toPatientItem(getApplicationConfiguration())
+    var model = patient.toPatientItem(getApplicationConfiguration())
+
+    val list = arrayListOf<Resource>()
+    list.add(patient)
+
+    if (patient.hasGeneralPractitioner()) {
+      val id = patient.generalPractitioner.first().extractId()
+      val practitioner = fhirEngine.get<Practitioner>(id)
+      list.add(practitioner)
+    }
+
+    val carePlans = patient.activeCarePlans(fhirEngine)
+
+    if (carePlans.isNotEmpty()) {
+      list.add(carePlans.first())
+    }
+
+    model =
+      model.copy(
+        populateResources = list,
+      )
+    return model
   }
 
   suspend fun getResource(resourceId: String): Resource {
@@ -107,10 +127,7 @@ constructor(
         sort(Patient.NAME, Order.ASCENDING)
       }
       .map { it.resource }
-      .map { inputModel ->
-        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
-        inputModel.toPatientItem(getApplicationConfiguration())
-      }
+      .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
   }
 }
 
@@ -127,6 +144,7 @@ data class PatientItem(
   val healthStatus: HealthStatus,
   val practitioners: List<Reference>? = null,
   val dateCreated: Date? = null,
+  val populateResources: ArrayList<Resource> = arrayListOf(),
 )
 
 data class AddressData(
@@ -166,5 +184,6 @@ internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): Pat
         fullAddress = this.extractAddress(),
       ),
     dateCreated = this.meta.lastUpdated,
+    populateResources = arrayListOf(),
   )
 }

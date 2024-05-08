@@ -181,10 +181,13 @@ constructor(val fhirEngine: FhirEngine, val transformSupportServices: TransformS
     status: Task.TaskStatus,
   ): CarePlan.CarePlanActivityStatus {
     return when (status) {
-      Task.TaskStatus.ONHOLD -> CarePlan.CarePlanActivityStatus.ONHOLD
-      Task.TaskStatus.ACCEPTED -> CarePlan.CarePlanActivityStatus.INPROGRESS
-      Task.TaskStatus.COMPLETED -> CarePlan.CarePlanActivityStatus.COMPLETED
-      else -> CarePlan.CarePlanActivityStatus.UNKNOWN
+      Task.TaskStatus.FAILED,
+      Task.TaskStatus.CANCELLED, -> CarePlan.CarePlanActivityStatus.CANCELLED
+      Task.TaskStatus.COMPLETED,
+      Task.TaskStatus.ONHOLD,
+      Task.TaskStatus.INPROGRESS,
+      Task.TaskStatus.ENTEREDINERROR, -> CarePlan.CarePlanActivityStatus.fromCode(status.toCode())
+      else -> CarePlan.CarePlanActivityStatus.NULL
     }
   }
 }
