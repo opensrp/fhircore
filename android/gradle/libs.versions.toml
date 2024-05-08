@@ -48,7 +48,6 @@ lifecycle= "2.7.0"
 mapbox-sdk-turf = "4.8.0"
 material = "1.11.0"
 compose-material-icons = "1.6.3"
-material3 = "1.2.1"
 mockk = "1.13.8"
 mockk-android = "1.13.8"
 msg-simple = "1.2"
@@ -154,7 +153,6 @@ mapbox-sdk-turf = { group = "com.mapbox.mapboxsdk", name = "mapbox-sdk-turf", ve
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "compose-material-icons" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose-material-icons" }
-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk-android" }
 msg-simple = { group = "com.github.java-json-tools", name = "msg-simple", version.ref = "msg-simple" }
@@ -213,7 +211,7 @@ lifecycle = ["lifecycle-viewmodel-ktx", "lifecycle-viewmodel-compose", "lifecycl
 okhttp3 = ["okhttp-logging-interceptor", "okhttp"]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
 klint = ["ktlint-cli-ruleset", "ktlint-rule-engine-core"]
-compose = ["activity-compose","activity-ktx", "material3", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
+compose = ["activity-compose","activity-ktx", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
 navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-ui-ktx"]
 junit-test = ["junit-ktx", "junit"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
