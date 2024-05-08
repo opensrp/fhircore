@@ -1024,13 +1024,14 @@ constructor(
                 }
               } else {
 
+                Timber.d("#### process - compositionConfig params for 3")
                 val compositionConfigParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
                   val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
                   chunkedResourceIdList.forEach { parentIt ->
                     Timber.d(
-                      "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                      "#### Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
                     )
                     val resourceIds: List<String> =
                       parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
