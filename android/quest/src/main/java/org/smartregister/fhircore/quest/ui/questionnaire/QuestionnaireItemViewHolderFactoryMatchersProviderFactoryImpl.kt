@@ -22,6 +22,7 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderVi
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.smartregister.fhircore.quest.ui.register.customui.CustomAttachmentViewHolderFactory
 
 const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
   "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
@@ -61,6 +62,10 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = LocationWidgetViewHolderFactory,
           matches = LocationWidgetViewHolderFactory::matcher,
+        ),
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = CustomAttachmentViewHolderFactory,
+          matches = CustomAttachmentViewHolderFactory::matcher,
         ),
       )
     }

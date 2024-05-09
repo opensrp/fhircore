@@ -130,7 +130,9 @@
           "StructureMap",
           "Task",
           "Group",
-          "Location"
+          "Location",
+          "Media",
+          "DocumentReference"
         ],
         "type": "token",
         "expression": "#count"

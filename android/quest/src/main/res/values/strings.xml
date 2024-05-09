@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:ns1="http://schemas.android.com/apk/res-auto">
     <string name="back_to_clients">Back to client list</string>
     <string name="test_results">Test Results</string>
 
@@ -6,7 +6,30 @@
 
     <string name="menu_clients">Clients</string>
     <string name="menu_settings">Settings</string>
+
+
     <string name="cannot_find_parent_questionnaire">Cannot find the parent Questionnaire!</string>
+    <string name="max_size_file_above_limit_validation_error_msg">Error: File size is larger than %1$s MB</string>
+    <string name="max_size_image_above_limit_validation_error_msg">Error: Image size is larger than %1$s MB</string>
+    <string name="max_value_validation_error_msg">Maximum value allowed is:<ns1:g id="max_value">%1$s</ns1:g> </string>
+    <string name="mime_type_wrong_media_format_validation_error_msg">Error: Wrong media format</string>
+    <string name="min_length_validation_error_msg">The minimum number of characters that are permitted in the answer is: <ns1:g id="min_length">%1$s</ns1:g>  </string>
+    <string name="min_value_validation_error_msg">Minimum value allowed is:<ns1:g id="min_value">%1$s</ns1:g> </string>
+    <string name="multi_select_dialog_subtitle">Select all that apply</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="time">Time</string>
+    <string name="upload_audio">Upload Audio</string>
+    <string name="upload_document">Upload Document</string>
+    <string name="upload_failed">Upload failed</string>
+    <string name="upload_file">Upload File</string>
+    <string name="upload_photo">Upload Photo</string>
+    <string name="upload_video">Upload Video</string>
+    <string name="uploaded">Uploaded</string>
+    <string name="video_deleted">Video deleted</string>
+    <string name="video_uploaded">Video uploaded</string>
+    <string name="audio_deleted">Audio deleted</string>
+    <string name="audio_uploaded">Audio uploaded</string>
+
 
     <string name="loading_forms">Loading forms ...</string>
     <string name="loading_responses">Loading responses ...</string>
@@ -115,5 +138,7 @@
     <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
     <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
