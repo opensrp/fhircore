@@ -41,6 +41,8 @@ constructor(
         .entry
         .map { it.resource }
 
+    if (binaryResources.isEmpty()) throw Exception("${appConfigService.getAppId()} not found")
+
     defaultRepository.saveLocalOnly(*binaryResources.toTypedArray())
   }
 }

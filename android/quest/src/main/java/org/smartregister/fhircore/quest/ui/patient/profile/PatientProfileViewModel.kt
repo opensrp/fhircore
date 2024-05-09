@@ -329,6 +329,13 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources,
         )
+      is PatientProfileEvent.FinishVisit ->
+        QuestionnaireActivity.launchQuestionnaireForResult(
+          event.context as Activity,
+          questionnaireId = event.formId,
+          clientIdentifier = patientId,
+          populationResources = profile.populationResources,
+        )
       is PatientProfileEvent.OpenChildProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
