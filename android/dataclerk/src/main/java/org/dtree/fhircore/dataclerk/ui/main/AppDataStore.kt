@@ -16,8 +16,6 @@
 
 package org.dtree.fhircore.dataclerk.ui.main
 
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -26,10 +24,6 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Date
-import javax.inject.Inject
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -48,23 +42,23 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
-import timber.log.Timber
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import javax.inject.Inject
 
 class AppDataStore
 @Inject
 constructor(
   private val fhirEngine: FhirEngine,
   private val configurationRegistry: ConfigurationRegistry,
-  val defaultRepository: DefaultRepository,
+  private val defaultRepository: DefaultRepository,
 ) {
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-
   private fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.getAppConfigs()
   }
 
   suspend fun loadPatients(page: Int = 1): List<PatientItem> {
-    Timber.e("Page: $page")
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
