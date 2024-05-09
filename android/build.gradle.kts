@@ -14,6 +14,7 @@ buildscript {
 }
 
 plugins {
+  `project-properties`
   alias(libs.plugins.org.jetbrains.kotlin.jvm)
   alias(libs.plugins.kt3k.coveralls)
   alias(libs.plugins.kotlin.serialization)
@@ -23,7 +24,6 @@ plugins {
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
-
 }
 
 tasks.dokkaHtmlMultiModule {
@@ -47,6 +47,12 @@ allprojects {
     apply(plugin = "org.owasp.dependencycheck")
     tasks.dependencyCheckAggregate{
       dependencyCheck.formats.add("XML")
+    }
+    maven {
+      url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
+      credentials.username = "mapbox"
+      credentials.password = property("MAPBOX_SDK_TOKEN").toString()
+      authentication.create<BasicAuthentication>("basic")
     }
   }
 }
