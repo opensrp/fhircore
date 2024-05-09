@@ -36,14 +36,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
-import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.Resource
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
@@ -60,7 +57,6 @@ import org.smartregister.fhircore.engine.util.extension.today
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 
 @HiltAndroidTest
 class MeasureReportRepositoryTest : RobolectricTest() {
