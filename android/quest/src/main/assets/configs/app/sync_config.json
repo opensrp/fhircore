@@ -93,7 +93,8 @@
           "Measure",
           "MeasureReport",
           "Flag",
-          "List"
+          "List",
+          "Media"
         ],
         "type": "token",
         "expression": "#count"

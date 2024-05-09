@@ -17,6 +17,8 @@
         <item name="android:listDivider">@color/white_slightly_opaque</item>
         <item name="android:forceDarkAllowed" tools:targetApi="q">false</item>
         <item name="questionnaire_theme">@style/AppTheme.Questionnaire</item>
+        <item name="android:windowBackground">@color/white</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar">

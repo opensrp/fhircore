@@ -20,6 +20,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -27,7 +29,13 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.search
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +47,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations.DataType
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -60,8 +69,11 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class RegisterViewModel
@@ -72,6 +84,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val dispatcherProvider: DispatcherProvider,
   val resourceDataRulesExecutor: ResourceDataRulesExecutor,
+  val fhirEngine: FhirEngine,
 ) : ViewModel() {
 
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
@@ -89,6 +102,9 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+  private val _patientsListLiveData = MutableLiveData<MutableList<PatientItem>>()
+  val patientsListLiveData: LiveData<MutableList<PatientItem>>
+    get() = _patientsListLiveData
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -457,4 +473,109 @@ constructor(
     _percentageProgress.emit(progress)
     _isUploadSync.emit(isUploadSync)
   }
+
+
+  fun getSearchResults(nameQuery: String = "") {
+
+    CoroutineScope(Dispatchers.IO).launch {
+      val patients: MutableList<PatientItem> = mutableListOf()
+      fhirEngine
+        .search<Patient> {
+          if (nameQuery.isNotEmpty()) {
+            filter(
+              Patient.NAME,
+              {
+                modifier = StringFilterModifier.CONTAINS
+                value = nameQuery
+              },
+            )
+          }
+          sort(Patient.ADDRESS_STATE, Order.ASCENDING)
+          count = 1
+          from = 0
+        }
+        .mapIndexed { index, fhirPatient -> fhirPatient.resource.toPatientItem(index + 1) }
+        .let { patients.addAll(it) }
+      //_patientsListLiveData.value =  patients
+    }
+
+
+    /*val risks = getRiskAssessments()
+    patients.forEach { patient ->
+      risks["Patient/${patient.resourceId}"]?.let {
+        patient.risk = it.prediction?.first()?.qualitativeRisk?.coding?.first()?.code
+      }
+    }*/
+
+  }
+
+
+  fun Patient.toPatientItem(position: Int): PatientItem {
+    // Show nothing if no values available for gender and date of birth.
+    val patientId = if (hasIdElement()) idElement.idPart else ""
+    val name = if (hasName()) name[0].nameAsSingleString else ""
+    val gender = if (hasGenderElement()) genderElement.valueAsString else ""
+    val dob =
+      if (hasBirthDateElement()) {
+        LocalDate.parse(birthDateElement.valueAsString, DateTimeFormatter.ISO_DATE)
+      } else {
+        null
+      }
+    val phone = if (hasTelecom()) telecom[0].value else ""
+    val city = if (hasAddress()) address[0].city else ""
+    val country = if (hasAddress()) address[0].country else ""
+    val isActive = active
+    val html: String = if (hasText()) text.div.valueAsString else ""
+
+    return PatientItem(
+      id = position.toString(),
+      resourceId = patientId,
+      name = name,
+      gender = gender ?: "",
+      dob = dob,
+      phone = phone ?: "",
+      city = city ?: "",
+      country = country ?: "",
+      isActive = isActive,
+      html = html,
+    )
+  }
+
+
+  /** The Patient's details for display purposes. */
+  data class PatientItem(
+    val id: String,
+    val resourceId: String,
+    val name: String,
+    val gender: String,
+    val dob: LocalDate? = null,
+    val phone: String,
+    val city: String,
+    val country: String,
+    val isActive: Boolean,
+    val html: String,
+    var risk: String? = ""
+  ) {
+    override fun toString(): String = name
+  }
+
+  /** The Observation's details for display purposes. */
+  data class ObservationItem(
+    val id: String,
+    val code: String,
+    val effective: String,
+    val value: String,
+  ) {
+    override fun toString(): String = code
+  }
+
+  data class ConditionItem(
+    val id: String,
+    val code: String,
+    val effective: String,
+    val value: String,
+  ) {
+    override fun toString(): String = code
+  }
+
 }

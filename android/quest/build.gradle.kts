@@ -182,11 +182,11 @@ android {
   productFlavors {
     create("opensrp") {
       dimension = "apps"
-      manifestPlaceholders["appLabel"] = "OpenSRP"
+      manifestPlaceholders["appLabel"] = "OCS"
       isDefault = true
     }
 
-    create("ecbis") {
+    /*create("ecbis") {
       dimension = "apps"
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
@@ -313,7 +313,7 @@ android {
       applicationIdSuffix = ".demoEir"
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
-    }
+    }*/
   }
 
   applicationVariants.all {

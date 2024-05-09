@@ -16,22 +16,27 @@
 
 package org.smartregister.fhircore.engine.data.remote.fhir.resource
 
+import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Resource
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.QueryMap
 import retrofit2.http.Url
+
 
 /** [Retrofit] Service for communication with HAPI FHIR server. Used for querying FHIR Resources */
 interface FhirResourceService {
@@ -73,4 +78,18 @@ interface FhirResourceService {
   ): Bundle
 
   @POST suspend fun post(@Url url: String, @Body body: RequestBody): Bundle
+
+  @POST("/DocumentReference/{id}/\\\$binary-access-write?path=DocumentReference.content.attachment")
+  suspend fun uploadDocumentReference(
+    @Path("id") id : String,
+    @Body fileBytes: RequestBody): ResponseBody
+
+  @Multipart
+  @POST("/DocumentReference/{id}/\\\$binary-access-write?path=DocumentReference.content.attachment")
+  fun uploadFile(
+    @Path("id") id : String,
+    @Part("description") description: RequestBody?,
+    @Part file: MultipartBody.Part?
+  ): Call<RequestBody?>?
+
 }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MyQuestionnaire" parent="Theme.Questionnaire">
+        <item name="questionnaireQuestionTextStyle">
+            @style/TextAppearance.MaterialComponents.Headline1
+        </item>
+
+        <item name="questionnaireRadioButtonStyle">
+            @style/TextAppearance.MaterialComponents.Chip
+        </item>
+
+
+        <item name="questionnaireTextInputLayoutStyle">
+            @style/EditTextStyle
+        </item>
+
+
+    </style>
+
+    <style name="EditTextStyle">
+        <item name="endIconTint">@color/colorPrimary</item>
+        <item name="startIconTint">@color/colorPrimary</item>
+        <item name="endIconMode">clear_text</item>
+        <item name="endIconDrawable">@drawable/ic_delete</item>
+    </style>
+
+
+
+    <style name="Widget.Simple.Chip.Answer" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/answer_chip_background</item>
+        <item name="chipStartPadding">0dp</item>
+        <item name="textStartPadding">24dp</item>
+        <item name="textEndPadding">24dp</item>
+        <item name="chipEndPadding">0dp</item>
+        <item name="chipMinTouchTargetSize">32dp</item>
+        <item name="android:textColor">@color/answer_chip_text</item>
+        <item name="android:minWidth">56dp</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="PatientEntry">
+        <item name="endIconTint">@color/color_on_surface_67</item>
+        <item name="startIconTint">@color/color_on_surface_67</item>
+        <item name="endIconMode">clear_text</item>
+        <item name="endIconDrawable">@drawable/ic_clear_circular_16dp</item>
+
+    </style>
+
+    <!--<style name="Widget.Simple.TextField.Layout" parent="Widget.MaterialComponents.TextInputLayout.FilledBox.Dense">
+        <item name="boxBackgroundColor">@android:color/white</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Simple.TextField</item>
+        <item name="hintTextAppearance">?attr/textAppearanceBody2</item>
+        <item name="errorTextAppearance">?attr/textAppearanceBody2</item>
+    </style>
+
+    <style name="ThemeOverlay.Simple.TextField" parent="">
+        <item name="colorSecondary">@color/simple_light_blue_500</item>
+        <item name="editTextStyle">@style/Widget.Simple.TextField</item>
+    </style>
+
+    <style name="Widget.Simple.TextField" parent="Widget.MaterialComponents.TextInputEditText.FilledBox.Dense">
+        <item name="android:textAppearance">?attr/textAppearanceBody1</item>
+        <item name="android:paddingTop">26dp</item>
+        <item name="android:paddingBottom">6dp</item>
+    </style>-->
+
+</resources>

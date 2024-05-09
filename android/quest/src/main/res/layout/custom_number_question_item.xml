@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    android:background="@color/white"
+    android:layout_height="wrap_content">
+
+    <com.google.android.fhir.datacapture.views.GroupHeaderView
+        android:id="@+id/header"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/item_margin_vertical"
+        android:layout_marginHorizontal="@dimen/item_margin_horizontal"
+        style="?attr/questionnaireGroupTypeHeaderStyle"
+        />
+
+    <com.google.android.fhir.datacapture.views.MediaView
+        android:id="@+id/item_media"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="4dp"
+        android:background="@color/white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/phoneNumberInputLayout"
+            style="@style/PatientEntry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/phoneNumberEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxEms="10"
+                android:maxLength="10"
+                android:digits="1234567890"
+                android:hint="Phone number"
+                android:imeOptions="flagNoFullscreen"
+                android:inputType="phone|textCapSentences" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

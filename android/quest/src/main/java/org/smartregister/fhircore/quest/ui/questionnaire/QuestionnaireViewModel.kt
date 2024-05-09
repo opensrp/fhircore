@@ -31,6 +31,7 @@ import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
+import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
@@ -51,6 +52,7 @@ import org.hl7.fhir.r4.model.Library
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -94,6 +96,17 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
+import java.time.LocalDate
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.count
+import com.google.android.fhir.search.search
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class QuestionnaireViewModel
@@ -128,6 +141,9 @@ constructor(
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
+
+
+
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The

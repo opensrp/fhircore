@@ -27,7 +27,7 @@ fhir-engine = "1.0.0-preview5-SNAPSHOT"
 foundation = "1.6.3"
 fragment-ktx = "1.6.2"
 glide = "4.16.0"
-gradle = "8.3.1"
+gradle = "8.3.2"
 gson = "2.10.1"
 hilt = "1.2.0"
 jjwt = "0.9.1"
@@ -81,6 +81,7 @@ dagger-hilt = "2.50"
 accompanist = "0.23.1"
 jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
+kotlin2 = "1.9.0"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -203,6 +204,7 @@ com-diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "spotlessP
 androidx-navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 kt3k-coveralls = { id = "com.github.kt3k.coveralls", version.ref = "kt3k-coveralls-ver" }
 android-junit5 = {id="de.mannodermaus.android-junit5", version.ref="androidJunit5"}
+jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin2" }
 
 [bundles]
 retrofit2 = ["retrofit", "retrofit-mock", "retrofit2-kotlinx-serialization-converter"]
