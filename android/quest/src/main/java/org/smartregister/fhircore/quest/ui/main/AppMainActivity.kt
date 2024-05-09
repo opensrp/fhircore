@@ -161,7 +161,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
       schedulePlan(applicationContext)
       scheduleCheckForMissedAppointments(applicationContext)
       scheduleWelcomeServiceAppointments(applicationContext)
-      scheduleWelcomeServiceToCarePlanForMissedAppointments(applicationContext)
+//      scheduleWelcomeServiceToCarePlanForMissedAppointments(applicationContext)
       scheduleResourcePurger(applicationContext)
     }
   }
