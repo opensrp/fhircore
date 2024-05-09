@@ -245,7 +245,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
 
         try {
-          val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
+          val questionnaireFragmentBuilder =
+            buildQuestionnaireFragment(
+              questionnaire = questionnaire!!,
+              questionnaireConfig = questionnaireConfig,
+            )
           supportFragmentManager.commit {
             setReorderingAllowed(true)
             add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
@@ -264,6 +268,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private suspend fun buildQuestionnaireFragment(
     questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireFragment.Builder {
     if (questionnaire.subjectType.isNullOrEmpty()) {
       val subjectRequiredMessage = getString(R.string.missing_subject_type)
@@ -273,15 +278,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
 
     val (questionnaireResponse, launchContextResources) =
-      viewModel.populateQuestionnaire(questionnaire, questionnaireConfig, actionParameters)
+      viewModel.populateQuestionnaire(questionnaire, this.questionnaireConfig, actionParameters)
 
     return QuestionnaireFragment.builder()
       .setQuestionnaire(questionnaire.json())
       .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
         OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
       )
-      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
-      .showRequiredText(questionnaireConfig.showRequiredText)
+      .setSubmitButtonText(
+        questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
+      )
+      .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
+      .showRequiredText(this.questionnaireConfig.showRequiredText)
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
@@ -397,7 +405,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
-    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
 
     fun intentBundle(
       questionnaireConfig: QuestionnaireConfig,
