@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.extensions.MimeType
+import com.google.android.fhir.datacapture.extensions.getValueAsString
 import com.google.android.fhir.datacapture.extensions.hasMimeType
 import com.google.android.fhir.datacapture.extensions.hasMimeTypeOnly
 import com.google.android.fhir.datacapture.extensions.mimeTypes
@@ -39,9 +40,12 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Attachment
 import org.hl7.fhir.r4.model.DecimalType
 import org.hl7.fhir.r4.model.DocumentReference
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.util.extension.valueToString
+import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import java.io.File
 import java.math.BigDecimal
@@ -177,6 +181,13 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
             uploadDocumentButton.visibility = View.VISIBLE
           }
 
+          questionnaireItem.hasMimeTypeOnly(MimeType.IMAGE.value) -> {
+            // NOOP
+          }
+          questionnaireItem.hasMimeTypeOnly(MimeType.VIDEO.value) -> {
+            // NOOP
+          }
+
           else -> {
             uploadFileButton.visibility = View.VISIBLE
           }
@@ -213,20 +224,15 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
             return@setFragmentResultListener
           }
 
-          val doc = DocumentReference().apply {
-            id = UUID.randomUUID().toString()
-            addExtension("http://hl7.org/fhir/StructureDefinition/file-location",StringType(attachmentUri.toString()))
-            addContent().apply {
-              attachment = Attachment().apply { contentType = "image/jpeg"}
-            }
-          }
-
+          // Create a document reference to store the file later and use the document ref
+          // permanent link in attachment url
+          val doc = createDocumentReference(attachmentUri, attachmentMimeTypeWithSubType)
           val answer =
             QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
               value =
                 Attachment().apply {
                   contentType = attachmentMimeTypeWithSubType
-                  url = "https://fhir.aicoe.triveous.tech/fhir/DocumentReference/${doc.id}/\$binary-access-write?path=DocumentReference.content.attachment"
+                  url = doc.url
                   title = file.name
                   creation = Date()
                 }
@@ -280,17 +286,21 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
           }
 
           val attachmentTitle = getFileName(attachmentUri)
+          // Create a document reference to store the file later and use the document ref
+          // permanent link in attachment url
+          val doc = createDocumentReference(attachmentUri, attachmentMimeTypeWithSubType)
           val answer =
             QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
               value =
                 Attachment().apply {
                   contentType = attachmentMimeTypeWithSubType
-                  data = attachmentByteArray
+                  url = doc.url
                   title = attachmentTitle
                   creation = Date()
                 }
             }
           context.lifecycleScope.launch {
+            FhirEngineProvider.getInstance(context.applicationContext).create(doc)
             questionnaireViewItem.setAnswer(answer)
 
             divider.visibility = View.VISIBLE
@@ -460,6 +470,20 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
       }
     }
 
+  private fun createDocumentReference(attachmentUri: Uri, mimeType: String): DocumentReference {
+    val doc = DocumentReference().apply {
+      id = UUID.randomUUID().toString()
+      addExtension(EXTENSION_FILE_LOCATION, StringType(attachmentUri.toString()))
+      addContent().apply {
+        attachment = Attachment().apply { contentType = mimeType }
+      }
+      date = Date()
+      docStatus = DocumentReference.ReferredDocumentStatus.FINAL
+      status = Enumerations.DocumentReferenceStatus.CURRENT
+    }
+    return doc
+  }
+
   val EXTRA_MIME_TYPE_KEY = "mime_type"
   val EXTRA_SAVED_PHOTO_URI_KEY = "saved_photo_uri"
 
@@ -481,6 +505,7 @@ private fun Context.getMimeTypeFromUri(uri: Uri): String {
 
 
 internal const val EXTENSION_MAX_SIZE = "http://hl7.org/fhir/StructureDefinition/maxSize"
+internal const val EXTENSION_FILE_LOCATION = "http://hl7.org/fhir/StructureDefinition/file-location"
 
 /** The default maximum size of an attachment is 1 Mebibytes. */
 private val DEFAULT_SIZE = BigDecimal(1048576)
@@ -503,3 +528,6 @@ private fun Questionnaire.QuestionnaireItemComponent.isGivenSizeOverLimit(
 ): Boolean {
   return size > (maxSizeInBytes ?: DEFAULT_SIZE)
 }
+
+private val DocumentReference.url
+  get() = "${BuildConfig.FHIR_BASE_URL}/DocumentReference/${id}/\$binary-access-write?path=DocumentReference.content.attachment"

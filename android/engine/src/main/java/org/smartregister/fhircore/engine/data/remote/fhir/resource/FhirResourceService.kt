@@ -30,13 +30,15 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 import retrofit2.http.QueryMap
 import retrofit2.http.Url
 
 /** [Retrofit] Service for communication with HAPI FHIR server. Used for querying FHIR Resources */
 interface FhirResourceService {
 
-  @GET suspend fun getResource(@Url url: String): Bundle
+  @GET
+  suspend fun getResource(@Url url: String): Bundle
 
   @GET
   suspend fun getResourceWithGatewayModeHeader(
@@ -64,7 +66,8 @@ interface FhirResourceService {
     @Path("id") id: String,
   ): OperationOutcome
 
-  @GET suspend fun fetchImage(@Url url: String): ResponseBody?
+  @GET
+  suspend fun fetchImage(@Url url: String): ResponseBody?
 
   @GET("{resourceType}/_search")
   suspend fun searchResource(
@@ -72,5 +75,13 @@ interface FhirResourceService {
     @QueryMap(encoded = false) searchParameters: Map<String, String>,
   ): Bundle
 
-  @POST suspend fun post(@Url url: String, @Body body: RequestBody): Bundle
+  @POST
+  suspend fun post(@Url url: String, @Body body: RequestBody): Bundle
+
+  @POST("{resourceType}/{id}/\$binary-access-write")
+  suspend fun uploadFile(@Path("resourceType") resourceType: String,
+                         @Path("id") id: String,
+                         @Query("path") path: String,
+                         @Body body: RequestBody
+  ): retrofit2.Response<String>
 }
