@@ -24,6 +24,10 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import javax.inject.Inject
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -34,6 +38,8 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
@@ -42,10 +48,6 @@ import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Date
-import javax.inject.Inject
 
 class AppDataStore
 @Inject
@@ -53,7 +55,16 @@ constructor(
   private val fhirEngine: FhirEngine,
   private val configurationRegistry: ConfigurationRegistry,
   private val defaultRepository: DefaultRepository,
+  private val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
+
+  private val currentPractitioner by lazy {
+    sharedPreferencesHelper.read(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      defaultValue = null,
+    )
+  }
+
   private fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.getAppConfigs()
   }
@@ -122,6 +133,10 @@ constructor(
       }
       .map { it.resource }
       .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
+  }
+
+  suspend fun getCurrentPractitioner(): Practitioner? {
+    return currentPractitioner?.let { fhirEngine.get<Practitioner>(it) }
   }
 }
 

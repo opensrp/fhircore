@@ -43,33 +43,59 @@ android {
     vectorDrawables { useSupportLibrary = true }
   }
 
-  //    signingConfigs {
-  //        release {
-  //
-  //            v1SigningEnabled false
-  //            v2SigningEnabled true
-  //
-  //            keyAlias System.getenv("KEYSTORE_ALIAS")?: project.KEYSTORE_ALIAS
-  //            keyPassword System.getenv("KEY_PASSWORD") ?: project.KEY_PASSWORD
-  //            storePassword System.getenv("KEYSTORE_PASSWORD") ?: project.KEYSTORE_PASSWORD
-  //            storeFile file(System.getProperty("user.home") + "/fhircore.keystore.jks")
-  //        }
-  //    }
+  signingConfigs {
+    create("release") {
+      enableV1Signing = false
+      enableV2Signing = true
+
+      keyAlias = System.getenv("KEYSTORE_ALIAS") ?: """${project.extra["KEYSTORE_ALIAS"]}"""
+      keyPassword = System.getenv("KEY_PASSWORD") ?: """${project.extra["KEY_PASSWORD"]}"""
+      storePassword =
+        System.getenv("KEYSTORE_PASSWORD") ?: """${project.extra["KEYSTORE_PASSWORD"]}"""
+      storeFile = file(System.getProperty("user.home") + "/fhircore.keystore.jks")
+    }
+  }
 
   buildTypes {
     debug {
       //            enableUnitTestCoverage true
-      resValue("string", "authenticator_account_type", "\"${android.defaultConfig.applicationId}\"")
     }
     release {
-      resValue("string", "authenticator_account_type", "\"${android.defaultConfig.applicationId}\"")
-      //            minifyEnabled false
-      //            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"),
-      // "proguard-rules.pro"
-      //            signingConfig signingConfigs.release
+      isMinifyEnabled = false
+      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      signingConfig = signingConfigs.getByName("release")
       //            firebaseCrashlytics {
-      //                nativeSymbolUploadEnabled false
+      //                isNativeSymbolUploadEnabled = false
       //            }
+    }
+  }
+
+  packaging {
+    resources {
+      excludes +=
+        listOf(
+          "META-INF/ASL-2.0.txt",
+          "META-INF/LGPL-3.0.txt",
+          "license.html",
+          "readme.html",
+          "META-INF/DEPENDENCIES",
+          "META-INF/LICENSE",
+          "META-INF/LICENSE.txt",
+          "META-INF/license.txt",
+          "META-INF/license.html",
+          "META-INF/LICENSE.md",
+          "META-INF/NOTICE",
+          "META-INF/NOTICE.txt",
+          "META-INF/NOTICE.md",
+          "META-INF/notice.txt",
+          "META-INF/ASL2.0",
+          "META-INF/ASL-2.0.txt",
+          "META-INF/LGPL-3.0.txt",
+          "META-INF/sun-jaxb.episode",
+          "META-INF/*.kotlin_module",
+          "META-INF/AL2.0",
+          "META-INF/LGPL2.1",
+        )
     }
   }
 
@@ -100,32 +126,23 @@ android {
       }
     }
   }
-  packaging {
-    resources {
-      excludes +=
-        listOf(
-          "META-INF/ASL-2.0.txt",
-          "META-INF/LGPL-3.0.txt",
-          "license.html",
-          "readme.html",
-          "META-INF/DEPENDENCIES",
-          "META-INF/LICENSE",
-          "META-INF/LICENSE.txt",
-          "META-INF/license.txt",
-          "META-INF/license.html",
-          "META-INF/LICENSE.md",
-          "META-INF/NOTICE",
-          "META-INF/NOTICE.txt",
-          "META-INF/NOTICE.md",
-          "META-INF/notice.txt",
-          "META-INF/ASL2.0",
-          "META-INF/ASL-2.0.txt",
-          "META-INF/LGPL-3.0.txt",
-          "META-INF/sun-jaxb.episode",
-          "META-INF/*.kotlin_module",
-          "META-INF/AL2.0",
-          "META-INF/LGPL2.1",
-        )
+
+  flavorDimensions += "apps"
+
+  productFlavors {
+    create("exposedInfant") {
+      dimension = "apps"
+      applicationIdSuffix = ".exposedInfant"
+      versionNameSuffix = "-exposedInfant"
+      versionCode = 1
+      versionName = "0.0.1"
+    }
+    create("artClient") {
+      dimension = "apps"
+      applicationIdSuffix = ".artClient"
+      versionNameSuffix = "-artClient"
+      versionCode = 1
+      versionName = "0.0.1"
     }
   }
 

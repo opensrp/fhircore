@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -71,6 +72,7 @@ fun HomeScreen(
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
   val refreshKey by appMainViewModel.refreshHash
+  val scope = rememberCoroutineScope()
 
   LaunchedEffect(syncState) {
     if (syncState is SyncJobStatus.Succeeded) {
@@ -118,7 +120,9 @@ fun HomeScreen(
     bottomBar = {
       if (!appState.isInitialSync) {
         Button(
-          onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
+          onClick = {
+            scope.launch { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) }
+          },
           modifier = Modifier.fillMaxWidth(),
         ) {
           Text(text = appState.registrationButton)

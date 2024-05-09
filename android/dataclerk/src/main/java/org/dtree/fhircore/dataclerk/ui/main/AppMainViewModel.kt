@@ -35,6 +35,8 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Flag
+import org.hl7.fhir.r4.model.Practitioner
+import org.hl7.fhir.r4.model.Resource
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -61,6 +63,7 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   val appMainUiState: MutableState<AppMainUiState> = mutableStateOf(appMainUiStateOf())
   val syncSharedFlow = MutableSharedFlow<SyncJobStatus>()
+  var currentPractitioner: Practitioner? = null
 
   val refreshHash = mutableStateOf("")
 
@@ -86,28 +89,35 @@ constructor(
       )
       .displayName
 
-  fun openForm(context: Context): Intent {
+  suspend fun openForm(context: Context): Intent {
     val isArtClient = applicationConfiguration.appId.contains("art-client")
     val artCode =
       Coding().apply {
         code = if (isArtClient) "client-already-on-art" else "exposed-infant"
         display = if (isArtClient) "Person Already on ART" else "Exposed Infant"
       }
+    val resources =
+      arrayListOf<Resource>(
+        Flag().apply {
+          code =
+            CodeableConcept().apply {
+              text = if (isArtClient) "client-already-on-art" else "exposed-infant"
+              addCoding(artCode)
+            }
+        },
+      )
+
+    if (currentPractitioner == null) {
+      dataStore.getCurrentPractitioner()?.let { currentPractitioner = it }
+    }
+    currentPractitioner?.let { resources.add(it) }
+
     return Intent(context, QuestionnaireActivity::class.java)
       .putExtras(
         QuestionnaireActivity.intentArgs(
           formName = applicationConfiguration.registrationForm,
           questionnaireType = QuestionnaireType.DEFAULT,
-          populationResources =
-            arrayListOf(
-              Flag().apply {
-                code =
-                  CodeableConcept().apply {
-                    text = if (isArtClient) "client-already-on-art" else "exposed-infant"
-                    addCoding(artCode)
-                  }
-              },
-            ),
+          populationResources = resources,
         ),
       )
   }
