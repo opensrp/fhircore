@@ -246,21 +246,21 @@
     ]
   },
   "noResults": {
-    "title": "No households added",
-    "message": "Sorry, you haven't added any households to your register",
+    "title": "No patients added",
+    "message": "Sorry, you haven't added any patients yet",
     "actionButton": {
       "id": "noResultsButton",
       "visible": true,
-      "display": "Add household",
+      "display": "Add Patient",
       "actions": [
         {
           "trigger": "ON_CLICK",
           "workflow": "LAUNCH_QUESTIONNAIRE",
           "id": "householdRegister",
           "questionnaire": {
-            "id": "f210a832-857f-49e6-93f5-399eec4f4edb",
-            "title": "Add household",
-            "saveButtonText": "Add Household",
+            "id": "102",
+            "title": "Add Patient",
+            "saveButtonText": "Add Patient",
             "setPractitionerDetails": true,
             "setOrganizationDetails": true
           }

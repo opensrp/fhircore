@@ -19,11 +19,14 @@ package org.smartregister.fhircore.quest.ui.register
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -72,6 +75,7 @@ const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
 fun RegisterScreen(
   modifier: Modifier = Modifier,
   openDrawer: (Boolean) -> Unit,
+  viewModel : RegisterViewModel,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
   searchText: MutableState<String>,
@@ -160,6 +164,13 @@ fun RegisterScreen(
           NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
             noResultConfig.actionButton?.actions?.handleClickEvent(navController)
           }
+          /*LazyColumn {
+            viewModel.patientsListLiveData.observeForever {
+              items(it.size) { item ->
+                Text(text = "item")
+              }
+            }
+          }*/
         }
       }
     }
@@ -173,38 +184,51 @@ fun NoRegisterDataView(
   onClick: () -> Unit,
 ) {
   Column(
-    modifier = modifier.fillMaxSize().padding(16.dp).testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
+    modifier = modifier
+      .fillMaxSize()
+      .padding(16.dp)
+      .testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
   ) {
     Text(
       text = noResults.title,
       fontSize = 16.sp,
-      modifier = modifier.padding(vertical = 8.dp).testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
+      modifier = modifier
+        .padding(vertical = 8.dp)
+        .testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
       fontWeight = FontWeight.Bold,
     )
     Text(
       text = noResults.message,
       modifier =
-        modifier.padding(start = 32.dp, end = 32.dp).testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
+      modifier
+        .padding(start = 32.dp, end = 32.dp)
+        .testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
       textAlign = TextAlign.Center,
       fontSize = 15.sp,
       color = Color.Gray,
     )
     if (noResults.actionButton != null) {
-      Button(
-        modifier = modifier.padding(vertical = 16.dp).testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-        onClick = onClick,
-      ) {
-        Icon(
-          imageVector = Icons.Filled.Add,
-          contentDescription = null,
-          modifier.padding(end = 8.dp).testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG),
-        )
-        Text(
-          text = noResults.actionButton?.display?.uppercase().toString(),
-          modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG),
-        )
+      Row {
+        Button(
+          modifier = modifier
+            .padding(vertical = 16.dp)
+            .testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+          onClick = onClick,
+        ) {
+          Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = null,
+            modifier
+              .padding(end = 8.dp)
+              .testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG),
+          )
+          Text(
+            text = noResults.actionButton?.display?.uppercase().toString(),
+            modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG),
+          )
+        }
       }
     }
   }

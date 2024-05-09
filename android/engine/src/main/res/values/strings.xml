@@ -149,6 +149,8 @@
     <string name="username_sample" translatable="false">e.g JohnDoe</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
+    <string name="integer_format_validation_error_msg"
+        xmlns:ns1="http://your.namespace.uri">Number must be between <ns1:g id="min_value">%1$s</ns1:g> and <ns1:g id="max_value">%2$s</ns1:g></string>
     <string name="insights">Insights</string>
     <string name="contact_help">"Contact help"</string>
     <string name="offline_map">"Offline Maps"</string>

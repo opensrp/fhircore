@@ -36,8 +36,8 @@ val localProperties = readProperties((project.properties["localPropertiesFile"] 
 
 requiredFhirProperties.forEach { property ->
   project.extra.set(property, localProperties.getProperty(property, when {
-    property.contains("URL") -> "https://sample.url/fhir/"
-    property.equals("OPENSRP_APP_ID") -> """"""""
+    property.contains("URL") -> "https://fhir.aicoe.triveous.tech/fhir/"
+    property.equals("OPENSRP_APP_ID") -> "app"
     else -> "sample_" + property
   }
   ))

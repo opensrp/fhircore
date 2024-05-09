@@ -198,7 +198,7 @@ fun LoginPage(
         ) {
           Text(
             color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
-            text = applicationConfiguration.appTitle,
+            text = "OCS",
             fontWeight = FontWeight.Bold,
             fontSize = 32.sp,
             modifier =
@@ -328,7 +328,7 @@ fun LoginPage(
             enabled = !showProgressBar && username.isNotEmpty() && password.isNotEmpty(),
             colors =
               ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.primary,
+                backgroundColor = MaterialTheme.colors.primaryVariant,
                 disabledContentColor =
                   if (applicationConfiguration.useDarkTheme) {
                     LoginFieldBackgroundColor
@@ -364,19 +364,6 @@ fun LoginPage(
         modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
         verticalAlignment = Alignment.Bottom,
       ) {
-        Column {
-          Text(
-            text = stringResource(id = R.string.powered_by),
-            modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
-            fontWeight = FontWeight.Light,
-          )
-          Image(
-            painter = painterResource(id = R.drawable.ic_opensrplogo),
-            contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(32.dp),
-          )
-        }
-
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),

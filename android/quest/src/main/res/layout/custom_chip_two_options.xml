@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:elevation="4dp">
+
+    <com.google.android.fhir.datacapture.views.GroupHeaderView
+        android:id="@+id/header"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/item_margin_vertical"
+        android:layout_marginHorizontal="@dimen/item_margin_horizontal"
+        style="?attr/questionnaireGroupTypeHeaderStyle"
+        />
+
+    <com.google.android.fhir.datacapture.views.MediaView
+        android:id="@+id/item_media"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
+<!--    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/group_question_tile"
+            android:layout_width="match_parent"
+            android:layout_margin="@dimen/spacing_16"
+            android:textColor="@color/lt_black"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
+            android:textStyle="bold"
+            android:text="Cigarettes / Bidi"
+            android:textSize="18sp"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+        <LinearLayout
+            android:id="@+id/linearLayoutq1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/spacing_16"
+            android:paddingTop="@dimen/spacing_16"
+            android:layout_margin="@dimen/spacing_8"
+            android:orientation="horizontal"
+            android:weightSum="9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/group_question_tile">
+
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/current"
+                style="@style/Widget.Simple.Chip.Answer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="Current"
+                android:textAlignment="center"
+                android:textSize="16sp" />
+
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/past"
+                style="@style/Widget.Simple.Chip.Answer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_8"
+                android:layout_weight="3"
+                android:text="Past"
+                android:textAlignment="center"
+                android:textSize="16sp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/never"
+                style="@style/Widget.Simple.Chip.Answer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_8"
+                android:layout_weight="3"
+                android:text="Never"
+                android:textAlignment="center"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:elevation="4dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/linearLayoutq1">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/current_condition_tile"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/spacing_16"
+                    android:layout_weight="6"
+                    android:text="Cigarettes / Bidi"
+                    android:textColor="@color/lt_black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+
+                <LinearLayout
+                    android:id="@+id/linearLayoutq1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/spacing_8"
+                    android:orientation="horizontal"
+                    android:paddingTop="@dimen/spacing_16"
+                    android:paddingBottom="@dimen/spacing_16"
+                    android:weightSum="9"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/group_question_tile">
+
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/current"
+                        style="@style/Widget.Simple.Chip.Answer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="3"
+                        android:text="Current"
+                        android:textAlignment="center"
+                        android:textSize="16sp" />
+
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/past"
+                        style="@style/Widget.Simple.Chip.Answer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_8"
+                        android:layout_weight="3"
+                        android:text="Past"
+                        android:textAlignment="center"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/never"
+                        style="@style/Widget.Simple.Chip.Answer"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_8"
+                        android:layout_weight="3"
+                        android:text="Never"
+                        android:textAlignment="center"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>-->
+
+
+
+</androidx.cardview.widget.CardView>

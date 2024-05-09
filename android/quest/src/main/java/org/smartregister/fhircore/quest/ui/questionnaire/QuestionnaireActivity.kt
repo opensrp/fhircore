@@ -281,6 +281,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     val questionnaireFragmentBuilder =
       QuestionnaireFragment.builder()
         .setQuestionnaire(questionnaire.json())
+        .showReviewPageBeforeSubmit(true)
         .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
           OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
         )

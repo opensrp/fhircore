@@ -23,6 +23,7 @@ plugins {
   alias(libs.plugins.org.owasp.dependencycheck)
   alias(libs.plugins.com.diffplug.spotless) apply false
   alias(libs.plugins.android.junit5) apply false
+    alias(libs.plugins.jetbrainsKotlinAndroid) apply false
 
 }
 

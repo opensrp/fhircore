@@ -43,12 +43,7 @@
       "name": "https://www.smartregister.org/"
     }
   ],
-  "extension": [
-    {
-      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-      "valueCanonical": "https://fhir.labs.smartregister.org/fhir/StructureMap/42d6d826-d6b2-41e9-9787-7424b4deca85"
-    }
-  ],
+
   "date": "2022-07-27T00:00:00Z",
   "item": [
     {

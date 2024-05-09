@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.ui.components.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +29,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,11 +64,12 @@ fun RegisterFooter(
         modifier
           .fillMaxWidth()
           .testTag(SEARCH_FOOTER_TAG)
+          .background(Color.White)
           .padding(
-            bottom =
-              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+            bottom = 16.dp
+             /* if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
                 PADDING_BOTTOM_WITH_FAB.dp
-              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,*/
           ),
     ) {
       Box(

@@ -229,7 +229,7 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
       )
     }
     Text(
-      text = title,
+      text = "OCS",
       textAlign = TextAlign.Center,
       fontWeight = FontWeight.Bold,
       fontSize = 22.sp,
