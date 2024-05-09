@@ -19,7 +19,6 @@ package com.google.android.fhir.datacapture.views.factories
 import android.icu.number.NumberFormatter
 import android.icu.text.DecimalFormat
 import android.os.Build
-import android.text.Editable
 import android.text.InputType
 import androidx.annotation.RequiresApi
 import com.google.android.fhir.datacapture.R
@@ -37,12 +36,11 @@ internal object EditTextIntegerViewHolderFactory :
       QuestionnaireItemEditTextViewHolderDelegate(
         InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_SIGNED,
       ) {
-      override suspend fun handleInput(
-        editable: Editable,
+      override suspend fun handleInputText(
+        input: String?,
         questionnaireViewItem: QuestionnaireViewItem,
       ) {
-        val input = editable.toString()
-        if (input.isEmpty()) {
+        if (input.isNullOrEmpty()) {
           questionnaireViewItem.clearAnswer()
           return
         }

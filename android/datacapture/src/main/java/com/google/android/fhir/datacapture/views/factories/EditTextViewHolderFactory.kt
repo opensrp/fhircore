@@ -17,8 +17,6 @@
 package com.google.android.fhir.datacapture.views.factories
 
 import android.content.Context
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
 import android.view.View.FOCUS_DOWN
 import android.view.View.GONE
@@ -28,7 +26,6 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.extensions.getRequiredOrOptionalText
@@ -39,6 +36,7 @@ import com.google.android.fhir.datacapture.extensions.unit
 import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.datacapture.views.HeaderView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
+import com.google.android.fhir.datacapture.views.afterTextChangedDelayed
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
@@ -58,7 +56,6 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
   protected lateinit var textInputLayout: TextInputLayout
   private lateinit var textInputEditText: TextInputEditText
   private var unitTextView: TextView? = null
-  private var textWatcher: TextWatcher? = null
 
   override fun init(itemView: View) {
     context = itemView.context.tryUnwrapContext()!!
@@ -74,7 +71,7 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
     // https://stackoverflow.com/questions/13614101/fatal-crash-focus-search-returned-a-view-that-wasnt-able-to-take-focus/47991577
     textInputEditText.setOnEditorActionListener { view, actionId, _ ->
       if (actionId != EditorInfo.IME_ACTION_NEXT) {
-        false
+        return@setOnEditorActionListener false
       }
       view.focusSearch(FOCUS_DOWN)?.requestFocus(FOCUS_DOWN) ?: false
     }
@@ -87,9 +84,13 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
         context.lifecycleScope.launch {
           // Update answer even if the text box loses focus without any change. This will mark the
           // questionnaire response item as being modified in the view model and trigger validation.
-          handleInput(textInputEditText.editableText, questionnaireViewItem)
+          handleInputText(textInputEditText.editableText.toString(), questionnaireViewItem)
         }
       }
+    }
+    textInputEditText.afterTextChangedDelayed(500) { text: String? ->
+      // with a delay check that user has stopped typing
+      context.lifecycleScope.launch { handleInputText(text, questionnaireViewItem) }
     }
   }
 
@@ -101,18 +102,12 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
     }
     displayValidationResult(questionnaireViewItem.validationResult)
 
-    textInputEditText.removeTextChangedListener(textWatcher)
     updateUI(questionnaireViewItem, textInputEditText, textInputLayout)
 
     unitTextView?.apply {
       text = questionnaireViewItem.questionnaireItem.unit?.code
       visibility = if (text.isNullOrEmpty()) GONE else VISIBLE
     }
-
-    textWatcher =
-      textInputEditText.doAfterTextChanged { editable: Editable? ->
-        context.lifecycleScope.launch { handleInput(editable!!, questionnaireViewItem) }
-      }
   }
 
   private fun displayValidationResult(validationResult: ValidationResult) {
@@ -126,7 +121,7 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
   }
 
   /** Handles user input from the `editable` and updates the questionnaire. */
-  abstract suspend fun handleInput(editable: Editable, questionnaireViewItem: QuestionnaireViewItem)
+  abstract suspend fun handleInputText(input: String?, questionnaireViewItem: QuestionnaireViewItem)
 
   /** Handles the UI update. */
   abstract fun updateUI(
