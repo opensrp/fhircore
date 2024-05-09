@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.android.fhir.sync.SyncJobStatus
@@ -132,7 +133,7 @@ fun HomeScreen(
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues)) {
       Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
       ) {
@@ -157,7 +158,10 @@ fun SyncStatusBar(
         .times(100)
         .div(100)
         .toFloat()
-    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), progress = progress)
+    LinearProgressIndicator(
+      progress = { progress },
+      modifier = Modifier.fillMaxWidth(),
+    )
   } else if (syncState is SyncJobStatus.Started) {
     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
   }

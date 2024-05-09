@@ -16,6 +16,7 @@
 
 package org.dtree.fhircore.dataclerk.ui.main
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
@@ -73,14 +74,13 @@ constructor(
     return configurationRegistry.getAppConfigs()
   }
 
-  suspend fun loadPatients(page: Int = 1): List<PatientItem> {
+  suspend fun loadPatients(): List<PatientItem> {
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
         filterPatient()
-        sort(Patient.NAME, Order.ASCENDING)
-        count = 20
-        from = (page - 1) * 20
+        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
+        count = 10
       }
       .map { it.resource }
       .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
@@ -126,6 +126,7 @@ constructor(
   }
 
   suspend fun search(text: String): List<PatientItem> {
+    val isArt = getApplicationConfiguration().appId.contains("art-client")
     return fhirEngine
       .search<Patient> {
         filter(
@@ -136,11 +137,18 @@ constructor(
           },
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = text }) })
-        filterPatient()
         operation = Operation.OR
         sort(Patient.NAME, Order.ASCENDING)
       }
       .map { it.resource }
+      .filter {
+        it.meta.tag?.firstOrNull { coding ->
+          coding.system == SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM &&
+            (if (isArt) listOf("client-already-on-art", "newly-diagnosed-client")
+              else listOf("exposed-infant"))
+              .contains(coding.code)
+        } != null
+      }
       .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
   }
 
