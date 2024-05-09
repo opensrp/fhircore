@@ -44,6 +44,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -380,6 +381,14 @@ fun isValidResourceType(resourceCode: String): Boolean {
   } catch (exception: FHIRException) {
     false
   }
+}
+
+fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
+  List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent> {
+  val resources =
+    mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
+  this.definition.resource.forEach { resources.add(it) }
+  return resources
 }
 
 /**
