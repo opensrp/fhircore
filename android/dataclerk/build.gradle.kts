@@ -144,6 +144,34 @@ android {
       versionCode = 1
       versionName = "0.0.1"
     }
+    create("exposedInfantDev") {
+      dimension = "apps"
+      applicationIdSuffix = ".exposedInfantDev"
+      versionNameSuffix = "-exposedInfantDev"
+      versionCode = 1
+      versionName = "0.0.1"
+    }
+    create("artClientDev") {
+      dimension = "apps"
+      applicationIdSuffix = ".artClientDev"
+      versionNameSuffix = "-artClientDev"
+      versionCode = 1
+      versionName = "0.0.1"
+    }
+    create("exposedInfantStaging") {
+      dimension = "apps"
+      applicationIdSuffix = ".exposedInfantStaging"
+      versionNameSuffix = "-exposedInfantStaging"
+      versionCode = 1
+      versionName = "0.0.1"
+    }
+    create("artClientStaging") {
+      dimension = "apps"
+      applicationIdSuffix = ".artClientStaging"
+      versionNameSuffix = "-artClientStaging"
+      versionCode = 1
+      versionName = "0.0.1"
+    }
   }
 
   lint { abortOnError = false }
