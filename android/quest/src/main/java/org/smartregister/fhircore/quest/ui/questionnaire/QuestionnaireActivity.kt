@@ -226,6 +226,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private fun renderQuestionnaire() {
     lifecycleScope.launch {
+      var questionnaireFragment: QuestionnaireFragment? = null
       if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
         viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
         with(viewBinding) {
@@ -236,9 +237,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           questionnaireTitle.apply { text = questionnaireConfig.title }
           clearAll.apply {
             visibility = if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
-            setOnClickListener {
-              // TODO Clear current QuestionnaireResponse items -> SDK
-            }
+            setOnClickListener { questionnaireFragment?.clearAllAnswers() }
           }
         }
 
@@ -250,9 +249,11 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
               questionnaire = questionnaire!!,
               questionnaireConfig = questionnaireConfig,
             )
+
+          questionnaireFragment = questionnaireFragmentBuilder.build()
           supportFragmentManager.commit {
             setReorderingAllowed(true)
-            add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
+            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
           }
 
           registerFragmentResultListener()
