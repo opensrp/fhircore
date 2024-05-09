@@ -24,11 +24,13 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import org.dtree.fhircore.dataclerk.ui.home.paging.PatientPagingSource
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
 import org.dtree.fhircore.dataclerk.ui.main.PatientItem
@@ -52,7 +54,7 @@ class HomeViewModel @Inject constructor(private val dataStore: AppDataStore) : V
         pagingSourceFactory = { PatientPagingSource(dataStore) },
       )
       .flow
-      .cachedIn(viewModelScope)
+      .cachedIn(viewModelScope.plus(Dispatchers.IO))
 
   fun refresh() {
     viewModelScope.launch {
