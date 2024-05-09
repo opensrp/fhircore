@@ -16,6 +16,7 @@
 
 package org.dtree.fhircore.dataclerk.ui.main
 
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -23,11 +24,13 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -40,6 +43,7 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
@@ -73,6 +77,7 @@ constructor(
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
+        filterPatient()
         sort(Patient.NAME, Order.ASCENDING)
         count = 20
         from = (page - 1) * 20
@@ -113,7 +118,10 @@ constructor(
 
   suspend fun patientCount(): Long {
     return fhirEngine.count(
-      Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) },
+      Search(ResourceType.Patient).apply {
+        filter(Patient.ACTIVE, { value = of(true) })
+        filterPatient()
+      },
     )
   }
 
@@ -128,6 +136,7 @@ constructor(
           },
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = text }) })
+        filterPatient()
         operation = Operation.OR
         sort(Patient.NAME, Order.ASCENDING)
       }
@@ -137,6 +146,31 @@ constructor(
 
   suspend fun getCurrentPractitioner(): Practitioner? {
     return currentPractitioner?.let { fhirEngine.get<Practitioner>(it) }
+  }
+
+  private fun Search.filterPatient() {
+    val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+      (if (getApplicationConfiguration().appId.contains("art-client")) {
+          listOf(
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "client-already-on-art"
+            },
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "newly-diagnosed-client"
+            },
+          )
+        } else {
+          listOf(
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "exposed-infant"
+            },
+          )
+        })
+        .map { coding -> { value = of(coding) } }
+    filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
   }
 }
 

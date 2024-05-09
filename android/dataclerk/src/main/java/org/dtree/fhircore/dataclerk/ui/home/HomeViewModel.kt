@@ -16,7 +16,7 @@
 
 package org.dtree.fhircore.dataclerk.ui.home
 
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -24,8 +24,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -37,7 +37,7 @@ import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val dataStore: AppDataStore) : ViewModel() {
-  val patientCount = mutableStateOf(0L)
+  val patientCount = mutableLongStateOf(0L)
   var patientsPaging: MutableStateFlow<Flow<PagingData<PatientItem>>> =
     MutableStateFlow(emptyFlow())
 
