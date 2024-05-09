@@ -65,7 +65,7 @@ constructor(
         }
       } catch (e: Exception) {
         Timber.e(e)
-        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException(e.message)))
       }
     }
   }
@@ -82,10 +82,12 @@ constructor(
         if ((400..503).contains(httpException.response()!!.code())) {
           _loadState.postValue(DataLoadState.Error(ServerException()))
         } else {
-          _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+          _loadState.postValue(
+            DataLoadState.Error(ConfigurationErrorException(httpException.message)),
+          )
         }
       } catch (e: Exception) {
-        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException(e.message)))
       }
     }
   }

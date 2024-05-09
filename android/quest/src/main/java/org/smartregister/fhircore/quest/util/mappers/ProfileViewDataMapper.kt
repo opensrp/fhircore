@@ -96,7 +96,7 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
             inputModel.tasks.map {
               PatientProfileRowItem(
                 id = it.outcomeReference.first().extractId(),
-                actionFormId =  if (it.canBeCompleted()) it.getQuestionnaire() else null,
+                actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
                 title = "", // it.description,
                 subtitle = "", // context.getString(R.string.due_on,
                 // it.executionPeriod.start.makeItReadable()),

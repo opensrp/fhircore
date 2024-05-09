@@ -16,10 +16,16 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire
 
+import java.lang.Exception
+import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Resource
 
 sealed class ExtractionProgress {
-  class Success(val extras: List<Resource>? = null) : ExtractionProgress()
+  class Success(
+    val questionnaireResponse: QuestionnaireResponse,
+    val extras: List<Resource>? = null,
+  ) : ExtractionProgress()
 
-  object Failed : ExtractionProgress()
+  class Failed(val questionnaireResponse: QuestionnaireResponse, val exception: Exception) :
+    ExtractionProgress()
 }

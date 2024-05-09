@@ -35,20 +35,18 @@ allprojects {
         mavenCentral()
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
         maven(url = "https://jcenter.bintray.com/")
-        val properties = ProjectProperties.readProperties("local.properties")
-
-        if (properties.getProperty("dtreeRepositoryUsername") != null && properties.getProperty("dtreeRepositoryPassword") != null) {
-            maven {
-                url = uri("https://maven.pkg.github.com/d-tree-org/android-fhir")
-                name = "dtreeRepository"
-                credentials {
-                    username = properties["dtreeRepositoryUsername"]?.toString()
-                    password = properties["dtreeRepositoryPassword"]?.toString()
+        ProjectProperties.readProperties("local.properties")
+            .takeIf { it.getProperty("dtreeRepositoryUsername") != null && it.getProperty("dtreeRepositoryPassword") != null }
+            ?.let {
+                maven {
+                    url = uri("https://maven.pkg.github.com/d-tree-org/android-fhir")
+                    name = "dtreeRepository"
+                    credentials {
+                        username = it["dtreeRepositoryUsername"]?.toString()
+                        password = it["dtreeRepositoryPassword"]?.toString()
+                    }
                 }
             }
-        }
-
-        mavenLocal()
         maven {
             name = "fhirsdk"
             url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
