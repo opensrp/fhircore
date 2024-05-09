@@ -28,6 +28,7 @@ import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.ResourceType
+import timber.log.Timber
 
 @HiltWorker
 class CompositionConfigSyncWorker
@@ -53,6 +54,7 @@ constructor(
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
   private fun loadCompositionConfigParams(): Map<ResourceType, Map<String, String>> {
+    Timber.d("#### loadCompositionConfigParams- ${syncParamSource.compositionConfigSyncParameters.size}")
     return syncParamSource.compositionConfigSyncParameters
   }
 

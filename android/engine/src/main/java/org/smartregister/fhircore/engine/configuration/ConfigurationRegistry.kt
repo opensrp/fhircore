@@ -915,7 +915,7 @@ constructor(
       when (compConfigFlowJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("#### compConfigFlowJobStatus succeeded")
-          fetchCompositionList(coroutineScope)
+          fetchCompositionContent(coroutineScope)
         } else -> {
         Timber.d("#### compConfigFlowJobStatus other than succeeded")
         // do nothing
@@ -982,7 +982,7 @@ constructor(
 
   }
 
-  private suspend fun fetchCompositionList(coroutineScope: CoroutineScope){
+  private suspend fun fetchCompositionContent(coroutineScope: CoroutineScope){
     run {
 
       val compositionListParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
@@ -991,8 +991,9 @@ constructor(
         val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
         val patientRelatedResourceTypes = mutableListOf<ResourceType>()
         val compositionResource = fhirEngine.searchCompositionByIdentifier(parsedAppId)
-        Timber.d("compositionResource = " + jsonParser.encodeResourceToString(compositionResource))
+
         compositionResource?.let { composition ->
+          Timber.d("#### composition = ${jsonParser.encodeResourceToString(composition)}")
           composition
             .retrieveCompositionSections()
             .asSequence()
@@ -1007,6 +1008,7 @@ constructor(
             }
             .filter { entry -> entry.key in FILTER_RESOURCE_LIST }
             .forEach { entry: Map.Entry<String, List<Composition.SectionComponent>> ->
+              Timber.d("#### entry.key - ${entry.key}")
               if (entry.key == ResourceType.List.name) {
                 if (isNonProxy()) {
                   val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
@@ -1052,29 +1054,23 @@ constructor(
                     }
                     }
                   }
-
                 } else {
-
                   val compositionManifestParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
                   Timber.d("#### else condition compositionList size ${compositionListParamPairs.size}")
-                    entry.value.forEach {
-
-
-                      compositionManifestParamPairs.add(
-                        Pair(
-                          ResourceType.fromCode(entry.key),
-                          mapOf(Composition.SP_RES_ID to it.focus.extractId()),
-                        ),
-                      )
-
-//                      processCompositionManifestResources(
-//                        gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
-//                        searchPath =
-//                        "${entry.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
-//                        patientRelatedResourceTypes = patientRelatedResourceTypes,
-//                      )
-                    }
+                  entry.value.forEach {
+                    compositionManifestParamPairs.add(
+                      Pair(
+                        ResourceType.fromCode(entry.key),
+                        mapOf(Composition.SP_RES_ID to it.focus.extractId()),
+                      ),
+                    )
+//                    processCompositionManifestResources(
+//                      gatewayModeHeaderValue = FHIR_GATEWAY_MODE_HEADER_VALUE,
+//                      searchPath =
+//                      "${entry.key}?$ID=${it.focus.extractId()}&_page=1&_count=$DEFAULT_COUNT",
+//                      patientRelatedResourceTypes = patientRelatedResourceTypes,
+//                    )
+                  }
 
                   syncParamSource.compositionManifestSyncPairs =  mapOf(*compositionManifestParamPairs.toTypedArray())
                   Timber.d("#### compositionManifestSyncPairs size - ${compositionManifestParamPairs.size}")
@@ -1093,50 +1089,50 @@ constructor(
                 }
               } else {
 
-                Timber.d("#### process - compositionConfig params for 3")
-                val compositionConfigParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+              Timber.d("#### process - compositionContent if LIST else params for 3")
+              val compositionConfigParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
-                  val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+                val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-                  chunkedResourceIdList.forEach { parentIt ->
-                    Timber.d(
-                      "#### Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                chunkedResourceIdList.forEach { parentIt ->
+                  Timber.d(
+                    "#### Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                  )
+                  val resourceIds: List<String> =
+                    parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
+                  val resourceType = entry.key
+
+                  resourceIds.forEach {
+                    Timber.d("#### compositionConfigParamPairs adding resourceType - $resourceType and id= $it")
+                    compositionConfigParamPairs.add(
+                      Pair(
+                        ResourceType.fromCode(resourceType),
+                        mapOf(Composition.SP_RES_ID to it),
+                      ),
                     )
-                    val resourceIds: List<String> =
-                      parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
-                    val resourceType = entry.key
+                  }
 
-                    resourceIds.forEach {
-                      Timber.d("#### compositionConfigParamPairs adding resourceType - $resourceType and id= $it")
-                      compositionConfigParamPairs.add(
-                        Pair(
-                          ResourceType.fromCode(resourceType),
-                          mapOf(Composition.SP_RES_ID to it),
-                        ),
-                      )
+                  syncParamSource.compositionConfigSyncParameters =  mapOf(*compositionConfigParamPairs.toTypedArray())
+                  Timber.d("#### compositionConfigSyncParameters size - ${compositionConfigParamPairs.size}")
+                  val compositionConfigFlow3 = Sync.oneTimeSync<CompositionConfigSyncWorker>(context)
+                  compositionConfigFlow3.handleCompositionConfigSyncJobStatus(coroutineScope)
+                  compositionConfigFlow3.collect{ compListJobStatus ->
+                    Timber.d("#### compConfigFlow3 collected  $compListJobStatus")
+                    when(compListJobStatus) {
+                      is CurrentSyncJobStatus.Succeeded -> {
+                        Timber.d("#### compConfigFlow3 JobStatus succeeded")
+                      }else -> {
+                      Timber.d("#### compConfigFlow3 JobStatus other than succeeded")
                     }
-
-                    syncParamSource.compositionConfigSyncParameters =  mapOf(*compositionConfigParamPairs.toTypedArray())
-                    Timber.d("#### compositionConfigSyncParameters size - ${compositionConfigParamPairs.size}")
-                    val compositionConfigFlow3 = Sync.oneTimeSync<CompositionConfigSyncWorker>(context)
-                    compositionConfigFlow3.handleCompositionConfigSyncJobStatus(coroutineScope)
-                    compositionConfigFlow3.collect{ compListJobStatus ->
-                      Timber.d("#### compConfigFlow3 collected  $compListJobStatus")
-                      when(compListJobStatus) {
-                        is CurrentSyncJobStatus.Succeeded -> {
-                          Timber.d("#### compConfigFlow3 JobStatus succeeded")
-                        }else -> {
-                        Timber.d("#### compConfigFlow3 JobStatus other than succeeded")
-                      }
-                      }
                     }
+                  }
 
 //                    processCompositionManifestResources(
 //                      entry.key,
 //                      parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
 //                      patientRelatedResourceTypes,
 //                    )
-                  }
+                }
               }
             }
             saveSyncSharedPreferences(patientRelatedResourceTypes.toList())
