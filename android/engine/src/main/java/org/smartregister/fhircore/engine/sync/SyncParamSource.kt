@@ -20,6 +20,7 @@ package org.smartregister.fhircore.engine.sync
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.hl7.fhir.r4.model.ResourceType
+import java.util.LinkedList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,6 +32,11 @@ constructor(
 ) {
     var compositionSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
     var compositionListSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
-    var compositionConfigSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
+    // var compositionConfigSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
     var compositionManifestSyncPairs : Map<ResourceType, Map<String, String>> = emptyMap()
+
+    var compListRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
+    var compConfigRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
+    var compManifestRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
+
 }
