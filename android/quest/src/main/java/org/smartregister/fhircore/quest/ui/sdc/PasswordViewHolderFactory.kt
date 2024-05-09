@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Google LLC
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.fhir.datacapture.R
-import com.google.android.fhir.datacapture.extensions.getRequiredOrOptionalText
-import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.itemControlCode
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
-import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.datacapture.views.HeaderView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
@@ -45,7 +41,7 @@ import org.hl7.fhir.r4.model.StringType
 
 object PasswordViewHolderFactory :
   QuestionnaireItemViewHolderFactory(
-          org.smartregister.fhircore.quest.R.layout.password_view,
+    org.smartregister.fhircore.quest.R.layout.password_view,
   ) {
   override fun getQuestionnaireItemViewHolderDelegate() =
     object : QuestionnaireItemViewHolderDelegate {
@@ -63,7 +59,7 @@ object PasswordViewHolderFactory :
         passwordEditText =
           itemView
             .findViewById<TextInputEditText?>(
-                    org.smartregister.fhircore.quest.R.id.password_edit_text,
+              org.smartregister.fhircore.quest.R.id.password_edit_text,
             )
             .apply {
               setRawInputType(InputType.TYPE_CLASS_TEXT)
@@ -77,7 +73,7 @@ object PasswordViewHolderFactory :
               setOnFocusChangeListener { view, focused ->
                 if (!focused) {
                   (view.context.applicationContext.getSystemService(Context.INPUT_METHOD_SERVICE)
-                    as InputMethodManager)
+                      as InputMethodManager)
                     .hideSoftInputFromWindow(view.windowToken, 0)
                 }
               }
