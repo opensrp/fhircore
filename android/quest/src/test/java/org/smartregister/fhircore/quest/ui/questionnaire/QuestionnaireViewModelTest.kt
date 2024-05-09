@@ -1311,7 +1311,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireConfig.copy(
         resourceType = ResourceType.Patient,
         resourceIdentifier = patient.logicalId,
-        type = QuestionnaireType.EDIT.name
+        type = QuestionnaireType.EDIT.name,
       )
 
     val questionnaireWithInitialValue =
@@ -1394,7 +1394,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       questionnaireViewModel.populateQuestionnaire(
         questionnaireWithInitialValue,
         questionnaireConfig1,
-        emptyList()
+        emptyList(),
       )
     Assert.assertNotNull(result.first)
     Assert.assertTrue(result.first!!.find("linkid-1") == null)

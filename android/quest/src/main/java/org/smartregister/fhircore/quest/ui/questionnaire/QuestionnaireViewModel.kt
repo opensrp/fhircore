@@ -91,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -166,6 +167,10 @@ constructor(
                   ?.filter { it.type == LinkIdType.READ_ONLY }
                   ?.map { it.linkId },
           )
+        }
+
+        if (questionnaireConfig.isEditable()) {
+          item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
         }
 
         // Pre-populate questionnaire items with configured values
