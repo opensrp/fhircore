@@ -233,7 +233,7 @@ fun LoginPage(
             .testTag(USERNAME_FIELD_TAG)
             .focusRequester(usernameFocusRequester)
             .focusProperties { next = passwordFocusRequester },
-          //keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
           keyboardActions =
             KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
         )

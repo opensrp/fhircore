@@ -72,6 +72,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
@@ -206,13 +207,25 @@ fun RegisterScreen(
           val tabTitles = listOf("PATIENTS", "IN-PROGRESS")
           val pagerState = rememberPagerState(pageCount = { 2 }, initialPage = 0)
 
-          var patients = remember {
-            mutableListOf<RegisterViewModel.Patient2>()
+          /*var patients = remember {
+            listOf<Patient>()
           }
           viewModel.patientsListLiveData.observeForever {
             patients = it
+          }*/
+          Box (modifier = modifier
+            .padding(top =16.dp)
+            .background(SearchHeaderColor)){
+            NoRegisterDataView(
+              modifier = modifier,
+              viewModel = viewModel,
+              noResults = noResultConfig
+            ) {
+              noResultConfig.actionButton?.actions?.handleClickEvent(navController)
+            }
           }
-          TabRow(
+
+/*          TabRow(
             selectedTabIndex = pagerState.currentPage,
             contentColor = Color.Red, // Customize tab text color
           ) {
@@ -309,24 +322,24 @@ fun RegisterScreen(
                                   Row(modifier = modifier.padding(vertical = 4.dp)) {
                                     Text(
                                       modifier = Modifier.weight(1f),
-                                      text = patient.name,
+                                      text = patient.name.firstOrNull()?.given?.firstOrNull()?.value ?: "",
                                       style = MaterialTheme.typography.h6,
                                       color = LightColors.primary
                                     )
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    Text(text = "Sync: Pending")
+                                    Text(text = "Sync: ${patient}")
                                   }
 
                                   Row(modifier = modifier.padding(vertical = 4.dp)) {
                                     Text(text = "Gender: ")
-                                    Text(text = patient.gender)
+                                    Text(text = patient.gender.name)
                                   }
-                                  /*if (patient.dob != null) {
+                                  *//*if (patient.dob != null) {
                                     Row {
                                       Text(text = "DoB: ")
                                       Text(text = patient.dob.toString())
                                     }
-                                  }*/
+                                  }*//*
                                 }
                               }
                             }
@@ -338,7 +351,7 @@ fun RegisterScreen(
                 }
               }
             }
-          }
+          }*/
         }
       }
     }
@@ -392,7 +405,7 @@ fun NoRegisterDataView(
   onClick: () -> Unit,
 ) {
   var patients = remember {
-    mutableListOf<RegisterViewModel.Patient2>()
+    listOf<Patient>()
   }
   viewModel.patientsListLiveData.observeForever {
     patients = it
@@ -494,17 +507,17 @@ fun NoRegisterDataView(
                   Row(modifier = modifier.padding(vertical = 4.dp)) {
                     Text(
                       modifier = Modifier.weight(1f),
-                      text = patient.name,
+                      text = patient.name.firstOrNull()?.given?.firstOrNull()?.value ?: "",
                       style = MaterialTheme.typography.h6,
                       color = LightColors.primary
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Sync: Pending")
+                    //Text(text = patient.address)
                   }
 
                   Row(modifier = modifier.padding(vertical = 4.dp)) {
                   Text(text = "Gender: ")
-                    Text(text = patient.gender)
+                    Text(text = patient.gender?.name ?: "")
                   }
                   /*if (patient.dob != null) {
                     Row {
