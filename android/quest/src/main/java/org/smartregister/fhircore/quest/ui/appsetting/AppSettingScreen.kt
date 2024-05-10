@@ -20,6 +20,7 @@ package org.smartregister.fhircore.quest.ui.appsetting
 
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.ui.theme.LightColors
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.ui.login.LOGIN_ERROR_TEXT_TAG
@@ -89,21 +91,23 @@ fun AppSettingScreen(
     focusManager.moveFocus(FocusDirection.Next)
   }
 
-  Column(modifier = modifier.fillMaxSize()) {
+  Column(modifier = modifier.fillMaxSize().background(LightColors.primary)) {
     Column(
       verticalArrangement = Arrangement.Center,
-      modifier = modifier.weight(1f).padding(horizontal = 20.dp),
+      modifier = modifier.weight(1f).padding(horizontal = 20.dp).background(LightColors.primary),
     ) {
       Text(
-        text = stringResource(R.string.fhir_core_app),
+        text = stringResource(R.string.appname),
         fontWeight = FontWeight.Bold,
         textAlign = TextAlign.Center,
+        color = Color.White,
         fontSize = 32.sp,
         modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
       )
       Spacer(modifier = modifier.height(80.dp))
       Text(
         text = stringResource(R.string.application_id),
+        color = Color.White,
         modifier = modifier.padding(vertical = 4.dp),
       )
       OutlinedTextField(
@@ -163,7 +167,7 @@ fun AppSettingScreen(
 
         if (showProgressBar) {
           CircularProgressIndicator(
-            modifier = modifier.align(Alignment.Center).size(18.dp),
+            modifier = modifier.align(Alignment.Center).size(18.dp).background(LightColors.primary),
             strokeWidth = 1.6.dp,
             color = Color.White,
           )

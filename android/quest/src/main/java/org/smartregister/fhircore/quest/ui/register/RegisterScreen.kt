@@ -16,25 +16,36 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import org.smartregister.fhircore.engine.R
@@ -53,8 +65,11 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
+import org.smartregister.fhircore.engine.ui.theme.DarkColors
+import org.smartregister.fhircore.engine.ui.theme.LightColors
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -76,6 +91,7 @@ fun RegisterScreen(
   modifier: Modifier = Modifier,
   openDrawer: (Boolean) -> Unit,
   viewModel : RegisterViewModel,
+  appMainViewModel: AppMainViewModel,
   onEvent: (RegisterEvent) -> Unit,
   registerUiState: RegisterUiState,
   searchText: MutableState<String>,
@@ -86,9 +102,12 @@ fun RegisterScreen(
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
 
+
   Scaffold(
+    modifier = modifier.background(Color.White),
     topBar = {
-      Column {
+      Column(modifier = modifier.background(Color.White),) {
+
         // Top section has toolbar and a results counts view
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
@@ -98,6 +117,7 @@ fun RegisterScreen(
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
+          onSync = appMainViewModel::onEvent,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
@@ -117,8 +137,11 @@ fun RegisterScreen(
         }
         // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
+
+
       }
     },
+
     floatingActionButton = {
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
@@ -131,6 +154,7 @@ fun RegisterScreen(
       }
     },
   ) { innerPadding ->
+
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
@@ -161,16 +185,10 @@ fun RegisterScreen(
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
-          NoRegisterDataView(modifier = modifier, noResults = noResultConfig) {
+          NoRegisterDataView(modifier = modifier, viewModel = viewModel, noResults = noResultConfig) {
             noResultConfig.actionButton?.actions?.handleClickEvent(navController)
           }
-          /*LazyColumn {
-            viewModel.patientsListLiveData.observeForever {
-              items(it.size) { item ->
-                Text(text = "item")
-              }
-            }
-          }*/
+
         }
       }
     }
@@ -181,56 +199,135 @@ fun RegisterScreen(
 fun NoRegisterDataView(
   modifier: Modifier = Modifier,
   noResults: NoResultsConfig,
+  viewModel : RegisterViewModel,
   onClick: () -> Unit,
 ) {
+  var patients = remember {
+    mutableListOf<RegisterViewModel.Patient2>()
+  }
+  viewModel.patientsListLiveData.observeForever {
+    patients = it
+  }
+
   Column(
     modifier = modifier
       .fillMaxSize()
       .padding(16.dp)
       .testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
     horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.Center,
+    verticalArrangement = Arrangement.Top,
   ) {
-    Text(
-      text = noResults.title,
-      fontSize = 16.sp,
-      modifier = modifier
-        .padding(vertical = 8.dp)
-        .testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
-      fontWeight = FontWeight.Bold,
-    )
-    Text(
-      text = noResults.message,
-      modifier =
-      modifier
-        .padding(start = 32.dp, end = 32.dp)
-        .testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
-      textAlign = TextAlign.Center,
-      fontSize = 15.sp,
-      color = Color.Gray,
-    )
+
+
+
     if (noResults.actionButton != null) {
       Row {
-        Button(
-          modifier = modifier
-            .padding(vertical = 16.dp)
-            .testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
-          onClick = onClick,
-        ) {
-          Icon(
-            imageVector = Icons.Filled.Add,
-            contentDescription = null,
-            modifier
-              .padding(end = 8.dp)
-              .testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG),
-          )
-          Text(
-            text = noResults.actionButton?.display?.uppercase().toString(),
-            modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG),
-          )
+        Box {
+          Button(
+            modifier = modifier
+              .padding(vertical = 16.dp)
+              .fillMaxWidth()
+              .testTag(NO_REGISTER_VIEW_BUTTON_TEST_TAG),
+            onClick = onClick,
+          ) {
+            Icon(
+              imageVector = Icons.Filled.Add,
+              contentDescription = null,
+              modifier
+                .padding(end = 8.dp)
+                .testTag(NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG),
+            )
+            Text(
+              text = noResults.actionButton?.display?.uppercase().toString(),
+              modifier.testTag(NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG),
+            )
+          }
         }
       }
     }
+
+    if (patients.isEmpty()){
+      Text(
+        text = noResults.title,
+        fontSize = 16.sp,
+        modifier = modifier
+          .padding(vertical = 8.dp)
+          .testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
+        fontWeight = FontWeight.Bold,
+      )
+      Text(
+        text = noResults.message,
+        modifier =
+        modifier
+          .padding(start = 32.dp, end = 32.dp)
+          .testTag(NO_REGISTER_VIEW_MESSAGE_TEST_TAG),
+        textAlign = TextAlign.Center,
+        fontSize = 15.sp,
+        color = Color.Gray,
+      )
+    }
+
+    Column(
+      modifier = modifier
+        .fillMaxSize()
+        .padding(16.dp)
+        .testTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG),
+      horizontalAlignment = Alignment.Start,
+    ) {
+      Text(
+        text = "RECENTS",
+        fontSize = 16.sp,
+        modifier = modifier
+          .padding(vertical = 8.dp)
+          .testTag(NO_REGISTER_VIEW_TITLE_TEST_TAG),
+        fontWeight = FontWeight.Bold,
+      )
+      Box {
+        LazyColumn {
+          items(patients) { patient ->
+            Card(
+              modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            ) {
+              Box(modifier = modifier
+                .fillMaxWidth()
+                .background(Color.White)) {
+                Column(
+                  modifier = Modifier
+                    .padding(16.dp)
+                    .background(Color.White)
+                ) {
+                  Row {
+                    Text(
+                      modifier = Modifier.weight(1f),
+                      text = patient.name,
+                      style = MaterialTheme.typography.h6,
+                      color = LightColors.primary
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = "Sync: Pending")
+                  }
+
+                  Row {
+                    Text(text = "Gender: ")
+                    Text(text = patient.gender)
+                  }
+                  /*if (patient.dob != null) {
+                    Row {
+                      Text(text = "DoB: ")
+                      Text(text = patient.dob.toString())
+                    }
+                  }*/
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 }
 
@@ -238,6 +335,7 @@ fun NoRegisterDataView(
 @Composable
 private fun PreviewNoRegistersView() {
   NoRegisterDataView(
+    viewModel = viewModel(),
     noResults =
       NoResultsConfig(
         title = "Title",

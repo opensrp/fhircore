@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -57,6 +58,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.ui.theme.DarkColors
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
@@ -86,23 +88,26 @@ fun TopScreenSection(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
+  onSync: (AppMainEvent) -> Unit,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
   Column(
-    modifier = modifier.fillMaxWidth().background(colorResource(id = R.color.colorPrimaryDark)),
+    modifier = modifier
+      .fillMaxWidth()
+      .background(DarkColors.primary),
   ) {
     Row(
       modifier =
-        modifier
-          .fillMaxWidth()
-          .height(64.dp)
-          .padding(horizontal = 16.dp, vertical = 16.dp)
-          .testTag(
-            TITLE_ROW_TEST_TAG,
-          ),
+      modifier
+        .fillMaxWidth()
+        .height(64.dp)
+        .padding(horizontal = 16.dp, vertical = 16.dp)
+        .testTag(
+          TITLE_ROW_TEST_TAG,
+        ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Icon(
+      /*Icon(
         when (toolBarHomeNavigation) {
           ToolBarHomeNavigation.OPEN_DRAWER -> Icons.Filled.Menu
           ToolBarHomeNavigation.NAVIGATE_BACK -> Icons.Filled.ArrowBack
@@ -110,25 +115,31 @@ fun TopScreenSection(
         contentDescription = DRAWER_MENU,
         tint = Color.White,
         modifier =
-          modifier.clickable { onClick(ToolbarClickEvent.Navigate) }.testTag(TOP_ROW_ICON_TEST_TAG),
-      )
+        modifier
+          .clickable { onClick(ToolbarClickEvent.Navigate) }
+          .testTag(TOP_ROW_ICON_TEST_TAG),
+      )*/
       Text(
-        text = "OCS",
+        text = stringResource(id = R.string.appname),
         fontSize = 24.sp,
         color = Color.White,
         fontWeight = FontWeight.Bold,
-        modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
+        modifier = modifier
+          .padding(start = 8.dp)
+          .weight(1f)
+          .testTag(TOP_ROW_TEXT_TEST_TAG),
       )
+      val context = LocalContext.current
 
-      /*Icon(
+      Icon(
         painter = painterResource(id = R.drawable.ic_sync),
         contentDescription = FILTER,
         tint = Color.White,
         modifier =
         modifier
-          .clickable {  }
+          .clickable { onSync(AppMainEvent.SyncData(context))}
           .testTag(TOP_ROW_FILTER_ICON_TEST_TAG),
-      )*/
+      )
 
       /*if (false) {
         BadgedBox(
@@ -214,6 +225,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
+    onSync = {},
     onClick = {},
   )
 }
@@ -228,6 +240,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = true,
+    onSync = {},
     onClick = {},
   )
 }
@@ -241,6 +254,7 @@ fun TopScreenSectionNoFilterIconPreview() {
     onSearchTextChanged = {},
     toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
     isFilterIconEnabled = false,
+    onSync = {},
     onClick = {},
   )
 }
