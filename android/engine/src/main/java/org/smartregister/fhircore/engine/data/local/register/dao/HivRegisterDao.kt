@@ -24,7 +24,6 @@ import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -36,6 +35,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
+import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -44,7 +44,6 @@ import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activeCarePlans
-import org.smartregister.fhircore.engine.util.extension.activelyBreastfeeding
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -55,13 +54,16 @@ import org.smartregister.fhircore.engine.util.extension.extractFamilyName
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractGivenName
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.familyName
+import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
+import org.smartregister.fhircore.engine.util.extension.getResourcesByIds
 import org.smartregister.fhircore.engine.util.extension.givenName
-import org.smartregister.fhircore.engine.util.extension.hasActivePregnancy
 import org.smartregister.fhircore.engine.util.extension.loadResource
+import org.smartregister.fhircore.engine.util.extension.patientConditions
 import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
@@ -241,8 +243,12 @@ constructor(
       currentCarePlan = null,
     )
 
-  private suspend fun transformPatientToHivRegisterData(patient: Patient) =
-    RegisterData.HivRegisterData(
+  private suspend fun transformPatientToHivRegisterData(
+    patient: Patient,
+  ): RegisterData.HivRegisterData {
+    val pregnancyStatus = defaultRepository.getPregnancyStatus(patient.logicalId)
+
+    return RegisterData.HivRegisterData(
       logicalId = patient.logicalId,
       identifier = hivPatientIdentifier(patient),
       name = patient.extractName(),
@@ -258,9 +264,10 @@ constructor(
         patient.extractHealthStatusFromMeta(
           getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
-      isPregnant = defaultRepository.isPatientPregnant(patient),
-      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
+      isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
+      isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
     )
+  }
 
   internal suspend fun Patient.activeConditions() =
     defaultRepository.patientConditions(this.logicalId).filter { condition ->
@@ -334,15 +341,22 @@ constructor(
     return false
   }
 
-  internal suspend fun Patient.guardians(): List<Guardian> =
-    this.link
-      .filter {
-        (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name).or(
-          it.type == Patient.LinkType.REFER &&
-            it.other.referenceElement.resourceType == ResourceType.Patient.name,
-        )
+  internal suspend fun Patient.guardians(): List<Guardian> {
+    val patients = mutableListOf<String>()
+    val relatedPersons = mutableListOf<String>()
+    this.link.forEach {
+      if (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name) {
+        relatedPersons.add(it.other.extractId())
+      } else if (
+        it.type == Patient.LinkType.REFER &&
+          it.other.referenceElement.resourceType == ResourceType.Patient.name
+      ) {
+        patients.add(it.other.extractId())
       }
-      .map { defaultRepository.loadResource(it.other) }
+    }
+    return fhirEngine.getResourcesByIds<Patient>(patients) +
+      fhirEngine.getResourcesByIds<RelatedPerson>(relatedPersons)
+  }
 
   private fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.getAppConfigs()
@@ -361,6 +375,8 @@ constructor(
     return patients
       .filter(this::isValidPatient)
       .map { patient ->
+        val pregnancyStatus = defaultRepository.getPregnancyStatus(patient.logicalId)
+
         RegisterData.HivRegisterData(
           logicalId = patient.logicalId,
           identifier = hivPatientIdentifier(patient),
@@ -377,8 +393,8 @@ constructor(
             patient.extractHealthStatusFromMeta(
               getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
             ),
-          isPregnant = defaultRepository.isPatientPregnant(patient),
-          isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
+          isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
+          isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
         )
       }
       .filterNot { it.healthStatus == HealthStatus.DEFAULT }
@@ -395,16 +411,3 @@ constructor(
     const val ORGANISATION_DISPLAY = "Practitioner Organization"
   }
 }
-
-suspend fun DefaultRepository.patientConditions(patientId: String) =
-  searchResourceFor<Condition>(
-    subjectId = patientId,
-    subjectParam = Condition.SUBJECT,
-    subjectType = ResourceType.Patient,
-  )
-
-suspend fun DefaultRepository.isPatientPregnant(patient: Patient) =
-  patientConditions(patient.logicalId).hasActivePregnancy()
-
-suspend fun DefaultRepository.isPatientBreastfeeding(patient: Patient) =
-  patientConditions(patient.logicalId).activelyBreastfeeding()

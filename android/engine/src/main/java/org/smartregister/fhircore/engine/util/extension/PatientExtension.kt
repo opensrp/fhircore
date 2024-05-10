@@ -18,12 +18,14 @@ package org.smartregister.fhircore.engine.util.extension
 
 import android.content.Context
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import org.hl7.fhir.r4.model.Address
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
@@ -31,8 +33,11 @@ import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Immunization
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.codesystems.AdministrativeGender
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import timber.log.Timber
 
@@ -264,6 +269,27 @@ fun List<Condition>.pregnancyCondition(): Condition {
   return pregnancyCondition
 }
 
+suspend fun DefaultRepository.getPregnancyStatus(patientId: String): PregnancyStatus {
+  val conditions =
+    patientConditions(patientId) {
+      filter(
+        Condition.CODE,
+        {
+          value =
+            of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "77386006", null)))
+        },
+        {
+          value =
+            of(CodeableConcept().addCoding(Coding("http://snomed.info/sct", "413712001", null)))
+        },
+      )
+    }
+  if (conditions.isEmpty()) return PregnancyStatus.None
+  val isPregnant = conditions.findLast { it.code.codingFirstRep.code == "77386006" } != null
+  if (isPregnant) return PregnancyStatus.Pregnant
+  return PregnancyStatus.BreastFeeding
+}
+
 fun Enumerations.AdministrativeGender.translateGender(context: Context) =
   when (this) {
     Enumerations.AdministrativeGender.MALE -> context.getString(R.string.male)
@@ -320,4 +346,36 @@ suspend fun Patient.activeCarePlans(fhirEngine: FhirEngine): List<CarePlan> {
     .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
     .sortedBy { it.meta.lastUpdated }
     .toList()
+}
+
+suspend fun DefaultRepository.patientConditions(
+  patientId: String,
+  filters: (Search.() -> Unit)? = null,
+): List<Condition> {
+  fhirEngine.search<Condition> {
+    filter(Condition.SUBJECT, { value = "${ResourceType.Patient.name}/$patientId" })
+    filters?.invoke(this)
+    filter(
+      Condition.CLINICAL_STATUS,
+      {
+        value =
+          of(
+            CodeableConcept()
+              .addCoding(
+                Coding(
+                  "https://terminology.hl7.org/CodeSystem/condition-clinical",
+                  "confirmed",
+                  null,
+                ),
+              ),
+          )
+      },
+    )
+  }
+  return searchResourceFor<Condition>(
+    subjectId = patientId,
+    subjectParam = Condition.SUBJECT,
+    subjectType = ResourceType.Patient,
+    filters = listOf(),
+  )
 }

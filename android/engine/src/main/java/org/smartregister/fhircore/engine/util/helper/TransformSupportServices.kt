@@ -18,9 +18,9 @@ package org.smartregister.fhircore.engine.util.helper
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.search
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Appointment
@@ -51,7 +51,9 @@ import timber.log.Timber
  * Immunization.Reaction
  */
 @Singleton
-class TransformSupportServices @Inject constructor(val simpleWorkerContext: SimpleWorkerContext, val fhirEngine: FhirEngine) :
+class TransformSupportServices
+@Inject
+constructor(val simpleWorkerContext: SimpleWorkerContext, val fhirEngine: FhirEngine) :
   ITransformerServices {
 
   val outputs: MutableList<Base> = mutableListOf()

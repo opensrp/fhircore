@@ -34,6 +34,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
@@ -50,6 +51,7 @@ import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
+import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
 import org.smartregister.fhircore.engine.util.extension.safeSubList
 
 @Singleton
@@ -238,6 +240,7 @@ constructor(
   private suspend fun transformAppointment(appointment: Appointment): RegisterData {
     val refPatient = appointment.patientRef()!!
     val patient = defaultRepository.loadResource(refPatient) as Patient
+    val pregnancyStatus = defaultRepository.getPregnancyStatus(patient.logicalId)
 
     return RegisterData.AppointmentRegisterData(
       logicalId = patient.logicalId,
@@ -250,8 +253,8 @@ constructor(
         patient.extractHealthStatusFromMeta(
           applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
-      isPregnant = defaultRepository.isPatientPregnant(patient),
-      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
+      isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
+      isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
       reasons = appointment.reasonCode.flatMap { cc -> cc.coding.map { coding -> coding.code } },
     )
   }
