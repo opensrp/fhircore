@@ -67,8 +67,8 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
           matches = LocationWidgetViewHolderFactory::matcher,
         ),
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
-          factory = CustomAttachmentViewHolderFactory(),
-          matches = CustomAttachmentViewHolderFactory()::matcher,
+          factory = CustomAttachmentViewHolderFactory,
+          matches = CustomAttachmentViewHolderFactory::matcher,
         ),
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = CustomEditTextStringViewHolderFactory,
