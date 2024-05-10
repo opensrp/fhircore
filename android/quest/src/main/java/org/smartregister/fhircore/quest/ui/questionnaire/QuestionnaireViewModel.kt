@@ -107,6 +107,7 @@ import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import java.time.format.DateTimeFormatter
 
 @HiltViewModel
@@ -122,7 +123,7 @@ constructor(
   val fhirOperator: FhirOperator,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val configurationRegistry: ConfigurationRegistry,
-  val workManager: WorkManager,
+  val syncBroadcaster: SyncBroadcaster,
 ) : ViewModel() {
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
@@ -304,7 +305,9 @@ constructor(
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
       onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
-      workManager
+
+      // Trigger one time sync after question submission
+      syncBroadcaster.runOneTimeSync()
     }
   }
 
