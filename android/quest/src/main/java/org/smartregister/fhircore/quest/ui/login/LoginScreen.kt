@@ -18,6 +18,7 @@
 
 package org.smartregister.fhircore.quest.ui.login
 
+import android.text.InputType
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -232,6 +233,7 @@ fun LoginPage(
             .testTag(USERNAME_FIELD_TAG)
             .focusRequester(usernameFocusRequester)
             .focusProperties { next = passwordFocusRequester },
+          //keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
           keyboardActions =
             KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
         )

@@ -482,7 +482,6 @@ constructor(
     CoroutineScope(Dispatchers.IO).launch {
       val patients: MutableList<Patient2> = mutableListOf()
       val data = fhirEngine.getUnsyncedLocalChanges()
-
       data.forEachIndexed { index, localChange ->
         val patient = parsePatientJson(localChange.payload)
         patient?.let {

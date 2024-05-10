@@ -15,7 +15,7 @@
 
 
 
-        <item name="questionnaire_theme">@style/Theme.MyQuestionnaire</item>
+        <item name="questionnaire_theme">@style/Theme.MyQuestionnaire2</item>
 
     </style>
 </resources>

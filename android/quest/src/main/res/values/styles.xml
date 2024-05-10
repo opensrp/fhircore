@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
     <style name="Theme.MyQuestionnaire" parent="Theme.Questionnaire">
         <item name="questionnaireQuestionTextStyle">
             @style/TextAppearance.MaterialComponents.Headline1
@@ -15,7 +15,26 @@
         </item>
 
 
+
     </style>
+
+    <style name="Theme.MyQuestionnaire2" parent="Theme.Questionnaire">
+        <item name="questionnaireRadioButtonStyle">
+            @style/RadioButtonWithoutBorder
+        </item>
+    </style>
+
+
+    <style name="RadioButtonWithoutBorder">
+        <item name="android:background">@drawable/transparent_border</item>
+    </style>
+
+    <drawable name="transparent_border">
+        <shape>
+            <solid android:color="@android:color/transparent" />
+        </shape>
+    </drawable>
+
 
     <style name="EditTextStyle">
         <item name="endIconTint">@color/colorPrimary</item>

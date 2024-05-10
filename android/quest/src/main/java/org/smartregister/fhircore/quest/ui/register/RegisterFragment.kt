@@ -21,13 +21,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -61,6 +69,7 @@ import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.ui.theme.SearchHeaderColor
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -146,7 +155,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsLazyPagingItems()
           // Register screen provides access to the side navigation
           Scaffold(
-            modifier = Modifier.background(Color.White),
+            modifier = Modifier.background(SearchHeaderColor),
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
             drawerContent = {
@@ -173,8 +182,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding).background(Color.White)
+            Box(modifier = Modifier.padding(innerPadding)
+              .background(SearchHeaderColor)
               .testTag(REGISTER_SCREEN_BOX_TAG)) {
+
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
@@ -193,6 +204,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
     }
   }
+
+
 
   override fun onResume() {
     super.onResume()
@@ -232,6 +245,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
+        registerViewModel.getUnsyncedLocalChanges()
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()

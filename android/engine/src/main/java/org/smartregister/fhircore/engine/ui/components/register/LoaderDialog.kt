@@ -98,7 +98,7 @@ fun LoaderDialog(
                 if (showPercentageProgress) {
                   Text(
                     fontSize = 15.sp,
-                    color = Color.White,
+                    color = Color.DarkGray,
                     text = stringResource(id = R.string.percentage_progress, currentPercentage),
                     modifier = modifier.padding(horizontal = 3.dp, vertical = 16.dp),
                   )

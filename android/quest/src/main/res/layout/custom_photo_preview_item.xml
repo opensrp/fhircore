@@ -60,8 +60,18 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:elevation="@dimen/spacing_8"
-        android:drawableTint="@color/simple_red_600"
-        android:drawableStart="@drawable/ic_delete"
+        android:background="@null"
+        android:visibility="gone"
+        android:drawableStart="@drawable/ic_close_vd_white_24"
+        app:layout_constraintEnd_toEndOf="@+id/photo_thumbnail"
+        app:layout_constraintTop_toTopOf="@id/photo_thumbnail" />
+
+    <ImageView
+        android:id="@+id/photo_delete2"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:elevation="@dimen/spacing_8"
+        android:src="@drawable/ic_close_vd_white_24"
         app:layout_constraintEnd_toEndOf="@+id/photo_thumbnail"
         app:layout_constraintTop_toTopOf="@id/photo_thumbnail" />
 

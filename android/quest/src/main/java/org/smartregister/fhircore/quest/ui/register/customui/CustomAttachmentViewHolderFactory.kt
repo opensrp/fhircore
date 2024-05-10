@@ -5,6 +5,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.DrawableRes
@@ -69,6 +70,7 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
       private lateinit var photoThumbnail: ImageView
       private lateinit var photoTitle: TextView
       private lateinit var photoDeleteButton: Button
+      private lateinit var photoDeleteButton2: ImageView
       private lateinit var filePreview: ConstraintLayout
       private lateinit var fileIcon: ImageView
       private lateinit var fileTitle: TextView
@@ -91,6 +93,7 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
         photoThumbnail = itemView.findViewById(R.id.photo_thumbnail)
         photoTitle = itemView.findViewById(R.id.photo_title)
         photoDeleteButton = itemView.findViewById(R.id.photo_delete)
+        photoDeleteButton2 = itemView.findViewById(R.id.photo_delete2)
         filePreview = itemView.findViewById(R.id.file_preview)
         fileIcon = itemView.findViewById(R.id.file_icon)
         fileTitle = itemView.findViewById(R.id.file_title)
@@ -115,6 +118,7 @@ internal object CustomAttachmentViewHolderFactory : QuestionnaireItemViewHolderF
         uploadDocumentButton.setOnClickListener { view -> onUploadClicked(view, questionnaireItem) }
         uploadFileButton.setOnClickListener { view -> onUploadClicked(view, questionnaireItem) }
         photoDeleteButton.setOnClickListener { view -> onDeleteClicked(view) }
+        photoDeleteButton2.setOnClickListener { view -> onDeleteClicked(view) }
         fileDeleteButton.setOnClickListener { view -> onDeleteClicked(view) }
         displayValidationResult(questionnaireViewItem.validationResult)
       }
