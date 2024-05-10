@@ -42,7 +42,9 @@ import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -102,10 +104,10 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-  private val _patientsListLiveData = MutableLiveData<List<Patient>>()
-  val patientsListLiveData: LiveData<List<Patient>>
-    get() = _patientsListLiveData
 
+
+  private val _patientsStateFlow = MutableStateFlow<List<Patient>>(emptyList())
+  val patientsStateFlow: StateFlow<List<Patient>> = _patientsStateFlow
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
    * cache (this is necessary after a questionnaire has been submitted to refresh the register with
@@ -474,79 +476,18 @@ constructor(
     _isUploadSync.emit(isUploadSync)
   }
 
-
-  fun getUnsyncedPatients(){
-    CoroutineScope(Dispatchers.IO).launch {
-      //val data = fhirEngine.getUnsyncedLocalChanges()
-
-      /*data.forEachIndexed { index, localChange ->
-        val patient = parsePatientJson(localChange.payload)
-        patient?.let {
-          if (patient.name.isNotEmpty()){
-            patients.add(patient)
-          }
-        }
-      }
-      patients.reverse()*/
-      //_patientsListLiveData.postValue(patients)
-    }
-  }
-
   fun getAllPatients() {
 
-    CoroutineScope(Dispatchers.IO).launch {
+    viewModelScope.launch {
       val patients = fhirEngine.search<Patient> {
       }.map {
         it.resource
       }.sortedByDescending { it.meta.lastUpdated }
-      _patientsListLiveData.postValue(patients)
-
-      /*val patients = fhirEngine.search<Patient> {
-               sort(Patient.NAME, Order.ASCENDING)
-               count = 10
-               from = 0
-             }
-        .map {
-          it.resource
-        }
-      _patientsListLiveData.postValue(patients)*/
+      _patientsStateFlow.value = patients
 
     }
-
-
-    /*
-  fun Patient.toPatientItem(position: Int): PatientItem {
-    // Show nothing if no values available for gender and date of birth.
-    val patientId = if (hasIdElement()) idElement.idPart else ""
-    val name = if (hasName()) name[0].nameAsSingleString else ""
-    val gender = if (hasGenderElement()) genderElement.valueAsString else ""
-    val dob =
-      if (hasBirthDateElement()) {
-        LocalDate.parse(birthDateElement.valueAsString, DateTimeFormatter.ISO_DATE)
-      } else {
-        null
-      }
-    val phone = if (hasTelecom()) telecom[0].value else ""
-    val city = if (hasAddress()) address[0].city else ""
-    val country = if (hasAddress()) address[0].country else ""
-    val isActive = active
-    val html: String = if (hasText()) text.div.valueAsString else ""
-
-    return PatientItem(
-      id = position.toString(),
-      resourceId = patientId,
-      name = name,
-      gender = gender ?: "",
-      dob = dob,
-      phone = phone ?: "",
-      city = city ?: "",
-      country = country ?: "",
-      isActive = isActive,
-      html = html,
-    )
   }
 
-*/
 
     /** The Patient's details for display purposes. */
     data class PatientItem(
@@ -617,6 +558,4 @@ constructor(
         return null
       }
     }
-
-  }
 }

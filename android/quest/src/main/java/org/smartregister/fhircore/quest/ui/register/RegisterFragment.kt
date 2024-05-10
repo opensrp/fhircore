@@ -193,8 +193,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
     }
   }
 
-
-
   override fun onResume() {
     super.onResume()
     registerViewModel.getAllPatients()
