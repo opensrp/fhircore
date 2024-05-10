@@ -532,4 +532,4 @@ private fun Questionnaire.QuestionnaireItemComponent.isGivenSizeOverLimit(
 }
 
 private val DocumentReference.url
-  get() = "${BuildConfig.FHIR_BASE_URL}/DocumentReference/${logicalId}/\$binary-access-write?path=DocumentReference.content.attachment"
+  get() = "${BuildConfig.FHIR_BASE_URL}DocumentReference/${logicalId}/\$binary-access-read?path=DocumentReference.content.attachment"
