@@ -20,27 +20,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.viewModels
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material.SnackbarDuration
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
@@ -76,8 +66,6 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
-import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -209,7 +197,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onResume() {
     super.onResume()
-    registerViewModel.getUnsyncedLocalChanges()
+    registerViewModel.getAllPatients()
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 
@@ -245,7 +233,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             ),
           )
         }
-        registerViewModel.getUnsyncedLocalChanges()
+        registerViewModel.getAllPatients()
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()

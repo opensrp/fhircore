@@ -30,8 +30,8 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.LocalChange
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,7 +50,6 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -69,13 +68,12 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireViewModel
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class RegisterViewModel
@@ -104,8 +102,8 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-  private val _patientsListLiveData = MutableLiveData<MutableList<Patient2>>()
-  val patientsListLiveData: LiveData<MutableList<Patient2>>
+  private val _patientsListLiveData = MutableLiveData<List<Patient>>()
+  val patientsListLiveData: LiveData<List<Patient>>
     get() = _patientsListLiveData
 
   /**
@@ -477,12 +475,11 @@ constructor(
   }
 
 
-  fun getUnsyncedLocalChanges() {
-
+  fun getUnsyncedPatients(){
     CoroutineScope(Dispatchers.IO).launch {
-      val patients: MutableList<Patient2> = mutableListOf()
-      val data = fhirEngine.getUnsyncedLocalChanges()
-      data.forEachIndexed { index, localChange ->
+      //val data = fhirEngine.getUnsyncedLocalChanges()
+
+      /*data.forEachIndexed { index, localChange ->
         val patient = parsePatientJson(localChange.payload)
         patient?.let {
           if (patient.name.isNotEmpty()){
@@ -490,41 +487,34 @@ constructor(
           }
         }
       }
-      patients.reverse()
+      patients.reverse()*/
+      //_patientsListLiveData.postValue(patients)
+    }
+  }
+
+  fun getAllPatients() {
+
+    CoroutineScope(Dispatchers.IO).launch {
+      val patients = fhirEngine.search<Patient> {
+      }.map {
+        it.resource
+      }.sortedByDescending { it.meta.lastUpdated }
       _patientsListLiveData.postValue(patients)
 
-        /*.search<Patient> {
-          if (nameQuery.isNotEmpty()) {
-            filter(
-              Patient.NAME,
-              {
-                modifier = StringFilterModifier.CONTAINS
-                value = nameQuery
-              },
-            )
-          }
-          sort(Patient.NAME, Order.ASCENDING)
-          count = 3
-          from = 0
+      /*val patients = fhirEngine.search<Patient> {
+               sort(Patient.NAME, Order.ASCENDING)
+               count = 10
+               from = 0
+             }
+        .map {
+          it.resource
         }
-        .mapIndexed { index, fhirPatient -> fhirPatient.resource.toPatientItem(index + 1) }
-        .let { patients.addAll(it) }
       _patientsListLiveData.postValue(patients)*/
+
     }
 
 
-    /*val risks = getRiskAssessments()
-    patients.forEach { patient ->
-      risks["Patient/${patient.resourceId}"]?.let {
-        patient.risk = it.prediction?.first()?.qualitativeRisk?.coding?.first()?.code
-      }
-    }*/
-
-  }
-
-
-
-
+    /*
   fun Patient.toPatientItem(position: Int): PatientItem {
     // Show nothing if no values available for gender and date of birth.
     val patientId = if (hasIdElement()) idElement.idPart else ""
@@ -556,70 +546,77 @@ constructor(
     )
   }
 
+*/
 
-  /** The Patient's details for display purposes. */
-  data class PatientItem(
-    val id: String,
-    val resourceId: String,
-    val name: String,
-    val gender: String,
-    val dob: LocalDate? = null,
-    val phone: String,
-    val city: String,
-    val country: String,
-    val isActive: Boolean,
-    val html: String,
-    var risk: String? = ""
-  ) {
-    override fun toString(): String = name
-  }
+    /** The Patient's details for display purposes. */
+    data class PatientItem(
+      val id: String,
+      val resourceId: String,
+      val name: String,
+      val gender: String,
+      val dob: LocalDate? = null,
+      val phone: String,
+      val city: String,
+      val country: String,
+      val isActive: Boolean,
+      val html: String,
+      var risk: String? = ""
+    ) {
+      override fun toString(): String = name
+    }
 
-  /** The Observation's details for display purposes. */
-  data class ObservationItem(
-    val id: String,
-    val code: String,
-    val effective: String,
-    val value: String,
-  ) {
-    override fun toString(): String = code
-  }
+    /** The Observation's details for display purposes. */
+    data class ObservationItem(
+      val id: String,
+      val code: String,
+      val effective: String,
+      val value: String,
+    ) {
+      override fun toString(): String = code
+    }
 
-  data class ConditionItem(
-    val id: String,
-    val code: String,
-    val effective: String,
-    val value: String,
-  ) {
-    override fun toString(): String = code
-  }
+    data class ConditionItem(
+      val id: String,
+      val code: String,
+      val effective: String,
+      val value: String,
+    ) {
+      override fun toString(): String = code
+    }
 
-  data class Patient2(val name: String, val gender: String, val primaryContact: String?, val age: Int?)
+    data class Patient2(
+      val name: String,
+      val gender: String,
+      val primaryContact: String?,
+      val age: Int?
+    )
 
-  fun parsePatientJson(json: String): Patient2? {
-    val gson = Gson()
-    try {
-      val patientData = gson.fromJson(json, Map::class.java)
+    fun parsePatientJson(json: String): Patient2? {
+      val gson = Gson()
+      try {
+        val patientData = gson.fromJson(json, Map::class.java)
 
-      val nameList = patientData["name"] as List<*>?
-      val name = if (nameList != null && nameList.isNotEmpty()) {
-        val firstName = (nameList[0] as Map<*, *>)["given"] as List<*>?
-        if (firstName != null && firstName.isNotEmpty()) {
-          firstName[0] as String
+        val nameList = patientData["name"] as List<*>?
+        val name = if (nameList != null && nameList.isNotEmpty()) {
+          val firstName = (nameList[0] as Map<*, *>)["given"] as List<*>?
+          if (firstName != null && firstName.isNotEmpty()) {
+            firstName[0] as String
+          } else {
+            null
+          }
         } else {
           null
         }
-      } else {
-        null
+
+        val gender = patientData["gender"] as String?
+        val telecomData = patientData["telecom"] as List<*>?
+
+        return Patient2(name ?: "", gender ?: "", "", 0)
+      } catch (e: Exception) {
+        e.printStackTrace()
+        return null
       }
-
-      val gender = patientData["gender"] as String?
-      val telecomData = patientData["telecom"] as List<*>?
-
-      return Patient2(name ?: "", gender ?: "", "", 0)
-    } catch (e: Exception) {
-      e.printStackTrace()
-      return null
     }
-  }
 
+  }
 }
