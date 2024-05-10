@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="simple_dark_blue_900">#0A2E52</color>
-    <color name="simple_dark_blue_800">#0C3966</color>
+    <color name="simple_dark_blue_900">#0077CC</color>
+    <color name="simple_dark_blue_800">#0077CC</color>
 
     <color name="simple_light_blue_500">#0075EB</color>
     <color name="simple_light_blue_100">#E0F0FF</color>

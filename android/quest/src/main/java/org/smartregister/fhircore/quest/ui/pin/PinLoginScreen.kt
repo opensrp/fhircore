@@ -110,13 +110,13 @@ fun PinLoginPage(
   Scaffold(
     topBar = {
       // Only show toolbar when entering pin
-      if (!pinUiState.setupPin) {
+      /*if (!pinUiState.setupPin) {
         PinTopBar(
           showMenu = showMenu,
           onShowMenu = { showMenu = it },
           onMenuLoginClicked = onMenuLoginClicked,
         )
-      }
+      }*/
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
@@ -124,7 +124,7 @@ fun PinLoginPage(
         ForgotPinDialog(forgotPin = forgotPin, onDismissDialog = { showForgotPinDialog = false })
       }
       Column {
-        Spacer(modifier = modifier.fillMaxHeight(0.22f))
+        Spacer(modifier = modifier.fillMaxHeight(0.1f))
         Column(modifier = modifier.fillMaxWidth()) {
           if (pinUiState.setupPin) {
             PinLogoSection(
@@ -140,7 +140,9 @@ fun PinLoginPage(
             fontWeight = FontWeight.Normal,
             fontSize = 20.sp,
             modifier =
-              modifier.padding(bottom = 12.dp, top = 20.dp).align(Alignment.CenterHorizontally),
+            modifier
+              .padding(bottom = 12.dp, top = 20.dp)
+              .align(Alignment.CenterHorizontally),
           )
 
           PinInput(
@@ -162,7 +164,9 @@ fun PinLoginPage(
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp,
                 color = DangerColor,
-                modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
+                modifier = modifier
+                  .padding(vertical = 8.dp)
+                  .align(Alignment.CenterHorizontally),
               )
             } else {
               Text(
@@ -170,11 +174,11 @@ fun PinLoginPage(
                 color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
                 fontSize = 16.sp,
                 modifier =
-                  modifier
-                    .padding(top = 24.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .clickable { showForgotPinDialog = !showForgotPinDialog }
-                    .bringIntoViewRequester(bringIntoViewRequester),
+                modifier
+                  .padding(top = 24.dp)
+                  .align(Alignment.CenterHorizontally)
+                  .clickable { forgotPin() }
+                  .bringIntoViewRequester(bringIntoViewRequester),
               )
             }
           } else {
@@ -183,10 +187,10 @@ fun PinLoginPage(
               onClick = { onSetPin(newPin) },
               enabled = newPin.size == pinUiState.pinLength && !pinUiState.showProgressBar,
               modifier =
-                modifier
-                  .bringIntoViewRequester(bringIntoViewRequester)
-                  .padding(top = 32.dp, end = 16.dp, start = 16.dp)
-                  .fillMaxWidth(),
+              modifier
+                .bringIntoViewRequester(bringIntoViewRequester)
+                .padding(top = 32.dp, end = 16.dp, start = 16.dp)
+                .fillMaxWidth(),
               colors =
                 ButtonDefaults.buttonColors(
                   disabledContentColor = Color.Gray,
@@ -197,7 +201,9 @@ fun PinLoginPage(
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
                 if (pinUiState.showProgressBar) {
                   CircularProgressIndicator(
-                    modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
+                    modifier = modifier
+                      .size(18.dp)
+                      .testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
                     color = Color.White,
                   )
@@ -221,15 +227,15 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
         painter = painterResource(id = R.drawable.ic_app_logo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
-          modifier
-            .align(Alignment.CenterHorizontally)
-            .requiredHeight(120.dp)
-            .requiredWidth(140.dp)
-            .testTag(PIN_LOGO_IMAGE),
+        modifier
+          .align(Alignment.CenterHorizontally)
+          .requiredHeight(120.dp)
+          .requiredWidth(140.dp)
+          .testTag(PIN_LOGO_IMAGE),
       )
     }
     Text(
-      text = "OCS",
+      text = stringResource(id = R.string.appname),
       textAlign = TextAlign.Center,
       fontWeight = FontWeight.Bold,
       fontSize = 22.sp,
@@ -281,18 +287,24 @@ fun ForgotPinDialog(
     text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
     buttons = {
       Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
+        modifier = modifier
+          .fillMaxWidth()
+          .padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
+          modifier = modifier
+            .padding(horizontal = 10.dp)
+            .clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
           text = stringResource(R.string.dial_number),
           modifier =
-            modifier.padding(horizontal = 10.dp).clickable {
+          modifier
+            .padding(horizontal = 10.dp)
+            .clickable {
               onDismissDialog()
               forgotPin()
             },

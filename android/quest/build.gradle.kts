@@ -182,7 +182,7 @@ android {
   productFlavors {
     create("opensrp") {
       dimension = "apps"
-      manifestPlaceholders["appLabel"] = "OCS"
+      manifestPlaceholders["appLabel"] = "Arogya Aarohan"
       isDefault = true
     }
 

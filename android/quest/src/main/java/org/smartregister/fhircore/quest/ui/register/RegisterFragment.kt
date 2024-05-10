@@ -21,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
@@ -31,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
@@ -84,6 +86,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
   private val registerFragmentArgs by navArgs<RegisterFragmentArgs>()
   private val registerViewModel by viewModels<RegisterViewModel>()
 
+
+
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -102,7 +107,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
     }
 
-    registerViewModel.getSearchResults("")
 
 /*    registerViewModel.patientsListLiveData.observeForever {
       val data = it
@@ -142,15 +146,16 @@ class RegisterFragment : Fragment(), OnSyncListener {
               .collectAsLazyPagingItems()
           // Register screen provides access to the side navigation
           Scaffold(
+            modifier = Modifier.background(Color.White),
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
             drawerContent = {
-              AppDrawer(
+              /*AppDrawer(
                 appUiState = uiState,
                 openDrawer = openDrawer,
                 onSideMenuClick = appMainViewModel::onEvent,
                 navController = findNavController(),
-              )
+              )*/
             },
             bottomBar = {
               // TODO Activate bottom nav via view configuration
@@ -168,7 +173,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
               )
             },
           ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding).testTag(REGISTER_SCREEN_BOX_TAG)) {
+            Box(modifier = Modifier.padding(innerPadding).background(Color.White)
+              .testTag(REGISTER_SCREEN_BOX_TAG)) {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
@@ -177,6 +183,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
                 navController = findNavController(),
+                appMainViewModel = appMainViewModel,
                 toolBarHomeNavigation = registerFragmentArgs.toolBarHomeNavigation,
                 viewModel = registerViewModel
               )
@@ -189,6 +196,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
 
   override fun onResume() {
     super.onResume()
+    registerViewModel.getUnsyncedLocalChanges()
     syncListenerManager.registerSyncListener(this, lifecycle)
   }
 

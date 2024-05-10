@@ -2,13 +2,13 @@
 <resources>
     <color name="colorError">#DD0000</color>
     <color name="colorErrorDull">#f2d0d3</color>
-    <color name="colorPrimary">#0077CC</color>
-    <color name="colorPrimaryDark">#0A2E52</color>
-    <color name="colorPrimaryLight">#0C3966</color>
+    <color name="colorPrimary">#0068d2</color>
+    <color name="colorPrimaryDark">#005bb9</color>
+    <color name="colorPrimaryLight">#0075EB</color>
     <color name="colorAccent">#0077CC</color>
     <color name="colorPrimaryLightDull">#DEECF6</color>
     <color name="white">#FFFFFF</color>
-    <color name="drawer_menu_highlighted_bg_color">#005084</color>
+    <color name="drawer_menu_highlighted_bg_color">#0075EB</color>
     <color name="colorSuccess">#38B500</color>
     <color name="drawer_menu_bg_color">#2C2C2C</color>
     <color name="white_slightly_opaque">#38ffffff</color>

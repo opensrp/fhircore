@@ -33,6 +33,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +50,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -102,8 +104,8 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
-  private val _patientsListLiveData = MutableLiveData<MutableList<PatientItem>>()
-  val patientsListLiveData: LiveData<MutableList<PatientItem>>
+  private val _patientsListLiveData = MutableLiveData<MutableList<Patient2>>()
+  val patientsListLiveData: LiveData<MutableList<Patient2>>
     get() = _patientsListLiveData
 
   /**
@@ -475,12 +477,24 @@ constructor(
   }
 
 
-  fun getSearchResults(nameQuery: String = "") {
+  fun getUnsyncedLocalChanges() {
 
     CoroutineScope(Dispatchers.IO).launch {
-      val patients: MutableList<PatientItem> = mutableListOf()
-      fhirEngine
-        .search<Patient> {
+      val patients: MutableList<Patient2> = mutableListOf()
+      val data = fhirEngine.getUnsyncedLocalChanges()
+
+      data.forEachIndexed { index, localChange ->
+        val patient = parsePatientJson(localChange.payload)
+        patient?.let {
+          if (patient.name.isNotEmpty()){
+            patients.add(patient)
+          }
+        }
+      }
+      patients.reverse()
+      _patientsListLiveData.postValue(patients)
+
+        /*.search<Patient> {
           if (nameQuery.isNotEmpty()) {
             filter(
               Patient.NAME,
@@ -490,13 +504,13 @@ constructor(
               },
             )
           }
-          sort(Patient.ADDRESS_STATE, Order.ASCENDING)
-          count = 1
+          sort(Patient.NAME, Order.ASCENDING)
+          count = 3
           from = 0
         }
         .mapIndexed { index, fhirPatient -> fhirPatient.resource.toPatientItem(index + 1) }
         .let { patients.addAll(it) }
-      //_patientsListLiveData.value =  patients
+      _patientsListLiveData.postValue(patients)*/
     }
 
 
@@ -508,6 +522,8 @@ constructor(
     }*/
 
   }
+
+
 
 
   fun Patient.toPatientItem(position: Int): PatientItem {
@@ -576,6 +592,35 @@ constructor(
     val value: String,
   ) {
     override fun toString(): String = code
+  }
+
+  data class Patient2(val name: String, val gender: String, val primaryContact: String?, val age: Int?)
+
+  fun parsePatientJson(json: String): Patient2? {
+    val gson = Gson()
+    try {
+      val patientData = gson.fromJson(json, Map::class.java)
+
+      val nameList = patientData["name"] as List<*>?
+      val name = if (nameList != null && nameList.isNotEmpty()) {
+        val firstName = (nameList[0] as Map<*, *>)["given"] as List<*>?
+        if (firstName != null && firstName.isNotEmpty()) {
+          firstName[0] as String
+        } else {
+          null
+        }
+      } else {
+        null
+      }
+
+      val gender = patientData["gender"] as String?
+      val telecomData = patientData["telecom"] as List<*>?
+
+      return Patient2(name ?: "", gender ?: "", "", 0)
+    } catch (e: Exception) {
+      e.printStackTrace()
+      return null
+    }
   }
 
 }
