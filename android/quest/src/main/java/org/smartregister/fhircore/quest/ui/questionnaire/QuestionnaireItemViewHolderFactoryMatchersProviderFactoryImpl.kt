@@ -23,6 +23,7 @@ import com.google.android.fhir.datacapture.contrib.views.locationwidget.Location
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
 import org.smartregister.fhircore.quest.ui.register.customui.CustomAttachmentViewHolderFactory
+import org.smartregister.fhircore.quest.ui.register.customui.CustomDatePickerViewHolderFactory
 import org.smartregister.fhircore.quest.ui.register.customui.CustomEditTextStringViewHolderFactory
 import org.smartregister.fhircore.quest.ui.register.customui.CustomRadioGroupViewHolderFactory
 import org.smartregister.fhircore.quest.ui.register.customui.CustomTextIntegerItemViewHolderFactory
@@ -81,6 +82,10 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           factory = CustomRadioGroupViewHolderFactory,
           matches = CustomRadioGroupViewHolderFactory::matcher,
+        ),
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = CustomDatePickerViewHolderFactory,
+          matches = CustomDatePickerViewHolderFactory::matcher,
         )
       )
     }

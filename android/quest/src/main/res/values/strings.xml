@@ -140,5 +140,6 @@
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="required_text_and_new_line">Please fill the required field</string>
 
 </resources>

@@ -1,5 +1,6 @@
 package org.smartregister.fhircore.quest.ui.register.customui
 
+import android.content.Context
 import android.icu.number.NumberFormatter
 import android.icu.text.DecimalFormat
 import android.os.Build
@@ -7,6 +8,11 @@ import android.text.Editable
 import android.text.InputType
 import android.view.View
 import androidx.annotation.RequiresApi
+import com.google.android.fhir.datacapture.extensions.asStringValue
+import com.google.android.fhir.datacapture.validation.Invalid
+import com.google.android.fhir.datacapture.validation.NotValidated
+import com.google.android.fhir.datacapture.validation.Valid
+import com.google.android.fhir.datacapture.validation.ValidationResult
 import com.google.android.fhir.datacapture.views.HeaderView
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemEditTextViewHolderDelegate
@@ -42,6 +48,11 @@ object CustomTextIntegerItemViewHolderFactory : QuestionnaireItemViewHolderFacto
             super.bind(questionnaireViewItem)
             textInputLayout.hint = questionnaireViewItem.questionText
             header.visibility = View.GONE
+            displayValidationResult(questionnaireViewItem.validationResult)
+        }
+
+        fun displayValidationResult(validationResult: ValidationResult) {
+            textInputLayout.error = getValidationErrorMessage(textInputLayout.context, questionnaireViewItem, validationResult)
         }
 
         override suspend fun handleInput(
@@ -116,5 +127,4 @@ object CustomTextIntegerItemViewHolderFactory : QuestionnaireItemViewHolderFacto
     fun matcher(questionnaireItem: Questionnaire.QuestionnaireItemComponent): Boolean {
         return questionnaireItem.type == Questionnaire.QuestionnaireItemType.INTEGER
     }
-
 }
