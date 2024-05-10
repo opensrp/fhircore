@@ -3,7 +3,6 @@ package org.smartregister.fhircore.quest.ui.register.customui
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -19,7 +18,6 @@ import com.bumptech.glide.Glide
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.FhirEngineProvider
 import com.google.android.fhir.datacapture.extensions.MimeType
-import com.google.android.fhir.datacapture.extensions.getValueAsString
 import com.google.android.fhir.datacapture.extensions.hasMimeType
 import com.google.android.fhir.datacapture.extensions.hasMimeTypeOnly
 import com.google.android.fhir.datacapture.extensions.mimeTypes
@@ -34,6 +32,7 @@ import com.google.android.fhir.datacapture.views.attachment.CameraLauncherFragme
 import com.google.android.fhir.datacapture.views.attachment.OpenDocumentLauncherFragment
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderFactory
+import com.google.android.fhir.logicalId
 import com.google.android.material.divider.MaterialDivider
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -44,7 +43,6 @@ import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
 import org.smartregister.fhircore.quest.R
 import java.io.File
@@ -530,4 +528,4 @@ private fun Questionnaire.QuestionnaireItemComponent.isGivenSizeOverLimit(
 }
 
 private val DocumentReference.url
-  get() = "${BuildConfig.FHIR_BASE_URL}/DocumentReference/${id}/\$binary-access-write?path=DocumentReference.content.attachment"
+  get() = "${BuildConfig.FHIR_BASE_URL}/DocumentReference/${logicalId}/\$binary-access-write?path=DocumentReference.content.attachment"

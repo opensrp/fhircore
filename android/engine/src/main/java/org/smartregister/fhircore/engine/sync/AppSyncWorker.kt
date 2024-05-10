@@ -19,7 +19,6 @@ package org.smartregister.fhircore.engine.sync
 import android.content.Context
 import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
-import androidx.work.ListenableWorker.Result.Success
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.google.android.fhir.FhirEngine
@@ -89,8 +88,8 @@ constructor(
 
     return docReferences
       .map {
-        val uriString = it.resource.getExtensionByUrl("http://hl7.org/fhir/StructureDefinition/file-location").value.asStringValue()
-        if (uriString.isBlank()) return@map it.resource to null
+        val uriString = it.resource.getExtensionByUrl("http://hl7.org/fhir/StructureDefinition/file-location")?.value?.asStringValue()
+        if (uriString.isNullOrBlank()) return@map it.resource to null
 
         it.resource to uriString.toUri()
       }
@@ -103,7 +102,7 @@ constructor(
         val docContentType = docReference.content.first().attachment.contentType
 
         // In case the file is missing, we will return true and no do anything
-        val bytes = applicationContext.contentResolver.openInputStream(fileUri)?.use { it.buffered().readBytes() }
+        val bytes = runCatching { applicationContext.contentResolver.openInputStream(fileUri)?.use { it.buffered().readBytes() } }.getOrNull()
           ?: return@map false
 
         val body = bytes.toRequestBody(docContentType.toMediaType())
@@ -119,7 +118,7 @@ constructor(
 
           // When it is client error, it cannot be retried successfully ever,
           // so we are going to purge the data
-          if (response.code() in 400..499) {
+          if (response.code() == 400 || response.code() == 422 || response.code() == 410) {
             // Save the changes to document reference
             openSrpFhirEngine.purge(docReference.resourceType, docReference.logicalId, true)
 
