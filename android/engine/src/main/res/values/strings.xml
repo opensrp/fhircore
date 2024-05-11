@@ -18,13 +18,13 @@
     <string name="userinfo_call_fail_error_message">Failed to get user info from server. Check your internet connection</string>
     <string name="select_language">Select Language</string>
     <string name="logout_user">Log out as %1$s</string>
-    <string name="sync_completed">Sync complete</string>
+    <string name="sync_completed">Sync Successful</string>
     <string name="syncing">Syncing</string>
     <string name="syncing_up" >Syncing up</string>
     <string name="syncing_down" >Syncing down</string>
     <string name="syncing_initiated">Sync initiated&#8230;</string>
     <string name="sync_failed">Sync failed. Check internet connection or try again later</string>
-    <string name="sync_completed_with_errors"> Sync completed with errors. Retrying…</string>
+    <string name="sync_completed_with_errors">Sync will be retried in some time</string>
     <string name="sync_unauthorised">Sync failed because the authentication credentials are invalid.</string>
     <string name="refresh_token_fail_error_message">Failed to retrieve credentials from the server. Please check your internet connection.</string>
     <string name="try_again">Try again</string>
@@ -99,7 +99,7 @@
     <string name="edit">Edit</string>
     <string name="application_not_supported">Error loading application %1$s configs</string>
     <string name="eCBIS_app_name" translatable="false">eCBIS</string>
-    <string name="invalid_login_credentials">username or password is invalid</string>
+    <string name="invalid_login_credentials">mobile or password is invalid</string>
     <string name="invalid_form_id">Invalid form ID attached</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
@@ -147,7 +147,7 @@
     <string name="weeks">Week(s)</string>
     <string name="days">Days(s)</string>
     <string name="initializing">Initializing settings &#8230;</string>
-    <string name="username_sample" translatable="false">e.g 988237466</string>
+    <string name="username_sample" translatable="false">e.g 9882374662</string>
     <string name="percentage_progress" translatable="false">%1$d%%</string>
     <string name="error_occurred">Something went wrong…</string>
     <string name="integer_format_validation_error_msg"

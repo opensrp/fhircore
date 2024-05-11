@@ -226,7 +226,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           registerViewModel.emitSnackBarState(
             SnackBarMessageConfig(
               message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
+              //actionLabel = getString(R.string.ok).uppercase(),
               duration = SnackbarDuration.Long,
             ),
           )
@@ -242,7 +242,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             SnackBarMessageConfig(
               message = getString(R.string.sync_completed_with_errors),
               duration = SnackbarDuration.Long,
-              actionLabel = getString(R.string.ok).uppercase(),
+              //actionLabel = getString(R.string.ok).uppercase(),
             ),
           )
         }
