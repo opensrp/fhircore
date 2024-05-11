@@ -801,7 +801,13 @@ constructor(
         ResourceType.Measure.name,
         ResourceType.Basic.name,
         ResourceType.Binary.name,
-        ResourceType.Parameters,
+        ResourceType.Parameters.name,
+        ResourceType.ActivityDefinition.name,
+        ResourceType.ValueSet.name,
+        ResourceType.CodeSystem.name,
+        ResourceType.ConceptMap.name,
+        ResourceType.Device.name,
+        ResourceType.SpecimenDefinition.name,
       )
   }
 }
