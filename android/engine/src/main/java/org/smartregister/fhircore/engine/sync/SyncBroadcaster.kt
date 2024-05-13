@@ -28,6 +28,8 @@ import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.download.ResourceParamsBasedDownloadWorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
@@ -39,8 +41,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 /**
  * This class is used to trigger one time and periodic syncs. A new instance of this class is
@@ -104,7 +104,6 @@ constructor(
   ) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
-      Timber.d("#### sb job listener 0 done")
       }
       .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
