@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperti
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -119,20 +120,23 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.End
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
+                else -> {
+                  Alignment.Start
+                }
               },
             modifier =
-              modifier
-                .padding(properties.padding.dp)
-                .conditional(
-                  properties.clickable.toBoolean(),
-                  {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
-                  },
-                ),
+            modifier
+              .padding(properties.padding.dp)
+              .conditional(
+                properties.clickable.toBoolean(),
+                {
+                  clickable {
+                    (properties as RowProperties)
+                      .actions
+                      .handleClickEvent(navController, resourceData)
+                  }
+                },
+              ),
             verticalArrangement =
               if (isWeighted) {
                 Arrangement.spacedBy(properties.spacedBy.dp)
@@ -191,20 +195,23 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.Bottom
                 ViewAlignment.CENTER -> Alignment.CenterVertically
                 ViewAlignment.NONE -> Alignment.CenterVertically
+                else -> {
+                  Alignment.CenterVertically
+                }
               },
             modifier =
-              modifier
-                .padding(properties.padding.dp)
-                .conditional(
-                  properties.clickable.toBoolean(),
-                  {
-                    clickable {
-                      (properties as RowProperties)
-                        .actions
-                        .handleClickEvent(navController, resourceData)
-                    }
-                  },
-                ),
+            modifier
+              .padding(properties.padding.dp)
+              .conditional(
+                properties.clickable.toBoolean(),
+                {
+                  clickable {
+                    (properties as RowProperties)
+                      .actions
+                      .handleClickEvent(navController, resourceData)
+                  }
+                },
+              ),
             horizontalArrangement =
               if (isWeighted) {
                 Arrangement.spacedBy(properties.spacedBy.dp)
@@ -262,6 +269,13 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
+      ViewType.STACK ->
+        StackViewTest(
+          modifier = modifier,
+          stackViewProperties = properties as StackViewProperties,
+          resourceData = resourceData,
+          navController = navController
+        )
     }
   }
 }
@@ -309,7 +323,8 @@ fun generateModifier(viewProperties: ViewProperties): Modifier =
 @SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
-  this.conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
+  this
+    .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
     .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
     .background(viewProperties.backgroundColor.parseColor())
     .clip(RoundedCornerShape(viewProperties.borderRadius.dp))
