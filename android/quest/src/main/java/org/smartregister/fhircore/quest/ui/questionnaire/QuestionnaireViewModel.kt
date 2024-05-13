@@ -36,6 +36,7 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
@@ -79,7 +80,9 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -915,6 +918,72 @@ constructor(
       }
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
+  }
+
+  suspend fun launchContextResources(
+    subjectResourceType: ResourceType?,
+    subjectResourceIdentifier: String?,
+    actionParameters: List<ActionParameter>,
+  ): List<Resource> {
+    return when {
+      subjectResourceType != null && subjectResourceIdentifier != null ->
+        LinkedList<Resource>().apply {
+          loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
+          val actionParametersExcludingSubject =
+            actionParameters.filterNot {
+              it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+                subjectResourceType == it.resourceType &&
+                subjectResourceIdentifier.equals(it.value, ignoreCase = true)
+            }
+          addAll(retrievePopulationResources(actionParametersExcludingSubject))
+        }
+      else -> LinkedList(retrievePopulationResources(actionParameters))
+    }
+  }
+
+  suspend fun populateQuestionnaire(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>,
+  ): Pair<QuestionnaireResponse?, List<Resource>> {
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    val launchContextResources =
+      launchContextResources(resourceType, resourceIdentifier, actionParameters)
+
+    // Populate questionnaire with initial default values
+    ResourceMapper.populate(
+      questionnaire,
+      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
+    )
+
+    // Populate questionnaire with latest QuestionnaireResponse
+    val questionnaireResponse =
+      if (
+        resourceType != null &&
+          !resourceIdentifier.isNullOrEmpty() &&
+          questionnaireConfig.isEditable()
+      ) {
+        searchLatestQuestionnaireResponse(
+            resourceId = resourceIdentifier,
+            resourceType = resourceType,
+            questionnaireId = questionnaire.logicalId,
+          )
+          ?.let {
+            QuestionnaireResponse().apply {
+              item = it.item
+              // Clearing the text prompts the SDK to re-process the content, which includes HTML
+              clearText()
+            }
+          }
+      } else {
+        null
+      }
+
+    return Pair(questionnaireResponse, launchContextResources)
   }
 
   /**
