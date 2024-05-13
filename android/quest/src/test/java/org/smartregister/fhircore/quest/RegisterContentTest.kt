@@ -55,7 +55,6 @@ class RegisterContentTest : RobolectricTest() {
     sourceGroup: String,
   ): StructureMapExtractionContext {
     return StructureMapExtractionContext(
-      context = context,
       transformSupportServices = transformSupportServices,
       structureMapProvider = { _: String, _: IWorkerContext ->
         StructureMapUtilities(worker, transformSupportServices)
