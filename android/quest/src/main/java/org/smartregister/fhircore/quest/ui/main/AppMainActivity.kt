@@ -185,7 +185,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   override fun onSync(syncJobStatus: CurrentSyncJobStatus) {
     when (syncJobStatus) {
       is CurrentSyncJobStatus.Succeeded -> {
-        Timber.d("#### appMainActivity sync config currentJOb succeed")
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(
@@ -196,7 +195,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
         }
       }
       is CurrentSyncJobStatus.Failed -> {
-        Timber.d("#### appMainActivity sync config currentJOb failed")
         appMainViewModel.run {
           onEvent(
             AppMainEvent.UpdateSyncState(

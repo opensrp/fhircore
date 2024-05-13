@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
+import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -107,7 +108,6 @@ constructor(
   private var openSrpApplication: OpenSrpApplication?,
   val syncListenerManager: SyncListenerManager,
   val syncParamSource: SyncParamSource
-  //val syncBroadcaster: SyncBroadcaster
 ) {
 
   val configsJsonMap = mutableMapOf<String, String>()
@@ -139,9 +139,6 @@ constructor(
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
-//      //if(syncListenerManager.testInit?)
-//      if(configType == ConfigType.Application)
-//        syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
       if(configType == ConfigType.Sync)
         syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
       return configCacheMap[configKey] as T
@@ -154,8 +151,6 @@ constructor(
           template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
-//    if(configType == ConfigType.Application)
-//      syncListenerManager.appConfiguration = configCacheMap[configKey] as ApplicationConfiguration
     if(configType == ConfigType.Sync)
       syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
     configCacheMap[configKey] = decodedConfig
@@ -477,7 +472,7 @@ constructor(
 
               chunkedResourceIdList.forEach { parentIt ->
                 Timber.d(
-                  "#### Fetching config resource ${entry.key}: with id= ${parentIt}",
+                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
                 )
                 processCompositionManifestResources(
                   entry.key,
@@ -554,7 +549,7 @@ constructor(
       "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=$DEFAULT_COUNT"
 
     val testComp =  fhirEngine.get(ResourceType.Composition, appId!!)
-    println("testComp #### - " + jsonParser.encodeResourceToString(testComp))
+
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")

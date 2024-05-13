@@ -42,7 +42,6 @@ class SyncListenerManager
 @Inject
 constructor(
   val configService: ConfigService,
-//  val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirEngine: FhirEngine
 ) {
