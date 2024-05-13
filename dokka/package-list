@@ -38,6 +38,7 @@ org.smartregister.fhircore.engine.ui.base
 org.smartregister.fhircore.engine.ui.bottomsheet
 org.smartregister.fhircore.engine.ui.components
 org.smartregister.fhircore.engine.ui.components.register
+org.smartregister.fhircore.engine.ui.multiselect
 org.smartregister.fhircore.engine.ui.theme
 org.smartregister.fhircore.engine.util
 org.smartregister.fhircore.engine.util.annotation
@@ -68,6 +69,7 @@ org.smartregister.fhircore.quest.ui.appsetting
 org.smartregister.fhircore.quest.ui.login
 org.smartregister.fhircore.quest.ui.main
 org.smartregister.fhircore.quest.ui.main.components
+org.smartregister.fhircore.quest.ui.multiselect
 org.smartregister.fhircore.quest.ui.pin
 org.smartregister.fhircore.quest.ui.profile
 org.smartregister.fhircore.quest.ui.profile.bottomSheet
