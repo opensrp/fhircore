@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,10 @@ import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import dagger.hilt.android.testing.HiltTestApplication
 
+/**
+ * Custom [AndroidJUnitRunner] for running instrumentation tests. Used in the gradle
+ * 'testInstrumentationRunner' configuration
+ */
 class QuestTestRunner : AndroidJUnitRunner() {
 
   override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {

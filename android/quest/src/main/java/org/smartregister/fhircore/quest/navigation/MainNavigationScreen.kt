@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.navigation
 
-import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.engine.R
 
 sealed class MainNavigationScreen(
   val titleResource: Int? = null,
@@ -24,19 +24,46 @@ sealed class MainNavigationScreen(
   val route: Int,
   val showInBottomNav: Boolean = false,
 ) {
-  object Home :
-    MainNavigationScreen(R.string.clients, R.drawable.ic_home, R.id.registerFragment, true)
+  data object Home :
+    MainNavigationScreen(
+      R.string.clients,
+      org.smartregister.fhircore.quest.R.drawable.ic_home,
+      org.smartregister.fhircore.quest.R.id.registerFragment,
+      true,
+    )
 
-  object Reports :
-    MainNavigationScreen(R.string.reports, R.drawable.ic_reports, R.id.measureReportFragment, true)
+  data object Reports :
+    MainNavigationScreen(
+      R.string.reports,
+      R.drawable.ic_reports,
+      org.smartregister.fhircore.quest.R.id.measureReportFragment,
+      true,
+    )
 
-  object Settings :
-    MainNavigationScreen(R.string.settings, R.drawable.ic_settings, R.id.userSettingFragment, true)
+  data object Settings :
+    MainNavigationScreen(
+      R.string.settings,
+      R.drawable.ic_settings,
+      org.smartregister.fhircore.quest.R.id.userSettingFragment,
+      true,
+    )
 
-  object Profile :
-    MainNavigationScreen(titleResource = R.string.profile, route = R.id.profileFragment)
+  data object Profile :
+    MainNavigationScreen(
+      titleResource = R.string.profile,
+      route = org.smartregister.fhircore.quest.R.id.profileFragment,
+    )
 
-  object GeoWidget : MainNavigationScreen(route = R.id.geoWidgetFragment)
+  data object GeoWidget :
+    MainNavigationScreen(route = org.smartregister.fhircore.geowidget.R.id.geoWidgetFragment)
+
+  data object Insight :
+    MainNavigationScreen(route = org.smartregister.fhircore.quest.R.id.userInsightScreenFragment)
+
+  data object LocationSelector :
+    MainNavigationScreen(
+      route = org.smartregister.fhircore.quest.R.id.multiSelectBottomSheetFragment,
+    )
 
   fun eventId(id: String) = route.toString() + "_" + id
 }

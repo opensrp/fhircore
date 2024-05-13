@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
-  val syncStrategies: List<String> = listOf(),
+  val syncStrategy: List<SyncStrategy> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
@@ -41,4 +41,20 @@ data class ApplicationConfiguration(
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
+  val logGpsLocation: List<LocationLogOptions> = emptyList(),
+  val usePractitionerAssignedLocationOnSync: Boolean =
+    true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
+  // location selector
 ) : Configuration()
+
+enum class SyncStrategy {
+  Location,
+  CareTeam,
+  RelatedEntityLocation,
+  Organization,
+  Practitioner,
+}
+
+enum class LocationLogOptions {
+  QUESTIONNAIRE,
+}

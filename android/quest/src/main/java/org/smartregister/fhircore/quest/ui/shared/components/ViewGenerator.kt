@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,8 +40,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.accompanist.flowlayout.FlowColumn
-import com.google.accompanist.flowlayout.FlowRow
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -61,6 +62,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
 const val COLUMN_DIVIDER_TEST_TAG = "horizontalDividerTestTag"
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GenerateView(
   modifier: Modifier = Modifier,
@@ -81,8 +83,8 @@ fun GenerateView(
         ActionableButton(
           modifier = modifier,
           buttonProperties = properties as ButtonProperties,
-          navController = navController,
           resourceData = resourceData,
+          navController = navController,
         )
       ViewType.COLUMN -> {
         val children = (properties as ColumnProperties).children
@@ -253,7 +255,13 @@ fun GenerateView(
           resourceData = resourceData,
           navController = navController,
         )
-      ViewType.IMAGE -> Image(modifier = modifier, imageProperties = properties as ImageProperties)
+      ViewType.IMAGE ->
+        Image(
+          modifier = modifier,
+          imageProperties = properties as ImageProperties,
+          resourceData = resourceData,
+          navController = navController,
+        )
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,22 +64,22 @@ private fun PopulationResultCard(
       modifier =
         modifier
           .clip(RoundedCornerShape(8.dp))
-          .background(color = colorResource(id = R.color.white))
+          .background(color = colorResource(id = org.smartregister.fhircore.engine.R.color.white))
           .padding(16.dp)
           .fillMaxWidth(),
     ) {
       Column {
         Row(modifier = modifier.fillMaxWidth()) {
           Text(
-            text = resultItem.indicatorTitle.uppercase(),
-            color = colorResource(id = R.color.black),
+            text = resultItem.title.ifEmpty { resultItem.indicatorTitle }.uppercase(),
+            color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_INDICATOR_TITLE),
             textAlign = TextAlign.Start,
           )
           Text(
-            text = resultItem.measureReportDenominator.let { it?.toString() ?: "0" },
-            color = colorResource(id = R.color.black),
+            text = resultItem.measureReportDenominator,
+            color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
             fontSize = 16.sp,
             modifier = modifier.weight(1.0f).testTag(POPULATION_COUNT_TEST_TAG),
             textAlign = TextAlign.End,
@@ -89,14 +89,14 @@ private fun PopulationResultCard(
           Row(modifier = modifier.fillMaxWidth()) {
             Text(
               text = it.title,
-              color = colorResource(id = R.color.black),
+              color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_INDICATOR_TITLE),
               textAlign = TextAlign.Start,
             )
             Text(
               text = it.count,
-              color = colorResource(id = R.color.black),
+              color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
               fontSize = 15.sp,
               modifier = modifier.weight(1.0f).testTag(DETAILS_COUNT_TEST_TAG),
               textAlign = TextAlign.End,

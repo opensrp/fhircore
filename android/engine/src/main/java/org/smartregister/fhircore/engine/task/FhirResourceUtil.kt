@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.ServiceRequest
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Task.TaskStatus
 import org.smartregister.fhircore.engine.configuration.ConfigType
@@ -61,8 +62,8 @@ constructor(
    * The size of the tasks is between 0 to (tasksCount * 2).
    */
   suspend fun expireOverdueTasks(): List<Task> {
-    Timber.i("Fetch and expire overdue tasks")
     val fhirEngine = defaultRepository.fhirEngine
+    Timber.i("Fetch and expire overdue tasks")
     val tasksResult =
       fhirEngine
         .search<Task> {
@@ -83,6 +84,7 @@ constructor(
             },
           )
         }
+        .map { it.resource }
         .filter { it.isPastExpiry() }
         .also { Timber.i("Going to expire ${it.size} tasks") }
         .onEach { task ->
@@ -105,7 +107,9 @@ constructor(
                   }
                 }
                 .onFailure {
-                  Timber.e("$basedOn CarePlan was not found. In consistent data ${it.message}")
+                  Timber.e(
+                    "$basedOn CarePlan was not found. In consistent data ${it.message}",
+                  )
                 }
             }
 
@@ -143,32 +147,36 @@ constructor(
     Timber.i("Update upcoming Tasks to due...")
 
     val tasks =
-      defaultRepository.fhirEngine.search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(TaskStatus.REQUESTED.toCoding()) },
-          { value = of(TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(TaskStatus.RECEIVED.toCoding()) },
-        )
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
-            value = of(DateTimeType(Date()))
-          },
-        )
-        if (!subject?.reference.isNullOrEmpty()) {
-          filter(Task.SUBJECT, { value = subject?.reference })
-        }
-        taskResourcesToFilterBy?.let {
-          val filters =
-            it.map {
-              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
-              apply
+      defaultRepository.fhirEngine
+        .search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(TaskStatus.REQUESTED.toCoding()) },
+            { value = of(TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(TaskStatus.RECEIVED.toCoding()) },
+          )
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
+              value = of(DateTimeType(Date()))
+            },
+          )
+          if (!subject?.reference.isNullOrEmpty()) {
+            filter(Task.SUBJECT, { value = subject?.reference })
+          }
+          taskResourcesToFilterBy?.let {
+            val filters =
+              it.map {
+                val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it.logicalId) }
+                apply
+              }
+            if (filters.isNotEmpty()) {
+              filter(Resource.RES_ID, *filters.toTypedArray())
             }
-          filter(Resource.RES_ID, *filters.toTypedArray())
+          }
         }
-      }
+        .map { it.resource }
 
     Timber.i(
       "Found ${tasks.size} upcoming Tasks (with statuses REQUESTED, ACCEPTED or RECEIVED) to be updated",
@@ -199,19 +207,42 @@ constructor(
       .find { it.reference.startsWith(ResourceType.Task.name + "/") }
       ?.let {
         defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
-      }
-      ?: false
+      } ?: false
 
   suspend fun closeRelatedResources(resource: Resource) {
     val appRegistry =
-      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
+      configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+        ConfigType.Application,
+      )
 
     appRegistry.eventWorkflows
       .filter { it.eventType == EventType.RESOURCE_CLOSURE }
       .forEach { eventWorkFlow ->
         eventWorkFlow.eventResources.forEach { eventResource ->
-          defaultRepository.updateResourcesRecursively(eventResource, resource)
+          defaultRepository.updateResourcesRecursively(eventResource, resource, eventWorkFlow)
         }
+      }
+  }
+
+  /**
+   * This function fetches completed service requests from the local database. For each of the
+   * service requests functionality for closing related resources is triggered The related resources
+   * are configured in the application config file.
+   */
+  suspend fun closeResourcesRelatedToCompletedServiceRequests() {
+    Timber.i("Fetch completed service requests and close related resources")
+    defaultRepository.fhirEngine
+      .search<ServiceRequest> {
+        filter(
+          ServiceRequest.STATUS,
+          { value = of(ServiceRequest.ServiceRequestStatus.COMPLETED.toCode()) },
+        )
+      }
+      .map { it.resource }
+      .also { Timber.i("Handling ${it.size} completed service Requests") }
+      .onEach { serviceRequest ->
+        // close related resources
+        closeRelatedResources(serviceRequest)
       }
   }
 }

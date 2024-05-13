@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectViewData
 
 const val PERSONAL_DETAILS_TEST_TAG = "personalDetailsTestTag"
@@ -49,13 +48,12 @@ const val RESULT_VIEW_INDICATOR_DESCRIPTION = "resultViewIndicatorDescription"
 fun MeasureReportIndividualResultView(
   modifier: Modifier = Modifier,
   subjectViewData: MeasureReportSubjectViewData,
-  isMatchedIndicator: Boolean = true,
 ) {
   Box(
     modifier =
       modifier
         .clip(RoundedCornerShape(15.dp))
-        .background(color = colorResource(id = R.color.white))
+        .background(color = colorResource(id = org.smartregister.fhircore.engine.R.color.white))
         .wrapContentWidth()
         .testTag(INDIVIDUAL_RESULT_VIEW_CONTAINER_TEST_TAG),
     contentAlignment = Alignment.Center,
@@ -85,6 +83,5 @@ private fun MeasureReportIndividualResultViewPreview() {
         logicalId = "12444",
         type = ResourceType.Patient,
       ),
-    isMatchedIndicator = true,
   )
 }

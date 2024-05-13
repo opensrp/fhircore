@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,32 @@ import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.MeasureReport
 import org.hl7.fhir.r4.model.ResourceType
-import org.opencds.cqf.cql.evaluator.measure.common.MeasurePopulationType
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_PRECISION
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration.Companion.DEFAULT_ROUNDING_STRATEGY
+import org.smartregister.p2p.utils.capitalize
 
 // TODO: Enhancement - use FhirPathEngine evaluator for data extraction
+
+enum class MeasurePopulationType(
+  private val code: String,
+) {
+  INITIALPOPULATION("initial-population"),
+  NUMERATOR("numerator"),
+  DENOMINATOR("denominator"),
+  ;
+
+  val system: String
+    get() = "http://hl7.org/fhir/measure-population"
+
+  val display: String
+    get() = code.capitalize()
+
+  fun toCode(): String {
+    return this.code
+  }
+}
+
 fun MeasureReport.StratifierGroupComponent.findPopulation(
   id: MeasurePopulationType,
 ): MeasureReport.StratifierGroupPopulationComponent? {
@@ -123,8 +143,7 @@ fun MeasureReport.MeasureReportGroupComponent.findStratumForMonth(reportingMonth
  *   endDate: Date, operation: Operation = Operation.AND)
  * @return list of already generatedMeasureReports
  */
-suspend inline fun retrievePreviouslyGeneratedMeasureReports(
-  fhirEngine: FhirEngine,
+suspend inline fun FhirEngine.retrievePreviouslyGeneratedMeasureReports(
   startDateFormatted: String,
   endDateFormatted: String,
   measureUrl: String,
@@ -146,5 +165,5 @@ suspend inline fun retrievePreviouslyGeneratedMeasureReports(
   search.filter(MeasureReport.MEASURE, { value = measureUrl })
   subjects.forEach { search.filter(MeasureReport.SUBJECT, { value = it }) }
 
-  return fhirEngine.search(search)
+  return this.search<MeasureReport>(search).map { it.resource }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.usersetting
 import android.content.Context
 import android.os.Looper
 import android.widget.Toast
+import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
@@ -37,6 +38,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.unmockkStatic
 import io.mockk.verify
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
@@ -50,15 +52,18 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.launchActivityWithNoBackStackHistory
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.app.fakes.Faker
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -69,6 +74,9 @@ class UserSettingViewModelTest : RobolectricTest() {
   @get:Rule var hiltRule = HiltAndroidRule(this)
 
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   lateinit var fhirEngine: FhirEngine
   private var sharedPreferencesHelper: SharedPreferencesHelper
   private var configService: ConfigService
@@ -81,6 +89,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   private val workManager = mockk<WorkManager>(relaxed = true, relaxUnitFun = true)
   private var fhirResourceDataSource: FhirResourceDataSource
   private val sync = mockk<Sync>(relaxed = true)
+  private val navController = mockk<NavController>(relaxUnitFun = true)
 
   init {
     sharedPreferencesHelper = SharedPreferencesHelper(context = context, gson = mockk())
@@ -92,7 +101,7 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
-    accountAuthenticator = mockk()
+    accountAuthenticator = mockk(relaxUnitFun = true)
     secureSharedPreference = mockk()
     sharedPreferencesHelper = mockk()
     fhirEngine = mockk(relaxUnitFun = true)
@@ -101,9 +110,8 @@ class UserSettingViewModelTest : RobolectricTest() {
         SyncBroadcaster(
           configurationRegistry,
           fhirEngine = mockk(),
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           syncListenerManager = mockk(relaxed = true),
-          sync = sync,
           context = context,
         ),
       )
@@ -118,7 +126,7 @@ class UserSettingViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           workManager = workManager,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
         ),
       )
   }
@@ -213,6 +221,8 @@ class UserSettingViewModelTest : RobolectricTest() {
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify { sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, "es") }
+
+    Assert.assertTrue(configurationRegistry.configCacheMap.isEmpty())
   }
 
   @Test
@@ -266,21 +276,30 @@ class UserSettingViewModelTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testResetAppDataShouldClearEverything() = runTest {
     userSettingViewModel.resetAppData(context)
-
+    every { accountAuthenticator.invalidateSession(any()) } just runs
     verify { workManager.cancelAllWork() }
     coVerify { fhirEngine.clearDatabase() }
     verify { accountAuthenticator.invalidateSession(any()) }
   }
 
   @Test
-  fun testShowInsightsView() {
+  fun testShowInsightScreen() {
     val userSettingViewModelSpy = spyk(userSettingViewModel)
-    every { userSettingViewModelSpy.resetAppData(any()) } just runs
+    val showInsightScreenEvent = UserSettingsEvent.ShowInsightsScreen(navController)
+    userSettingViewModelSpy.onEvent(showInsightScreenEvent)
+    verify { navController.navigate(MainNavigationScreen.Insight.route) }
+  }
 
-    val userSettingsEvent = UserSettingsEvent.ShowInsightsView(true, context)
-
-    userSettingViewModelSpy.onEvent(userSettingsEvent)
-
-    verify { userSettingViewModelSpy.renderInsightsView(context) }
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testFetchUnsyncedResources() = runTest {
+    coEvery {
+      fhirEngine
+        .getUnsyncedLocalChanges()
+        .distinctBy { it.resourceId }
+        .groupingBy { it.resourceType.spaceByUppercase() }
+        .eachCount()
+        .map { it.key to it.value }
+    } returns listOf("Patient" to 10, "Encounters" to 5, "Observations" to 20)
   }
 }

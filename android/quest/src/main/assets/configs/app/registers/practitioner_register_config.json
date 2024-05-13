@@ -103,7 +103,7 @@
               "text": "CHA Visit",
               "status": "DUE",
               "fontSize": 12.0,
-              "smallSized": false,
+              "buttonType": "BIG",
               "actions": [
                 {
                   "trigger": "ON_CLICK",

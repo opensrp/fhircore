@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -293,8 +293,7 @@ constructor(
                 }
 
                 val existingReports =
-                  retrievePreviouslyGeneratedMeasureReports(
-                    fhirEngine = fhirEngine,
+                  fhirEngine.retrievePreviouslyGeneratedMeasureReports(
                     startDateFormatted = startDateFormatted,
                     endDateFormatted = endDateFormatted,
                     measureUrl = config.url,
@@ -304,8 +303,8 @@ constructor(
                 val existingValidReports = mutableListOf<MeasureReport>()
 
                 existingReports
-                  ?.groupBy { it.subject.reference }
-                  ?.forEach { entry ->
+                  .groupBy { it.subject.reference }
+                  .forEach { entry ->
                     if (
                       entry.value.size > 1 &&
                         entry.value.distinctBy { it.measure }.size > 1 &&

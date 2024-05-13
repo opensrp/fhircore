@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalFoundationApi::class)
+@file:OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 
 package org.smartregister.fhircore.quest.ui.login
 
@@ -67,8 +67,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.graphics.Color
@@ -88,12 +91,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 import org.smartregister.fhircore.engine.ui.theme.LoginFieldBackgroundColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
-import org.smartregister.fhircore.quest.R
 
 const val APP_NAME_TEXT_TAG = "aapNameTextTag"
 const val USERNAME_FIELD_TAG = "usernameFieldTag"
@@ -145,16 +148,14 @@ fun LoginPage(
   var showForgotPasswordDialog by remember { mutableStateOf(false) }
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-
   val coroutineScope = rememberCoroutineScope()
-  val bringIntoViewRequester = BringIntoViewRequester()
+  val bringIntoViewRequester = remember { BringIntoViewRequester() }
   val focusManager = LocalFocusManager.current
-  val usernameFocusRequester = remember { FocusRequester() }
-  val passwordFocusRequester = remember { FocusRequester() }
+  val (usernameFocusRequester, passwordFocusRequester) = FocusRequester.createRefs()
 
   LaunchedEffect(Unit) {
     delay(300)
-    usernameFocusRequester.requestFocus()
+    focusManager.moveFocus(FocusDirection.Next)
   }
 
   Surface(
@@ -186,23 +187,28 @@ fun LoginPage(
             modifier =
               modifier
                 .align(Alignment.CenterHorizontally)
-                .requiredHeight(120.dp)
-                .requiredWidth(140.dp)
+                .requiredHeight(applicationConfiguration.loginConfig.logoHeight.dp)
+                .requiredWidth(applicationConfiguration.loginConfig.logoWidth.dp)
                 .testTag(APP_LOGO_TAG),
           )
         }
-        Text(
-          color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
-          text = applicationConfiguration.appTitle,
-          fontWeight = FontWeight.Bold,
-          fontSize = 32.sp,
-          modifier =
-            modifier
-              .wrapContentWidth()
-              .padding(vertical = 8.dp)
-              .align(Alignment.CenterHorizontally)
-              .testTag(APP_NAME_TEXT_TAG),
-        )
+        if (
+          applicationConfiguration.appTitle.isNotEmpty() &&
+            applicationConfiguration.loginConfig.showAppTitle
+        ) {
+          Text(
+            color = if (applicationConfiguration.useDarkTheme) Color.White else LoginDarkColor,
+            text = applicationConfiguration.appTitle,
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            modifier =
+              modifier
+                .wrapContentWidth()
+                .padding(vertical = 8.dp)
+                .align(Alignment.CenterHorizontally)
+                .testTag(APP_NAME_TEXT_TAG),
+          )
+        }
         Spacer(modifier = modifier.height(40.dp))
         Text(text = stringResource(R.string.username), modifier = modifier.padding(vertical = 4.dp))
         OutlinedTextField(
@@ -219,8 +225,10 @@ fun LoginPage(
               .padding(vertical = 4.dp)
               .background(color = Color.Unspecified)
               .testTag(USERNAME_FIELD_TAG)
-              .focusRequester(usernameFocusRequester),
-          keyboardActions = KeyboardActions(onDone = { passwordFocusRequester.requestFocus() }),
+              .focusRequester(usernameFocusRequester)
+              .focusProperties { next = passwordFocusRequester },
+          keyboardActions =
+            KeyboardActions(onDone = { focusManager.moveFocus(FocusDirection.Next) }),
         )
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = modifier.fillMaxWidth()) {
           Text(
@@ -297,7 +305,9 @@ fun LoginPage(
               LoginErrorState.ERROR_FETCHING_USER ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(R.string.error_fetching_user_details),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.error_fetching_user_details,
+                  ),
                 )
               LoginErrorState.INVALID_OFFLINE_STATE ->
                 stringResource(
@@ -358,18 +368,20 @@ fun LoginPage(
           Text(
             text = stringResource(id = R.string.powered_by),
             modifier = modifier.wrapContentWidth().padding(vertical = 8.dp).align(Alignment.Start),
+            fontWeight = FontWeight.Light,
           )
           Image(
-            painter = painterResource(id = R.drawable.ic_opensrp_logo),
+            painter = painterResource(id = R.drawable.ic_opensrplogo),
             contentDescription = stringResource(id = R.string.app_logo),
-            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(40.dp),
+            modifier = modifier.align(Alignment.CenterHorizontally).requiredHeight(32.dp),
           )
         }
 
         Text(
           fontSize = 16.sp,
           text = stringResource(id = R.string.app_version, versionCode, versionName),
-          modifier = modifier.wrapContentWidth().padding(0.dp).testTag(LOGIN_FOOTER),
+          modifier = modifier.wrapContentWidth().padding(bottom = 8.dp).testTag(LOGIN_FOOTER),
+          fontWeight = FontWeight.Light,
         )
       }
     }

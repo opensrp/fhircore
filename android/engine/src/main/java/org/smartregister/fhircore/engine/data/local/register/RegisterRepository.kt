@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.search.Search
-import java.util.LinkedList
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Resource
@@ -26,14 +26,12 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.repository.Repository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -52,6 +50,7 @@ constructor(
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
 ) :
   Repository,
   DefaultRepository(
@@ -62,17 +61,19 @@ constructor(
     configService = configService,
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
   ) {
 
   override suspend fun loadRegisterData(
     currentPage: Int,
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): List<RepositoryResourceData> {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
     return searchResourcesRecursively(
       filterActiveResources = registerConfiguration.activeResourceFilters,
-      fhirResourceConfig = registerConfiguration.fhirResource,
+      fhirResourceConfig = fhirResourceConfig ?: registerConfiguration.fhirResource,
       secondaryResourceConfigs = registerConfiguration.secondaryResources,
       currentPage = currentPage,
       pageSize = registerConfiguration.pageSize,
@@ -80,87 +81,15 @@ constructor(
     )
   }
 
-  private suspend fun searchResourcesRecursively(
-    filterActiveResources: List<ActiveResourceFilterConfig>?,
-    fhirResourceConfig: FhirResourceConfig,
-    secondaryResourceConfigs: List<FhirResourceConfig>?,
-    currentPage: Int? = null,
-    pageSize: Int? = null,
-    configRules: List<RuleConfig>?,
-  ): List<RepositoryResourceData> {
-    val baseResourceConfig = fhirResourceConfig.baseResource
-    val relatedResourcesConfig = fhirResourceConfig.relatedResources
-    val configComputedRuleValues = configRules.configRulesComputedValues()
-    val search =
-      Search(type = baseResourceConfig.resource).apply {
-        applyConfiguredSortAndFilters(
-          resourceConfig = baseResourceConfig,
-          filterActiveResources = filterActiveResources,
-          sortData = true,
-          configComputedRuleValues = configComputedRuleValues,
-        )
-        if (currentPage != null && pageSize != null) {
-          count = pageSize
-          from = currentPage * pageSize
-        }
-      }
-
-    val baseFhirResources =
-      kotlin
-        .runCatching {
-          withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
-        }
-        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
-        .getOrDefault(emptyList())
-
-    return baseFhirResources.map { baseFhirResource ->
-      val retrievedRelatedResources =
-        withContext(dispatcherProvider.io()) {
-          retrieveRelatedResources(
-            resources = listOf(baseFhirResource),
-            relatedResourcesConfigs = relatedResourcesConfig,
-            relatedResourceWrapper = RelatedResourceWrapper(),
-            configComputedRuleValues = configComputedRuleValues,
-          )
-        }
-      RepositoryResourceData(
-        resourceRulesEngineFactId = baseResourceConfig.id ?: baseResourceConfig.resource.name,
-        resource = baseFhirResource,
-        relatedResourcesMap = retrievedRelatedResources.relatedResourceMap,
-        relatedResourcesCountMap = retrievedRelatedResources.relatedResourceCountMap,
-        secondaryRepositoryResourceData =
-          withContext(dispatcherProvider.io()) {
-            secondaryResourceConfigs.retrieveSecondaryRepositoryResourceData(filterActiveResources)
-          },
-      )
-    }
-  }
-
-  /** This function fetches other resources that are not linked to the base/primary resource. */
-  private suspend fun List<FhirResourceConfig>?.retrieveSecondaryRepositoryResourceData(
-    filterActiveResources: List<ActiveResourceFilterConfig>?,
-  ): LinkedList<RepositoryResourceData> {
-    val secondaryRepositoryResourceDataLinkedList = LinkedList<RepositoryResourceData>()
-    this?.forEach {
-      secondaryRepositoryResourceDataLinkedList.addAll(
-        searchResourcesRecursively(
-          fhirResourceConfig = it,
-          filterActiveResources = filterActiveResources,
-          secondaryResourceConfigs = null,
-          configRules = null,
-        ),
-      )
-    }
-    return secondaryRepositoryResourceDataLinkedList
-  }
-
   /** Count register data for the provided [registerId]. Use the configured base resource filters */
   override suspend fun countRegisterData(
     registerId: String,
+    fhirResourceConfig: FhirResourceConfig?,
     paramsMap: Map<String, String>?,
   ): Long {
     val registerConfiguration = retrieveRegisterConfiguration(registerId, paramsMap)
-    val baseResourceConfig = registerConfiguration.fhirResource.baseResource
+    val fhirResource = fhirResourceConfig ?: registerConfiguration.fhirResource
+    val baseResourceConfig = fhirResource.baseResource
     val configComputedRuleValues = registerConfiguration.configRules.configRulesComputedValues()
     val search =
       Search(baseResourceConfig.resource).apply {
@@ -191,8 +120,7 @@ constructor(
           (it.paramType == ActionParameterType.PARAMDATA ||
             it.paramType == ActionParameterType.UPDATE_DATE_ON_EDIT) && it.value.isNotEmpty()
         }
-        ?.associate { it.key to it.value }
-        ?: emptyMap()
+        ?.associate { it.key to it.value } ?: emptyMap()
 
     val profileConfiguration = retrieveProfileConfiguration(profileId, paramsMap)
     val resourceConfig = fhirResourceConfig ?: profileConfiguration.fhirResource
@@ -240,12 +168,6 @@ constructor(
     paramsMap: Map<String, String>?,
   ): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
-
-  private fun List<RuleConfig>?.configRulesComputedValues(): Map<String, Any> {
-    if (this == null) return emptyMap()
-    val configRules = configRulesExecutor.generateRules(this)
-    return configRulesExecutor.fireRules(configRules)
-  }
 
   companion object {
     const val ACTIVE = "active"

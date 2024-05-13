@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ constructor(val defaultRepository: DefaultRepository, val dispatcherProvider: Di
       defaultRepository.fhirEngine
         .search<Group> { filter(Group.TYPE, { value = of(coding) }) }
         .asSequence()
+        .map { it.resource }
         .filter {
           // it.hasExtension("http://build.fhir.org/extension-location-boundary-geojson.html")
           it.characteristic.firstOrNull { characteristic ->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ data class ProfileConfiguration(
   val id: String,
   val fhirResource: FhirResourceConfig,
   val secondaryResources: List<FhirResourceConfig>? = null,
-  val managingEntity: ManagingEntityConfig? = null,
   val profileParams: List<String> = emptyList(),
   val rules: List<RuleConfig> = emptyList(),
   val topAppBar: TopBarConfig? = null,
@@ -48,4 +47,5 @@ data class ProfileConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
   val configRules: List<RuleConfig>? = null,
+  val contentBackgroundColor: String? = "#F2F4F7",
 ) : Configuration()

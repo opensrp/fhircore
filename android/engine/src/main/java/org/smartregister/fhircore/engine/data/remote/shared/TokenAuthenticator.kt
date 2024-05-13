@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,40 +67,43 @@ constructor(
   private var isLoginPageRendered = false
 
   fun getAccessToken(): String {
-    val account = findAccount()
-    return if (account != null) {
-      val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
-      if (!isTokenActive(accessToken)) {
-        accountManager.run {
-          invalidateAuthToken(account.type, accessToken)
-          try {
-            getAuthToken(
-              account,
-              AUTH_TOKEN_TYPE,
-              bundleOf(),
-              true,
-              handleAccountManagerFutureCallback(account),
-              Handler(Looper.getMainLooper()) { message: Message ->
-                Timber.e(message.toString())
-                true
-              },
-            )
-          } catch (operationCanceledException: OperationCanceledException) {
-            Timber.e(operationCanceledException)
-          } catch (ioException: IOException) {
-            Timber.e(ioException)
-          } catch (authenticatorException: AuthenticatorException) {
-            Timber.e(authenticatorException)
-            // TODO: Should we cancel the sync job to avoid retries when offline?
-          }
-        }
-      } else {
-        isLoginPageRendered = false
-      }
-      accessToken
-    } else {
-      ""
+    val account = findAccount() ?: return ""
+    val accessToken = accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) ?: ""
+    if (isTokenActive(accessToken)) {
+      isLoginPageRendered = false
+      return accessToken
     }
+
+    accountManager.invalidateAuthToken(account.type, accessToken)
+    val authTokenBundleFuture =
+      with(accountManager) {
+        getAuthToken(
+          account,
+          AUTH_TOKEN_TYPE,
+          bundleOf(),
+          true,
+          handleAccountManagerFutureCallback(account),
+          Handler(Looper.getMainLooper()) { message: Message ->
+            Timber.e(message.toString())
+            true
+          },
+        )
+      }
+
+    try {
+      val authTokenBundle = authTokenBundleFuture.result
+      if (authTokenBundle.containsKey(AccountManager.KEY_AUTHTOKEN)) {
+        return authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN)!! // refreshed token
+      }
+    } catch (operationCanceledException: OperationCanceledException) {
+      Timber.e(operationCanceledException)
+    } catch (ioException: IOException) {
+      Timber.e(ioException)
+    } catch (authenticatorException: AuthenticatorException) {
+      Timber.e(authenticatorException)
+      // TODO: Should we cancel the sync job to avoid retries when offline?
+    }
+    return accessToken
   }
 
   private fun AccountManager.handleAccountManagerFutureCallback(account: Account?) =
@@ -143,7 +146,6 @@ constructor(
     mutableMapOf(
       GRANT_TYPE to grantType,
       CLIENT_ID to authConfiguration.clientId,
-      CLIENT_SECRET to authConfiguration.clientSecret,
       SCOPE to authConfiguration.scope,
     )
 
@@ -178,7 +180,6 @@ constructor(
         val responseBody =
           oAuthService.logout(
             clientId = authConfiguration.clientId,
-            clientSecret = authConfiguration.clientSecret,
             refreshToken = accountManager.getPassword(account),
           )
 
@@ -223,12 +224,15 @@ constructor(
    * [HttpException] or [UnknownHostException] exceptions
    */
   @Throws(HttpException::class, UnknownHostException::class)
-  fun refreshToken(currentRefreshToken: String): String {
+  fun refreshToken(account: Account, currentRefreshToken: String): String {
     return runBlocking {
       val oAuthResponse =
         oAuthService.fetchToken(
           buildOAuthPayload(REFRESH_TOKEN).apply { put(REFRESH_TOKEN, currentRefreshToken) },
         )
+
+      // Updates with new refresh-token
+      accountManager.setPassword(account, oAuthResponse.refreshToken!!)
 
       // Returns valid token or throws exception, NullPointerException not expected
       oAuthResponse.accessToken!!

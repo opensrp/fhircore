@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,8 +136,8 @@ private fun ChangeManagingEntityBottomBar(
     ) {
       Text(
         fontSize = 14.sp,
-        color = colorResource(id = R.color.black),
-        text = stringResource(id = R.string.cancel),
+        color = colorResource(id = org.smartregister.fhircore.engine.R.color.black),
+        text = stringResource(id = org.smartregister.fhircore.engine.R.string.cancel),
       )
     }
     TextButton(
@@ -150,13 +150,24 @@ private fun ChangeManagingEntityBottomBar(
       colors =
         ButtonDefaults.textButtonColors(
           backgroundColor =
-            colorResource(id = if (isEnabled) R.color.colorPrimary else R.color.white),
+            colorResource(
+              id =
+                if (isEnabled) {
+                  org.smartregister.fhircore.engine.R.color.colorPrimary
+                } else org.smartregister.fhircore.engine.R.color.white,
+            ),
         ),
     ) {
       Text(
         fontSize = 14.sp,
-        color = colorResource(id = if (isEnabled) R.color.white else R.color.colorPrimary),
-        text = stringResource(id = R.string.str_save).uppercase(),
+        color =
+          colorResource(
+            id =
+              if (isEnabled) {
+                org.smartregister.fhircore.engine.R.color.white
+              } else org.smartregister.fhircore.engine.R.color.colorPrimary,
+          ),
+        text = stringResource(id = org.smartregister.fhircore.engine.R.string.str_save).uppercase(),
       )
     }
   }
@@ -200,7 +211,8 @@ private fun ChangeManagingEntityTopBar(
           .height(IntrinsicSize.Min)
           .padding(horizontal = 12.dp, vertical = 18.dp)
           .background(
-            color = colorResource(id = R.color.background_warning),
+            color =
+              colorResource(id = org.smartregister.fhircore.engine.R.color.background_warning),
             shape = RoundedCornerShape(8.dp),
           ),
     ) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ class AppSyncWorkerTest : RobolectricTest() {
     val taskExecutor = mockk<TaskExecutor>()
     val timeContext = mockk<AppTimeStampContext>()
 
-    every { taskExecutor.backgroundExecutor } returns mockk()
+    every { taskExecutor.serialTaskExecutor } returns mockk()
     every { workerParams.taskExecutor } returns taskExecutor
     every { syncListenerManager.loadSyncParams() } returns syncParams
 
@@ -51,6 +51,5 @@ class AppSyncWorkerTest : RobolectricTest() {
 
     Assert.assertEquals(AcceptLocalConflictResolver, appSyncWorker.getConflictResolver())
     Assert.assertEquals(fhirEngine, appSyncWorker.getFhirEngine())
-    Assert.assertEquals(false, appSyncWorker.getUploadConfiguration().useETagForUpload)
   }
 }

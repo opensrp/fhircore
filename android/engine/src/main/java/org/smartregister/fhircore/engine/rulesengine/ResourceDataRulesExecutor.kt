@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,12 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       computeResourceDataRules(
         ruleConfigs = ruleConfigs,
         repositoryResourceData = repositoryResourceData,
+        params = params ?: emptyMap(),
       )
     return ResourceData(
       baseResourceId = repositoryResourceData.resource.logicalId.extractLogicalIdUuid(),
       baseResourceType = repositoryResourceData.resource.resourceType,
-      computedValuesMap =
-        if (params != null) computedValuesMap.plus(params).toMap() else computedValuesMap.toMap(),
+      computedValuesMap = computedValuesMap,
     )
   }
 
@@ -97,10 +97,12 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
   fun computeResourceDataRules(
     ruleConfigs: List<RuleConfig>,
     repositoryResourceData: RepositoryResourceData?,
+    params: Map<String, String>,
   ): Map<String, Any> {
     return rulesFactory.fireRules(
       rules = rulesFactory.generateRules(ruleConfigs),
       repositoryResourceData = repositoryResourceData,
+      params = params,
     )
   }
 
@@ -118,8 +120,8 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
           relatedListResource.fhirPathExpression.let {
             rulesFactory.rulesEngineService.retrieveRelatedResources(
               resource = resource,
-              relatedResourceKey = relatedListResource.relatedResourceId
-                  ?: relatedListResource.resourceType.name,
+              relatedResourceKey =
+                relatedListResource.relatedResourceId ?: relatedListResource.resourceType.name,
               referenceFhirPathExpression = it,
               relatedResourcesMap = relatedResourcesMap,
             )
@@ -148,6 +150,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
               resource = resource,
               relatedResourcesMap = listItemRelatedResources,
             ),
+          params = emptyMap(),
         )
 
       resourceDataSnapshotStateList.add(
@@ -181,7 +184,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
       ) {
         rulesFactory.rulesEngineService.filterResources(
           resources = newListRelatedResources,
-          fhirPathExpression = listResource.conditionalFhirPathExpression,
+          conditionalFhirPathExpression = listResource.conditionalFhirPathExpression,
         )
       } else newListRelatedResources ?: listOf()
 
@@ -194,8 +197,7 @@ class ResourceDataRulesExecutor @Inject constructor(val rulesFactory: RulesFacto
         fhirPathExpression = sortConfig.fhirPathExpression,
         dataType = sortConfig.dataType.name,
         order = sortConfig.order.name,
-      )
-        ?: resources
+      ) ?: resources
     } else {
       resources
     }

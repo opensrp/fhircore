@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.google.android.fhir.sync.AcceptLocalConflictResolver
 import com.google.android.fhir.sync.ConflictResolver
 import com.google.android.fhir.sync.DownloadWorkManager
 import com.google.android.fhir.sync.FhirSyncWorker
-import com.google.android.fhir.sync.UploadConfiguration
+import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -35,8 +35,8 @@ constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   val syncListenerManager: SyncListenerManager,
-  val openSrpFhirEngine: FhirEngine,
-  val appTimeStampContext: AppTimeStampContext,
+  private val openSrpFhirEngine: FhirEngine,
+  private val appTimeStampContext: AppTimeStampContext,
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
@@ -47,9 +47,7 @@ constructor(
       context = appTimeStampContext,
     )
 
-  /** Disable ETag for upload */
-  override fun getUploadConfiguration(): UploadConfiguration =
-    UploadConfiguration(useETagForUpload = false)
-
   override fun getFhirEngine(): FhirEngine = openSrpFhirEngine
+
+  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 }

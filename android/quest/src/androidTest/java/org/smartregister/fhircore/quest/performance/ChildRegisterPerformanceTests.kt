@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,12 @@ import javax.inject.Inject
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 
 @HiltAndroidTest
 class ChildRegisterPerformanceTests : BaseRegisterPerformanceTest() {
 
   @get:Rule val benchmarkRule = BenchmarkRule()
-
-  @Inject lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var registerRepository: RegisterRepository
 

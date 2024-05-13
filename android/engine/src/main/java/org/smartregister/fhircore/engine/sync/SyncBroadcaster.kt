@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import android.content.Context
 import androidx.work.Constraints
 import androidx.work.NetworkType
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
+import com.google.android.fhir.sync.PeriodicSyncJobStatus
 import com.google.android.fhir.sync.RepeatInterval
 import com.google.android.fhir.sync.Sync
 import com.google.android.fhir.sync.SyncJobStatus
@@ -55,7 +57,6 @@ constructor(
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,
-  val sync: Sync,
   @ApplicationContext val context: Context,
 ) {
 
@@ -65,7 +66,7 @@ constructor(
    */
   suspend fun runOneTimeSync() = coroutineScope {
     Timber.i("Running one time sync...")
-    sync.oneTimeSync<AppSyncWorker>().handleSyncJobStatus(this)
+    Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
   }
 
   /**
@@ -75,22 +76,38 @@ constructor(
   @OptIn(ExperimentalCoroutinesApi::class)
   suspend fun schedulePeriodicSync(interval: Long = 15) = coroutineScope {
     Timber.i("Scheduling periodic sync...")
-    sync
-      .periodicSync<AppSyncWorker>(
-        PeriodicSyncConfiguration(
-          syncConstraints =
-            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
-        ),
+    Sync.periodicSync<AppSyncWorker>(
+        context = context,
+        periodicSyncConfiguration =
+          PeriodicSyncConfiguration(
+            syncConstraints =
+              Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+            repeat = RepeatInterval(interval = interval, timeUnit = TimeUnit.MINUTES),
+          ),
       )
-      .handleSyncJobStatus(this)
+      .handlePeriodicSyncJobStatus(this)
   }
 
-  private fun Flow<SyncJobStatus>.handleSyncJobStatus(coroutineScope: CoroutineScope) {
+  private fun Flow<PeriodicSyncJobStatus>.handlePeriodicSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    this.onEach {
+        syncListenerManager.onSyncListeners.forEach { onSyncListener ->
+          onSyncListener.onSync(it.currentSyncJobStatus)
+        }
+      }
+      .catch { throwable -> Timber.e("Encountered an error during periodic sync:", throwable) }
+      .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+      .launchIn(coroutineScope)
+  }
+
+  private fun Flow<CurrentSyncJobStatus>.handleOneTimeSyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
     this.onEach {
         syncListenerManager.onSyncListeners.forEach { onSyncListener -> onSyncListener.onSync(it) }
       }
-      .catch { throwable -> Timber.e("Encountered an error during sync:", throwable) }
+      .catch { throwable -> Timber.e("Encountered an error during one time sync:", throwable) }
       .shareIn(coroutineScope, SharingStarted.Eagerly, 1)
       .launchIn(coroutineScope)
   }

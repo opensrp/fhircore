@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.smartregister.fhircore.engine.sync
 
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 
 /**
  * An interface the exposes a callback method [onSync] which accepts an application level FHIR
- * [SyncJobStatus].
+ * [CurrentSyncJobStatus].
  */
 interface OnSyncListener {
-  /** Callback method invoked to handle sync [SyncJobStatus] */
-  fun onSync(syncJobStatus: SyncJobStatus)
+  /** Callback method invoked to handle sync [CurrentSyncJobStatus] */
+  fun onSync(syncJobStatus: CurrentSyncJobStatus)
 }
