@@ -91,7 +91,9 @@ class GeoWidgetFragment : Fragment() {
     savedInstanceState: Bundle?,
   ): View {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    return setupViews()
+    val view = setupViews()
+    mapView.onCreate(savedInstanceState)
+    return view
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
