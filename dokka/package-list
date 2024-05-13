@@ -83,6 +83,7 @@ org.smartregister.fhircore.quest.ui.report.measure.components
 org.smartregister.fhircore.quest.ui.report.measure.models
 org.smartregister.fhircore.quest.ui.report.measure.screens
 org.smartregister.fhircore.quest.ui.report.measure.worker
+org.smartregister.fhircore.quest.ui.sdc
 org.smartregister.fhircore.quest.ui.shared
 org.smartregister.fhircore.quest.ui.shared.components
 org.smartregister.fhircore.quest.ui.shared.models
