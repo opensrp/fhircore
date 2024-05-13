@@ -24,6 +24,7 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.MockKAnnotations
 import io.mockk.mockk
 import io.mockk.spyk
+import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.ResourceType
@@ -31,8 +32,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
@@ -40,7 +39,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
-import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -55,7 +53,6 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster

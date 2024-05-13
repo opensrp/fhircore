@@ -22,6 +22,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
+import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -29,13 +30,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.R
-import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
-import javax.inject.Inject
 
 @HiltAndroidTest
 class SyncListenerManagerTest : RobolectricTest() {
@@ -43,8 +41,6 @@ class SyncListenerManagerTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   private lateinit var syncListenerManager: SyncListenerManager
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 

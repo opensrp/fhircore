@@ -24,6 +24,9 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
+import java.net.URL
+import java.util.Calendar
+import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
@@ -43,9 +46,6 @@ import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncParamSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import java.net.URL
-import java.util.Calendar
-import java.util.Date
 
 object Faker {
 
