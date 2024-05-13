@@ -39,4 +39,8 @@ constructor(
     var compConfigRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
     var compManifestRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
 
+    var compListItemRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
+
+    var compListRequestParamForItems = ArrayList<ResTypeId>()
+
 }
