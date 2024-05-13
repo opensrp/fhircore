@@ -35,9 +35,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import java.io.File
-import java.net.URL
-import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
@@ -76,6 +73,9 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
+import java.io.File
+import java.net.URL
+import javax.inject.Inject
 
 @HiltAndroidTest
 class ConfigurationRegistryTest : RobolectricTest() {
@@ -117,6 +117,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
               return URL("http://my_test_fhirbase_url/fhir/")
             }
           },
+        syncListenerManager = mockk(),
+        syncParamSource = mockk()
       )
     mockedContext = mockk()
     mockedJsonParser = mockk()

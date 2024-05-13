@@ -24,9 +24,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import java.net.URL
-import java.util.Calendar
-import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
@@ -42,8 +39,13 @@ import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.sync.SyncListenerManager
+import org.smartregister.fhircore.engine.sync.SyncParamSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import java.net.URL
+import java.util.Calendar
+import java.util.Date
 
 object Faker {
 
@@ -74,12 +76,16 @@ object Faker {
     dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
+    val syncListenerManager = mockk<SyncListenerManager>()
+    val syncParamSource = mockk<SyncParamSource>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
     return buildTestConfigurationRegistry(
       fhirResourceService,
       fhirResourceDataSource,
       sharedPreferencesHelper,
       dispatcherProvider,
+      syncListenerManager,
+      syncParamSource
     )
   }
 
@@ -88,6 +94,8 @@ object Faker {
     fhirResourceDataSource: FhirResourceDataSource,
     sharedPreferencesHelper: SharedPreferencesHelper,
     dispatcherProvider: DispatcherProvider,
+    syncListenerManager: SyncListenerManager,
+    syncParamSource: SyncParamSource
   ): ConfigurationRegistry {
     coEvery { fhirResourceService.getResource(any()) } returns Bundle()
 
@@ -107,6 +115,8 @@ object Faker {
                 return URL("http://my_test_fhirbase_url/fhir/")
               }
             },
+          syncListenerManager = syncListenerManager,
+          syncParamSource = syncParamSource
         ),
       )
 
