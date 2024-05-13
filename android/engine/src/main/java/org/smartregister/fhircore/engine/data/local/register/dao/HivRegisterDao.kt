@@ -305,16 +305,12 @@ constructor(
       .distinctBy { it.logicalId }
   }
 
-  internal suspend fun Patient.otherChildren(): List<Resource> {
-    return fetchOtherPatients(this.logicalId)
-  }
-
-  internal suspend fun fetchOtherPatients(patientId: String): List<Resource> {
+  private suspend fun Patient.otherChildren(): List<Resource> {
     val list: ArrayList<Patient> = arrayListOf()
 
     val filteredItems =
       defaultRepository.searchResourceFor<Patient>(
-        subjectId = patientId,
+        subjectId = logicalId,
         subjectType = ResourceType.Patient,
         subjectParam = Patient.LINK,
       )
@@ -325,19 +321,21 @@ constructor(
     return list
   }
 
-  internal fun Patient.isValidChildContact(): Boolean {
+  private fun Patient.isValidChildContact(): Boolean {
     val healthStatus =
       this.extractHealthStatusFromMeta(
         getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
       )
 
-    if (healthStatus == HealthStatus.CHILD_CONTACT || healthStatus == HealthStatus.EXPOSED_INFANT) {
-      if (this.hasBirthDate()) {
-        if (this.birthDate!!.yearsPassed() < LINKED_CHILD_AGE_LIMIT) return true
-      }
-    } else {
-      return true
+    if (
+      healthStatus == HealthStatus.CHILD_CONTACT ||
+        healthStatus == HealthStatus.EXPOSED_INFANT ||
+        healthStatus == HealthStatus.CLIENT_ALREADY_ON_ART ||
+        healthStatus == HealthStatus.NEWLY_DIAGNOSED_CLIENT
+    ) {
+      return this.hasBirthDate() && this.birthDate!!.yearsPassed() <= LINKED_CHILD_AGE_LIMIT
     }
+
     return false
   }
 
@@ -345,7 +343,10 @@ constructor(
     val patients = mutableListOf<String>()
     val relatedPersons = mutableListOf<String>()
     this.link.forEach {
-      if (it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name) {
+      if (
+        it.type == Patient.LinkType.REFER &&
+          it.other.referenceElement.resourceType == ResourceType.RelatedPerson.name
+      ) {
         relatedPersons.add(it.other.extractId())
       } else if (
         it.type == Patient.LinkType.REFER &&
@@ -406,7 +407,7 @@ constructor(
 
   companion object {
     const val HAPI_MDM_TAG = "HAPI-MDM"
-    const val LINKED_CHILD_AGE_LIMIT = 20
+    const val LINKED_CHILD_AGE_LIMIT = 15
     const val ORGANISATION_SYSTEM = "http://smartregister.org/fhir/organization-tag"
     const val ORGANISATION_DISPLAY = "Practitioner Organization"
   }
