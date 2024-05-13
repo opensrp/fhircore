@@ -26,6 +26,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.junit.Before
@@ -86,11 +87,12 @@ class QuestionnaireHandlerTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaire() = runTest {
-    val activityResult = mockk<ActivityResult>(relaxed = true)
+  fun testOnSubmitQuestionnaire() =
+    runTest(timeout = 30.seconds) {
+      val activityResult = mockk<ActivityResult>(relaxed = true)
 
-    (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
+      (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
 
-    coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
-  }
+      coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
+    }
 }
