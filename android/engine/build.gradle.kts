@@ -162,7 +162,6 @@ dependencies {
   api(libs.jjwt)
   api(libs.fhir.common.utils) { exclude(group = "org.slf4j", module = "jcl-over-slf4j") }
   api(libs.runtime.livedata)
-  //  api(libs.material3)
   api(libs.foundation)
   api(libs.fhir.common.utils)
   api(libs.kotlinx.serialization.json)

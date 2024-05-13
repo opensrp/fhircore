@@ -40,14 +40,17 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.sentry.android.navigation.SentryNavigationListener
 import java.time.Instant
 import javax.inject.Inject
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -150,7 +153,19 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       lifecycleScope.launch {
         retrieveAppMainUiState()
         if (isDeviceOnline()) {
-          syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
+          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+          // if we need to trigger sync based on assigned locations or not
+          if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
+            if (
+              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
+            ) {
+              triggerSync()
+            }
+          } else {
+            triggerSync()
+          }
         } else {
           showToast(
             getString(org.smartregister.fhircore.engine.R.string.sync_failed),
