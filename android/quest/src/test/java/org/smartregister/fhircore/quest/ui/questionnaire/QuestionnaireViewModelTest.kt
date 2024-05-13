@@ -40,6 +40,7 @@ import io.mockk.unmockkObject
 import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -49,8 +50,10 @@ import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.Expression
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
@@ -253,7 +256,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         structureMapExtractionContext = any(),
       )
     } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
 
     questionnaireViewModel.handleQuestionnaireSubmission(
       questionnaire = questionnaire,
@@ -351,8 +358,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val idsTypesSlot = slot<List<IdType>>()
 
     // Mock result for subject (Patient) that is reloaded via loadResource function
-    coEvery { questionnaireViewModel.loadResource(ResourceType.Patient, patient.logicalId) } returns
-      patient
+    coEvery {
+      questionnaireViewModel.loadResource(
+        ResourceType.Patient,
+        patient.logicalId,
+      )
+    } returns patient
 
     // Verify other function calls in order of execution after saving resources
     coVerifyOrder {
@@ -408,7 +419,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
         structureMapExtractionContext = any(),
       )
     } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
     val bundle =
       questionnaireViewModel.performExtraction(
         extractByStructureMap = true,
@@ -429,7 +444,11 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val theQuestionnaireResponse = extractionQuestionnaireResponse()
 
     coEvery { ResourceMapper.extract(questionnaire, theQuestionnaireResponse) } returns
-      Bundle().apply { addEntry(Bundle.BundleEntryComponent().apply { resource = patient }) }
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply { resource = patient },
+        )
+      }
     val bundle =
       questionnaireViewModel.performExtraction(
         extractByStructureMap = false,
@@ -966,7 +985,10 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   fun testAddPractitionerInfoAppendedCorrectlyOnEncounterResource() {
     val encounter = Encounter().apply { this.id = "123456" }
     encounter.appendPractitionerInfo("12345")
-    Assert.assertEquals("Practitioner/12345", encounter.participant.first().individual.reference)
+    Assert.assertEquals(
+      "Practitioner/12345",
+      encounter.participant.first().individual.reference,
+    )
   }
 
   @Test
@@ -1065,7 +1087,12 @@ class QuestionnaireViewModelTest : RobolectricTest() {
       }
 
     coEvery { fhirEngine.get(ResourceType.Patient, patient.logicalId) } returns patient
-    coEvery { fhirEngine.get(ResourceType.Observation, previousObs.logicalId) } returns previousObs
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Observation,
+        previousObs.logicalId,
+      )
+    } returns previousObs
     coEvery { fhirEngine.get(ResourceType.Observation, newObservation.logicalId) } returns
       newObservation
     coEvery { fhirEngine.update(resource = anyVararg()) } just runs
@@ -1143,5 +1170,131 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertTrue(
       bundle.entry.any { it.resource is Basic && it.resource.id == "basic-resource-id" },
     )
+  }
+
+  @Test
+  fun testSaveExtractedResourcesAddsRelatedEntityLocationMetaTagToExtractedResource() =
+    runBlocking {
+      val bundleSlot = slot<Bundle>()
+      val bundle = bundleSlot.captured
+      val linkId = "linkId"
+      val metaTagId = "UUId123"
+      val questionnaire = extractionQuestionnaire()
+      val questionnaireConfig =
+        questionnaireConfig.copy(
+          resourceIdentifier = "resourceId",
+          resourceType = ResourceType.Location,
+          saveQuestionnaireResponse = false,
+          type = "EDIT",
+          linkIds = listOf(LinkIdConfig(linkId = linkId, LinkIdType.LOCATION)),
+          extractedResourceUniquePropertyExpressions =
+            listOf(
+              ExtractedResourceUniquePropertyExpression(
+                ResourceType.Location,
+                "Observation.code.where(coding.code='obs1').coding.code",
+              ),
+            ),
+        )
+      val previousObs =
+        Observation().apply {
+          id = "previousObs1"
+          code = (CodeableConcept(Coding("http://obsys", "obs1", "Obs 1")))
+        }
+
+      val questionnaireResponse =
+        extractionQuestionnaireResponse().apply {
+          val extractionDate = Date()
+          subject = patient.asReference()
+          val listResource =
+            ListResource().apply {
+              id = metaTagId
+              status = ListResource.ListStatus.CURRENT
+              mode = ListResource.ListMode.WORKING
+              title = CONTAINED_LIST_TITLE
+              date = extractionDate
+            }
+          val listEntryComponent =
+            ListResource.ListEntryComponent().apply {
+              deleted = false
+              date = extractionDate
+              item = previousObs.asReference()
+            }
+          listResource.addEntry(listEntryComponent)
+          addContained(listResource)
+        }
+
+      questionnaireViewModel.saveExtractedResources(
+        bundle = bundle,
+        questionnaire = questionnaire,
+        questionnaireConfig = questionnaireConfig,
+        questionnaireResponse = questionnaireResponse,
+        context = context,
+      )
+
+      // Extract tags manually
+      val listResource = questionnaireResponse.contained.firstOrNull() as ListResource
+      val resource = listResource.entry.firstOrNull()?.item?.resource
+
+      // Assert
+      Assert.assertNotNull(listResource)
+      Assert.assertNotNull(resource)
+
+      // Check if the meta tag id exists
+      var metaTagIdExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.code == metaTagId) {
+          metaTagIdExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(metaTagIdExists)
+
+      // Check if the related entity location meta tag exists
+      var relatedEntityLocationMetaTagExists = false
+      resource?.meta?.tag?.forEach { tag ->
+        if (tag.system == "https://smartregister.org/related-entity-location-tag-id") {
+          relatedEntityLocationMetaTagExists = true
+          return@forEach
+        }
+      }
+      Assert.assertTrue(relatedEntityLocationMetaTagExists)
+
+      // Assert that the listResource id matches the linkId
+      assertEquals(linkId, listResource.id)
+    }
+
+  @Test
+  fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaire() = runTest {
+    val questionnaireWithDefaultDate =
+      Questionnaire().apply {
+        id = questionnaireConfig.id
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "defaultedDate"
+            type = Questionnaire.QuestionnaireItemType.DATE
+            addExtension(
+              Extension(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                Expression().apply {
+                  language = "text/fhirpath"
+                  expression = "today()"
+                },
+              ),
+            )
+          },
+        )
+      }
+    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+      questionnaireWithDefaultDate
+
+    questionnaireViewModel.populateQuestionnaire(
+      questionnaireWithDefaultDate,
+      questionnaireConfig,
+      emptyList(),
+    )
+    val initialValueDate =
+      questionnaireWithDefaultDate.item.first { it.linkId == "defaultedDate" }.initial.first().value
+        as DateType
+    Assert.assertTrue(initialValueDate.isToday)
   }
 }

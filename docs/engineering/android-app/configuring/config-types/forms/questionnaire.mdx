@@ -1,5 +1,5 @@
 ---
-title: Questionnaires and forms
+title: Questionnaires
 ---
 
 # Questionnaire configuration
@@ -51,6 +51,8 @@ actions    | A list of actions that you would like to be executed | yes if you a
 actions (trigger) | Defines when you want to launch the questions | yes |        |
 actions(workflow) | Import to execute logic related to the questionnaire | yes |  |
 linkIds    | Contains configurations for linkIds for fields in the Questionnaires that are used to control application workflow and content; ranging from read only fields to fields used to capure location/barcode details. Each linkId is identified by a type (`READ_ONLY`, `LOCATION`, `BARCODE`, `IDENTIFIER`) | no |  |
+type | The item type, e.g. `date`, `choice` or `group`. A `group` type allows you to create a section within a questionnaire that controls and treats the items within the `group` as a single item. This is suitable for block sections that can be toggled based on condition or answer expression logic | no | null
+repeats | Boolean that controls whether an item is repeated or not, used to control a single item or group item that creates a repeated group | no | false
 
 ### Questionnaire config actions
 
@@ -58,7 +60,7 @@ linkIds    | Contains configurations for linkIds for fields in the Questionnaire
 "questionnaire": {
   "id": "questionnaire-uuid",
   "title": "Record sick child",
-  "resourceIdentifier": "@{patientId}", 
+  "resourceIdentifier": "@{patientId}",
   "linkIds": [
     {
       "linkId": "122d7ffe-3137-46b5-a28d-5c1a335c4899",
@@ -131,7 +133,7 @@ Data extraction happens during rules execution and is persisted in `computedValu
 
 For example, in the `underlying_conditions` questionnaire you would like to show or hide the Cancer option based on whether the patient has cancer or not. The solution would be to pass `has-cancer` BOOLEAN from `adult_profile_config` to `underlying_conditions`.
 
-Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed. 
+Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_config` takes you to `underlying_conditions` questionnaire screen, below is a practical example of how the data would be passed.
 
 ### Cancer LAUNCH_QUESTIONAIRE
 #### Sample JSON
@@ -176,7 +178,7 @@ Assuming that the `LAUNCH_QUESTIONAIRE` `onClick` function of `adult_profile_con
 }
 ```
 
-On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below. 
+On the `underlying_conditions` questionnaire side, we will then call the `has-cancer` linkId that was declared in the `adult_profile_config`, as shown in the example below.
 ``` json
 {
     "extension": [ {
@@ -324,4 +326,3 @@ eventType |The intention of the eventWorkflow. E.g close resources | yes | RESOU
 triggerConditions | This defines an array of condition for to be met for the event to run | no | null |
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
-
