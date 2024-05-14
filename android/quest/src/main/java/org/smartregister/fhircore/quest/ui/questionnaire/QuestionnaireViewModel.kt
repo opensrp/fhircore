@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -90,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -165,6 +167,10 @@ constructor(
                   ?.filter { it.type == LinkIdType.READ_ONLY }
                   ?.map { it.linkId },
           )
+        }
+
+        if (questionnaireConfig.isEditable()) {
+          item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
         }
 
         // Pre-populate questionnaire items with configured values
@@ -830,7 +836,7 @@ constructor(
    * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
    * or [QuestionnaireConfig.removeResource] config properties.
    */
-  fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
+  suspend fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
         groupId = questionnaireConfig.groupResource!!.groupIdentifier,
@@ -860,40 +866,40 @@ constructor(
     }
   }
 
-  private fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
+  private suspend fun removeGroup(
+    groupId: String,
+    removeGroup: Boolean,
+    deactivateMembers: Boolean,
+  ) {
     if (removeGroup) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroup(
-            groupId = groupId,
-            isDeactivateMembers = deactivateMembers,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroup(
+          groupId = groupId,
+          isDeactivateMembers = deactivateMembers,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
 
-  private fun removeGroupMember(
+  private suspend fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
     memberResourceType: ResourceType?,
     removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroupMember(
-            memberId = memberId,
-            groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroupMember(
+          memberId = memberId,
+          groupId = groupIdentifier,
+          groupMemberResourceType = memberResourceType,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
@@ -974,7 +980,7 @@ constructor(
           )
           ?.let {
             QuestionnaireResponse().apply {
-              item = it.item
+              item = it.item.removeUnAnsweredItems()
               // Clearing the text prompts the SDK to re-process the content, which includes HTML
               clearText()
             }
@@ -984,6 +990,13 @@ constructor(
       }
 
     return Pair(questionnaireResponse, launchContextResources)
+  }
+
+  private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
+    List<QuestionnaireResponseItemComponent> {
+    return this.filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .onEach { it.item = it.item.removeUnAnsweredItems() }
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
   }
 
   /**
