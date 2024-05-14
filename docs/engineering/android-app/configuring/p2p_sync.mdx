@@ -4,7 +4,7 @@ OpenSRP supports device-to-device syncing through an additional library. To add 
 
 ## Enabling P2P sync configuration
 
-To enble P2P sync we need to make changes to enable viweing P2P UI elements and configure what to sync over P2P.
+To enable P2P sync we need to make changes to enable viewing P2P UI elements and configure what to sync over P2P.
 
 ### Navigation configurations
 
@@ -34,16 +34,16 @@ To enble P2P sync we need to make changes to enable viweing P2P UI elements and 
 id | uniquieId of your p2p_sync block | yes |  |
 visible | Boolean to show whether this is to be shown | yes | `apps` |
 display | Title text that should be shown on the device | yes | |
-menuIconConfig | The icon to show. This can be configured through ICON configuration. See widgets | No  |  |
+menuIconConfig | The icon to show. This can be configured through ICON configuration. [See here](https://docs.opensrp.io/engineering/android-app/configuring/config-types/widget#how-to-use-button-with-icon-and-copy-ability) | No  |  |
 actions |  Action to be performed when once clicks on the display above. See actions parameters under questionnaire | yes | |
 
 :::info
-A WORKFLOW can be launched anywhere on the app through an action. Either by a text link, actionable button, or image icon.
+The P2P WORKFLOW can be launched anywhere on the app through text link, actionable button or image icon. An example is shown above where we can launch it through navigation configurations.
 :::
 
 #### Resources to sync
 
-You also need to define which resources to be synced. This configuration should be added as part of Application configuration file under config-types/application
+You also need to define which resources to be synced. This configuration should be added as part of [Application configuration](https://docs.opensrp.io/engineering/android-app/configuring/config-types/application)
 
 ``` json
 "deviceToDeviceSync": {
