@@ -662,22 +662,25 @@ constructor(
     if (isRevInclude) this.filter { it.isRevInclude && !it.resultAsCount }
     else this.filter { !it.isRevInclude && !it.resultAsCount }
 
+  /**
+   * Data queries for retrieving resources require the id to be provided in the format
+   * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
+   * up to the server the id is updated with history information e.g
+   * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
+   * [ResourceType/UUID] format and updated in the computedValuesMap
+   */
   suspend fun updateResourcesRecursively(resourceConfig: ResourceConfig, subject: Resource) {
     val configRules = configRulesExecutor.generateRules(resourceConfig.configRules ?: listOf())
-    val initialComputedValuesMap =
-      configRulesExecutor.fireRules(rules = configRules, baseResource = subject)
-
-    /**
-     * Data queries for retrieving resources require the id to be provided in the format
-     * [ResourceType/UUID] e.g Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4. When resources are synced
-     * up to the server the id is updated with history information e.g
-     * Group/0acda8c9-3fa3-40ae-abcd-7d1fba7098b4/_history/1 This needs to be formatted to
-     * [ResourceType/UUID] format and updated in the computedValuesMap
-     */
-    val computedValuesMap = mutableMapOf<String, Any>()
-    initialComputedValuesMap.forEach { entry ->
-      computedValuesMap[entry.key] =
-        "${entry.value.toString().substringBefore("/")}/${entry.value.toString().extractLogicalIdUuid()}"
+    val computedValuesMap =
+      configRulesExecutor.fireRules(rules = configRules, baseResource = subject).mapValues { entry ->
+      val initialValue = entry.value.toString()
+      if (initialValue.contains('/')) {
+            "${initialValue.substringBefore("/")}/${
+              initialValue.extractLogicalIdUuid()
+            }"
+      } else {
+        initialValue
+      }
     }
 
     Timber.i("Computed values map = ${computedValuesMap.values}")
@@ -693,7 +696,9 @@ constructor(
     val resources = fhirEngine.search<Resource>(search)
     resources.forEach {
       Timber.i("Closing Resource type ${it.resourceType.name} and id ${it.id}")
-      closeResource(it, resourceConfig)
+      if (filterResource(it, resourceConfig)) {
+        closeResource(it, resourceConfig)
+      }
     }
 
     // recursive related resources
@@ -712,7 +717,7 @@ constructor(
         Timber.i(
           "Closing related Resource type ${resource.resourceType.name} and id ${resource.id}"
         )
-        if (filterRelatedResource(resource, resourceConfig)) {
+        if (filterResource(resource, resourceConfig)) {
           closeResource(resource, resourceConfig)
         }
       }
@@ -750,8 +755,10 @@ constructor(
   /**
    * Filtering the Related Resources is achieved by use of the filterFhirPathExpression
    * configuration. It specifies which field and values to filter the resources by.
+   * This can also be used to filter Base Resources that meet a certain criteria by providing a
+   * fhirpath expression through the filterFhirPathExpression.
    */
-  fun filterRelatedResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
+  fun filterResource(resource: Resource, resourceConfig: ResourceConfig): Boolean {
     return if (resourceConfig.filterFhirPathExpressions?.isEmpty() == true) {
       true
     } else {
