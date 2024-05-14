@@ -449,6 +449,8 @@ dependencies {
   // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
