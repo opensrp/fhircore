@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.util
+package org.smartregister.fhircore.engine.rulesengine.services
 
-enum class SharedPreferenceKey {
-  APP_ID,
-  LAST_SYNC_TIMESTAMP,
-  LANG,
-  PRACTITIONER_ID,
-  PRACTITIONER_DETAILS,
-  PRACTITIONER_LOCATION_HIERARCHIES,
-  PRACTITIONER_LOCATION,
-  REMOTE_SYNC_RESOURCES,
-  LOGIN_CREDENTIAL_KEY,
-  LOGIN_PIN_KEY,
-  LOGIN_PIN_SALT,
-  LAST_OFFSET,
-  USER_INFO,
-  CARE_TEAM,
-  ORGANIZATION,
-  GEO_LOCATION,
-  DATA_MIGRATION
-}
+import java.time.Instant
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class LocationCoordinate(
+  val latitude: Double? = null,
+  val longitude: Double? = null,
+  val altitude: Double? = null,
+  @Contextual val timeStamp: Instant? = null,
+)

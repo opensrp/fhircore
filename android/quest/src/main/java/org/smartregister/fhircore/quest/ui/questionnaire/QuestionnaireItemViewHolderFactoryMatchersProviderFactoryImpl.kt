@@ -22,9 +22,15 @@ import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderVi
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
 import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.smartregister.fhircore.quest.ui.sdc.PasswordViewHolderFactory
 
 const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
   "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
+private const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
+const val BARCODE_NAME = "barcode"
+private const val PASSWORD_EXTENSION_URL =
+  "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
+private const val PASSWORD_VALUE = "password-widget"
 
 object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
@@ -42,11 +48,15 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   object OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl :
     QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
 
-    const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
-    const val BARCODE_NAME = "barcode"
-
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          PasswordViewHolderFactory,
+        ) { questionnaireItem ->
+          questionnaireItem.getExtensionByUrl(PASSWORD_EXTENSION_URL).let {
+            if (it == null) false else it.value.toString() == PASSWORD_VALUE
+          }
+        },
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           BarCodeReaderViewHolderFactory,
         ) { questionnaireItem ->
