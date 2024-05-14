@@ -198,7 +198,7 @@ class UserSettingScreenTest {
           onEvent = {},
           mainNavController = rememberNavController(),
           allowP2PSync = isP2PAvailable,
-          dataMigrationVersion = 0,
+          dataMigrationVersion = "0",
           lastSyncTime = "05:30 PM, Mar 3",
           showProgressIndicatorFlow = MutableStateFlow(false),
         )
