@@ -110,6 +110,8 @@ constructor(
           "Fetching configs for app $appId with highest context-quantity ${QuestBuildConfig.VERSION_CODE}",
         )
 
+//        configurationRegistry.fetchNonWorkflowConfigResources()
+
         val compositionResource: Composition?
 
         val implementationGuideResource =

@@ -439,7 +439,7 @@ constructor(
   @Throws(UnknownHostException::class, HttpException::class)
   suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) = coroutineScope {
     Timber.d("fetchNonWorkflow Config Sync")
-    fetchCompositionConfig(this)
+    fetchCompositionConfig(this, isInitialLogin = isInitialLogin)
   }
 
   /**
@@ -920,14 +920,14 @@ constructor(
       )
   }
 
-  private suspend fun fetchCompositionConfig(coroutineScope: CoroutineScope) {
+  private suspend fun fetchCompositionConfig(coroutineScope: CoroutineScope, isInitialLogin: Boolean = true) {
     val compConfigFlow1 = Sync.oneTimeSync<CompositionSyncWorker>(context)
     compConfigFlow1.handleCompositionSyncJobStatus(coroutineScope)
     compConfigFlow1.collect { compConfigFlowJobStatus ->
       when (compConfigFlowJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("Composition Config Sync FlowJobStatus succeeded")
-          fetchCompositionContent(coroutineScope)
+          fetchCompositionContent(coroutineScope, isInitialLogin = isInitialLogin)
         } else -> {
           // do nothing
         }
@@ -941,7 +941,7 @@ constructor(
     Timber.d("configSync handleCompositionSyncJobStatus")
   }
 
-  private suspend fun fetchCompositionContent(coroutineScope: CoroutineScope){
+  private suspend fun fetchCompositionContent(coroutineScope: CoroutineScope, isInitialLogin: Boolean = true){
     run {
 
       sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
@@ -983,8 +983,8 @@ constructor(
                             mapOf(Composition.SP_RES_ID to it),
                           ),
                         )
-                        syncParamSource.compListRequestQue.push(mapOf(*compositionListRequestParamPairs.toTypedArray()))
-                        syncParamSource.compListRequestParamForItems.add(ResTypeId(ResourceType.fromCode(resourceType), it))
+                        syncParamSource.compositionListRequestQue.push(mapOf(*compositionListRequestParamPairs.toTypedArray()))
+                        syncParamSource.compositionListRequestParamForItems.add(ResTypeId(ResourceType.fromCode(resourceType), it))
                       }
                     } else {
                       resourceIds.forEach {
@@ -995,13 +995,13 @@ constructor(
                             mapOf(Composition.SP_RES_ID to it),
                           ),
                         )
-                        syncParamSource.compListRequestQue.push(mapOf(*compositionListRequestParamPairs.toTypedArray()))
-                        syncParamSource.compListRequestParamForItems.add(ResTypeId(ResourceType.fromCode(resourceType), it))
+                        syncParamSource.compositionListRequestQue.push(mapOf(*compositionListRequestParamPairs.toTypedArray()))
+                        syncParamSource.compositionListRequestParamForItems.add(ResTypeId(ResourceType.fromCode(resourceType), it))
                       }
                     }
                   }
 
-                  Timber.d("configSync compListRequestQue size ${syncParamSource.compListRequestQue.size}")
+                  Timber.d("configSync compListRequestQue size ${syncParamSource.compositionListRequestQue.size}")
                   fetchCompositionListRequest(coroutineScope)
 
                 } else {
@@ -1015,10 +1015,10 @@ constructor(
                         mapOf(Composition.SP_RES_ID to it.focus.extractId()),
                       ),
                     )
-                    syncParamSource.compManifestRequestQue.push( mapOf(*compositionManifestRequestParamPairs.toTypedArray()))
+                    syncParamSource.compositionManifestRequestQue.push( mapOf(*compositionManifestRequestParamPairs.toTypedArray()))
                   }
 
-                  Timber.d("configSync composition Manifest RequestQue size - ${syncParamSource.compManifestRequestQue.size}")
+                  Timber.d("configSync composition Manifest RequestQue size - ${syncParamSource.compositionManifestRequestQue.size}")
                   fetchCompositionManifestRequest(coroutineScope)
 
                 }
@@ -1032,17 +1032,17 @@ constructor(
 
                   resourceIds.forEach {
                     Timber.d("configSync composition Config adding resourceType - ${resourceType} and id= ${it}")
-                    val compConfigParamPairsReq = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-                    compConfigParamPairsReq.add(
+                    val compositionConfigParamPairsReq = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+                    compositionConfigParamPairsReq.add(
                       Pair(
                         ResourceType.fromCode(resourceType),
                         mapOf(Composition.SP_RES_ID to it),
                       ),
                     )
-                    syncParamSource.compConfigRequestQue.push(mapOf(*compConfigParamPairsReq.toTypedArray()))
+                    syncParamSource.compositionConfigRequestQue.push(mapOf(*compositionConfigParamPairsReq.toTypedArray()))
                   }
 
-                  Timber.d("configSync composition Config RequestQue size - ${syncParamSource.compConfigRequestQue.size}")
+                  Timber.d("configSync composition Config RequestQue size - ${syncParamSource.compositionConfigRequestQue.size}")
 
                   fetchCompositionConfigRequest(coroutineScope)
                 }
@@ -1056,10 +1056,10 @@ constructor(
 
   private suspend fun fetchCompositionManifestRequest(coroutineScope: CoroutineScope) {
 
-    val compositionManifestFlow4 = Sync.oneTimeSync<CompositionManifestSyncWorker>(context)
-    compositionManifestFlow4.handleCompositionManifestSyncJobStatus(coroutineScope)
-    compositionManifestFlow4.collect{ compManifestJobStatus ->
-      when(compManifestJobStatus) {
+    val compositionManifestFlow = Sync.oneTimeSync<CompositionManifestSyncWorker>(context)
+    compositionManifestFlow.handleCompositionManifestSyncJobStatus(coroutineScope)
+    compositionManifestFlow.collect{ compositionManifestJobStatus ->
+      when(compositionManifestJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition Manifest FlowJobStatus succeeded")
         } else -> {
@@ -1070,13 +1070,13 @@ constructor(
   }
 
   private suspend fun fetchCompositionListRequest(coroutineScope: CoroutineScope) {
-    val compListFlow2 = Sync.oneTimeSync<CompositionListSyncWorker>(context)
-    compListFlow2.handleCompositionListSyncJobStatus(coroutineScope)
-    compListFlow2.collect{ compListJobStatus ->
-      when(compListJobStatus) {
+    val compListFlow = Sync.oneTimeSync<CompositionListSyncWorker>(context)
+    compListFlow.handleCompositionListSyncJobStatus(coroutineScope)
+    compListFlow.collect{ compositionListJobStatus ->
+      when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition List FlowJobStatus succeeded")
-          if(syncParamSource.compListRequestQue.isNotEmpty()){
+          if(syncParamSource.compositionListRequestQue.isNotEmpty()){
             fetchCompositionListRequest(coroutineScope)
           } else {
             processCompositionListResult(coroutineScope)
@@ -1089,13 +1089,13 @@ constructor(
   }
 
   private suspend fun fetchCompositionConfigRequest(coroutineScope: CoroutineScope) {
-    val compositionConfigFlow3 = Sync.oneTimeSync<CompositionConfigSyncWorker>(context)
-    compositionConfigFlow3.handleCompositionConfigSyncJobStatus(coroutineScope)
-    compositionConfigFlow3.collect{ compListJobStatus ->
-      when(compListJobStatus) {
+    val compositionConfigFlow = Sync.oneTimeSync<CompositionConfigSyncWorker>(context)
+    compositionConfigFlow.handleCompositionConfigSyncJobStatus(coroutineScope)
+    compositionConfigFlow.collect{ compositionListJobStatus ->
+      when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition Config FlowJobStatus succeeded")
-          if(syncParamSource.compConfigRequestQue.isNotEmpty()){
+          if(syncParamSource.compositionConfigRequestQue.isNotEmpty()){
             fetchCompositionConfigRequest(coroutineScope)
           }
         } else -> {
@@ -1108,7 +1108,7 @@ constructor(
   private suspend fun processCompositionListResult(coroutineScope: CoroutineScope){
     Timber.e("configSync process result of compositionList for next resources call")
     val compositionListItemRequestParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-    for (item in syncParamSource.compListRequestParamForItems) {
+    for (item in syncParamSource.compositionListRequestParamForItems) {
       val dbResource = fhirEngine.get(item.type, item.id)
       when(dbResource){
         is ListResource -> {
@@ -1132,26 +1132,26 @@ constructor(
                 mapOf("_count" to "200"),
               ),
             )
-            syncParamSource.compListItemRequestQue.push(mapOf(*compositionListItemRequestParamPairs.toTypedArray()))
+            syncParamSource.compositionListItemRequestQue.push(mapOf(*compositionListItemRequestParamPairs.toTypedArray()))
           }
         } else -> {
           // do nothing
         }
       }
-      Timber.d("configSync composition ListItemRequestQue size - ${syncParamSource.compConfigRequestQue.size}")
+      Timber.d("configSync composition ListItemRequestQue size - ${syncParamSource.compositionConfigRequestQue.size}")
       fetchCompListItemRequest(coroutineScope)
     }
   }
 
 
   private suspend fun fetchCompListItemRequest(coroutineScope: CoroutineScope) {
-    val compListFlow2 = Sync.oneTimeSync<CompListItemSyncWorker>(context)
-    compListFlow2.handleCompListItemSyncJobStatus(coroutineScope)
-    compListFlow2.collect{ compListJobStatus ->
-      when(compListJobStatus) {
+    val compListFlow = Sync.oneTimeSync<CompListItemSyncWorker>(context)
+    compListFlow.handleCompListItemSyncJobStatus(coroutineScope)
+    compListFlow.collect{ compositionListJobStatus ->
+      when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition ListItemJobStatus succeeded")
-          if(syncParamSource.compListRequestQue.isNotEmpty()){
+          if(syncParamSource.compositionListRequestQue.isNotEmpty()){
             fetchCompListItemRequest(coroutineScope)
           } else {
             processCompListItemResult()
@@ -1172,10 +1172,10 @@ constructor(
     appId: String,
     configsLoadedCallback: (Boolean) -> Unit
     ) {
-    val compositionConfigFlow3 = Sync.oneTimeSync<BinarySyncWorker>(context)
-    compositionConfigFlow3.handleBinarySyncJobStatus(coroutineScope)
-    compositionConfigFlow3.collect{ compListJobStatus ->
-      when(compListJobStatus) {
+    val binaryConfigFlow = Sync.oneTimeSync<BinarySyncWorker>(context)
+     binaryConfigFlow.handleBinarySyncJobStatus(coroutineScope)
+     binaryConfigFlow.collect{ compositionListJobStatus ->
+      when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync binary FlowJobStatus succeeded")
           if(syncParamSource.binaryRequestQue.isNotEmpty()){
@@ -1206,36 +1206,36 @@ constructor(
   private fun Flow<CurrentSyncJobStatus>.handleCompositionListSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    Timber.d("confRegistry handleCompositionListSyncJobStatus")
+    Timber.d("configSync handleCompositionListSyncJobStatus")
   }
 
   private fun Flow<CurrentSyncJobStatus>.handleCompositionConfigSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    Timber.d("confRegistry handleCompositionConfigSyncJobStatus")
+    Timber.d("configSync handleCompositionConfigSyncJobStatus")
   }
 
   private fun Flow<CurrentSyncJobStatus>.handleCompositionManifestSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    Timber.d("confRegistry handleCompositionManifestSyncJobStatus")
+    Timber.d("configSync handleCompositionManifestSyncJobStatus")
   }
 
   private fun Flow<CurrentSyncJobStatus>.handleCompListItemSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    Timber.d("confRegistry handleCompListItemSyncJobStatus")
+    Timber.d("configSync handleCompListItemSyncJobStatus")
   }
 
 
   private fun Flow<CurrentSyncJobStatus>.handleBinarySyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
-    Timber.d("confRegistry handleBinarySyncJobStatus")
+    Timber.d("configSync handleBinarySyncJobStatus")
   }
 
   private suspend fun processCompListItemResult(){
-    Timber.e("confRegistry process result of composition List Items")
+    Timber.e("configSync process result of composition List Items")
   }
 
 }

@@ -53,7 +53,7 @@ constructor(
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
   private fun loadCompositionManifestParams(): Map<ResourceType, Map<String, String>> {
-    return syncParamSource.compManifestRequestQue.pop()
+    return syncParamSource.compositionManifestRequestQue.pop()
   }
 
 }
