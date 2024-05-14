@@ -652,15 +652,16 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegisters(): Unit = runBlocking {
-    defaultRepository.create(addResourceTags = true, binaryImage)
-    val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
-    runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
-    assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
-  }
+  fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
+    runBlocking {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
+      runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
+      assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
+    }
 
   @Test
-  fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegisterss(): Unit = runBlocking {
+  fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
     val navigationMenuConfigs = listOf(overflowMenuItemConfig)
     runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
@@ -668,10 +669,61 @@ class ConfigExtensionsTest : RobolectricTest() {
   }
 
   @Test
-  fun testImageBitmapUpdatedCorrectly(): Unit = runBlocking {
+  fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       profileConfiguration.views,
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties.content[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(listViewProperties.registerCard.views[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenRowProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(columnProperties.children[0]),
       computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
     )
