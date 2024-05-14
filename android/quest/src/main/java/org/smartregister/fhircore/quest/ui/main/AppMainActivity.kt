@@ -63,8 +63,6 @@ import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
