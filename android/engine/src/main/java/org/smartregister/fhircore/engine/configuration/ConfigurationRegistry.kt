@@ -54,6 +54,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.sync.BinarySyncWorker
 import org.smartregister.fhircore.engine.sync.CompListItemSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionConfigSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionListSyncWorker
@@ -136,8 +137,6 @@ constructor(
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
-//      if(configType == ConfigType.Sync)
-//        syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
       return configCacheMap[configKey] as T
     }
     val decodedConfig =
@@ -148,8 +147,6 @@ constructor(
           template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
-//    if(configType == ConfigType.Sync)
-//      syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
@@ -190,7 +187,6 @@ constructor(
    */
   inline fun <reified T : Base> retrieveResourceConfiguration(configType: ConfigType): T {
     require(configType.parseAsResource) { "Configuration MUST be a supported FHIR Resource" }
-//    syncListenerManager.syncConfig = configsJsonMap.getValue(configType.name).decodeResourceFromString()
     return configsJsonMap.getValue(configType.name).decodeResourceFromString()
   }
 
@@ -293,9 +289,33 @@ constructor(
           if (iconConfigs.isNotEmpty()) {
             val ids = iconConfigs.joinToString(DEFAULT_STRING_SEPARATOR) { it.focus.extractId() }
 
-            // fetch binaries ~ BinarySyncWork would work
-            // Sync.oneTimeSync<ConfigSyncWorker>(context).handleConfigSyncJobStatus(coroutineScope)
-            // retrofit call
+//            val binaryRequestParamPairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+//
+//            binaryRequestParamPairs.add(
+//              Pair(
+//                ResourceType.Binary,
+//                mapOf(ID to ids),
+//              ),
+//            )
+//            binaryRequestParamPairs.add(
+//              Pair(
+//                ResourceType.Binary,
+//                mapOf("_count" to "200"),
+//              ),
+//            )
+//
+//            syncParamSource.binaryRequestQue.push(mapOf(*binaryRequestParamPairs.toTypedArray()))
+//
+//            Timber.d("configSync Binary Request Size ${binaryRequestParamPairs.size}")
+//            fetchBinaryRequest(
+//              coroutineScope = coroutineScope,
+//              composition = this,
+//              loadFromAssets = true,
+//              appId = parsedAppId,
+//              context = context,
+//              configsLoadedCallback = configsLoadedCallback
+//            )
+            // below fun replace with above fetchBinary call
             fhirResourceDataSource
               .getResource(
                 "${ResourceType.Binary.name}?$ID=$ids&_count=$DEFAULT_COUNT",
@@ -303,6 +323,7 @@ constructor(
               .entry
               .forEach { addOrUpdate(it.resource) }
           }
+          // below fun moved to fetchBinaryRequest
           populateConfigurationsMap(
             composition = this,
             loadFromAssets = true,
@@ -1142,6 +1163,46 @@ constructor(
     }
   }
 
+
+   suspend fun fetchBinaryRequest(
+    coroutineScope: CoroutineScope,
+    context: Context,
+    composition: Composition,
+    loadFromAssets: Boolean,
+    appId: String,
+    configsLoadedCallback: (Boolean) -> Unit
+    ) {
+    val compositionConfigFlow3 = Sync.oneTimeSync<BinarySyncWorker>(context)
+    compositionConfigFlow3.handleBinarySyncJobStatus(coroutineScope)
+    compositionConfigFlow3.collect{ compListJobStatus ->
+      when(compListJobStatus) {
+        is CurrentSyncJobStatus.Succeeded -> {
+          Timber.d("configSync binary FlowJobStatus succeeded")
+          if(syncParamSource.binaryRequestQue.isNotEmpty()){
+            fetchBinaryRequest(
+              coroutineScope = coroutineScope,
+              composition = composition,
+              loadFromAssets = true,
+              appId = appId,
+              configsLoadedCallback = configsLoadedCallback,
+              context = context,
+            )
+          } else {
+            populateConfigurationsMap(
+              composition = composition,
+              loadFromAssets = loadFromAssets,
+              appId = appId,
+              configsLoadedCallback = configsLoadedCallback,
+              context = context,
+            )
+          }
+        } else -> {
+        // do nothing Timber.d("#### compConfigFlow3 JobStatus other than succeeded // do nothing")
+      }
+      }
+    }
+  }
+
   private fun Flow<CurrentSyncJobStatus>.handleCompositionListSyncJobStatus(
     coroutineScope: CoroutineScope,
   ) {
@@ -1164,6 +1225,13 @@ constructor(
     coroutineScope: CoroutineScope,
   ) {
     Timber.d("confRegistry handleCompListItemSyncJobStatus")
+  }
+
+
+  private fun Flow<CurrentSyncJobStatus>.handleBinarySyncJobStatus(
+    coroutineScope: CoroutineScope,
+  ) {
+    Timber.d("confRegistry handleBinarySyncJobStatus")
   }
 
   private suspend fun processCompListItemResult(){

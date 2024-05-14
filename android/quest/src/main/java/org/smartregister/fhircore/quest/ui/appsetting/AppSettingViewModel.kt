@@ -217,7 +217,7 @@ constructor(
   }
 
   suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
-    //retrofit
+    //retrofit call, only calls in Test classes
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
@@ -233,6 +233,8 @@ constructor(
   fun loadConfigurations(context: Context) {
     appId.value?.trim()?.let { thisAppId ->
       viewModelScope.launch(dispatcherProvider.io()) {
+        // retrofit call refactor inside configRegistry->loadConfigurations
+        Timber.d("ConfigSync AppSettingsVM loadConfigurations()")
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {

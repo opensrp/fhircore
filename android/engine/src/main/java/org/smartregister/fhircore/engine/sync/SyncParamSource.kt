@@ -30,17 +30,10 @@ class SyncParamSource
 constructor(
     @ApplicationContext val context: Context
 ) {
-    var compositionSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
-    var compositionListSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
-    // var compositionConfigSyncParameters : Map<ResourceType, Map<String, String>> = emptyMap()
-    var compositionManifestSyncPairs : Map<ResourceType, Map<String, String>> = emptyMap()
-
     var compListRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
     var compConfigRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
     var compManifestRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
-
     var compListItemRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
-
+    var binaryRequestQue = LinkedList<(Map<ResourceType, Map<String, String>>)>()
     var compListRequestParamForItems = ArrayList<ResTypeId>()
-
 }

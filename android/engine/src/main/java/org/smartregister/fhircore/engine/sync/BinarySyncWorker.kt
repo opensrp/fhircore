@@ -30,7 +30,7 @@ import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.ResourceType
 
 @HiltWorker
-class CompositionConfigSyncWorker
+class BinarySyncWorker
 @AssistedInject
 constructor(
   @Assisted appContext: Context,
@@ -44,7 +44,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = loadCompositionConfigParams(),
+      syncParams = loadBinarySyncParams(),
       context = appTimeStampContext,
     )
 
@@ -52,8 +52,7 @@ constructor(
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
-  private fun loadCompositionConfigParams(): Map<ResourceType, Map<String, String>> {
-    return syncParamSource.compConfigRequestQue.pop()
+  private fun loadBinarySyncParams(): Map<ResourceType, Map<String, String>> {
+    return syncParamSource.binaryRequestQue.pop()
   }
-
 }
