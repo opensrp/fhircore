@@ -7,7 +7,9 @@ You can manage edits through
 
 We suggest following approach (2.) to reduce the chance of errors and the resulting inconsistent data.
 
-## Limiting what is editable
+## Approach-1
+
+# Limiting what is editable
 
 Below we describe how to limit what is editable while reusing the same FHIR resources that created the data. This assumes that you have
 
@@ -68,3 +70,22 @@ Below we describe how to limit what is editable while reusing the same FHIR reso
 ```
 
 4. Launch the Questionnaire from an edit menu just as would is creating, but prepopulate the previously captured items. This approach allows to you to use the existing Questionnaire and StructureMap.
+
+## Approach-2
+
+# Using ```readOnlyLinkIds```
+
+Below we defines how we can limit the Edit to QuestionnaireItems in Edit Mode
+
+For the Questionnaire with Edit Mode, Assign the list of QuestionnaireItems->link-ids to the property readOnlyLinkIds of QuestionnaireConfig : like
+
+>```
+> "readOnlyLinkIds": [
+>         "0740ed31-554a-4069-81d9-08f9f1697a03",
+>         "6c2d4f74-84d5-49cd-81dd-a53e101a6899",
+>         "5f06debf-721a-457d-8540-65cac95be9a1",
+>         "e5bb0db6-82a0-4200-b421-334da8a916a4"
+>       ]
+>```
+
+This list is handled with fhircore app fun ```prepareQuestionsForReadingOrEditing``` to restrict the input behaviour on the provided link-ids fields when Questionnaire is rendered  
