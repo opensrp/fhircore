@@ -20,10 +20,12 @@ import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -83,6 +85,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
@@ -1264,37 +1267,136 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     }
 
   @Test
-  fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaire() = runTest {
-    val questionnaireWithDefaultDate =
+  fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaireInitialExpression() =
+    runTest {
+      val questionnaireWithDefaultDate =
+        Questionnaire().apply {
+          id = questionnaireConfig.id
+          addItem(
+            Questionnaire.QuestionnaireItemComponent().apply {
+              linkId = "defaultedDate"
+              type = Questionnaire.QuestionnaireItemType.DATE
+              addExtension(
+                Extension(
+                  "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                  Expression().apply {
+                    language = "text/fhirpath"
+                    expression = "today()"
+                  },
+                ),
+              )
+            },
+          )
+        }
+      coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
+        questionnaireWithDefaultDate
+
+      questionnaireViewModel.populateQuestionnaire(
+        questionnaireWithDefaultDate,
+        questionnaireConfig,
+        emptyList(),
+      )
+      val initialValueDate =
+        questionnaireWithDefaultDate.item
+          .first { it.linkId == "defaultedDate" }
+          .initial
+          .first()
+          .value as DateType
+      Assert.assertTrue(initialValueDate.isToday)
+    }
+
+  @Test
+  fun testThatPopulateQuestionnaireReturnsQuestionnaireResponseWithUnAnsweredRemoved() = runTest {
+    val questionnaireConfig1 =
+      questionnaireConfig.copy(
+        resourceType = ResourceType.Patient,
+        resourceIdentifier = patient.logicalId,
+        type = QuestionnaireType.EDIT.name,
+      )
+
+    val questionnaireWithInitialValue =
       Questionnaire().apply {
-        id = questionnaireConfig.id
+        id = questionnaireConfig1.id
         addItem(
           Questionnaire.QuestionnaireItemComponent().apply {
-            linkId = "defaultedDate"
-            type = Questionnaire.QuestionnaireItemType.DATE
-            addExtension(
-              Extension(
-                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
-                Expression().apply {
-                  language = "text/fhirpath"
-                  expression = "today()"
-                },
-              ),
+            linkId = "group-1"
+            type = Questionnaire.QuestionnaireItemType.GROUP
+            addItem(
+              Questionnaire.QuestionnaireItemComponent().apply {
+                linkId = "linkid-1"
+                type = Questionnaire.QuestionnaireItemType.STRING
+                addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+              },
+            )
+
+            addItem(
+              Questionnaire.QuestionnaireItemComponent().apply {
+                linkId = "linkid-1.1"
+                type = Questionnaire.QuestionnaireItemType.STRING
+                addInitial(Questionnaire.QuestionnaireItemInitialComponent(StringType("---")))
+              },
+            )
+          },
+        )
+
+        addItem(
+          Questionnaire.QuestionnaireItemComponent().apply {
+            linkId = "linkid-2"
+            type = Questionnaire.QuestionnaireItemType.STRING
+          },
+        )
+      }
+    val questionnaireResponse =
+      QuestionnaireResponse().apply {
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "group-1"
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                linkId = "linkid-1"
+              },
+            )
+            addItem(
+              QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+                linkId = "linkid-1.1"
+                addAnswer(
+                  QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                    value = StringType("World")
+                  },
+                )
+              },
+            )
+          },
+        )
+
+        addItem(
+          QuestionnaireResponse.QuestionnaireResponseItemComponent().apply {
+            linkId = "linkid-2"
+            addAnswer(
+              QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent().apply {
+                value = StringType("45678")
+              },
             )
           },
         )
       }
-    coEvery { fhirEngine.get(ResourceType.Questionnaire, questionnaireConfig.id) } returns
-      questionnaireWithDefaultDate
+    coEvery {
+      fhirEngine.get(questionnaireConfig1.resourceType!!, questionnaireConfig1.resourceIdentifier!!)
+    } returns patient
 
-    questionnaireViewModel.populateQuestionnaire(
-      questionnaireWithDefaultDate,
-      questionnaireConfig,
-      emptyList(),
-    )
-    val initialValueDate =
-      questionnaireWithDefaultDate.item.first { it.linkId == "defaultedDate" }.initial.first().value
-        as DateType
-    Assert.assertTrue(initialValueDate.isToday)
+    coEvery { fhirEngine.search<QuestionnaireResponse>(any<Search>()) } returns
+      listOf(
+        SearchResult(questionnaireResponse, included = null, revIncluded = null),
+      )
+
+    Assert.assertNotNull(questionnaireResponse.find("linkid-1"))
+    val result =
+      questionnaireViewModel.populateQuestionnaire(
+        questionnaireWithInitialValue,
+        questionnaireConfig1,
+        emptyList(),
+      )
+    Assert.assertNotNull(result.first)
+    Assert.assertTrue(result.first!!.find("linkid-1") == null)
   }
 }
