@@ -41,10 +41,12 @@ org.smartregister.fhircore.engine.ui.components.register
 org.smartregister.fhircore.engine.ui.multiselect
 org.smartregister.fhircore.engine.ui.theme
 org.smartregister.fhircore.engine.util
+org.smartregister.fhircore.engine.util.adapter
 org.smartregister.fhircore.engine.util.annotation
 org.smartregister.fhircore.engine.util.extension
 org.smartregister.fhircore.engine.util.fhirpath
 org.smartregister.fhircore.engine.util.helper
+org.smartregister.fhircore.engine.util.location
 org.smartregister.fhircore.engine.util.serializers
 org.smartregister.fhircore.engine.util.test
 module:geowidget
