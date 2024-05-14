@@ -17,11 +17,9 @@
 package org.smartregister.fhircore.engine.sync
 
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -55,8 +53,6 @@ class SyncListenerManagerTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
 
-  private val fhirEngine = mockk<FhirEngine>()
-
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
@@ -66,10 +62,9 @@ class SyncListenerManagerTest : RobolectricTest() {
       SyncListenerManager(
         configService = configService,
         sharedPreferencesHelper = sharedPreferencesHelper,
-        //configurationRegistry = configurationRegistry,
+        configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = dispatcherProvider,
-        fhirEngine = fhirEngine
+        dispatcherProvider = dispatcherProvider
       )
   }
 

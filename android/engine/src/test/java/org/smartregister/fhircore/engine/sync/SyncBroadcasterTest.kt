@@ -54,8 +54,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-  //@Inject lateinit var dispatcherProvider: DispatcherProvider
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -68,11 +68,10 @@ class SyncBroadcasterTest : RobolectricTest() {
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
-        //configurationRegistry = configurationRegistry,
+        configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = sharedPreferencesHelper,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = dispatcherProvider,
-        fhirEngine = fhirEngine,
+        dispatcherProvider = dispatcherProvider
       )
 
     syncBroadcaster =

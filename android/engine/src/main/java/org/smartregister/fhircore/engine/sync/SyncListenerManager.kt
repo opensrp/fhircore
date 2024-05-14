@@ -21,7 +21,6 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.firstOrNull
@@ -50,30 +49,12 @@ class SyncListenerManager
 @Inject
 constructor(
   val configService: ConfigService,
-    val configurationRegistry: ConfigurationRegistry,
+  val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
-  val dispatcherProvider: DefaultDispatcherProvider,
-  val fhirEngine: FhirEngine
+  val dispatcherProvider: DefaultDispatcherProvider
 ) {
 
-  //  private val syncConfig by lazy {
-//    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-//  }
-
-//   private var syncConfig: Parameters
-//     get() {
-//       return this.syncConfig
-//     }
-//     set(value) {
-//       this.syncConfig = value
-//     }
-
-//  private val appConfig by lazy {
-//    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-//      ConfigType.Application,
-//    )
-//  }
   private val syncConfig by lazy {
     configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
   }
@@ -112,16 +93,10 @@ constructor(
     }
   }
 
-//  fun linkSyncConfig(syncConfigParameters: Parameters) {
-//    this.syncConfig = syncConfigParameters
-//  }
 
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
-    //val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
-
-//    val appConfig = configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }

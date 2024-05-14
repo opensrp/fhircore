@@ -104,7 +104,6 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
-//  val syncListenerManager: SyncListenerManager,
   val syncParamSource: SyncParamSource
 ) {
 
