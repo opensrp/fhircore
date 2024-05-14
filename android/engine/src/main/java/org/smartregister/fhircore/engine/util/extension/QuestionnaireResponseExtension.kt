@@ -33,3 +33,25 @@ private fun List<QuestionnaireResponseItemComponent>.clearText() {
     }
   }
 }
+
+/** Pre-order list of all questionnaire response items in the questionnaire. */
+val QuestionnaireResponse.allItems: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  get() = item.flatMap { it.descendant }
+
+/**
+ * Pre-order list of descendants of the questionnaire response item (inclusive of the current item).
+ */
+val QuestionnaireResponse.QuestionnaireResponseItemComponent.descendant:
+        List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  get() =
+    mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>().also {
+      appendDescendantTo(it)
+    }
+
+private fun QuestionnaireResponse.QuestionnaireResponseItemComponent.appendDescendantTo(
+  output: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent>,
+) {
+  output.add(this)
+  item.forEach { it.appendDescendantTo(output) }
+  answer.forEach { answer -> answer.item.forEach { it.appendDescendantTo(output) } }
+}
