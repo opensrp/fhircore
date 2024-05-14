@@ -14,30 +14,37 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.quest.util
+package org.smartregister.fhircore.engine.util.location
 
 import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.location.FusedLocationProviderClient
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.test.assertEquals
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.android.controller.ActivityController
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
-import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
+@HiltAndroidTest
 class LocationUtilsTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
+
   private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
   private val activityController: ActivityController<HiltActivityForTest> =
     Robolectric.buildActivity(HiltActivityForTest::class.java)
-  private lateinit var context: HiltActivityForTest
+  private lateinit var context: Context
 
   @Before
   fun setUp() {
@@ -67,13 +74,14 @@ class LocationUtilsTest : RobolectricTest() {
   @Test
   fun `test getAccurateLocation`() = runBlocking {
     val location =
-      Location("").apply {
+      Location("Test location").apply {
         latitude = 36.0
         longitude = 1.0
       }
     fusedLocationProviderClient.setMockLocation(location)
 
-    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
+    val result = LocationUtils.getAccurateLocation(fusedLocationProviderClient)
+    assertNotNull(result)
 
     assertEquals(location.latitude, result!!.latitude, 0.0)
     assertEquals(location.longitude, result.longitude, 0.0)
@@ -88,7 +96,7 @@ class LocationUtilsTest : RobolectricTest() {
       }
     fusedLocationProviderClient.setMockLocation(location)
 
-    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient, coroutineContext)
+    val result = LocationUtils.getApproximateLocation(fusedLocationProviderClient)
     assertEquals(location.latitude, result!!.latitude, 0.0)
     assertEquals(location.longitude, result.longitude, 0.0)
   }
@@ -100,9 +108,7 @@ class LocationUtilsTest : RobolectricTest() {
       coroutineContext.cancel()
     }
 
-    val result = runCatching {
-      LocationUtils.getAccurateLocation(fusedLocationProviderClient, coroutineContext)
-    }
+    val result = runCatching { LocationUtils.getAccurateLocation(fusedLocationProviderClient) }
 
     assertEquals(true, result.isFailure)
     assertEquals(true, result.exceptionOrNull() is CancellationException)

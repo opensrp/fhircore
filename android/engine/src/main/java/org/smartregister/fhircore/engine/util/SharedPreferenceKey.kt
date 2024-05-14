@@ -32,5 +32,6 @@ enum class SharedPreferenceKey {
   USER_INFO,
   CARE_TEAM,
   ORGANIZATION,
+  GEO_LOCATION,
   SELECTED_LOCATION_ID,
 }

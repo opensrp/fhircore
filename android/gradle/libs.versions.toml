@@ -81,6 +81,10 @@ dagger-hilt = "2.50"
 accompanist = "0.23.1"
 jetbrains-kotlin-jvm="1.9.22"
 kt3k-coveralls-ver="2.12.0"
+playServicesTasks = "18.1.0"
+google-playServicesLocation = "21.1.0"
+uiautomator = "2.3.0"
+rules = "1.5.0"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
@@ -192,6 +196,10 @@ work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version
 work-testing = { group = "androidx.work", name = "work-testing", version.ref = "work" }
 workflow = { group = "org.smartregister", name = "workflow", version.ref = "workflow" }
 xercesImpl = { group = "xerces", name = "xercesImpl", version.ref = "xercesImpl" }
+play-services-tasks = { group = "com.google.android.gms", name = "play-services-tasks", version.ref = "playServicesTasks" }
+gms-play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "google-playServicesLocation" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
 
 [plugins]
 org-jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }
@@ -213,7 +221,7 @@ lifecycle = ["lifecycle-viewmodel-ktx", "lifecycle-viewmodel-compose", "lifecycl
 okhttp3 = ["okhttp-logging-interceptor", "okhttp"]
 accompanist = ["accompanist-placeholder", "accompanist-flowlayout"]
 klint = ["ktlint-cli-ruleset", "ktlint-rule-engine-core"]
-compose = ["activity-compose","activity-ktx", "material3", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
+compose = ["activity-compose","activity-ktx", "material", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
 navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-ui-ktx"]
 junit-test = ["junit-ktx", "junit"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
