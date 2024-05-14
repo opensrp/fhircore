@@ -30,9 +30,8 @@ import org.smartregister.fhircore.engine.datastore.serializers.LocationCoordinat
 import org.smartregister.fhircore.engine.datastore.serializers.PractitionerDetailsDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.SyncLocationIdDataStoreSerializer
 import org.smartregister.fhircore.engine.datastore.serializers.UserInfoDataStoreSerializer
-import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
-
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import timber.log.Timber
 
 private const val PRACTITIONER_DETAILS_DATASTORE_JSON = "practitioner_details.json"
@@ -56,13 +55,12 @@ val Context.userInfoProtoStore: DataStore<UserInfo> by
     serializer = UserInfoDataStoreSerializer,
   )
 
-
 val Context.locationCoordinatesDatastore: DataStore<LocationCoordinate> by
   dataStore(
     fileName = LOCATION_COORDINATES_DATASTORE_JSON,
     serializer = LocationCoordinatesSerializer,
   )
-  
+
 val Context.syncLocationIdsProtoStore: DataStore<List<SyncLocationToggleableState>> by
   dataStore(
     fileName = SYNC_LOCATION_IDS,
