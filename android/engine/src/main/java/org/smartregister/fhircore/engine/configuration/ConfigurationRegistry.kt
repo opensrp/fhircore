@@ -953,6 +953,7 @@ constructor(
           Timber.d("Composition = ${jsonParser.encodeResourceToString(composition)}")
           composition
             .retrieveCompositionSections()
+            .also { Timber.d("configSync sectionComposition size = ${it.size}") }
             .asSequence()
             .filter {
               it.hasFocus() && it.focus.hasReferenceElement()
@@ -1024,7 +1025,7 @@ constructor(
                 }
               } else {
                 Timber.d("configSync process compositionContent if Not LIST block")
-                val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
+                val chunkedResourceIdList = entry.value.chunked(200)
                 chunkedResourceIdList.forEach { parentIt ->
                   val resourceIds: List<String> =
                     parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }

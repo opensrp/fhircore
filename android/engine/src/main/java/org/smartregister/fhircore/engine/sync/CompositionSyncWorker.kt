@@ -61,25 +61,21 @@ constructor(
   private fun loadConfigSyncParams(): Map<ResourceType, Map<String, String>> {
 
     Timber.d("Composition loadConfigSyncParams")
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+    val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
       // val urlPath =
       // "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
+    val resourceType = ResourceType.Composition
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER).trim()
-      pairs.add(
-        Pair(
-          ResourceType.Composition,
-          mapOf(Composition.SP_IDENTIFIER to parsedAppId),
-        ),
+      val pair = Pair(
+        resourceType,
+        mutableMapOf(Composition.SP_IDENTIFIER to parsedAppId),
       )
-      pairs.add(
-        Pair(
-          ResourceType.Composition,
-          mapOf("_count" to ConfigurationRegistry.DEFAULT_COUNT.toString()),
-        ),
-      )
+      pairs.add(pair)
+      val updatedPair = pair.second.apply { put("_count", ConfigurationRegistry.DEFAULT_COUNT.toString()) }
+      val index = pairs.indexOfFirst { it.first == resourceType }
+      pairs[index] = Pair(resourceType, updatedPair)
     }
-    // GET /StructureMap?_count=37
     return mapOf(*pairs.toTypedArray())
   }
 }
