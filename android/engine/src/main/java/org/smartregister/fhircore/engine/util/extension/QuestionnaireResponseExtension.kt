@@ -42,7 +42,7 @@ val QuestionnaireResponse.allItems: List<QuestionnaireResponse.QuestionnaireResp
  * Pre-order list of descendants of the questionnaire response item (inclusive of the current item).
  */
 val QuestionnaireResponse.QuestionnaireResponseItemComponent.descendant:
-        List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
+  List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
   get() =
     mutableListOf<QuestionnaireResponse.QuestionnaireResponseItemComponent>().also {
       appendDescendantTo(it)
