@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/registerFragment">
 
@@ -87,6 +86,19 @@
     <fragment
         android:id="@+id/userInsightScreenFragment"
         android:name="org.smartregister.fhircore.quest.ui.usersetting.UserInsightScreenFragment"
-        android:label="fragment_user_insight_screen"
-        tools:layout="@layout/fragment_user_insight_screen" />
+        android:label="fragment_user_insight_screen" />
+
+    <dialog
+        android:id="@+id/multiSelectBottomSheetFragment"
+        android:name="org.smartregister.fhircore.quest.ui.multiselect.MultiSelectBottomSheetFragment" >
+        <argument
+            android:name="screenTitle"
+            android:defaultValue=""
+            app:argType="string"
+            app:nullable="false" />
+        <argument
+            android:name="multiSelectViewConfig"
+            app:argType="org.smartregister.fhircore.engine.domain.model.MultiSelectViewConfig"
+            app:nullable="true" />
+    </dialog>
 </navigation>
