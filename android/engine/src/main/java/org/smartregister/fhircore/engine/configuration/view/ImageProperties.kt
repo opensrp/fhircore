@@ -50,6 +50,7 @@ data class ImageProperties(
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ViewProperties {
     return this.copy(
+      visible = visible.interpolate(computedValuesMap),
       imageConfig =
         imageConfig?.copy(
           reference = imageConfig.reference?.interpolate(computedValuesMap),
