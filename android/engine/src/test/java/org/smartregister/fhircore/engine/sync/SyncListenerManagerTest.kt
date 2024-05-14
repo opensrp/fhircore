@@ -22,7 +22,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.mockk
-import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -30,10 +29,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
+import javax.inject.Inject
 
 @HiltAndroidTest
 class SyncListenerManagerTest : RobolectricTest() {
@@ -46,9 +49,11 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @Inject lateinit var configService: ConfigService
 
-  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
   private lateinit var hiltActivityForTest: HiltActivityForTest
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
 
   private val fhirEngine = mockk<FhirEngine>()
 
@@ -61,6 +66,9 @@ class SyncListenerManagerTest : RobolectricTest() {
       SyncListenerManager(
         configService = configService,
         sharedPreferencesHelper = sharedPreferencesHelper,
+        //configurationRegistry = configurationRegistry,
+        context = ApplicationProvider.getApplicationContext(),
+        dispatcherProvider = dispatcherProvider,
         fhirEngine = fhirEngine
       )
   }

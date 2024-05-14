@@ -16,16 +16,24 @@
 
 package org.smartregister.fhircore.engine.sync
 
+import android.content.Context
+import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.SyncJobStatus
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
@@ -42,7 +50,10 @@ class SyncListenerManager
 @Inject
 constructor(
   val configService: ConfigService,
+    val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  @ApplicationContext val context: Context,
+  val dispatcherProvider: DefaultDispatcherProvider,
   val fhirEngine: FhirEngine
 ) {
 
@@ -50,14 +61,22 @@ constructor(
 //    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
 //  }
 
-   private var syncConfig: Parameters
-     get() {
-       return syncConfig
-     }
-     set(value) {
-       this.syncConfig = value
-     }
+//   private var syncConfig: Parameters
+//     get() {
+//       return this.syncConfig
+//     }
+//     set(value) {
+//       this.syncConfig = value
+//     }
 
+//  private val appConfig by lazy {
+//    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
+//      ConfigType.Application,
+//    )
+//  }
+  private val syncConfig by lazy {
+    configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+  }
 
   private val _onSyncListeners = mutableListOf<WeakReference<OnSyncListener>>()
   val onSyncListeners: List<OnSyncListener>
@@ -93,13 +112,14 @@ constructor(
     }
   }
 
-  fun linkSyncConfig(syncConfigParameters: Parameters) {
-    this.syncConfig = syncConfigParameters
-  }
+//  fun linkSyncConfig(syncConfigParameters: Parameters) {
+//    this.syncConfig = syncConfigParameters
+//  }
 
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+    val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
+    //val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
 //    val appConfig = configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
 
@@ -154,7 +174,8 @@ constructor(
               pairs.add(
                 Pair(
                   resourceType,
-                  expressionValue?.let { mapOf(sp.code to expressionValue) } ?: mapOf(),
+                  expressionValue?.let { mutableMapOf(sp.code to expressionValue) }
+                    ?: mutableMapOf(),
                 ),
               )
             } else {
@@ -162,7 +183,7 @@ constructor(
                 // add another parameter if there is a matching resource type
                 // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
                 // _count=100})]
-                val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
+                val updatedPair = pair.second.apply { put(sp.code, expressionValue) }
                 val index = pairs.indexOfFirst { it.first == resourceType }
                 pairs.set(index, Pair(resourceType, updatedPair))
               }
@@ -170,9 +191,25 @@ constructor(
           }
       }
 
+    // Set sync locations Location query params
+    runBlocking {
+      context.syncLocationIdsProtoStore.data
+        .firstOrNull()
+        ?.filter { it.toggleableState == ToggleableState.On }
+        ?.map { it.locationId }
+        .takeIf { !it.isNullOrEmpty() }
+        ?.let { locationIds ->
+          pairs.forEach { it.second[SYNC_LOCATION_IDS] = locationIds.joinToString(",") }
+        }
+    }
+
     Timber.i("SYNC CONFIG $pairs")
 
     return mapOf(*pairs.toTypedArray())
+  }
+
+  companion object {
+    private const val SYNC_LOCATION_IDS = "_syncLocations"
   }
 
 }

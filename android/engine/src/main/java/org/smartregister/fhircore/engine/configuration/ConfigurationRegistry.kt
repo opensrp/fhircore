@@ -41,7 +41,6 @@ import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
-import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
@@ -61,7 +60,6 @@ import org.smartregister.fhircore.engine.sync.CompositionListSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionManifestSyncWorker
 import org.smartregister.fhircore.engine.sync.CompositionSyncWorker
 import org.smartregister.fhircore.engine.sync.ResTypeId
-import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.sync.SyncParamSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -106,7 +104,7 @@ constructor(
   val json: Json,
   @ApplicationContext val context: Context,
   private var openSrpApplication: OpenSrpApplication?,
-  val syncListenerManager: SyncListenerManager,
+//  val syncListenerManager: SyncListenerManager,
   val syncParamSource: SyncParamSource
 ) {
 
@@ -139,8 +137,8 @@ constructor(
     require(!configType.parseAsResource) { "Configuration MUST be a template" }
     val configKey = if (configType.multiConfig && configId != null) configId else configType.name
     if (configCacheMap.contains(configKey) && paramsMap?.isEmpty() == true) {
-      if(configType == ConfigType.Sync)
-        syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
+//      if(configType == ConfigType.Sync)
+//        syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
       return configCacheMap[configKey] as T
     }
     val decodedConfig =
@@ -151,8 +149,8 @@ constructor(
           template = getConfigValueWithParam(paramsMap, configKey),
         )
         .decodeJson<T>(jsonInstance = json)
-    if(configType == ConfigType.Sync)
-      syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
+//    if(configType == ConfigType.Sync)
+//      syncListenerManager.linkSyncConfig( configCacheMap[configKey] as Parameters)
     configCacheMap[configKey] = decodedConfig
     return decodedConfig
   }
