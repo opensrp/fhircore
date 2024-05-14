@@ -35,7 +35,7 @@ data class StackViewProperties(
   override val fillMaxHeight: Boolean = false,
   override val clickable: String = "false",
   override val visible: String = "true",
-  val opacity: Float = 1.0f,
+  val opacity: Float = 0f,
   val size: Int? = null,
   val children: List<ViewProperties> = emptyList(),
 ) : ViewProperties(), Parcelable {
@@ -45,13 +45,4 @@ data class StackViewProperties(
       visible = visible.interpolate(computedValuesMap),
     )
   }
-}
-
-
-enum class BoxViewAlignment {
-  CENTER,
-  TOPSTART,
-  TOPEND,
-  BOTTOMSTART,
-  BOTTOMEND,
 }

@@ -28,11 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import org.smartregister.fhircore.engine.configuration.view.BoxViewAlignment
+import androidx.navigation.compose.rememberNavController
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 
 @Composable
@@ -56,16 +58,23 @@ fun StackViewTest(
   resourceData: ResourceData,
   navController: NavController
 ) {
-  val alpha = stackViewProperties.opacity
   val backgroundColor = stackViewProperties.backgroundColor.parseColor()
   val size = stackViewProperties.size
 
   Box(
-    modifier = modifier.background(backgroundColor.copy(alpha = alpha)).size(size!!.dp),
+//    modifier
+//      .background(
+//        stackViewProperties.backgroundColor
+//          ?.interpolate(resourceData.computedValuesMap)
+//          .parseColor().copy(alpha = stackViewProperties.opacity),
+//      )
+    modifier = Modifier
+      .background(backgroundColor.copy(alpha = stackViewProperties.opacity))
+      .size(size!!.dp),
   ) {
     stackViewProperties.children.forEach { child ->
       GenerateView(
-        modifier = Modifier
+        modifier = modifier
           .align(determineAlignment(child.alignment)),
         properties = child,
         resourceData = resourceData,
@@ -90,6 +99,21 @@ fun determineAlignment(viewAlignment: ViewAlignment) : Alignment{
 
 @PreviewWithBackgroundExcludeGenerated
 @Composable
-private fun StackViewPreview() {
-  ComposeLayouts()
+private fun PreviewStack() {
+
+  StackViewTest(
+    stackViewProperties = StackViewProperties(
+      opacity = 0.2f,
+      size = 250,
+      backgroundColor = "successColor"
+    ),
+    modifier = Modifier,
+    navController = rememberNavController(),
+    resourceData =
+    ResourceData(
+      baseResourceId = "baseId",
+      baseResourceType = ResourceType.Patient,
+      computedValuesMap = emptyMap(),
+    ),
+  )
 }
