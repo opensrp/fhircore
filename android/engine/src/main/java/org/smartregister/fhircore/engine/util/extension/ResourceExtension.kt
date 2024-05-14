@@ -188,6 +188,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
     }
   }
 }
+
 /**
  * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
  * [readOnly] is true. This also generates the correct FHIRPath population expression for each
@@ -195,7 +196,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.generateMissingItems(
  */
 fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrEditing(
   path: String,
-  readOnly: Boolean,
+  readOnly: Boolean = false,
   readOnlyLinkIds: List<String>? = emptyList()
 ) {
   forEach { item ->
@@ -209,6 +210,31 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
       item.item.prepareQuestionsForReadingOrEditing(
         "$path.where(linkId = '${item.linkId}').item",
         readOnly
+      )
+    }
+  }
+}
+
+/**
+ * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
+ * [readOnlyLinkIds] item are there while editing the form. This also generates the correct FHIRPath
+ * population expression for each question when mapped to the corresponding [QuestionnaireResponse]
+ */
+fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForEditing(
+  path: String,
+  readOnlyLinkIds: List<String>? = emptyList()
+) {
+  forEach { item ->
+    if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+      item.readOnly = readOnlyLinkIds?.contains(item.linkId) == true
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnlyLinkIds
+      )
+    } else {
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnlyLinkIds
       )
     }
   }

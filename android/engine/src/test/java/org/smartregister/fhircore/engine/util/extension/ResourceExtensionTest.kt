@@ -25,7 +25,6 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.util.Date
-import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -744,6 +743,19 @@ class ResourceExtensionTest : RobolectricTest() {
 
     Assert.assertFalse(questionnaire.item[0].readOnly)
     Assert.assertTrue(questionnaire.item[1].readOnly)
+    Assert.assertTrue(questionnaire.item[2].readOnly)
+  }
+
+  @Test
+  fun `prepareQuestionsForEditing should set readOnly correctly when readOnlyLinkIds passed`() {
+    val questionnaire = Questionnaire()
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "2" })
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
+    questionnaire.item.prepareQuestionsForEditing("", readOnlyLinkIds = listOf("1", "3"))
+
+    Assert.assertTrue(questionnaire.item[0].readOnly)
+    Assert.assertFalse(questionnaire.item[1].readOnly)
     Assert.assertTrue(questionnaire.item[2].readOnly)
   }
 }

@@ -76,6 +76,7 @@ import org.smartregister.fhircore.engine.util.extension.findSubject
 import org.smartregister.fhircore.engine.util.extension.isExtractionCandidate
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
@@ -130,12 +131,15 @@ constructor(
     readOnlyLinkIds: List<String>? = emptyList()
   ): Questionnaire? =
     defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-      if (questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode()) {
+      if (questionnaireConfig.type.isReadOnly()) {
         item.prepareQuestionsForReadingOrEditing(
           QUESTIONNAIRE_RESPONSE_ITEM,
-          questionnaireConfig.type.isReadOnly() || questionnaireConfig.type.isEditMode(),
+          questionnaireConfig.type.isReadOnly(),
           readOnlyLinkIds
         )
+      }
+      if (questionnaireConfig.type.isEditMode()) {
+        item.prepareQuestionsForEditing(QUESTIONNAIRE_RESPONSE_ITEM, readOnlyLinkIds)
       }
       // prepopulate questionnaireItems with initial values
       prePopulationParams?.takeIf { it.isNotEmpty() }?.let { nonEmptyParams ->
@@ -273,12 +277,14 @@ constructor(
             else if (bundleEntry.resource.resourceType.isIn(ResourceType.List)) {
               // No need to update List resource subject to the questionnaire subject
               // only need to change location reference as in entry.item-reference
-              val lastLocationRes =
-                bundle.entry
-                  .first { item -> item.resource.resourceType.isIn(ResourceType.Group) }
-                  .resource
-              (bundleEntry.resource as ListResource).entry[0].item.reference =
-                (lastLocationRes as Group).referenceValue()
+              if (!bundle.entry.first().hasResource()) {
+                val lastLocationRes =
+                  bundle.entry
+                    .first { item -> item.resource.resourceType.isIn(ResourceType.Group) }
+                    .resource
+                (bundleEntry.resource as ListResource).entry[0].item.reference =
+                  (lastLocationRes as Group).referenceValue()
+              }
             } else {
               bundleEntry.resource.setPropertySafely("subject", questionnaireResponse.subject)
               bundleEntry.resource.setPropertySafely("patient", questionnaireResponse.subject)
