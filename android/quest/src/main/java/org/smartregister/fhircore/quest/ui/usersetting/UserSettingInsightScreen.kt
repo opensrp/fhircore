@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -73,7 +74,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
-const val INSIGHT_UNSYNCED_DATA = "insightUnsynceData"
+const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -145,6 +146,8 @@ fun UserSettingInsightScreen(
         item {
           Row(
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
           ) {
             Text(
               text = stringResource(id = R.string.all_resources_synced),
@@ -156,6 +159,7 @@ fun UserSettingInsightScreen(
               imageVector = Icons.Default.Check,
               contentDescription = null,
               tint = Color.Green,
+              modifier = Modifier.size(32.dp),
             )
           }
         }
