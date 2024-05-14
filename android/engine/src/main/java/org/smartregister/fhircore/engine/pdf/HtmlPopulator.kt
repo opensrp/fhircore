@@ -1,7 +1,7 @@
 package org.smartregister.fhircore.engine.pdf
 
+import com.google.android.fhir.datacapture.extensions.allItems
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.smartregister.fhircore.engine.util.extension.allItems
 import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.valueToString
 
