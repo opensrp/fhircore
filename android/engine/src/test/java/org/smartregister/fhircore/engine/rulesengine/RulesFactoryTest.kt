@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -76,6 +77,8 @@ class RulesFactoryTest : RobolectricTest() {
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var locationService: LocationService
   private val rulesEngine = mockk<DefaultRulesEngine>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
@@ -92,6 +95,7 @@ class RulesFactoryTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
           dispatcherProvider = dispatcherProvider,
+          locationService = locationService,
         ),
       )
     rulesEngineService = rulesFactory.RulesEngineService()
