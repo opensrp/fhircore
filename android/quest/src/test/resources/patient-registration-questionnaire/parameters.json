@@ -1,0 +1,782 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "subject",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "c76a773b-fea7-4e98-a402-de42eb250e0a",
+        "meta": {
+          "lastUpdated": "2024-04-25T16:21:47.346+07:00",
+          "tag": [
+            {
+              "system": "https://smartregister.org/related-entity-location-tag-id",
+              "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+              "display": "Related Entity Location"
+            },
+            {
+              "system": "https://smartregister.org/care-team-tag-id",
+              "code": "ff483a20-391a-4928-8892-461b48353123",
+              "display": "Practitioner CareTeam"
+            },
+            {
+              "system": "https://smartregister.org/location-tag-id",
+              "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+              "display": "Practitioner Location"
+            },
+            {
+              "system": "https://smartregister.org/organisation-tag-id",
+              "code": "0ccdf2b1-96f8-4aa1-981e-783fdfb5f536",
+              "display": "Practitioner Organization"
+            },
+            {
+              "system": "https://smartregister.org/practitioner-tag-id",
+              "code": "685f285a-4a89-4cae-889e-f41c6e249d9b",
+              "display": "Practitioner"
+            },
+            {
+              "system": "https://smartregister.org/app-version",
+              "code": "1.1.0-sidBunda",
+              "display": "Application Version"
+            }
+          ]
+        },
+        "identifier": [
+          {
+            "use": "secondary",
+            "period": {
+              "start": "2024-04-25T16:21:46+07:00"
+            }
+          },
+          {
+            "use": "usual",
+            "value": "ab4a2bde-9721-48e2-82b0-a7c74c603708",
+            "period": {
+              "start": "2024-04-25T16:21:46+07:00"
+            }
+          },
+          {
+            "use": "official",
+            "value": "1111111111111111",
+            "period": {
+              "start": "2024-04-25T16:21:46+07:00"
+            }
+          },
+          {
+            "use": "secondary",
+            "period": {
+              "start": "2024-04-25T16:21:46+07:00"
+            }
+          },
+          {
+            "use": "secondary",
+            "period": {
+              "start": "2024-04-25T16:21:46+07:00"
+            }
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "text": "Last",
+            "family": "Hey"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "2020-04-25",
+        "address": [
+          {
+            "use": "home",
+            "type": "physical",
+            "district": "Home"
+          }
+        ],
+        "generalPractitioner": [
+          {
+            "reference": "Practitioner/685f285a-4a89-4cae-889e-f41c6e249d9b"
+          }
+        ],
+        "managingOrganization": {
+          "reference": "Organization/0ccdf2b1-96f8-4aa1-981e-783fdfb5f536"
+        }
+      }
+    },
+    {
+      "name": "definition",
+      "resource": {
+        "resourceType": "ActivityDefinition",
+        "id": "#careplan-ecd-growth-deviation-task-activity",
+        "title": "Growth Deviation",
+        "status": "active",
+        "description": "This action will generate tasks for Early Childhood tasks for babies ages between 3 to 60 months after child birth",
+        "usage": "Questionnaire/123456",
+        "kind": "Task",
+        "code": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "449233006",
+              "display": "KPME"
+            }
+          ],
+          "text": "KPME"
+        },
+        "dosage": [
+          {
+            "sequence": 0,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 33,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 1,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 36,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 2,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 39,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 3,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 42,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 4,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 45,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 5,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 48,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 6,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 51,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 7,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 54,
+                "periodUnit": "mo"
+              }
+            }
+          },
+          {
+            "sequence": 8,
+            "timing": {
+              "repeat": {
+                "count": 1,
+                "duration": 3,
+                "durationUnit": "mo",
+                "period": 57,
+                "periodUnit": "mo"
+              }
+            }
+          }
+        ],
+        "productCodeableConcept": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "111164006",
+              "display": "Growth Deviation"
+            }
+          ],
+          "text": "Growth Deviation"
+        }
+      }
+    },
+    {
+      "name": "depends-on",
+      "resource": {
+        "resourceType": "Bundle",
+        "id": "b178124d-08e2-4db7-a912-42a7f9113b53",
+        "type": "collection",
+        "entry": [
+          {
+            "resource": {
+              "resourceType": "Patient",
+              "id": "c76a773b-fea7-4e98-a402-de42eb250e0a",
+              "meta": {
+                "lastUpdated": "2024-04-25T16:21:47.346+07:00",
+                "tag": [
+                  {
+                    "system": "https://smartregister.org/related-entity-location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Related Entity Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/care-team-tag-id",
+                    "code": "ff483a20-391a-4928-8892-461b48353123",
+                    "display": "Practitioner CareTeam"
+                  },
+                  {
+                    "system": "https://smartregister.org/location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Practitioner Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/organisation-tag-id",
+                    "code": "0ccdf2b1-96f8-4aa1-981e-783fdfb5f536",
+                    "display": "Practitioner Organization"
+                  },
+                  {
+                    "system": "https://smartregister.org/practitioner-tag-id",
+                    "code": "685f285a-4a89-4cae-889e-f41c6e249d9b",
+                    "display": "Practitioner"
+                  },
+                  {
+                    "system": "https://smartregister.org/app-version",
+                    "code": "1.1.0-sidBunda",
+                    "display": "Application Version"
+                  }
+                ]
+              },
+              "identifier": [
+                {
+                  "use": "secondary",
+                  "period": {
+                    "start": "2024-04-25T16:21:46+07:00"
+                  }
+                },
+                {
+                  "use": "usual",
+                  "value": "ab4a2bde-9721-48e2-82b0-a7c74c603708",
+                  "period": {
+                    "start": "2024-04-25T16:21:46+07:00"
+                  }
+                },
+                {
+                  "use": "official",
+                  "value": "1111111111111111",
+                  "period": {
+                    "start": "2024-04-25T16:21:46+07:00"
+                  }
+                },
+                {
+                  "use": "secondary",
+                  "period": {
+                    "start": "2024-04-25T16:21:46+07:00"
+                  }
+                },
+                {
+                  "use": "secondary",
+                  "period": {
+                    "start": "2024-04-25T16:21:46+07:00"
+                  }
+                }
+              ],
+              "active": true,
+              "name": [
+                {
+                  "use": "official",
+                  "text": "Last",
+                  "family": "Hey"
+                }
+              ],
+              "gender": "female",
+              "birthDate": "2020-04-25",
+              "address": [
+                {
+                  "use": "home",
+                  "type": "physical",
+                  "district": "Home"
+                }
+              ],
+              "generalPractitioner": [
+                {
+                  "reference": "Practitioner/685f285a-4a89-4cae-889e-f41c6e249d9b"
+                }
+              ],
+              "managingOrganization": {
+                "reference": "Organization/0ccdf2b1-96f8-4aa1-981e-783fdfb5f536"
+              }
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "Encounter",
+              "id": "e293338f-c5f2-448e-8897-47f45323802c",
+              "meta": {
+                "lastUpdated": "2024-04-25T16:21:47.668+07:00",
+                "tag": [
+                  {
+                    "system": "https://smartregister.org/related-entity-location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Related Entity Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/care-team-tag-id",
+                    "code": "ff483a20-391a-4928-8892-461b48353123",
+                    "display": "Practitioner CareTeam"
+                  },
+                  {
+                    "system": "https://smartregister.org/location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Practitioner Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/organisation-tag-id",
+                    "code": "0ccdf2b1-96f8-4aa1-981e-783fdfb5f536",
+                    "display": "Practitioner Organization"
+                  },
+                  {
+                    "system": "https://smartregister.org/practitioner-tag-id",
+                    "code": "685f285a-4a89-4cae-889e-f41c6e249d9b",
+                    "display": "Practitioner"
+                  },
+                  {
+                    "system": "https://smartregister.org/app-version",
+                    "code": "1.1.0-sidBunda",
+                    "display": "Application Version"
+                  }
+                ]
+              },
+              "status": "finished",
+              "class": {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                "code": "HH"
+              },
+              "type": [
+                {
+                  "coding": [
+                    {
+                      "system": "http://snomed.info/sct",
+                      "code": "184048005",
+                      "display": "Registration"
+                    }
+                  ],
+                  "text": "Registration"
+                }
+              ],
+              "priority": {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/ValueSet/v3-ActPriority",
+                    "code": "EL",
+                    "display": "elective"
+                  }
+                ],
+                "text": "elective"
+              },
+              "subject": {
+                "reference": "Patient/c76a773b-fea7-4e98-a402-de42eb250e0a"
+              },
+              "participant": [
+                {
+                  "individual": {
+                    "reference": "Practitioner/685f285a-4a89-4cae-889e-f41c6e249d9b"
+                  }
+                }
+              ],
+              "period": {
+                "start": "2024-04-25T16:21:47+07:00",
+                "end": "2024-04-25T16:21:47+07:00"
+              },
+              "reasonCode": [
+                {
+                  "coding": [
+                    {
+                      "system": "http://smartregsiter.org/",
+                      "code": "patient_registration",
+                      "display": "Patient Registration"
+                    }
+                  ],
+                  "text": "Patient Registration"
+                }
+              ],
+              "serviceProvider": {
+                "reference": "Organization/0ccdf2b1-96f8-4aa1-981e-783fdfb5f536"
+              }
+            }
+          },
+          {
+            "resource": {
+              "resourceType": "QuestionnaireResponse",
+              "id": "5e89564b-b87d-4217-ad12-4d1bd4e5edc6",
+              "meta": {
+                "lastUpdated": "2024-04-25T16:21:47.750+07:00",
+                "tag": [
+                  {
+                    "system": "urn:oid:2.16.578.1.12.4.1.1.8655",
+                    "display": "Patient Registration",
+                    "_display": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                          "extension": [
+                            {
+                              "url": "lang",
+                              "valueCode": "id"
+                            },
+                            {
+                              "url": "content",
+                              "valueString": "Pendaftaran Pasien"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "system": "https://smartregister.org/related-entity-location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Related Entity Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/care-team-tag-id",
+                    "code": "ff483a20-391a-4928-8892-461b48353123",
+                    "display": "Practitioner CareTeam"
+                  },
+                  {
+                    "system": "https://smartregister.org/location-tag-id",
+                    "code": "30f3bcd9-4f44-42f2-b81c-d7d0588b3d6a",
+                    "display": "Practitioner Location"
+                  },
+                  {
+                    "system": "https://smartregister.org/organisation-tag-id",
+                    "code": "0ccdf2b1-96f8-4aa1-981e-783fdfb5f536",
+                    "display": "Practitioner Organization"
+                  },
+                  {
+                    "system": "https://smartregister.org/practitioner-tag-id",
+                    "code": "685f285a-4a89-4cae-889e-f41c6e249d9b",
+                    "display": "Practitioner"
+                  },
+                  {
+                    "system": "https://smartregister.org/app-version",
+                    "code": "1.1.0-sidBunda",
+                    "display": "Application Version"
+                  }
+                ]
+              },
+              "contained": [
+                {
+                  "resourceType": "List",
+                  "id": "3725fc21-5fd6-4eaf-9a6f-500506c4491d",
+                  "status": "current",
+                  "mode": "working",
+                  "title": "GeneratedResourcesList",
+                  "date": "2024-04-25T16:21:47+07:00",
+                  "entry": [
+                    {
+                      "deleted": false,
+                      "date": "2024-04-25T16:21:47+07:00",
+                      "item": {
+                        "reference": "Patient/c76a773b-fea7-4e98-a402-de42eb250e0a"
+                      }
+                    },
+                    {
+                      "deleted": false,
+                      "date": "2024-04-25T16:21:47+07:00",
+                      "item": {
+                        "reference": "Encounter/e293338f-c5f2-448e-8897-47f45323802c"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "questionnaire": "Questionnaire/e5155788-8831-4916-a3f5-486915ce34b211",
+              "status": "completed",
+              "subject": {
+                "reference": "Patient/c76a773b-fea7-4e98-a402-de42eb250e0a"
+              },
+              "authored": "2024-04-25T16:21:46+07:00",
+              "author": {
+                "reference": "Practitioner/685f285a-4a89-4cae-889e-f41c6e249d9b"
+              },
+              "item": [
+                {
+                  "linkId": "82a80049-8d2d-4008-81aa-55356b9d6628",
+                  "text": "NIK number",
+                  "answer": [
+                    {
+                      "valueString": "1111111111111111"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "6acb0d21-98f3-4c26-8479-8a9ed30200d0",
+                  "text": "Verify NIK number",
+                  "answer": [
+                    {
+                      "valueString": "1111111111111111"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "e6306275-b989-4375-8527-3a56092081b8",
+                  "text": "First Name",
+                  "answer": [
+                    {
+                      "valueString": "Hey"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "8fb87910-d900-4eea-dbba-dcf76ee6806d",
+                  "text": "Last Name",
+                  "answer": [
+                    {
+                      "valueString": "Last"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "597f4425-72b3-4bc4-8f38-b742aa3e99cd",
+                  "text": "Nickname"
+                },
+                {
+                  "linkId": "36d39dbe-00e2-4e29-f079-3ec8f0119aff",
+                  "answer": [
+                    {
+                      "valueCoding": {
+                        "system": "urn:uuid:d2f70cf6-9320-4f5c-ce52-02f67f2a99e2",
+                        "code": "date-of-birth-unknown",
+                        "display": "Date of Birth Unknown",
+                        "_display": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                              "extension": [
+                                {
+                                  "url": "lang",
+                                  "valueCode": "id"
+                                },
+                                {
+                                  "url": "content",
+                                  "valueString": "Tangal Lahir tidak diketahui"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
+                  "text": "Age",
+                  "answer": [
+                    {
+                      "valueInteger": 4
+                    }
+                  ]
+                },
+                {
+                  "linkId": "age",
+                  "text": "Age",
+                  "answer": [
+                    {
+                      "valueInteger": 4
+                    }
+                  ]
+                },
+                {
+                  "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
+                  "text": "Sex",
+                  "answer": [
+                    {
+                      "valueCoding": {
+                        "system": "http://hl7.org/fhir/administrative-gender",
+                        "code": "female",
+                        "display": "Female",
+                        "_display": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                              "extension": [
+                                {
+                                  "url": "lang",
+                                  "valueCode": "id"
+                                },
+                                {
+                                  "url": "content",
+                                  "valueString": "Perempuan"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "calculated-year",
+                  "text": "calculated year"
+                },
+                {
+                  "linkId": "3d453a4e-8548-468f-81b7-e5451abe1106",
+                  "text": "Does the child have a mother/guardian?",
+                  "answer": [
+                    {
+                      "valueCoding": {
+                        "id": "1f407a2c-fa05-43ff-c44f-64f08068107e",
+                        "system": "urn:uuid:6bf5b563-47c1-4146-8a9a-492b2d29b8a4",
+                        "code": "no",
+                        "display": "No",
+                        "_display": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                              "extension": [
+                                {
+                                  "url": "lang",
+                                  "valueCode": "id"
+                                },
+                                {
+                                  "url": "content",
+                                  "valueString": "Tidak"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "bad3d9f7-00c1-4606-d10b-b400c71f0bca",
+                  "text": "National Insurance number"
+                },
+                {
+                  "linkId": "fef9e49a-3501-41c6-9e9e-b57af9c32e23",
+                  "text": "Verify National Insurance number"
+                },
+                {
+                  "linkId": "1b87fbf5-1330-4e65-8364-10cbf7c0a3e3",
+                  "text": "Current Home Address",
+                  "answer": [
+                    {
+                      "valueString": "Home"
+                    }
+                  ]
+                },
+                {
+                  "linkId": "toggle-is-family-head",
+                  "text": "isFamilyHeadExists",
+                  "answer": [
+                    {
+                      "valueInteger": 1
+                    }
+                  ]
+                },
+                {
+                  "linkId": "d02e3a9e-ede2-4cd5-9c98-cc5824c06ac4",
+                  "text": "Is the child's father alive?",
+                  "answer": [
+                    {
+                      "valueCoding": {
+                        "id": "e8c4e406-61da-40c8-8ca2-8996b4280ef6",
+                        "system": "urn:uuid:a0c601e3-b8e0-49ed-82b0-1579c1c53dfd",
+                        "code": "no",
+                        "display": "No",
+                        "_display": {
+                          "extension": [
+                            {
+                              "url": "http://hl7.org/fhir/StructureDefinition/translation",
+                              "extension": [
+                                {
+                                  "url": "lang",
+                                  "valueCode": "id"
+                                },
+                                {
+                                  "url": "content",
+                                  "valueString": "Tidak"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "linkId": "household-id",
+                  "answer": [
+                    {
+                      "valueString": "5c37f647-676d-423a-9312-9dfb6b852d10"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "period",
+      "valuePeriod": {
+        "start": "2024-05-25T16:21:47+07:00",
+        "end": "2024-06-25T16:21:47+07:00"
+      }
+    },
+    {
+      "name": "version",
+      "valueInteger": 0
+    }
+  ]
+}
