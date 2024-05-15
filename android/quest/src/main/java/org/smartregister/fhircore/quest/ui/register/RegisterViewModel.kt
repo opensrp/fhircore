@@ -364,7 +364,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
