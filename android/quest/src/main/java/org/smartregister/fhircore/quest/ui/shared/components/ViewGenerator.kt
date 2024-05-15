@@ -31,7 +31,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -125,18 +125,18 @@ fun GenerateView(
                 }
               },
             modifier =
-            modifier
-              .padding(properties.padding.dp)
-              .conditional(
-                properties.clickable.toBoolean(),
-                {
-                  clickable {
-                    (properties as RowProperties)
-                      .actions
-                      .handleClickEvent(navController, resourceData)
-                  }
-                },
-              ),
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties)
+                        .actions
+                        .handleClickEvent(navController, resourceData)
+                    }
+                  },
+                ),
             verticalArrangement =
               if (isWeighted) {
                 Arrangement.spacedBy(properties.spacedBy.dp)
@@ -200,18 +200,18 @@ fun GenerateView(
                 }
               },
             modifier =
-            modifier
-              .padding(properties.padding.dp)
-              .conditional(
-                properties.clickable.toBoolean(),
-                {
-                  clickable {
-                    (properties as RowProperties)
-                      .actions
-                      .handleClickEvent(navController, resourceData)
-                  }
-                },
-              ),
+              modifier
+                .padding(properties.padding.dp)
+                .conditional(
+                  properties.clickable.toBoolean(),
+                  {
+                    clickable {
+                      (properties as RowProperties)
+                        .actions
+                        .handleClickEvent(navController, resourceData)
+                    }
+                  },
+                ),
             horizontalArrangement =
               if (isWeighted) {
                 Arrangement.spacedBy(properties.spacedBy.dp)
@@ -270,11 +270,11 @@ fun GenerateView(
           navController = navController,
         )
       ViewType.STACK ->
-        StackViewTest(
+        StackView(
           modifier = modifier,
           stackViewProperties = properties as StackViewProperties,
           resourceData = resourceData,
-          navController = navController
+          navController = navController,
         )
     }
   }
@@ -323,8 +323,7 @@ fun generateModifier(viewProperties: ViewProperties): Modifier =
 @SuppressLint("ComposableModifierFactory", "ModifierFactoryExtensionFunction")
 @Composable
 private fun Modifier.applyCommonProperties(viewProperties: ViewProperties): Modifier =
-  this
-    .conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
+  this.conditional(viewProperties.fillMaxWidth, { fillMaxWidth() })
     .conditional(viewProperties.fillMaxHeight, { fillMaxHeight() })
     .background(viewProperties.backgroundColor.parseColor())
     .clip(RoundedCornerShape(viewProperties.borderRadius.dp))

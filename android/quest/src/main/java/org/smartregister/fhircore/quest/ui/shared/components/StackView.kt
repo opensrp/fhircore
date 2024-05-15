@@ -19,13 +19,9 @@ package org.smartregister.fhircore.quest.ui.shared.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -34,48 +30,27 @@ import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
-import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.parseColor
 
 @Composable
-fun ComposeLayouts() {
-  Box(
-    Modifier
-      .background(Color.Green.copy(alpha = 0.2f))
-      .size(250.dp)
-  ) {
-    Text("Center", Modifier.align(Alignment.Center))
-    Text("Top Start", Modifier.align(Alignment.TopStart))
-    Text("Top End", Modifier.align(Alignment.TopEnd))
-    Text("Bottom Start", Modifier.align(Alignment.BottomStart))
-    Text("Bottom End", Modifier.align(Alignment.BottomEnd))
-  }
-}
-@Composable
-fun StackViewTest(
+fun StackView(
   modifier: Modifier,
   stackViewProperties: StackViewProperties,
   resourceData: ResourceData,
-  navController: NavController
+  navController: NavController,
 ) {
   val backgroundColor = stackViewProperties.backgroundColor.parseColor()
   val size = stackViewProperties.size
 
   Box(
-//    modifier
-//      .background(
-//        stackViewProperties.backgroundColor
-//          ?.interpolate(resourceData.computedValuesMap)
-//          .parseColor().copy(alpha = stackViewProperties.opacity),
-//      )
-    modifier = Modifier
-      .background(backgroundColor.copy(alpha = stackViewProperties.opacity))
-      .size(size!!.dp),
+    modifier =
+      Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
+        .size(size!!.dp),
+    contentAlignment = castViewAlignment(stackViewProperties.alignment),
   ) {
     stackViewProperties.children.forEach { child ->
       GenerateView(
-        modifier = modifier
-          .align(determineAlignment(child.alignment)),
+        modifier = generateModifier(viewProperties = child),
         properties = child,
         resourceData = resourceData,
         navController = navController,
@@ -84,13 +59,15 @@ fun StackViewTest(
   }
 }
 
-fun determineAlignment(viewAlignment: ViewAlignment) : Alignment{
+fun castViewAlignment(
+  viewAlignment: ViewAlignment,
+): Alignment {
   return when (viewAlignment) {
-    ViewAlignment.TOPSTART-> Alignment.TopStart
+    ViewAlignment.TOPSTART -> Alignment.TopStart
     ViewAlignment.TOPEND -> Alignment.TopEnd
     ViewAlignment.CENTER -> Alignment.Center
-    ViewAlignment.BOTTOMSTART-> Alignment.BottomStart
-    ViewAlignment.BOTTOMEND-> Alignment.BottomEnd
+    ViewAlignment.BOTTOMSTART -> Alignment.BottomStart
+    ViewAlignment.BOTTOMEND -> Alignment.BottomEnd
     else -> {
       Alignment.Center
     }
@@ -100,20 +77,20 @@ fun determineAlignment(viewAlignment: ViewAlignment) : Alignment{
 @PreviewWithBackgroundExcludeGenerated
 @Composable
 private fun PreviewStack() {
-
-  StackViewTest(
-    stackViewProperties = StackViewProperties(
-      opacity = 0.2f,
-      size = 250,
-      backgroundColor = "successColor"
-    ),
+  StackView(
+    stackViewProperties =
+      StackViewProperties(
+        opacity = 0.2f,
+        size = 250,
+        backgroundColor = "successColor",
+      ),
     modifier = Modifier,
     navController = rememberNavController(),
     resourceData =
-    ResourceData(
-      baseResourceId = "baseId",
-      baseResourceType = ResourceType.Patient,
-      computedValuesMap = emptyMap(),
-    ),
+      ResourceData(
+        baseResourceId = "baseId",
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = emptyMap(),
+      ),
   )
 }
