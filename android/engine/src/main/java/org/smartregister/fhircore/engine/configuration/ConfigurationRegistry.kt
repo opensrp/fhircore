@@ -318,22 +318,24 @@ constructor(
           )
         ) {
           val configJson = context.assets.open(fileName).bufferedReader().readText()
-          val configKey =
-            when {
-              configJson.isNotEmpty() &&
-                configJson.contains(RESOURCE_TYPE) &&
-                configJson.decodeResourceFromString<Resource>().resourceType.name in LOCAL_RESOURCES_TO_LOAD ->
-                configJson.decodeResourceFromString<Resource>().id.extractLogicalIdUuid()
-              else ->
-                fileName
-                  .lowercase(Locale.ENGLISH)
-                  .substring(
-                    fileName.indexOfLast { it == '/' }.plus(1),
-                    fileName.lastIndexOf(CONFIG_SUFFIX),
-                  )
-                  .camelCase()
-            }
-          configsJsonMap[configKey] = configJson
+          if (
+            configJson.isNotEmpty() &&
+              configJson.contains(RESOURCE_TYPE) &&
+              configJson.decodeResourceFromString<Resource>().resourceType.name in
+                LOCAL_RESOURCES_TO_LOAD
+          ) {
+            configJson.decodeResourceFromString<Resource>().also { addOrUpdate(it) }
+          } else {
+            val configKey =
+              fileName
+                .lowercase(Locale.ENGLISH)
+                .substring(
+                  fileName.indexOfLast { it == '/' }.plus(1),
+                  fileName.lastIndexOf(CONFIG_SUFFIX),
+                )
+                .camelCase()
+            configsJsonMap[configKey] = configJson
+          }
         }
       }
     } else {
@@ -816,15 +818,6 @@ constructor(
       resourceTypes.distinctBy { it.name },
     )
 
-  inline fun <reified T : Resource> retrieveResourceFromConfigMap(resourceId: String): T? {
-    val loadedResource = configsJsonMap.getOrDefault(resourceId, null)
-    return if (loadedResource != null) {
-      loadedResource.decodeResourceFromString() as T
-    } else {
-      null
-    }
-  }
-
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
@@ -846,7 +839,7 @@ constructor(
       listOf(
         ResourceType.Questionnaire.name,
         ResourceType.StructureMap.name,
-        ResourceType.PlanDefinition.name
+        ResourceType.PlanDefinition.name,
       )
 
     /**

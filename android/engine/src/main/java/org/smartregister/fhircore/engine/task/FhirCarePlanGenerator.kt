@@ -61,7 +61,6 @@ import org.smartregister.fhircore.engine.configuration.event.EventType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.addResourceParameter
-import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractFhirpathDuration
@@ -97,12 +96,7 @@ constructor(
     data: Bundle = Bundle(),
     generateCarePlanWithWorkflowApi: Boolean = false,
   ): CarePlan? {
-    val planDefinition =
-      if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
-        configurationRegistry.retrieveResourceFromConfigMap<PlanDefinition>(
-          resourceId = planDefinitionId,
-        )
-      } else defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
+    val planDefinition = defaultRepository.loadResource<PlanDefinition>(planDefinitionId)
     return planDefinition?.let {
       generateOrUpdateCarePlan(
         planDefinition = it,
@@ -205,12 +199,7 @@ constructor(
             source.setParameter(Task.SP_PERIOD, period)
             source.setParameter(ActivityDefinition.SP_VERSION, IntegerType(index))
 
-            val structureMap =
-              if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
-                configurationRegistry.retrieveResourceFromConfigMap<StructureMap>(
-                  resourceId = IdType(action.transform).idPart,
-                )
-              } else fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
+            val structureMap = fhirEngine.get<StructureMap>(IdType(action.transform).idPart)
             structureMapUtilities.transform(
               transformSupportServices.simpleWorkerContext,
               source,
