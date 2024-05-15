@@ -347,7 +347,7 @@ abstract class TracingRegisterDao(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display },
+            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }.distinct(),
           ),
       )
     }
@@ -467,7 +467,7 @@ abstract class TracingRegisterDao(
       attempts = attempt.numberOfAttempts,
       lastAttemptDate = attempt.lastAttempt,
       firstAdded = oldestTaskDate,
-      reasons = attempt.reasons,
+      reasons = attempt.reasons.distinct(),
     )
   }
 
