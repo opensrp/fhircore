@@ -76,6 +76,7 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
   companion object Keys {
     val APP_ID by lazy { stringPreferencesKey("appId") }
     val LANG by lazy { stringPreferencesKey("lang") }
+    val SYNC_LOCATION_IDS by lazy { stringPreferencesKey("syncLocationIds") }
     val MIGRATION_VERSION by lazy { intPreferencesKey("migrationVersion") }
     val LAST_SYNC_TIMESTAMP by lazy { stringPreferencesKey("lastSyncTimestamp") }
     val PRACTITIONER_ID by lazy { stringPreferencesKey("practitionerId") }

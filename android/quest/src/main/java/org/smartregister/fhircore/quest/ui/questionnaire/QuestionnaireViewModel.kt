@@ -36,6 +36,7 @@ import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
+import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.SupervisorJob
@@ -53,6 +54,7 @@ import org.hl7.fhir.r4.model.ListResource.ListEntryComponent
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComponent
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -80,7 +82,9 @@ import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -88,6 +92,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
+import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
@@ -163,6 +168,10 @@ constructor(
                   ?.filter { it.type == LinkIdType.READ_ONLY }
                   ?.map { it.linkId },
           )
+        }
+
+        if (questionnaireConfig.isEditable()) {
+          item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
         }
 
         // Pre-populate questionnaire items with configured values
@@ -828,7 +837,7 @@ constructor(
    * This function triggers removal of [Resource] s as per the [QuestionnaireConfig.groupResource]
    * or [QuestionnaireConfig.removeResource] config properties.
    */
-  fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
+  suspend fun softDeleteResources(questionnaireConfig: QuestionnaireConfig) {
     if (questionnaireConfig.groupResource != null) {
       removeGroup(
         groupId = questionnaireConfig.groupResource!!.groupIdentifier,
@@ -858,40 +867,40 @@ constructor(
     }
   }
 
-  private fun removeGroup(groupId: String, removeGroup: Boolean, deactivateMembers: Boolean) {
+  private suspend fun removeGroup(
+    groupId: String,
+    removeGroup: Boolean,
+    deactivateMembers: Boolean,
+  ) {
     if (removeGroup) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroup(
-            groupId = groupId,
-            isDeactivateMembers = deactivateMembers,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroup(
+          groupId = groupId,
+          isDeactivateMembers = deactivateMembers,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
 
-  private fun removeGroupMember(
+  private suspend fun removeGroupMember(
     memberId: String?,
     groupIdentifier: String?,
     memberResourceType: ResourceType?,
     removeMember: Boolean,
   ) {
     if (removeMember && !memberId.isNullOrEmpty()) {
-      viewModelScope.launch(dispatcherProvider.io()) {
-        try {
-          defaultRepository.removeGroupMember(
-            memberId = memberId,
-            groupId = groupIdentifier,
-            groupMemberResourceType = memberResourceType,
-            configComputedRuleValues = emptyMap(),
-          )
-        } catch (exception: Exception) {
-          Timber.e(exception)
-        }
+      try {
+        defaultRepository.removeGroupMember(
+          memberId = memberId,
+          groupId = groupIdentifier,
+          groupMemberResourceType = memberResourceType,
+          configComputedRuleValues = emptyMap(),
+        )
+      } catch (exception: Exception) {
+        Timber.e(exception)
       }
     }
   }
@@ -916,6 +925,79 @@ constructor(
       }
     val questionnaireResponses: List<QuestionnaireResponse> = defaultRepository.search(search)
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
+  }
+
+  suspend fun launchContextResources(
+    subjectResourceType: ResourceType?,
+    subjectResourceIdentifier: String?,
+    actionParameters: List<ActionParameter>,
+  ): List<Resource> {
+    return when {
+      subjectResourceType != null && subjectResourceIdentifier != null ->
+        LinkedList<Resource>().apply {
+          loadResource(subjectResourceType, subjectResourceIdentifier)?.let { add(it) }
+          val actionParametersExcludingSubject =
+            actionParameters.filterNot {
+              it.paramType == ActionParameterType.QUESTIONNAIRE_RESPONSE_POPULATION_RESOURCE &&
+                subjectResourceType == it.resourceType &&
+                subjectResourceIdentifier.equals(it.value, ignoreCase = true)
+            }
+          addAll(retrievePopulationResources(actionParametersExcludingSubject))
+        }
+      else -> LinkedList(retrievePopulationResources(actionParameters))
+    }
+  }
+
+  suspend fun populateQuestionnaire(
+    questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>,
+  ): Pair<QuestionnaireResponse?, List<Resource>> {
+    val questionnaireSubjectType = questionnaire.subjectType.firstOrNull()?.code
+    val resourceType =
+      questionnaireConfig.resourceType ?: questionnaireSubjectType?.let { ResourceType.valueOf(it) }
+    val resourceIdentifier = questionnaireConfig.resourceIdentifier
+
+    val launchContextResources =
+      launchContextResources(resourceType, resourceIdentifier, actionParameters)
+
+    // Populate questionnaire with initial default values
+    ResourceMapper.populate(
+      questionnaire,
+      launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
+    )
+
+    // Populate questionnaire with latest QuestionnaireResponse
+    val questionnaireResponse =
+      if (
+        resourceType != null &&
+          !resourceIdentifier.isNullOrEmpty() &&
+          questionnaireConfig.isEditable()
+      ) {
+        searchLatestQuestionnaireResponse(
+            resourceId = resourceIdentifier,
+            resourceType = resourceType,
+            questionnaireId = questionnaire.logicalId,
+          )
+          ?.let {
+            QuestionnaireResponse().apply {
+              item = it.item.removeUnAnsweredItems()
+              // Clearing the text prompts the SDK to re-process the content, which includes HTML
+              clearText()
+            }
+          }
+      } else {
+        null
+      }
+
+    return Pair(questionnaireResponse, launchContextResources)
+  }
+
+  private fun List<QuestionnaireResponseItemComponent>.removeUnAnsweredItems():
+    List<QuestionnaireResponseItemComponent> {
+    return this.filter { it.hasAnswer() || it.item.isNotEmpty() }
+      .onEach { it.item = it.item.removeUnAnsweredItems() }
+      .filter { it.hasAnswer() || it.item.isNotEmpty() }
   }
 
   /**

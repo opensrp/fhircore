@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -91,6 +92,10 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -306,15 +311,18 @@ constructor(
     dataQueries?.map {
       val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
       it.filterCriteria.forEach { filterCriterionConfig ->
-        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
-        answerComponent?.answer?.forEach { itemAnswerComponent ->
-          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
-          if (criterion != null) newFilterCriteria.add(criterion)
+        if (!filterCriterionConfig.dataFilterLinkId.isNullOrEmpty()) {
+          val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+          answerComponent?.answer?.forEach { itemAnswerComponent ->
+            val criterion =
+              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+            if (criterion != null) newFilterCriteria.add(criterion)
+          }
+        } else {
+          newFilterCriteria.add(filterCriterionConfig)
         }
       }
-      it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
-      )
+      it.copy(filterCriteria = newFilterCriteria)
     }
 
   private fun convertAnswerToFilterCriterion(
@@ -356,7 +364,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
@@ -380,7 +388,7 @@ constructor(
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
           valueAsDateTime = true,
-          value = answerComponent.valueDecimalType.asStringValue(),
+          value = answerComponent.valueDateTimeType.asStringValue(),
         )
       }
       answerComponent.hasValueDateType() -> {
@@ -390,7 +398,7 @@ constructor(
           dataType = DataType.DATE,
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
-          valueAsDateTime = false,
+          valueAsDateTime = dateFilterCriterion.valueAsDateTime,
           value = answerComponent.valueDateType.asStringValue(),
         )
       }
@@ -451,7 +459,10 @@ constructor(
                   SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
                   null,
                 )
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+                .isNullOrEmpty() &&
+                _totalRecordsCount.longValue == 0L &&
+                // Do not show progress dialog if initial sync is disabled
+                applicationConfiguration.usePractitionerAssignedLocationOnSync,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,
