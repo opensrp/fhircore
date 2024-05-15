@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -31,6 +32,8 @@ import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.parseColor
+
+const val STACK_VIEW_TEST_TAG = "stackViewTestTag"
 
 @Composable
 fun StackView(
@@ -45,7 +48,8 @@ fun StackView(
   Box(
     modifier =
       Modifier.background(backgroundColor.copy(alpha = stackViewProperties.opacity))
-        .size(size!!.dp),
+        .size(size!!.dp)
+        .testTag(STACK_VIEW_TEST_TAG),
     contentAlignment = castViewAlignment(stackViewProperties.alignment),
   ) {
     stackViewProperties.children.forEach { child ->
