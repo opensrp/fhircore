@@ -21,6 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.model.Feature
@@ -37,7 +38,8 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     MutableStateFlow(setOf())
   val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
 
-  private fun addLocationToMap(feature: Feature) {
+  @VisibleForTesting
+  fun addLocationToMap(feature: Feature) {
     try {
       val jsonFeature =
         JSONObject().apply {

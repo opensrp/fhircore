@@ -90,8 +90,11 @@ class GeoWidgetFragment : Fragment() {
     set(value) {
       field = value
     }
-  private var geoJsonSource: GeoJsonSource? = null
-  private var featureCollection: FeatureCollection? = null
+  @VisibleForTesting
+  var geoJsonSource: GeoJsonSource? = null
+
+  @VisibleForTesting
+  var featureCollection: FeatureCollection? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -220,7 +223,8 @@ class GeoWidgetFragment : Fragment() {
 
   }
 
-  private fun setOnClickLocationListener(mapView: KujakuMapView) {
+  @VisibleForTesting
+  fun setOnClickLocationListener(mapView: KujakuMapView) {
     mapView.setOnFeatureClickListener(
       { featuresList ->
         val mapBoxFeature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
@@ -252,8 +256,8 @@ class GeoWidgetFragment : Fragment() {
       "quest-data-points",
     )
   }
-
-  private fun setOnAddLocationListener(mapView: KujakuMapView) {
+  @VisibleForTesting
+  fun setOnAddLocationListener(mapView: KujakuMapView) {
     mapView.addPoint(
       useGpsOnAddingLocation,
       object : AddPointCallback {
