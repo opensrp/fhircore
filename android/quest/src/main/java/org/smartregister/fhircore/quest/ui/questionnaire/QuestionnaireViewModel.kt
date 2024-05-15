@@ -59,6 +59,7 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -77,6 +78,7 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
+import org.smartregister.fhircore.engine.util.extension.appIdExistsAndIsNotNull
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -157,43 +159,51 @@ constructor(
       )
 
     val questionnaire =
-      defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-          item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.isReadOnly(),
-            readOnlyLinkIds =
-              questionnaireConfig.readOnlyLinkIds
-                ?: questionnaireConfig.linkIds
-                  ?.filter { it.type == LinkIdType.READ_ONLY }
-                  ?.map { it.linkId },
-          )
-        }
-
-        if (questionnaireConfig.isEditable()) {
-          item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
-        }
-
-        // Pre-populate questionnaire items with configured values
-        allActionParameters
-          ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
-          ?.let { actionParam ->
-            item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
+      if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
+        configurationRegistry.retrieveResourceFromConfigMap<Questionnaire>(
+          resourceId = questionnaireConfig.id,
+        )
+      } else {
+        defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
+          if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
+            item.prepareQuestionsForReadingOrEditing(
+              readOnly = questionnaireConfig.isReadOnly(),
+              readOnlyLinkIds =
+                questionnaireConfig.readOnlyLinkIds
+                  ?: questionnaireConfig.linkIds
+                    ?.filter { it.type == LinkIdType.READ_ONLY }
+                    ?.map { it.linkId },
+            )
           }
 
-        // Set barcode to the configured linkId default: "patient-barcode"
-        if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-          (questionnaireConfig.barcodeLinkId
-              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
-            ?.let { barcodeLinkId ->
-              find(barcodeLinkId)?.apply {
-                initial =
-                  mutableListOf(
-                    Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-                  ) // TODO should this be resource identifier or OpenSrp unique ID?
-                readOnly = true
-              }
+          if (questionnaireConfig.isEditable()) {
+            item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
+          }
+
+          // Pre-populate questionnaire items with configured values
+          allActionParameters
+            ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
+            ?.let { actionParam ->
+              item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
             }
+
+          // Set barcode to the configured linkId default: "patient-barcode"
+          if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+            (questionnaireConfig.barcodeLinkId
+                ?: questionnaireConfig.linkIds
+                  ?.firstOrNull { it.type == LinkIdType.BARCODE }
+                  ?.linkId)
+              ?.let { barcodeLinkId ->
+                find(barcodeLinkId)?.apply {
+                  initial =
+                    mutableListOf(
+                      Questionnaire.QuestionnaireItemInitialComponent()
+                        .setValue(StringType(questionnaireConfig.resourceIdentifier)),
+                    ) // TODO should this be resource identifier or OpenSrp unique ID?
+                  readOnly = true
+                }
+              }
+          }
         }
       }
     return questionnaire
@@ -565,7 +575,9 @@ constructor(
                 transformSupportServices = transformSupportServices,
                 structureMapProvider = { structureMapUrl: String?, _: IWorkerContext ->
                   structureMapUrl?.substringAfterLast("/")?.let {
-                    defaultRepository.loadResource(it)
+                    if (appIdExistsAndIsNotNull(sharedPreferencesHelper)) {
+                      configurationRegistry.retrieveResourceFromConfigMap<StructureMap>(it)
+                    } else defaultRepository.loadResource(it)
                   }
                 },
               ),
