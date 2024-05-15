@@ -53,10 +53,10 @@ import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.parcelableArrayList
 import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.engine.util.location.LocationUtils
+import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.databinding.QuestionnaireActivityBinding
-import org.smartregister.fhircore.quest.util.LocationUtils
-import org.smartregister.fhircore.quest.util.PermissionUtils
 import org.smartregister.fhircore.quest.util.ResourceUtils
 import timber.log.Timber
 
@@ -203,11 +203,9 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     lifecycleScope.launch {
       try {
         if (highAccuracy) {
-          currentLocation =
-            LocationUtils.getAccurateLocation(fusedLocationClient, dispatcherProvider.io())
+          currentLocation = LocationUtils.getAccurateLocation(fusedLocationClient)
         } else {
-          currentLocation =
-            LocationUtils.getApproximateLocation(fusedLocationClient, dispatcherProvider.io())
+          currentLocation = LocationUtils.getApproximateLocation(fusedLocationClient)
         }
       } catch (e: Exception) {
         Timber.e(e, "Failed to get GPS location for questionnaire: ${questionnaireConfig.id}")
@@ -226,6 +224,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private fun renderQuestionnaire() {
     lifecycleScope.launch {
+      var questionnaireFragment: QuestionnaireFragment? = null
       if (supportFragmentManager.findFragmentByTag(QUESTIONNAIRE_FRAGMENT_TAG) == null) {
         viewModel.setProgressState(QuestionnaireProgressState.QuestionnaireLaunch(true))
         with(viewBinding) {
@@ -236,19 +235,23 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
           questionnaireTitle.apply { text = questionnaireConfig.title }
           clearAll.apply {
             visibility = if (questionnaireConfig.showClearAll) View.VISIBLE else View.GONE
-            setOnClickListener {
-              // TODO Clear current QuestionnaireResponse items -> SDK
-            }
+            setOnClickListener { questionnaireFragment?.clearAllAnswers() }
           }
         }
 
         questionnaire = viewModel.retrieveQuestionnaire(questionnaireConfig, actionParameters)
 
         try {
-          val questionnaireFragmentBuilder = buildQuestionnaireFragment(questionnaire!!)
+          val questionnaireFragmentBuilder =
+            buildQuestionnaireFragment(
+              questionnaire = questionnaire!!,
+              questionnaireConfig = questionnaireConfig,
+            )
+
+          questionnaireFragment = questionnaireFragmentBuilder.build()
           supportFragmentManager.commit {
             setReorderingAllowed(true)
-            add(R.id.container, questionnaireFragmentBuilder.build(), QUESTIONNAIRE_FRAGMENT_TAG)
+            add(R.id.container, questionnaireFragment, QUESTIONNAIRE_FRAGMENT_TAG)
           }
 
           registerFragmentResultListener()
@@ -264,6 +267,7 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
 
   private suspend fun buildQuestionnaireFragment(
     questionnaire: Questionnaire,
+    questionnaireConfig: QuestionnaireConfig,
   ): QuestionnaireFragment.Builder {
     if (questionnaire.subjectType.isNullOrEmpty()) {
       val subjectRequiredMessage = getString(R.string.missing_subject_type)
@@ -273,15 +277,18 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     }
 
     val (questionnaireResponse, launchContextResources) =
-      viewModel.populateQuestionnaire(questionnaire, questionnaireConfig, actionParameters)
+      viewModel.populateQuestionnaire(questionnaire, this.questionnaireConfig, actionParameters)
 
     return QuestionnaireFragment.builder()
       .setQuestionnaire(questionnaire.json())
       .setCustomQuestionnaireItemViewHolderFactoryMatchersProvider(
         OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER,
       )
-      .showAsterisk(questionnaireConfig.showRequiredTextAsterisk)
-      .showRequiredText(questionnaireConfig.showRequiredText)
+      .setSubmitButtonText(
+        questionnaireConfig.saveButtonText ?: getString(R.string.submit_questionnaire),
+      )
+      .showAsterisk(this.questionnaireConfig.showRequiredTextAsterisk)
+      .showRequiredText(this.questionnaireConfig.showRequiredText)
       .apply {
         if (questionnaireResponse != null) {
           questionnaireResponse
@@ -397,7 +404,6 @@ class QuestionnaireActivity : BaseMultiLanguageActivity() {
     const val QUESTIONNAIRE_SUBMISSION_EXTRACTED_RESOURCE_IDS = "questionnaireExtractedResourceIds"
     const val QUESTIONNAIRE_RESPONSE = "questionnaireResponse"
     const val QUESTIONNAIRE_ACTION_PARAMETERS = "questionnaireActionParameters"
-    const val QUESTIONNAIRE_POPULATION_RESOURCES = "questionnairePopulationResources"
 
     fun intentBundle(
       questionnaireConfig: QuestionnaireConfig,

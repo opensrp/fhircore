@@ -335,7 +335,7 @@ private fun BigServiceButton(
   ) {
     if (status == ServiceStatus.COMPLETED.name) {
       Icon(
-        modifier = modifier.size(16.dp),
+        modifier = modifier.size(buttonProperties.statusIconSize.dp),
         imageVector = Icons.Filled.Check,
         contentDescription = null,
         tint =
