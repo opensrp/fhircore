@@ -324,7 +324,8 @@ constructor(
               configJson.decodeResourceFromString<Resource>().resourceType.name in
                 LOCAL_RESOURCES_TO_LOAD
           ) {
-            configJson.decodeResourceFromString<Resource>().also { addOrUpdate(it) }
+            val loadedResource = configJson.decodeResourceFromString<Resource>()
+            addOrUpdate(loadedResource)
           } else {
             val configKey =
               fileName
