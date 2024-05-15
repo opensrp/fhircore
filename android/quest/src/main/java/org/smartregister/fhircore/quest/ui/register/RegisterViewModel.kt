@@ -309,10 +309,15 @@ constructor(
     dataQueries?.map {
       val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
       it.filterCriteria.forEach { filterCriterionConfig ->
-        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
-        answerComponent?.answer?.forEach { itemAnswerComponent ->
-          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
-          if (criterion != null) newFilterCriteria.add(criterion)
+        if (!filterCriterionConfig.dataFilterLinkId.isNullOrEmpty()) {
+          val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+          answerComponent?.answer?.forEach { itemAnswerComponent ->
+            val criterion =
+              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+            if (criterion != null) newFilterCriteria.add(criterion)
+          }
+        } else {
+          newFilterCriteria.add(filterCriterionConfig)
         }
       }
       it.copy(
@@ -359,7 +364,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
