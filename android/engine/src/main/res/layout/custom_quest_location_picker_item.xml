@@ -55,13 +55,13 @@
             android:text="Describe Physical Locator" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/text_input_layout"
+            android:id="@+id/physical_locator_input_layout"
             style="?attr/questionnaireTextInputLayoutStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/text_input_edit_text"
+                android:id="@+id/physical_locator_edit_text"
                 style="?attr/questionnaireMultiLineTextInputEditTextStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

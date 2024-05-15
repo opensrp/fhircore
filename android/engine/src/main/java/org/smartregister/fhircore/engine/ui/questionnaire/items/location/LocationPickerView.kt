@@ -47,26 +47,28 @@ class LocationPickerView(
   private var rootLayout: LinearLayout? = null
   private val dropdownMap = mutableMapOf<String, AutoCompleteTextView>()
 
-  private var selectedHierarchy: LocationHierarchy? = null
+  private var selectedHierarchy: LocationData? = null
   private var physicalLocator: String? = null
 
   private var onLocationChanged: ((StringType?) -> Unit)? = null
 
   private var cardView: CardView? = null
-  private var locationText: TextView? = null
-  private var textInputLayout: TextInputLayout? = null
-  private var textInputEditText: TextInputEditText? = null
+  private var locationNameText: TextView? = null
+  private var physicalLocatorInputLayout: TextInputLayout? = null
+  private var physicalLocatorInputEditText: TextInputEditText? = null
   var headerView: HeaderView? = null
+
+  private var initialValue: String? = null
 
   init {
     cardView = itemView.findViewById(R.id.location_picker_view)
-    locationText = cardView?.findViewById(R.id.location)
+    locationNameText = cardView?.findViewById(R.id.location)
     headerView = itemView.findViewById(R.id.header)
-    textInputLayout = itemView.findViewById(R.id.text_input_layout)
-    textInputEditText = itemView.findViewById(R.id.text_input_edit_text)
+    physicalLocatorInputLayout = itemView.findViewById(R.id.physical_locator_input_layout)
+    physicalLocatorInputEditText = itemView.findViewById(R.id.physical_locator_edit_text)
 
     cardView?.setOnClickListener { showDropdownDialog() }
-    textInputEditText?.doAfterTextChanged { editable: Editable? ->
+    physicalLocatorInputEditText?.doAfterTextChanged { editable: Editable? ->
       lifecycleScope.launch {
         physicalLocator = editable.toString()
         onUpdate()
@@ -104,7 +106,7 @@ class LocationPickerView(
 
   private fun onLocationSelected() {
     onUpdate()
-    locationText?.text = selectedHierarchy?.name ?: "-"
+    locationNameText?.text = selectedHierarchy?.name ?: "-"
   }
 
   private fun onUpdate() {
@@ -168,11 +170,39 @@ class LocationPickerView(
         updateLocationData(selectedLocation.children)
       }
     } else if (selectedLocation != null) {
-      this.selectedHierarchy = selectedLocation
+      this.selectedHierarchy = LocationData.fromHierarchy(selectedLocation)
     }
   }
 
   fun setCustomDataProvider(customQuestItemDataProvider: CustomQuestItemDataProvider) {
     this.customQuestItemDataProvider = customQuestItemDataProvider
+  }
+
+  fun initLocation(initialAnswer: String?) {
+    if (initialAnswer != null && initialValue == null) {
+      val elements = initialAnswer.split("|")
+      val locationId = elements.getOrNull(0)
+      val locationName =
+        elements.getOrNull(1)?.let {
+          locationNameText?.text = it
+          it
+        }
+      elements.getOrNull(2)?.let {
+        physicalLocator = it
+        physicalLocatorInputEditText?.setText(it)
+      }
+      if (locationId != null && locationName != null) {
+        selectedHierarchy = LocationData(locationId, locationName)
+      }
+      initialValue = initialAnswer
+    }
+  }
+}
+
+data class LocationData(val identifier: String, val name: String) {
+  companion object {
+    fun fromHierarchy(location: LocationHierarchy): LocationData {
+      return LocationData(location.identifier, location.name)
+    }
   }
 }

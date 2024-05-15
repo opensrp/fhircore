@@ -27,6 +27,7 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.items.location.LocationPickerView
+import timber.log.Timber
 
 class LocationPickerViewHolderFactory(
   val customQuestItemDataProvider: CustomQuestItemDataProvider,
@@ -53,6 +54,9 @@ class LocationPickerViewHolderFactory(
             }
           }
         }
+        val initialAnswer = questionnaireViewItem.answers.singleOrNull()?.valueStringType
+        Timber.e(initialAnswer?.value ?: "Empty answer")
+        locationPickerView.initLocation(initialAnswer?.value)
       }
 
       override fun init(itemView: View) {
