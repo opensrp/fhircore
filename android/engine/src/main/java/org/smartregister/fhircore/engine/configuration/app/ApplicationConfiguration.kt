@@ -42,9 +42,7 @@ data class ApplicationConfiguration(
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
-  val usePractitionerAssignedLocationOnSync: Boolean =
-    true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
-  // location selector
+  val usePractitionerAssignedLocationOnSync: Boolean = true,
 ) : Configuration()
 
 enum class SyncStrategy {
