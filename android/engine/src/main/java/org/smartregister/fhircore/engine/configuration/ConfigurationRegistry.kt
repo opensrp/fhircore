@@ -306,37 +306,33 @@ constructor(
     configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (loadFromAssets) {
-      retrieveAssetConfigs(context, appId).forEach { fileName ->
+      retrieveConfigsAndResourceFromAssets(context, appId).first.forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
         // Use file name as the key. Conventionally navigation configs MUST end with
         // "_config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
-        if (
-          !fileName.equals(
-            String.format(COMPOSITION_CONFIG_PATH, appId),
-            ignoreCase = true,
-          )
-        ) {
+        if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
+          val configKey =
+            fileName
+              .lowercase(Locale.ENGLISH)
+              .substring(
+                fileName.indexOfLast { it == '/' }.plus(1),
+                fileName.lastIndexOf(CONFIG_SUFFIX),
+              )
+              .camelCase()
+
           val configJson = context.assets.open(fileName).bufferedReader().readText()
-          if (
-            configJson.isNotEmpty() &&
-              configJson.contains(RESOURCE_TYPE) &&
-              configJson.decodeResourceFromString<Resource>().resourceType.name in
-                LOCAL_RESOURCES_TO_LOAD
-          ) {
-            val loadedResource = configJson.decodeResourceFromString<Resource>()
-            addOrUpdate(loadedResource)
-          } else {
-            val configKey =
-              fileName
-                .lowercase(Locale.ENGLISH)
-                .substring(
-                  fileName.indexOfLast { it == '/' }.plus(1),
-                  fileName.lastIndexOf(CONFIG_SUFFIX),
-                )
-                .camelCase()
-            configsJsonMap[configKey] = configJson
-          }
+          configsJsonMap[configKey] = configJson
+        }
+      }
+      retrieveConfigsAndResourceFromAssets(context).second.forEach { resourceName ->
+        val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
+        if (
+          resourceJson.decodeResourceFromString<Resource>().resourceType.name in
+            LOCAL_RESOURCES_TO_LOAD
+        ) {
+          val loadedResource = resourceJson.decodeResourceFromString<Resource>()
+          addOrUpdate(loadedResource)
         }
       }
     } else {
@@ -366,18 +362,28 @@ constructor(
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
   /**
-   * Reads supported files from the asset/config directory recursively, populates all sub directory
-   * in a queue, then reads all the nested files for each.
+   * Reads supported files from the asset/config and assets/resources directory recursively,
+   * populates all sub directory in a queue, then reads all the nested files for each.
    *
    * @return A list of strings of config files.
    */
-  private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
+  private fun retrieveConfigsAndResourceFromAssets(
+    context: Context,
+    appId: String? = null,
+  ): Pair<MutableList<String>, MutableList<String>> {
     val filesQueue = LinkedList<String>()
+    val resourcesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
+    val resourceFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
       } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
+    }
+    context.assets.list(BASE_RESOURCES_PATH)?.onEach {
+      if (!supportedFileExtensions.contains(it.fileExtension)) {
+        resourcesQueue.addLast(String.format(BASE_RESOURCES_PATH) + "/$it")
+      } else resourceFiles.add(String.format(BASE_RESOURCES_PATH) + "/$it")
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
@@ -387,7 +393,15 @@ constructor(
         } else configFiles.add("$currentPath/$it")
       }
     }
-    return configFiles
+    while (resourcesQueue.isNotEmpty()) {
+      val currentResourceFilePath = resourcesQueue.removeFirst()
+      context.assets.list(currentResourceFilePath)?.onEach {
+        if (!supportedFileExtensions.contains(it.fileExtension)) {
+          resourcesQueue.addLast(String.format(currentResourceFilePath) + "/$it")
+        } else resourceFiles.add(String.format(currentResourceFilePath) + "/$it")
+      }
+    }
+    return Pair(configFiles, resourceFiles)
   }
 
   /**
@@ -644,9 +658,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${
-                        openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }
-                    }/${this.referenceValue()}"
+          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
     }
 
   fun writeToFile(resource: Resource): File {
@@ -821,6 +833,7 @@ constructor(
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
+    const val BASE_RESOURCES_PATH = "resources"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
     const val CONFIG_SUFFIX = "_config"
     const val CONFIG_TYPE = "configType"
@@ -835,7 +848,6 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val PAGINATION_NEXT = "next"
-    const val RESOURCE_TYPE = "resourceType"
     val LOCAL_RESOURCES_TO_LOAD =
       listOf(
         ResourceType.Questionnaire.name,
