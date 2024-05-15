@@ -320,9 +320,7 @@ constructor(
           newFilterCriteria.add(filterCriterionConfig)
         }
       }
-      it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
-      )
+      it.copy(filterCriteria = newFilterCriteria)
     }
 
   private fun convertAnswerToFilterCriterion(
