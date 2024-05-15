@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.smartregister.fhircore.engine.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -28,23 +28,25 @@ import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.sync.AppTimeStampContext
+import org.smartregister.fhircore.engine.sync.OpenSrpDownloadManager
 
 @HiltWorker
-class CompositionConfigSyncWorker
+class CompositionListSyncWorker
 @AssistedInject
 constructor(
-  @Assisted appContext: Context,
-  @Assisted workerParams: WorkerParameters,
-  private val openSrpFhirEngine: FhirEngine,
-  private val appTimeStampContext: AppTimeStampContext,
-  private val syncParamSource: SyncParamSource
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val openSrpFhirEngine: FhirEngine,
+    private val appTimeStampContext: AppTimeStampContext,
+    private val syncParamSource: SyncParamSource
 ) : FhirSyncWorker(appContext, workerParams) {
 
   override fun getConflictResolver(): ConflictResolver = AcceptLocalConflictResolver
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = loadCompositionConfigParams(),
+      syncParams = loadCompositionListParams(),
       context = appTimeStampContext,
     )
 
@@ -52,8 +54,8 @@ constructor(
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
-  private fun loadCompositionConfigParams(): Map<ResourceType, Map<String, String>> {
-    return syncParamSource.compositionConfigRequestQue.pop()
+  private fun loadCompositionListParams(): Map<ResourceType, Map<String, String>> {
+    return syncParamSource.compositionListRequestQue.pop()
   }
 
 }

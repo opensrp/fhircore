@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.smartregister.fhircore.engine.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -28,9 +28,11 @@ import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.sync.AppTimeStampContext
+import org.smartregister.fhircore.engine.sync.OpenSrpDownloadManager
 
 @HiltWorker
-class BinarySyncWorker
+class CompositionConfigSyncWorker
 @AssistedInject
 constructor(
   @Assisted appContext: Context,
@@ -44,7 +46,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = loadBinarySyncParams(),
+      syncParams = loadCompositionConfigParams(),
       context = appTimeStampContext,
     )
 
@@ -52,7 +54,8 @@ constructor(
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
-  private fun loadBinarySyncParams(): Map<ResourceType, Map<String, String>> {
-    return syncParamSource.binaryRequestQue.pop()
+  fun loadCompositionConfigParams(): Map<ResourceType, Map<String, String>> {
+    return syncParamSource.compositionConfigRequestQue.pop()
   }
+
 }

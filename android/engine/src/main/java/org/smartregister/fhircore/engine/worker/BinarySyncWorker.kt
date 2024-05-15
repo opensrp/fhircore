@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.smartregister.fhircore.engine.worker
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
@@ -27,22 +27,18 @@ import com.google.android.fhir.sync.FhirSyncWorker
 import com.google.android.fhir.sync.upload.UploadStrategy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import timber.log.Timber
+import org.smartregister.fhircore.engine.sync.AppTimeStampContext
+import org.smartregister.fhircore.engine.sync.OpenSrpDownloadManager
 
 @HiltWorker
-class CompositionSyncWorker
+class BinarySyncWorker
 @AssistedInject
 constructor(
   @Assisted appContext: Context,
   @Assisted workerParams: WorkerParameters,
   private val openSrpFhirEngine: FhirEngine,
   private val appTimeStampContext: AppTimeStampContext,
-  val sharedPreferencesHelper: SharedPreferencesHelper,
   private val syncParamSource: SyncParamSource
 ) : FhirSyncWorker(appContext, workerParams) {
 
@@ -50,7 +46,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = loadConfigSyncParams(),
+      syncParams = loadBinarySyncParams(),
       context = appTimeStampContext,
     )
 
@@ -58,24 +54,7 @@ constructor(
 
   override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
 
-  private fun loadConfigSyncParams(): Map<ResourceType, Map<String, String>> {
-
-    Timber.d("Composition loadConfigSyncParams")
-    val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
-      // val urlPath =
-      // "${ResourceType.Composition.name}?${Composition.SP_IDENTIFIER}=$appId&_count=${ConfigurationRegistry.DEFAULT_COUNT}"
-    val resourceType = ResourceType.Composition
-    sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
-      val parsedAppId = appId.substringBefore(ConfigurationRegistry.TYPE_REFERENCE_DELIMITER).trim()
-      val pair = Pair(
-        resourceType,
-        mutableMapOf(Composition.SP_IDENTIFIER to parsedAppId),
-      )
-      pairs.add(pair)
-      val updatedPair = pair.second.apply { put("_count", ConfigurationRegistry.DEFAULT_COUNT.toString()) }
-      val index = pairs.indexOfFirst { it.first == resourceType }
-      pairs[index] = Pair(resourceType, updatedPair)
-    }
-    return mapOf(*pairs.toTypedArray())
+  private fun loadBinarySyncParams(): Map<ResourceType, Map<String, String>> {
+    return syncParamSource.binaryRequestQue.pop()
   }
 }

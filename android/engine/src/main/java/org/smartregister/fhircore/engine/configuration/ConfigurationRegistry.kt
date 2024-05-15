@@ -54,14 +54,8 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceD
 import org.smartregister.fhircore.engine.di.NetworkModule
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
-import org.smartregister.fhircore.engine.sync.BinarySyncWorker
-import org.smartregister.fhircore.engine.sync.CompListItemSyncWorker
-import org.smartregister.fhircore.engine.sync.CompositionConfigSyncWorker
-import org.smartregister.fhircore.engine.sync.CompositionListSyncWorker
-import org.smartregister.fhircore.engine.sync.CompositionManifestSyncWorker
-import org.smartregister.fhircore.engine.sync.CompositionSyncWorker
 import org.smartregister.fhircore.engine.sync.ResTypeId
-import org.smartregister.fhircore.engine.sync.SyncParamSource
+import org.smartregister.fhircore.engine.worker.SyncParamSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -80,6 +74,12 @@ import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdent
 import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
+import org.smartregister.fhircore.engine.worker.BinarySyncWorker
+import org.smartregister.fhircore.engine.worker.CompositionListItemSyncWorker
+import org.smartregister.fhircore.engine.worker.CompositionConfigSyncWorker
+import org.smartregister.fhircore.engine.worker.CompositionListSyncWorker
+import org.smartregister.fhircore.engine.worker.CompositionManifestSyncWorker
+import org.smartregister.fhircore.engine.worker.CompositionSyncWorker
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.File
@@ -1025,7 +1025,7 @@ constructor(
                 }
               } else {
                 Timber.d("configSync process compositionContent if Not LIST block")
-                val chunkedResourceIdList = entry.value.chunked(200)
+                val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
                 chunkedResourceIdList.forEach { parentIt ->
                   val resourceIds: List<String> =
                     parentIt.map { sectionComponent -> sectionComponent.focus.extractId() }
@@ -1071,9 +1071,9 @@ constructor(
   }
 
   private suspend fun fetchCompositionListRequest(coroutineScope: CoroutineScope) {
-    val compListFlow = Sync.oneTimeSync<CompositionListSyncWorker>(context)
-    compListFlow.handleCompositionListSyncJobStatus(coroutineScope)
-    compListFlow.collect{ compositionListJobStatus ->
+    val compositionListFlow = Sync.oneTimeSync<CompositionListSyncWorker>(context)
+    compositionListFlow.handleCompositionListSyncJobStatus(coroutineScope)
+    compositionListFlow.collect{ compositionListJobStatus ->
       when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition List FlowJobStatus succeeded")
@@ -1140,22 +1140,22 @@ constructor(
         }
       }
       Timber.d("configSync composition ListItemRequestQue size - ${syncParamSource.compositionConfigRequestQue.size}")
-      fetchCompListItemRequest(coroutineScope)
+      fetchCompositionListItemRequest(coroutineScope)
     }
   }
 
 
-  private suspend fun fetchCompListItemRequest(coroutineScope: CoroutineScope) {
-    val compListFlow = Sync.oneTimeSync<CompListItemSyncWorker>(context)
-    compListFlow.handleCompListItemSyncJobStatus(coroutineScope)
-    compListFlow.collect{ compositionListJobStatus ->
+  private suspend fun fetchCompositionListItemRequest(coroutineScope: CoroutineScope) {
+    val compositionListFlow = Sync.oneTimeSync<CompositionListItemSyncWorker>(context)
+    compositionListFlow.handleCompListItemSyncJobStatus(coroutineScope)
+    compositionListFlow.collect{ compositionListJobStatus ->
       when(compositionListJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("configSync composition ListItemJobStatus succeeded")
           if(syncParamSource.compositionListRequestQue.isNotEmpty()){
-            fetchCompListItemRequest(coroutineScope)
+            fetchCompositionListItemRequest(coroutineScope)
           } else {
-            processCompListItemResult()
+            processCompositionListItemResult()
           }
         } else -> {
         // do nothing Timber.d("#### compListItemJobStatus other than succeeded ")
@@ -1235,7 +1235,7 @@ constructor(
     Timber.d("configSync handleBinarySyncJobStatus")
   }
 
-  private suspend fun processCompListItemResult(){
+  private suspend fun processCompositionListItemResult(){
     Timber.e("configSync process result of composition List Items")
   }
 

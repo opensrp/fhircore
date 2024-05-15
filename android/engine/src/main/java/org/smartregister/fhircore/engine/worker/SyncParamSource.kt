@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.sync
+package org.smartregister.fhircore.engine.worker
 
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.sync.ResTypeId
 import java.util.LinkedList
 import javax.inject.Inject
 import javax.inject.Singleton
