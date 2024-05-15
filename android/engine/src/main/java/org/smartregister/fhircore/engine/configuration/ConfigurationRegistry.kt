@@ -921,10 +921,10 @@ constructor(
   }
 
   private suspend fun fetchCompositionConfig(coroutineScope: CoroutineScope, isInitialLogin: Boolean = true) {
-    val compConfigFlow1 = Sync.oneTimeSync<CompositionSyncWorker>(context)
-    compConfigFlow1.handleCompositionSyncJobStatus(coroutineScope)
-    compConfigFlow1.collect { compConfigFlowJobStatus ->
-      when (compConfigFlowJobStatus) {
+    val compositionConfigFlow = Sync.oneTimeSync<CompositionSyncWorker>(context)
+    compositionConfigFlow.handleCompositionSyncJobStatus(coroutineScope)
+    compositionConfigFlow.collect { compositionConfigFlowJobStatus ->
+      when (compositionConfigFlowJobStatus) {
         is CurrentSyncJobStatus.Succeeded -> {
           Timber.d("Composition Config Sync FlowJobStatus succeeded")
           fetchCompositionContent(coroutineScope, isInitialLogin = isInitialLogin)
