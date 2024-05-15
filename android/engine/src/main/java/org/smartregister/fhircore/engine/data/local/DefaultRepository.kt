@@ -507,7 +507,7 @@ constructor(
               )
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
-                sortData = false,
+                sortData = true,
                 configComputedRuleValues = configComputedRuleValues,
               )
             }
