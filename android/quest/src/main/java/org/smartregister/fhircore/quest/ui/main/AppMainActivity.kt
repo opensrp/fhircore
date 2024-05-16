@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
@@ -216,18 +217,24 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private fun setupLocationServices() {
-    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    if (
+      appMainViewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.CALCULATE_DISTANCE_RULE_EXECUTOR,
+      )
+    ) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-    if (!LocationUtils.isLocationEnabled(this)) {
-      openLocationServicesSettings()
-    }
+      if (!LocationUtils.isLocationEnabled(this)) {
+        openLocationServicesSettings()
+      }
 
-    if (!hasLocationPermissions()) {
-      launchLocationPermissionsDialog()
-    }
+      if (!hasLocationPermissions()) {
+        launchLocationPermissionsDialog()
+      }
 
-    if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
-      fetchLocation()
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation()
+      }
     }
   }
 
