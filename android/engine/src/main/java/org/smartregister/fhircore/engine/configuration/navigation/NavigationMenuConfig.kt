@@ -21,7 +21,6 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.util.extension.interpolate
 

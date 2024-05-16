@@ -16,9 +16,6 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
 import java.text.MessageFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -126,4 +123,3 @@ fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFS
 
 fun String.spaceByUppercase() =
   this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()
-
