@@ -347,7 +347,8 @@ abstract class TracingRegisterDao(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }.distinct(),
+            reasons =
+              tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }.distinct(),
           ),
       )
     }

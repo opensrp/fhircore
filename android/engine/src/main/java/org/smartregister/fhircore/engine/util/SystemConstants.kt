@@ -46,6 +46,10 @@ object ReasonConstants {
 
   var missedAppointmentTracingCode =
     Coding(SystemConstants.REASON_CODE_SYSTEM, "missed-appointment", "Missed Appointment")
+  var missedMilestoneAppointmentTracingCode =
+    Coding(SystemConstants.REASON_CODE_SYSTEM, "missed-milestone", "Missed Milestone Appointment")
+  var missedRoutineAppointmentTracingCode =
+    Coding(SystemConstants.REASON_CODE_SYSTEM, "missed-routine", "Missed Routine Appointment")
   var interruptedTreatmentTracingCode =
     Coding(SystemConstants.REASON_CODE_SYSTEM, "interrupted-treatment", "Interrupted Treatment")
 

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.task
 
 import android.content.Context
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
@@ -44,10 +45,13 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.joda.time.DateTime
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.getCarePlanId
 import org.smartregister.fhircore.engine.util.extension.hasPastEnd
@@ -188,15 +192,20 @@ constructor(
           }
 
           val today = LocalDate.now()
-          val tracingDate =
+          val missedAppointmentInRange =
             LocalDate.from(appointment.start.plusDays(7).toInstant().atZone(ZoneId.systemDefault()))
+              .let { missedAppointmentDate ->
+                today.isAfter(missedAppointmentDate) || today.isEqual(missedAppointmentDate)
+              }
+          val missedMilestoneInRange =
+            LocalDate.from(appointment.start.plusDays(1).toInstant().atZone(ZoneId.systemDefault()))
+              .let { missedMilestoneDate ->
+                today.isAfter(missedMilestoneDate) || today.isEqual(missedMilestoneDate)
+              }
 
-          if (today.isAfter(tracingDate) || today.isEqual(tracingDate)) {
+          if ((missedAppointmentInRange) || (missedMilestoneInRange)) {
             appointment.status = Appointment.AppointmentStatus.NOSHOW
-            addToTracingList(appointment, ReasonConstants.missedAppointmentTracingCode)?.let { task,
-              ->
-              tracingTasksToAdd.add(task)
-            }
+            tracingTasksToAdd.addAll(addMissedAppointment(appointment, missedMilestoneInRange))
           } else {
             appointment.status = Appointment.AppointmentStatus.WAITLIST
           }
@@ -299,13 +308,58 @@ constructor(
     fhirEngine.update(*appointments)
   }
 
+  private suspend fun addMissedAppointment(
+    appointment: Appointment,
+    missedMilestoneInRange: Boolean,
+  ): List<Task> {
+    val tracingTasks = mutableListOf<Task>()
+    val patient = getPatient(appointment) ?: return listOf()
+    val isEID = patient.extractHealthStatusFromMeta("") == HealthStatus.EXPOSED_INFANT
+
+    addToTracingList(
+        appointment,
+        if (isEID) {
+          ReasonConstants.missedRoutineAppointmentTracingCode
+        } else ReasonConstants.missedAppointmentTracingCode,
+      )
+      ?.let { tracingTasks.add(it) }
+
+    if (isEID && missedMilestoneInRange) {
+      val carePlan = patient.activeCarePlans(fhirEngine).firstOrNull()
+      val hasMileStoneTest =
+        carePlan?.activity?.firstOrNull {
+          it.hasDetail() &&
+            it.detail.code.codingFirstRep.code == "Questionnaire/exposed-infant-milestone-hiv-test"
+        } != null
+      val milestoneTracingTaskDoesNotExist =
+        fhirEngine
+          .search<Task> {
+            filter(
+              TokenClientParam("_tag"),
+              { value = of(ReasonConstants.homeTracingCoding) },
+              { value = of(ReasonConstants.phoneTracingCoding) },
+            )
+            filter(Task.CODE, { value = of(ReasonConstants.missedMilestoneAppointmentTracingCode) })
+            filter(
+              Task.STATUS,
+              { value = of(Task.TaskStatus.READY.toCode()) },
+              { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+              operation = Operation.OR,
+            )
+          }
+          .isEmpty()
+      if (hasMileStoneTest && milestoneTracingTaskDoesNotExist) {
+        addToTracingList(appointment, ReasonConstants.missedMilestoneAppointmentTracingCode)?.let {
+          tracingTasks.add(it)
+        }
+      }
+    }
+
+    return tracingTasks
+  }
+
   private suspend fun addToTracingList(appointment: Appointment, coding: Coding): Task? {
-    val patientRef =
-      appointment.participant
-        .firstOrNull { it.hasActor() && it.actor.reference.contains(ResourceType.Patient.name) }
-        ?.actor
-        ?.extractId() ?: return null
-    val patient = fhirEngine.get<Patient>(patientRef)
+    val patient = getPatient(appointment) ?: return null
     return createTracingTask(
       patient,
       currentPractitioner!!.asReference(ResourceType.Practitioner),
@@ -343,6 +397,19 @@ constructor(
             coding,
           )
           .apply { text = coding.display }
+    }
+  }
+
+  private suspend fun getPatient(appointment: Appointment): Patient? {
+    try {
+      val patientRef =
+        appointment.participant
+          .firstOrNull { it.hasActor() && it.actor.reference.contains(ResourceType.Patient.name) }
+          ?.actor
+          ?.extractId() ?: return null
+      return fhirEngine.get<Patient>(patientRef)
+    } catch (e: Exception) {
+      return null
     }
   }
 }
