@@ -327,12 +327,14 @@ constructor(
       }
       retrieveConfigsAndResourceFromAssets(context).second.forEach { resourceName ->
         val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
-        if (
-          resourceJson.decodeResourceFromString<Resource>().resourceType.name in
-            LOCAL_RESOURCES_TO_LOAD
-        ) {
-          val loadedResource = resourceJson.decodeResourceFromString<Resource>()
-          addOrUpdate(loadedResource)
+        try {
+          if (resourceJson.decodeResourceFromString<Resource>().resourceType != null) {
+            resourceJson.decodeResourceFromString<Resource>().let {
+              fhirEngine.create(resource = arrayOf(it), isLocalOnly = false)
+            }
+          }
+        } catch (e: Exception) {
+          Timber.e("Provided JSON doesn't seem to be a valid FHIR resource")
         }
       }
     } else {
@@ -848,12 +850,6 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val PAGINATION_NEXT = "next"
-    val LOCAL_RESOURCES_TO_LOAD =
-      listOf(
-        ResourceType.Questionnaire.name,
-        ResourceType.StructureMap.name,
-        ResourceType.PlanDefinition.name,
-      )
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
