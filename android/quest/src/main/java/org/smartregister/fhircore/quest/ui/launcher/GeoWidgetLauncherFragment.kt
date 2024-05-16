@@ -78,7 +78,7 @@ class GeoWidgetLauncherFragment : Fragment() {
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var geoWidgetFragment: GeoWidgetFragment
-  private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
+  val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
   private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(
@@ -87,12 +87,7 @@ class GeoWidgetLauncherFragment : Fragment() {
       emptyMap(),
     )
   }
-  private val appMainViewModel by activityViewModels<AppMainViewModel>()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    Timber.i("GeoWidgetLauncherFragment onCreate")
-  }
+  val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
