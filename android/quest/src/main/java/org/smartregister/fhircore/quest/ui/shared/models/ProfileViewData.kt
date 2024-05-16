@@ -70,7 +70,7 @@ sealed class ProfileViewData(
     val tasksCompleted =
       currentCarePlan != null &&
         tasks.isNotEmpty() &&
-        tasks.all { it.subtitleStatus == Task.TaskStatus.COMPLETED.name }
+        tasks.all { it.subtitleStatus == CarePlan.CarePlanActivityStatus.COMPLETED.name }
 
     private val guardiansRelatedPersonResource = guardians.filterIsInstance<RelatedPerson>()
 
@@ -83,10 +83,6 @@ sealed class ProfileViewData(
       }
       list
     }
-
-    // todo : apply filter on tracingTask->meta to check patient is valid for Home or Phone Tracing
-    val validForHomeTrace = false
-    val validForPhoneTracing = tracingTask.extractedTracingCategoryIsPhone("https://d-tree.org")
   }
 
   data class FamilyProfileViewData(

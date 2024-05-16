@@ -147,11 +147,5 @@ constructor(
     }
   }
 
-  fun retrieveUsername(): String? =
-    sharedPreferences
-      .read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
-      ?.nameFirstRep
-      ?.nameAsSingleString
-
   fun fetchPractitionerDetails() {}
 }

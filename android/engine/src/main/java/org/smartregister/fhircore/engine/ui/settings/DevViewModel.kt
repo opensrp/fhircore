@@ -43,7 +43,6 @@ import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorke
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -61,7 +60,6 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val fhirResourceService: FhirResourceService,
   val fhirEngine: FhirEngine,
 ) : ViewModel() {
 

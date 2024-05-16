@@ -66,7 +66,7 @@ fun UserProfileRow(
       if (iconAlt != null) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.Center
+          horizontalArrangement = Arrangement.Center,
         ) {
           iconAlt()
         }
