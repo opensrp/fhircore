@@ -31,7 +31,7 @@ import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -134,7 +134,7 @@ class GeoWidgetViewModelTest {
 
     // Then
     val result = runBlocking { viewModel.featuresFlow.first() }
-    assertEquals(2, result.size)
+    Assert.assertEquals(2, result.size)
   }
 
   @Test
@@ -162,7 +162,7 @@ class GeoWidgetViewModelTest {
 
     // Then
     val result = runBlocking { viewModel.featuresFlow.first() }
-    assertEquals(0, result.size)
+    Assert.assertEquals(0, result.size)
   }
 
   fun `test mapping service point keys to types`() {
@@ -174,10 +174,10 @@ class GeoWidgetViewModelTest {
     val result = viewModel.getServicePointKeyToType()
 
     // Then
-    assertEquals(expectedMap.size, result.size)
+    Assert.assertEquals(expectedMap.size, result.size)
     expectedMap.forEach { (key, expectedValue) ->
       val actualValue = result[key]
-      assertEquals(expectedValue.name, actualValue?.name)
+      Assert.assertEquals(expectedValue.name, actualValue?.name)
     }
   }
 
@@ -207,6 +207,42 @@ class GeoWidgetViewModelTest {
       )
     geoWidgetViewModel.addLocationsToMap(locations)
 
-    assertEquals(geoWidgetViewModel.featuresFlow.value.size, locations.size)
+    Assert.assertEquals(geoWidgetViewModel.featuresFlow.value.size, locations.size)
+  }
+
+  @Test
+  fun `should return a map of ServicePointType enum values based on their lowercase names`() {
+    // When
+    val result = geoWidgetViewModel.getServicePointKeyToType()
+
+    // Then
+    val expectedMap =
+      mapOf(
+        "epp" to ServicePointType.EPP,
+        "ceg" to ServicePointType.CEG,
+        "chrd1" to ServicePointType.CHRD1,
+        "chrd2" to ServicePointType.CHRD2,
+        "drsp" to ServicePointType.DRSP,
+        "msp" to ServicePointType.MSP,
+        "sdsp" to ServicePointType.SDSP,
+        "csb1" to ServicePointType.CSB1,
+        "csb2" to ServicePointType.CSB2,
+        "chrr" to ServicePointType.CHRR,
+        "warehouse" to ServicePointType.WAREHOUSE,
+        "water_point" to ServicePointType.WATER_POINT,
+        "presco" to ServicePointType.PRESCO,
+        "meah" to ServicePointType.MEAH,
+        "dreah" to ServicePointType.DREAH,
+        "mppspf" to ServicePointType.MPPSPF,
+        "drppspf" to ServicePointType.DRPPSPF,
+        "ngo_partner" to ServicePointType.NGO_PARTNER,
+        "site_communautaire" to ServicePointType.SITE_COMMUNAUTAIRE,
+        "drjs" to ServicePointType.DRJS,
+        "instat" to ServicePointType.INSTAT,
+        "bsd" to ServicePointType.BSD,
+        "men" to ServicePointType.MEN,
+        "dren" to ServicePointType.DREN,
+      )
+    Assert.assertEquals(expectedMap, result)
   }
 }

@@ -46,7 +46,7 @@ import org.smartregister.fhircore.geowidget.shadows.ShadowMapbox
   application = HiltTestApplication::class,
 )
 @HiltAndroidTest
-class GeoWidgetFragmentTest  {
+class GeoWidgetFragmentTest {
   private lateinit var geowidgetFragment: GeoWidgetFragment
   private var kujakuMapView = mockk<KujakuMapView>(relaxed = true)
 
