@@ -127,7 +127,3 @@ fun String.lastOffset() = this.uppercase() + "_" + SharedPreferenceKey.LAST_OFFS
 fun String.spaceByUppercase() =
   this.split(Regex("(?=\\p{Upper})")).joinToString(separator = " ").trim()
 
-fun String.base64toBitmap(offset: Int = 0): Bitmap {
-  val decodedBytes = Base64.decode(this, Base64.DEFAULT)
-  return BitmapFactory.decodeByteArray(decodedBytes, offset, decodedBytes.size)
-}

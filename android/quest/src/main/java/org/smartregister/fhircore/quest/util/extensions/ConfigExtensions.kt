@@ -30,7 +30,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
-import org.smartregister.fhircore.engine.configuration.navigation.ImageConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
@@ -47,7 +46,6 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
-import org.smartregister.fhircore.engine.util.extension.base64toBitmap
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -271,12 +269,7 @@ suspend fun loadRemoteImagesBitmaps(
               .interpolate(computedValuesMap)
               .extractLogicalIdUuid()
           registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            imageProps.imageConfig?.decodedBitmap =
-              binary.data
-                .decodeToString()
-                .tryDecodeJson<ImageConfiguration>()
-                ?.data
-                ?.base64toBitmap()
+            imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
           }
         }
       }

@@ -141,7 +141,7 @@ constructor(
             listResourceDataStateMap[listProperties.id]?.size!! > 0
         ) {
           val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
-          viewModelScope.launch {
+          viewModelScope.launch(dispatcherProvider.io()) {
             if (computedMap != null) {
               loadRemoteImagesBitmaps(
                 profileConfiguration.views,
