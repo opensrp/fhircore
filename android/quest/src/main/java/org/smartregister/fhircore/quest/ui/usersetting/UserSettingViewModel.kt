@@ -29,13 +29,16 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -69,6 +72,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val workManager: WorkManager,
   val dispatcherProvider: DispatcherProvider,
+  private val preferenceDataStore: PreferenceDataStore
 ) : ViewModel() {
 
   val languages by lazy { configurationRegistry.fetchLanguages() }
@@ -100,6 +104,11 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
 
   fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
+
+  fun retrieveDataMigrationVersion() : String = runBlocking {
+    val dbMigrationVersion = preferenceDataStore.read(PreferenceDataStore.MIGRATION_VERSION).firstOrNull() ?: 0
+    return@runBlocking dbMigrationVersion.toString()
+  }
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
