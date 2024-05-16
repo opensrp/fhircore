@@ -34,8 +34,8 @@ object PractitionerDetailsDataStoreSerializer : Serializer<PractitionerDetails> 
         deserializer = PractitionerDetails.serializer(),
         string = input.readBytes().decodeToString(),
       )
-    } catch (e: SerializationException) {
-      Timber.tag(SerializerConstants.PROTOSTORE_SERIALIZER_TAG).d(e)
+    } catch (serializationException: SerializationException) {
+      Timber.e(serializationException)
       defaultValue
     }
   }
