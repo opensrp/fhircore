@@ -50,8 +50,8 @@ import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
-import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.domain.model.LauncherType
+import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager

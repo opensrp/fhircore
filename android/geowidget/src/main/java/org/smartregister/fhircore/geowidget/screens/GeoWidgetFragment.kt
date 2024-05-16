@@ -206,7 +206,6 @@ class GeoWidgetFragment : Fragment() {
     if (showPlaneSwitcherButton) {
       baseLayerSwitcherPlugin.show()
     }
-
   }
 
   private fun setOnClickLocationListener(mapView: KujakuMapView) {
@@ -356,9 +355,12 @@ class Builder {
 
   fun setMapLayers(list: List<MapLayerConfig>) = apply { this.mapLayers = list }
 
-  fun showCurrentLocationButtonVisibility(show: Boolean) = apply { this.showCurrentLocationButton = show }
+  fun showCurrentLocationButtonVisibility(show: Boolean) = apply {
+    this.showCurrentLocationButton = show
+  }
 
   fun setAddLocationButtonVisibility(show: Boolean) = apply { this.showAddLocationButton = show }
+
   fun setPlaneSwitcherButtonVisibility(show: Boolean) = apply {
     this.showPlaneSwitcherButton = show
   }

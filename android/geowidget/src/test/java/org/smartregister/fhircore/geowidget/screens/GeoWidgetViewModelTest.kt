@@ -26,6 +26,8 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.spyk
+import java.util.UUID
+import javax.inject.Inject
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -50,26 +52,19 @@ import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.rule.CoroutineTestRule
-import java.util.UUID
-import javax.inject.Inject
-
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 @HiltAndroidTest
 class GeoWidgetViewModelTest {
 
-  @get:Rule(order = 0)
-  var hiltRule = HiltAndroidRule(this)
+  @get:Rule(order = 0) var hiltRule = HiltAndroidRule(this)
 
-  @get:Rule(order = 1)
-  var instantTaskExecutorRule = InstantTaskExecutorRule()
+  @get:Rule(order = 1) var instantTaskExecutorRule = InstantTaskExecutorRule()
 
-  @get:Rule(order = 2)
-  var coroutinesTestRule = CoroutineTestRule()
+  @get:Rule(order = 2) var coroutinesTestRule = CoroutineTestRule()
 
-  @Inject
-  lateinit var configService: ConfigService
+  @Inject lateinit var configService: ConfigService
 
   private lateinit var configurationRegistry: ConfigurationRegistry
 
@@ -83,15 +78,12 @@ class GeoWidgetViewModelTest {
 
   private val configRulesExecutor: ConfigRulesExecutor = mockk()
 
-  @Inject
-  lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+  @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject
-  lateinit var parser: IParser
+  @Inject lateinit var parser: IParser
   private lateinit var viewModel: GeoWidgetViewModel
 
-  @Mock
-  private lateinit var dispatcherProvider: DispatcherProvider
+  @Mock private lateinit var dispatcherProvider: DispatcherProvider
 
   @Before
   fun setUp() {
@@ -113,8 +105,7 @@ class GeoWidgetViewModelTest {
           parser = parser,
         ),
       )
-    geoWidgetViewModel =
-      spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))
+    geoWidgetViewModel = spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))
 
     coEvery { defaultRepository.create(any()) } returns emptyList()
   }
@@ -122,18 +113,20 @@ class GeoWidgetViewModelTest {
   @Test
   fun `test adding locations to map`() {
     // Given
-    val feature1 = Feature(
-      geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-      id = "id1",
-      type = "type1",
-      serverVersion = 1
-    )
-    val feature2 = Feature(
-      geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-      id = "id2",
-      type = "type2",
-      serverVersion = 2
-    )
+    val feature1 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id1",
+        type = "type1",
+        serverVersion = 1,
+      )
+    val feature2 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id2",
+        type = "type2",
+        serverVersion = 2,
+      )
     val features = setOf(feature1, feature2)
 
     // When
@@ -147,18 +140,20 @@ class GeoWidgetViewModelTest {
   @Test
   fun `test clearing locations`() {
     // Given
-    val feature1 = Feature(
-      geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-      id = "id1",
-      type = "type1",
-      serverVersion = 1
-    )
-    val feature2 = Feature(
-      geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
-      id = "id2",
-      type = "type2",
-      serverVersion = 2
-    )
+    val feature1 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id1",
+        type = "type1",
+        serverVersion = 1,
+      )
+    val feature2 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id2",
+        type = "type2",
+        serverVersion = 2,
+      )
     val features = setOf(feature1, feature2)
     viewModel.addLocationsToMap(features)
 
@@ -173,9 +168,7 @@ class GeoWidgetViewModelTest {
   fun `test mapping service point keys to types`() {
     // Given
     val expectedMap = mutableMapOf<String, ServicePointType>()
-    ServicePointType.values().forEach {
-      expectedMap[it.name.lowercase()] = it
-    }
+    ServicePointType.values().forEach { expectedMap[it.name.lowercase()] = it }
 
     // When
     val result = viewModel.getServicePointKeyToType()
@@ -191,27 +184,29 @@ class GeoWidgetViewModelTest {
   @Test
   fun `add location to map`() {
     val serverVersion = (1..10).random()
-    val locations = setOf(
-      Feature(
-        id = UUID.randomUUID().toString(),
-        geometry = Geometry(
-          coordinates = listOf(Coordinates(34.76, 68.23))
+    val locations =
+      setOf(
+        Feature(
+          id = UUID.randomUUID().toString(),
+          geometry =
+            Geometry(
+              coordinates = listOf(Coordinates(34.76, 68.23)),
+            ),
+          properties = mapOf(),
+          serverVersion = serverVersion,
         ),
-        properties = mapOf(),
-        serverVersion = serverVersion
-      ),
-      Feature(
-        id = UUID.randomUUID().toString(),
-        geometry = Geometry(
-          coordinates = listOf(Coordinates(34.76, 68.23))
+        Feature(
+          id = UUID.randomUUID().toString(),
+          geometry =
+            Geometry(
+              coordinates = listOf(Coordinates(34.76, 68.23)),
+            ),
+          properties = mapOf(),
+          serverVersion = serverVersion,
         ),
-        properties = mapOf(),
-        serverVersion = serverVersion
       )
-    )
     geoWidgetViewModel.addLocationsToMap(locations)
 
     assertEquals(geoWidgetViewModel.featuresFlow.value.size, locations.size)
   }
-
 }
