@@ -309,15 +309,18 @@ constructor(
     dataQueries?.map {
       val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
       it.filterCriteria.forEach { filterCriterionConfig ->
-        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
-        answerComponent?.answer?.forEach { itemAnswerComponent ->
-          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
-          if (criterion != null) newFilterCriteria.add(criterion)
+        if (!filterCriterionConfig.dataFilterLinkId.isNullOrEmpty()) {
+          val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+          answerComponent?.answer?.forEach { itemAnswerComponent ->
+            val criterion =
+              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+            if (criterion != null) newFilterCriteria.add(criterion)
+          }
+        } else {
+          newFilterCriteria.add(filterCriterionConfig)
         }
       }
-      it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
-      )
+      it.copy(filterCriteria = newFilterCriteria)
     }
 
   private fun convertAnswerToFilterCriterion(
@@ -359,7 +362,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
@@ -383,7 +386,7 @@ constructor(
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
           valueAsDateTime = true,
-          value = answerComponent.valueDecimalType.asStringValue(),
+          value = answerComponent.valueDateTimeType.asStringValue(),
         )
       }
       answerComponent.hasValueDateType() -> {
@@ -393,7 +396,7 @@ constructor(
           dataType = DataType.DATE,
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
-          valueAsDateTime = false,
+          valueAsDateTime = dateFilterCriterion.valueAsDateTime,
           value = answerComponent.valueDateType.asStringValue(),
         )
       }
