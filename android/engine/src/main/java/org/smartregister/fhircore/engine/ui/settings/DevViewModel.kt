@@ -23,23 +23,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import com.google.android.fhir.testing.jsonParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.File
 import java.io.FileWriter
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
 import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
@@ -47,8 +50,6 @@ import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
-import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
-import org.smartregister.model.practitioner.PractitionerDetails
 
 @ExcludeFromJacocoGeneratedReport
 @HiltViewModel
@@ -60,7 +61,6 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
   val fhirEngine: FhirEngine,
 ) : ViewModel() {
@@ -103,9 +103,11 @@ constructor(
 
     val fileName = "log_data.txt"
     val file = File(context.filesDir, fileName)
-    val fileWriter = FileWriter(file)
-    fileWriter.write(log)
-    fileWriter.close()
+    withContext(Dispatchers.IO) {
+      val fileWriter = FileWriter(file)
+      fileWriter.write(log)
+      fileWriter.close()
+    }
   }
 
   suspend fun getResourcesToReport(): Map<String, List<ResourceField>> {
@@ -123,38 +125,24 @@ constructor(
     return mapOf(Pair("Questionnaire", questionnaire), Pair("StructureMap", structureMaps))
   }
 
-  // TODO: Fix refetch logic
-  fun fetchDetails() {
-    try {
-      viewModelScope.launch @ExcludeFromJacocoGeneratedReport {
-        val userInfo = keycloakService.fetchUserInfo().body()
-        if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
-          val bundle =
-            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
-          val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-
-          val data = jsonParser.encodeResourceToString(practitionerDetails)
-          println(data)
-        }
-      }
-    } catch (e: Exception) {
-      println(e)
+  fun missedTask(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          FhirTaskPlanWorker.WORK_ID,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build(),
+        )
     }
   }
 
-  fun missedResource(context: Context) {
+  fun missedAppointment(context: Context) {
     viewModelScope.launch {
       WorkManager.getInstance(context)
         .enqueueUniqueWork(
           MissedFHIRAppointmentsWorker.NAME,
           ExistingWorkPolicy.REPLACE,
           OneTimeWorkRequestBuilder<MissedFHIRAppointmentsWorker>().build(),
-        )
-      WorkManager.getInstance(context)
-        .enqueueUniqueWork(
-          FhirTaskPlanWorker.WORK_ID,
-          ExistingWorkPolicy.REPLACE,
-          OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build(),
         )
     }
   }
@@ -168,6 +156,24 @@ constructor(
           OneTimeWorkRequestBuilder<ProposedWelcomeServiceAppointmentsWorker>().build(),
         )
     }
+  }
+
+  fun observeMissedAppointment(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(MissedFHIRAppointmentsWorker.NAME)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeMissedTask(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(FhirTaskPlanWorker.WORK_ID)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeInterrupted(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(ProposedWelcomeServiceAppointmentsWorker.NAME)
+      .map { list -> list.map { it.state } }
   }
 }
 
