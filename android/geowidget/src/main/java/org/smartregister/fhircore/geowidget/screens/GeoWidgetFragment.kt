@@ -49,6 +49,7 @@ import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
 import java.util.LinkedList
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayer
 import org.smartregister.fhircore.engine.configuration.geowidget.MapLayerConfig
@@ -208,7 +209,8 @@ class GeoWidgetFragment : Fragment() {
     }
   }
 
-  private fun setOnClickLocationListener(mapView: KujakuMapView) {
+  @VisibleForTesting
+  fun setOnClickLocationListener(mapView: KujakuMapView) {
     mapView.setOnFeatureClickListener(
       { featuresList ->
         val mapBoxFeature = featuresList.firstOrNull() ?: return@setOnFeatureClickListener
@@ -241,7 +243,8 @@ class GeoWidgetFragment : Fragment() {
     )
   }
 
-  private fun setOnAddLocationListener(mapView: KujakuMapView) {
+  @VisibleForTesting
+  fun setOnAddLocationListener(mapView: KujakuMapView) {
     mapView.addPoint(
       useGpsOnAddingLocation,
       object : AddPointCallback {
