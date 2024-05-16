@@ -329,9 +329,8 @@ constructor(
         val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
         try {
           if (resourceJson.decodeResourceFromString<Resource>().resourceType != null) {
-            resourceJson.decodeResourceFromString<Resource>().let {
-              fhirEngine.create(resource = arrayOf(it), isLocalOnly = false)
-            }
+            val localResource = resourceJson.decodeResourceFromString<Resource>()
+            addOrUpdate(localResource)
           }
         } catch (e: Exception) {
           Timber.e("Provided JSON doesn't seem to be a valid FHIR resource")
