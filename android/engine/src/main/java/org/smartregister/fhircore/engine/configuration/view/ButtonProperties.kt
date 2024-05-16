@@ -69,6 +69,7 @@ data class ButtonProperties(
       ServiceStatus.COMPLETED -> DefaultColor
       ServiceStatus.IN_PROGRESS -> WarningColor
       ServiceStatus.EXPIRED -> DefaultColor
+      ServiceStatus.FAILED -> DangerColor
     }
   }
 

@@ -206,7 +206,10 @@ constructor(
     this.partOf
       .find { it.reference.startsWith(ResourceType.Task.name + "/") }
       ?.let {
-        defaultRepository.fhirEngine.get<Task>(it.extractId()).status.isIn(TaskStatus.COMPLETED)
+        defaultRepository.fhirEngine
+          .get<Task>(it.extractId())
+          .status
+          .isIn(TaskStatus.COMPLETED, TaskStatus.FAILED)
       } ?: false
 
   suspend fun closeRelatedResources(resource: Resource) {
