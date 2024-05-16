@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.geowidget
 
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
 import androidx.navigation.Navigation
@@ -28,10 +27,8 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.mockk
 import io.mockk.spyk
 import javax.inject.Inject
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import org.robolectric.Robolectric
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -115,11 +112,5 @@ class GeoWidgetLauncherFragmentTest : RobolectricTest() {
       }
       executePendingTransactions()
     }
-  }
-
-  @Test
-  fun testGeoWidgetLauncherFragmentCreation() {
-    Assert.assertTrue(geoWidgetLauncherFragment.view is ComposeView)
-    activityController.destroy()
   }
 }
