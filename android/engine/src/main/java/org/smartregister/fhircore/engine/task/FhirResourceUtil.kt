@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
@@ -314,7 +315,7 @@ constructor(
   ): List<Task> {
     val tracingTasks = mutableListOf<Task>()
     val patient = getPatient(appointment) ?: return listOf()
-    val isEID = patient.extractHealthStatusFromMeta("") == HealthStatus.EXPOSED_INFANT
+    val isEID = patient.extractHealthStatusFromMeta(SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM) == HealthStatus.EXPOSED_INFANT
 
     addToTracingList(
         appointment,
