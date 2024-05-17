@@ -200,12 +200,12 @@ class LocationPickerView(
           locationNameText?.text = it
           it
         }
+      if (locationId != null && locationName != null) {
+        selectedHierarchy = LocationData(locationId, locationName)
+      }
       elements.getOrNull(2)?.let {
         physicalLocator = it
         physicalLocatorInputEditText?.setText(it)
-      }
-      if (locationId != null && locationName != null) {
-        selectedHierarchy = LocationData(locationId, locationName)
       }
       initialValue = initialAnswer
     }

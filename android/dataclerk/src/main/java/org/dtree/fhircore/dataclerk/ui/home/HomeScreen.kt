@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -101,7 +102,7 @@ fun HomeScreen(
             }
             IconButton(onClick = { navController.navigate("info") }) {
               Icon(
-                imageVector = Icons.Default.BugReport,
+                imageVector = Icons.Default.Settings,
                 contentDescription = "Debug",
               )
             }
