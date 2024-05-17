@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.pin
 
-import Demo_ExposedDropdownMenuBox
 import DropdownList
 import android.content.Context
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -56,7 +55,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +66,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.PinInput
@@ -157,9 +154,7 @@ fun PinLoginPage(
             fontWeight = FontWeight.Normal,
             fontSize = 20.sp,
             modifier =
-            modifier
-              .padding(bottom = 12.dp, top = 20.dp)
-              .align(Alignment.CenterHorizontally),
+              modifier.padding(bottom = 12.dp, top = 20.dp).align(Alignment.CenterHorizontally),
           )
 
           PinInput(
@@ -181,9 +176,7 @@ fun PinLoginPage(
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp,
                 color = DangerColor,
-                modifier = modifier
-                  .padding(vertical = 8.dp)
-                  .align(Alignment.CenterHorizontally),
+                modifier = modifier.padding(vertical = 8.dp).align(Alignment.CenterHorizontally),
               )
             } else {
               Text(
@@ -218,9 +211,7 @@ fun PinLoginPage(
               Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.Center) {
                 if (pinUiState.showProgressBar) {
                   CircularProgressIndicator(
-                    modifier = modifier
-                      .size(18.dp)
-                      .testTag(CIRCULAR_PROGRESS_INDICATOR),
+                    modifier = modifier.size(18.dp).testTag(CIRCULAR_PROGRESS_INDICATOR),
                     strokeWidth = 1.6.dp,
                     color = Color.White,
                   )
@@ -244,11 +235,11 @@ private fun PinLogoSection(modifier: Modifier = Modifier, showLogo: Boolean, tit
         painter = painterResource(id = R.drawable.ic_app_logo),
         contentDescription = stringResource(id = R.string.app_logo),
         modifier =
-        modifier
-          .align(Alignment.CenterHorizontally)
-          .requiredHeight(120.dp)
-          .requiredWidth(140.dp)
-          .testTag(PIN_LOGO_IMAGE),
+          modifier
+            .align(Alignment.CenterHorizontally)
+            .requiredHeight(120.dp)
+            .requiredWidth(140.dp)
+            .testTag(PIN_LOGO_IMAGE),
       )
     }
     Text(
@@ -304,24 +295,18 @@ fun ForgotPinDialog(
     text = { Text(text = stringResource(R.string.please_contact_supervisor), fontSize = 16.sp) },
     buttons = {
       Row(
-        modifier = modifier
-          .fillMaxWidth()
-          .padding(vertical = 20.dp),
+        modifier = modifier.fillMaxWidth().padding(vertical = 20.dp),
         horizontalArrangement = Arrangement.End,
       ) {
         Text(
           text = stringResource(R.string.cancel),
-          modifier = modifier
-            .padding(horizontal = 10.dp)
-            .clickable { onDismissDialog() },
+          modifier = modifier.padding(horizontal = 10.dp).clickable { onDismissDialog() },
         )
         Text(
           color = MaterialTheme.colors.primary,
           text = stringResource(R.string.dial_number),
           modifier =
-          modifier
-            .padding(horizontal = 10.dp)
-            .clickable {
+            modifier.padding(horizontal = 10.dp).clickable {
               onDismissDialog()
               forgotPin()
             },

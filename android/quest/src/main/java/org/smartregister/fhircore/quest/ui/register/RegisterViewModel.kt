@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterFilterField
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
@@ -89,6 +90,10 @@ constructor(
   private var allPatientRegisterData: Flow<PagingData<ResourceData>>? = null
   private val _percentageProgress: MutableSharedFlow<Int> = MutableSharedFlow(0)
   private val _isUploadSync: MutableSharedFlow<Boolean> = MutableSharedFlow(0)
+
+  val applicationConfiguration: ApplicationConfiguration by lazy {
+    configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
+  }
 
   /**
    * This function paginates the register data. An optional [clearCache] resets the data in the
@@ -221,15 +226,12 @@ constructor(
         ?.mapValues { it.value.first() }
 
     // Get filter queries from the map. NOTE: filterId MUST be unique for all resources
+    val baseResourceRegisterFilterField = registerDataFilterFieldsMap?.get(baseResource.filterId)
     val newBaseResourceDataQueries =
       createQueriesForRegisterFilter(
-        registerDataFilterFieldsMap?.get(baseResource.filterId)?.dataQueries,
-        qrItemMap,
+        dataQueries = baseResourceRegisterFilterField?.dataQueries,
+        qrItemMap = qrItemMap,
       )
-
-    Timber.i(
-      "New data queries for filtering Base Resources: ${newBaseResourceDataQueries.encodeJson()}",
-    )
 
     val newRelatedResources =
       createFilterRelatedResources(
@@ -238,19 +240,30 @@ constructor(
         qrItemMap = qrItemMap,
       )
 
-    Timber.i(
-      "New configurations for filtering related resource data: ${newRelatedResources.encodeJson()}",
-    )
-
+    val fhirResourceConfig =
+      FhirResourceConfig(
+        baseResource =
+          baseResource.copy(
+            dataQueries = newBaseResourceDataQueries ?: baseResource.dataQueries,
+            nestedSearchResources =
+              baseResourceRegisterFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+                nestedSearchConfig.copy(
+                  dataQueries =
+                    createQueriesForRegisterFilter(
+                      dataQueries = nestedSearchConfig.dataQueries,
+                      qrItemMap = qrItemMap,
+                    ),
+                )
+              } ?: baseResource.nestedSearchResources,
+          ),
+        relatedResources = newRelatedResources,
+      )
     registerFilterState.value =
       RegisterFilterState(
         questionnaireResponse = questionnaireResponse,
-        fhirResourceConfig =
-          FhirResourceConfig(
-            baseResource = baseResource.copy(dataQueries = newBaseResourceDataQueries),
-            relatedResources = newRelatedResources,
-          ),
+        fhirResourceConfig = fhirResourceConfig,
       )
+    Timber.i("New ResourceConfig for register data filter: ${fhirResourceConfig.encodeJson()}")
   }
 
   private fun createFilterRelatedResources(
@@ -259,20 +272,31 @@ constructor(
     qrItemMap: Map<String, QuestionnaireResponse.QuestionnaireResponseItemComponent>,
   ): List<ResourceConfig> {
     val newRelatedResources =
-      relatedResources.map {
+      relatedResources.map { resourceConfig: ResourceConfig ->
+        val registerFilterField = registerDataFilterFieldsMap?.get(resourceConfig.filterId)
         val newDataQueries =
           createQueriesForRegisterFilter(
-            registerDataFilterFieldsMap?.get(it.filterId)?.dataQueries,
-            qrItemMap,
+            dataQueries = registerFilterField?.dataQueries,
+            qrItemMap = qrItemMap,
           )
-        it.copy(
-          dataQueries = newDataQueries,
+        resourceConfig.copy(
+          dataQueries = newDataQueries ?: resourceConfig.dataQueries,
           relatedResources =
             createFilterRelatedResources(
               registerDataFilterFieldsMap = registerDataFilterFieldsMap,
-              relatedResources = it.relatedResources,
+              relatedResources = resourceConfig.relatedResources,
               qrItemMap = qrItemMap,
             ),
+          nestedSearchResources =
+            registerFilterField?.nestedSearchResources?.map { nestedSearchConfig ->
+              nestedSearchConfig.copy(
+                dataQueries =
+                  createQueriesForRegisterFilter(
+                    dataQueries = nestedSearchConfig.dataQueries,
+                    qrItemMap = qrItemMap,
+                  ),
+              )
+            } ?: resourceConfig.nestedSearchResources,
         )
       }
     return newRelatedResources
@@ -285,15 +309,18 @@ constructor(
     dataQueries?.map {
       val newFilterCriteria = mutableListOf<FilterCriterionConfig>()
       it.filterCriteria.forEach { filterCriterionConfig ->
-        val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
-        answerComponent?.answer?.forEach { itemAnswerComponent ->
-          val criterion = convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
-          if (criterion != null) newFilterCriteria.add(criterion)
+        if (!filterCriterionConfig.dataFilterLinkId.isNullOrEmpty()) {
+          val answerComponent = qrItemMap[filterCriterionConfig.dataFilterLinkId]
+          answerComponent?.answer?.forEach { itemAnswerComponent ->
+            val criterion =
+              convertAnswerToFilterCriterion(itemAnswerComponent, filterCriterionConfig)
+            if (criterion != null) newFilterCriteria.add(criterion)
+          }
+        } else {
+          newFilterCriteria.add(filterCriterionConfig)
         }
       }
-      it.copy(
-        filterCriteria = if (newFilterCriteria.isEmpty()) it.filterCriteria else newFilterCriteria,
-      )
+      it.copy(filterCriteria = newFilterCriteria)
     }
 
   private fun convertAnswerToFilterCriterion(
@@ -335,7 +362,7 @@ constructor(
         val numberFilterCriterion =
           oldFilterCriterion as FilterCriterionConfig.NumberFilterCriterionConfig
         FilterCriterionConfig.NumberFilterCriterionConfig(
-          dataType = DataType.DECIMAL,
+          dataType = DataType.INTEGER,
           computedRule = numberFilterCriterion.computedRule,
           prefix = numberFilterCriterion.prefix,
           value = answerComponent.valueIntegerType.value.toBigDecimal(),
@@ -359,7 +386,7 @@ constructor(
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
           valueAsDateTime = true,
-          value = answerComponent.valueDecimalType.asStringValue(),
+          value = answerComponent.valueDateTimeType.asStringValue(),
         )
       }
       answerComponent.hasValueDateType() -> {
@@ -369,7 +396,7 @@ constructor(
           dataType = DataType.DATE,
           computedRule = dateFilterCriterion.computedRule,
           prefix = dateFilterCriterion.prefix,
-          valueAsDateTime = false,
+          valueAsDateTime = dateFilterCriterion.valueAsDateTime,
           value = answerComponent.valueDateType.asStringValue(),
         )
       }
@@ -426,8 +453,14 @@ constructor(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
             isFirstTimeSync =
               sharedPreferencesHelper
-                .read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-                .isNullOrEmpty() && _totalRecordsCount.longValue == 0L,
+                .read(
+                  SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
+                  null,
+                )
+                .isNullOrEmpty() &&
+                _totalRecordsCount.longValue == 0L &&
+                // Do not show progress dialog if initial sync is disabled
+                applicationConfiguration.usePractitionerAssignedLocationOnSync,
             registerConfiguration = currentRegisterConfiguration,
             registerId = registerId,
             totalRecordsCount = _totalRecordsCount.longValue,

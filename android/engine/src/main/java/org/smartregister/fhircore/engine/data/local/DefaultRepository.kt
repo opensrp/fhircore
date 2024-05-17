@@ -196,7 +196,11 @@ constructor(
     }
   }
 
-  suspend fun delete(resourceType: ResourceType, resourceId: String, softDelete: Boolean = false) {
+  suspend fun delete(
+    resourceType: ResourceType,
+    resourceId: String,
+    softDelete: Boolean = false,
+  ) {
     withContext(dispatcherProvider.io()) {
       if (softDelete) {
         val resource = fhirEngine.get(resourceType, resourceId)
@@ -273,7 +277,10 @@ constructor(
         ?.let { relatedPerson ->
           fhirEngine
             .search<Patient> {
-              filter(Patient.RES_ID, { value = of(relatedPerson.patient.extractId()) })
+              filter(
+                Patient.RES_ID,
+                { value = of(relatedPerson.patient.extractId()) },
+              )
             }
             .map { it.resource }
             .firstOrNull()
@@ -298,7 +305,11 @@ constructor(
         }
       val newPatient = fhirEngine.get<Patient>(newManagingEntityId)
 
-      updateRelatedPersonDetails(relatedPerson, newPatient, managingEntityConfig.relationshipCode)
+      updateRelatedPersonDetails(
+        relatedPerson,
+        newPatient,
+        managingEntityConfig.relationshipCode,
+      )
 
       addOrUpdate(resource = relatedPerson)
 
@@ -496,7 +507,7 @@ constructor(
               )
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
-                sortData = false,
+                sortData = true,
                 configComputedRuleValues = configComputedRuleValues,
               )
             }
@@ -504,7 +515,13 @@ constructor(
           search.count(
             onSuccess = {
               relatedResourceWrapper.relatedResourceCountMap[key] =
-                LinkedList<RelatedResourceCount>().apply { add(RelatedResourceCount(count = it)) }
+                LinkedList<RelatedResourceCount>().apply {
+                  add(
+                    RelatedResourceCount(
+                      count = it,
+                    ),
+                  )
+                }
             },
             onFailure = {
               Timber.e(
@@ -536,7 +553,12 @@ constructor(
 
   protected suspend fun Search.count(
     onSuccess: (Long) -> Unit = {},
-    onFailure: (Throwable) -> Unit = { throwable -> Timber.e(throwable, "Error counting data") },
+    onFailure: (Throwable) -> Unit = { throwable ->
+      Timber.e(
+        throwable,
+        "Error counting data",
+      )
+    },
   ): Long =
     kotlin
       .runCatching { withContext(dispatcherProvider.io()) { fhirEngine.count(this@count) } }
@@ -578,7 +600,11 @@ constructor(
         onFailure = {
           Timber.e(
             it,
-            "Error retrieving count for ${baseResource.logicalId.asReference(baseResource.resourceType)} for related resource identified ID $key",
+            "Error retrieving count for ${
+                            baseResource.logicalId.asReference(
+                                baseResource.resourceType,
+                            )
+                        } for related resource identified ID $key",
           )
         },
       )
@@ -671,9 +697,17 @@ constructor(
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
           val includedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.included?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.included
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val reverseIncludedResources: Map<ResourceType, List<Resource>>? =
-            currentSearchResult.revIncluded?.values?.flatten()?.groupBy { it.resourceType }
+            currentSearchResult.revIncluded
+              ?.values
+              ?.flatten()
+              ?.distinctBy { it.id }
+              ?.groupBy { it.resourceType }
           val theRelatedResourcesMap =
             mutableMapOf<ResourceType, List<Resource>>().apply {
               includedResources?.let { putAll(it) }
@@ -709,7 +743,10 @@ constructor(
         }
       }
       .onFailure {
-        Timber.e(it, "Error fetching configured related resources: $relatedResourcesConfigsMap")
+        Timber.e(
+          it,
+          "Error fetching configured related resources: $relatedResourcesConfigsMap",
+        )
       }
   }
 
@@ -956,7 +993,12 @@ constructor(
         .runCatching {
           withContext(dispatcherProvider.io()) { fhirEngine.search<Resource>(search) }
         }
-        .onFailure { Timber.e(it, "Error retrieving resources. Empty list returned by default") }
+        .onFailure {
+          Timber.e(
+            it,
+            "Error retrieving resources. Empty list returned by default",
+          )
+        }
         .getOrDefault(emptyList())
 
     return baseFhirResources.map { searchResult ->

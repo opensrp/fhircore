@@ -317,12 +317,16 @@ fun LoginPage(
               LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(org.smartregister.fhircore.quest.R.string.error_matching_sync_strategy),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.error_matching_sync_strategy
+                  ),
                 )
               LoginErrorState.UNAUTHORISED_PERMISSIONS ->
                 stringResource(
                   id = R.string.login_error,
-                  stringResource(org.smartregister.fhircore.quest.R.string.unauthorised_user_permissions),
+                  stringResource(
+                    org.smartregister.fhircore.quest.R.string.unauthorised_user_permissions
+                  ),
                 ) // todo: improve message
             },
           modifier =
