@@ -5,20 +5,226 @@ sidebar_label: Admin Dashboard Features
 
 # Admin Dashboard Features
 
-### Create practitioners
+This guide outlines the steps to follow to manage Users, Care Team, Organization and Locations on OpenSRP. The platform is named FHIR Web and interacts with the Keycloak and HAPI FHIR servers.
 
-Enroll practitioners to use OpenSRP by capturing basic details such as name and username, then assigning roles and access permissions.
+### Prerequisites
+To navigate through this user guide, you are required to have admin access to the admin portal. In addition, you will need to understand how the different entities tie to each other. Below is a summary.
 
-### Manage locations
+A user represents anyone who will interact with the FHIR SDK-based App or FHIR Web. A user is assigned permission through roles defined in Keycloak which maintains all user authentication. Keycloak defines permissions in the form of roles that can be assigned to a user based on the activities they are expected to carry out. Due to the long list of roles, FHIR Web presents the option to create user groups, which represent a collection of roles that can be assigned to a user.
 
-Add and edit locations based on the health system's prebuilt location hierarchy (the hierarchy is defined when the dashboard is initially set up and is not editable). Locations include name, the parent location, status (active or inactive), and type (jurisdiction or building).
+A user who is expected to interact with the health workflows, is assigned to a care team. A care team is then assigned to an organization (also known as a team). The organization is then assigned to a location which is the lowest point in the hierarchy that a user is expected to interact in while fulfilling the health workflows.
+The steps laid out below ensure a user is able to interact with the
+1. Create/add the complete list of users
+2. Create the location hierarchy
+3. Create Organizations/teams
+4. Create Careteams
+5. Assign the Organization to a location which is the lowest point in the hierarchy that a user is expected to interact
+6. Assign the created careteam to the respective Organization
+7. Assign Users to the careteam
 
-### Manage care teams
+### Access to Admin portal (OpenSRP 2 web portal)
 
-A care team is a collection of practitioners that conduct similar activities. OpenSRP Admin Dashboard allows the ability to create a care team, add teams to an organization, mark the care team as active or inactive, and add practitioners to a care team.
+1. Access the OpenSRP 2 web portal through the url:
+    a. Production - https://web.ProjectName-production.smartregister.org/
+    b. Preview/training - https://web.ProjectName-preview.smartregister.org/
+2. This will load the login page as shown below.
 
-It is required to assign care teams to locations. We assign caregiving practitioners to care teams, these care teams are assigned a managing organization. The Organization is the team. Organizations are then assigned to locations.
+![authentication](/img/admin_dashboard_features/0.jpg)
 
-### Manage and assign teams
+3. Enter your login credentials (Username and Password) and click ‘Sign in’. A landing page will appear as shown below.
+4. The landing page has the following features
 
-Practitioners work at locations such as health facilities. Team assignment ensures navigation through the hierarchy of a country to the location where a team is to be assigned and assigning a team to a location.
+![dashboard](/img/admin_dashboard_features/1.jpg)
+
+1. Side menu: A collection of menus that facilitate the user to conduct management activities.
+2. Users Management: allows you to manage users, user groups and user roles
+3. Locations Management: allows you to manage location units and location unit groups
+4. Care Teams Management:  helps the users create CareTeam to be used to administer the different services in the FHIR Core apps.
+5. Team Management: helps the users create teams (organization) to be used to administer the different services in the FHIR Core apps.
+6. Patients Management: helps the users to view the patient registered on App and synced to the server.
+7. Main landing page: has shortcuts to the side menu items.
+
+### User Management
+The OpenSRP web provides the ability to create users, user groups and assign users to user groups. User groups allows categorization of users with common user roles, by default there are two user groups; Provider user group which refers to clinicians whose main role is to collect immunization data on the mobile application while the Super User group refers to users who have all the privileges such as managing  users, teams and locations.
+
+![user-management](/img/admin_dashboard_features/2.jpg)
+
+### How to create a user group
+1. Click on the ‘User group ’ menu item or on the main landing page
+2. This will load a page with a list of existing user groups.
+
+![user-group](/img/admin_dashboard_features/3.jpg)
+
+3. Click on the ‘New user group’ button on the top right side of the screen.
+4. This will load a form that allows you to enter the user group name.
+
+![new-user-group](/img/admin_dashboard_features/4.jpg)
+
+Fields with Asterisks are a must to fill.
+5. Click ‘Save.
+
+To complete the process of creation of the user group, you will need to assign user roles. To do this, follow the steps below
+
+### How to assign/unassign roles
+1. Click on the ‘User group ’ menu item or on the main landing page
+2. This will load a page with a list of existing user groups.
+
+![user-roles](/img/admin_dashboard_features/5.jpg)
+
+3. Click on the ‘Edit’ link.
+4. This will load a screen that allows you to assign roles to the user group. The screen has the following sections
+    a. Lists the available roles
+    b. Lists the selected roles to be assigned.
+    c. Lists the roles already assigned.
+
+![edit-user-group](/img/admin_dashboard_features/6.jpg)
+
+5. To assign a user role, tick the box next to the preferred user roles, click on the button with an arrow pointing to the right .This will update section 2 with the selected roles. Then click ‘save’ to effect the changes.
+6. To un-assign roles from the user group tick the box next to the roles to be unassigned then click on the button with an arrow pointing to the left, then click ‘save’.
+
+### How to create a user
+1. Click on the ‘User Management ’ menu item or on the main landing page
+2. This will load a page with a list of existing users.
+
+![create-user](/img/admin_dashboard_features/7.jpg)
+
+3. Click on the ‘Add user’ button on the top right of the screen.
+4. This will load a form that allows you to enter the user details.
+Fields with Asterisks are a must to fill.
+
+![add-user](/img/admin_dashboard_features/8.jpg)
+
+5. To assign the user to a particular user group, click on the ‘Group’ field and select the user groups.
+6. Click ‘Save.
+7. You will then need to create credentials for the created user, to do this click on the three dots located beside a particular user.
+
+![user-management](/img/admin_dashboard_features/9.jpg)
+
+8. Click on ‘Credentials’ link from the pop up.
+9. Enter the user credentials on the form that appears
+
+![user-credentials](/img/admin_dashboard_features/10.jpg)
+
+10. Click ‘set password’
+
+### How to update User’s detail
+
+1. Click on the ‘User management’ menu item or on the main landing page
+2. This will load a page with a list of existing Users.
+
+![user-management](/img/admin_dashboard_features/11.jpg)
+
+3. Click on the ‘Edit’ link on the particular user you would like to update.
+4. This will load a form that allows you to update the user’s details.
+Fields with Asterisks are a must to fill.
+
+![edit-user](/img/admin_dashboard_features/12.jpg)
+
+5. Click ‘Save.
+
+### Location Management
+This piece of functionality helps the users create locations and add any parent locations for each location. This package is based on the location resource in FHIR. A location hierarchy is defined by assigning parent locations. If a parent is not selected then the location is taken as a root location in the hierarchy.
+
+### How to create a Location unit
+You can access this page by clicking on the location management menu on the sidebar then, clicking on the location unit menu. This will load a page with a list of existing location units.s. Below is a sample of how the page would look like.
+
+![location-unit-management](/img/admin_dashboard_features/13.jpg)
+
+1. Click on the ‘Add location Unit’ button on the top right of the screen.
+2. This will load a form that allows you to enter the location unit details. The fields are described as follows.  Fields with Asterisks are a must to fill.
+3. Click ‘Save.
+
+### How to update a Location unit
+You can access this page by clicking on the location management menu on the sidebar then, click on the location unit menu. This will load a page with a list of existing location units.s. Below is a sample of how the page would look like.
+
+![location-unit-management](/img/admin_dashboard_features/14.jpg)
+
+1. Click on the ‘Edit’ link.
+2. This will load a form that allows you to update the location unit group details. Fields with Asterisks are a must to fill.
+
+![update-location](/img/admin_dashboard_features/15.jpg)
+
+3. Click ‘Save.
+
+### Care Team Management
+
+This piece of functionality helps the users create CareTeam to be used to administer the different services in the FHIR Core apps.
+    1. This package also allows the different practitioners  to be added to the CareTeam
+    2. This package also allows the different groups to be added to the CareTeam
+
+### How to update a Location unit
+You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.
+
+![fhir-care-team](/img/admin_dashboard_features/16.jpg)
+
+1. Click on the ‘Create CareTeam’ button on the top right of the screen.
+2. This will load a form that allows you to enter the CareTeam’s details. Fields with Asterisks are a must to fill.
+
+![create-care-team](/img/admin_dashboard_features/17.jpg)
+
+3. To assign a Practitioner to that particular CareTeam, click on the ‘Participant’ field and select the practitioners.
+4. To assign a Group to that particular CareTeam, click on the ‘Subject’ field and select the groups.
+5. Click ‘Save'.
+
+### How to update CareTeam’s detail
+You can access this page by clicking on the CareTeam management menu on the sidebar. This will load a page with a list of existing CareTeam. Below is a sample of how the page would look like.
+
+![update-care-team](/img/admin_dashboard_features/18.jpg)
+
+1. Click on the ‘Edit’ link on the particular CareTeam you would like to update.
+
+![update-team](/img/admin_dashboard_features/19.jpg)
+
+2. This will load a form that allows you to update the CareTeam’s details. Fields with Asterisks are a must to fill.
+3. Click ‘Save.
+
+### Team Management
+The FHIR web team(organization) management package provides the ability to perform the following functions.
+1. Creating teams (organization).
+    a. Assign users to teams (organization).
+2. Assigning teams (organization) to locations.
+
+Teams (organization) - This piece of functionality helps the users create teams (organization) to be used to administer the different services in the FHIR Core apps. This package also allows the different users to be added to the teams (organization).
+
+Team assignment - This piece of functionality helps the users assign a location to the teams (organization).
+
+### Teams
+You can access this page by clicking on the team (organization) management menu on the sidebar then, clicking on the teams'(organization) menu. This will load a page with a list of existing Teams (organization). Below is a sample of how the page would look like.
+
+![teams](/img/admin_dashboard_features/20.jpg)
+
+1. Click on the ‘Create Team’ button on the top right of the screen.
+2. This will load a form that allows you to enter the Team’s (organization) details. Fields with Asterisks are a must to fill.
+
+![create-team](/img/admin_dashboard_features/21.jpg)
+
+3. To assign users to that particular team, click on the ‘Team Members’ field and select the users.
+4. Click ‘Save.
+5. To complete the Teams creation process, you will need to assign the team (organization) to a specific location as outlined in the next section.
+
+### How to update Team’s detail
+You can access this page by clicking on the team(organization) management menu on the sidebar then, clicking on the teams' menu. This will load a page with a list of existing Teams. Below is a sample of how the page would look like.
+
+![update-team](/img/admin_dashboard_features/22.jpg)
+
+1. Click on the ‘Edit’ link on the particular Team you would like to update.
+
+![edit-team](/img/admin_dashboard_features/23.jpg)
+
+2. This will load a form that allows you to update the team’s details. Fields with Asterisks are a must to fill.
+3. Click ‘Save.
+
+### Team (organization) Assignment
+NB: Before proceeding with the steps below ensure you have locations uploaded in the system.
+
+How to assign/ unassign Teams to locations
+You can access this page by clicking on the team(organization) management menu on the sidebar then, clicking on the team assignment menu. This will load a page with a list of existing locations. Below is a sample of how the page would look like.
+
+![team-assignment](/img/admin_dashboard_features/24.jpg)
+
+1. Search for the location on the search field, a list of results will appear, click on the preferred location from the results. The location will be updated on the section on the right.
+2. Click on the ‘Edit’ link, a page will appear as shown below that allows you to assign the teams. Select the preferred teams to assign to the location.
+
+![assign-team](/img/admin_dashboard_features/25.jpg)
+
+3. To unassign a team from a location, follow the same process as on the above page click on the teams who would wish to remove.

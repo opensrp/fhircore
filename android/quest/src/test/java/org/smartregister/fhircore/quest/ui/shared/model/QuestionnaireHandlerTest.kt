@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.junit.Before
@@ -86,11 +87,12 @@ class QuestionnaireHandlerTest : RobolectricTest() {
   }
 
   @Test
-  fun testOnSubmitQuestionnaire() = runTest {
-    val activityResult = mockk<ActivityResult>(relaxed = true)
+  fun testOnSubmitQuestionnaire() =
+    runTest(timeout = 30.seconds) {
+      val activityResult = mockk<ActivityResult>(relaxed = true)
 
-    (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
+      (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
 
-    coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
-  }
+      coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
+    }
 }

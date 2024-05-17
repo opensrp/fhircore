@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ fun String.camelCase(): String = CaseUtils.toCamelCase(this, false, '_')
  * Get the practitioner endpoint url and append the keycloak-uuid. The original String is assumed to
  * be a keycloak-uuid.
  */
-fun String.practitionerEndpointUrl(): String = "practitioner-details?keycloak-uuid=$this"
+fun String.practitionerEndpointUrl(): String = "PractitionerDetail?keycloak-uuid=$this"
 
 /** Remove double white spaces from text and also remove space before comma */
 fun String.removeExtraWhiteSpaces(): String =

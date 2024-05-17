@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.p2p.utils.capitalize
 
 const val DIVIDER_TEST_TAG = "dividerTestTag"
+const val NUMBER_OF_ICONS_DISPLAYED = 2
 
 @Composable
 fun ServiceCard(
@@ -170,8 +171,8 @@ private fun RowScope.RenderDetails(
   navController: NavController,
   resourceData: ResourceData,
 ) {
-  val iconsSplit = serviceMemberIcons?.split(",") ?: listOf()
-  val twoMemberIcons = iconsSplit.map { it.capitalize().trim() }.take(2)
+  val iconsSplit = serviceMemberIcons?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
+  val memberIcons = iconsSplit.map { it.capitalize().trim() }.take(NUMBER_OF_ICONS_DISPLAYED)
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.weight(weight).padding(end = 6.dp).fillMaxWidth(),
@@ -190,14 +191,14 @@ private fun RowScope.RenderDetails(
         )
       }
     }
-    // Display 2 icons and counter if icons are more than 2
-    if (twoMemberIcons.isNotEmpty()) {
+    // Display N icons and counter if icons are more than N
+    if (memberIcons.isNotEmpty()) {
       Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.wrapContentWidth(),
         horizontalArrangement = Arrangement.End,
       ) {
-        twoMemberIcons.forEach {
+        memberIcons.forEach {
           if (
             it.isNotEmpty() && ServiceMemberIcon.values().map { icon -> icon.name }.contains(it)
           ) {
@@ -209,13 +210,16 @@ private fun RowScope.RenderDetails(
             )
           }
         }
-        if (twoMemberIcons.size == 2 && iconsSplit.size > 2) {
+        if (
+          memberIcons.size == NUMBER_OF_ICONS_DISPLAYED &&
+            iconsSplit.size > NUMBER_OF_ICONS_DISPLAYED
+        ) {
           Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.clip(CircleShape).size(22.dp).background(DefaultColor.copy(0.1f)),
           ) {
             Text(
-              text = "+${iconsSplit.size - 2}",
+              text = "+${iconsSplit.size - NUMBER_OF_ICONS_DISPLAYED}",
               fontSize = 10.sp,
               color = Color.DarkGray,
               softWrap = false,
@@ -250,8 +254,8 @@ private fun RowScope.RenderActionButtons(
             ) {
               ActionableButton(
                 buttonProperties = serviceCardProperties.serviceButton!!,
-                navController = navController,
                 resourceData = resourceData,
+                navController = navController,
               )
             }
           }
@@ -272,8 +276,8 @@ private fun RowScope.RenderActionButtons(
             serviceCardProperties.services?.forEach { buttonProperties ->
               ActionableButton(
                 buttonProperties = buttonProperties,
-                navController = navController,
                 resourceData = resourceData,
+                navController = navController,
               )
             }
           }
@@ -331,7 +335,7 @@ private fun BigServiceButton(
   ) {
     if (status == ServiceStatus.COMPLETED.name) {
       Icon(
-        modifier = modifier.size(16.dp),
+        modifier = modifier.size(buttonProperties.statusIconSize.dp),
         imageVector = Icons.Filled.Check,
         contentDescription = null,
         tint =

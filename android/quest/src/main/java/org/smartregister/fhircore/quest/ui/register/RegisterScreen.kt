@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -60,6 +63,10 @@ const val NO_REGISTER_VIEW_MESSAGE_TEST_TAG = "noRegisterViewMessageTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEST_TAG = "noRegisterViewButtonTestTag"
 const val NO_REGISTER_VIEW_BUTTON_ICON_TEST_TAG = "noRegisterViewButtonIconTestTag"
 const val NO_REGISTER_VIEW_BUTTON_TEXT_TEST_TAG = "noRegisterViewButtonTextTestTag"
+const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
+const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
+const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
+const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
 
 @Composable
 fun RegisterScreen(
@@ -81,6 +88,7 @@ fun RegisterScreen(
         // Top section has toolbar and a results counts view
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
+          modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
           title = registerUiState.screenTitle,
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
@@ -111,6 +119,7 @@ fun RegisterScreen(
       val fabActions = registerUiState.registerConfiguration?.fabActions
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
+          modifier = modifier.testTag(FAB_BUTTON_REGISTER_TEST_TAG),
           fabActions = fabActions,
           navController = navController,
           lazyListState = lazyListState,
@@ -120,10 +129,15 @@ fun RegisterScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       if (registerUiState.isFirstTimeSync) {
+        val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
-          modifier = modifier,
+          modifier = modifier.testTag(FIRST_TIME_SYNC_DIALOG),
           percentageProgressFlow = registerUiState.progressPercentage,
-          isSyncUploadFlow = registerUiState.isSyncUpload,
+          dialogMessage =
+            stringResource(
+              id = if (isSyncUpload) R.string.syncing_up else R.string.syncing_down,
+            ),
+          showPercentageProgress = true,
         )
       }
       if (
@@ -131,6 +145,7 @@ fun RegisterScreen(
           registerUiState.registerConfiguration?.registerCard != null
       ) {
         RegisterCardList(
+          modifier = modifier.testTag(REGISTER_CARD_TEST_TAG),
           registerCardConfig = registerUiState.registerConfiguration.registerCard,
           pagingItems = pagingItems,
           navController = navController,

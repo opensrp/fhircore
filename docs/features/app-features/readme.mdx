@@ -120,11 +120,25 @@ OpenSRP supports peer-to-peer data transfer using “WiFi-direct” technology s
 
 ![p2p data transfer](/img/p2p.png)
 
-## Sync Insights
+## Sync insights
 
 Through sync insights OpenSRP makes it possible to understand which data has been synced back to the remote server and what data remains unsynced on your device. These insights help provide assurances that data is synced securely and timely. Sync insights also helps the health worker navigate and troubleshoot data connectivity issues, and is invaluable to teams when providing remote support.
 
 ![sync insights](/img/sync-insights.png)
 
-## Roadmap for 2023–2024
+## Known limitations and potential risks
+
+OpenSRP 2 allows a large amount of flexiblity in the creation of apps that run on it. This means that an app's correctness, usability, and effectiveness is dependent upon the content written for that app. To address this it is important to have a comprehensive testing and quality assurance process for the app's content.
+
+Relatedly, an app's content is run through the various software layers of OpenSRP 2, including the Android FHIR SDK and it's underlying libraries, e.g. cql-ruler. A change in these components may affect the way the content is interpreted, and it is therefore essential to validate existing app content against new releases of OpenSRP 2 before upgrading.
+
+## Roadmap features
+
+- Background capture of GPS linked to stored with specific actions (in progress)
+- Content versioning linked to release versioning (in progress)
 - Draft and in-progress forms
+- Library of content configuration patterns and common use cases, e.g.:
+    - Editing data that is not related to further generated data, e.g. names
+    - Editing data that is related to further generated data, e.g. age or pregnancy status
+    - Load all the members of a family into a Questionnaire, e.g. to select a caregiver.
+- Questionnaire widget to capture GPS (in progress)

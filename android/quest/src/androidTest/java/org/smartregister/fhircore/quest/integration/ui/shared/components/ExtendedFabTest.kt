@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.quest.integration.ui.shared.components
 
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -39,9 +39,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.FAB_BUTTON_ROW_TEXT
 import org.smartregister.fhircore.quest.ui.shared.components.FAB_BUTTON_TEST_TAG
 
 class ExtendedFabTest {
-
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
-
   @get:Rule val composeRule = createComposeRule()
 
   private fun init() {
@@ -64,10 +61,41 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }
+  }
+
+  @Test
+  fun can_initializing_extended_fab_with_null_resource_data() {
+    composeRule.setContent {
+      ExtendedFab(
+        fabActions =
+          listOf(
+            NavigationMenuConfig(
+              id = "test",
+              display = "Fab Button",
+              menuIconConfig = ImageConfig(type = ICON_TYPE_LOCAL, reference = "ic_user"),
+              actions =
+                listOf(
+                  ActionConfig(
+                    trigger = ActionTrigger.ON_CLICK,
+                    workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
+                    questionnaire = QuestionnaireConfig(id = "23", title = "Add Family"),
+                  ),
+                ),
+            ),
+          ),
+        resourceData = null,
+        navController = TestNavHostController(LocalContext.current),
+        lazyListState = null,
+      )
+    }
+    composeRule
+      .onNodeWithTag(FAB_BUTTON_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 
   @Test
@@ -120,7 +148,7 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }
@@ -158,7 +186,7 @@ class ExtendedFabTest {
             ),
           ),
         resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
-        navController = navController,
+        navController = TestNavHostController(LocalContext.current),
         lazyListState = null,
       )
     }

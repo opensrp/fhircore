@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package org.smartregister.fhircore.quest.integration.ui.shared.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import io.mockk.mockk
+import androidx.navigation.testing.TestNavHostController
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +42,6 @@ import org.smartregister.fhircore.quest.ui.shared.components.ActionableButton
 
 class ActionableButtonTest {
   @get:Rule val composeRule = createComposeRule()
-  private val navController = mockk<NavController>(relaxed = true, relaxUnitFun = true)
 
   @Test
   fun testActionableButtonRendersAncClickWorksCorrectlyWithStatusDue() {
@@ -123,7 +122,7 @@ class ActionableButtonTest {
               startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
             ),
           resourceData = ResourceData("id", ResourceType.Patient, computedValuesMap),
-          navController = navController,
+          navController = TestNavHostController(LocalContext.current),
         )
       }
     }

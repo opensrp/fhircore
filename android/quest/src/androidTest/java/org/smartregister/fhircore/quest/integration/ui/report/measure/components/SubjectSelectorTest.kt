@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import io.mockk.spyk
-import io.mockk.verify
 import org.hl7.fhir.r4.model.ResourceType
-import org.junit.Before
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.ui.report.measure.components.CHANGE_TEXT_TEST_TAG
@@ -35,29 +33,30 @@ import org.smartregister.fhircore.quest.ui.shared.models.MeasureReportSubjectVie
 
 class SubjectSelectorTest {
 
-  private val mockListener: () -> Unit = spyk({})
-
   @get:Rule val composeTestRule = createComposeRule()
-
-  @Before
-  fun setup() {
-    composeTestRule.setContent {
-      SubjectSelector(
-        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
-        onAddSubject = mockListener,
-        onRemoveSubject = {},
-      )
-    }
-  }
 
   @Test
   fun testSubjectSelectorRendersSubjectNameCorrectly() {
+    composeTestRule.setContent {
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = {},
+        onRemoveSubject = {},
+      )
+    }
     composeTestRule.onNodeWithTag(SUBJECT_NAME_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("Mary Magdalene").assertExists().assertIsDisplayed()
   }
 
   @Test
   fun testSubjectSelectorRendersCloseIconBackgroundCorrectly() {
+    composeTestRule.setContent {
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = {},
+        onRemoveSubject = {},
+      )
+    }
     composeTestRule
       .onNodeWithTag(CLOSE_ICON_TEST_TAG, useUnmergedTree = true)
       .assertExists()
@@ -66,15 +65,31 @@ class SubjectSelectorTest {
 
   @Test
   fun testSubjectSelectorRendersChangeTextCorrectly() {
+    composeTestRule.setContent {
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = {},
+        onRemoveSubject = {},
+      )
+    }
     composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG, useUnmergedTree = true).assertExists()
     composeTestRule.onNodeWithText("ADD").assertExists().assertIsDisplayed()
   }
 
   @Test
   fun testThatChangeRowClickCallsTheListener() {
+    var clicked = false
+
+    composeTestRule.setContent {
+      SubjectSelector(
+        subjects = setOf(MeasureReportSubjectViewData(ResourceType.Patient, "1", "Mary Magdalene")),
+        onAddSubject = { clicked = true },
+        onRemoveSubject = {},
+      )
+    }
     val changeRow = composeTestRule.onNodeWithTag(CHANGE_TEXT_TEST_TAG)
     changeRow.assertExists()
     changeRow.performClick()
-    verify { mockListener() }
+    Assert.assertTrue(clicked)
   }
 }

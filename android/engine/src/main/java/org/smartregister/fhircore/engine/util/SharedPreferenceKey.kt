@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,14 @@ enum class SharedPreferenceKey {
   PRACTITIONER_ID,
   PRACTITIONER_DETAILS,
   PRACTITIONER_LOCATION_HIERARCHIES,
+  PRACTITIONER_LOCATION,
   REMOTE_SYNC_RESOURCES,
   LOGIN_CREDENTIAL_KEY,
   LOGIN_PIN_KEY,
   LOGIN_PIN_SALT,
   LAST_OFFSET,
+  USER_INFO,
+  CARE_TEAM,
+  ORGANIZATION,
+  GEO_LOCATION,
 }

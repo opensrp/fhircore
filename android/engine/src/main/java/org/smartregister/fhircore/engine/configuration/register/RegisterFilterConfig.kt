@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.configuration.register
 import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.DataQuery
+import org.smartregister.fhircore.engine.domain.model.NestedSearchConfig
 
 @Serializable
 data class RegisterFilterConfig(
@@ -28,6 +29,7 @@ data class RegisterFilterConfig(
 
 @Serializable
 data class RegisterFilterField(
-  val dataQueries: List<DataQuery>,
   val filterId: String,
+  val dataQueries: List<DataQuery>? = null,
+  val nestedSearchResources: List<NestedSearchConfig>? = null,
 ) : java.io.Serializable

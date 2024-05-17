@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,8 @@ fun ExtendedFab(
           modifier = modifier.testTag(FAB_BUTTON_ROW_ICON_TEST_TAG),
           imageProperties = ImageProperties(imageConfig = firstMenuIconConfig),
           tint = if (firstFabEnabled) Color.White else DefaultColor,
+          navController = navController,
+          resourceData = resourceData,
         )
       }
       if (text.isNotEmpty()) {

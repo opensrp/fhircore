@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
 const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun ProfileScreen(
@@ -94,7 +96,7 @@ fun ProfileScreen(
   LaunchedEffect(Unit) {
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
-
+  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
@@ -118,8 +120,6 @@ fun ProfileScreen(
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.profileConfiguration?.fabActions
-
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
@@ -154,12 +154,21 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary,
         )
       }
-      LazyColumn(state = lazyListState) {
+      LazyColumn(
+        state = lazyListState,
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+          ),
+      ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
           )
         }
@@ -232,8 +241,8 @@ private fun RenderSimpleAppTopBar(
   ) {
     ViewRenderer(
       viewProperties = topBarConfig.content,
-      resourceData = profileUiState.resourceData
-          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      resourceData =
+        profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
     )
   }
@@ -346,6 +355,8 @@ private fun ProfileTopAppBarMenuAction(
             Image(
               imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
               tint = contentColor,
+              navController = navController,
+              resourceData = profileUiState.resourceData!!,
             )
             if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
             Text(text = overflowMenuItemConfig.title, color = contentColor)

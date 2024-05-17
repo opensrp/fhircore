@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package org.smartregister.fhircore.quest.ui.register
 sealed class RegisterEvent {
   data class SearchRegister(val searchText: String = "") : RegisterEvent()
 
-  object MoveToNextPage : RegisterEvent()
+  data object MoveToNextPage : RegisterEvent()
 
-  object MoveToPreviousPage : RegisterEvent()
+  data object MoveToPreviousPage : RegisterEvent()
 
-  object ResetFilterRecordsCount : RegisterEvent()
+  data object ResetFilterRecordsCount : RegisterEvent()
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
 @HiltAndroidTest
@@ -49,7 +48,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
       QuestionnaireConfig(
         id = "@{id}",
         title = "@{title}",
-        type = QuestionnaireType.EDIT,
+        type = "@{type}",
         resourceIdentifier = "@{resourceIdentifier}",
         confirmationDialog =
           ConfirmationDialog(
@@ -85,6 +84,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
         "planDef1" to "97c5f33b-389c-4ecb-abd3-46c5a3ac4026",
         "linkId1" to "1",
         "linkId2" to "2",
+        "type" to "EDIT",
       )
 
     val interpolatedConfig = questionnaireConfig.interpolate(map)
@@ -103,6 +103,7 @@ class QuestionnaireConfigTest : RobolectricTest() {
     )
     Assert.assertEquals("1", interpolatedConfig.readOnlyLinkIds!![0])
     Assert.assertEquals("2", interpolatedConfig.readOnlyLinkIds!![1])
+    Assert.assertEquals("EDIT", interpolatedConfig.type)
   }
 
   @Test

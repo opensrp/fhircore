@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.work.WorkManager
-import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -66,6 +66,7 @@ import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.ui.bottomsheet.RegisterBottomSheetFragment
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -86,6 +87,8 @@ class AppMainViewModelTest : RobolectricTest() {
   @Inject lateinit var gson: Gson
 
   @Inject lateinit var workManager: WorkManager
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
@@ -117,7 +120,7 @@ class AppMainViewModelTest : RobolectricTest() {
           sharedPreferencesHelper = sharedPreferencesHelper,
           configurationRegistry = configurationRegistry,
           registerRepository = registerRepository,
-          dispatcherProvider = this.coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           workManager = workManager,
           fhirCarePlanGenerator = fhirCarePlanGenerator,
         ),
@@ -167,7 +170,7 @@ class AppMainViewModelTest : RobolectricTest() {
   fun testOnEventUpdateSyncStates() {
     // Simulate sync state Finished
     val syncFinishedTimestamp = OffsetDateTime.now()
-    val syncFinishedSyncJobStatus = mockk<SyncJobStatus.Finished>()
+    val syncFinishedSyncJobStatus = mockk<CurrentSyncJobStatus.Succeeded>()
     every { syncFinishedSyncJobStatus.timestamp } returns syncFinishedTimestamp
 
     appMainViewModel.onEvent(
@@ -212,15 +215,13 @@ class AppMainViewModelTest : RobolectricTest() {
   @Test
   fun testOnEventTriggerWorkflow() {
     val action =
-      spyk(
-        listOf(
-          ActionConfig(
-            trigger = ActionTrigger.ON_CLICK,
-            workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
-          ),
+      listOf(
+        ActionConfig(
+          trigger = ActionTrigger.ON_CLICK,
+          workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
         ),
       )
-    val navMenu = spyk(NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action))
+    val navMenu = NavigationMenuConfig(id = "menuId", display = "Menu Item", actions = action)
     appMainViewModel.onEvent(
       AppMainEvent.TriggerWorkflow(navController = navController, navMenu = navMenu),
     )

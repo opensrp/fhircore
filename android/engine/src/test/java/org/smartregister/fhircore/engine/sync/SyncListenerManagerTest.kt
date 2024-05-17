@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
 
@@ -40,17 +41,16 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
-  private lateinit var syncListenerManager: SyncListenerManager
-
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
-
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
   @Inject lateinit var configService: ConfigService
 
-  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
+  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
+  private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var hiltActivityForTest: HiltActivityForTest
+  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
 
   @Before
   fun setUp() {
@@ -62,6 +62,8 @@ class SyncListenerManagerTest : RobolectricTest() {
         configService = configService,
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
+        context = ApplicationProvider.getApplicationContext(),
+        dispatcherProvider = dispatcherProvider,
       )
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ constructor(
             start = startDateFormatted,
             end = endDateFormatted,
             reportType = MeasureReportViewModel.POPULATION,
-            subject = null,
+            subjectId = null,
             practitioner = null,
             /* TODO DO NOT pass this id to MeasureProcessor as this is treated as subject if subject is null.
             practitionerId?.asReference(ResourceType.Practitioner)?.reference*/

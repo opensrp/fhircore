@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.di
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import com.google.gson.Gson
@@ -24,7 +25,9 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -36,6 +39,8 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
+import org.smartregister.fhircore.engine.BuildConfig
+import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.auth.OAuthService
@@ -43,6 +48,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirConverter
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.TimeZoneTypeAdapter
 import org.smartregister.fhircore.engine.util.extension.getCustomJsonParser
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -51,6 +57,7 @@ import timber.log.Timber
 @InstallIn(SingletonComponent::class)
 @Module
 class NetworkModule {
+  private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
 
   @Provides
   @NoAuthorizationOkHttpClientQualifier
@@ -58,7 +65,10 @@ class NetworkModule {
     OkHttpClient.Builder()
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
@@ -73,8 +83,39 @@ class NetworkModule {
   fun provideOkHttpClient(
     tokenAuthenticator: TokenAuthenticator,
     sharedPreferencesHelper: SharedPreferencesHelper,
+    openSrpApplication: OpenSrpApplication?,
   ) =
     OkHttpClient.Builder()
+      .addInterceptor(
+        Interceptor { chain: Interceptor.Chain ->
+          try {
+            var request = chain.request()
+            val requestPath = request.url.encodedPath.substring(1)
+            val resourcePath = if (!_isNonProxy) requestPath.replace("fhir/", "") else requestPath
+
+            openSrpApplication?.let {
+              if (
+                (request.url.host == it.getFhirServerHost()?.host) &&
+                  CUSTOM_ENDPOINTS.contains(resourcePath)
+              ) {
+                val newUrl = request.url.newBuilder().encodedPath("/$resourcePath").build()
+                request = request.newBuilder().url(newUrl).build()
+              }
+            }
+
+            chain.proceed(request)
+          } catch (e: Exception) {
+            Timber.e(e)
+            Response.Builder()
+              .request(chain.request())
+              .protocol(Protocol.HTTP_1_1)
+              .code(901)
+              .message(e.message ?: "Failed to overwrite URL request successfully")
+              .body("{$e}".toResponseBody(null))
+              .build()
+          }
+        },
+      )
       .addInterceptor(
         Interceptor { chain: Interceptor.Chain ->
           try {
@@ -103,7 +144,10 @@ class NetworkModule {
       )
       .addInterceptor(
         HttpLoggingInterceptor().apply {
-          level = HttpLoggingInterceptor.Level.BASIC
+          level =
+            if (BuildConfig.DEBUG) {
+              HttpLoggingInterceptor.Level.BODY
+            } else HttpLoggingInterceptor.Level.BASIC
           redactHeader(AUTHORIZATION)
           redactHeader(COOKIE)
         },
@@ -114,7 +158,12 @@ class NetworkModule {
       .retryOnConnectionFailure(false) // Avoid silent retries sometimes before token is provided
       .build()
 
-  @Provides fun provideGson(): Gson = GsonBuilder().setLenient().create()
+  @Provides
+  fun provideGson(): Gson =
+    GsonBuilder()
+      .setLenient()
+      .registerTypeAdapter(TimeZone::class.java, TimeZoneTypeAdapter().nullSafe())
+      .create()
 
   @Provides fun provideParser(): IParser = FhirContext.forR4Cached().getCustomJsonParser()
 
@@ -182,11 +231,17 @@ class NetworkModule {
   fun provideFhirResourceService(@RegularRetrofit retrofit: Retrofit): FhirResourceService =
     retrofit.create(FhirResourceService::class.java)
 
+  @Provides
+  @Singleton
+  fun provideFHIRBaseURL(@ApplicationContext context: Context): OpenSrpApplication? =
+    if (context is OpenSrpApplication) context else null
+
   companion object {
     const val TIMEOUT_DURATION = 120L
     const val AUTHORIZATION = "Authorization"
     const val APPLICATION_ID = "App-Id"
     const val COOKIE = "Cookie"
     val JSON_MEDIA_TYPE = "application/json".toMediaType()
+    val CUSTOM_ENDPOINTS = listOf("PractitionerDetail", "LocationHierarchy")
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
+import android.content.Context
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
@@ -24,6 +25,7 @@ import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
@@ -42,6 +44,7 @@ import org.hl7.fhir.r4.model.Flag
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Immunization
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -53,13 +56,19 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StringType
 import org.hl7.fhir.r4.model.StructureMap
 import org.hl7.fhir.r4.model.Task
 import org.hl7.fhir.r4.model.Timing
+import org.hl7.fhir.r4.model.Type
 import org.joda.time.Instant
 import org.json.JSONException
 import org.json.JSONObject
+import org.smartregister.fhircore.engine.configuration.LinkIdType
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import timber.log.Timber
 
 const val REFERENCE = "reference"
@@ -120,9 +129,9 @@ fun <T> String.decodeResourceFromString(parser: IParser = fhirR4JsonParser): T =
   parser.parseResource(this) as T
 
 fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
-  var extensionUpdateForm = listOf<Extension>()
+  var extensionUpdateFrom = listOf<Extension>()
   if (updatedResource is Patient) {
-    extensionUpdateForm = updatedResource.extension
+    extensionUpdateFrom = updatedResource.extension
   }
   var extension = listOf<Extension>()
   if (this is Patient) {
@@ -135,27 +144,27 @@ fun <T : Resource> T.updateFrom(updatedResource: Resource): T {
   originalResourceJson.updateFrom(JSONObject(updatedResource.encodeResourceToString(jsonParser)))
   return jsonParser.parseResource(this::class.java, originalResourceJson.toString()).apply {
     val meta = this.meta
-    val metaUpdateForm = this@updateFrom.meta
+    val metaUpdateFrom = this@updateFrom.meta
     if ((meta == null || meta.isEmpty)) {
-      if (metaUpdateForm != null) {
-        this.meta = metaUpdateForm
-        this.meta.tag = metaUpdateForm.tag
+      if (metaUpdateFrom != null) {
+        this.meta = metaUpdateFrom
+        this.meta.tag = metaUpdateFrom.tag
       }
     } else {
       val setOfTags = mutableSetOf<Coding>()
       setOfTags.addAll(meta.tag)
-      setOfTags.addAll(metaUpdateForm.tag)
+      setOfTags.addAll(metaUpdateFrom.tag)
       this.meta.tag = setOfTags.distinctBy { it.code + it.system }
     }
     if (this is Patient && this@updateFrom is Patient && updatedResource is Patient) {
       if (extension.isEmpty()) {
-        if (extensionUpdateForm.isNotEmpty()) {
-          this.extension = extensionUpdateForm
+        if (extensionUpdateFrom.isNotEmpty()) {
+          this.extension = extensionUpdateFrom
         }
       } else {
         val setOfExtension = mutableSetOf<Extension>()
         setOfExtension.addAll(extension)
-        setOfExtension.addAll(extensionUpdateForm)
+        setOfExtension.addAll(extensionUpdateFrom)
         this.extension = setOfExtension.distinct()
       }
     }
@@ -215,6 +224,31 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
   }
 }
 
+/**
+ * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
+ * [readOnlyLinkIds] item are there while editing the form. This also generates the correct FHIRPath
+ * population expression for each question when mapped to the corresponding [QuestionnaireResponse]
+ */
+fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForEditing(
+  path: String = "QuestionnaireResponse.item",
+  readOnlyLinkIds: List<String>? = emptyList(),
+) {
+  forEach { item ->
+    if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+      item.readOnly = readOnlyLinkIds?.contains(item.linkId) == true
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnlyLinkIds,
+      )
+    } else {
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnlyLinkIds,
+      )
+    }
+  }
+}
+
 /** Delete resources in [QuestionnaireResponse.contained] from the database */
 suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
   contained.forEach { defaultRepository.delete(it) }
@@ -237,7 +271,10 @@ fun QuestionnaireResponse.getEncounterId(): String? {
   return this.contained
     ?.find { it.resourceType == ResourceType.Encounter }
     ?.logicalId
-    ?.replace("#", "")
+    ?.replace(
+      "#",
+      "",
+    )
 }
 
 fun Resource.generateMissingId() {
@@ -246,15 +283,19 @@ fun Resource.generateMissingId() {
 
 fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?) {
   // Organization reference in shared pref as "Organization/some-gibberish-uuid"
+  // Only set organization only if the desired Resource property is null
   authenticatedOrganizationIds?.let { ids ->
     val organizationRef =
       ids.firstOrNull()?.extractLogicalIdUuid()?.asReference(ResourceType.Organization)
 
-    when (this) {
-      is Patient -> managingOrganization = organizationRef
-      is Group -> managingEntity = organizationRef
-      is Encounter -> serviceProvider = organizationRef
-      is Location -> managingOrganization = organizationRef
+    if (organizationRef != null) {
+      when (this) {
+        is Patient -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        is Group -> managingEntity = updateReference(managingEntity, organizationRef)
+        is Encounter -> serviceProvider = updateReference(serviceProvider, organizationRef)
+        is Location -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        else -> {}
+      }
     }
   }
 }
@@ -265,18 +306,70 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
     val practitionerRef = it.asReference(ResourceType.Practitioner)
 
     when (this) {
-      is Patient -> generalPractitioner = arrayListOf(practitionerRef)
-      is Observation -> performer = arrayListOf(practitionerRef)
-      is QuestionnaireResponse -> author = practitionerRef
-      is Flag -> author = practitionerRef
+      is Patient ->
+        generalPractitioner =
+          if (generalPractitioner.isNullOrEmpty()) {
+            arrayListOf(practitionerRef)
+          } else {
+            generalPractitioner
+          }
+      is Observation ->
+        performer = if (performer.isNullOrEmpty()) arrayListOf(practitionerRef) else performer
+      is QuestionnaireResponse -> author = updateReference(author, practitionerRef)
+      is Flag -> author = updateReference(author, practitionerRef)
       is Encounter ->
         participant =
-          arrayListOf(
-            Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
-          )
+          if (participant.isNullOrEmpty()) {
+            arrayListOf(
+              Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
+            )
+          } else {
+            participant
+          }
+      else -> {}
     }
   }
 }
+
+fun Resource.appendRelatedEntityLocation(
+  questionnaireResponse: QuestionnaireResponse,
+  questionnaireConfig: QuestionnaireConfig,
+  context: Context,
+) {
+  val locationCoding =
+    Coding().apply {
+      system =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+      display =
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
+        )
+    }
+  questionnaireConfig.linkIds
+    ?.filter { it.type == LinkIdType.LOCATION }
+    ?.forEach { linkIdConfig ->
+      val answer: Type? = questionnaireResponse.find(linkIdConfig.linkId)?.answerFirstRep?.value
+      val locationId =
+        when (answer) {
+          is Reference -> answer.reference.extractLogicalIdUuid()
+          is StringType -> answer.value.extractLogicalIdUuid()
+          else -> null
+        }
+      val existingTag = this.meta.getTag(locationCoding.system, locationId)
+      if (!locationId.isNullOrEmpty() && existingTag == null) {
+        this.meta.addTag(locationCoding.apply { setCode(locationId) })
+      }
+    }
+}
+
+private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
+  if (oldReference == null || oldReference.reference.isNullOrEmpty()) {
+    newReference
+  } else {
+    Reference(oldReference.reference)
+  }
 
 fun Resource.updateLastUpdated() {
   meta.lastUpdated = Date()
@@ -313,6 +406,14 @@ fun isValidResourceType(resourceCode: String): Boolean {
   } catch (exception: FHIRException) {
     false
   }
+}
+
+fun ImplementationGuide.retrieveImplementationGuideDefinitionResources():
+  List<ImplementationGuide.ImplementationGuideDefinitionResourceComponent> {
+  val resources =
+    mutableListOf<ImplementationGuide.ImplementationGuideDefinitionResourceComponent>()
+  this.definition.resource.forEach { resources.add(it) }
+  return resources
 }
 
 /**
@@ -370,14 +471,21 @@ suspend fun Task.updateDependentTaskDueDate(
   return apply {
     val dependentTasks =
       defaultRepository.fhirEngine
-        .search<Task> { filter(referenceParameter = ReferenceClientParam(PARTOF), { value = id }) }
+        .search<Task> {
+          filter(
+            referenceParameter = ReferenceClientParam(PARTOF),
+            { value = id },
+          )
+        }
         .map { it.resource }
     dependentTasks.forEach { dependantTask ->
       dependantTask.partOf.forEach { _ ->
         if (
           dependantTask.executionPeriod.hasStart() &&
             dependantTask.hasInput() &&
-            dependantTask.status.equals(Task.TaskStatus.REQUESTED)
+            dependantTask.status.equals(
+              Task.TaskStatus.REQUESTED,
+            )
         ) {
           this.output.forEach { taskOp ->
             try {
@@ -408,8 +516,11 @@ suspend fun Task.updateDependentTaskDueDate(
                           dependantTask
                             .apply {
                               executionPeriod.start =
-                                Date.from(immunizationDate?.toInstant())
-                                  .plusDays(dependentTaskInputDuration)
+                                Date.from(
+                                  immunizationDate
+                                    ?.toInstant()
+                                    ?.plus(dependentTaskInputDuration.toLong(), ChronoUnit.DAYS),
+                                )
                             }
                             .run {
                               defaultRepository.addOrUpdate(
@@ -428,6 +539,30 @@ suspend fun Task.updateDependentTaskDueDate(
             }
           }
         }
+      }
+    }
+  }
+}
+
+/**
+ * Filter provided [Resource]'s using FhirPath expressions. The extracted FHIRPath value is REQUIRED
+ * to be a boolean otherwise the [toBoolean] function will evaluate to false and hence return an
+ * empty list.
+ */
+fun List<RepositoryResourceData>.filterByFhirPathExpression(
+  fhirPathDataExtractor: FhirPathDataExtractor,
+  conditionalFhirPathExpressions: List<String>?,
+  matchAll: Boolean,
+): List<RepositoryResourceData> {
+  if (conditionalFhirPathExpressions.isNullOrEmpty()) return this
+  return this.filter { repositoryResourceData ->
+    if (matchAll) {
+      conditionalFhirPathExpressions.all {
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
+      }
+    } else {
+      conditionalFhirPathExpressions.any {
+        fhirPathDataExtractor.extractValue(repositoryResourceData.resource, it).toBoolean()
       }
     }
   }

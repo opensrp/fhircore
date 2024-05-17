@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ fun RegisterCardList(
   currentPage: MutableState<Int>,
   showPagination: Boolean = false,
 ) {
-  LazyColumn(modifier = modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
+  LazyColumn(modifier = Modifier.testTag(REGISTER_CARD_LIST_TEST_TAG), state = lazyListState) {
     items(
       count = pagingItems.itemCount,
       key = pagingItems.itemKey { it.baseResourceId },
@@ -106,6 +106,7 @@ fun RegisterCardList(
           resultCount = pagingItems.itemCount,
           currentPage = currentPage.value.plus(1),
           pagesCount = registerUiState.pagesCount,
+          fabActions = registerUiState.registerConfiguration?.fabActions,
           previousButtonClickListener = { onEvent(RegisterEvent.MoveToPreviousPage) },
           nextButtonClickListener = { onEvent(RegisterEvent.MoveToNextPage) },
         )

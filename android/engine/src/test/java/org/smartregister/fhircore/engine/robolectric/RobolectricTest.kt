@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,8 @@ abstract class RobolectricTest {
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
       object : Observer<T> {
-        override fun onChanged(o: T) {
-          data[0] = o
+        override fun onChanged(value: T) {
+          data[0] = value
           latch.countDown()
           liveData.removeObserver(this)
         }

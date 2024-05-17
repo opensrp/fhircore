@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -56,7 +55,9 @@ import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.profile.bottomSheet.ProfileBottomSheetFragment
 import org.smartregister.fhircore.quest.ui.profile.model.EligibleManagingEntity
+import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import org.smartregister.fhircore.quest.util.extensions.loadRemoteImagesBitmaps
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -97,14 +98,7 @@ constructor(
       )
     profileConfig.overFlowMenuItems
       .filter { it.icon != null && !it.icon!!.reference.isNullOrEmpty() }
-      .forEach {
-        val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
-        viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
-          }
-        }
-      }
+      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
   }
 
   suspend fun retrieveProfileUiState(
@@ -142,6 +136,21 @@ constructor(
           computedValuesMap = resourceData.computedValuesMap.plus(paramsMap),
           listResourceDataStateMap = listResourceDataStateMap,
         )
+        if (
+          listResourceDataStateMap[listProperties.id] != null &&
+            listResourceDataStateMap[listProperties.id]?.size!! > 0
+        ) {
+          val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
+          viewModelScope.launch(dispatcherProvider.io()) {
+            if (computedMap != null) {
+              loadRemoteImagesBitmaps(
+                profileConfiguration.views,
+                registerRepository,
+                computedMap,
+              )
+            }
+          }
+        }
       }
     }
   }
@@ -199,9 +208,11 @@ constructor(
             emitSnackBarState(
               snackBarMessageConfig =
                 SnackBarMessageConfig(
-                  message = event.managingEntityConfig?.managingEntityReassignedMessage
+                  message =
+                    event.managingEntityConfig?.managingEntityReassignedMessage
                       ?: event.context.getString(R.string.reassigned_managing_entity),
-                  actionLabel = event.context.getString(R.string.ok),
+                  actionLabel =
+                    event.context.getString(org.smartregister.fhircore.engine.R.string.ok),
                 ),
             )
             refreshProfileDataLiveData.value = true
@@ -256,8 +267,7 @@ constructor(
                   expression = managingEntity.nameFhirPathExpression!!,
                 ),
             )
-          }
-          ?: emptyList()
+          } ?: emptyList()
 
       // Show error message when no group members are found
       if (eligibleManagingEntities.isEmpty()) {

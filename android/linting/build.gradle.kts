@@ -3,12 +3,9 @@ plugins {
   id("org.jetbrains.kotlin.jvm")
 }
 
-dependencies {
-  implementation(libs.ktlint.cli.ruleset)
-  implementation(libs.ktlint.rule.engine.core)
-}
+dependencies { implementation(libs.bundles.klint) }
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
 }
