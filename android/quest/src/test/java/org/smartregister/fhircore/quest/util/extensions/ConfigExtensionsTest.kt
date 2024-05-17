@@ -286,7 +286,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     Assert.assertEquals(MainNavigationScreen.GeoWidgetLauncher.route, slotInt.captured)
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
-    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.GEO_WIDGET_ID))
   }
 
   @Test
