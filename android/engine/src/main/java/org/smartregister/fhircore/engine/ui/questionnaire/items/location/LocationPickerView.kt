@@ -54,9 +54,13 @@ class LocationPickerView(
 
   private var cardView: CardView? = null
   private var locationNameText: TextView? = null
-  private var physicalLocatorInputLayout: TextInputLayout? = null
+  var physicalLocatorInputLayout: TextInputLayout? = null
   private var physicalLocatorInputEditText: TextInputEditText? = null
   var headerView: HeaderView? = null
+
+  val helperText: TextView
+  private var errorView: LinearLayout
+  private var errorText: TextView
 
   private var initialValue: String? = null
 
@@ -66,6 +70,10 @@ class LocationPickerView(
     headerView = itemView.findViewById(R.id.header)
     physicalLocatorInputLayout = itemView.findViewById(R.id.physical_locator_input_layout)
     physicalLocatorInputEditText = itemView.findViewById(R.id.physical_locator_edit_text)
+
+    helperText = itemView.findViewById(R.id.location_helper_text)
+    errorView = itemView.findViewById(R.id.item_error_view)
+    errorText = itemView.findViewById(R.id.error_text)
 
     cardView?.setOnClickListener { showDropdownDialog() }
     physicalLocatorInputEditText?.doAfterTextChanged { editable: Editable? ->
@@ -110,6 +118,10 @@ class LocationPickerView(
   }
 
   private fun onUpdate() {
+    if (physicalLocator == null || selectedHierarchy == null) {
+      onLocationChanged?.invoke(StringType(null))
+      return
+    }
     val strValue =
       "${selectedHierarchy?.identifier ?: "-"}|${selectedHierarchy?.name ?: "-"}|${physicalLocator ?: "-"}"
     onLocationChanged?.invoke(StringType(strValue))
@@ -211,6 +223,26 @@ class LocationPickerView(
       }
       initialValue = initialAnswer
     }
+  }
+
+  fun showError(validationErrorMessage: String?) {
+    if (validationErrorMessage == null) {
+      errorView.visibility = View.GONE
+      return
+    }
+
+    errorView.visibility = View.VISIBLE
+    errorText.text = validationErrorMessage
+  }
+
+  fun setRequiredOrOptionalText(requiredOrOptionalText: String?) {
+    physicalLocatorInputLayout?.let { it.helperText = requiredOrOptionalText }
+    if (requiredOrOptionalText == null) {
+      helperText.visibility = View.GONE
+      return
+    }
+    helperText.text = requiredOrOptionalText
+    helperText.visibility = View.VISIBLE
   }
 }
 

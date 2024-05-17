@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.ui.questionnaire.items
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.datacapture.extensions.getRequiredOrOptionalText
+import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.fhir.datacapture.views.factories.QuestionnaireItemViewHolderDelegate
@@ -43,6 +45,9 @@ class LocationPickerViewHolderFactory(
 
       override fun bind(questionnaireViewItem: QuestionnaireViewItem) {
         locationPickerView.headerView?.bind(questionnaireViewItem)
+        locationPickerView.setRequiredOrOptionalText(
+          getRequiredOrOptionalText(questionnaireViewItem, context)
+        )
         locationPickerView.setOnLocationChanged { value ->
           context.lifecycleScope.launch {
             if (value != null) {
@@ -57,6 +62,15 @@ class LocationPickerViewHolderFactory(
         val initialAnswer = questionnaireViewItem.answers.singleOrNull()?.valueStringType
         Timber.e(initialAnswer?.value ?: "Empty answer")
         locationPickerView.initLocation(initialAnswer?.value)
+        if (questionnaireViewItem.draftAnswer == null) {
+          locationPickerView.showError(
+            getValidationErrorMessage(
+              context,
+              questionnaireViewItem,
+              questionnaireViewItem.validationResult,
+            ),
+          )
+        }
       }
 
       override fun init(itemView: View) {

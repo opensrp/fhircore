@@ -306,7 +306,9 @@ fun Patient.extractSecondaryIdentifier(): String? {
 
 fun Patient.extractOfficialIdentifier(): String? =
   if (this.hasIdentifier()) {
-    this.identifier.lastOrNull { it.use == Identifier.IdentifierUse.OFFICIAL && it.system != "WHO-HCID" }?.value
+    this.identifier
+      .lastOrNull { it.use == Identifier.IdentifierUse.OFFICIAL && it.system != "WHO-HCID" }
+      ?.value
   } else {
     null
   }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -41,6 +42,14 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
+    <TextView android:id="@+id/location_helper_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Required"
+        style="@style/Questionnaire.HelpStyle"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -68,6 +77,29 @@
                 android:gravity="top" />
 
         </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/item_error_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:layout_marginVertical="8dp"
+            android:background="?attr/colorError"
+            tools:background="@android:color/holo_red_dark"/>
+
+        <TextView android:id="@+id/error_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Validation error"
+            style="@style/Questionnaire.ErrorStyle"/>
+
     </LinearLayout>
 
     <com.google.android.fhir.datacapture.views.MediaView
