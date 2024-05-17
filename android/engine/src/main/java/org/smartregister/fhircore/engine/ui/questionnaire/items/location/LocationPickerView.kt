@@ -205,7 +205,9 @@ class LocationPickerView(
       }
       elements.getOrNull(2)?.let {
         physicalLocator = it
-        physicalLocatorInputEditText?.setText(it)
+        if (it != "-") {
+          physicalLocatorInputEditText?.setText(it)
+        }
       }
       initialValue = initialAnswer
     }
