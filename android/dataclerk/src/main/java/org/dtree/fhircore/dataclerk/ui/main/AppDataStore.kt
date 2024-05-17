@@ -144,8 +144,11 @@ constructor(
       .filter {
         it.meta.tag?.firstOrNull { coding ->
           coding.system == SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM &&
-            (if (isArt) listOf("client-already-on-art", "newly-diagnosed-client")
-              else listOf("exposed-infant"))
+            (if (isArt) {
+                listOf("client-already-on-art", "newly-diagnosed-client")
+              } else {
+                listOf("exposed-infant")
+              })
               .contains(coding.code)
         } != null
       }
@@ -203,7 +206,11 @@ data class AddressData(
   val state: String = "",
   val text: String = "",
   val fullAddress: String = "",
-)
+) {
+  override fun toString(): String {
+    return "$district \n $state"
+  }
+}
 
 internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): PatientItem {
   val phone = if (hasTelecom()) telecom[0].value else "N/A"

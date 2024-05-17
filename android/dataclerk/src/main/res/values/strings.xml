@@ -16,4 +16,5 @@
     <string name="patient_property_dob">Date of Birth</string>
     <string name="patient_property_age">Age</string>
     <string name="patient_property_gender">Gender</string>
+    <string name="patient_physical_locator">Physical locator</string>
 </resources>
