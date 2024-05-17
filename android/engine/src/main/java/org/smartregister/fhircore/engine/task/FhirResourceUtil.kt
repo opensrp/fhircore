@@ -315,7 +315,10 @@ constructor(
   ): List<Task> {
     val tracingTasks = mutableListOf<Task>()
     val patient = getPatient(appointment) ?: return listOf()
-    val isEID = patient.extractHealthStatusFromMeta(SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM) == HealthStatus.EXPOSED_INFANT
+    val isEID =
+      patient.extractHealthStatusFromMeta(
+        SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM,
+      ) == HealthStatus.EXPOSED_INFANT
 
     addToTracingList(
         appointment,

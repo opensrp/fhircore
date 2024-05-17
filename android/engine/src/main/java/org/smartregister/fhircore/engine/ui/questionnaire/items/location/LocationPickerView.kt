@@ -122,11 +122,15 @@ class LocationPickerView(
   private fun initData() {
     customQuestItemDataProvider?.let {
       val locations = it.fetchLocationHierarchies()
-      updateLocationData(locations = locations)
+      updateLocationData(locations = locations, isDefault = true)
     }
   }
 
-  private fun updateLocationData(locations: List<LocationHierarchy>) {
+  private fun updateLocationData(
+    locations: List<LocationHierarchy>,
+    isDefault: Boolean = false,
+    parent: LocationHierarchy? = null,
+  ) {
     rootLayout?.let { rootLayout ->
       val mainLayout =
         LayoutInflater.from(context).inflate(R.layout.custom_material_spinner, rootLayout, false)
@@ -138,6 +142,12 @@ class LocationPickerView(
         )
       layoutParams.bottomMargin = 16
       mainLayout.layoutParams = layoutParams
+
+      if (parent != null) {
+        val helperText = mainLayout.findViewById<TextView>(R.id.helper_text)
+        helperText.visibility = View.VISIBLE
+        helperText.text = context.getString(R.string.select_locations_in, parent.name)
+      }
 
       val adapter = LocationHierarchyAdapter(context, locations)
       dropdown.setAdapter(adapter)
@@ -153,6 +163,9 @@ class LocationPickerView(
         val selected = locations.first()
         dropdown.setText(selected.name, false)
         onOptionSelected(selected, dropdown)
+        if (isDefault) {
+          dropdown.isEnabled = false
+        }
       }
     }
   }
@@ -167,7 +180,7 @@ class LocationPickerView(
           ?.updateLocations(selectedLocation.children)
       } else {
         dropdownMap[selectedLocation.identifier] = dropdown
-        updateLocationData(selectedLocation.children)
+        updateLocationData(selectedLocation.children, parent = selectedLocation)
       }
     } else if (selectedLocation != null) {
       this.selectedHierarchy = LocationData.fromHierarchy(selectedLocation)
