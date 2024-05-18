@@ -147,8 +147,8 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mwcore"
       versionNameSuffix = "-mwcore"
-      versionCode = 37
-      versionName = "0.1.26"
+      versionCode = 0
+      versionName = "0.0.1"
     }
     create("mwcoreDev") {
       dimension = "apps"
@@ -157,12 +157,12 @@ android {
       versionCode = 33
       versionName = "0.1.22-beta11"
     }
-    create("mwcoreProd") {
+    create("mwcoreStaging") {
       dimension = "apps"
-      applicationIdSuffix = ".mwcoreProd"
-      versionNameSuffix = "-mwcoreProd"
-      versionCode = 16
-      versionName = "0.1.5"
+      applicationIdSuffix = ".mwcoreStaging"
+      versionNameSuffix = "-mwcoreStaging"
+      versionCode = 1
+      versionName = "0.0.1"
     }
     create("afyayangu") {
       dimension = "apps"
