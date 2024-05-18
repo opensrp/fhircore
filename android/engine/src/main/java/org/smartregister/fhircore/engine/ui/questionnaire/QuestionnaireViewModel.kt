@@ -229,15 +229,16 @@ constructor(
           arrayListOf(
             Encounter.EncounterParticipantComponent().apply { individual = practitionerRef },
           )
-      } else if (resource is Patient) {
-        if (resource.hasGeneralPractitioner()) {
-          if (!resource.generalPractitioner.contains(practitionerRef)) {
-            resource.addGeneralPractitioner(practitionerRef)
-          }
-        } else {
-          resource.generalPractitioner = arrayListOf(practitionerRef)
-        }
       }
+//      else if (resource is Patient) {
+//        if (resource.hasGeneralPractitioner()) {
+//          if (!resource.generalPractitioner.contains(practitionerRef)) {
+//            resource.addGeneralPractitioner(practitionerRef)
+//          }
+//        } else {
+//          resource.generalPractitioner = arrayListOf(practitionerRef)
+//        }
+//      }
     }
   }
 
