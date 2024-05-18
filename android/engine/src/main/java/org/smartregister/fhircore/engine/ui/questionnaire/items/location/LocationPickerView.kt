@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
 import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
+import timber.log.Timber
 
 class LocationPickerView(
   private val context: Context,
@@ -54,7 +55,7 @@ class LocationPickerView(
 
   private var cardView: CardView? = null
   private var locationNameText: TextView? = null
-  var physicalLocatorInputLayout: TextInputLayout? = null
+  private var physicalLocatorInputLayout: TextInputLayout? = null
   private var physicalLocatorInputEditText: TextInputEditText? = null
   var headerView: HeaderView? = null
 
@@ -78,7 +79,7 @@ class LocationPickerView(
     cardView?.setOnClickListener { showDropdownDialog() }
     physicalLocatorInputEditText?.doAfterTextChanged { editable: Editable? ->
       lifecycleScope.launch {
-        physicalLocator = editable.toString()
+        physicalLocator = editable.toString().ifBlank { null }
         onUpdate()
       }
     }
@@ -118,6 +119,7 @@ class LocationPickerView(
   }
 
   private fun onUpdate() {
+    Timber.e(physicalLocator)
     if (physicalLocator == null || selectedHierarchy == null) {
       onLocationChanged?.invoke(StringType(null))
       return
@@ -204,6 +206,7 @@ class LocationPickerView(
   }
 
   fun initLocation(initialAnswer: String?) {
+    Timber.e("$initialAnswer $initialValue")
     if (initialAnswer != null && initialValue == null) {
       val elements = initialAnswer.split("|")
       val locationId = elements.getOrNull(0)

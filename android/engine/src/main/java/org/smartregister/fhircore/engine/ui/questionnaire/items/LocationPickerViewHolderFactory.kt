@@ -60,7 +60,6 @@ class LocationPickerViewHolderFactory(
           }
         }
         val initialAnswer = questionnaireViewItem.answers.singleOrNull()?.valueStringType
-        Timber.e(initialAnswer?.value ?: "Empty answer")
         locationPickerView.initLocation(initialAnswer?.value)
         if (questionnaireViewItem.draftAnswer == null) {
           locationPickerView.showError(
