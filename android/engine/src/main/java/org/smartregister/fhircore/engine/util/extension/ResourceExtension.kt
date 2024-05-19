@@ -224,6 +224,31 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForReadingOrE
   }
 }
 
+/**
+ * Set all questions that are not of type [Questionnaire.QuestionnaireItemType.GROUP] to readOnly if
+ * [readOnlyLinkIds] item are there while editing the form. This also generates the correct FHIRPath
+ * population expression for each question when mapped to the corresponding [QuestionnaireResponse]
+ */
+fun List<Questionnaire.QuestionnaireItemComponent>.prepareQuestionsForEditing(
+  path: String = "QuestionnaireResponse.item",
+  readOnlyLinkIds: List<String>? = emptyList(),
+) {
+  forEach { item ->
+    if (item.type != Questionnaire.QuestionnaireItemType.GROUP) {
+      item.readOnly = readOnlyLinkIds?.contains(item.linkId) == true
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').answer.item",
+        readOnlyLinkIds,
+      )
+    } else {
+      item.item.prepareQuestionsForEditing(
+        "$path.where(linkId = '${item.linkId}').item",
+        readOnlyLinkIds,
+      )
+    }
+  }
+}
+
 /** Delete resources in [QuestionnaireResponse.contained] from the database */
 suspend fun QuestionnaireResponse.deleteRelatedResources(defaultRepository: DefaultRepository) {
   contained.forEach { defaultRepository.delete(it) }
