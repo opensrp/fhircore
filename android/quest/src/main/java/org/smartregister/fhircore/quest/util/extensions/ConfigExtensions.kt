@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -27,6 +27,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -143,6 +144,12 @@ fun List<ActionConfig>.handleClickEvent(
           MainNavigationScreen.GeoWidget.route,
           bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
         )
+      ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
+        val questionnaireConfig = actionConfig.questionnaire ?: return
+        val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+        val appCompatActivity = (navController.context as AppCompatActivity)
+        PdfLauncherFragment.launch(appCompatActivity, questionnaireConfigInterpolated.encodeJson())
+      }
       else -> return
     }
   }

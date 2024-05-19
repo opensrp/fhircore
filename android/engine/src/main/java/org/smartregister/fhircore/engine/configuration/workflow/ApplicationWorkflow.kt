@@ -48,6 +48,9 @@ enum class ApplicationWorkflow {
   /** A workflow for changing a managing entity */
   CHANGE_MANAGING_ENTITY,
 
+  /** A workflow to launch pdf generation */
+  LAUNCH_PDF_GENERATION,
+
   /** Represents null/nothing */
   NOTHING
 }

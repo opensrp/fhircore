@@ -23,7 +23,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.QuestionnaireType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -57,6 +56,7 @@ data class QuestionnaireConfig(
   val generateCarePlanWithWorkflowApi: Boolean = false,
   val cqlInputResources: List<String>? = emptyList(),
   val showClearAll: Boolean = false,
+  val htmlBinaryId: String? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -83,6 +83,7 @@ data class QuestionnaireConfig(
       onSubmitActions = onSubmitActions?.map { it.interpolate(computedValuesMap) },
       barcodeLinkId = barcodeLinkId.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
+      htmlBinaryId = htmlBinaryId?.interpolate(computedValuesMap),
     )
 }
 
