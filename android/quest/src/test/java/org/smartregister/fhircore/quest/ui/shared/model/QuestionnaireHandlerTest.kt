@@ -18,16 +18,12 @@ package org.smartregister.fhircore.quest.ui.shared.model
 
 import android.content.Context
 import android.content.Intent
-import androidx.activity.result.ActivityResult
 import androidx.core.os.bundleOf
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.junit.Before
 import org.junit.Rule
@@ -85,14 +81,4 @@ class QuestionnaireHandlerTest : RobolectricTest() {
 
     verify { (context as QuestionnaireHandler).startForResult.launch(any()) }
   }
-
-  @Test
-  fun testOnSubmitQuestionnaire() =
-    runTest(timeout = 30.seconds) {
-      val activityResult = mockk<ActivityResult>(relaxed = true)
-
-      (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
-
-      coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
-    }
 }

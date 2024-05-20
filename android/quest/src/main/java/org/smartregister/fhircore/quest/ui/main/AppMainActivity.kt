@@ -50,6 +50,7 @@ import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -62,8 +63,6 @@ import org.smartregister.fhircore.engine.util.extension.serializable
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
-import org.smartregister.fhircore.geowidget.model.GeoWidgetEvent
-import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -92,7 +91,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   @Inject lateinit var eventBus: EventBus
   lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
-  private val geoWidgetViewModel by viewModels<GeoWidgetViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
   private lateinit var locationPermissionLauncher: ActivityResultLauncher<Array<String>>
@@ -127,23 +125,6 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       .replace(R.id.nav_host, navHostFragment)
       .setPrimaryNavigationFragment(navHostFragment)
       .commit()
-
-    geoWidgetViewModel.geoWidgetEventLiveData.observe(this) { geoWidgetEvent ->
-      when (geoWidgetEvent) {
-        is GeoWidgetEvent.OpenProfile ->
-          appMainViewModel.launchProfileFromGeoWidget(
-            navHostFragment.navController,
-            geoWidgetEvent.geoWidgetConfiguration.id,
-            geoWidgetEvent.data,
-          )
-        is GeoWidgetEvent.RegisterClient ->
-          appMainViewModel.launchFamilyRegistrationWithLocationId(
-            context = this,
-            locationId = geoWidgetEvent.data,
-            questionnaireConfig = geoWidgetEvent.questionnaire,
-          )
-      }
-    }
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
@@ -181,11 +162,32 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onResume()
     navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
     syncListenerManager.registerSyncListener(this, lifecycle)
+    setStartDestination()
   }
 
   override fun onPause() {
     super.onPause()
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
+  }
+
+  private fun setStartDestination() {
+    val navController = navHostFragment.navController
+    val startDestination =
+      when (appMainViewModel.applicationConfiguration.launcherType) {
+        LauncherType.MAP -> {
+          R.id.geoWidgetLauncherFragment
+        }
+        else -> {
+          R.id.registerFragment
+        }
+      }
+    // Inflate the navigation graph
+    val navInflater = navController.navInflater
+    val graph = navInflater.inflate(R.navigation.application_nav_graph)
+    // Set the start destination
+    graph.setStartDestination(startDestination)
+    // Set the modified NavGraph to the NavController
+    navController.graph = graph
   }
 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
