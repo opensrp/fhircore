@@ -199,8 +199,8 @@ constructor(
 
   /**
    * Check if current [Task] is part of another [Task] then return true if the [Task.TaskStatus] of
-   * the parent [Task](that the current [Task] is part of) is [Task.TaskStatus.COMPLETED], otherwise
-   * return false.
+   * the parent [Task](that the current [Task] is part of) is [Task.TaskStatus.COMPLETED] or
+   * [Task.TaskStatus.FAILED], otherwise return false.
    */
   private suspend fun Task.preRequisiteConditionSatisfied() =
     this.partOf
