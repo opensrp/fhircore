@@ -55,7 +55,7 @@ fun StackView(
     stackViewProperties.children.forEach { child ->
       GenerateView(
         modifier = generateModifier(viewProperties = child),
-        properties = child,
+        properties = child.interpolate(resourceData.computedValuesMap),
         resourceData = resourceData,
         navController = navController,
       )
