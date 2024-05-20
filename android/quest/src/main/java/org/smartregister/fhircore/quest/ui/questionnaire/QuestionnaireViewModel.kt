@@ -39,7 +39,6 @@ import java.util.Date
 import java.util.LinkedList
 import java.util.UUID
 import javax.inject.Inject
-import kotlin.reflect.full.memberProperties
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,11 +60,11 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.StructureDefinition
+import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.hl7.fhir.r4.model.StructureDefinition
-import org.hl7.fhir.r4.model.StructureMap
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -102,7 +101,6 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServicesMatchBox
-import org.smartregister.fhircore.quest.QuestApplication
 import org.smartregister.fhircore.quest.R
 import timber.log.Timber
 
@@ -669,8 +667,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Boolean {
-    val validQuestionnaireResponseItems =
-      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+    val validQuestionnaireResponseItems = ArrayList<QuestionnaireResponseItemComponent>()
     val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
     val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
 
@@ -925,11 +922,11 @@ constructor(
    */
   private suspend fun loadStructureMapDependencyTree(
     structureMapId: String,
-    simpleWorkerContext: SimpleWorkerContext
+    simpleWorkerContext: SimpleWorkerContext,
   ): StructureMap? {
     val structureMap = defaultRepository.loadResource<StructureMap>(structureMapId)
     structureMap?.also { structureMapIterator ->
-        simpleWorkerContext.cacheResource(structureMapIterator)
+      simpleWorkerContext.cacheResource(structureMapIterator)
 
       structureMapIterator.import?.let { canonicalTypes ->
         canonicalTypes.forEach { structureMapUrl ->
