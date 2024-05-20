@@ -51,9 +51,10 @@ org.smartregister.fhircore.engine.util.location
 org.smartregister.fhircore.engine.util.serializers
 org.smartregister.fhircore.engine.util.test
 module:geowidget
-org.smartregister.fhircore.geowidget
+org.smartregister.fhircore.geowidget.baselayers
 org.smartregister.fhircore.geowidget.model
 org.smartregister.fhircore.geowidget.screens
+org.smartregister.fhircore.geowidget.util
 org.smartregister.fhircore.geowidget.util.extensions
 module:linting
 org.smartregister.lint
@@ -69,6 +70,8 @@ org.smartregister.fhircore.quest.di.config
 org.smartregister.fhircore.quest.event
 org.smartregister.fhircore.quest.navigation
 org.smartregister.fhircore.quest.ui.appsetting
+org.smartregister.fhircore.quest.ui.bottomsheet
+org.smartregister.fhircore.quest.ui.launcher
 org.smartregister.fhircore.quest.ui.login
 org.smartregister.fhircore.quest.ui.main
 org.smartregister.fhircore.quest.ui.main.components
