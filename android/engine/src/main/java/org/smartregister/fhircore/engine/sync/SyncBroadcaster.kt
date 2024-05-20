@@ -39,7 +39,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
@@ -53,7 +52,6 @@ import timber.log.Timber
 class SyncBroadcaster
 @Inject
 constructor(
-  val configurationRegistry: ConfigurationRegistry,
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,

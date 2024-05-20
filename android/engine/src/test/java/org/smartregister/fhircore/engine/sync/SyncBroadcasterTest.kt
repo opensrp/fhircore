@@ -24,7 +24,6 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.MockKAnnotations
 import io.mockk.mockk
 import io.mockk.spyk
-import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
@@ -40,6 +39,7 @@ import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
+import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 @HiltAndroidTest
@@ -54,6 +54,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
@@ -70,13 +71,12 @@ class SyncBroadcasterTest : RobolectricTest() {
         configurationRegistry = configurationRegistry,
         sharedPreferencesHelper = sharedPreferencesHelper,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = dispatcherProvider,
+        dispatcherProvider = dispatcherProvider
       )
 
     syncBroadcaster =
       spyk(
         SyncBroadcaster(
-          configurationRegistry = configurationRegistry,
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = syncListenerManager,

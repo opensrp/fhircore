@@ -22,8 +22,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.UnknownHostException
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -53,6 +51,8 @@ import org.smartregister.fhircore.engine.util.extension.retrieveImplementationGu
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 import retrofit2.HttpException
 import timber.log.Timber
+import java.net.UnknownHostException
+import javax.inject.Inject
 
 typealias QuestBuildConfig = org.smartregister.fhircore.quest.BuildConfig
 
@@ -109,6 +109,8 @@ constructor(
         Timber.i(
           "Fetching configs for app $appId with highest context-quantity ${QuestBuildConfig.VERSION_CODE}",
         )
+
+//        configurationRegistry.fetchNonWorkflowConfigResources()
 
         val compositionResource: Composition?
 
@@ -217,6 +219,7 @@ constructor(
   }
 
   suspend fun fetchComposition(urlPath: String, context: Context): Composition? {
+    //retrofit call, only calls in Test classes
     return fhirResourceDataSource.getResource(urlPath).entryFirstRep.let {
       if (!it.hasResource()) {
         Timber.w("No response for composition resource on path $urlPath")
@@ -232,6 +235,8 @@ constructor(
   fun loadConfigurations(context: Context) {
     appId.value?.trim()?.let { thisAppId ->
       viewModelScope.launch(dispatcherProvider.io()) {
+        // retrofit call refactor inside configRegistry->loadConfigurations
+        Timber.d("ConfigSync AppSettingsVM loadConfigurations()")
         configurationRegistry.loadConfigurations(thisAppId, context) { loadConfigSuccessful ->
           showProgressBar.postValue(false)
           if (loadConfigSuccessful) {
@@ -277,6 +282,7 @@ constructor(
   ): Bundle {
     val bundleEntryComponents = mutableListOf<Bundle.BundleEntryComponent>()
 
+    //retrofit call
     resourceIds.forEach {
       val responseBundle =
         fhirResourceDataSource.getResource("$resourceType?${Composition.SP_RES_ID}=$it")

@@ -23,9 +23,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.lang.ref.WeakReference
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Parameters
@@ -33,13 +30,15 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
+import java.lang.ref.WeakReference
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * A singleton class that maintains a list of [OnSyncListener] that have been registered to listen
@@ -53,13 +52,9 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
-  val dispatcherProvider: DefaultDispatcherProvider,
+  val dispatcherProvider: DefaultDispatcherProvider
 ) {
-  private val appConfig by lazy {
-    configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
-      ConfigType.Application,
-    )
-  }
+
   private val syncConfig by lazy {
     configurationRegistry.retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
   }
@@ -98,6 +93,7 @@ constructor(
     }
   }
 
+
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
@@ -129,7 +125,7 @@ constructor(
                 }
                 ?.code
             ConfigurationRegistry.ID -> paramExpression
-            ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
+            ConfigurationRegistry.COUNT -> ConfigurationRegistry.DEFAULT_COUNT .toString()
             else -> null
           }?.let {
             // replace the evaluated value into expression for complex expressions
@@ -190,4 +186,5 @@ constructor(
   companion object {
     private const val SYNC_LOCATION_IDS = "_syncLocations"
   }
+
 }

@@ -20,7 +20,6 @@ import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import javax.inject.Inject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -35,11 +34,14 @@ import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.test.HiltActivityForTest
+import javax.inject.Inject
 
 @HiltAndroidTest
 class SyncListenerManagerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  private lateinit var syncListenerManager: SyncListenerManager
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
 
@@ -47,7 +49,6 @@ class SyncListenerManagerTest : RobolectricTest() {
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
 
-  private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var hiltActivityForTest: HiltActivityForTest
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val activityController = Robolectric.buildActivity(HiltActivityForTest::class.java)
@@ -63,7 +64,7 @@ class SyncListenerManagerTest : RobolectricTest() {
         sharedPreferencesHelper = sharedPreferencesHelper,
         configurationRegistry = configurationRegistry,
         context = ApplicationProvider.getApplicationContext(),
-        dispatcherProvider = dispatcherProvider,
+        dispatcherProvider = dispatcherProvider
       )
   }
 
