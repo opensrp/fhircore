@@ -34,11 +34,8 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.spyk
-import io.mockk.verify
 import java.io.File
 import java.net.URL
 import javax.inject.Inject
@@ -975,16 +972,20 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testPopulateConfigurationsMapReadsAndSavesValidResourcesToDB() {
     val mockedContext = mockk<Context>(relaxed = true)
-    val mockedConfigurationReg= mockk<ConfigurationRegistry>()
-    val resourceConfigs=mutableListOf<String>().apply {
-      add("resources/sample_qr.json")
-      add("resources/sample_sm.json")
-    }
-    val configFiles= mutableListOf<String>()
+    val mockedConfigurationReg = mockk<ConfigurationRegistry>()
+    val resourceConfigs =
+      mutableListOf<String>().apply {
+        add("resources/sample_qr.json")
+        add("resources/sample_sm.json")
+      }
+    val configFiles = mutableListOf<String>()
     val assets = mockk<AssetManager>()
     every { mockedContext.assets } returns assets
-    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(context=context) } returns Pair(configFiles,resourceConfigs)
-    every {  assets.list(anyString())} returns (arrayOf("resources/sample_sm.json","resources/sample_qr.json"))
+    every {
+      mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(context = context)
+    } returns Pair(configFiles, resourceConfigs)
+    every { assets.list(anyString()) } returns
+      (arrayOf("resources/sample_sm.json", "resources/sample_qr.json"))
     configRegistry.retrieveConfigsAndResourcesFromAssets(context).second.forEach { resourceName ->
       val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
       try {

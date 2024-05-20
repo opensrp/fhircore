@@ -368,7 +368,7 @@ constructor(
    *
    * @return A list of strings of config files.
    */
-   fun retrieveConfigsAndResourcesFromAssets(
+  fun retrieveConfigsAndResourcesFromAssets(
     context: Context,
     appId: String? = null,
   ): Pair<MutableList<String>, MutableList<String>> {
