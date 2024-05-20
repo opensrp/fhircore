@@ -85,19 +85,28 @@ fun RegisterScreen(
   Scaffold(
     topBar = {
       Column {
-        // Top section has toolbar and a results counts view
+        /*
+         * Top section has toolbar and a results counts view
+         * by default isSearchBarVisible is visible
+         * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
-          title = registerUiState.screenTitle,
+          title =
+            registerUiState.screenTitle.ifEmpty {
+              registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
+            }, // backward compatibility for screen title
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
+          isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
+          navController = navController,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -108,6 +117,11 @@ fun RegisterScreen(
             ToolbarClickEvent.FilterData -> {
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
+            }
+            is ToolbarClickEvent.Actions -> {
+              event.actions.handleClickEvent(
+                navController = navController,
+              )
             }
           }
         }
