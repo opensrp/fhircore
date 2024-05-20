@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
+import ca.uhn.fhir.rest.gclient.DateClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
@@ -97,11 +98,10 @@ constructor(
     val patients =
       fhirEngine.search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
-        sort(Patient.NAME, Order.ASCENDING)
-        count =
-          if (loadAll) {
-            countRegisterData(appFeatureName).toInt()
-          } else PaginationConstant.DEFAULT_PAGE_SIZE
+        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
+        if (!loadAll) {
+          count = PaginationConstant.DEFAULT_PAGE_SIZE
+        }
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
@@ -128,7 +128,7 @@ constructor(
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
         operation = Operation.OR
-        sort(Patient.NAME, Order.ASCENDING)
+        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
       }
 
     return patients
