@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -46,7 +47,7 @@ class PdfLauncherFragment : DialogFragment() {
     val subjectId = questionnaireConfig.resourceIdentifier!!.extractLogicalIdUuid()
     val subjectType = questionnaireConfig.resourceType!!
     val htmlBinaryId = questionnaireConfig.htmlBinaryId!!.extractLogicalIdUuid()
-    val htmlTitle = questionnaireConfig.title ?: "file"
+    val htmlTitle = questionnaireConfig.title ?: getString(R.string.default_html_title)
 
     lifecycleScope.launch(Dispatchers.IO) {
       val questionnaireResponse = pdfLauncherViewModel.retrieveQuestionnaireResponse(

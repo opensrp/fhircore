@@ -154,4 +154,23 @@
     <string name="invalid_offline_login_state">User set up required. Enable your internet connection </string>
     <string name="select_month">Select Month</string>
     <string name="help"></string>
+    <string name="user">User</string>
+    <string name="team">Team</string>
+    <string name="locality" >Locality</string>
+    <string name="team_organization">Team(Organization)</string>
+    <string name="care_team">Care Team</string>
+    <string name="location">Location</string>
+    <string name="app_version_code">App version code</string>
+    <string name="build_date">Build date</string>
+    <string name="manufacture">Manufacture</string>
+    <string name="app_versions">App version</string>
+    <string name="os_version">OS Version</string>
+    <string name="device_date">Date</string>
+    <string name="device">Device</string>
+    <string name="ok">OK</string>
+    <string name="add">ADD</string>
+    <string name="data_migration_started">Started data migration from version %1$d</string>
+    <string name="data_migration_completed">Application data migrated to version %1$d</string>
+    <string name="no_data">No data set</string>
+    <string name="default_html_title">file</string>
 </resources>
