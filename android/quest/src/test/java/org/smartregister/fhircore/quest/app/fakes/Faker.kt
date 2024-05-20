@@ -31,6 +31,7 @@ import java.util.Date
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Basic
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
@@ -57,6 +58,14 @@ object Faker {
   }
 
   private const val APP_DEBUG = "app/debug"
+
+  val sampleImageJSONString =
+    "{\n" +
+      "  \"id\": \"d60ff460-7671-466a-93f4-c93a2ebf2077\",\n" +
+      "  \"resourceType\": \"Binary\",\n" +
+      "  \"contentType\": \"image/jpeg\",\n" +
+      "  \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAFMAAABTCAYAAADjsjsAAAAABHNCSVQICAgIfAhkiAAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAtdEVYdENyZWF0aW9uIFRpbWUARnJpIDE5IEFwciAyMDI0IDA3OjIxOjM4IEFNIEVBVIqENmYAAADTSURBVHic7dDBCcAgAMBAdf/p+nQZXSIglLsJQube3xkk1uuAPzEzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjN0AXiwBCviCqIRAAAAAElFTkSuQmCC\"\n" +
+      "}"
 
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
@@ -149,5 +158,15 @@ object Faker {
     override fun pinEnabled() = true
 
     override fun deviceOnline() = true
+  }
+
+  fun buildBinaryResource(
+    id: String = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+  ): Binary {
+    return Binary().apply {
+      this.id = id
+      this.contentType = "image/jpeg"
+      this.data = sampleImageJSONString.toByteArray()
+    }
   }
 }
