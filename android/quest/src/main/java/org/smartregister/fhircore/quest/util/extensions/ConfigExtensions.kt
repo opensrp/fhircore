@@ -23,6 +23,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
@@ -46,6 +47,7 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.encodeJson
@@ -194,6 +196,12 @@ fun List<ActionConfig>.handleClickEvent(
             NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
           )
         navController.navigate(MainNavigationScreen.LocationSelector.route, args)
+      }
+      ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
+        val questionnaireConfig = actionConfig.questionnaire ?: return
+        val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+        val appCompatActivity = (navController.context as AppCompatActivity)
+        PdfLauncherFragment.launch(appCompatActivity, questionnaireConfigInterpolated.encodeJson())
       }
       else -> return
     }
