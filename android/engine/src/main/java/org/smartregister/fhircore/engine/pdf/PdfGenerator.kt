@@ -26,10 +26,10 @@ import android.webkit.WebView
  * be initialized on the Main thread.
  *
  * @param context Application context for initializing WebView and PrintManager.
+ * @param webView Optional WebView for testing purposes.
  */
-class PdfGenerator(context: Context) {
+class PdfGenerator(context: Context, private val webView: WebView = WebView(context)) {
 
-  private val webView = WebView(context)
   private val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
 
   /**
