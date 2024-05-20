@@ -30,6 +30,7 @@ org.smartregister.fhircore.engine.domain.model
 org.smartregister.fhircore.engine.domain.repository
 org.smartregister.fhircore.engine.domain.util
 org.smartregister.fhircore.engine.p2p.dao
+org.smartregister.fhircore.engine.pdf
 org.smartregister.fhircore.engine.rulesengine
 org.smartregister.fhircore.engine.rulesengine.services
 org.smartregister.fhircore.engine.sync
