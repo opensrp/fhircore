@@ -306,7 +306,7 @@ constructor(
     configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (loadFromAssets) {
-      retrieveConfigsAndResourceFromAssets(context, appId).first.forEach { fileName ->
+      retrieveConfigsAndResourcesFromAssets(context, appId).first.forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
         // Use file name as the key. Conventionally navigation configs MUST end with
         // "_config.<extension>"
@@ -325,7 +325,7 @@ constructor(
           configsJsonMap[configKey] = configJson
         }
       }
-      retrieveConfigsAndResourceFromAssets(context).second.forEach { resourceName ->
+      retrieveConfigsAndResourcesFromAssets(context).second.forEach { resourceName ->
         val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
         try {
           if (resourceJson.decodeResourceFromString<Resource>().resourceType != null) {
@@ -368,7 +368,7 @@ constructor(
    *
    * @return A list of strings of config files.
    */
-  private fun retrieveConfigsAndResourceFromAssets(
+   fun retrieveConfigsAndResourcesFromAssets(
     context: Context,
     appId: String? = null,
   ): Pair<MutableList<String>, MutableList<String>> {

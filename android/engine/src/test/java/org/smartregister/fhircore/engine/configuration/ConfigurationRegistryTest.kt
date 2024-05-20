@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
+import android.content.res.AssetManager
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -33,8 +34,11 @@ import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
+import io.mockk.verify
 import java.io.File
 import java.net.URL
 import javax.inject.Inject
@@ -48,15 +52,19 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
@@ -73,6 +81,7 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
@@ -961,5 +970,30 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val resultFile = configRegistry.writeToFile(resource)
     assertEquals(expectedFileName, resultFile.name)
     assertEquals(expectedEncodedResource, resultFile.readText())
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapReadsAndSavesValidResourcesToDB() {
+    val mockedContext = mockk<Context>(relaxed = true)
+    val mockedConfigurationReg= mockk<ConfigurationRegistry>()
+    val resourceConfigs=mutableListOf<String>().apply {
+      add("resources/sample_qr.json")
+      add("resources/sample_sm.json")
+    }
+    val configFiles= mutableListOf<String>()
+    val assets = mockk<AssetManager>()
+    every { mockedContext.assets } returns assets
+    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(context=context) } returns Pair(configFiles,resourceConfigs)
+    every {  assets.list(anyString())} returns (arrayOf("resources/sample_sm.json","resources/sample_qr.json"))
+    configRegistry.retrieveConfigsAndResourcesFromAssets(context).second.forEach { resourceName ->
+      val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
+      try {
+        val localResource = resourceJson.decodeResourceFromString<Resource>()
+        assertNotNull(localResource)
+        assertEquals("Questionnaire", localResource.resourceType)
+      } catch (e: Exception) {
+        fail("Should not throw an exception for valid resources")
+      }
+    }
   }
 }
