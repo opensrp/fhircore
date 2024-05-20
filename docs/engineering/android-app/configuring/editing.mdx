@@ -5,11 +5,11 @@ You can manage edits through
 1. complex structure maps to ensure that any potential downstream effects of an edit (like changing CarePlan or Task status) are accounted for, or
 2. limiting what is editable to only those fields(data elements) that do not have downstream affects.
 
-We suggest following approach (2.) to reduce the chance of errors and the resulting inconsistent data.
+We suggest following approaches to reduce the chance of errors and the resulting inconsistent data.
 
-## Approach-1
+## Limiting what is editable
 
-# Limiting what is editable
+## Toggle visibility for select questionnaire items
 
 Below we describe how to limit what is editable while reusing the same FHIR resources that created the data. This assumes that you have
 
@@ -71,9 +71,9 @@ Below we describe how to limit what is editable while reusing the same FHIR reso
 
 4. Launch the Questionnaire from an edit menu just as would is creating, but prepopulate the previously captured items. This approach allows to you to use the existing Questionnaire and StructureMap.
 
-## Approach-2
+## Block select questionnaire items from editing
 
-# Using ```readOnlyLinkIds```
+# Using ```readOnlyLinkIds``` config
 
 Below we defines how we can limit the Edit to QuestionnaireItems in Edit Mode
 
@@ -88,4 +88,4 @@ For the Questionnaire with Edit Mode, Assign the list of QuestionnaireItems->lin
 >       ]
 >```
 
-This list is handled with fhircore app fun ```prepareQuestionsForReadingOrEditing``` to restrict the input behaviour on the provided link-ids fields when Questionnaire is rendered  
+This list is handled with fhircore app function named ```prepareQuestionsForReadingOrEditing``` to restrict the input behaviour on the provided link-ids fields when Questionnaire is rendered, this allows for visbility of the data capruted previously however user is unable to make edits.
