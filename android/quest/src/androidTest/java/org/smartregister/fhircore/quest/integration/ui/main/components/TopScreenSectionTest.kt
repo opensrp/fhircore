@@ -21,6 +21,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavController
+import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -37,6 +39,7 @@ class TopScreenSectionTest {
   private val listener: (String) -> Unit = {}
 
   @get:Rule val composeTestRule = createComposeRule()
+  private val navController: NavController = mockk(relaxUnitFun = true)
 
   @Test
   fun testTopScreenSectionRendersTitleRowCorrectly() {
@@ -45,6 +48,8 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = listener,
+        navController = navController,
+        isSearchBarVisible = true,
         onClick = {},
       )
     }
@@ -74,6 +79,8 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = listener,
+        navController = navController,
+        isSearchBarVisible = true,
         onClick = {},
       )
     }
@@ -105,6 +112,8 @@ class TopScreenSectionTest {
         title = "All Clients",
         searchText = "search text",
         onSearchTextChanged = { clicked = true },
+        navController = navController,
+        isSearchBarVisible = true,
         onClick = {},
       )
     }
