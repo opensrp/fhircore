@@ -38,6 +38,7 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Condition
+import org.hl7.fhir.r4.model.Consent
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Extension
 import org.hl7.fhir.r4.model.Flag
@@ -294,6 +295,7 @@ fun Resource.appendOrganizationInfo(authenticatedOrganizationIds: List<String>?)
         is Group -> managingEntity = updateReference(managingEntity, organizationRef)
         is Encounter -> serviceProvider = updateReference(serviceProvider, organizationRef)
         is Location -> managingOrganization = updateReference(managingOrganization, organizationRef)
+        is Consent -> organization = updateReferenceList(organization, organizationRef)
         else -> {}
       }
     }
@@ -326,6 +328,7 @@ fun Resource.appendPractitionerInfo(practitionerId: String?) {
           } else {
             participant
           }
+      is Consent -> performer = updateReferenceList(performer, practitionerRef)
       else -> {}
     }
   }
@@ -363,6 +366,13 @@ fun Resource.appendRelatedEntityLocation(
       }
     }
 }
+
+private fun updateReferenceList(
+  oldReferenceList: List<Reference>?,
+  newReference: Reference,
+): List<Reference> =
+  oldReferenceList.orEmpty().filterNot { it.reference.isNullOrEmpty() }.takeIf { it.isNotEmpty() }
+    ?: listOf(newReference)
 
 private fun updateReference(oldReference: Reference?, newReference: Reference): Reference =
   if (oldReference == null || oldReference.reference.isNullOrEmpty()) {
