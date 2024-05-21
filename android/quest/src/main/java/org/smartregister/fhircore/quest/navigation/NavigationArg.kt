@@ -25,9 +25,12 @@ object NavigationArg {
   const val RESOURCE_CONFIG = "resourceConfig"
   const val MULTI_SELECT_VIEW_CONFIG = "multiSelectViewConfig"
   const val CONFIG_ID = "configId"
+  const val GEO_WIDGET_ID = "geoWidgetId"
+  const val DETAILS_BOTTOM_SHEET_CONFIG = "detailsBottomSheetConfig"
   const val REPORT_ID = "reportId"
   const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
+  const val LAUNCHER_TYPE = "launcherType"
 
   /** Create route paths */
   fun routePathsOf(vararg navArg: String): String =
