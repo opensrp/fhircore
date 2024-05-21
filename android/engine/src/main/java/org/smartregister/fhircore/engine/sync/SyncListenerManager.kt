@@ -91,7 +91,7 @@ constructor(
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
     val userInfo =
       sharedPreferencesHelper.read<UserClaimInfo>(SharedPreferenceKey.USER_CLAIM_INFO.name)
-    val pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
+    var pairs = mutableListOf<Pair<ResourceType, Map<String, String>>>()
 
     val appConfig = configurationRegistry.getAppConfigs()
 
@@ -137,13 +137,12 @@ constructor(
               // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105, _count=100})]
               val updatedPair = pair.second.toMutableMap().apply { put(sp.code, expressionValue) }
               val index = pairs.indexOfFirst { it.first == resourceType }
-              resourceType.filterBasedOnPerResourceType(pairs)
               pairs.set(index, Pair(resourceType, updatedPair))
             }
           }
         }
       }
-
+    pairs = filterBasedOnPerResourceType(pairs)
     val syncConfigParams = sharedPreferencesHelper.filterByResourceLocation(pairs)
     Timber.i("SYNC CONFIG $syncConfigParams")
 
@@ -151,61 +150,64 @@ constructor(
   }
 }
 
-private fun ResourceType.filterBasedOnPerResourceType(
+private fun filterBasedOnPerResourceType(
   pairs: MutableList<Pair<ResourceType, Map<String, String>>>,
-) =
-  when (this) {
-    ResourceType.RelatedPerson ->
-      pairs.addParam(resourceType = this, param = RelatedPerson.SP_ACTIVE, value = true.toString())
-    ResourceType.Patient ->
-      pairs.addParam(resourceType = this, param = Patient.SP_ACTIVE, value = true.toString())
+): MutableList<Pair<ResourceType, Map<String, String>>> {
+  pairs.addParam(
+    resourceType = ResourceType.RelatedPerson,
+    param = RelatedPerson.SP_ACTIVE,
+    value = true.toString(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.Patient,
+    param = Patient.SP_ACTIVE,
+    value = true.toString(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.Observation,
+    param = Observation.SP_STATUS,
+    value = Observation.ObservationStatus.PRELIMINARY.toString().lowercase(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.Appointment,
+    param = Appointment.SP_STATUS,
+    value = Appointment.AppointmentStatus.BOOKED.toString().lowercase(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.Appointment,
+    param = Appointment.SP_STATUS,
+    value = Appointment.AppointmentStatus.PROPOSED.toString().lowercase(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.Encounter,
+    param = Encounter.SP_STATUS,
+    value = Encounter.EncounterStatus.INPROGRESS.toString().lowercase(),
+  )
+  pairs.addParam(
+    resourceType = ResourceType.List,
+    param = ListResource.SP_STATUS,
+    value = ListResource.ListStatus.CURRENT.toString().lowercase(),
+  )
+  //    ResourceType.CarePlan ->
+  //      pairs.addParam(
+  //        resourceType = this,
+  //        param = CarePlan.SP_STATUS,
+  //        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase(),
+  //      )
 
-    //    ResourceType.CarePlan ->
-    //      pairs.addParam(
-    //        resourceType = this,
-    //        param = CarePlan.SP_STATUS,
-    //        value = CarePlan.CarePlanStatus.ACTIVE.toString().lowercase(),
-    //      )
-
-    ResourceType.Observation ->
-      pairs.addParam(
-        resourceType = this,
-        param = Observation.SP_STATUS,
-        value = Observation.ObservationStatus.FINAL.toString().lowercase(),
-      )
-
-    //    ResourceType.Task ->
-    //      pairs.addParam(
-    //        resourceType = this,
-    //        param = Task.SP_STATUS,
-    //        value =
-    //          String.format(
-    //            "%s,%s",
-    //            Task.TaskStatus.FAILED.toString().lowercase(),
-    //            Task.TaskStatus.INPROGRESS.toString().lowercase()
-    //          )
-    //      )
-
-    ResourceType.Appointment ->
-      pairs.addParam(
-        resourceType = this,
-        param = Appointment.SP_STATUS,
-        value = Appointment.AppointmentStatus.BOOKED.toString().lowercase(),
-      )
-    ResourceType.Encounter ->
-      pairs.addParam(
-        resourceType = this,
-        param = Encounter.SP_STATUS,
-        value = Encounter.EncounterStatus.INPROGRESS.toString().lowercase(),
-      )
-    ResourceType.List ->
-      pairs.addParam(
-        resourceType = this,
-        param = ListResource.SP_STATUS,
-        value = ListResource.ListStatus.CURRENT.toString().lowercase(),
-      )
-    else -> Unit
-  }
+  //    ResourceType.Task ->
+  //      pairs.addParam(
+  //        resourceType = this,
+  //        param = Task.SP_STATUS,
+  //        value =
+  //          String.format(
+  //            "%s,%s",
+  //            Task.TaskStatus.FAILED.toString().lowercase(),
+  //            Task.TaskStatus.INPROGRESS.toString().lowercase()
+  //          )
+  //      )
+  return pairs
+}
 
 private fun SharedPreferencesHelper.filterByResourceLocation(
   pairs: MutableList<Pair<ResourceType, Map<String, String>>>,
