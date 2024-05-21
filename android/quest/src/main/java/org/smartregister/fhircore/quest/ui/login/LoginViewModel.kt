@@ -452,6 +452,10 @@ constructor(
       key = SharedPreferenceKey.ORGANIZATION.name,
       value = organization.joinToString(separator = ""),
     )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+      value = locations.joinToString(separator = ""),
+    )
   }
 
   fun downloadNowWorkflowConfigs(isInitialLogin: Boolean = true) {
