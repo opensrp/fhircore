@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.questionnaire.items.location.LocationPickerView
-import timber.log.Timber
 
 class LocationPickerViewHolderFactory(
   val customQuestItemDataProvider: CustomQuestItemDataProvider,
@@ -46,7 +45,7 @@ class LocationPickerViewHolderFactory(
       override fun bind(questionnaireViewItem: QuestionnaireViewItem) {
         locationPickerView.headerView?.bind(questionnaireViewItem)
         locationPickerView.setRequiredOrOptionalText(
-          getRequiredOrOptionalText(questionnaireViewItem, context)
+          getRequiredOrOptionalText(questionnaireViewItem, context),
         )
         locationPickerView.setOnLocationChanged { value ->
           context.lifecycleScope.launch {

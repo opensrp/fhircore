@@ -99,7 +99,7 @@ fun AppSettingScreen(
           is DataLoadState.Success -> {
             Text(text = "Data loaded successfully")
           }
-          is DataLoadState.Loading -> {
+          else -> {
             Column(
               verticalArrangement = Arrangement.Center,
               horizontalAlignment = Alignment.CenterHorizontally,

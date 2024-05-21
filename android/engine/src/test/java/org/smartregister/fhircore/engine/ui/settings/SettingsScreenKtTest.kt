@@ -46,7 +46,7 @@ class SettingsScreenKtTest : RobolectricTest() {
   @Test
   @Ignore("Fix failing test")
   fun testSettingsScreenShowsUserProfileRows() = runTest {
-    coEvery { devMenuViewModel.getResourcesToReport() } returns emptyMap()
+    coEvery { devMenuViewModel.getResourcesToVersions() } returns emptyMap()
     coEvery { settingsViewModel.profileData } returns MutableLiveData()
     composeRule.setContent {
       SettingsScreen(settingsViewModel = settingsViewModel, devViewModel = devMenuViewModel)
