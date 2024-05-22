@@ -56,7 +56,7 @@ class HtmlPopulator(
         while (html.contains("@is-not-empty('")) {
             val linkId = html.substringAfter("@is-not-empty('").substringBefore("')")
             val htmlWithoutTag = html.substringAfter("@is-not-empty('$linkId')").substringBefore("@is-not-empty")
-            html =  if (questionnaireResponseItemMap.getValue(linkId).isNotEmpty()) {
+            html =  if (questionnaireResponseItemMap.getOrDefault(linkId, listOf()).isNotEmpty()) {
                 html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", htmlWithoutTag)
             } else {
                 html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", "")
@@ -81,7 +81,7 @@ class HtmlPopulator(
         var html = this
         while (html.contains("@answer-as-list('")) {
             val linkId = html.substringAfter("@answer-as-list('").substringBefore("')")
-            val answerAsList = questionnaireResponseItemMap.getValue(linkId).joinToString(separator = "") { answer -> "<li>${answer.value.valueToString()}</li>" }
+            val answerAsList = questionnaireResponseItemMap.getOrDefault(linkId, listOf()).joinToString(separator = "") { answer -> "<li>${answer.value.valueToString()}</li>" }
             html = html.replace("@answer-as-list('$linkId')", answerAsList)
         }
         return html
@@ -107,7 +107,7 @@ class HtmlPopulator(
         while (html.contains("@answer('")) {
             val linkId = html.substringAfter("@answer('").substringBefore("'")
             val dateFormat = html.substringAfter("@answer('$linkId','", "").substringBefore("')")
-            val answer = questionnaireResponseItemMap.getValue(linkId).joinToString { answer ->
+            val answer = questionnaireResponseItemMap.getOrDefault(linkId, listOf()).joinToString { answer ->
                 if (dateFormat.isEmpty()) answer.value.valueToString() else answer.value.valueToString(dateFormat)
             }
             html = if (dateFormat.isEmpty()) {
@@ -172,7 +172,7 @@ class HtmlPopulator(
       val indicator = html.substringAfter("@contains('$linkId','").substringBefore("')")
       val content = html.substringAfter("@contains('$linkId','$indicator')").substringBefore("@contains")
 
-      val shouldShow = questionnaireResponseItemMap.getValue(linkId).any {
+      val shouldShow = questionnaireResponseItemMap.getOrDefault(linkId, listOf()).any {
         it.valueToString()
         when {
           it.hasValueCoding() -> it.valueCoding.code == indicator
