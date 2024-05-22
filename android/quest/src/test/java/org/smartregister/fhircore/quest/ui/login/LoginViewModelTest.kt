@@ -657,7 +657,7 @@ internal class LoginViewModelTest : RobolectricTest() {
     )
     assertEquals(
       locationId,
-      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name)
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name),
     )
   }
 
