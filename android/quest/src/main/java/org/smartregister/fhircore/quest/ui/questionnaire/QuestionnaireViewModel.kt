@@ -125,6 +125,11 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  private lateinit var questionnaireItemParentMap:
+          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>
+
+  private val questionnaireLaunchContextMap: Map<String, Resource>? = null
+
   suspend fun loadQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
     prePopulationParams: List<ActionParameter>? = emptyList(),
@@ -709,7 +714,7 @@ constructor(
    * @param questionnaireResponse QuestionnaireResponse to validate
    * @param context Context to use in validation
    */
-  fun isQuestionnaireResponseValid(
+  suspend fun isQuestionnaireResponseValid(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context
@@ -722,7 +727,9 @@ constructor(
       QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire,
         questionnaireResponse,
-        context
+        context,
+        questionnaireItemParentMap,
+        questionnaireLaunchContextMap
       )
       true
     } catch (e: IllegalArgumentException) {
