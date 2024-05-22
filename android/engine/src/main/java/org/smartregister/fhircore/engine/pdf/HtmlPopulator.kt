@@ -152,19 +152,6 @@ class HtmlPopulator(
     return html
   }
 
-  /**
-   * Populates the submitted date from [QuestionnaireResponse.meta.lastUpdated].
-   *
-   * Example:
-   * ```
-   * "@submitted-date" -> 14-May-2024
-   *
-   * "@submitted-date('MMMM d, yyyy')" -> May 14, 2024
-   * ```
-   *
-   * @return The HTML string with the submitted date populated.
-   * @receiver The raw HTML string to be processed.
-   */
   fun String.processContains(): String {
     var html = this
     while (html.contains("@contains('")) {
@@ -173,7 +160,6 @@ class HtmlPopulator(
       val content = html.substringAfter("@contains('$linkId','$indicator')").substringBefore("@contains")
 
       val shouldShow = questionnaireResponseItemMap.getOrDefault(linkId, listOf()).any {
-        it.valueToString()
         when {
           it.hasValueCoding() -> it.valueCoding.code == indicator
           it.hasValueStringType() -> it.valueStringType.value == indicator
