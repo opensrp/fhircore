@@ -1,8 +1,10 @@
 package org.smartregister.fhircore.engine.pdf
 
 import com.google.android.fhir.datacapture.extensions.allItems
+import org.hl7.fhir.r4.model.BaseDateTimeType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.util.extension.formatDate
+import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.valueToString
 
 /**
@@ -24,19 +26,15 @@ class HtmlPopulator(
         valueTransform = { it.answer }
     )
 
-    /**
-     * Populates the given HTML string with data from the [QuestionnaireResponse].
-     *
-     * @param html The raw HTML string to be populated.
-     * @return The populated HTML string.
-     */
-    fun populateHtml(html: String): String {
-        return html
-            .processIsNotEmpty()
-            .populateAnswerAsList()
-            .populateAnswer()
-            .populateSubmittedDate()
-    }
+  /**
+   * Populates the given HTML string with data from the [QuestionnaireResponse].
+   *
+   * @param html The raw HTML string to be populated.
+   * @return The populated HTML string.
+   */
+  fun populateHtml(html: String): String {
+    return html.processIsNotEmpty().populateAnswerAsList().populateAnswer().populateSubmittedDate().processContains()
+  }
 
     /**
      * Hides the contained UI elements if the referred link ID has no answer.
@@ -121,34 +119,78 @@ class HtmlPopulator(
         return html
     }
 
-    /**
-     * Populates the submitted date from [QuestionnaireResponse.meta.lastUpdated].
-     *
-     * Example:
-     * ```
-     * "@submitted-date" -> 14-May-2024
-     *
-     * "@submitted-date('MMMM d, yyyy')" -> May 14, 2024
-     * ```
-     *
-     * @receiver The raw HTML string to be processed.
-     * @return The HTML string with the submitted date populated.
-     */
-    private fun String.populateSubmittedDate(): String {
-        var html = this
-        while (html.contains("@submitted-date")) {
-            val dateFormat = html.substringAfter("@submitted-date('", "").substringBefore("')")
-            val formattedDate = if (dateFormat.isEmpty()) {
-                questionnaireResponse.meta.lastUpdated.formatDate()
-            } else {
-                questionnaireResponse.meta.lastUpdated.formatDate(dateFormat)
-            }
-            html = if (dateFormat.isEmpty()) {
-                html.replace("@submitted-date", formattedDate)
-            } else {
-                html.replace("@submitted-date('$dateFormat')", formattedDate)
-            }
+  /**
+   * Populates the submitted date from [QuestionnaireResponse.meta.lastUpdated].
+   *
+   * Example:
+   * ```
+   * "@submitted-date" -> 14-May-2024
+   *
+   * "@submitted-date('MMMM d, yyyy')" -> May 14, 2024
+   * ```
+   *
+   * @return The HTML string with the submitted date populated.
+   * @receiver The raw HTML string to be processed.
+   */
+  private fun String.populateSubmittedDate(): String {
+    var html = this
+    while (html.contains("@submitted-date")) {
+      val dateFormat = html.substringAfter("@submitted-date('", "").substringBefore("')")
+      val formattedDate =
+        if (dateFormat.isEmpty()) {
+          questionnaireResponse.meta.lastUpdated.formatDate()
+        } else {
+          questionnaireResponse.meta.lastUpdated.formatDate(dateFormat)
         }
-        return html
+      html =
+        if (dateFormat.isEmpty()) {
+          html.replace("@submitted-date", formattedDate)
+        } else {
+          html.replace("@submitted-date('$dateFormat')", formattedDate)
+        }
     }
+    return html
+  }
+
+  /**
+   * Populates the submitted date from [QuestionnaireResponse.meta.lastUpdated].
+   *
+   * Example:
+   * ```
+   * "@submitted-date" -> 14-May-2024
+   *
+   * "@submitted-date('MMMM d, yyyy')" -> May 14, 2024
+   * ```
+   *
+   * @return The HTML string with the submitted date populated.
+   * @receiver The raw HTML string to be processed.
+   */
+  fun String.processContains(): String {
+    var html = this
+    while (html.contains("@contains('")) {
+      val linkId = html.substringAfter("@contains('").substringBefore("','")
+      val indicator = html.substringAfter("@contains('$linkId','").substringBefore("')")
+      val content = html.substringAfter("@contains('$linkId','$indicator')").substringBefore("@contains")
+
+      val shouldShow = questionnaireResponseItemMap.getValue(linkId).any {
+        it.valueToString()
+        when {
+          it.hasValueCoding() -> it.valueCoding.code == indicator
+          it.hasValueStringType() -> it.valueStringType.value == indicator
+          it.hasValueIntegerType() -> it.valueIntegerType.value == indicator.toInt()
+          it.hasValueDecimalType() -> it.valueDecimalType.value == indicator.toBigDecimal()
+          it.hasValueBooleanType() -> it.valueBooleanType.value == indicator.toBoolean()
+          it.hasValueQuantity() -> it.valueQuantity.value.toPlainString() == indicator
+          it.isDateTime -> (it.value as BaseDateTimeType).value.makeItReadable() == indicator
+          else -> false
+        }
+      }
+      html = if (shouldShow) {
+        html.replace("@contains('$linkId','$indicator')$content@contains", content)
+      } else {
+        html.replace("@contains('$linkId','$indicator')$content@contains", "")
+      }
+    }
+    return html
+  }
 }
