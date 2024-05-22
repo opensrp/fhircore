@@ -33,6 +33,7 @@ import io.mockk.verify
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.internal.http.RealResponseBody
@@ -52,6 +53,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
+import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -636,6 +638,27 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testDownloadNowWorkflowConfigs() {
     loginViewModel.downloadNowWorkflowConfigs()
     verify { workManager.enqueue(any<OneTimeWorkRequest>()) }
+  }
+
+  @Test
+  fun testWritePractitionerDetailsToShredPrefSavesPractitionerLocationId() {
+    val locationId = "ABCD123"
+    ReflectionHelpers.callInstanceMethod<LoginViewModel>(
+      loginViewModel,
+      "writePractitionerDetailsToShredPref",
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
+      ReflectionHelpers.ClassParameter.from(PractitionerDetails::class.java, PractitionerDetails()),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf(locationId)),
+      ReflectionHelpers.ClassParameter.from(List::class.java, listOf(LocationHierarchy())),
+    )
+    assertEquals(
+      locationId,
+      sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name)
+    )
   }
 
   private fun updateCredentials() {
