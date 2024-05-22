@@ -294,7 +294,7 @@ constructor(
           ExistingWorkPolicy.REPLACE,
           OneTimeWorkRequestBuilder<ResourcePurgerWorker>()
             .setInputData(
-              Data.Builder().putBoolean(ResourcePurgerWorker.ONE_TIME_SYNC_KEY, true).build()
+              Data.Builder().putBoolean(ResourcePurgerWorker.ONE_TIME_SYNC_KEY, true).build(),
             )
             .build(),
         )
