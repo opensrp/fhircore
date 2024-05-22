@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
@@ -112,6 +113,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
   }

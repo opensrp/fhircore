@@ -66,6 +66,7 @@ constructor(
       val resourcesMap =
         defaultRepository
           .searchResourcesRecursively(
+            filterByRelatedEntityLocationMetaTag = false,
             fhirResourceConfig = multiSelectViewConfig.resourceConfig,
             filterActiveResources = null,
             secondaryResourceConfigs = null,
