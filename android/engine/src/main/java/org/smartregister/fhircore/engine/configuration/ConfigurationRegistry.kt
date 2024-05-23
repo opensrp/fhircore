@@ -298,7 +298,7 @@ constructor(
     }
   }
 
-  private suspend fun populateConfigurationsMap(
+  suspend fun populateConfigurationsMap(
     context: Context,
     composition: Composition,
     loadFromAssets: Boolean,

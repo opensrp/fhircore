@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
-import android.content.res.AssetManager
 import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
@@ -36,6 +35,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.net.URL
 import javax.inject.Inject
@@ -53,18 +53,18 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.fail
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.ArgumentMatchers
-import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.BASE_RESOURCES_PATH
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -78,7 +78,6 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
@@ -195,7 +194,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.configsJsonMap[configId] =
       "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
     val registerConfig =
-      configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, configId)
+      configRegistry.retrieveConfiguration<RegisterConfiguration>(
+        ConfigType.Register,
+        configId,
+      )
     Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
     assertEquals(appId, registerConfig.appId)
     assertEquals(id, registerConfig.id)
@@ -225,7 +227,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testRetrieveConfigurationParseResource() {
-    Assert.assertThrows("Configuration MUST be a template", IllegalArgumentException::class.java) {
+    Assert.assertThrows(
+      "Configuration MUST be a template",
+      IllegalArgumentException::class.java,
+    ) {
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Sync)
     }
   }
@@ -279,7 +284,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         id = "composition-id-1"
         identifier = Identifier().apply { value = appId }
         section =
-          listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
+          listOf(
+            SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name },
+          )
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
@@ -311,7 +318,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
       Composition().apply {
         identifier = Identifier().apply { value = appId }
         section =
-          listOf(SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name })
+          listOf(
+            SectionComponent().apply { focus.reference = ResourceType.Questionnaire.name },
+          )
       }
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     fhirEngine.create(composition) // Add composition to database instead of mocking
@@ -894,7 +903,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
               BundleEntryComponent()
                 .setResource(
                   Bundle().apply {
-                    entry = listOf(BundleEntryComponent().setResource(listResource))
+                    entry =
+                      listOf(
+                        BundleEntryComponent().setResource(listResource),
+                      )
                   },
                 ),
             )
@@ -970,31 +982,119 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testPopulateConfigurationsMapReadsAndSavesValidResourcesToDB() {
+  fun testPopulateConfigurationsMapReadsAndSavesValidResourcesToDB() = runTest {
     val mockedContext = mockk<Context>(relaxed = true)
     val mockedConfigurationReg = mockk<ConfigurationRegistry>()
-    val resourceConfigs =
-      mutableListOf<String>().apply {
-        add("resources/sample_qr.json")
-        add("resources/sample_sm.json")
-      }
+    val composition = Composition().apply { id = "1234" }
+    val appId = "app/debug"
+    val resourceConfigs = mutableListOf<String>().apply { add("resources/sample_qr.json") }
     val configFiles = mutableListOf<String>()
-    val assets = mockk<AssetManager>()
-    every { mockedContext.assets } returns assets
-    every {
-      mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(context = context)
-    } returns Pair(configFiles, resourceConfigs)
-    every { assets.list(anyString()) } returns
-      (arrayOf("resources/sample_sm.json", "resources/sample_qr.json"))
-    configRegistry.retrieveConfigsAndResourcesFromAssets(context).second.forEach { resourceName ->
-      val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
-      try {
-        val localResource = resourceJson.decodeResourceFromString<Resource>()
-        assertNotNull(localResource)
-        assertEquals("Questionnaire", localResource.resourceType)
-      } catch (e: Exception) {
-        fail("Should not throw an exception for valid resources")
+    val assetFiles = Pair(configFiles, resourceConfigs)
+    val questionnaire =
+      """{
+  "resourceType": "Questionnaire",
+  "id": "3440",
+  "language": "en",
+  "name": "G6PD Test Photo Result",
+  "title": "G6PD Test Photo Result",
+  "status": "active",
+  "subjectType": [
+    "Patient"
+  ],
+  "publisher": "ONA-Systems",
+  "useContext": [
+    {
+      "code": {
+        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
+        "code": "focus"
+      },
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://fhir.ona.io",
+            "code": "000002",
+            "display": "G6PD Test Photo Results"
+          }
+        ]
       }
     }
+  ],
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
+      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+      "valueCanonical": "Library/46831"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
+      "valueCanonical": "Library/46823"
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "result_type",
+      "code": [
+        {
+          "system": "http://fhir.ona.io",
+          "code": "000001",
+          "display": "G6PD Result Type"
+        }
+      ],
+      "text": "G6PD Result Type",
+      "type": "choice",
+      "required": true,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "410680006",
+            "display": "Number"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "405358009",
+            "display": "Error"
+          }
+        },
+        {
+          "valueCoding": {
+            "system": "http://snomed.info/sct",
+            "code": "385432009",
+            "display": "N/A"
+          }
+        }
+      ]
+    }
+  ]
+}
+        """
+        .trimIndent()
+    val resourceNames = arrayOf("sample_qr.json")
+    every { mockedContext.assets.list(BASE_RESOURCES_PATH) } returns resourceNames
+    every { mockedContext.assets.open(any()) } returnsMany
+      listOf(
+        ByteArrayInputStream(resourceNames[0].toByteArray()),
+      )
+    every { mockedContext.assets.open(any()) } returns
+      ByteArrayInputStream(
+        questionnaire.toByteArray(),
+      )
+    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(mockedContext) } returns
+      assetFiles
+    val loadedResources = configRegistry.retrieveConfigsAndResourcesFromAssets(mockedContext)
+    configRegistry.populateConfigurationsMap(mockedContext, composition, true, appId) {}
+    assertEquals(loadedResources, assetFiles)
+    coVerify { configRegistry.addOrUpdate(any()) }
   }
 }
