@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -59,7 +59,6 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
@@ -96,12 +95,15 @@ fun PageRegisterScreen(
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
       // Only show when filtering data is not active
+      if (pagingItems.loadState.refresh is LoadState.NotLoading && searchText.isEmpty()) {
+        registerViewModel.loadCount()
+      }
+
       Column {
-        if (searchText.isEmpty()) {
+        if (searchText.isEmpty() && pagingItems.itemCount > 0) {
           RegisterFooter(
-            resultCount = pagingItems.itemCount,
-            currentPage = registerViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = registerViewModel.countPages().observeAsState(initial = 1).value,
+            currentPageStateFlow = registerViewModel.currentPage,
+            pagesCountStateFlow = registerViewModel.totalRecordsCountPages,
             previousButtonClickListener = {
               registerViewModel.onEvent(StandardRegisterEvent.MoveToPreviousPage)
             },

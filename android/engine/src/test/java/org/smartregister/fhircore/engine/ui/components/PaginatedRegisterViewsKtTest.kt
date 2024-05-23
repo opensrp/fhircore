@@ -26,7 +26,6 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.paging.LoadState
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Rule
@@ -70,27 +69,12 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   }
 
   @Test
-  fun testSearchFooterWithZeroAsResultCount() {
-    composeRule.setContent {
-      RegisterFooter(
-        resultCount = 0,
-        currentPage = 1,
-        pagesCount = 1,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-      )
-    }
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertDoesNotExist()
-  }
-
-  @Test
   fun testSearchFooterWithTenAsResultCount() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
-        resultCount = 50,
-        currentPage = 1,
-        pagesCount = 3,
+        currentPageStateFlow = 1,
+        pagesCountStateFlow = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
@@ -119,9 +103,8 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
-        resultCount = 50,
-        currentPage = 3,
-        pagesCount = 3,
+        currentPageStateFlow = 3,
+        pagesCountStateFlow = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
@@ -150,9 +133,8 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
       RegisterFooter(
-        resultCount = 20,
-        currentPage = 1,
-        pagesCount = 1,
+        currentPageStateFlow = 1,
+        pagesCountStateFlow = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
@@ -178,209 +160,6 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
     composeRule.setContent { NoResults() }
     composeRule.onNodeWithText("No results", useUnmergedTree = true).assertExists()
     composeRule.onNodeWithText("No results", useUnmergedTree = true).assertIsDisplayed()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldShowNoResultsView() {
-    composeRule.mainClock.autoAdvance = false
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.NotLoading(false),
-        showResultsCount = true,
-        resultCount = 0,
-        body = { RegisterBody() },
-        currentPage = 1,
-        pagesCount = 1,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = true,
-      )
-    }
-
-    // No results is displayed
-    composeRule.onNodeWithText("No results").assertExists()
-    composeRule.onNodeWithText("No results").assertIsDisplayed()
-
-    // Register body not displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertDoesNotExist()
-
-    // Pagination is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldDisplayProgressDialog() {
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.Loading,
-        showResultsCount = false,
-        resultCount = 0,
-        body = { RegisterBody() },
-        currentPage = 1,
-        pagesCount = 1,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = true,
-      )
-    }
-
-    // CircularProgressBar is displayed
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertExists()
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertIsDisplayed()
-
-    // No results is not displayed
-    composeRule.onNodeWithText("No results").assertDoesNotExist()
-
-    // Register body not displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertDoesNotExist()
-
-    // Pagination is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldDisplayResultsBodyWithFooter() {
-    composeRule.mainClock.autoAdvance = false
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.NotLoading(true),
-        showResultsCount = false,
-        resultCount = 52,
-        body = { RegisterBody() },
-        currentPage = 2,
-        pagesCount = 3,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = true,
-      )
-    }
-
-    // CircularProgressBar is not displayed
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
-
-    // No results is not displayed
-    composeRule.onNodeWithText("No results").assertDoesNotExist()
-
-    // Register body is displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertExists()
-    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
-
-    // Pagination is displayed with text Page 2 of 3
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertIsDisplayed()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertTextEquals("Page 2 of 3")
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertIsDisplayed()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldDisplayResultsBodyWithNoFooter() {
-    composeRule.mainClock.autoAdvance = false
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.NotLoading(true),
-        showResultsCount = true,
-        resultCount = 52,
-        body = { RegisterBody() },
-        currentPage = 2,
-        pagesCount = 3,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = false,
-      )
-    }
-
-    // CircularProgressBar is not displayed
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
-
-    // No results is not displayed
-    composeRule.onNodeWithText("No results").assertDoesNotExist()
-
-    // Register body is displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertExists()
-    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
-
-    // Pagination is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldDisplayResultsBodyWithFooterAbsolute() {
-    composeRule.mainClock.autoAdvance = false
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.NotLoading(true),
-        showResultsCount = false,
-        resultCount = 52,
-        body = { RegisterBody() },
-        currentPage = 2,
-        pagesCount = 3,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = true,
-      )
-    }
-
-    // CircularProgressBar is not displayed
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
-
-    // No results is not displayed
-    composeRule.onNodeWithText("No results").assertDoesNotExist()
-
-    // Register body is displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertExists()
-    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
-
-    // Pagination is displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertExists()
-  }
-
-  @Test
-  fun testPaginatedRegisterShouldDisplayResultsBodyWithNoFooterAbsolute() {
-    composeRule.mainClock.autoAdvance = false
-    composeRule.setContent {
-      PaginatedRegister(
-        loadState = LoadState.NotLoading(true),
-        showResultsCount = false,
-        resultCount = 52,
-        body = { RegisterBody() },
-        currentPage = 2,
-        pagesCount = 3,
-        previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
-        nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
-        showHeader = true,
-        showFooter = false,
-      )
-    }
-
-    // CircularProgressBar is not displayed
-    composeRule.onNodeWithTag(CIRCULAR_PROGRESS_BAR).assertDoesNotExist()
-
-    // No results is not displayed
-    composeRule.onNodeWithText("No results").assertDoesNotExist()
-
-    // Register body is displayed
-    composeRule.onNodeWithTag(registerBodyTag).assertExists()
-    composeRule.onNodeWithTag(registerBodyTag).assertIsDisplayed()
-
-    // Pagination is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertDoesNotExist()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
   }
 
   @Composable

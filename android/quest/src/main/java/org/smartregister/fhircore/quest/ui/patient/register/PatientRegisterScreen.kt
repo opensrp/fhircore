@@ -29,7 +29,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -48,7 +48,6 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -107,13 +106,15 @@ fun PatientRegisterScreen(
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
       // Only show when filtering data is not active
+      if (pagingItems.loadState.refresh is LoadState.NotLoading && searchText.isEmpty()) {
+        patientRegisterViewModel.loadCount()
+      }
+
       Column {
-        if (searchText.isEmpty()) {
+        if (searchText.isEmpty() && pagingItems.itemCount > 0) {
           RegisterFooter(
-            resultCount = pagingItems.itemCount,
-            currentPage =
-              patientRegisterViewModel.currentPage.observeAsState(initial = 0).value.plus(1),
-            pagesCount = patientRegisterViewModel.countPages().observeAsState(initial = 1).value,
+            currentPageStateFlow = patientRegisterViewModel.currentPage,
+            pagesCountStateFlow = patientRegisterViewModel.totalRecordsCountPages,
             previousButtonClickListener = {
               patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToPreviousPage)
             },
@@ -121,26 +122,26 @@ fun PatientRegisterScreen(
               patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage)
             },
           )
-          // TODO activate this button action via config; now only activated for family register
-          if (
-            patientRegisterViewModel.isAppFeatureHousehold() ||
-              patientRegisterViewModel.isRegisterFormViaSettingExists()
-          ) {
-            Button(
-              modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-              onClick = {
-                patientRegistrationLauncher.launch(
-                  patientRegisterViewModel.patientRegisterQuestionnaireIntent(context),
-                )
-              },
-              enabled = !firstTimeSync,
-            ) {
-              Text(
-                text =
-                  stringResource(org.smartregister.fhircore.engine.R.string.register_new_client),
-                modifier = modifier.padding(8.dp),
+        }
+
+        if (
+          searchText.isEmpty() &&
+            (patientRegisterViewModel.isAppFeatureHousehold() ||
+              patientRegisterViewModel.isRegisterFormViaSettingExists())
+        ) {
+          Button(
+            modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            onClick = {
+              patientRegistrationLauncher.launch(
+                patientRegisterViewModel.patientRegisterQuestionnaireIntent(context),
               )
-            }
+            },
+            enabled = !firstTimeSync,
+          ) {
+            Text(
+              text = stringResource(org.smartregister.fhircore.engine.R.string.register_new_client),
+              modifier = modifier.padding(8.dp),
+            )
           }
         }
       }

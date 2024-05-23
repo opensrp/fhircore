@@ -26,6 +26,9 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -34,11 +37,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 const val DEFAULT_MAX_PAGE_COUNT = 20
+const val TOTAL_PAGES_UNKNOWN = -1
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
 const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
@@ -46,63 +52,72 @@ const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
 
 @Composable
 fun RegisterFooter(
-  resultCount: Int,
-  currentPage: Int,
-  pagesCount: Int,
+  currentPageStateFlow: StateFlow<Int>,
+  pagesCountStateFlow: StateFlow<Int>,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
-  if (resultCount > 0) {
-    Row(modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG)) {
-      Box(
-        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
-      ) {
-        if (currentPage > 1) {
-          TextButton(
-            onClick = previousButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG),
-          ) {
-            Icon(
-              painter = painterResource(id = R.drawable.ic_chevron_left),
-              contentDescription = stringResource(R.string.str_next),
-            )
-            Text(
-              fontSize = 14.sp,
-              color = MaterialTheme.colors.primary,
-              text = stringResource(id = R.string.str_previous),
-            )
-          }
+  val currentPageState = currentPageStateFlow.collectAsState()
+  val currentPage by remember { currentPageState }
+  val pagesCountState = pagesCountStateFlow.collectAsState()
+  val pagesCount by remember { pagesCountState }
+
+  Row(
+    modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG),
+  ) {
+    Box(
+      modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
+    ) {
+      if (currentPage > 1) {
+        TextButton(
+          onClick = previousButtonClickListener,
+          modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG),
+        ) {
+          Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_left),
+            contentDescription = stringResource(R.string.str_next),
+          )
+          Text(
+            fontSize = 14.sp,
+            color = MaterialTheme.colors.primary,
+            text = stringResource(id = R.string.str_previous),
+          )
         }
       }
-      Text(
-        fontSize = 14.sp,
-        color = GreyTextColor,
-        text = stringResource(id = R.string.str_page_info, currentPage, pagesCount),
-        modifier =
-          modifier
-            .testTag(SEARCH_FOOTER_PAGINATION_TAG)
-            .padding(4.dp)
-            .align(Alignment.CenterVertically),
-      )
-      Box(
-        modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
-      ) {
-        if (currentPage < pagesCount) {
-          TextButton(
-            onClick = nextButtonClickListener,
-            modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG),
-          ) {
-            Text(
-              fontSize = 14.sp,
-              color = MaterialTheme.colors.primary,
-              text = stringResource(id = R.string.str_next),
-            )
-            Icon(
-              painter = painterResource(id = R.drawable.ic_chevron_right),
-              contentDescription = stringResource(R.string.str_next),
-            )
-          }
+    }
+    Text(
+      fontSize = 14.sp,
+      color = GreyTextColor,
+      text =
+        stringResource(
+          id = R.string.str_page_info,
+          currentPage,
+          if (pagesCount == TOTAL_PAGES_UNKNOWN) "_" else "$pagesCount"
+        ),
+      modifier =
+        modifier
+          .testTag(SEARCH_FOOTER_PAGINATION_TAG)
+          .padding(4.dp)
+          .align(Alignment.CenterVertically),
+    )
+    Box(
+      modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
+    ) {
+      if (currentPage < pagesCount) {
+        TextButton(
+          onClick = nextButtonClickListener,
+          modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG),
+        ) {
+          Text(
+            fontSize = 14.sp,
+            color = MaterialTheme.colors.primary,
+            text = stringResource(id = R.string.str_next),
+          )
+          Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = stringResource(R.string.str_next),
+          )
         }
       }
     }
@@ -113,26 +128,26 @@ fun RegisterFooter(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
-  RegisterFooter(10, 1, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(MutableStateFlow(1), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
-  RegisterFooter(10, 20, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(MutableStateFlow(20), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  RegisterFooter(10, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(MutableStateFlow(6), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
-  RegisterFooter(0, 6, DEFAULT_MAX_PAGE_COUNT, {}, {})
+  RegisterFooter(MutableStateFlow(6), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
 }

@@ -24,6 +24,7 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.StringFilterModifier
 import com.google.android.fhir.search.search
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
@@ -34,7 +35,6 @@ import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
 import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -76,8 +76,12 @@ class HivRegisterDao
 constructor(
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
-  val configurationRegistry: ConfigurationRegistry,
+  configurationRegistry: Provider<ConfigurationRegistry>,
 ) : RegisterDao, PatientDao {
+
+  private val patientTypeMetaTagCodingSystem by lazy {
+    configurationRegistry.get().getAppConfigs().patientTypeFilterTagViaMetaCodingSystem
+  }
 
   fun isValidPatient(patient: Patient): Boolean =
     patient.active &&
@@ -102,14 +106,18 @@ constructor(
         if (!loadAll) {
           count = PaginationConstant.DEFAULT_PAGE_SIZE
         }
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+        if (currentPage > 0) {
+          from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+        }
       }
 
     return patients
       .map { it.resource }
       .filter(this::isValidPatient)
+      .filterNot {
+        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
+      }
       .map { transformPatientToHivRegisterData(it) }
-      .filterNot { it.healthStatus == HealthStatus.DEFAULT }
   }
 
   override suspend fun searchByName(
@@ -133,20 +141,15 @@ constructor(
 
     return patients
       .map { it.resource }
-      .mapNotNull { patient ->
-        if (isValidPatient(patient)) {
-          val transFormedPatient = transformPatientToHivRegisterData(patient)
-          if (transFormedPatient.healthStatus != HealthStatus.DEFAULT) {
-            return@mapNotNull transFormedPatient
-          }
-        }
-        return@mapNotNull null
+      .filter { isValidPatient(it) }
+      .filterNot {
+        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
       }
+      .map { transformPatientToHivRegisterData(it) }
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
     val patient = defaultRepository.loadResource<Patient>(resourceId)!!
-    val configuration = getApplicationConfiguration()
     val carePlan = patient.activeCarePlans(fhirEngine).firstOrNull()
 
     return ProfileData.HivProfileData(
@@ -166,8 +169,7 @@ constructor(
       chwAssigned = patient.generalPractitionerFirstRep,
       showIdentifierInProfile = true,
       currentCarePlan = carePlan,
-      healthStatus =
-        patient.extractHealthStatusFromMeta(configuration.patientTypeFilterTagViaMetaCodingSystem),
+      healthStatus = patient.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem),
       tasks =
         carePlan
           ?.activity
@@ -187,6 +189,9 @@ constructor(
       .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
       .map { it.resource }
       .filter(this::isValidPatient)
+      .filterNot {
+        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
+      }
       .size
       .toLong()
   }
@@ -260,10 +265,7 @@ constructor(
       phoneContacts = patient.extractTelecom(),
       practitioners = patient.generalPractitioner,
       chwAssigned = patient.extractGeneralPractitionerReference(),
-      healthStatus =
-        patient.extractHealthStatusFromMeta(
-          getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
-        ),
+      healthStatus = patient.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem),
       isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
       isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
     )
@@ -322,10 +324,7 @@ constructor(
   }
 
   private fun Patient.isValidChildContact(): Boolean {
-    val healthStatus =
-      this.extractHealthStatusFromMeta(
-        getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
-      )
+    val healthStatus = this.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem)
 
     if (
       healthStatus == HealthStatus.CHILD_CONTACT ||
@@ -359,10 +358,6 @@ constructor(
       fhirEngine.getResourcesByIds<RelatedPerson>(relatedPersons)
   }
 
-  private fun getApplicationConfiguration(): ApplicationConfiguration {
-    return configurationRegistry.getAppConfigs()
-  }
-
   suspend fun removePatient(patientId: String) {
     val patient =
       defaultRepository.loadResource<Patient>(patientId)!!.apply {
@@ -392,7 +387,7 @@ constructor(
           chwAssigned = patient.extractGeneralPractitionerReference(),
           healthStatus =
             patient.extractHealthStatusFromMeta(
-              getApplicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
+              patientTypeMetaTagCodingSystem,
             ),
           isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
           isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,

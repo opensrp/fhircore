@@ -18,11 +18,8 @@ package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -43,6 +40,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -54,8 +52,10 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.components.register.TOTAL_PAGES_UNKNOWN
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
@@ -80,6 +80,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
   val appFeatureManager: AppFeatureManager,
+  val dispatcherProvider: DispatcherProvider,
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel() {
 
@@ -92,9 +93,9 @@ constructor(
   val isRefreshing: StateFlow<Boolean>
     get() = _isRefreshing.asStateFlow()
 
-  private val _currentPage = MutableLiveData(0)
+  private val _currentPage = MutableStateFlow(1)
   val currentPage
-    get() = _currentPage
+    get() = _currentPage.asStateFlow()
 
   private val _searchText = MutableStateFlow("")
   val searchText: StateFlow<String>
@@ -111,21 +112,20 @@ constructor(
   private val _syncProgressMutableStateFlow = MutableStateFlow("")
   val syncProgressStateFlow = _syncProgressMutableStateFlow.asStateFlow()
 
-  private val _totalRecordsCount = MutableLiveData(1L)
+  private val _totalPagesCount = MutableStateFlow(1)
+  val totalRecordsCountPages = _totalPagesCount.asStateFlow()
+
+  private val _startCountRegisterMutableStateFlow = MutableStateFlow("")
 
   val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
-    MutableStateFlow(emptyFlow())
-
-  val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
   init {
 
     val searchFlow = _searchText.debounce(500)
-    val pageFlow = _currentPage.asFlow().debounce(200)
-    val refreshCounterFlow = refreshCounter
-    viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
+
+    viewModelScope.launch(dispatcherProvider.io()) {
+      combine(searchFlow, _currentPage, refreshCounter) { s, p, r -> Triple(s, p, r) }
         .mapLatest {
           val pagingFlow =
             if (it.first.isNotBlank()) {
@@ -134,20 +134,22 @@ constructor(
               paginateRegisterDataFlow(page = it.second)
             }
 
-          return@mapLatest pagingFlow.onEach { _isRefreshing.emit(false) }
+          return@mapLatest pagingFlow.also { _isRefreshing.emit(false) }
         }
         .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
-    viewModelScope.launch {
-      combine(searchFlow, pageFlow, refreshCounterFlow) { s, p, r -> Triple(s, p, r) }
-        .filter { it.first.isBlank() }
+
+    viewModelScope.launch(dispatcherProvider.io()) {
+      _startCountRegisterMutableStateFlow
+        .onEach { _totalPagesCount.emit(TOTAL_PAGES_UNKNOWN) }
+        .filter { it.isNotBlank() }
         .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
-        .collect { _totalRecordsCount.postValue(it) }
+        .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
+        .map { ceil(it).toInt() }
+        .collect { _totalPagesCount.emit(it) }
     }
 
-    viewModelScope.launch { paginateRegisterDataForSearch() }
-
-    val syncStateListener =
+    syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
           when (state) {
@@ -163,8 +165,9 @@ constructor(
             else -> _firstTimeSyncState.value = isFirstTimeSync()
           }
         }
-      }
-    syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
+      },
+      scope = viewModelScope,
+    )
   }
 
   private fun updateSyncProgress(state: SyncJobStatus.InProgress) {
@@ -176,9 +179,13 @@ constructor(
     }
   }
 
+  fun loadCount() {
+    _startCountRegisterMutableStateFlow.update { "${refreshCounter.value}${_currentPage.value}" }
+  }
+
   fun refresh() {
     _isRefreshing.value = true
-    _refreshCounter.value += 1
+    _refreshCounter.update { it + 1 }
   }
 
   fun isAppFeatureHousehold() =
@@ -195,12 +202,6 @@ constructor(
         searchFilter = text,
       )
       .flow
-      .cachedIn(viewModelScope)
-
-  fun paginateRegisterDataForSearch() {
-    paginatedRegisterDataForSearch.value =
-      getPager(appFeatureName, healthModule, false).flow.cachedIn(viewModelScope)
-  }
 
   private fun getPager(
     appFeatureName: String?,
@@ -231,9 +232,6 @@ constructor(
       },
     )
 
-  fun countPages() =
-    _totalRecordsCount.map { it.toDouble().div(DEFAULT_PAGE_SIZE) }.map { ceil(it).toInt() }
-
   fun patientRegisterQuestionnaireIntent(context: Context) =
     Intent(context, QuestionnaireActivity::class.java)
       .putExtras(
@@ -250,10 +248,10 @@ constructor(
         _searchText.value = event.searchText
       }
       is PatientRegisterEvent.MoveToNextPage -> {
-        this._currentPage.value = this._currentPage.value?.plus(1)
+        this._currentPage.update { it + 1 }
       }
       is PatientRegisterEvent.MoveToPreviousPage -> {
-        this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
+        this._currentPage.update { if (it > 0) it - 1 else it }
       }
       is PatientRegisterEvent.RegisterNewClient -> {
         //        event.context.launchQuestionnaire<QuestionnaireActivity>(

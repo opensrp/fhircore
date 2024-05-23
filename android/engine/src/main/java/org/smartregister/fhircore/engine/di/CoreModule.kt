@@ -27,6 +27,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Provider
 import javax.inject.Singleton
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.smartregister.fhircore.engine.auditEvent.AuditEventRepository
@@ -104,7 +105,7 @@ class CoreModule {
   fun providePatientDao(
     fhirEngine: FhirEngine,
     defaultRepository: DefaultRepository,
-    configurationRegistry: ConfigurationRegistry,
+    configurationRegistry: Provider<ConfigurationRegistry>,
   ): PatientDao = HivRegisterDao(fhirEngine, defaultRepository, configurationRegistry)
 
   @Singleton

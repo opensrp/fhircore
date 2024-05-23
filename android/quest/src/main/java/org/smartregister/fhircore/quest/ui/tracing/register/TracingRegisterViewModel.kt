@@ -16,11 +16,8 @@
 
 package org.smartregister.fhircore.quest.ui.tracing.register
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -55,7 +52,9 @@ import org.smartregister.fhircore.engine.data.local.TracingRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.ui.components.register.TOTAL_PAGES_UNKNOWN
 import org.smartregister.fhircore.engine.ui.filter.FilterOption
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
@@ -84,6 +83,7 @@ constructor(
   val registerRepository: AppRegisterRepository,
   val configurationRegistry: ConfigurationRegistry,
   val registerViewDataMapper: RegisterViewDataMapper,
+  val dispatcherProvider: DispatcherProvider,
   val appFeatureManager: AppFeatureManager,
   val sharedPreferencesHelper: SharedPreferencesHelper,
 ) : ViewModel(), StandardRegisterViewModel {
@@ -97,8 +97,8 @@ constructor(
   override val isRefreshing: StateFlow<Boolean>
     get() = _isRefreshing.asStateFlow()
 
-  private val _currentPage = MutableLiveData(0)
-  override val currentPage: LiveData<Int>
+  private val _currentPage = MutableStateFlow(1)
+  override val currentPage: StateFlow<Int>
     get() = _currentPage
 
   private val _searchText = MutableStateFlow("")
@@ -109,7 +109,9 @@ constructor(
   val refreshCounter: StateFlow<Int>
     get() = _refreshCounter.asStateFlow()
 
-  private val _totalRecordsCount = MutableLiveData(1L)
+  private val _totalRecordsPagesMutableStateFlow = MutableStateFlow(1)
+  override val totalRecordsCountPages: StateFlow<Int>
+    get() = _totalRecordsPagesMutableStateFlow.asStateFlow()
 
   override val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
@@ -122,9 +124,10 @@ constructor(
   val filtersStateFlow: StateFlow<TracingRegisterFilterState> =
     _filtersMutableStateFlow.asStateFlow()
 
+  private val _startCountRegisterMutableStateFlow = MutableStateFlow("")
+
   init {
     val searchFlow = _searchText.debounce(500)
-    val pageFlow = _currentPage.asFlow().debounce(200)
     val registerFilterFlow =
       _filtersMutableStateFlow
         .map {
@@ -139,8 +142,8 @@ constructor(
           )
         }
         .onEach { resetPage() }
-    viewModelScope.launch {
-      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
+    viewModelScope.launch(dispatcherProvider.io()) {
+      combine(searchFlow, _currentPage, registerFilterFlow, refreshCounter) { s, p, f, _ ->
           Triple(s, p, f)
         }
         .mapLatest {
@@ -155,15 +158,21 @@ constructor(
         }
         .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
-    viewModelScope.launch {
-      combine(searchFlow, pageFlow, registerFilterFlow, refreshCounter) { s, p, f, _ ->
-          Triple(s, p, f)
-        }
-        .filter { it.first.isBlank() }
+
+    viewModelScope.launch(dispatcherProvider.io()) {
+      combine(_startCountRegisterMutableStateFlow, registerFilterFlow) { s, r -> Pair(s, r) }
+        .onEach { _totalRecordsPagesMutableStateFlow.emit(TOTAL_PAGES_UNKNOWN) }
+        .filter { it.first.isNotBlank() }
         .mapLatest {
-          registerRepository.countRegisterFiltered(appFeatureName, healthModule, filters = it.third)
+          registerRepository.countRegisterFiltered(
+            appFeatureName,
+            healthModule,
+            filters = it.second
+          )
         }
-        .collect { _totalRecordsCount.postValue(it) }
+        .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
+        .map { ceil(it).toInt() }
+        .collect { _totalRecordsPagesMutableStateFlow.emit(it) }
     }
 
     viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
@@ -182,6 +191,10 @@ constructor(
 
   private fun resetPage() {
     _currentPage.value = 0
+  }
+
+  override fun loadCount() {
+    _startCountRegisterMutableStateFlow.update { "${refreshCounter.value}${_currentPage.value}" }
   }
 
   override fun refresh() {
@@ -236,9 +249,6 @@ constructor(
       },
     )
 
-  override fun countPages() =
-    _totalRecordsCount.map { it.toDouble().div(DEFAULT_PAGE_SIZE) }.map { ceil(it).toInt() }
-
   override fun onEvent(event: StandardRegisterEvent) {
     when (event) {
       // Search using name or patient logicalId or identifier. Modify to add more search params
@@ -246,10 +256,10 @@ constructor(
         _searchText.value = event.searchText
       }
       is StandardRegisterEvent.MoveToNextPage -> {
-        this._currentPage.value = this._currentPage.value?.plus(1)
+        this._currentPage.update { it + 1 }
       }
       is StandardRegisterEvent.MoveToPreviousPage -> {
-        this._currentPage.value?.let { if (it > 0) _currentPage.value = it.minus(1) }
+        this._currentPage.update { if (it > 0) it - 1 else it }
       }
       is StandardRegisterEvent.OpenProfile -> {
         val urlParams =

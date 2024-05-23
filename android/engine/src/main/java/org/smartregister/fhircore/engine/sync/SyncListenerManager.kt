@@ -162,11 +162,11 @@ constructor(
         put(ResourceType.Binary, syncConfigParams.getOrDefault(ResourceType.Binary, emptyMap()))
         put(
           ResourceType.StructureMap,
-          syncConfigParams.getOrDefault(ResourceType.StructureMap, emptyMap())
+          syncConfigParams.getOrDefault(ResourceType.StructureMap, emptyMap()),
         )
         put(
           ResourceType.Questionnaire,
-          syncConfigParams.getOrDefault(ResourceType.Questionnaire, emptyMap())
+          syncConfigParams.getOrDefault(ResourceType.Questionnaire, emptyMap()),
         )
         putAll(syncConfigParams)
       }
