@@ -39,7 +39,6 @@ import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -69,7 +68,6 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.fetchLanguages
 import org.smartregister.fhircore.engine.util.extension.getActivity
@@ -83,6 +81,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
+import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.schedulePeriodically
 
@@ -133,14 +132,7 @@ constructor(
           it.menuIconConfig?.type == ICON_TYPE_REMOTE &&
           !it.menuIconConfig!!.reference.isNullOrEmpty()
       }
-      .forEach {
-        val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
-        viewModelScope.launch(dispatcherProvider.io()) {
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
-          }
-        }
-      }
+      .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
   }
 
   suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
