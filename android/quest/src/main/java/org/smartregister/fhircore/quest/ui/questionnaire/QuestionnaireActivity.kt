@@ -97,7 +97,7 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
   private var questionnaireLaunchContextMap: Map<String, Resource>? = null
-  private lateinit var questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>
+  private var questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
   internal lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -125,6 +125,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     setupLocationServices()
 
     questionnaireConfig = (intent.getSerializableExtra(QUESTIONNAIRE_CONFIG) as QuestionnaireConfig)
+
+    questionnaireItemParentMap
 
     actionParams =
       intent.getSerializableExtra(QUESTIONNAIRE_ACTION_PARAMETERS) as List<ActionParameter>?
