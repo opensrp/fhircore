@@ -132,25 +132,20 @@ constructor(
         }
       }
 
+    filterBasedOnPerResourceType().forEach { (type, filters) ->
+      resourceTypeParamsMap.merge(type, filters) { list1, list2 ->
+        return@merge list1.toMutableList().apply { addAll(list2) }
+      }
+    }
     val filterByLocationParams =
       sharedPreferencesHelper.filterByResourceLocation(resourceTypeParamsMap)
-    val filterBasedResourceParams =
-      resourceTypeParamsMap
-        .map {
-          val resourceType = it.key
-          val map = linkedMapOf<String, String>()
-          resourceType.filterBasedOnPerResourceType(map)
-          resourceType to map
-        }
-        .toMap()
 
-    val syncConfigParams =
+    val mergeSyncConfigParams =
       resourceTypeParamsMap
         //        .filter { it.key == ResourceType.Patient }
         .map {
           val resourceType = it.key
           val paramsMap = linkedMapOf<String, String>("_total" to "none")
-          paramsMap.putAll(filterBasedResourceParams.getOrDefault(resourceType, emptyMap()))
           paramsMap.putAll(filterByLocationParams.getOrDefault(resourceType, emptyList()))
           paramsMap.putAll(it.value)
           resourceType to paramsMap
@@ -159,16 +154,19 @@ constructor(
 
     val orderedSyncConfigParams =
       linkedMapOf<ResourceType, Map<String, String>>().apply {
-        put(ResourceType.Binary, syncConfigParams.getOrDefault(ResourceType.Binary, emptyMap()))
+        put(
+          ResourceType.Binary,
+          mergeSyncConfigParams.getOrDefault(ResourceType.Binary, emptyMap()),
+        )
         put(
           ResourceType.StructureMap,
-          syncConfigParams.getOrDefault(ResourceType.StructureMap, emptyMap()),
+          mergeSyncConfigParams.getOrDefault(ResourceType.StructureMap, emptyMap()),
         )
         put(
           ResourceType.Questionnaire,
-          syncConfigParams.getOrDefault(ResourceType.Questionnaire, emptyMap()),
+          mergeSyncConfigParams.getOrDefault(ResourceType.Questionnaire, emptyMap()),
         )
-        putAll(syncConfigParams)
+        putAll(mergeSyncConfigParams)
       }
 
     Timber.i("SYNC CONFIG $orderedSyncConfigParams")
@@ -176,30 +174,38 @@ constructor(
   }
 }
 
-private fun ResourceType.filterBasedOnPerResourceType(
-  resourceTypePair: MutableMap<String, String>,
-) {
-  when (this) {
-    ResourceType.RelatedPerson -> resourceTypePair[RelatedPerson.SP_ACTIVE] = true.toString()
-    ResourceType.Patient -> resourceTypePair[Patient.SP_ACTIVE] = true.toString()
-    ResourceType.Appointment ->
-      resourceTypePair[Appointment.SP_STATUS] =
-        Appointment.AppointmentStatus.BOOKED.toString().lowercase()
-    ResourceType.Encounter ->
-      resourceTypePair[Encounter.SP_STATUS] =
-        Encounter.EncounterStatus.INPROGRESS.toString().lowercase()
-    ResourceType.List ->
-      resourceTypePair[ListResource.SP_STATUS] =
-        ListResource.ListStatus.CURRENT.toString().lowercase()
-    ResourceType.Observation ->
-      resourceTypePair[Observation.SP_STATUS] =
-        Observation.ObservationStatus.FINAL.toString().lowercase()
-    //    ResourceType.CarePlan -> resourceTypePair.put(CarePlan.SP_STATUS,
-    // CarePlan.CarePlanStatus.ACTIVE.toString().lowercase())
-    //    ResourceType.Task -> resourceTypePair.put(Task.SP_STATUS, String.format("%s,%s",
-    // Task.TaskStatus.FAILED.toString().lowercase(),
-    // Task.TaskStatus.INPROGRESS.toString().lowercase()))
-    else -> Unit
+private fun filterBasedOnPerResourceType(): Map<ResourceType, List<Pair<String, String>>> {
+  return mutableMapOf<ResourceType, List<Pair<String, String>>>().apply {
+    put(ResourceType.RelatedPerson, listOf(RelatedPerson.SP_ACTIVE to true.toString()))
+    put(ResourceType.Patient, listOf(Patient.SP_ACTIVE to true.toString()))
+    put(
+      ResourceType.Observation,
+      listOf(
+        Observation.SP_STATUS to Observation.ObservationStatus.PRELIMINARY.toString().lowercase(),
+      ),
+    )
+    put(
+      ResourceType.Appointment,
+      listOf(
+        Appointment.SP_STATUS to
+          "${Appointment.AppointmentStatus.BOOKED.toString().lowercase()},${Appointment.AppointmentStatus.PROPOSED.toString().lowercase()}",
+      ),
+    )
+    put(
+      ResourceType.Encounter,
+      listOf(Encounter.SP_STATUS to Encounter.EncounterStatus.INPROGRESS.toString().lowercase()),
+    )
+    put(
+      ResourceType.List,
+      listOf(ListResource.SP_STATUS to ListResource.ListStatus.CURRENT.toString().lowercase()),
+    )
+    //    put(ResourceType.CarePlan, mapOf(CarePlan.SP_STATUS to
+    // CarePlan.CarePlanStatus.ACTIVE.toString().lowercase()))
+    //    put(ResourceType.Task, mapOf(Task.SP_STATUS to String.format(
+    //      "%s,%s",
+    //      Task.TaskStatus.FAILED.toString().lowercase(),
+    //      Task.TaskStatus.INPROGRESS.toString().lowercase()
+    //    )))
   }
 }
 

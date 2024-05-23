@@ -21,6 +21,7 @@ import android.content.Intent
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
@@ -285,6 +286,21 @@ constructor(
     }
   }
 
+  fun resourcePurger(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          ResourcePurgerWorker.NAME,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<ResourcePurgerWorker>()
+            .setInputData(
+              Data.Builder().putBoolean(ResourcePurgerWorker.ONE_TIME_SYNC_KEY, true).build(),
+            )
+            .build(),
+        )
+    }
+  }
+
   fun observeMissedAppointment(context: Context): Flow<List<WorkInfo.State>> {
     return WorkManager.getInstance(context)
       .getWorkInfosForUniqueWorkFlow(MissedFHIRAppointmentsWorker.NAME)
@@ -300,6 +316,12 @@ constructor(
   fun observeInterrupted(context: Context): Flow<List<WorkInfo.State>> {
     return WorkManager.getInstance(context)
       .getWorkInfosForUniqueWorkFlow(ProposedWelcomeServiceAppointmentsWorker.NAME)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeResourcePurgerWorker(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(ResourcePurgerWorker.NAME)
       .map { list -> list.map { it.state } }
   }
 }

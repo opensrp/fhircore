@@ -43,6 +43,7 @@ fun DevMenu(viewModel: DevViewModel) {
   val missedTasks by viewModel.observeMissedTask(context).collectAsState(listOf())
   val appointmentList by viewModel.observeMissedAppointment(context).collectAsState(listOf())
   val interruptedList by viewModel.observeInterrupted(context).collectAsState(listOf())
+  val resourcePurger by viewModel.observeResourcePurgerWorker(context).collectAsState(listOf())
 
   Column(
     modifier = Modifier.padding(16.dp).padding(vertical = 20.dp).fillMaxWidth(),
@@ -62,6 +63,11 @@ fun DevMenu(viewModel: DevViewModel) {
       iconAlt = { WorkerStateIcon(states = interruptedList) },
       text = "Run interrupted treatment worker",
       clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.interruptedResource(context) },
+    )
+    UserProfileRow(
+      iconAlt = { WorkerStateIcon(states = resourcePurger) },
+      text = "Run Resource Purger Worker",
+      clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.resourcePurger(context) },
     )
   }
 }

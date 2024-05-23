@@ -214,8 +214,13 @@ constructor(
           appointment
         }
 
-    defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
-    fhirEngine.update(*missedAppointments.toTypedArray())
+    if (tracingTasksToAdd.isNotEmpty()) {
+      defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
+    }
+
+    if (missedAppointments.isNotEmpty()) {
+      fhirEngine.update(*missedAppointments.toTypedArray())
+    }
 
     Timber.i(
       "Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}",
