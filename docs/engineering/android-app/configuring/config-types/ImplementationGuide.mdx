@@ -1,15 +1,16 @@
-#Implementation Guide
+# Implementation Guide
 This is a FHIR resource that is used for version management of the application. Currently an Implementation Guide should point to a Composition resource.
 The idea is that a given app version should use the resources that a given Composition resource is pointing to. 
 In the sample JSON below, the Implementation Guide points to a composition with an id 8294.
 The valueRange object implies that the composition resource in this Implementation guide supports applications with `version_code` between 1 to 10.
 
-#Fetching an Implementation Guide.
+## Fetching an Implementation Guide.
 We need to get an Implementation Guide before user authentication. And for this to work, your project should have a version of [fhir-gateway](https://github.com/onaio/fhir-gateway-extension) that has the ImplementationGuide endpoint whitelisted.
 The ideal query to use to fetch an implementation guide is `ImplementationGuide?name=zeir&context-quantity=le10&_sort=-context-quantity&_count=1`. The url queries
 `context-quantity=le10&_sort=-context-quantity&_count=1` ensures that you get the Implementation Guide whose useContext.valueRange.high.value is 10 or highest value near 10.
 
-#Sample JSON
+## Sample JSON
+``` json
 {
   "resourceType": "ImplementationGuide",
   "id": "12967310",
@@ -65,3 +66,4 @@ The ideal query to use to fetch an implementation guide is `ImplementationGuide?
     ]
   }
 }
+```
