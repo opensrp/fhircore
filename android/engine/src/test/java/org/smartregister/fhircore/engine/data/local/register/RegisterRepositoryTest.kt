@@ -474,7 +474,7 @@ class RegisterRepositoryTest : RobolectricTest() {
               )
             }
         }
-      val group2 = createGroup("group1", active = true, members = listOf(patient))
+      val group2 = createGroup("group2", active = true, members = listOf(patient))
       val task = createTask("task1", null, patient.asReference())
 
       // Replace Household Register configuration
