@@ -415,7 +415,7 @@ constructor(
     )
   }
 
-  private fun writePractitionerDetailsToShredPref(
+  fun writePractitionerDetailsToShredPref(
     careTeam: List<String>,
     organization: List<String>,
     location: List<String>,

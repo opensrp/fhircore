@@ -53,7 +53,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.annotation.Config
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
@@ -643,17 +642,15 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testWritePractitionerDetailsToShredPrefSavesPractitionerLocationId() {
     val locationId = "ABCD123"
-    ReflectionHelpers.callInstanceMethod<LoginViewModel>(
-      loginViewModel,
-      "writePractitionerDetailsToShredPref",
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
-      ReflectionHelpers.ClassParameter.from(PractitionerDetails::class.java, PractitionerDetails()),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf("")),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf(locationId)),
-      ReflectionHelpers.ClassParameter.from(List::class.java, listOf(LocationHierarchy())),
+    loginViewModel.writePractitionerDetailsToShredPref(
+      careTeams = listOf(""),
+      careTeam = listOf(""),
+      organization = listOf(""),
+      organizations = listOf(""),
+      location = listOf(""),
+      locations = listOf(locationId),
+      fhirPractitionerDetails = PractitionerDetails(),
+      locationHierarchies = listOf(LocationHierarchy())
     )
     assertEquals(
       locationId,
