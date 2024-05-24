@@ -415,7 +415,7 @@ constructor(
     )
   }
 
-  private fun writePractitionerDetailsToShredPref(
+  fun writePractitionerDetailsToShredPref(
     careTeam: List<String>,
     organization: List<String>,
     location: List<String>,
@@ -451,6 +451,10 @@ constructor(
     sharedPreferences.write(
       key = SharedPreferenceKey.ORGANIZATION.name,
       value = organization.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+      value = locations.joinToString(separator = ""),
     )
   }
 
