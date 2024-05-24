@@ -167,7 +167,7 @@ constructor(
           registerRepository.countRegisterFiltered(
             appFeatureName,
             healthModule,
-            filters = it.second
+            filters = it.second,
           )
         }
         .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }

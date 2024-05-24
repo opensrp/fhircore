@@ -27,9 +27,11 @@ import androidx.compose.material.Button
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -41,6 +43,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
@@ -48,6 +51,7 @@ import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -59,6 +63,7 @@ fun PatientRegisterScreen(
   openDrawer: (Boolean) -> Unit,
   navController: NavHostController,
   patientRegisterViewModel: PatientRegisterViewModel = hiltViewModel(),
+  appMainViewModel: AppMainViewModel = hiltViewModel(),
 ) {
   val context = LocalContext.current
   val firstTimeSyncState = patientRegisterViewModel.firstTimeSyncState.collectAsState()
@@ -106,8 +111,11 @@ fun PatientRegisterScreen(
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
       // Only show when filtering data is not active
-      if (pagingItems.loadState.refresh is LoadState.NotLoading && searchText.isEmpty()) {
-        patientRegisterViewModel.loadCount()
+      val scope = rememberCoroutineScope()
+      LaunchedEffect(key1 = pagingItems.loadState) {
+        if (pagingItems.loadState.refresh is LoadState.NotLoading && searchText.isEmpty()) {
+          scope.launch { patientRegisterViewModel.loadCount() }
+        }
       }
 
       Column {
@@ -121,6 +129,7 @@ fun PatientRegisterScreen(
             nextButtonClickListener = {
               patientRegisterViewModel.onEvent(PatientRegisterEvent.MoveToNextPage)
             },
+            onCountLoaded = { appMainViewModel.computeSideMenuCounts() },
           )
         }
 

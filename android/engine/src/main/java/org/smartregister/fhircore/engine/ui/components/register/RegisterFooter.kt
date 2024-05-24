@@ -26,9 +26,11 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
@@ -57,11 +60,19 @@ fun RegisterFooter(
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
+  onCountLoaded: () -> Unit = {},
 ) {
   val currentPageState = currentPageStateFlow.collectAsState()
   val currentPage by remember { currentPageState }
   val pagesCountState = pagesCountStateFlow.collectAsState()
   val pagesCount by remember { pagesCountState }
+  val customScope = rememberCoroutineScope()
+
+  LaunchedEffect(key1 = pagesCount) {
+    if (pagesCount != TOTAL_PAGES_UNKNOWN) {
+      customScope.launch { onCountLoaded.invoke() }
+    }
+  }
 
   Row(
     modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG),
@@ -93,7 +104,7 @@ fun RegisterFooter(
         stringResource(
           id = R.string.str_page_info,
           currentPage,
-          if (pagesCount == TOTAL_PAGES_UNKNOWN) "_" else "$pagesCount"
+          if (pagesCount == TOTAL_PAGES_UNKNOWN) "_" else "$pagesCount",
         ),
       modifier =
         modifier

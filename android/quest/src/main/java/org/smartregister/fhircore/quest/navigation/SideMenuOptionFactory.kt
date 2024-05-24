@@ -39,7 +39,7 @@ constructor(
       iconResource = org.smartregister.fhircore.engine.R.drawable.ic_baby_mother,
       titleResource = R.string.all_clients,
       showCount = true,
-      count =
+      getCount =
         suspend {
           registerRepository.countRegisterData(
             appFeatureName = AppFeature.PatientManagement.name,
@@ -82,7 +82,7 @@ constructor(
               else -> 0
             },
           showCount = true,
-          count =
+          getCount =
             suspend {
               registerRepository.countRegisterData(
                 appFeatureName = it.feature,

@@ -38,7 +38,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +56,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.Language
+import org.smartregister.fhircore.engine.domain.model.SIDE_MENU_COUNT_NOT_SET
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
@@ -116,13 +116,13 @@ fun AppDrawer(
           ->
           val title = stringResource(sideMenuOption.titleResource)
 
-          val (countValue, setCountValue) = remember { mutableStateOf(0L) }
-          LaunchedEffect(key1 = sideMenuOption.count) { setCountValue(sideMenuOption.count()) }
-
           SideMenuItem(
             iconResource = sideMenuOption.iconResource,
             title = title,
-            endText = countValue.toString(),
+            endText =
+              if (sideMenuOption.count == SIDE_MENU_COUNT_NOT_SET) {
+                ""
+              } else sideMenuOption.count.toString(),
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
               openDrawer(false)
@@ -286,14 +286,14 @@ fun AppDrawerPreview() {
           appFeatureName = "AllFamilies",
           iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
           titleResource = org.smartregister.fhircore.engine.R.string.clients,
-          count = suspend { 4 },
+          count = 4,
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
           iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
           titleResource = org.smartregister.fhircore.engine.R.string.clients,
-          count = suspend { 16 },
+          count = 16,
           showCount = true,
         ),
         SideMenuOption(
@@ -328,14 +328,14 @@ fun AppDrawerPreviewSyncDisabled() {
           appFeatureName = "AllFamilies",
           iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
           titleResource = org.smartregister.fhircore.engine.R.string.clients,
-          count = suspend { 4 },
+          count = 4,
           showCount = true,
         ),
         SideMenuOption(
           appFeatureName = "ChildClients",
           iconResource = org.smartregister.fhircore.engine.R.drawable.ic_user,
           titleResource = org.smartregister.fhircore.engine.R.string.clients,
-          count = suspend { 16 },
+          count = 16,
           showCount = true,
         ),
         SideMenuOption(

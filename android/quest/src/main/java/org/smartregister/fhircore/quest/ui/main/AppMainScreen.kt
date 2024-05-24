@@ -173,6 +173,7 @@ private fun AppMainNavigationGraph(
                 navController = navController,
                 openDrawer = openDrawer,
                 screenTitle = screenTitle,
+                appMainViewModel = appMainViewModel,
               )
             }
           }
