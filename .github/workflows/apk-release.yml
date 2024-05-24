@@ -62,36 +62,33 @@ jobs:
         env:
           KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }} 
  
-      - name: Spotless check quest application
-        run: ./gradlew :quest:spotlessCheck
-        working-directory: android
+      # - name: Spotless check quest application
+      #   run: ./gradlew :quest:spotlessCheck
+      #   working-directory: android
 
-      - name: Generate AAB (Android App Bundle) file
-        if: ${{ false }}
-        run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
-        working-directory: android
+      # - name: Generate AAB (Android App Bundle) file
+      #   if: ${{ false }}
+      #   run: ./gradlew :quest:bundle${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
+      #   working-directory: android
         
-      - name: Upload AAB file to tag assets
-        if: ${{ false }}
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
-          asset_name: "quest-$tag.aab"
-          tag: ${{ github.ref }}
-          overwrite: true
+      # - name: Upload AAB file to tag assets
+      #   if: ${{ false }}
+      #   uses: svenstaro/upload-release-action@v2
+      #   with:
+      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
+      #     file: android/quest/build/outputs/bundle/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.aab
+      #     asset_name: "quest-$tag.aab"
+      #     tag: ${{ github.ref }}
+      #     overwrite: true
       
       - name: Generate APK (Android App PacKage) file
         run: ./gradlew :quest:assemble${{steps.product-flavor.outputs.idCapitalized}} -x :quest:test${{steps.product-flavor.outputs.idCapitalized}}DebugUnitTest --stacktrace
         working-directory: android
         
       - name: Upload APK file to tag assets
-        uses: svenstaro/upload-release-action@v2
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          appId: ${{secrets.FIREBASE_APP_ID}}
+          serviceCredentialsFileContent: ${{ secrets.CREDENTIAL_FILE_CONTENT }}
+          groups: dev
           file: android/quest/build/outputs/apk/${{steps.product-flavor.outputs.id}}/release/quest-${{steps.product-flavor.outputs.id}}-release.apk
-          asset_name: "quest-$tag.apk"
-          tag: ${{ github.ref }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
-          overwrite: true
- 

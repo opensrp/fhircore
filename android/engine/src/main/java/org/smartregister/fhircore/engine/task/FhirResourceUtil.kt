@@ -205,8 +205,14 @@ constructor(
               }
 
           if ((missedAppointmentInRange) || (missedMilestoneInRange)) {
-            appointment.status = Appointment.AppointmentStatus.NOSHOW
-            tracingTasksToAdd.addAll(addMissedAppointment(appointment, missedMilestoneInRange))
+            if (missedMilestoneInRange) {
+              appointment.status = Appointment.AppointmentStatus.WAITLIST
+              tracingTasksToAdd.addAll(addMissedAppointment(appointment, true))
+            }
+            if(missedAppointmentInRange) {
+              appointment.status = Appointment.AppointmentStatus.NOSHOW
+              tracingTasksToAdd.addAll(addMissedAppointment(appointment, false))
+            }
           } else {
             appointment.status = Appointment.AppointmentStatus.WAITLIST
           }
@@ -316,7 +322,7 @@ constructor(
 
   private suspend fun addMissedAppointment(
     appointment: Appointment,
-    missedMilestoneInRange: Boolean,
+    isMilestoneAppointment: Boolean,
   ): List<Task> {
     val tracingTasks = mutableListOf<Task>()
     val patient = getPatient(appointment) ?: return listOf()
@@ -325,15 +331,7 @@ constructor(
         SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM,
       ) == HealthStatus.EXPOSED_INFANT
 
-    addToTracingList(
-        appointment,
-        if (isEID) {
-          ReasonConstants.missedRoutineAppointmentTracingCode
-        } else ReasonConstants.missedAppointmentTracingCode,
-      )
-      ?.let { tracingTasks.add(it) }
-
-    if (isEID && missedMilestoneInRange) {
+    if (isEID && isMilestoneAppointment) {
       val carePlan = patient.activeCarePlans(fhirEngine).firstOrNull()
       val hasMileStoneTest =
         carePlan?.activity?.firstOrNull {
@@ -362,6 +360,15 @@ constructor(
           tracingTasks.add(it)
         }
       }
+    }
+    if(!isMilestoneAppointment) {
+      addToTracingList(
+        appointment,
+        if (isEID) {
+          ReasonConstants.missedRoutineAppointmentTracingCode
+        } else ReasonConstants.missedAppointmentTracingCode,
+      )
+        ?.let { tracingTasks.add(it) }
     }
 
     return tracingTasks
