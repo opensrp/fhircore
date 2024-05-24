@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.launcher
 
-import androidx.compose.runtime.*
 import android.view.View
 import android.widget.FrameLayout
 import androidx.compose.foundation.layout.Box
@@ -25,8 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -56,7 +53,6 @@ fun GeoWidgetLauncherScreen(
   fragmentManager: FragmentManager,
   fragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
-  searchText: MutableState<String>
 ) {
   Scaffold(
     topBar = {
@@ -67,7 +63,7 @@ fun GeoWidgetLauncherScreen(
          * */
         TopScreenSection(
           title = geoWidgetConfiguration.topScreenSection?.title ?: "",
-          searchText = searchText.value,
+          searchText = "",
           filteredRecordsCount = 1,
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
