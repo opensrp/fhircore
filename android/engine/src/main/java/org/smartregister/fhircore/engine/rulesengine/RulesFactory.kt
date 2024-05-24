@@ -348,6 +348,11 @@ constructor(
               SharedPreferenceKey.PRACTITIONER_LOCATION.name,
               "",
             )
+          SharedPreferenceKey.PRACTITIONER_LOCATION_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+              "",
+            )
           else -> ""
         }
       } catch (exception: Exception) {

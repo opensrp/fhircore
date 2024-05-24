@@ -24,6 +24,7 @@ enum class SharedPreferenceKey {
   PRACTITIONER_DETAILS,
   PRACTITIONER_LOCATION_HIERARCHIES,
   PRACTITIONER_LOCATION,
+  PRACTITIONER_LOCATION_ID,
   REMOTE_SYNC_RESOURCES,
   LOGIN_CREDENTIAL_KEY,
   LOGIN_PIN_KEY,
@@ -35,6 +36,7 @@ enum class SharedPreferenceKey {
   CARE_TEAM,
   ORGANIZATION,
   GEO_LOCATION,
+  SELECTED_LOCATION_ID,
 }
 
 fun practitionerIdKey(username: String) = "${username}_${SharedPreferenceKey.PRACTITIONER_ID.name}"
