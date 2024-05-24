@@ -33,7 +33,7 @@ class HtmlPopulator(
    * @return The populated HTML string.
    */
   fun populateHtml(html: String): String {
-    return html.processIsNotEmpty().populateAnswerAsList().populateAnswer().populateSubmittedDate().processContains()
+    return html.processIsNotEmpty().processIsEnabled().populateAnswerAsList().populateAnswer().populateSubmittedDate().processContains()
   }
 
     /**
@@ -60,6 +60,20 @@ class HtmlPopulator(
                 html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", htmlWithoutTag)
             } else {
                 html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", "")
+            }
+        }
+        return html
+    }
+
+    private fun String.processIsEnabled(): String {
+        var html = this
+        while (html.contains("@is-enabled('")) {
+            val linkId = html.substringAfter("@is-enabled('").substringBefore("')")
+            val htmlWithoutTag = html.substringAfter("@is-enabled('$linkId')").substringBefore("@is-enabled")
+            html =  if (questionnaireResponseItemMap.containsKey(linkId)) {
+                html.replace("@is-enabled('$linkId')$htmlWithoutTag@is-enabled", htmlWithoutTag)
+            } else {
+                html.replace("@is-enabled('$linkId')$htmlWithoutTag@is-enabled", "")
             }
         }
         return html
