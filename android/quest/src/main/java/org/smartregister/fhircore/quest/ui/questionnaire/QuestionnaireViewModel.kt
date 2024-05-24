@@ -756,7 +756,7 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
-      if (planId.isNotEmpty())
+      if (planId.isNotEmpty()) {
         kotlin
           .runCatching {
             fhirCarePlanGenerator.generateOrUpdateCarePlan(
@@ -767,6 +767,7 @@ constructor(
             )
           }
           .onFailure { Timber.e(it) }
+      }
     }
   }
 
