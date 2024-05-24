@@ -163,6 +163,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
+                searchText = geoWidgetLauncherViewModel.searchText,
               )
             }
           }
@@ -248,6 +249,11 @@ class GeoWidgetLauncherFragment : Fragment() {
         )
       }
     }
+  }
+
+  override fun onStop() {
+    super.onStop()
+    geoWidgetLauncherViewModel.searchText.value = ""
   }
 
   companion object {

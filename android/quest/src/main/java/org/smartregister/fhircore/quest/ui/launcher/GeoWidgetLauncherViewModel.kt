@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -67,6 +68,8 @@ constructor(
   private val _locationDialog = MutableLiveData<String>()
   val locationDialog: LiveData<String>
     get() = _locationDialog
+
+  val searchText = mutableStateOf("")
 
   // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
   private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
@@ -183,8 +186,13 @@ constructor(
   fun onEvent(event: GeoWidgetEvent) =
     when (event) {
       is GeoWidgetEvent.SearchServicePoints -> {
-        // TODO: here the search bar query will be processed
-        ""
+        searchText.value = event.searchText
+        if (event.searchText.isEmpty()) {
+          //reload all data
+
+        } else {
+          filterQuery(event)
+        }
       }
     }
 
