@@ -49,11 +49,9 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
-import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StructureMap
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -264,7 +262,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "theAppId"
     val composition = Composition().apply { identifier = Identifier().apply { value = appId } }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
@@ -291,7 +295,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
     coEvery { fhirEngine.create(composition) } returns listOf(composition.id)
     coEvery { fhirEngine.search<Composition>(Search(composition.resourceType)) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(resource = composition, null, null),
+      )
     coEvery { fhirResourceDataSource.post(any(), any()) } returns Bundle()
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
@@ -422,8 +428,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testAddOrUpdateCatchesResourceNotFound() {
     val patient = Faker.buildPatient()
-    coEvery { fhirEngine.get(patient.resourceType, patient.logicalId) } throws
-      ResourceNotFoundException("", "")
+    coEvery {
+      fhirEngine.get(
+        patient.resourceType,
+        patient.logicalId,
+      )
+    } throws ResourceNotFoundException("", "")
     coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf(patient.id)
 
     runTest {
@@ -464,7 +474,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "the app id"
     val composition = Composition().apply { section = listOf() }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -476,7 +492,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val appId = "the app id"
     val composition = Composition().apply { section = listOf(SectionComponent()) }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -502,7 +524,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
@@ -533,9 +561,19 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
-    coEvery { fhirEngine.get(ResourceType.Binary, referenceId) } returns
-      Binary().apply { content = ByteArray(0) }
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
+    coEvery {
+      fhirEngine.get(
+        ResourceType.Binary,
+        referenceId,
+      )
+    } returns Binary().apply { content = ByteArray(0) }
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     Assert.assertFalse(configRegistry.configsJsonMap.isEmpty())
@@ -566,7 +604,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
       }
     coEvery { fhirEngine.search<Composition>(any()) } returns
-      listOf(SearchResult(resource = composition, null, null))
+      listOf(
+        SearchResult(
+          resource = composition,
+          null,
+          null,
+        ),
+      )
 
     runTest { configRegistry.loadConfigurations(appId, context) }
 
@@ -836,8 +880,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
         "List?_id=46464&_page=1&_count=200",
       )
     }
-    coEvery { fhirEngine.get(any(), any()) } throws
-      ResourceNotFoundException(ResourceType.Group.name, "some-id")
+    coEvery {
+      fhirEngine.get(
+        any(),
+        any(),
+      )
+    } throws ResourceNotFoundException(ResourceType.Group.name, "some-id")
 
     coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
@@ -915,8 +963,12 @@ class ConfigurationRegistryTest : RobolectricTest() {
           )
         }
 
-      coEvery { fhirEngine.get(any(), any()) } throws
-        ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
+      coEvery {
+        fhirEngine.get(
+          any(),
+          any(),
+        )
+      } throws ResourceNotFoundException(ResourceType.Group.name, "some-id-not-found")
 
       coEvery { fhirEngine.create(any(), isLocalOnly = true) } returns listOf()
 
@@ -1096,5 +1148,31 @@ class ConfigurationRegistryTest : RobolectricTest() {
     configRegistry.populateConfigurationsMap(mockedContext, composition, true, appId) {}
     assertEquals(loadedResources, assetFiles)
     coVerify { configRegistry.addOrUpdate(any()) }
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapReadsAndSavesTestsException() = runTest {
+    val mockedContext = mockk<Context>(relaxed = true)
+    val mockedConfigurationReg = mockk<ConfigurationRegistry>()
+    val composition = Composition().apply { id = "1234" }
+    val appId = "app/debug"
+    val resourceConfigs = mutableListOf<String>().apply { add("resources/sample_qr.json") }
+    val configFiles = mutableListOf<String>()
+    val assetFiles = Pair(configFiles, resourceConfigs)
+    val resourceNames = arrayOf("sample_qr.json")
+    every { mockedContext.assets.list(BASE_RESOURCES_PATH) } returns resourceNames
+    every { mockedContext.assets.open(any()) } returnsMany
+      listOf(
+        ByteArrayInputStream(resourceNames[0].toByteArray()),
+      )
+    every { mockedContext.assets.open(any()) } returns
+      ByteArrayInputStream(
+        resourceNames[0].toByteArray(),
+      )
+    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(mockedContext) } returns
+      assetFiles
+    configRegistry.populateConfigurationsMap(mockedContext, composition, true, appId) { result ->
+      assertTrue(result)
+    }
   }
 }
