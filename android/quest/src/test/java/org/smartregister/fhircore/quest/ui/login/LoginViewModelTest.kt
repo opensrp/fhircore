@@ -650,7 +650,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       location = listOf(""),
       locations = listOf(locationId),
       fhirPractitionerDetails = PractitionerDetails(),
-      locationHierarchies = listOf(LocationHierarchy())
+      locationHierarchies = listOf(LocationHierarchy()),
     )
     assertEquals(
       locationId,
