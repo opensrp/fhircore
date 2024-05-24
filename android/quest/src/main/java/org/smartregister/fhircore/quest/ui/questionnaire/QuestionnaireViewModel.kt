@@ -457,12 +457,13 @@ constructor(
       }
 
     questionnaireConfig.planDefinitions?.forEach { planId ->
-      kotlin
-        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
-        .onFailure {
-          Timber.e(it)
-          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-        }
+      if (planId.isNotEmpty())
+          kotlin
+            .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+            .onFailure {
+              Timber.e(it)
+              extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+            }
     }
 
     fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
