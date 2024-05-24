@@ -51,7 +51,7 @@ allprojects {
     maven {
       url = uri("https://api.mapbox.com/downloads/v2/releases/maven")
       credentials.username = "mapbox"
-      credentials.password = property("MAPBOX_SDK_TOKEN").toString()
+      credentials.password = System.getenv("MAPBOX_SDK_TOKEN") ?: property("MAPBOX_SDK_TOKEN").toString()
       authentication.create<BasicAuthentication>("basic")
     }
   }
