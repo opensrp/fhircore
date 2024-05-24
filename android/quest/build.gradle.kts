@@ -12,6 +12,7 @@ plugins {
   id("com.google.firebase.firebase-perf")
   id("com.google.gms.google-services")
   id("com.google.firebase.crashlytics")
+  id("com.google.firebase.appdistribution")
 }
 
 kotlin { jvmToolchain(17) }
@@ -67,6 +68,10 @@ android {
       //            firebaseCrashlytics {
       //                isNativeSymbolUploadEnabled = false
       //            }
+      firebaseAppDistribution {
+        artifactType = "APK"
+        releaseNotes = "Update"
+      }
     }
   }
   packaging {
@@ -125,24 +130,6 @@ android {
   flavorDimensions += "apps"
 
   productFlavors {
-    create("quest") {
-      dimension = "apps"
-      applicationIdSuffix = ".quest"
-      versionNameSuffix = "-quest"
-      isDefault = true
-    }
-    create("ecbis") {
-      dimension = "apps"
-      applicationIdSuffix = ".ecbis"
-      versionNameSuffix = "-ecbis"
-      versionCode = 3
-      versionName = "0.0.6"
-    }
-    create("g6pd") {
-      dimension = "apps"
-      applicationIdSuffix = ".g6pd"
-      versionNameSuffix = "-g6pd"
-    }
     create("mwcore") {
       dimension = "apps"
       applicationIdSuffix = ".mwcore"
@@ -161,13 +148,6 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mwcoreStaging"
       versionNameSuffix = "-mwcoreStaging"
-      versionCode = 1
-      versionName = "0.0.1"
-    }
-    create("afyayangu") {
-      dimension = "apps"
-      applicationIdSuffix = ".afyayangu"
-      versionNameSuffix = "-afyayangu"
       versionCode = 1
       versionName = "0.0.1"
     }

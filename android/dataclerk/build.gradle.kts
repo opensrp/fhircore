@@ -11,6 +11,7 @@ plugins {
   id("com.google.firebase.firebase-perf")
   id("com.google.gms.google-services")
   id("com.google.firebase.crashlytics")
+  id("com.google.firebase.appdistribution")
 }
 
 kotlin { jvmToolchain(17) }
@@ -67,6 +68,10 @@ android {
       //            firebaseCrashlytics {
       //                isNativeSymbolUploadEnabled = false
       //            }
+      firebaseAppDistribution {
+        artifactType = "APK"
+        releaseNotes = "Update"
+      }
     }
   }
 
