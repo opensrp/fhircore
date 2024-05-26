@@ -55,11 +55,11 @@ class HtmlPopulator(
         var html = this
         while (html.contains("@is-not-empty('")) {
             val linkId = html.substringAfter("@is-not-empty('").substringBefore("')")
-            val htmlWithoutTag = html.substringAfter("@is-not-empty('$linkId')").substringBefore("@is-not-empty")
+            val htmlWithoutTag = html.substringAfter("@is-not-empty('$linkId')").substringBefore("@is-not-empty('$linkId')")
             html =  if (questionnaireResponseItemMap.getOrDefault(linkId, listOf()).isNotEmpty()) {
-                html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", htmlWithoutTag)
+                html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty('$linkId')", htmlWithoutTag)
             } else {
-                html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty", "")
+                html.replace("@is-not-empty('$linkId')$htmlWithoutTag@is-not-empty('$linkId')", "")
             }
         }
         return html
@@ -166,12 +166,12 @@ class HtmlPopulator(
     return html
   }
 
-  fun String.processContains(): String {
+  private fun String.processContains(): String {
     var html = this
     while (html.contains("@contains('")) {
       val linkId = html.substringAfter("@contains('").substringBefore("','")
       val indicator = html.substringAfter("@contains('$linkId','").substringBefore("')")
-      val content = html.substringAfter("@contains('$linkId','$indicator')").substringBefore("@contains")
+      val content = html.substringAfter("@contains('$linkId','$indicator')").substringBefore("@contains('$linkId')")
 
       val shouldShow = questionnaireResponseItemMap.getOrDefault(linkId, listOf()).any {
         when {
@@ -186,9 +186,9 @@ class HtmlPopulator(
         }
       }
       html = if (shouldShow) {
-        html.replace("@contains('$linkId','$indicator')$content@contains", content)
+        html.replace("@contains('$linkId','$indicator')$content@contains('$linkId')", content)
       } else {
-        html.replace("@contains('$linkId','$indicator')$content@contains", "")
+        html.replace("@contains('$linkId','$indicator')$content@contains('$linkId')", "")
       }
     }
     return html
