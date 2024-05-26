@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.data.remote.model.response.OAuthRespons
 import org.smartregister.fhircore.engine.data.remote.model.response.UserClaimInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
+import org.smartregister.fhircore.engine.ui.questionnaire.ContentCache
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -206,6 +207,8 @@ constructor(
         _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
       }
       _showProgressBar.postValue(false)
+    } finally {
+      ContentCache.invalidate()
     }
   }
 

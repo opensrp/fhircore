@@ -134,7 +134,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mwcore"
       versionNameSuffix = "-mwcore"
-      versionCode = 0
+      versionCode = 1
       versionName = "0.0.1"
     }
     create("mwcoreDev") {
