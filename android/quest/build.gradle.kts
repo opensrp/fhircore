@@ -141,8 +141,8 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".mwcoreDev"
       versionNameSuffix = "-mwcoreDev"
-      versionCode = 33
-      versionName = "0.1.22-beta11"
+      versionCode = 34
+      versionName = "0.1.23"
     }
     create("mwcoreStaging") {
       dimension = "apps"
