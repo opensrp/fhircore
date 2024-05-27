@@ -43,7 +43,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.context.IWorkerContext
@@ -140,15 +139,34 @@ constructor(
     }
   }
 
-  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? =
-    defaultRepository.loadResource<Questionnaire>(id)?.apply {
-      if (type.isReadOnly() || type.isEditMode()) {
-        item.prepareQuestionsForReadingOrEditing(QUESTIONNAIRE_RESPONSE_ITEM, type.isReadOnly())
-      }
+  suspend fun loadQuestionnaire(id: String, type: QuestionnaireType): Questionnaire? {
+    var questionnaire = ContentCache.getResource(ResourceType.Questionnaire.name + "/" + id)?.copy()
 
-      // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
-      this.url = this.url ?: this.referenceValue()
+    if (questionnaire == null) {
+      questionnaire =
+        defaultRepository
+          .loadResource<Questionnaire>(id)
+          ?.apply {
+            if (type.isReadOnly() || type.isEditMode()) {
+              item.prepareQuestionsForReadingOrEditing(
+                QUESTIONNAIRE_RESPONSE_ITEM,
+                type.isReadOnly(),
+              )
+            }
+
+            // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
+            this.url = this.url ?: this.referenceValue()
+          }
+          ?.also { questionnaire ->
+            ContentCache.saveResource(
+              id,
+              questionnaire.copy(),
+            )
+          }
     }
+
+    return questionnaire as Questionnaire
+  }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
     val loadConfig =
@@ -200,11 +218,16 @@ constructor(
       .getOrNull()
 
   suspend fun fetchStructureMap(structureMapUrl: String?): StructureMap? {
-    var structureMap: StructureMap? = null
+    var structureMap: Resource? = null
     structureMapUrl?.substringAfterLast("/")?.run {
-      structureMap = defaultRepository.loadResource(this)
+      structureMap = ContentCache.getResource(ResourceType.StructureMap.name + "/" + this)
+      structureMap =
+        structureMap
+          ?: defaultRepository.loadResource<StructureMap>(this)?.also {
+            it.let { ContentCache.saveResource(this, it) }
+          }
     }
-    return structureMap
+    return structureMap as StructureMap
   }
 
   fun appendOrganizationInfo(resource: Resource) {
