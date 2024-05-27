@@ -157,15 +157,15 @@ constructor(
             // TODO https://github.com/opensrp/fhircore/issues/991#issuecomment-1027872061
             this.url = this.url ?: this.referenceValue()
           }
-          ?.also { questionnaire ->
+          ?.also {
             ContentCache.saveResource(
               id,
-              questionnaire.copy(),
+              it.copy(),
             )
           }
     }
 
-    return questionnaire as Questionnaire
+    return questionnaire as? Questionnaire
   }
 
   suspend fun getQuestionnaireConfig(form: String, context: Context): QuestionnaireConfig {
@@ -227,7 +227,7 @@ constructor(
             it.let { ContentCache.saveResource(this, it) }
           }
     }
-    return structureMap as StructureMap
+    return structureMap as? StructureMap
   }
 
   fun appendOrganizationInfo(resource: Resource) {
