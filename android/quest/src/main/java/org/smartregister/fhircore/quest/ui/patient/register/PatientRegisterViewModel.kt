@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
@@ -141,7 +141,7 @@ constructor(
 
     viewModelScope.launch(dispatcherProvider.io()) {
       _startCountRegisterMutableStateFlow
-        .onEach { _totalPagesCount.emit(TOTAL_PAGES_UNKNOWN) }
+        .onStart { _totalPagesCount.emit(TOTAL_PAGES_UNKNOWN) }
         .filter { it.isNotBlank() }
         .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
         .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
@@ -198,7 +198,7 @@ constructor(
     getPager(
         appFeatureName = appFeatureName,
         healthModule = healthModule,
-        loadAll = false,
+        loadAll = true,
         searchFilter = text,
       )
       .flow

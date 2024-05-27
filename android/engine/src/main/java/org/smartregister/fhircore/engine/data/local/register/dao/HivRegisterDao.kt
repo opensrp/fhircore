@@ -136,6 +136,8 @@ constructor(
         )
         filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
         operation = Operation.OR
+        count = PaginationConstant.DEFAULT_PAGE_SIZE
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
         sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
       }
 
