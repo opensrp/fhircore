@@ -12,67 +12,105 @@
     <string name="loading_responses">Chargement des réponses</string>
     <string name="no_test_results_found">Aucun résultat trouvé</string>
     <string name="patient_test_results">Résultat du test</string>
-    <string name="last_test">" Dernier Test - %1$s"</string>
+    <string name="last_test">Dernier essai -%1$s</string>
     <string name="menu_tasks">Tâches</string>
+    <string name="household">Ménage</string>
     <string name="routine_visit">Visite de routine</string>
-    <string name="anc_visit">Visite CPN</string>
-    <string name="at_risk">À risque</string>
+    <string name="anc_visit">Visite ANC</string>
+    <string name="at_risk">A risque</string>
     <string name="no_tasks">Aucune tâche</string>
-    <string name="add_member">AJOUTER UN MEMBRE</string>
-    <string name="what_to_do">Qu\'est-ce que tu veux faire?</string>
+    <string name="add_member">Ajouter un membre</string>
+    <string name="what_to_do">Qu\'est-ce que tu veux faire aujourd\'hui ?</string>
+
+    <!--Overflow menu strings -->
     <string name="view_profile">Voir le profil</string>
-    <string name="family_details">Détails de famille</string>
-    <string name="change_primary_caregiver">Changer de soignant principal</string>
+    <string name="family_details">Informations sur la famille</string>
     <string name="change_family_head">Changer de chef de famille</string>
-    <string name="family_activity">Activités familiale</string>
+    <string name="change_primary_caregiver">Changer de soignant principal</string>
+    <string name="family_activity">Activité de la famille</string>
     <string name="view_past_encounters">Voir les rencontres passées</string>
     <string name="remove_family">Supprimer la famille</string>
-    <string name="family_suffix">Famille %1$s</string>
-    <string name="remove_this_person">Supprimer cette personne</string>
-    <string name="individual_details">Détails individuels</string>
+    <string name="family_suffix">%1$s Famille</string>
+    <string name="remove_this_person">Retirer cette personne</string>
+    <string name="individual_details">Informations individuelles</string>
     <string name="view_family">Afficher la famille</string>
+    <string name="record_sick_child">Enregistrer l\'enfant malade</string>
+
+    <!-- SideMenu option strings-->
     <string name="device_to_device_sync">Synchronisation d\'appareil à appareil</string>
-    <string name="anc_clients">Clients CPN</string>
+    <string name="anc_clients">Clients ANC</string>
     <string name="all_clients">Tous les clients</string>
     <string name="pnc_clients">Clients PNC</string>
-    <string name="family_planning_clients">Clients de la planification familiale</string>
-    <string name="households">Ménages</string>
-    <string name="children">Enfants</string>
-    <string name="remove_family_warning">La suppression de %1$s supprimera l\'intégralité de son dossier médical de votre appareil. Cette action ne peut pas être annulée.</string>
-    <string name="remove_family_member_warning">%1$s sera supprimé définitivement de cette famille. Cette action ne peut pas être annulée.</string>
-    <string name="household">Ménage</string>
-    <string name="all">Tout</string>
-    <string name="alert_message_abort_operation">Voulez-vous vraiment annuler cette opération ?</string>
-    <string name="label_assign_new_family_head">Nommer chef de famille</string>
-    <string name="change">Changer</string>
-    <string name="date_range">Plage de dates</string>
-    <string name="due_on">Dû le %1$s</string>
-    <string name="end_date">Date de fin</string>
-    <string name="generate_report">GÉNÉRER UN RAPPORT</string>
-    <string name="unsaved_changes_message_alert">Si vous quittez avant d\'enregistrer, vos modifications ou changements seront perdus</string>
-    <string name="individual">Individuel</string>
-    <string name="no_eligible_family_members">Aucun membre de la famille éligible n\'a été identifié comme chef de ménage.</string>
-    <string name="patient">Patiente</string>
-    <string name="please_wait">Veuillez patienter...</string>
-    <string name="record_as_anc">Enregistrer sous CPN</string>
-    <string name="remove_member">Supprimer le membre du ménage</string>
-    <string name="label_select_new_head">Choisir un nouveau chef de famille</string>
-    <string name="select_date">Sélectionnez des dates</string>
-    <string name="select_patient">SÉLECTIONNER PATIENT</string>
-    <string name="start_date">Date de début</string>
-    <string name="visit_due_on">%1$s dû le %2$s</string>
-    <string name="visit_due_today">%1$s dû aujourd\'hui</string>
-    <string name="visit_overdue">%1$s en retard il y a %2$s</string>
-    <string name="pregnancy_outcome">Résultat de la grossesse</string>
-    <string name="registers">Registres</string>
-    <string name="record_sick_child">Inscrire un enfant malade</string>
-    <string name="hiv_clients">Liste de clients</string>
-    <string name="phone_tracing_clients">Recherche de téléphone</string>
+    <string name="hiv_clients">Liste des clients</string>
+    <string name="phone_tracing_clients">Recherche de numéros de téléphone</string>
     <string name="home_tracing_clients">Recherche de domicile</string>
     <string name="appointment_clients">Rendez-vous</string>
-    <string name="structure_success">Ressources extraites avec succès pour %1$s</string>
-    <string name="structuremap_failed">Échec de l\'extraction des ressources pour le %1$s</string>
-    <string name="structure_map_missing_message">StructureMap manquante pour Questionnaire , QuestionnaireResponse enregistré</string>
-    <string name="sync_completed_with_errors">Synchronisation terminée avec des erreurs. Nouvelle tentative…</string>
-    <string name="error_occurred">Quelque chose sest mal passé...</string>
+    <string name="family_planning_clients">Clients du planning familial</string>
+    <string name="households">Ménages</string>
+    <string name="children">Enfants</string>
+
+    <!--remove family questionnaire strings-->
+    <string name="remove_family_warning">La suppression %1$ssupprime l\'ensemble du dossier médical de l\'utilisateur de votre appareil. Cette action ne peut pas être annulée.</string>
+
+    <!--remove family member questionnaire strings-->
+    <string name="remove_family_member_warning">%1$s sera définitivement retiré de cette famille. Cette action ne peut être annulée.</string>
+    <string name="remove_member">Supprimer un membre</string>
+
+    <!--Reporting strings -->
+    <string name="date_range">Plage de dates</string>
+    <string name="change">Changer</string>
+    <string name="all">Tout</string>
+    <string name="individual">Individuel</string>
+    <string name="please_wait">S\'il vous plaît, attendez</string>
+    <string name="patient">Patient</string>
+    <string name="subject">Sujet</string>
+    <string name="generate_report">GÉNÉRER DES RAPPORTS</string>
+    <string name="select_patient">Sélection de patient</string>
+    <string name="select_subject">Sélection de sujet</string>
+    <string name="start_date">Date de début</string>
+    <string name="end_date">Date de fin</string>
+    <string name="select_date">Sélectionnez les dates</string>
+
+    <!--Change family head strings -->
+    <string name="no_eligible_family_members">Aucun membre de la famille éligible n\'a été trouvé pour le chef de famille.</string>
+    <string name="label_select_new_head">Sélectionner un nouveau chef de famille</string>
+    <string name="label_assign_new_family_head">Assigner un nouveau chef de famille</string>
+    <string name="alert_message_abort_operation">Êtes-vous sûr de vouloir interrompre cette opération ?</string>
+
+    <!-- Dialog alert messages-->
+    <string name="unsaved_changes_message_alert">Si vous quittez le site avant de l\'avoir enregistré, vos modifications seront perdues.</string>
+    <string name="visit_due_on">%1$s dû le %2$s</string>
+    <string name="visit_due_today">%1$sà régler aujourd\'hui</string>
+    <string name="visit_overdue"> %1$sen retard il y a%2$s</string>
+    <string name="record_as_anc">Enregistrer comme ANC</string>
+    <string name="pregnancy_outcome">Résultats de la grossesse</string>
+    <string name="registers">Registres</string>
+    <string name="title_no_location_set">Pas d\'emplacement défini</string>
+    <string name="message_location_set">Définir l\'emplacement pour synchroniser les données et charger les points de service</string>
+    <string name="positive_button_location_set">Définir l\'emplacement</string>
+
+    <string name="due_on">Échéance le %1$s</string>
+
+    <string name="structuremap_failed">Échec de l\'extraction des ressources pour %1$s</string>
+    <string name="structure_map_missing_message">StructureMap manquante pour le questionnaire,  réponse du questionnaire sauvegardé</string>
+    <string name="structure_success">Des ressources extraites avec succès pour %1$s</string>
+    <string name="reassigned_managing_entity">Réaffectation réussie de l\'entité gestionnaire</string>
+    <string name="error_fetching_user_details">Échec de la recherche des informations de l\'utilisateur</string>
+    <string name="questionnaire_not_found">Questionnaire introuvable, synchroniser tous les questionnaires pour régler ce problème</string>
+    <string name="no_visits">Pas de visites</string>
+    <string name="questionnaire_response_invalid">Réponse du questionnaire invalide</string>
+    <string name="missing_subject_type">Type de sujet manquant dans le questionnaire. Fournir Questionnaire.subjectType pour résoudre le problème.</string>
+    <string name="missing_questionnaire_config">QuestionnaireConfig est requis mais manquant</string>
+    <string name="error_populating_questionnaire">Erreur dans le remplissage de certains champs du questionnaire. Réponse au questionnaire non valide.</string>
+    <string name="extraction_in_progress">Traitement des données du questionnaire...</string>
+    <string name="loading_questionnaire">Chargement du questionnaire...</string>
+    <string name="clear_all">Tout effacer</string>
+    <string name="yes">Oui</string>
+    <string name="no">Non</string>
+
+    <string name="location_permissions_denied">Accès à la localisation refusé : Pour capturer les coordonnées GPS, veuillez activer les autorisations de localisation dans les paramètres de votre appareil.</string>
+    <string name="location_services_disabled">Les services de localisation sont désactivés. Souhaitez-vous les activer ?</string>
+    <string name="copy_text_success_message">Lien %1$s copié avec succès</string>
+    <string name="submit_questionnaire">Soumettre</string>
+
 </resources>
