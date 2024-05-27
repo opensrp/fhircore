@@ -452,6 +452,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
         any(),
         any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }
@@ -477,6 +478,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
         any(),
         any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }
@@ -511,6 +513,7 @@ class QuestionnaireActivityTest : ActivityRobolectricTest() {
         any(),
         any(),
         any(),
+        intent.getStringExtra(QuestionnaireActivity.QUESTIONNAIRE_BACK_REFERENCE_KEY),
       )
     }
   }

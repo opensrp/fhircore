@@ -36,7 +36,6 @@ import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -45,6 +44,7 @@ import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.domain.Guardian
+import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
 import org.smartregister.fhircore.engine.data.local.TracingAgeFilterEnum
@@ -68,6 +68,8 @@ import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromM
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
+import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
+import org.smartregister.fhircore.engine.util.extension.patientConditions
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -345,7 +347,8 @@ abstract class TracingRegisterDao(
         practitioners = patient.practitioners(),
         currentAttempt =
           attempt.copy(
-            reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display },
+            reasons =
+              tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.display }.distinct(),
           ),
       )
     }
@@ -448,23 +451,24 @@ abstract class TracingRegisterDao(
         .copy(reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.code })
 
     val oldestTaskDate = tasks.minOfOrNull { it.authoredOn }
+    val pregnancyStatus = defaultRepository.getPregnancyStatus(this.logicalId)
+
     return RegisterData.TracingRegisterData(
       logicalId = this.logicalId,
       name = this.extractName(),
-      identifier =
-        this.identifier.firstOrNull { it.use == Identifier.IdentifierUse.OFFICIAL }?.value,
+      identifier = this.extractOfficialIdentifier(),
       gender = this.gender,
       familyName = this.extractFamilyName(),
       healthStatus =
         this.extractHealthStatusFromMeta(
           applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
-      isPregnant = defaultRepository.isPatientPregnant(this),
-      isBreastfeeding = defaultRepository.isPatientBreastfeeding(this),
+      isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
+      isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
       attempts = attempt.numberOfAttempts,
       lastAttemptDate = attempt.lastAttempt,
       firstAdded = oldestTaskDate,
-      reasons = attempt.reasons,
+      reasons = attempt.reasons.distinct(),
     )
   }
 

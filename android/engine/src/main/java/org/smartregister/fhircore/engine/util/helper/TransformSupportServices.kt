@@ -16,8 +16,11 @@
 
 package org.smartregister.fhircore.engine.util.helper
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Appointment
@@ -48,7 +51,9 @@ import timber.log.Timber
  * Immunization.Reaction
  */
 @Singleton
-class TransformSupportServices @Inject constructor(val simpleWorkerContext: SimpleWorkerContext) :
+class TransformSupportServices
+@Inject
+constructor(val simpleWorkerContext: SimpleWorkerContext, val fhirEngine: FhirEngine) :
   ITransformerServices {
 
   val outputs: MutableList<Base> = mutableListOf()
@@ -96,6 +101,6 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
 
   @Throws(FHIRException::class)
   override fun performSearch(appContext: Any, url: String): List<Base> {
-    throw FHIRException("performSearch is not supported yet")
+    return runBlocking { fhirEngine.search(url).map { it.resource } }
   }
 }

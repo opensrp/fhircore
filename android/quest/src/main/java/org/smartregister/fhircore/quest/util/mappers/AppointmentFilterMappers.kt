@@ -16,7 +16,10 @@
 
 package org.smartregister.fhircore.quest.util.mappers
 
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.quest.ui.appointment.register.PatientCategory
 import org.smartregister.fhircore.quest.ui.appointment.register.Reason
 
@@ -32,18 +35,67 @@ fun transformPatientCategoryToHealthStatus(patientCategory: PatientCategory) =
     PatientCategory.SEXUAL_CONTACT -> listOf(HealthStatus.SEXUAL_CONTACT)
   }
 
-fun transformAppointmentUiReasonToCode(uiReason: Reason) =
+fun transformAppointmentUiReasonToCode(uiReason: Reason): CodeableConcept? =
   when (uiReason) {
-    Reason.CERVICAL_CANCER_SCREENING -> "VIA"
-    Reason.DBS_POSITIVE -> "DBS Pos"
-    Reason.HIV_TEST -> "HIV Test"
-    Reason.INDEX_CASE_TESTING -> "ICT"
-    Reason.MILESTONE_HIV_TEST -> "Milestone"
-    Reason.LINKAGE -> "Linkage"
-    Reason.REFILL -> "Refill"
-    Reason.ROUTINE_VISIT -> "Routine"
-    Reason.VIRAL_LOAD_COLLECTION -> "VL"
-    Reason.WELCOME_SERVICE -> "Welcome"
-    Reason.WELCOME_SERVICE_FOLLOW_UP -> "Welcome Service Follow Up"
+    Reason.CERVICAL_CANCER_SCREENING ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "via", "Cervical Cancer Screening"),
+      )
+    Reason.DBS_POSITIVE ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "DBS Pos", "DBS Positive"),
+      )
+    Reason.HIV_TEST ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "hiv-test", "HIV Test"),
+      )
+    Reason.INDEX_CASE_TESTING ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "ICT", "Index Case Testing"),
+      )
+    Reason.MILESTONE_HIV_TEST ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "Milestone", "Milestone HIV Test"),
+      )
+    Reason.LINKAGE ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "linkage", "Linkage"),
+      )
+    Reason.REFILL ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "Refill", "Refill"),
+      )
+    Reason.ROUTINE_VISIT ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "Routine", "Routine Visit"),
+      )
+    Reason.VIRAL_LOAD_COLLECTION ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "vl", "Viral Load Collection"),
+      )
+    Reason.WELCOME_SERVICE ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "ICT", "Index Case Testing"),
+      )
+    Reason.WELCOME_SERVICE_HVL ->
+      CodeableConcept(
+        Coding(SystemConstants.REASON_CODE_SYSTEM, "welcome-service-hvl", "Welcome Service HVL"),
+      )
+    Reason.WELCOME_SERVICE_FOLLOW_UP ->
+      CodeableConcept(
+        Coding(
+          SystemConstants.REASON_CODE_SYSTEM,
+          "welcome-service-follow-up",
+          "Index Case Testing",
+        ),
+      )
+    Reason.TB_HISTORY_REGIMEN ->
+      CodeableConcept(
+        Coding(
+          SystemConstants.REASON_CODE_SYSTEM,
+          "tb_history_and_regimen",
+          "Welcome Service Follow Up",
+        ),
+      )
     else -> null
   }

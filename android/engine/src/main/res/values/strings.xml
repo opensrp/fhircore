@@ -157,4 +157,7 @@
     <string name="re_fetch_practitioner">Re-fetch Practitioner</string>
     <string name="dev_menu">Dev Menu</string>
     <string name="audit_event_system">http://dicom.nema.org/resources/ontology/DCM</string>
+    <string translatable="false" name="retry_extraction">Retry</string>
+    <string translatable="false" name="error_extraction">An error occurred while extracting and saving the Questionnaire</string>
+    <string name="select_locations_in">Select a location in %1$s</string>
 </resources>

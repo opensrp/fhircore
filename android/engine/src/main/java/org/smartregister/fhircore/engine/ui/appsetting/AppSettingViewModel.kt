@@ -22,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.UnknownHostException
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -32,6 +33,7 @@ import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import retrofit2.HttpException
+import timber.log.Timber
 
 @HiltViewModel
 class AppSettingViewModel
@@ -52,13 +54,18 @@ constructor(
   val goToHome = _goToHome
 
   fun loadConfigurations() {
-    viewModelScope.launch {
-      val loaded = configurationRegistry.loadConfigurations()
-      if (loaded) {
-        _goToHome.value = true
-        _loadState.postValue(DataLoadState.Success(data = true))
-      } else {
-        fetchRemoteConfigurations()
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        val loaded = configurationRegistry.loadConfigurations()
+        if (loaded) {
+          _goToHome.value = true
+          _loadState.postValue(DataLoadState.Success(data = true))
+        } else {
+          fetchRemoteConfigurations()
+        }
+      } catch (e: Exception) {
+        Timber.e(e)
+        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException(e.message)))
       }
     }
   }
@@ -69,17 +76,18 @@ constructor(
         _loadState.postValue(DataLoadState.Loading)
         configRepository.fetchConfigFromRemote()
         loadConfigurations()
-        _loadState.postValue(DataLoadState.Success(data = true))
       } catch (unknownHostException: UnknownHostException) {
         _loadState.postValue(DataLoadState.Error(InternetConnectionException()))
       } catch (httpException: HttpException) {
         if ((400..503).contains(httpException.response()!!.code())) {
           _loadState.postValue(DataLoadState.Error(ServerException()))
         } else {
-          _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+          _loadState.postValue(
+            DataLoadState.Error(ConfigurationErrorException(httpException.message)),
+          )
         }
       } catch (e: Exception) {
-        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException()))
+        _loadState.postValue(DataLoadState.Error(ConfigurationErrorException(e.message)))
       }
     }
   }

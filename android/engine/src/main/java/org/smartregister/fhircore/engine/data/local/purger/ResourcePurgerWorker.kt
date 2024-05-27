@@ -39,9 +39,10 @@ constructor(
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
+    val isOneTimeSync = inputData.getBoolean(ONE_TIME_SYNC_KEY, false)
     val optimalHour = LocalTime().hourOfDay
     Timber.i("Running $NAME...")
-    if (optimalHour < 6 || optimalHour > 17) {
+    if ((optimalHour < 6 || optimalHour > 17) || isOneTimeSync) {
       sharedPreferencesHelper.write(
         SharedPreferenceKey.LAST_PURGE_KEY.name,
         System.currentTimeMillis(),
@@ -53,5 +54,6 @@ constructor(
 
   companion object {
     const val NAME = "ResourcePurgerWorker"
+    const val ONE_TIME_SYNC_KEY = "one_time_sync"
   }
 }

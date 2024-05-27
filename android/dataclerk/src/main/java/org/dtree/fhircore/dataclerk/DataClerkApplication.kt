@@ -29,6 +29,7 @@ import javax.inject.Inject
 import org.dtree.fhircore.dataclerk.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
 import timber.log.Timber
 
 @HiltAndroidApp
@@ -40,6 +41,8 @@ class DataClerkApplication : Application(), DataCaptureConfig.Provider, Configur
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
+  @Inject lateinit var customQuestItemDataProvider: CustomQuestItemDataProvider
 
   override fun onCreate() {
     super.onCreate()
@@ -58,14 +61,17 @@ class DataClerkApplication : Application(), DataCaptureConfig.Provider, Configur
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
+              customQuestItemDataProvider,
+            ),
         )
     return configuration as DataCaptureConfig
   }
 
-  override val workManagerConfiguration: Configuration =
-    Configuration.Builder()
-      .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
-      .setWorkerFactory(workerFactory)
-      .build()
+  override val workManagerConfiguration: Configuration
+    get() =
+      Configuration.Builder()
+        .setMinimumLoggingLevel(if (BuildConfig.DEBUG) Log.VERBOSE else Log.INFO)
+        .setWorkerFactory(workerFactory)
+        .build()
 }

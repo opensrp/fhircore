@@ -9,6 +9,7 @@ plugins {
   id("de.mannodermaus.android-junit5")
   id("com.google.dagger.hilt.android")
   id("org.jetbrains.kotlin.android")
+  id("com.google.firebase.crashlytics")
 }
 
 kotlin { jvmToolchain(17) }
@@ -124,7 +125,7 @@ dependencies {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
-  api("org.smartregister:knowledge:0.1.0-alpha03-preview3-SNAPSHOT") {
+  api("org.smartregister:knowledge:0.1.0-alpha03-preview4-SNAPSHOT") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
 
@@ -136,6 +137,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.smartregister", module = "knowledge")
   }
 
   // Hilt - Dependency Injection
@@ -183,7 +185,7 @@ dependencies {
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.google.android.fhir", module = "engine")
   }
-  api("org.smartregister:data-capture:1.1.0-preview6-SNAPSHOT") {
+  api("org.smartregister:data-capture:1.1.0-preview8.1-SNAPSHOT") {
     isTransitive = true
     exclude(group = "ca.uhn.hapi.fhir")
     exclude(group = "com.google.android.fhir", module = "engine")
@@ -193,10 +195,11 @@ dependencies {
 
   api("org.smartregister:common:0.1.0-alpha05-preview3-SNAPSHOT") { isTransitive = true }
 
-  api("org.smartregister:engine:1.0.0-preview5-SNAPSHOT") {
+  api("org.smartregister:engine:1.0.0-preview7.1-SNAPSHOT") {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")
     exclude(group = "com.github.ben-manes.caffeine")
+    exclude(group = "org.smartregister", module = "knowledge")
   }
 
   api("com.google.code.gson:gson:2.10.1")
@@ -215,6 +218,7 @@ dependencies {
 
   implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
   implementation("com.google.firebase:firebase-perf-ktx")
+  implementation("com.google.firebase:firebase-crashlytics-ktx")
 
   implementation("androidx.core:core-splashscreen:1.0.0")
 

@@ -25,6 +25,7 @@ plugins {
     id("com.google.gms.google-services") version "4.3.14" apply false
     id("com.google.firebase.firebase-perf") version "1.4.2" apply false
     id("com.google.firebase.crashlytics") version "2.9.5"
+    id("com.google.firebase.appdistribution") version "5.0.0" apply false
 }
 
 allprojects {
@@ -35,6 +36,18 @@ allprojects {
         mavenCentral()
         maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
         maven(url = "https://jcenter.bintray.com/")
+        ProjectProperties.readProperties("local.properties")
+            .takeIf { it.getProperty("dtreeRepositoryUsername") != null && it.getProperty("dtreeRepositoryPassword") != null }
+            ?.let {
+                maven {
+                    url = uri("https://maven.pkg.github.com/d-tree-org/android-fhir")
+                    name = "dtreeRepository"
+                    credentials {
+                        username = it["dtreeRepositoryUsername"]?.toString()
+                        password = it["dtreeRepositoryPassword"]?.toString()
+                    }
+                }
+            }
         maven {
             name = "fhirsdk"
             url = uri("/Users/ndegwamartin/.m2.dev/fhirsdk")
@@ -45,7 +58,7 @@ allprojects {
 subprojects {
     apply {
         plugin("com.diffplug.spotless")
-        plugin(  "jacoco")
+        plugin("jacoco")
     }
 
     configure<SpotlessExtension> {

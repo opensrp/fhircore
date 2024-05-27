@@ -48,7 +48,7 @@ fun ViewResourceReport(viewModel: DevViewModel) {
   var data by remember { mutableStateOf(mapOf<String, List<ResourceField>>()) }
 
   LaunchedEffect(viewModel) @ExcludeFromJacocoGeneratedReport {
-    data = viewModel.getResourcesToReport()
+    data = viewModel.getResourcesToVersions()
   }
 
   Scaffold { paddingValues ->

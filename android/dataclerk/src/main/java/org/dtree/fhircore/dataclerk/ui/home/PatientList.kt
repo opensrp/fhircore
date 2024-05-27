@@ -60,6 +60,7 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
     verticalArrangement = Arrangement.spacedBy(8.dp),
     contentPadding = PaddingValues(8.dp),
   ) {
+    item { Text(text = "Recently updated") }
     items(items = patients.itemSnapshotList.items) { patient ->
       PatientItemCard(patient, onClick = { navigate(patient) })
     }
@@ -116,8 +117,12 @@ fun PatientList(viewModel: HomeViewModel, navigate: (PatientItem) -> Unit) {
 
 @Composable
 fun PatientItemCard(patient: PatientItem, onClick: () -> Unit) {
-  OutlinedCard(modifier = Modifier.fillMaxWidth().clickable { onClick() }) {
-    Column(Modifier.padding(Constants.defaultCardPadding).fillMaxWidth()) {
+  OutlinedCard(
+    modifier = Modifier.fillMaxWidth().clickable { onClick() },
+  ) {
+    Column(
+      Modifier.padding(Constants.defaultCardPadding).fillMaxWidth(),
+    ) {
       Text(
         text = patient.name,
         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),

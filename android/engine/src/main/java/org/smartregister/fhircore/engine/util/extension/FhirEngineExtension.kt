@@ -21,7 +21,9 @@ import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.SearchQuery
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
 import org.hl7.fhir.r4.model.Composition
@@ -101,4 +103,16 @@ suspend fun FhirEngine.addDateTimeIndex() {
   } catch (ex: SQLException) {
     Timber.e(ex)
   }
+}
+
+suspend inline fun <reified R : Resource> FhirEngine.getResourcesByIds(
+  list: List<String>,
+): List<R> {
+  if (list.isEmpty()) return listOf()
+  val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+    list.map { id -> { value = of(id) } }
+  return this.search<R> {
+      filter(Resource.RES_ID, *paramQueries.toTypedArray(), operation = Operation.OR)
+    }
+    .map { it.resource }
 }

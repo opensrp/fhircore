@@ -16,8 +16,8 @@
 
 package org.dtree.fhircore.dataclerk.ui.main
 
-import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
+import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
@@ -25,13 +25,16 @@ import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
@@ -39,47 +42,74 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
+import org.smartregister.fhircore.engine.util.extension.activeCarePlans
 import org.smartregister.fhircore.engine.util.extension.extractAddress
 import org.smartregister.fhircore.engine.util.extension.extractGeneralPractitionerReference
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
+import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractWithFhirPath
-import timber.log.Timber
 
 class AppDataStore
 @Inject
 constructor(
   private val fhirEngine: FhirEngine,
   private val configurationRegistry: ConfigurationRegistry,
-  val defaultRepository: DefaultRepository,
+  private val defaultRepository: DefaultRepository,
+  private val sharedPreferencesHelper: SharedPreferencesHelper,
 ) {
-  private val jsonParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+
+  private val currentPractitioner by lazy {
+    sharedPreferencesHelper.read(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      defaultValue = null,
+    )
+  }
 
   private fun getApplicationConfiguration(): ApplicationConfiguration {
     return configurationRegistry.getAppConfigs()
   }
 
-  suspend fun loadPatients(page: Int = 1): List<PatientItem> {
-    Timber.e("Page: $page")
-    // TODO: replace with _tag search when update is out
+  suspend fun loadPatients(): List<PatientItem> {
     return fhirEngine
       .search<Patient> {
         filter(Patient.ACTIVE, { value = of(true) })
-        sort(Patient.NAME, Order.ASCENDING)
-        count = 20
-        from = (page - 1) * 20
+        filterPatient()
+        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
+        count = 10
       }
       .map { it.resource }
-      .map { inputModel ->
-        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
-        inputModel.toPatientItem(getApplicationConfiguration())
-      }
+      .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
   }
 
   suspend fun getPatient(patientId: String): PatientItem {
     val patient = fhirEngine.get<Patient>(patientId)
-    return patient.toPatientItem(getApplicationConfiguration())
+    var model = patient.toPatientItem(getApplicationConfiguration())
+
+    val list = arrayListOf<Resource>()
+    list.add(patient)
+
+    if (patient.hasGeneralPractitioner()) {
+      val id = patient.generalPractitioner.first().extractId()
+      val practitioner = fhirEngine.get<Practitioner>(id)
+      list.add(practitioner)
+    }
+
+    val carePlans = patient.activeCarePlans(fhirEngine)
+
+    if (carePlans.isNotEmpty()) {
+      list.add(carePlans.first())
+    }
+
+    model =
+      model.copy(
+        populateResources = list,
+      )
+    return model
   }
 
   suspend fun getResource(resourceId: String): Resource {
@@ -88,11 +118,15 @@ constructor(
 
   suspend fun patientCount(): Long {
     return fhirEngine.count(
-      Search(ResourceType.Patient).apply { filter(Patient.ACTIVE, { value = of(true) }) },
+      Search(ResourceType.Patient).apply {
+        filter(Patient.ACTIVE, { value = of(true) })
+        filterPatient()
+      },
     )
   }
 
   suspend fun search(text: String): List<PatientItem> {
+    val isArt = getApplicationConfiguration().appId.contains("art-client")
     return fhirEngine
       .search<Patient> {
         filter(
@@ -107,10 +141,47 @@ constructor(
         sort(Patient.NAME, Order.ASCENDING)
       }
       .map { it.resource }
-      .map { inputModel ->
-        //        Timber.e(jsonParser.encodeResourceToString(inputModel))
-        inputModel.toPatientItem(getApplicationConfiguration())
+      .filter {
+        it.meta.tag?.firstOrNull { coding ->
+          coding.system == SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM &&
+            (if (isArt) {
+                listOf("client-already-on-art", "newly-diagnosed-client")
+              } else {
+                listOf("exposed-infant")
+              })
+              .contains(coding.code)
+        } != null
       }
+      .map { inputModel -> inputModel.toPatientItem(getApplicationConfiguration()) }
+  }
+
+  suspend fun getCurrentPractitioner(): Practitioner? {
+    return currentPractitioner?.let { fhirEngine.get<Practitioner>(it) }
+  }
+
+  private fun Search.filterPatient() {
+    val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+      (if (getApplicationConfiguration().appId.contains("art-client")) {
+          listOf(
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "client-already-on-art"
+            },
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "newly-diagnosed-client"
+            },
+          )
+        } else {
+          listOf(
+            Coding().apply {
+              system = SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM
+              code = "exposed-infant"
+            },
+          )
+        })
+        .map { coding -> { value = of(coding) } }
+    filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
   }
 }
 
@@ -127,6 +198,7 @@ data class PatientItem(
   val healthStatus: HealthStatus,
   val practitioners: List<Reference>? = null,
   val dateCreated: Date? = null,
+  val populateResources: ArrayList<Resource> = arrayListOf(),
 )
 
 data class AddressData(
@@ -134,7 +206,11 @@ data class AddressData(
   val state: String = "",
   val text: String = "",
   val fullAddress: String = "",
-)
+) {
+  override fun toString(): String {
+    return "$district \n $state"
+  }
+}
 
 internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): PatientItem {
   val phone = if (hasTelecom()) telecom[0].value else "N/A"
@@ -166,5 +242,6 @@ internal fun Patient.toPatientItem(configuration: ApplicationConfiguration): Pat
         fullAddress = this.extractAddress(),
       ),
     dateCreated = this.meta.lastUpdated,
+    populateResources = arrayListOf(),
   )
 }

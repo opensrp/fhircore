@@ -43,4 +43,5 @@ data class RegisterViewData(
   val showServiceButton: Boolean = true,
   val registerType: KClass<out RegisterData> = RegisterData.DefaultRegisterData::class,
   val identifier: String = "",
+  val customKey: String? = null,
 )

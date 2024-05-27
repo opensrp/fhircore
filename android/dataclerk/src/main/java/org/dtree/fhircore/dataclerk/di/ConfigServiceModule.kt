@@ -20,7 +20,9 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import org.dtree.fhircore.dataclerk.DataClerkAppConfigService
 import org.dtree.fhircore.dataclerk.DataClerkConfigService
+import org.smartregister.fhircore.engine.configuration.app.AppConfigService
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 
 @InstallIn(SingletonComponent::class)
@@ -28,4 +30,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 abstract class ConfigServiceModule {
   @Binds
   abstract fun provideConfigService(questConfigService: DataClerkConfigService): ConfigService
+
+  @Binds
+  abstract fun providesAppConfigService(configService: DataClerkAppConfigService): AppConfigService
 }

@@ -24,6 +24,7 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.CareTeam
 import org.hl7.fhir.r4.model.Location
@@ -33,13 +34,11 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
-import org.smartregister.fhircore.engine.util.LOGGED_IN_PRACTITIONER
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -59,23 +58,22 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirEngine: FhirEngine,
   val defaultRepository: DefaultRepository,
-  val keycloakService: KeycloakService,
   val fhirResourceService: FhirResourceService,
 ) : ViewModel() {
 
-  val onLogout = MutableLiveData<Boolean?>(null)
+  private val onLogout = MutableLiveData<Boolean?>(null)
 
   val language = MutableLiveData<Language?>(null)
 
   val profileData = MutableLiveData<DataLoadState<ProfileData>>()
 
   init {
-    viewModelScope.launch @ExcludeFromJacocoGeneratedReport { fetchData() }
+    viewModelScope.launch(Dispatchers.IO) @ExcludeFromJacocoGeneratedReport { fetchData() }
   }
 
   private suspend fun fetchData() {
     try {
-      profileData.value = DataLoadState.Loading
+      profileData.postValue(DataLoadState.Loading)
 
       var practitionerName: String? = null
       sharedPreferences
@@ -120,7 +118,7 @@ constructor(
 
       val isValid = organizationIds != null || locationIds != null || careTeamIds != null
 
-      profileData.value =
+      profileData.postValue(
         DataLoadState.Success(
           ProfileData(
             userName = practitionerName ?: "",
@@ -130,9 +128,10 @@ constructor(
             isUserValid = isValid,
             practitionerDetails = null,
           ),
-        )
+        ),
+      )
     } catch (e: Exception) {
-      profileData.value = DataLoadState.Error(e)
+      profileData.postValue(DataLoadState.Error(e))
     }
   }
 
@@ -146,12 +145,6 @@ constructor(
       context.getActivity()?.launchActivityWithNoBackStackHistory<LoginActivity>()
     }
   }
-
-  fun retrieveUsername(): String? =
-    sharedPreferences
-      .read<Practitioner>(key = LOGGED_IN_PRACTITIONER, decodeWithGson = true)
-      ?.nameFirstRep
-      ?.nameAsSingleString
 
   fun fetchPractitionerDetails() {}
 }

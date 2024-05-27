@@ -85,6 +85,13 @@ fun Date.plusYears(years: Int): Date {
   return clone.time
 }
 
+fun Date.plusDays(days: Int): Date {
+  val date = this
+  val clone = Calendar.getInstance().apply { time = date }
+  clone.add(Calendar.DATE, days)
+  return clone.time
+}
+
 fun DateType.format(): String = SDF_YYYY_MM_DD.format(value)
 
 fun DateTimeType.format(): String =
@@ -92,7 +99,7 @@ fun DateTimeType.format(): String =
     StringBuilder(it).insert(it.length - 2, ":").toString()
   }
 
-fun DateTimeType.plusDaysAsString(days: Int): String {
+fun DateTimeType.plusDays(days: Int): String {
   val clone = this.copy()
   clone.add(Calendar.DATE, days)
   return clone.value.asDdMmmYyyy()

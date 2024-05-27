@@ -59,7 +59,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import java.util.Locale
-import org.hl7.fhir.r4.model.CarePlan
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
@@ -183,11 +182,7 @@ fun PatientProfileScreen(
 
           // Patient tasks: List of tasks for the patients
           if (profileViewData.tasks.isNotEmpty()) {
-            val appointmentDate =
-              profileViewData.carePlans
-                .singleOrNull { it.status == CarePlan.CarePlanStatus.ACTIVE }
-                ?.period
-                ?.end
+            val appointmentDate = profileViewData.currentCarePlan?.period?.end
             ProfileCard(
               title = {
                 Row(
@@ -285,16 +280,15 @@ fun PatientProfileScreen(
       }
 
       //  Finish visit
-      if (profileViewData.carePlans.isNotEmpty() && profileViewData.tasks.isNotEmpty()) {
+      if (profileViewData.currentCarePlan != null && profileViewData.tasks.isNotEmpty()) {
         Button(
           modifier = Modifier.fillMaxWidth().padding(0.dp),
           shape = RectangleShape,
           onClick = {
             patientProfileViewModel.onEvent(
-              PatientProfileEvent.OpenTaskForm(
+              PatientProfileEvent.FinishVisit(
                 context = context,
-                taskFormId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
-                taskId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
+                formId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
               ),
             )
           },

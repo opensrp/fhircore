@@ -16,15 +16,12 @@
 
 package org.smartregister.fhircore.engine.data.local.register.dao
 
-import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.filter.TokenParamFilterCriterion
-import com.google.android.fhir.search.has
 import com.google.android.fhir.search.search
 import java.util.Calendar
 import java.util.Date
@@ -32,13 +29,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
@@ -54,8 +50,9 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractHealthStatusFromMeta
 import org.smartregister.fhircore.engine.util.extension.extractName
+import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
+import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
 import org.smartregister.fhircore.engine.util.extension.safeSubList
-import org.smartregister.fhircore.engine.util.extension.toHealthStatus
 
 @Singleton
 class AppointmentRegisterDao
@@ -107,7 +104,9 @@ constructor(
     val patient =
       appointment.patientRef()?.let { defaultRepository.loadResource(it) as Patient }
         ?: return false
-    return patient.meta.tag.any { coding -> coding.toHealthStatus() in categories }
+    return patient.meta.tag.any { coding ->
+      coding.code in categories.map { it.name.lowercase().replace("_", "-") }
+    }
   }
 
   private suspend fun searchAppointments(
@@ -133,8 +132,13 @@ constructor(
         sort(Appointment.DATE, Order.ASCENDING)
       }
 
+    val keySet = mutableSetOf<String>()
     return searchResults
-      .map { it.resource }
+      .mapNotNull {
+        if (keySet.contains(it.resource.logicalId)) return@mapNotNull null
+        keySet.add(it.resource.logicalId)
+        it.resource
+      }
       .filter {
         isAppointmentValid(
           appointment = it,
@@ -147,7 +151,7 @@ constructor(
 
   private suspend fun isAppointmentValid(
     appointment: Appointment,
-    reasonCode: String? = null,
+    reasonCode: CodeableConcept? = null,
     patientCategory: Iterable<HealthStatus>? = null,
     myPatients: Boolean = false,
   ): Boolean {
@@ -161,9 +165,12 @@ constructor(
 
     val appointmentReasonFilter =
       reasonCode == null ||
-        (appointment.reasonCode.flatMap { cc -> cc.coding }.any { c -> c.code == reasonCode })
+        (appointment.reasonCode
+          .flatMap { cc -> cc.coding }
+          .any { c -> c.code == reasonCode.coding.firstOrNull()?.code })
 
     return (appointment.status == Appointment.AppointmentStatus.BOOKED ||
+      appointment.status == Appointment.AppointmentStatus.WAITLIST ||
       appointment.status == Appointment.AppointmentStatus.NOSHOW) &&
       appointment.hasStart() &&
       patientAssignmentFilter &&
@@ -175,14 +182,16 @@ constructor(
 
   private fun Search.genericFilter(
     dateOfAppointment: Date? = null,
-    reasonCode: String? = null,
+    reasonCode: CodeableConcept? = null,
     patientCategory: Iterable<HealthStatus>? = null,
     myPatients: Boolean = false,
   ) {
     filter(
       Appointment.STATUS,
       { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) },
+      { value = of(Appointment.AppointmentStatus.WAITLIST.toCode()) },
       { value = of(Appointment.AppointmentStatus.NOSHOW.toCode()) },
+      operation = Operation.OR,
     )
 
     if (dateOfAppointment != null) {
@@ -190,96 +199,62 @@ constructor(
         Appointment.DATE,
         {
           value = of(DateTimeType(dateOfAppointment))
-          prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
-        },
-      )
-      filter(
-        Appointment.DATE,
-        {
-          value =
-            of(
-              DateTimeType(dateOfAppointment).apply {
-                add(
-                  Calendar.DATE,
-                  1,
-                )
-              },
-            )
-          prefix = ParamPrefixEnum.LESSTHAN
+          prefix = ParamPrefixEnum.EQUAL
         },
       )
     }
 
     if (myPatients && currentPractitioner != null) {
       filter(
-        Appointment.PRACTITIONER,
-        { value = currentPractitioner!!.asReference(ResourceType.Appointment).reference },
+        Appointment.ACTOR,
+        { value = currentPractitioner!!.asReference(ResourceType.Practitioner).reference },
       )
     }
 
     if (reasonCode != null) {
-      val codeAbleConcept =
-        CodeableConcept().apply {
-          addCoding(
-            Coding().apply {
-              system = "https://d-tree.org"
-              code = reasonCode
-            },
-          )
-        }
-      filter(Appointment.REASON_CODE, { value = of(codeAbleConcept) })
+      filter(Appointment.REASON_CODE, { value = of(reasonCode) })
     }
 
-    if (patientCategory != null) {
-      val patientTypeFilterTag = applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
-
-      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
-        patientCategory.flatMap { healthStatus ->
-          val coding: Coding =
-            Coding().apply {
-              system = patientTypeFilterTag
-              code = healthStatus.name.lowercase().replace("_", "-")
-            }
-          val alternativeCoding: Coding =
-            Coding().apply {
-              system = patientTypeFilterTag
-              code = healthStatus.name.lowercase()
-            }
-
-          return@flatMap listOf<Coding>(coding, alternativeCoding).map<
-            Coding,
-            TokenParamFilterCriterion.() -> Unit,
-          > { c ->
-            { value = of(c) }
-          }
-        }
-
-      has<Patient>(Appointment.PATIENT) {
-        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation = Operation.OR)
-      }
-    }
+    // TODO: look into this further
+    //    if (patientCategory != null) {
+    //      val patientTypeFilterTag =
+    // applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem
+    //
+    //      val paramQueries: List<(TokenParamFilterCriterion.() -> Unit)> =
+    //        patientCategory.map { healthStatus ->
+    //          val coding: Coding =
+    //            Coding().apply {
+    //              system = patientTypeFilterTag
+    //              code = healthStatus.name.lowercase().replace("_", "-")
+    //            }
+    //          return@map { value = of(coding) }
+    //        }
+    //
+    //      has<Patient>(Appointment.PATIENT) {
+    //        filter(TokenClientParam("_tag"), *paramQueries.toTypedArray(), operation =
+    // Operation.OR)
+    //      }
+    //    }
   }
 
   private suspend fun transformAppointment(appointment: Appointment): RegisterData {
     val refPatient = appointment.patientRef()!!
     val patient = defaultRepository.loadResource(refPatient) as Patient
+    val pregnancyStatus = defaultRepository.getPregnancyStatus(patient.logicalId)
 
     return RegisterData.AppointmentRegisterData(
       logicalId = patient.logicalId,
       appointmentLogicalId = appointment.logicalId,
       name = patient.extractName(),
-      identifier =
-        patient.identifier
-          .firstOrNull { identifier -> identifier.use == Identifier.IdentifierUse.OFFICIAL }
-          ?.value,
+      identifier = patient.extractOfficialIdentifier(),
       gender = patient.gender,
       age = patient.extractAge(),
       healthStatus =
         patient.extractHealthStatusFromMeta(
           applicationConfiguration().patientTypeFilterTagViaMetaCodingSystem,
         ),
-      isPregnant = defaultRepository.isPatientPregnant(patient),
-      isBreastfeeding = defaultRepository.isPatientBreastfeeding(patient),
+      isPregnant = pregnancyStatus == PregnancyStatus.Pregnant,
+      isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
       reasons = appointment.reasonCode.flatMap { cc -> cc.coding.map { coding -> coding.code } },
     )
   }
@@ -320,9 +295,13 @@ constructor(
         filter(Appointment.STATUS, { value = of(Appointment.AppointmentStatus.BOOKED.toCode()) })
         filter(Appointment.DATE, { value = of(DateTimeType.today()) })
       }
-
+    val keySet = mutableSetOf<String>()
     return appointments
-      .map { it.resource }
+      .mapNotNull {
+        if (keySet.contains(it.resource.logicalId)) return@mapNotNull null
+        keySet.add(it.resource.logicalId)
+        it.resource
+      }
       .filter {
         it.status == Appointment.AppointmentStatus.BOOKED &&
           it.hasStart() &&

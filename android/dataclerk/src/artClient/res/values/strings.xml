@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Data Clerk ART</string>
+    <string name="authenticator_account_type" translatable="false">org.dtree.fhircore.dataclerk.artClient</string>
+</resources>

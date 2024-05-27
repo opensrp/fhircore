@@ -16,47 +16,72 @@
 
 package org.smartregister.fhircore.engine.ui.settings.views
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CheckCircleOutline
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.work.WorkInfo
 import org.smartregister.fhircore.engine.ui.settings.DevViewModel
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
 @ExcludeFromJacocoGeneratedReport
 @Composable
-fun DevMenu(viewModel: DevViewModel, viewRes: () -> Unit) {
+fun DevMenu(viewModel: DevViewModel) {
   val context = LocalContext.current
-  val scope = rememberCoroutineScope()
+  val missedTasks by viewModel.observeMissedTask(context).collectAsState(listOf())
+  val appointmentList by viewModel.observeMissedAppointment(context).collectAsState(listOf())
+  val interruptedList by viewModel.observeInterrupted(context).collectAsState(listOf())
+  val resourcePurger by viewModel.observeResourcePurgerWorker(context).collectAsState(listOf())
+
   Column(
-    verticalArrangement = Arrangement.spacedBy(6.dp),
-    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+    modifier = Modifier.padding(16.dp).padding(vertical = 20.dp).fillMaxWidth(),
   ) {
-    Button(
-      modifier = Modifier.fillMaxWidth(),
-      onClick =
-        @ExcludeFromJacocoGeneratedReport {
-          scope.launch @ExcludeFromJacocoGeneratedReport { viewModel.createResourceReport(context) }
-        },
-    ) {
-      Text(text = "Export Report Resources")
-    }
-    Button(modifier = Modifier.fillMaxWidth(), onClick = viewRes) {
-      Text(text = "View Report Resources")
-    }
-    Button(
-      modifier = Modifier.fillMaxWidth(),
-      onClick = @ExcludeFromJacocoGeneratedReport { viewModel.fetchDetails() },
-    ) {
-      Text(text = "Test Fetch")
-    }
+    SectionTitle(text = "Developer Options")
+    UserProfileRow(
+      iconAlt = { WorkerStateIcon(states = missedTasks) },
+      text = "Run missed task worker",
+      clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.missedTask(context) },
+    )
+    UserProfileRow(
+      iconAlt = { WorkerStateIcon(states = appointmentList) },
+      text = "Run missed appointments worker",
+      clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.missedAppointment(context) },
+    )
+    UserProfileRow(
+      iconAlt = { WorkerStateIcon(states = interruptedList) },
+      text = "Run interrupted treatment worker",
+      clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.interruptedResource(context) },
+    )
+    UserProfileRow(
+      iconAlt = { WorkerStateIcon(states = resourcePurger) },
+      text = "Run Resource Purger Worker",
+      clickListener = @ExcludeFromJacocoGeneratedReport { viewModel.resourcePurger(context) },
+    )
+  }
+}
+
+@Composable
+fun WorkerStateIcon(states: List<WorkInfo.State>) {
+  val state = states.firstOrNull()
+
+  when (state) {
+    WorkInfo.State.RUNNING -> CircularProgressIndicator(modifier = Modifier.size(18.dp))
+    WorkInfo.State.SUCCEEDED ->
+      Icon(Icons.Outlined.CheckCircleOutline, contentDescription = "", tint = Color.Green)
+    WorkInfo.State.FAILED ->
+      Icon(Icons.Outlined.ErrorOutline, contentDescription = "", tint = Color.Red)
+    else -> {}
   }
 }

@@ -21,28 +21,49 @@ import android.content.Intent
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
-import com.google.android.fhir.testing.jsonParser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileWriter
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Questionnaire
+import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.StructureMap
+import org.smartregister.fhircore.engine.appointment.MissedFHIRAppointmentsWorker
+import org.smartregister.fhircore.engine.appointment.ProposedWelcomeServiceAppointmentsWorker
+import org.smartregister.fhircore.engine.auditEvent.AuditEventWorker
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
-import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.data.local.purger.ResourcePurgerWorker
+import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
+import org.smartregister.fhircore.engine.task.FhirTaskPlanWorker
+import org.smartregister.fhircore.engine.task.WelcomeServiceBackToCarePlanWorker
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
-import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
-import org.smartregister.model.practitioner.PractitionerDetails
+import timber.log.Timber
 
 @ExcludeFromJacocoGeneratedReport
 @HiltViewModel
@@ -54,34 +75,77 @@ constructor(
   val secureSharedPreference: SecureSharedPreference,
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val configurationRegistry: ConfigurationRegistry,
-  val keycloakService: KeycloakService,
-  val fhirResourceService: FhirResourceService,
   val fhirEngine: FhirEngine,
+  @ApplicationContext val appContext: Context,
 ) : ViewModel() {
 
+  val resourceSaveState = MutableStateFlow<DataLoadState<Boolean>>(DataLoadState.Idle)
+
   suspend fun createResourceReport(context: Context) {
-    try {
-      generateReport(context)
-      val file = File(context.filesDir, "log_data.txt")
-      val fileUri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    viewModelScope.launch(Dispatchers.IO) {
+      try {
+        resourceSaveState.value = DataLoadState.Loading
+        val generalReport =
+          File(context.filesDir, "general.txt").also {
+            generateReport(it, generateGeneralResource())
+          }
+        val resourceReport =
+          File(context.filesDir, "resource.txt").also { generateReport(it, getResourcesToReport()) }
+        val localChanges =
+          File(context.filesDir, "changes.txt").also {
+            generateReport(it, getLocalResourcesReport())
+          }
 
-      val shareIntent = Intent(Intent.ACTION_SEND)
-      shareIntent.type = "text/plain"
-      shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-      shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val zipFile = File(context.filesDir, "report.zip")
 
-      val chooser = Intent.createChooser(shareIntent, "Share Log Data")
+        zipReports(zipFile, listOf(generalReport, resourceReport, localChanges))
+        val zipFileUri =
+          FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", zipFile)
 
-      if (shareIntent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(chooser)
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "application/x-zip"
+        shareIntent.putExtra(Intent.EXTRA_STREAM, zipFileUri)
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        val chooser = Intent.createChooser(shareIntent, "Share Log Data")
+
+        if (shareIntent.resolveActivity(context.packageManager) != null) {
+          context.startActivity(chooser)
+        }
+        resourceSaveState.value = DataLoadState.Success(true)
+      } catch (e: Exception) {
+        Timber.e(e)
+        resourceSaveState.value = DataLoadState.Error(e)
       }
-    } catch (e: Exception) {
-      e.printStackTrace()
     }
   }
 
-  private suspend fun generateReport(context: Context) {
-    val data = getResourcesToReport()
+  private suspend fun zipReports(zipFile: File, files: List<File>) {
+    withContext(Dispatchers.IO) {
+      ZipOutputStream(BufferedOutputStream(zipFile.outputStream())).use { out ->
+        for (file in files) {
+          FileInputStream(file).use { fi ->
+            BufferedInputStream(fi).use { origin ->
+              val entry = ZipEntry(file.name)
+              out.putNextEntry(entry)
+              origin.copyTo(out, 1024)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private suspend fun generateReport(file: File, value: String) {
+    withContext(Dispatchers.IO) {
+      val fileWriter = FileWriter(file)
+      fileWriter.write(value)
+      fileWriter.close()
+    }
+  }
+
+  private suspend fun getResourcesToReport(): String {
+    val data = getResourcesToVersions()
     var log = ""
 
     data.entries.forEach { group ->
@@ -94,46 +158,171 @@ constructor(
           "" +
           "\n-----------------------------------------------------\n"
     }
-
-    val fileName = "log_data.txt"
-    val file = File(context.filesDir, fileName)
-    val fileWriter = FileWriter(file)
-    fileWriter.write(log)
-    fileWriter.close()
+    return log
   }
 
-  suspend fun getResourcesToReport(): Map<String, List<ResourceField>> {
-    val questionnaire =
-      fhirEngine
-        .search<Questionnaire> {}
-        .map { it.resource }
-        .map { ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy()) }
-    val structureMaps =
-      fhirEngine
-        .search<StructureMap> {}
-        .map { it.resource }
-        .map { ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy()) }
+  private suspend fun getLocalResourcesReport(): String {
+    val changes = fhirEngine.getUnsyncedLocalChanges()
 
-    return mapOf(Pair("Questionnaire", questionnaire), Pair("StructureMap", structureMaps))
-  }
-
-  // TODO: Fix refetch logic
-  fun fetchDetails() {
-    try {
-      viewModelScope.launch @ExcludeFromJacocoGeneratedReport {
-        val userInfo = keycloakService.fetchUserInfo().body()
-        if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
-          val bundle =
-            fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
-          val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-
-          val data = jsonParser.encodeResourceToString(practitionerDetails)
-          println(data)
-        }
+    val raw =
+      changes.joinToString {
+        """
+        |_______________________________
+        |resourceType: ${it.resourceType},
+        |resourceId: ${it.resourceId},
+        |versionId: ${it.versionId},
+        |timestamp: ${it.timestamp},
+        |type: ${it.resourceType},
+        |token: "${it.token.ids}",
+        |payload: "${it.payload}",
+        |_______________________________
+        |
+            """
+          .trimMargin()
       }
-    } catch (e: Exception) {
-      println(e)
+
+    return "\nChanges: ${changes.size}\n$raw"
+  }
+
+  private suspend fun generateGeneralResource(): String {
+    val all = sharedPreferencesHelper.prefs.all
+
+    val pref =
+      all.entries.joinToString {
+        """
+        ----------Prefs-------
+        ${it.key}: "${it.value}"
+        ----------------------
+            """
+          .trimIndent()
+      }
+
+    val workers =
+      listOf(
+          FhirTaskPlanWorker.WORK_ID,
+          MissedFHIRAppointmentsWorker.NAME,
+          ProposedWelcomeServiceAppointmentsWorker.NAME,
+          ResourcePurgerWorker.NAME,
+          AuditEventWorker.NAME,
+          WelcomeServiceBackToCarePlanWorker.NAME,
+          "${SyncBroadcaster::class.java.name}-oneTimeSync",
+          "${SyncBroadcaster::class.java.name}-periodicSync",
+          SyncBroadcaster::class.java.name,
+        )
+        .mapNotNull { tag ->
+          WorkManager.getInstance(appContext)
+            .getWorkInfosByTag(tag)
+            .get()
+            ?.let { list ->
+              list.joinToString { info ->
+                """-----$tag-----
+              |Name: ${info.state.name}, 
+              |Data: {${info.outputData.keyValueMap.entries.joinToString { "${it.key}: ${it.value}" }}}
+              |Tag: ${info.tags}
+              |Attempts: ${info.runAttemptCount}
+              |
+                    """
+                  .trimMargin()
+              }
+            }
+            ?.ifBlank { null }
+        }
+
+    return """
+      |$pref
+      |-------- workers --------
+      |$workers
+      |-------------------------
+      |
+            """
+      .trimMargin()
+  }
+
+  suspend fun getResourcesToVersions(): Map<String, List<ResourceField>> {
+    return mapOf(
+      Pair("Questionnaire", getAll<Questionnaire>()),
+      Pair("StructureMap", getAll<StructureMap>()),
+      Pair("Binary", getAll<Binary>()),
+    )
+  }
+
+  private suspend inline fun <reified T : Resource> getAll(): List<ResourceField> {
+    return fhirEngine
+      .search<T> {}
+      .map { it.resource }
+      .map { ResourceField(it.logicalId, it.meta.versionId, it.meta.lastUpdated.asDdMmmYyyy()) }
+  }
+
+  fun missedTask(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          FhirTaskPlanWorker.WORK_ID,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<FhirTaskPlanWorker>().build(),
+        )
     }
+  }
+
+  fun missedAppointment(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          MissedFHIRAppointmentsWorker.NAME,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<MissedFHIRAppointmentsWorker>().build(),
+        )
+    }
+  }
+
+  fun interruptedResource(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          ProposedWelcomeServiceAppointmentsWorker.NAME,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<ProposedWelcomeServiceAppointmentsWorker>().build(),
+        )
+    }
+  }
+
+  fun resourcePurger(context: Context) {
+    viewModelScope.launch {
+      WorkManager.getInstance(context)
+        .enqueueUniqueWork(
+          ResourcePurgerWorker.NAME,
+          ExistingWorkPolicy.REPLACE,
+          OneTimeWorkRequestBuilder<ResourcePurgerWorker>()
+            .setInputData(
+              Data.Builder().putBoolean(ResourcePurgerWorker.ONE_TIME_SYNC_KEY, true).build(),
+            )
+            .build(),
+        )
+    }
+  }
+
+  fun observeMissedAppointment(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(MissedFHIRAppointmentsWorker.NAME)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeMissedTask(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(FhirTaskPlanWorker.WORK_ID)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeInterrupted(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(ProposedWelcomeServiceAppointmentsWorker.NAME)
+      .map { list -> list.map { it.state } }
+  }
+
+  fun observeResourcePurgerWorker(context: Context): Flow<List<WorkInfo.State>> {
+    return WorkManager.getInstance(context)
+      .getWorkInfosForUniqueWorkFlow(ResourcePurgerWorker.NAME)
+      .map { list -> list.map { it.state } }
   }
 }
 

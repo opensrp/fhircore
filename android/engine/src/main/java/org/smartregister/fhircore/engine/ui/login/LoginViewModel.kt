@@ -40,6 +40,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceS
 import org.smartregister.fhircore.engine.data.remote.model.response.OAuthResponse
 import org.smartregister.fhircore.engine.data.remote.model.response.UserClaimInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -198,6 +199,7 @@ constructor(
         }
       }
     } catch (ex: Exception) {
+      Timber.e(ex)
       if (ex is PractitionerNotFoundException) {
         _loginErrorState.postValue(LoginErrorState.INVALID_CREDENTIALS)
       } else {
@@ -274,12 +276,12 @@ constructor(
       write(ResourceType.Organization.name, organisationIds)
       write(ResourceType.Location.name, locations.map { it.id.extractLogicalIdUuid() })
       write(
-        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies,
-      )
-      write(
         key = SharedPreferenceKey.PRACTITIONER_ID.name,
         value = practitionerId,
+      )
+      write(
+        key = SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+        value = locationHierarchies.map { LocationHierarchy.fromLocationHierarchy(it) },
       )
       write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
       write(

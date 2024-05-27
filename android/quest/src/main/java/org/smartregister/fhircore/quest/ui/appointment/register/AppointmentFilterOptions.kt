@@ -61,7 +61,9 @@ enum class Reason(val patientCategory: Array<PatientCategory>) : AppointmentFilt
   ROUTINE_VISIT(arrayOf(PatientCategory.EXPOSED_INFANT)),
   VIRAL_LOAD_COLLECTION(arrayOf(PatientCategory.ART_CLIENT)),
   WELCOME_SERVICE(arrayOf(PatientCategory.ART_CLIENT)),
+  WELCOME_SERVICE_HVL(arrayOf(PatientCategory.ART_CLIENT)),
   WELCOME_SERVICE_FOLLOW_UP(arrayOf(PatientCategory.ART_CLIENT)),
+  TB_HISTORY_REGIMEN(arrayOf(PatientCategory.ART_CLIENT)),
   ;
 
   override fun text(): String =

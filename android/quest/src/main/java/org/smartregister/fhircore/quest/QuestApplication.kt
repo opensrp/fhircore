@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlR
 import org.smartregister.fhircore.engine.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
+import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
@@ -56,6 +57,8 @@ class QuestApplication :
   @Inject lateinit var accountAuthenticator: AccountAuthenticator
 
   @Inject lateinit var xFhirQueryResolver: FhirXFhirQueryResolver
+
+  @Inject lateinit var customQuestItemDataProvider: CustomQuestItemDataProvider
 
   private val launcherActivityName: String? by lazy {
     val pm = packageManager
@@ -129,7 +132,9 @@ class QuestApplication :
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =
-            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl,
+            QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
+              customQuestItemDataProvider,
+            ),
         )
     return configuration as DataCaptureConfig
   }

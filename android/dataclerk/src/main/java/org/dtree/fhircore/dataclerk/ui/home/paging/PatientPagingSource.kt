@@ -32,9 +32,8 @@ class PatientPagingSource(private val dataStore: AppDataStore) : PagingSource<In
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PatientItem> {
     return try {
-      val page = params.key ?: 1
-      val response = dataStore.loadPatients(page = page)
-      val nextPage = if (response.isEmpty()) null else page.plus(1)
+      val response = dataStore.loadPatients()
+      val nextPage = null
       Timber.e("next page is $nextPage")
       LoadResult.Page(
         data = response,

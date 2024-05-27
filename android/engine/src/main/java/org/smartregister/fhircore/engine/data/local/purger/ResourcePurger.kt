@@ -22,6 +22,7 @@ import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import org.hl7.fhir.r4.model.Appointment
+import org.hl7.fhir.r4.model.AuditEvent
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Observation
@@ -32,12 +33,15 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import timber.log.Timber
 
+// TODO: Filter the status at the DB first than fetching all of the resources, we don't want to
+// block the db
 class ResourcePurger(private val fhirEngine: FhirEngine) {
 
   suspend operator fun invoke() {
-    onPurge<Observation>(ResourceType.Observation)
     onPurge<Encounter>(ResourceType.Encounter)
+    onPurge<AuditEvent>(ResourceType.AuditEvent)
     onPurge<QuestionnaireResponse>(ResourceType.QuestionnaireResponse)
+    onPurgeObservation()
     onPurgeCarePlans()
     onPurgeAppointment()
   }
@@ -58,7 +62,28 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
 
   private suspend fun onPurgeAppointment() =
     query<Appointment>(ResourceType.Appointment)
-      .filterNot { it.status == Appointment.AppointmentStatus.BOOKED }
+      .filter { app ->
+        listOf(
+            Appointment.AppointmentStatus.ENTEREDINERROR,
+            Appointment.AppointmentStatus.CANCELLED,
+            Appointment.AppointmentStatus.NOSHOW,
+            Appointment.AppointmentStatus.FULFILLED,
+          )
+          .contains(app.status)
+      }
+      .onEach { it.purge() }
+
+  private suspend fun onPurgeObservation() =
+    query<Observation>(ResourceType.Observation)
+      .filter { app ->
+        listOf(
+            Observation.ObservationStatus.ENTEREDINERROR,
+            Observation.ObservationStatus.CANCELLED,
+            Observation.ObservationStatus.FINAL,
+            Observation.ObservationStatus.CORRECTED,
+          )
+          .contains(app.status)
+      }
       .onEach { it.purge() }
 
   /** Purge Inactive [CarePlan] together with it's associated [Task] */
@@ -74,6 +99,7 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
       .filter { it.status == CarePlan.CarePlanStatus.ACTIVE }
       .also { if (it.size > 1) onPurgeCarePlanWithAssociatedTask(it.subList(1, it.size)) }
 
+  // TODO: Filter out the care_plans in the query before hand
   private suspend fun onPurgeCarePlans() =
     with(fhirEngine) {
       search<Patient>(Search(ResourceType.Patient)).onEach { patient ->

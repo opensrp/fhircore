@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.data.local
 
 import java.util.Date
+import org.hl7.fhir.r4.model.CodeableConcept
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 
 sealed interface RegisterFilter
@@ -28,7 +29,8 @@ data class AppointmentRegisterFilter(
     Iterable<
       HealthStatus,
     >?, // nullable whereby null represents absence of filter by patient category
-  val reasonCode: String?, // nullable whereby null represents absence of filter by reason code
+  val reasonCode:
+    CodeableConcept?, // nullable whereby null represents absence of filter by reason code
 ) : RegisterFilter
 
 enum class TracingAgeFilterEnum {

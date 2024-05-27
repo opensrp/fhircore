@@ -62,6 +62,26 @@ fun CarePlan.CarePlanActivityComponent.overdue() =
       CarePlan.CarePlanActivityStatus.NOTSTARTED,
     ) && detail.ended()
 
+fun CarePlan.CarePlanActivityComponent.canBeCompleted() =
+  hasDetail().and(detail.status != CarePlan.CarePlanActivityStatus.COMPLETED)
+
+fun CarePlan.CarePlanActivityComponent.getQuestionnaire() =
+  detail.code.coding.firstOrNull()?.code?.split("/")?.lastOrNull()
+
+fun CarePlan.CarePlanActivityComponent.getQuestionnaireName(): String? = detail.description
+
+fun CarePlan.CarePlanActivityComponent.isGuardianVisit(systemTag: String) =
+  this.detail.reasonCode
+    .filter { cd -> cd.coding.firstOrNull { it.system == systemTag } != null }
+    .any { it.coding.firstOrNull()?.code.equals(GUARDIAN_VISIT_CODE, true) }
+
+fun CarePlan.CarePlanActivityComponent.shouldShowOnProfile(): Boolean {
+  return (this.detail.status == CarePlan.CarePlanActivityStatus.SCHEDULED ||
+      this.detail.status == CarePlan.CarePlanActivityStatus.ONHOLD ||
+      this.detail.status == CarePlan.CarePlanActivityStatus.CANCELLED)
+    .not()
+}
+
 fun CarePlan.CarePlanStatus.toCoding() = Coding(this.system, this.toCode(), this.display)
 
 fun CarePlan.isLastTask(task: Task) =

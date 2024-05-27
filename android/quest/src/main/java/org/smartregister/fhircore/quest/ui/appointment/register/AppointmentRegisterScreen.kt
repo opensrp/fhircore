@@ -124,8 +124,8 @@ fun FilterAppointmentsModal(
               ),
             reason = AppointmentFilter(Reason.ALL_REASONS, Reason.values().asList()),
           )
-          },
-          )
+      },
+    )
 
     AppointmentExposedDropdown(
       filter = filtersState.patientCategory,

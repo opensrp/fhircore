@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -38,6 +39,8 @@ import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.extension.asDdMmYyyy
 import org.smartregister.fhircore.engine.util.extension.canBeCompleted
 import org.smartregister.fhircore.engine.util.extension.extractId
+import org.smartregister.fhircore.engine.util.extension.getQuestionnaire
+import org.smartregister.fhircore.engine.util.extension.getQuestionnaireName
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.translateGender
 import org.smartregister.fhircore.quest.R
@@ -87,28 +90,28 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
           viewChildText =
             context.getString(R.string.view_children_x, inputModel.otherPatients.size.toString()),
           observations = inputModel.observations,
-          carePlans = inputModel.services,
           guardians = inputModel.guardians,
+          currentCarePlan = inputModel.currentCarePlan,
           tasks =
             inputModel.tasks.map {
               PatientProfileRowItem(
-                id = it.logicalId,
-                actionFormId = if (it.canBeCompleted()) it.reasonReference.extractId() else null,
+                id = it.outcomeReference.first().extractId(),
+                actionFormId = if (it.canBeCompleted()) it.getQuestionnaire() else null,
                 title = "", // it.description,
                 subtitle = "", // context.getString(R.string.due_on,
                 // it.executionPeriod.start.makeItReadable()),
                 profileViewSection = PatientProfileViewSection.TASKS,
                 actionButtonIcon =
-                  if (it.status == Task.TaskStatus.COMPLETED) {
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
                     Icons.Filled.Check
                   } else Icons.Filled.Add,
                 actionIconColor =
-                  if (it.status == Task.TaskStatus.COMPLETED) {
+                  if (it.detail.status == CarePlan.CarePlanActivityStatus.COMPLETED) {
                     SuccessColor
-                  } else it.status.retrieveColorCode(),
-                actionButtonColor = it.status.retrieveColorCode(),
-                actionButtonText = it.description,
-                subtitleStatus = it.status.name,
+                  } else it.detail.status.retrieveColorCode(),
+                actionButtonColor = it.detail.status.retrieveColorCode(),
+                actionButtonText = it.getQuestionnaireName(),
+                subtitleStatus = it.detail.status.name,
               )
             },
           practitioners = inputModel.practitioners,
@@ -217,7 +220,16 @@ class ProfileViewDataMapper @Inject constructor(@ApplicationContext val context:
       else -> DefaultColor
     }
 
-  fun HealthStatus.retrieveDisplayIdentifierKey(): String =
+  private fun CarePlan.CarePlanActivityStatus.retrieveColorCode(): Color =
+    when (this) {
+      CarePlan.CarePlanActivityStatus.NOTSTARTED -> InfoColor
+      CarePlan.CarePlanActivityStatus.CANCELLED -> OverdueColor
+      CarePlan.CarePlanActivityStatus.STOPPED -> OverdueColor
+      CarePlan.CarePlanActivityStatus.COMPLETED -> DefaultColor
+      else -> DefaultColor
+    }
+
+  private fun HealthStatus.retrieveDisplayIdentifierKey(): String =
     when (this) {
       HealthStatus.EXPOSED_INFANT -> "HCC Number"
       HealthStatus.CHILD_CONTACT,

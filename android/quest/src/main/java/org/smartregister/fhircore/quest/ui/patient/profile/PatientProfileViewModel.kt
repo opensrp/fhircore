@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -99,9 +98,9 @@ constructor(
   val patientProfileViewData: StateFlow<ProfileViewData.PatientProfileViewData>
     get() = _patientProfileViewDataFlow.asStateFlow()
 
-  var patientProfileData: ProfileData? = null
+  private var patientProfileData: ProfileData? = null
 
-  val applicationConfiguration: ApplicationConfiguration
+  private val applicationConfiguration: ApplicationConfiguration
     get() = configurationRegistry.getAppConfigs()
 
   private val isClientVisit: MutableState<Boolean> = mutableStateOf(true)
@@ -163,7 +162,7 @@ constructor(
     syncBroadcaster.runSync()
   }
 
-  fun filterGuardianVisitTasks() {
+  private fun filterGuardianVisitTasks() {
     if (patientProfileData != null) {
       val hivPatientProfileData = patientProfileData as ProfileData.HivProfileData
       val newProfileData =
@@ -330,6 +329,13 @@ constructor(
           backReference = event.taskId.asReference(ResourceType.Task).reference,
           populationResources = profile.populationResources,
         )
+      is PatientProfileEvent.FinishVisit ->
+        QuestionnaireActivity.launchQuestionnaireForResult(
+          event.context as Activity,
+          questionnaireId = event.formId,
+          clientIdentifier = patientId,
+          populationResources = profile.populationResources,
+        )
       is PatientProfileEvent.OpenChildProfile -> {
         val urlParams =
           NavigationArg.bindArgumentsOf(
@@ -394,7 +400,7 @@ constructor(
   val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  fun paginateChildrenRegisterData(loadAll: Boolean = true) {
+  private fun paginateChildrenRegisterData(loadAll: Boolean = true) {
     paginatedChildrenRegisterData.value =
       getPager(appFeatureName, healthModule, loadAll).flow.cachedIn(viewModelScope)
   }

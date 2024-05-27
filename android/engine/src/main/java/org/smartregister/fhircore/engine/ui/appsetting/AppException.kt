@@ -22,4 +22,4 @@ class InternetConnectionException : AppException()
 
 class ServerException : AppException()
 
-class ConfigurationErrorException : AppException()
+class ConfigurationErrorException(override val message: String?) : AppException()

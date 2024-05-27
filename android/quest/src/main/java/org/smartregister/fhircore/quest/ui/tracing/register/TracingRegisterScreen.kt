@@ -100,8 +100,8 @@ fun FilterTracingRegisterModal(
               ),
             age = TracingRegisterUiFilter(AgeFilter.ALL_AGES, AgeFilter.values().asList()),
           )
-          },
-          )
+      },
+    )
 
     TracingRegisterExposedDropdown(
       filter = filtersState.patientCategory,

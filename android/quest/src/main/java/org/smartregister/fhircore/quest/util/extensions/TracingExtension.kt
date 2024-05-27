@@ -17,17 +17,10 @@
 package org.smartregister.fhircore.quest.util.extensions
 
 import org.hl7.fhir.r4.model.Task
-import org.smartregister.fhircore.engine.data.local.register.dao.HomeTracingRegisterDao
-import org.smartregister.fhircore.engine.data.local.register.dao.PhoneTracingRegisterDao
+import org.smartregister.fhircore.engine.util.ReasonConstants
 
 fun Task.isHomeTracingTask(): Boolean {
   return this.meta.tag.firstOrNull {
-    it.`is`(HomeTracingRegisterDao.taskCode.system, HomeTracingRegisterDao.taskCode.code)
-  } !== null
-}
-
-fun Task.isPhoneTracingTask(): Boolean {
-  return this.meta.tag.firstOrNull {
-    it.`is`(PhoneTracingRegisterDao.taskCode.system, PhoneTracingRegisterDao.taskCode.code)
+    it.`is`(ReasonConstants.homeTracingCoding.system, ReasonConstants.homeTracingCoding.code)
   } !== null
 }

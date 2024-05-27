@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.dtree.fhircore.dataclerk.R
 import org.dtree.fhircore.dataclerk.ui.main.AppDataStore
+import org.dtree.fhircore.dataclerk.ui.main.PatientItem
 import org.dtree.fhircore.dataclerk.util.getFormattedAge
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -104,12 +105,19 @@ constructor(
               lastInGroup = true,
             ),
           )
-          val address = patientItem.addressData.fullAddress
           data.add(
             PatientDetailProperty(
               PatientProperty(
                 getString(R.string.patient_property_address),
-                address.ifBlank { "N/A" },
+                patientItem.addressData.district.ifBlank { "N/A" },
+              ),
+            ),
+          )
+          data.add(
+            PatientDetailProperty(
+              PatientProperty(
+                getString(R.string.patient_physical_locator),
+                patientItem.addressData.text.ifBlank { "N/A" },
               ),
             ),
           )
@@ -155,12 +163,13 @@ constructor(
 
   private fun getString(resId: Int) = context.resources.getString(resId)
 
-  fun editPatient(context: Context) {
+  fun editPatient(context: Context, patientDetail: PatientItem) {
     QuestionnaireActivity.launchQuestionnaire(
       context = context,
       questionnaireId = EDIT_PROFILE_FORM,
       clientIdentifier = patientId,
       questionnaireType = QuestionnaireType.EDIT,
+      populationResources = patientDetail.populateResources,
     )
   }
 

@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,10 +41,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.google.android.fhir.sync.SyncJobStatus
@@ -71,6 +74,7 @@ fun HomeScreen(
     )
   val syncState by appMainViewModel.syncSharedFlow.collectAsState(initial = null)
   val refreshKey by appMainViewModel.refreshHash
+  val scope = rememberCoroutineScope()
 
   LaunchedEffect(syncState) {
     if (syncState is SyncJobStatus.Succeeded) {
@@ -98,7 +102,7 @@ fun HomeScreen(
             }
             IconButton(onClick = { navController.navigate("info") }) {
               Icon(
-                imageVector = Icons.Default.BugReport,
+                imageVector = Icons.Default.Settings,
                 contentDescription = "Debug",
               )
             }
@@ -118,7 +122,9 @@ fun HomeScreen(
     bottomBar = {
       if (!appState.isInitialSync) {
         Button(
-          onClick = { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) },
+          onClick = {
+            scope.launch { patientRegistrationLauncher.launch(appMainViewModel.openForm(context)) }
+          },
           modifier = Modifier.fillMaxWidth(),
         ) {
           Text(text = appState.registrationButton)
@@ -128,7 +134,7 @@ fun HomeScreen(
   ) { paddingValues ->
     Column(Modifier.padding(paddingValues)) {
       Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
       ) {
@@ -153,7 +159,10 @@ fun SyncStatusBar(
         .times(100)
         .div(100)
         .toFloat()
-    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), progress = progress)
+    LinearProgressIndicator(
+      progress = { progress },
+      modifier = Modifier.fillMaxWidth(),
+    )
   } else if (syncState is SyncJobStatus.Started) {
     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
   }
