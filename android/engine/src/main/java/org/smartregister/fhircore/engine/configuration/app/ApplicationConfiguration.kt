@@ -20,6 +20,7 @@ import kotlinx.serialization.Serializable
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
+import org.smartregister.fhircore.engine.domain.model.LauncherType
 
 @Serializable
 data class ApplicationConfiguration(
@@ -30,7 +31,7 @@ data class ApplicationConfiguration(
   val languages: List<String> = listOf("en"),
   val useDarkTheme: Boolean = false,
   val syncInterval: Long = 15,
-  val syncStrategies: List<String> = listOf(),
+  val syncStrategy: List<SyncStrategy> = listOf(),
   val loginConfig: LoginConfig = LoginConfig(),
   val deviceToDeviceSync: DeviceToDeviceSyncConfig? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
@@ -42,7 +43,19 @@ data class ApplicationConfiguration(
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
+  val usePractitionerAssignedLocationOnSync: Boolean =
+    true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
+  // location selector
+  val launcherType: LauncherType = LauncherType.REGISTER,
 ) : Configuration()
+
+enum class SyncStrategy {
+  Location,
+  CareTeam,
+  RelatedEntityLocation,
+  Organization,
+  Practitioner,
+}
 
 enum class LocationLogOptions {
   QUESTIONNAIRE,
