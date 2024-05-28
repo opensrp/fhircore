@@ -1444,60 +1444,64 @@ class DefaultRepositoryTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() = runBlocking {
-    val coding = Coding().apply { code = "phn" }
-    val group1 =
-      Group().apply {
-        id = "grp1"
-        addCharacteristic(
-          Group.GroupCharacteristicComponent(
-            CodeableConcept(coding),
-            CodeableConcept(Coding().apply { code = "1234" }),
-            BooleanType(false),
-          ),
-        )
-        addCharacteristic(
-          Group.GroupCharacteristicComponent(
-            CodeableConcept(coding),
-            CodeableConcept(Coding().apply { code = "1235" }),
-            BooleanType(false),
-          ),
-        )
-      }
-
-    val group2 =
-      Group().apply {
-        id = "grp2"
-        active = false
-      }
-
-    fhirEngine.create(group1, group2)
-
-    val uniqueIdAssignmentConfig =
-      UniqueIdAssignmentConfig(
-        linkId = "phn",
-        idFhirPathExpression =
-          "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
-        readOnly = true,
-        resource = ResourceType.Group,
-        sortConfigs =
-          listOf(
-            SortConfig(
-              paramName = "_lastUpdated",
-              dataType = Enumerations.DataType.DATE,
-              order = Order.DESCENDING,
+  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() =
+    runTest(timeout = 60.seconds) {
+      val coding = Coding().apply { code = "phn" }
+      val group1 =
+        Group().apply {
+          id = "grp1"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(coding),
+              CodeableConcept(Coding().apply { code = "1234" }),
+              BooleanType(false),
             ),
-          ),
-        resourceFilterExpression =
-          ResourceFilterExpression(
-            conditionalFhirPathExpressions =
-              listOf("Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'"),
-            matchAll = true,
-          ),
-      )
-    val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
-    Assert.assertNotNull(resource)
-    Assert.assertTrue(resource is Group)
-    Assert.assertEquals("phn", (resource as Group).characteristicFirstRep.code.text)
-  }
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept(coding),
+              CodeableConcept(Coding().apply { code = "1235" }),
+              BooleanType(false),
+            ),
+          )
+          active = true
+        }
+
+      val group2 =
+        Group().apply {
+          id = "grp2"
+          active = false
+        }
+
+      fhirEngine.create(group1, group2)
+
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = "phn",
+          idFhirPathExpression =
+            "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+          readOnly = true,
+          resource = ResourceType.Group,
+          sortConfigs =
+            listOf(
+              SortConfig(
+                paramName = "_lastUpdated",
+                dataType = Enumerations.DataType.DATE,
+                order = Order.DESCENDING,
+              ),
+            ),
+          resourceFilterExpression =
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions =
+                listOf(
+                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'"
+                ),
+              matchAll = true,
+            ),
+        )
+      val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+      Assert.assertNotNull(resource)
+      Assert.assertTrue(resource is Group)
+      Assert.assertEquals("phn", (resource as Group).characteristicFirstRep.code.text)
+    }
 }

@@ -1446,7 +1446,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     Assert.assertFalse(group.active)
   }
 
-
   @Test
   fun testThatPopulateQuestionnaireSetInitialDefaultValueForQuestionnaireInitialExpression() =
     runTest {
