@@ -42,7 +42,7 @@
     <string name="str_next">NEXT</string>
     <string name="str_previous">PREVIOUS</string>
     <string name="str_page_info">Page %1$d of %2$s</string>
-    <string name="search_result">%1$d RESULT(S)</string>
+    <string name="search_result">SHOWING: %1$d RESULT(S)</string>
     <string name="no_results">No results</string>
     <string name="no_results_message">Sorry we can\'t find person with the provided name or ID</string>
     <string name="male">Male</string>

@@ -37,7 +37,7 @@
         <string name="try_again">Jaribu tena</string>
         <string name="date_last_seen">Mara ya mwisho kuonekana %1$s</string>
         <string name="login_error">Hitiliafu ukiidhinisha: %1$s</string>
-        <string name="search_result">MATOKEO %1$d </string>
+        <string name="search_result">KUONYESHA: MATOKEO %1$d </string>
         <string name="no_results">Hakuna matokeo</string>
         <string name="no_results_message">Samahani, hatupati mteja ambaye ana hilo jina wala kitambulisho</string>
         <string name="syncing_failed">Hitilafu ukisawazisha</string>
