@@ -181,6 +181,10 @@ class UserSettingScreenTest {
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
+    showManualSync: Boolean = false,
+    showAppInsights: Boolean = false,
+    hasOfflineMaps: Boolean = false,
+    showContactHelp: Boolean = false,
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
@@ -189,17 +193,21 @@ class UserSettingScreenTest {
           fullname = "Jam Kenya",
           practitionerLocation = "Gateway Remote Location",
           username = userName,
-          allowSwitchingLanguages = allowSwitchingLanguages,
           selectedLanguage = Locale.ENGLISH.toLanguageTag(),
           languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-          showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
           progressBarState = Pair(isShowProgressBar, R.string.resetting_app),
           isDebugVariant = isDebugVariant,
           onEvent = {},
           mainNavController = rememberNavController(),
-          allowP2PSync = isP2PAvailable,
           lastSyncTime = "05:30 PM, Mar 3",
           showProgressIndicatorFlow = MutableStateFlow(false),
+          enableManualSync = showManualSync,
+          allowSwitchingLanguages = allowSwitchingLanguages,
+          showDatabaseResetConfirmation = isShowDatabaseResetConfirmation,
+          allowP2PSync = isP2PAvailable,
+          enableAppInsights = showAppInsights,
+          showOfflineMaps = hasOfflineMaps,
+          enableHelpContacts = showContactHelp,
         )
       }
 
