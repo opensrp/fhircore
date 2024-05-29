@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,12 +42,13 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.primarySurface
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -71,7 +74,7 @@ import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.LoginDarkColor
 
 const val USER_INSIGHT_TOP_APP_BAR = "userInsightToAppBar"
-const val INSIGHT_UNSYNCED_DATA = "insightUnsynceData"
+const val INSIGHT_UNSYNCED_DATA = "insightUnsyncedData"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -139,6 +142,32 @@ fun UserSettingInsightScreen(
           Divider(color = dividerColor)
           Spacer(modifier = Modifier.height(24.dp))
         }
+      } else {
+        item {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Text(
+              text = stringResource(id = R.string.all_resources_synced),
+              style = TextStyle(color = Color.Black, fontSize = 20.sp),
+              fontWeight = FontWeight.Bold,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+              imageVector = Icons.Default.Check,
+              contentDescription = null,
+              tint = Color.Green,
+              modifier = Modifier.size(32.dp),
+            )
+          }
+        }
+        item {
+          Spacer(modifier = Modifier.height(16.dp))
+          Divider(color = dividerColor)
+          Spacer(modifier = Modifier.height(24.dp))
+        }
       }
       item {
         if (fullName != null && team != null && locality != null) {
@@ -156,28 +185,18 @@ fun UserSettingInsightScreen(
         }
       }
       item {
-        if (userName != null && organization != null && careTeam != null && location != null) {
-          val items =
-            listOf(
-              stringResource(id = R.string.username) to userName,
-              stringResource(R.string.team_organization) to organization.take(10),
-              stringResource(R.string.care_team) to careTeam,
-              stringResource(R.string.location) to location,
-            )
-          InsightInfoView(
-            title = stringResource(id = R.string.app_info),
-            items = items,
-          )
-        }
-      }
+        val userNameItem =
+          stringResource(id = R.string.username) to
+            (if (userName.isNullOrEmpty()) "-" else userName!!)
+        val organizationItem =
+          stringResource(R.string.team_organization) to
+            (if (organization.isNullOrEmpty()) "-" else organization.take(10))
+        val careTeamItem =
+          stringResource(R.string.care_team) to (if (careTeam.isNullOrEmpty()) "-" else careTeam)
+        val locationItem =
+          stringResource(R.string.location) to (if (location.isNullOrEmpty()) "-" else location)
 
-      item {
-        val items =
-          listOf(
-            stringResource(R.string.app_versions) to appVersion,
-            stringResource(R.string.app_version_code) to appVersionCode,
-            stringResource(R.string.build_date) to buildDate,
-          )
+        val items = listOf(userNameItem, organizationItem, careTeamItem, locationItem)
         InsightInfoView(
           title = stringResource(id = R.string.assignment_info),
           items = items,
@@ -192,10 +211,31 @@ fun UserSettingInsightScreen(
       item {
         val items =
           listOf(
-            stringResource(R.string.manufacture) to Build.MANUFACTURER,
-            stringResource(R.string.device) to Build.DEVICE,
-            stringResource(R.string.os_version) to Build.VERSION.BASE_OS,
-            stringResource(R.string.device_date) to formatTimestamp(Build.TIME),
+            stringResource(R.string.app_versions) to appVersion,
+            stringResource(R.string.app_version_code) to appVersionCode,
+            stringResource(R.string.build_date) to buildDate,
+          )
+        InsightInfoView(
+          title = stringResource(id = R.string.app_info),
+          items = items,
+        )
+      }
+      item {
+        Spacer(modifier = Modifier.height(16.dp))
+        Divider(color = dividerColor)
+        Spacer(modifier = Modifier.height(24.dp))
+      }
+
+      item {
+        val items =
+          listOf(
+            stringResource(R.string.manufacture) to
+              (if (Build.MANUFACTURER.isNullOrEmpty()) "-" else Build.MANUFACTURER),
+            stringResource(R.string.device) to
+              (if (Build.DEVICE.isNullOrEmpty()) "-" else Build.DEVICE),
+            stringResource(R.string.os_version) to
+              (if (Build.VERSION.BASE_OS.isNullOrEmpty()) "-" else Build.VERSION.BASE_OS),
+            stringResource(R.string.device_date) to (formatTimestamp(Build.TIME).ifEmpty { "-" }),
           )
         InsightInfoView(
           title = stringResource(id = R.string.device_info),

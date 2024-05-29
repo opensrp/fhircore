@@ -30,19 +30,19 @@ sealed class ConfigType(
   val parseAsResource: Boolean = false,
   val multiConfig: Boolean = false,
 ) {
-  object Application : ConfigType("application")
+  data object Application : ConfigType("application")
 
-  object Sync : ConfigType(name = "sync", parseAsResource = true)
+  data object Sync : ConfigType(name = "sync", parseAsResource = true)
 
-  object Navigation : ConfigType("navigation")
+  data object Navigation : ConfigType("navigation")
 
-  object Register : ConfigType(name = "register", multiConfig = true)
+  data object Register : ConfigType(name = "register", multiConfig = true)
 
-  object MeasureReport : ConfigType(name = "measureReport", multiConfig = true)
+  data object MeasureReport : ConfigType(name = "measureReport", multiConfig = true)
 
-  object Profile : ConfigType(name = "profile", multiConfig = true)
+  data object Profile : ConfigType(name = "profile", multiConfig = true)
 
-  object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
+  data object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
 
-  object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
+  data object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
 }

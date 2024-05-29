@@ -61,9 +61,9 @@ class UserSettingInsightScreenTest {
   }
 
   @Test
-  fun testAppInfoViewAndAllItsItemIsShown() {
+  fun testAssignmentInfoViewAndAllItsItemIsShown() {
     initComposable()
-    composeRule.onNodeWithText("App info").assertExists()
+    composeRule.onNodeWithText("Assignment info").assertExists()
     composeRule.onNodeWithText("user_name").assertExists()
     composeRule.onNodeWithText("care_team").assertExists()
     composeRule.onNodeWithText("location").assertExists()
@@ -74,9 +74,9 @@ class UserSettingInsightScreenTest {
   }
 
   @Test
-  fun testAssignmentInfoViewAndAllItsItemIsShown() {
+  fun testAppInfoViewAndAllItsItemIsShown() {
     initComposable()
-    composeRule.onNodeWithText("Assignment info").assertExists()
+    composeRule.onNodeWithText("App info").assertExists()
     composeRule.onNodeWithText("3").assertExists()
     composeRule.onNodeWithText("v.123").assertExists()
     composeRule.onNodeWithText("29 jan 2023").assertExists()

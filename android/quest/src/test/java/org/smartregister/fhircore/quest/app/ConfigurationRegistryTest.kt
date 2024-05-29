@@ -35,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StructureMap
@@ -120,7 +121,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
+    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
+    coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     coEvery { configurationRegistry.fhirResourceDataSource.post(any(), any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
@@ -131,6 +133,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun testFetchListResourceNonProxy() = runBlocking {
+    val implementationGuide =
+      ImplementationGuide().apply {
+        url = "ImplementationGuide/1"
+        name = "testImplementationGuide"
+        definition =
+          ImplementationGuide.ImplementationGuideDefinitionComponent().apply {
+            resource =
+              mutableListOf(
+                ImplementationGuide.ImplementationGuideDefinitionResourceComponent(
+                  Reference().apply { reference = "Composition" },
+                ),
+              )
+          }
+      }
+
     val composition =
       Composition().apply {
         addSection().apply {
@@ -148,8 +165,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
     configurationRegistry.setNonProxy(true)
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
-
+    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery { configurationRegistry.fhirResourceDataSource.getResource(any()) } returns bundle
     every { sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null) } returns "demo"
     coEvery { configurationRegistry.saveSyncSharedPreferences(any()) } just runs
@@ -184,7 +200,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       }
 
     every { secureSharedPreference.retrieveSessionUsername() } returns "demo"
-    coEvery { configurationRegistry.fetchRemoteComposition(any()) } returns composition
+    coEvery { configurationRegistry.fetchRemoteCompositionByAppId(any()) } returns composition
     coEvery {
       fhirResourceService.getResourceWithGatewayModeHeader(
         ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,

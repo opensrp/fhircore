@@ -34,6 +34,7 @@ import java.net.URL
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.ReferenceUrlResolver
+import org.smartregister.fhircore.engine.data.remote.fhir.resource.ValueSetResolver
 import org.smartregister.fhircore.engine.util.extension.getSubDomain
 import org.smartregister.fhircore.quest.data.QuestXFhirQueryResolver
 import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl
@@ -50,6 +51,8 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
   @Inject lateinit var referenceUrlResolver: ReferenceUrlResolver
 
   @Inject lateinit var xFhirQueryResolver: QuestXFhirQueryResolver
+
+  @Inject lateinit var valueSetResolver: ValueSetResolver
 
   private var configuration: DataCaptureConfig? = null
 
@@ -110,6 +113,7 @@ class QuestApplication : OpenSrpApplication(), DataCaptureConfig.Provider, Confi
     configuration =
       configuration
         ?: DataCaptureConfig(
+          valueSetResolverExternal = valueSetResolver,
           urlResolver = referenceUrlResolver,
           xFhirQueryResolver = xFhirQueryResolver,
           questionnaireItemViewHolderFactoryMatchersProviderFactory =

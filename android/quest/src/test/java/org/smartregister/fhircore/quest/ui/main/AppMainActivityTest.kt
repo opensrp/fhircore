@@ -25,6 +25,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,6 +38,8 @@ import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
 import java.time.OffsetDateTime
+import junit.framework.TestCase
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -48,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -81,8 +85,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testActivityIsStartedCorrectly() {
     Assert.assertNotNull(appMainActivity)
     val fragments = appMainActivity.supportFragmentManager.fragments
-    Assert.assertEquals(1, fragments.size)
-    Assert.assertTrue(fragments.first() is NavHostFragment)
+    Assert.assertEquals(2, fragments.size)
+    Assert.assertTrue(fragments.second() is NavHostFragment)
   }
 
   override fun getActivity(): Activity {
@@ -201,5 +205,16 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testStartForResult() {
     val resultLauncher = appMainActivity.startForResult
     Assert.assertNotNull(resultLauncher)
+  }
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(appMainActivity)
+    assertNotNull(fusedLocationProviderClient)
+    TestCase.assertFalse(appMainActivity.hasLocationPermissions())
+
+    val dialog = appMainActivity.launchLocationPermissionsDialog()
+    assertNotNull(dialog)
   }
 }

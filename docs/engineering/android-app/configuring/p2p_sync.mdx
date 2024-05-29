@@ -1,0 +1,67 @@
+# P2P Sync
+
+OpenSRP supports device-to-device syncing through an additional library. To add the P2P library use ```p2p-lib = "XXX-SNAPSHOT``` in your `libs.version.toml` file. After this sync your application to update the added library.
+
+## Enabling P2P sync configuration
+
+To enable P2P sync we need to make changes to enable viewing P2P UI elements and configure what to sync over P2P.
+
+### Navigation configurations
+
+```json
+{
+    "id": "p2p_sync",
+    "visible": true,
+    "display": "Transfer Data",
+    "menuIconConfig": {
+        "type": "local",
+        "reference": "ic_p2p"
+    },
+    "actions": [
+        {
+            "trigger": "ON_CLICK",
+            "workflow": "DEVICE_TO_DEVICE_SYNC",
+            "id": "navigateToP2PScreen"
+        }
+    ]
+}
+```
+
+### Config properties of P2P sync
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+id | uniquieId of your p2p_sync block | yes |  |
+visible | Boolean to show whether this is to be shown | yes | `apps` |
+display | Title text that should be shown on the device | yes | |
+menuIconConfig | The icon to show. This can be configured through ICON configuration. [See here](https://docs.opensrp.io/engineering/android-app/configuring/config-types/widget#how-to-use-button-with-icon-and-copy-ability) | No  |  |
+actions |  Action to be performed when once clicks on the display above. See actions parameters under questionnaire | yes | |
+
+:::info
+DEVICE_TO_DEVICE_SYNC application workflow can be triggered via configurable actions as indicated in the sample navigation configuration above.
+:::
+
+#### Resources to sync
+
+You also need to define which resources to be synced. This configuration should be added as part of [Application configuration](https://docs.opensrp.io/engineering/android-app/configuring/config-types/application)
+
+``` json
+"deviceToDeviceSync": {
+    "resourcesToSync": [
+        "Group",
+        "Patient",
+        "CarePlan",
+        "Task",
+        "Encounter",
+        "Observation",
+        "Condition",
+        "Questionnaire",
+        "QuestionnaireResponse",
+        "RelatedPerson",
+        "Flag",
+        "Immunization"
+    ]
+}
+```
+This can be simplified by a sample workflow show on the image below.
+![P2P_SYNC](/img/p2p.png)

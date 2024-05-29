@@ -286,6 +286,16 @@ class RegisterViewModelTest : RobolectricTest() {
       },
     )
 
+    Assert.assertNotNull(
+      newBaseResourceQueries.find { dataQuery ->
+        dataQuery.paramName == "relationship" &&
+          dataQuery.filterCriteria.any {
+            it.dataType == Enumerations.DataType.CODE && (it.value as Code).code == "N" ||
+              it.dataType == Enumerations.DataType.CODE && (it.value as Code).code == "M"
+          }
+      },
+    )
+
     val taskRelatedResourceDataQueries =
       updatedFhirResourceConfig.relatedResources
         .find { it.id == ResourceType.Task.name }
@@ -326,6 +336,20 @@ class RegisterViewModelTest : RobolectricTest() {
                     dataType = Enumerations.DataType.DATE,
                     prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS,
                     dataFilterLinkId = "birthdate-filter",
+                  ),
+                ),
+            ),
+            DataQuery(
+              paramName = "relationship",
+              filterCriteria =
+                listOf(
+                  FilterCriterionConfig.TokenFilterCriterionConfig(
+                    dataType = Enumerations.DataType.CODE,
+                    value = Code(code = "N", system = "http://hl7.org/fhir/v2/0131"),
+                  ),
+                  FilterCriterionConfig.TokenFilterCriterionConfig(
+                    dataType = Enumerations.DataType.CODE,
+                    value = Code(code = "M", system = "http://hl7.org/fhir/v2/0132"),
                   ),
                 ),
             ),

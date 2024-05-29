@@ -86,6 +86,7 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Location_Position" -> Location.LocationPositionComponent()
       "List_Entry" -> ListResource.ListEntryComponent()
       "Dispense_Request" -> MedicationRequest.MedicationRequestDispenseRequestComponent()
+      "Encounter_Participant" -> Encounter.EncounterParticipantComponent()
       else -> ResourceFactory.createResourceOrType(name)
     }
   }

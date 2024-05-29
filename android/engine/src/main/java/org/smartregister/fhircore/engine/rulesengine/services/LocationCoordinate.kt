@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.datastore.serializers
+package org.smartregister.fhircore.engine.rulesengine.services
 
-object SerializerConstants {
-  const val PROTOSTORE_SERIALIZER_TAG = "Proto DataStore"
-}
+import java.time.Instant
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class LocationCoordinate(
+  val latitude: Double? = null,
+  val longitude: Double? = null,
+  val altitude: Double? = null,
+  @Contextual val timeStamp: Instant? = null,
+)
