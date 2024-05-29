@@ -23,6 +23,7 @@
         <activity
             android:name=".ui.appsetting.AppSettingActivity"
             android:exported="true"
+            android:clearTaskOnLaunch="true"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,9 +45,10 @@
 
         <activity
             android:name=".ui.main.AppMainActivity"
-            android:clearTaskOnLaunch="true"
+            android:exported="false"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:clearTaskOnLaunch="true"/>
 
         <activity
             android:name=".ui.questionnaire.QuestionnaireActivity"
