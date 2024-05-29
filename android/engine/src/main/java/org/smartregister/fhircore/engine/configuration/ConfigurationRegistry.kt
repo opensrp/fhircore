@@ -834,6 +834,7 @@ constructor(
         ResourceType.ConceptMap.name,
         ResourceType.Device.name,
         ResourceType.SpecimenDefinition.name,
+        ResourceType.StructureDefinition.name
       )
   }
 }
