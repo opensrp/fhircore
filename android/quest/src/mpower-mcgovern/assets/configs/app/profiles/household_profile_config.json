@@ -224,6 +224,13 @@
               "dataType": "STRING",
               "key": "familyMemberId",
               "value": "@{familyMemberId}"
+            },
+            {
+              "paramType": "PREPOPULATE",
+              "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+              "dataType": "STRING",
+              "key": "familySystemId",
+              "value": "@{familyId}"
             }
           ]
         }

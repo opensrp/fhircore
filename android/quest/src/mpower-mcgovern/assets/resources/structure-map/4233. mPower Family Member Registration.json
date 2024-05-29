@@ -1311,29 +1311,18 @@
           ]
         },
         {
-          "name": "rule_patient_tel",
+          "name": "rule_check_patient_tel",
           "source": [
             {
-              "context": "src"
-            }
-          ],
-          "target": [
-            {
-              "context": "patient",
-              "contextType": "variable",
-              "element": "telecom",
-              "variable": "patientContact",
-              "transform": "create",
-              "parameter": [
-                {
-                  "valueString": "ContactPoint"
-                }
-              ]
+              "context": "src",
+              "element": "item",
+              "variable": "patient_contact",
+              "condition": "((linkId = '3a731d3a-0da1-4f6e-8c18-286108c04300') and answer.value.exists())"
             }
           ],
           "rule": [
             {
-              "name": "rule_patient_tel_num",
+              "name": "rule_patient_tel",
               "source": [
                 {
                   "context": "src"
@@ -1341,58 +1330,82 @@
               ],
               "target": [
                 {
-                  "context": "patientContact",
+                  "context": "patient",
                   "contextType": "variable",
-                  "element": "value",
-                  "transform": "evaluate",
+                  "element": "telecom",
+                  "variable": "patientContact",
+                  "transform": "create",
                   "parameter": [
                     {
-                      "valueId": "src"
-                    },
-                    {
-                      "valueString": "$this.item.where(linkId = '3a731d3a-0da1-4f6e-8c18-286108c04300').answer.value"
+                      "valueString": "ContactPoint"
                     }
                   ]
                 }
-              ]
-            },
-            {
-              "name": "rule_patient_tel_sys",
-              "source": [
-                {
-                  "context": "src"
-                }
               ],
-              "target": [
+              "rule": [
                 {
-                  "context": "patientContact",
-                  "contextType": "variable",
-                  "element": "system",
-                  "transform": "copy",
-                  "parameter": [
+                  "name": "rule_patient_tel_num",
+                  "source": [
                     {
-                      "valueString": "phone"
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "value",
+                      "transform": "evaluate",
+                      "parameter": [
+                        {
+                          "valueId": "patient_contact"
+                        },
+                        {
+                          "valueString": "$this.answer.value"
+                        }
+                      ]
                     }
                   ]
-                }
-              ]
-            },
-            {
-              "name": "rule_patient_tel_use",
-              "source": [
+                },
                 {
-                  "context": "src"
-                }
-              ],
-              "target": [
-                {
-                  "context": "patientContact",
-                  "contextType": "variable",
-                  "element": "use",
-                  "transform": "copy",
-                  "parameter": [
+                  "name": "rule_patient_tel_sys",
+                  "source": [
                     {
-                      "valueString": "mobile"
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "system",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "phone"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "rule_patient_tel_use",
+                  "source": [
+                    {
+                      "context": "src"
+                    }
+                  ],
+                  "target": [
+                    {
+                      "context": "patientContact",
+                      "contextType": "variable",
+                      "element": "use",
+                      "transform": "copy",
+                      "parameter": [
+                        {
+                          "valueString": "mobile"
+                        }
+                      ]
                     }
                   ]
                 }

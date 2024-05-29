@@ -55,7 +55,7 @@
         }
       ],
       "linkId": "9af686f7-8fc7-4ef8-815b-99bd4ea5bb79",
-      "text": "Patient's Age *",
+      "text": "Patient's Age",
       "type": "decimal",
       "required": true,
       "readOnly": true
@@ -77,7 +77,7 @@
       ],
       "linkId": "ed77104e-c279-4030-ab20-8cd99ca99ca9",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
-      "text": "শেয়ারড হেলথ রেকর্ড আই ডি *",
+      "text": "শেয়ারড হেলথ রেকর্ড আই ডি",
       "type": "integer",
       "required": true,
       "readOnly": true
@@ -85,7 +85,7 @@
     {
       "linkId": "2588ee71-9699-440d-8364-6ac7c1e63ccd",
       "type": "string",
-      "text": "সদস্য আই ডি *",
+      "text": "সদস্য আই ডি",
       "required": true,
       "readOnly": true,
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.identifier.value",
@@ -116,9 +116,103 @@
       ],
       "linkId": "e6306275-b989-4375-8527-3a56092081b8",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.name",
-      "text": "সদস্যের নাম (ইংরেজীতে) *",
+      "text": "সদস্যের নাম (ইংরেজীতে)",
       "type": "string",
       "required": true
+    },
+    {
+      "linkId": "bc23d3a0-3ae6-425a-e352-46c8430ff5fe",
+      "type": "choice",
+      "text": "মা কি নিবন্ধিত?",
+      "required": false,
+      "answerOption": [
+        {
+          "valueCoding": {
+            "id": "c33e94f4-8ee3-4e12-dd6f-fb25add5e636",
+            "code": "yes",
+            "system": "urn:uuid:7283a7d7-8586-4fc6-f709-094ec432800d",
+            "display": "হ্যাঁ"
+          }
+        },
+        {
+          "valueCoding": {
+            "id": "c9bdd03f-4918-4db7-97a7-62c46980aa8f",
+            "code": "no",
+            "system": "urn:uuid:7283a7d7-8586-4fc6-f709-094ec432800d",
+            "display": "না"
+          }
+        }
+      ],
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "e0332775-045a-4763-8047-11d63a7414a4",
+      "type": "reference",
+      "text": "মাতার নাম",
+      "required": false,
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/variable",
+          "valueExpression": {
+            "name": "familySystemId",
+            "language": "text/fhirpath",
+            "expression": "%resource.descendants().where(linkId='6f5d14d9-9e6e-47c9-9c62-00e76a3f767c').answer.value"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+          "valueExpression": {
+            "language": "application/x-fhir-query",
+            "expression": "Patient?identifier={{%familySystemId}}&active=true&gender=female"
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+          "extension": [
+            {
+              "url": "path",
+              "valueString": "Patient.name.text"
+            },
+            {
+              "url": "forDisplay",
+              "valueBoolean": true
+            }
+          ]
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                "code": "radio-button"
+              }
+            ]
+          }
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "bc23d3a0-3ae6-425a-e352-46c8430ff5fe",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7283a7d7-8586-4fc6-f709-094ec432800d",
+            "code": "yes"
+          }
+        }
+      ]
     },
     {
       "linkId": "965b355c-8e93-49cd-c3b8-5ad6d88f1695",
@@ -133,6 +227,16 @@
         {
           "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
           "valueString": "একটি বৈধ নাম লিখুন"
+        }
+      ],
+      "enableWhen": [
+        {
+          "question": "bc23d3a0-3ae6-425a-e352-46c8430ff5fe",
+          "operator": "=",
+          "answerCoding": {
+            "system": "urn:uuid:7283a7d7-8586-4fc6-f709-094ec432800d",
+            "code": "no"
+          }
         }
       ]
     },
@@ -155,7 +259,7 @@
     {
       "linkId": "421560ba-465f-4450-9204-69d1d2e67ea2",
       "type": "choice",
-      "text": "সদস্য এর জন্মতারিখ কি জানা আছে? *",
+      "text": "সদস্য এর জন্মতারিখ কি জানা আছে?",
       "required": true,
       "answerOption": [
         {
@@ -233,7 +337,7 @@
       ],
       "linkId": "cd8e3d6d-e9ff-458d-d122-57070bebffaf",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.birthDate",
-      "text": "জন্ম তারিখ *",
+      "text": "জন্ম তারিখ",
       "type": "date",
       "enableWhen": [
         {
@@ -264,7 +368,7 @@
       ],
       "linkId": "8460d986-ef71-4997-80ee-7887d8c345e7",
       "definition": "http://hl7.org/fhir/StructureDefinition/Patient#Patient.age",
-      "text": "সদস্যের বয়স (বছর) *",
+      "text": "সদস্যের বয়স (বছর)",
       "type": "integer",
       "enableWhen": [
         {
@@ -356,7 +460,7 @@
     {
       "linkId": "c33296ce-1abb-4685-8bd0-e7f7187f2e98",
       "type": "choice",
-      "text": "খানা প্রধান এই সদস্যের কি হয়? *",
+      "text": "খানা প্রধান এই সদস্যের কি হয়?",
       "required": true,
       "answerOption": [
         {
@@ -520,7 +624,7 @@
     {
       "linkId": "ffe83655-d445-471d-8172-c0d3bafb8940",
       "type": "choice",
-      "text": "খানা প্রধান এই সদস্যের কি হয়? *",
+      "text": "খানা প্রধান এই সদস্যের কি হয়?",
       "required": true,
       "answerOption": [
         {
@@ -676,7 +780,7 @@
     {
       "linkId": "7b469fdd-7c64-4cd6-9a03-9a84df42322d",
       "type": "choice",
-      "text": "খানা প্রধান এই সদস্যের কি হয়? *",
+      "text": "খানা প্রধান এই সদস্যের কি হয়?",
       "required": true,
       "answerOption": [
         {
@@ -768,8 +872,8 @@
     {
       "linkId": "3a731d3a-0da1-4f6e-8c18-286108c04300",
       "type": "string",
-      "text": "মোবাইল নম্বর *",
-      "required": true,
+      "text": "মোবাইল নম্বর",
+      "required": false,
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
@@ -827,7 +931,7 @@
     {
       "linkId": "dcd43da7-3d32-4b86-8e46-fde38a1fcd78",
       "type": "choice",
-      "text": "আপনার কোন পরিচয় পত্রটি আছে? *",
+      "text": "আপনার কোন পরিচয় পত্রটি আছে?",
       "required": true,
       "answerOption": [
         {
@@ -879,7 +983,7 @@
     {
       "linkId": "7a31ee75-e1eb-4037-8f69-c8fd5a06fc32",
       "type": "string",
-      "text": "জাতীয় পরিচয় পত্র *",
+      "text": "জাতীয় পরিচয় পত্র",
       "required": true,
       "extension": [
         {
@@ -941,7 +1045,7 @@
     {
       "linkId": "b2bad7a2-9757-423c-8b2a-e2c183d6e076",
       "type": "string",
-      "text": "জন্ম নিবন্ধন সনদ *",
+      "text": "জন্ম নিবন্ধন সনদ",
       "extension": [
         {
           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
@@ -1000,7 +1104,7 @@
     {
       "linkId": "77e32953-0679-48b5-f004-1ab4a4ac0271",
       "type": "choice",
-      "text": "লিঙ্গ *",
+      "text": "লিঙ্গ",
       "required": true,
       "answerOption": [
         {
@@ -1046,7 +1150,7 @@
     {
       "linkId": "c5cf7fd7-eccd-45b6-8875-10a3183da552",
       "type": "choice",
-      "text": "বৈবাহিক অবস্থা *",
+      "text": "বৈবাহিক অবস্থা",
       "required": true,
       "answerOption": [
         {
@@ -1123,7 +1227,7 @@
     {
       "linkId": "9b62b65c-e8f9-4b4d-9cb2-cc715b73baaa",
       "type": "choice",
-      "text": "রক্তের গ্রুপ *",
+      "text": "রক্তের গ্রুপ",
       "answerOption": [
         {
           "valueCoding": {
@@ -1216,7 +1320,7 @@
     {
       "linkId": "b69718e1-1140-4e4a-882a-3dd47838c612",
       "type": "choice",
-      "text": "আপনার কি দেখতে, শুনতে অসুবিধা হয় - এমনকি চশমা পরেও/ কানে যন্ত্র দিয়েও? *",
+      "text": "আপনার কি দেখতে, শুনতে অসুবিধা হয় - এমনকি চশমা পরেও/ কানে যন্ত্র দিয়েও?",
       "required": true,
       "answerOption": [
         {
@@ -1269,7 +1373,7 @@
     {
       "linkId": "93e9278a-c9bf-47d4-b896-0987e8bcf1b0",
       "type": "choice",
-      "text": "আপনার কি হাঁটতে, ওঠা-নামা করতে, নিজে নিজে কিছু করতে যেমন: গোসল করতে অথবা পোশাক পড়তে অসুবিধা হয়? *",
+      "text": "আপনার কি হাঁটতে, ওঠা-নামা করতে, নিজে নিজে কিছু করতে যেমন: গোসল করতে অথবা পোশাক পড়তে অসুবিধা হয়?",
       "required": true,
       "answerOption": [
         {
@@ -1329,7 +1433,7 @@
     {
       "linkId": "bfc6966c-ea18-499b-8a19-e1224067aaa9",
       "type": "choice",
-      "text": "আপনার কি কোনো কিছু স্মরণ করতে অথবা মনোযোগ দিতে অথবা সাধারণত যেভাবে কথা বলেন, তা দিয়ে মানুষকে বোঝাতে অথবা মানুষের কথা বুঝতে সমস্যা হয়? *",
+      "text": "আপনার কি কোনো কিছু স্মরণ করতে অথবা মনোযোগ দিতে অথবা সাধারণত যেভাবে কথা বলেন, তা দিয়ে মানুষকে বোঝাতে অথবা মানুষের কথা বুঝতে সমস্যা হয়?",
       "required": true,
       "answerOption": [
         {
@@ -1389,7 +1493,7 @@
     {
       "linkId": "e7153089-3e49-4b29-935f-0825fe26392e",
       "type": "choice",
-      "text": "জন্মকালীন ওজন নেওয়া হয়েছে? *",
+      "text": "জন্মকালীন ওজন নেওয়া হয়েছে?",
       "required": true,
       "answerOption": [
         {
@@ -1447,7 +1551,7 @@
       ],
       "linkId": "0bcd75c0-2fc9-4027-9c54-23f1d0812d91",
       "type": "decimal",
-      "text": "ওজন(কেজি) *",
+      "text": "ওজন(কেজি)",
       "required": true,
       "enableWhen": [
         {
@@ -1463,7 +1567,7 @@
     {
       "linkId": "a17ba54c-d87b-41d2-8032-a603b6e4ed8a",
       "type": "choice",
-      "text": "নাভিতে ৭.১% ক্লোরোহেক্সিডিন দেয়া হয়েছে কিনা? *",
+      "text": "নাভিতে ৭.১% ক্লোরোহেক্সিডিন দেয়া হয়েছে কিনা?",
       "required": true,
       "answerOption": [
         {
@@ -1507,7 +1611,7 @@
     {
       "linkId": "b12ed9b2-090a-4597-c360-824f0b7604e2",
       "type": "choice",
-      "text": "প্রসবের কতক্ষনের মধ্যে মায়ের দুধ খাওয়ানো হয়েছে? (ঘন্টা) *",
+      "text": "প্রসবের কতক্ষনের মধ্যে মায়ের দুধ খাওয়ানো হয়েছে? (ঘন্টা)",
       "required": true,
       "answerOption": [
         {
@@ -1735,7 +1839,7 @@
     {
       "linkId": "482bd2c0-191b-4772-818f-8df4aecb1c8b",
       "type": "choice",
-      "text": "শিশুর মাথা সহ শরীর মোড়ানো হয়েছে কিনা? *",
+      "text": "শিশুর মাথা সহ শরীর মোড়ানো হয়েছে কিনা?",
       "required": true,
       "answerOption": [
         {
@@ -1779,7 +1883,7 @@
     {
       "linkId": "861fe7ba-2019-4e70-98ff-2a651369c406",
       "type": "choice",
-      "text": "শিশুর জন্ম গত ত্রুটি আছে কিনা? *",
+      "text": "শিশুর জন্ম গত ত্রুটি আছে কিনা?",
       "required": true,
       "answerOption": [
         {
@@ -1823,7 +1927,7 @@
     {
       "linkId": "5b0ce31c-475d-4ef1-8cb3-ae70f89bff32",
       "type": "choice",
-      "text": "কোন ত্রুটি আছে? *",
+      "text": "কোন ত্রুটি আছে?",
       "required": true,
       "repeats": true,
       "answerOption": [
@@ -1887,7 +1991,7 @@
     {
       "linkId": "55ff31dd-61fc-4d99-90fb-ef63ea2966f9",
       "type": "string",
-      "text": "অন্যান্য ত্রুটি লিখুন *",
+      "text": "অন্যান্য ত্রুটি লিখুন",
       "required": true,
       "enableWhen": [
         {
@@ -1921,6 +2025,19 @@
             "expression": "iif(%resource.descendants().where(linkId='c33296ce-1abb-4685-8bd0-e7f7187f2e98').answer.value.code = 'Household-Head', 'yes', 'no')"
           }
         },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ]
+    },
+    {
+      "linkId": "6f5d14d9-9e6e-47c9-9c62-00e76a3f767c",
+      "type": "string",
+      "text": "Family System Id",
+      "readOnly": true,
+      "required": true,
+      "extension": [
         {
           "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
           "valueBoolean": true
