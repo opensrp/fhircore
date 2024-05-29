@@ -644,7 +644,7 @@
         {
           "linkId": "805d98a0-ab9c-4cb9-859d-a803276f811e",
           "type": "choice",
-          "text": "হাপানি আছে কিনা?",
+          "text": "হাঁপানি আছে কিনা?",
           "required": true,
           "answerOption": [
             {
@@ -749,7 +749,7 @@
             {
               "linkId": "b5dbb96d-8b32-41e6-f1db-0b8ab6306ccb",
               "type": "display",
-              "text": "<span style=\"color:#cf0800;\">বযেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
+              "text": "<span style=\"color:#cf0800;\">যেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -817,7 +817,7 @@
             {
               "linkId": "d1d2bab4-6d25-4681-8f40-6d604af9671c",
               "type": "display",
-              "text": "<span style=\"color:#cf0800;\">বযেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
+              "text": "<span style=\"color:#cf0800;\">যেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -885,7 +885,7 @@
             {
               "linkId": "d1d2bab4-6d25-4681-8f40-6d604af9671c",
               "type": "display",
-              "text": "<span style=\"color:#cf0800;\">বযেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
+              "text": "<span style=\"color:#cf0800;\">যেহেতু আপনার পূর্বের রোগের ইতিহাস আছে সে কারণে যত তাড়াতড়ি সম্ভব  উপজেলা স্বাস্থ্য কমপ্লেক্স থেকে এএনসি  নিতে হবে।  ডাক্তারের পরামর্শ অনুযায়ী হাসপাতালে ডেলিভারি করতে হবে।</span>",
               "extension": [
                 {
                   "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
@@ -3448,95 +3448,6 @@
           "linkId": "edc72a77-5e46-43b5-bb98-2ab6f4cbdcd0",
           "type": "choice",
           "text": "আপনার কি টিটি টিকা ডোজ সম্পূর্ণ করা আছে?",
-          "item": [
-            {
-              "linkId": "5f7317a3-259e-4003-a120-4f0f89027795",
-              "type": "choice",
-              "text": "সর্বশেষ টিটি টিকা কোনটি দেয়া হয়েছে?",
-              "required": true,
-              "answerOption": [
-                {
-                  "valueCoding": {
-                    "id": "592296a3-54fe-4cd0-8271-c53ec0fb7ae8",
-                    "code": "tt1",
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "display": "টিটি-১"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "id": "03c9dd61-9e26-457a-8c98-a11b7fc68b64",
-                    "code": "tt2",
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "display": "টিটি-২"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "id": "58c2ac0a-4e82-49a0-8163-ec6772f4f2ba",
-                    "code": "tt3",
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "display": "টিটি-৩"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "id": "1d25e205-4509-4ab6-9dd3-b60c36868199",
-                    "code": "none",
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "display": "একটিও না"
-                  }
-                },
-                {
-                  "valueCoding": {
-                    "id": "ed9c5ddc-31bc-489c-81a6-cf8586f987b9",
-                    "code": "unknown",
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "display": "জানা নেই"
-                  }
-                }
-              ],
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
-                        "code": "radio-button"
-                      }
-                    ]
-                  }
-                }
-              ],
-              "enableWhen": [
-                {
-                  "question": "edc72a77-5e46-43b5-bb98-2ab6f4cbdcd0",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "code": "no"
-                  }
-                }
-              ]
-            },
-            {
-              "linkId": "897bdf4a-16a9-4780-ee55-cb49304d9075",
-              "type": "display",
-              "text": "নিকটবর্তী ইপিআই সেন্টার থেকে টিটি টিকা সম্পন্ন করুন",
-              "required": false,
-              "enableWhen": [
-                {
-                  "question": "edc72a77-5e46-43b5-bb98-2ab6f4cbdcd0",
-                  "operator": "=",
-                  "answerCoding": {
-                    "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
-                    "code": "no"
-                  }
-                }
-              ]
-            }
-          ],
           "required": true,
           "answerOption": [
             {
@@ -3566,6 +3477,101 @@
                     "code": "radio-button"
                   }
                 ]
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "5f7317a3-259e-4003-a120-4f0f89027795",
+          "type": "choice",
+          "text": "সর্বশেষ টিটি টিকা কোনটি দেয়া হয়েছে?",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "id": "592296a3-54fe-4cd0-8271-c53ec0fb7ae8",
+                "code": "tt1",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "টিটি-১"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "03c9dd61-9e26-457a-8c98-a11b7fc68b64",
+                "code": "tt2",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "টিটি-২"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "58c2ac0a-4e82-49a0-8163-ec6772f4f2ba",
+                "code": "tt3",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "টিটি-৩"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "db510c9b-22d2-4409-ae2f-215325d1f33a",
+                "code": "tt4",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "টিটি-৪"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "1d25e205-4509-4ab6-9dd3-b60c36868199",
+                "code": "none",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "একটিও না"
+              }
+            },
+            {
+              "valueCoding": {
+                "id": "ed9c5ddc-31bc-489c-81a6-cf8586f987b9",
+                "code": "unknown",
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "display": "জানা নেই"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/ValueSet/questionnaire-item-control",
+                    "code": "radio-button"
+                  }
+                ]
+              }
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "edc72a77-5e46-43b5-bb98-2ab6f4cbdcd0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "code": "no"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "897bdf4a-16a9-4780-ee55-cb49304d9075",
+          "type": "display",
+          "text": "নিকটবর্তী ইপিআই সেন্টার থেকে টিটি টিকা সম্পন্ন করুন",
+          "required": false,
+          "enableWhen": [
+            {
+              "question": "edc72a77-5e46-43b5-bb98-2ab6f4cbdcd0",
+              "operator": "=",
+              "answerCoding": {
+                "system": "urn:uuid:ac3ac0ac-14da-4b4e-875e-c37bf9744007",
+                "code": "no"
               }
             }
           ]
