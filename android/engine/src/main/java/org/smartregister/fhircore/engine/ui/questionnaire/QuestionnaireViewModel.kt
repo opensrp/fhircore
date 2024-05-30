@@ -431,7 +431,7 @@ constructor(
   }
 
   private suspend fun updateCarePlanAndTask(extras: List<Resource>, backReference: String?) {
-    if (backReference != null) {
+    if (backReference != null && backReference != "notify") {
       extras.forEach {
         if (it is Encounter) {
           fhirCarePlanGenerator.completeTask(
