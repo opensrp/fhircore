@@ -216,11 +216,12 @@ dependencies {
   api("com.squareup.okhttp3:okhttp:$okhttpVersion")
   api("com.squareup.okhttp3:logging-interceptor:$okhttpVersion")
 
-  implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
+  implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
   implementation("com.google.firebase:firebase-perf-ktx")
   implementation("com.google.firebase:firebase-crashlytics-ktx")
+  implementation("com.google.firebase:firebase-analytics")
 
-  implementation("androidx.core:core-splashscreen:1.0.0")
+  implementation("androidx.core:core-splashscreen:1.0.1")
 
   // Hilt test dependencies
   testImplementation("com.google.dagger:hilt-android-testing:${Deps.versions.hiltVersion}")

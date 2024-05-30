@@ -30,6 +30,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
@@ -93,6 +94,7 @@ class QuestApplication :
     } else {
       Firebase.performance.isPerformanceCollectionEnabled = false
       Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
+      Firebase.analytics.setAnalyticsCollectionEnabled(false)
       Timber.plant(Timber.DebugTree())
     }
 

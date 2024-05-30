@@ -49,6 +49,7 @@ import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardianRelatedPersonProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.guardians.GuardiansRoute
+import org.smartregister.fhircore.quest.ui.patient.profile.tranfer.TransferOutScreen
 import org.smartregister.fhircore.quest.ui.patient.register.PatientRegisterScreen
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import org.smartregister.fhircore.quest.ui.report.measure.measureReportNavigationGraph
@@ -212,6 +213,18 @@ private fun AppMainNavigationGraph(
               navigateRoute = { route -> navController.navigate(route) },
               onBackPress = { navController.popBackStack() },
             )
+          }
+        MainNavigationScreen.TransferOut ->
+          composable(
+            route = "${it.route}/{${NavigationArg.PATIENT_ID}}",
+            arguments =
+              commonNavArgs.plus(
+                listOf(
+                  navArgument(NavigationArg.PATIENT_ID) { type = NavType.StringType },
+                ),
+              ),
+          ) { _ ->
+            TransferOutScreen { navController.popBackStack() }
           }
         MainNavigationScreen.GuardianProfile ->
           composable(

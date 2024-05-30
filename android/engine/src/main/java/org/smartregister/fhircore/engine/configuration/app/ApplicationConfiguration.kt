@@ -36,6 +36,8 @@ data class ApplicationConfiguration(
   var taskOrderFilterTagViaMetaCodingSystem: String = SystemConstants.TASK_TASK_ORDER_SYSTEM,
   var taskFilterTagViaMetaCodingSystem: String = SystemConstants.TASK_FILTER_TAG_SYSTEM,
   var registrationForm: String = "patient-demographic-registration",
+  var supportEmail: String = "info@tingathe.org",
+  var supportPhoneNumber: String = ""
 ) : Configuration
 
 /**

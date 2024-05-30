@@ -68,6 +68,8 @@ sealed class MainNavigationScreen(
       route = "tracingProfileRoute",
     )
 
+  object TransferOut : MainNavigationScreen(route = "transferOut")
+
   object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
 
   object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
@@ -94,6 +96,7 @@ sealed class MainNavigationScreen(
         FamilyProfile,
         ViewChildContacts,
         GuardianProfile,
+        TransferOut,
         TracingProfile,
         TracingHistory,
         TracingOutcomes,

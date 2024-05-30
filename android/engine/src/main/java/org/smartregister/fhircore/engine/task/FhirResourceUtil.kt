@@ -209,7 +209,7 @@ constructor(
               appointment.status = Appointment.AppointmentStatus.WAITLIST
               tracingTasksToAdd.addAll(addMissedAppointment(appointment, true))
             }
-            if(missedAppointmentInRange) {
+            if (missedAppointmentInRange) {
               appointment.status = Appointment.AppointmentStatus.NOSHOW
               tracingTasksToAdd.addAll(addMissedAppointment(appointment, false))
             }
@@ -361,13 +361,13 @@ constructor(
         }
       }
     }
-    if(!isMilestoneAppointment) {
+    if (!isMilestoneAppointment) {
       addToTracingList(
-        appointment,
-        if (isEID) {
-          ReasonConstants.missedRoutineAppointmentTracingCode
-        } else ReasonConstants.missedAppointmentTracingCode,
-      )
+          appointment,
+          if (isEID) {
+            ReasonConstants.missedRoutineAppointmentTracingCode
+          } else ReasonConstants.missedAppointmentTracingCode,
+        )
         ?.let { tracingTasks.add(it) }
     }
 
