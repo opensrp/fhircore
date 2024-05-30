@@ -41,7 +41,7 @@ android {
     dataBinding = true
     buildConfig = true
   }
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.9" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
   packaging {
     resources {
@@ -96,22 +96,22 @@ dependencies {
   implementation("androidx.preference:preference-ktx:1.2.1")
   coreLibraryDesugaring(Deps.desugar)
 
-  api("androidx.core:core-ktx:1.12.0")
-  api("androidx.appcompat:appcompat:1.6.1")
-  api("com.google.android.material:material:1.11.0")
+  api("androidx.core:core-ktx:1.13.1")
+  api("androidx.appcompat:appcompat:1.7.0")
+  api("com.google.android.material:material:1.12.0")
   implementation("androidx.constraintlayout:constraintlayout:2.1.4")
   implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-  implementation("androidx.fragment:fragment-ktx:1.6.2")
+  implementation("androidx.fragment:fragment-ktx:1.7.1")
   api("io.jsonwebtoken:jjwt:0.9.1")
   implementation("androidx.security:security-crypto:1.1.0-alpha06")
   api("org.smartregister:fhir-common-utils:0.0.8-SNAPSHOT") {
     exclude(group = "org.slf4j", module = "jcl-over-slf4j")
   }
-  implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+  implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
   implementation("com.squareup.okhttp3:okhttp:4.12.0")
   implementation("androidx.cardview:cardview:1.0.0")
   implementation("joda-time:joda-time:2.10.14")
-  implementation("androidx.paging:paging-runtime-ktx:3.2.1")
+  implementation("androidx.paging:paging-runtime-ktx:3.3.0")
   implementation("com.github.bumptech.glide:glide:4.16.0")
   implementation("id.zelory:compressor:3.0.1")
 
@@ -147,17 +147,17 @@ dependencies {
   api("androidx.hilt:hilt-work:${Deps.versions.hiltWorkerVersion}")
   kapt("androidx.hilt:hilt-compiler:${Deps.versions.hiltWorkerVersion}")
 
-  api("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-  api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+  api("androidx.lifecycle:lifecycle-livedata-ktx:2.8.1")
+  api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.1")
 
   // Jetpack - DataStore
-  implementation("androidx.datastore:datastore-preferences:1.0.0")
+  implementation("androidx.datastore:datastore-preferences:1.1.1")
 
   // P2P dependency
   api("org.smartregister:p2p-lib:0.3.0-SNAPSHOT")
 
   // Configure Jetpack Compose
-  api(platform("androidx.compose:compose-bom:2024.02.02"))
+  api(platform("androidx.compose:compose-bom:2024.05.00"))
   api("androidx.compose.ui:ui")
   api("androidx.compose.ui:ui-tooling")
   api("androidx.compose.foundation:foundation")
@@ -165,17 +165,17 @@ dependencies {
   api("androidx.compose.material:material-icons-core")
   api("androidx.compose.material:material-icons-extended")
   api("androidx.compose.runtime:runtime-livedata")
-  api("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.1")
   api("androidx.navigation:navigation-compose:2.7.7")
   api("androidx.hilt:hilt-navigation-compose:1.2.0")
-  api("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-  api("androidx.paging:paging-compose:3.2.1")
-  api("androidx.activity:activity-compose:1.8.2")
+  api("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
+  api("androidx.paging:paging-compose:3.3.0")
+  api("androidx.activity:activity-compose:1.9.0")
   api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
   api("androidx.work:work-runtime-ktx:2.9.0")
   testApi("androidx.work:work-testing:2.9.0")
 
-  val coroutineVersion = "1.7.3"
+  val coroutineVersion = "1.8.1"
   api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutineVersion")
   api("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutineVersion")
   api("org.smartregister:contrib-barcode:0.1.0-beta3-preview7-SNAPSHOT") {
@@ -220,7 +220,7 @@ dependencies {
   implementation("com.google.firebase:firebase-perf-ktx")
   implementation("com.google.firebase:firebase-crashlytics-ktx")
 
-  implementation("androidx.core:core-splashscreen:1.0.0")
+  implementation("androidx.core:core-splashscreen:1.0.1")
 
   // Hilt test dependencies
   testImplementation("com.google.dagger:hilt-android-testing:${Deps.versions.hiltVersion}")

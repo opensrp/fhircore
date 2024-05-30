@@ -115,7 +115,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.9" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"
@@ -190,19 +190,19 @@ dependencies {
   coreLibraryDesugaring(Deps.desugar)
   implementation(project(":engine"))
 
-  implementation("androidx.core:core-ktx:1.12.0")
+  implementation("androidx.core:core-ktx:1.13.1")
   implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.20"))
-  implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-  implementation("androidx.activity:activity-compose:1.8.2")
+  implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
+  implementation("androidx.activity:activity-compose:1.9.0")
 
   implementation(Deps.accompanist.swiperefresh)
 
-  implementation(platform("androidx.compose:compose-bom:2024.02.01"))
+  implementation(platform("androidx.compose:compose-bom:2024.05.00"))
   implementation("androidx.compose.ui:ui")
   implementation("androidx.compose.ui:ui-graphics")
   implementation("androidx.compose.ui:ui-tooling-preview")
   implementation("androidx.compose.material3:material3")
-  implementation("androidx.paging:paging-compose:3.2.1")
+  implementation("androidx.paging:paging-compose:3.3.0")
 
   implementation("com.github.anrwatchdog:anrwatchdog:1.4.0")
 

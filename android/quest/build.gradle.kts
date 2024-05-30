@@ -115,7 +115,7 @@ android {
     buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.5.9" }
+  composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
 
   testOptions {
     execution = "ANDROIDX_TEST_ORCHESTRATOR"

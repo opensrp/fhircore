@@ -6,7 +6,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
         classpath(Deps.kotlin_coveralls_plugin)
         classpath("com.android.tools.build:gradle:8.2.2")
         classpath(Deps.dokka_plugin)
@@ -14,7 +14,7 @@ buildscript {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.22"
+    id("org.jetbrains.kotlin.jvm") version "1.9.24"
     id("com.github.kt3k.coveralls") version "2.12.2"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
     id("com.google.dagger.hilt.android") version Deps.versions.hiltVersion apply false
