@@ -84,4 +84,6 @@ The `logGpsLocation` config takes in a list of `LocationLogOptions` to toggle wh
 `showLogo` | Toggle whether to show the logo | Yes | `true` |
 `taskBackgroundWorkerBatchSize` | Batch size of tasks to be fetched from the server | Yes | `500` |
 `eventWorkflows` | A list of `EventWorkflow`s | Yes | `emptyList()` |
+`settingsScreenMenuOptions` | A list of `SettingsOptions`s that defines menu options to be displayed on the `Settings` screen | Yes | `listOf(SettingsOptions.MANUAL_SYNC, SettingsOptions.SWITCH_LANGUAGES, SettingsOptions.RESET_DATA, SettingsOptions.INSIGHTS,)` |
 `logGpsLocation` | A list of `LocationLogOptions` to toggle whether to capture GPS coordinates | Yes | emptyList() |
+`usePractitionerAssignedLocationOnSync` | If `true`, default to using logged in practitioner's location | Yes | `true` |
