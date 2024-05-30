@@ -181,10 +181,10 @@ class UserSettingScreenTest {
     isShowDatabaseResetConfirmation: Boolean = false,
     isDebugVariant: Boolean = false,
     isP2PAvailable: Boolean = false,
-    showManualSync: Boolean = false,
-    showAppInsights: Boolean = false,
-    hasOfflineMaps: Boolean = false,
-    showContactHelp: Boolean = false,
+    showManualSync: Boolean = true,
+    showAppInsights: Boolean = true,
+    hasOfflineMaps: Boolean = true,
+    showContactHelp: Boolean = true,
   ) {
     scenario.onActivity { activity ->
       activity.setContent {
