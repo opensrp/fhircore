@@ -81,6 +81,7 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
     val LAST_SYNC_TIMESTAMP by lazy { stringPreferencesKey("lastSyncTimestamp") }
     val PRACTITIONER_ID by lazy { stringPreferencesKey("practitionerId") }
     val PRACTITIONER_LOCATION by lazy { stringPreferencesKey("practitionerLocation") }
+    val PRACTITIONER_LOCATION_ID by lazy { stringPreferencesKey("practitionerLocationId") }
     val REMOTE_SYNC_RESOURCES by lazy { stringPreferencesKey("remoteSyncResources") }
     val PREFS_SYNC_PROGRESS_TOTAL by lazy { stringPreferencesKey("prefSyncProgressTotal") }
     val CARE_TEAM_ID by lazy { stringPreferencesKey("careTeamId") }

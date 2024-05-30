@@ -422,7 +422,7 @@ constructor(
     )
   }
 
-  private fun writePractitionerDetailsToPreference(
+  fun writePractitionerDetailsToPreference(
     careTeam: List<String>,
     organization: List<String>,
     location: List<String>,
@@ -462,39 +462,11 @@ constructor(
         key = PreferenceDataStore.ORGANIZATION_NAME,
         value = organization.joinToString(separator = ","),
       )
+      preferenceDataStore.write(
+        key = PreferenceDataStore.PRACTITIONER_LOCATION_ID,
+        value = location.joinToString(separator = "")
+      )
     }
-
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
-    )
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      fhirPractitionerDetails,
-    )
-    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
-    sharedPreferences.write(ResourceType.Organization.name, organizations)
-    sharedPreferences.write(ResourceType.Location.name, locations)
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-      value = location.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.CARE_TEAM.name,
-      value = careTeam.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.ORGANIZATION.name,
-      value = organization.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
-      value = locations.joinToString(separator = ""),
-    )
   }
 
   fun downloadNowWorkflowConfigs(isInitialLogin: Boolean = true) {
