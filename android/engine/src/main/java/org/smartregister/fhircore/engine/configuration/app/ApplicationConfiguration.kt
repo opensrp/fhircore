@@ -45,6 +45,7 @@ data class ApplicationConfiguration(
   val settingsScreenMenuOptions: List<SettingsOptions> =
     listOf(
       SettingsOptions.MANUAL_SYNC,
+      SettingsOptions.SWITCH_LANGUAGES,
       SettingsOptions.RESET_DATA,
       SettingsOptions.INSIGHTS,
     ),
