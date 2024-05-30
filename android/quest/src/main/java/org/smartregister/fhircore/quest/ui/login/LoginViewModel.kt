@@ -30,8 +30,13 @@ import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.sentry.Sentry
 import io.sentry.protocol.User
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -60,10 +65,6 @@ import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.inject.Inject
-import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
 
 @HiltViewModel
 class LoginViewModel
@@ -463,6 +464,37 @@ constructor(
       )
     }
 
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
+    )
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      fhirPractitionerDetails,
+    )
+    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
+    sharedPreferences.write(ResourceType.Organization.name, organizations)
+    sharedPreferences.write(ResourceType.Location.name, locations)
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+      locationHierarchies,
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+      value = location.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.CARE_TEAM.name,
+      value = careTeam.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.ORGANIZATION.name,
+      value = organization.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+      value = locations.joinToString(separator = ""),
+    )
   }
 
   fun downloadNowWorkflowConfigs(isInitialLogin: Boolean = true) {
