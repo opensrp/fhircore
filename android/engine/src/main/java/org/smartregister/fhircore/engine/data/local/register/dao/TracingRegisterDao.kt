@@ -57,6 +57,7 @@ import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.extension.activePatientConditions
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -69,7 +70,6 @@ import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.engine.util.extension.extractOfficialIdentifier
 import org.smartregister.fhircore.engine.util.extension.extractTelecom
 import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
-import org.smartregister.fhircore.engine.util.extension.patientConditions
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.safeSubList
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
@@ -342,7 +342,7 @@ abstract class TracingRegisterDao(
         healthStatus = patient.extractHealthStatusFromMeta(metaCodingSystemTag),
         tasks = tasks,
         services = patient.activeCarePlans(),
-        conditions = patient.activeConditions(),
+        conditions = defaultRepository.activePatientConditions(patient.logicalId),
         guardians = patient.guardians(),
         practitioners = patient.practitioners(),
         currentAttempt =
@@ -377,11 +377,6 @@ abstract class TracingRegisterDao(
         subjectParam = CarePlan.SUBJECT,
       )
       .filter { carePlan -> carePlan.status == CarePlan.CarePlanStatus.ACTIVE }
-
-  suspend fun Patient.activeConditions() =
-    defaultRepository.patientConditions(this.logicalId).filter { condition ->
-      condition.clinicalStatus.coding.any { it.code == "active" }
-    }
 
   suspend fun Patient.practitioners(): List<Practitioner> {
     return generalPractitioner.mapNotNull {

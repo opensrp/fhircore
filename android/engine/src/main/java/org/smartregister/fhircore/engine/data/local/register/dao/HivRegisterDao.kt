@@ -18,14 +18,21 @@ package org.smartregister.fhircore.engine.data.local.register.dao
 
 import ca.uhn.fhir.rest.gclient.DateClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
+import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.StringFilterModifier
+import com.google.android.fhir.search.revInclude
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
+import org.hl7.fhir.r4.model.CodeType
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
@@ -45,6 +52,7 @@ import org.smartregister.fhircore.engine.domain.repository.PatientDao
 import org.smartregister.fhircore.engine.domain.repository.RegisterDao
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.extension.activeCarePlans
+import org.smartregister.fhircore.engine.util.extension.activePatientConditions
 import org.smartregister.fhircore.engine.util.extension.canonical
 import org.smartregister.fhircore.engine.util.extension.canonicalName
 import org.smartregister.fhircore.engine.util.extension.extractAddress
@@ -64,7 +72,6 @@ import org.smartregister.fhircore.engine.util.extension.getPregnancyStatus
 import org.smartregister.fhircore.engine.util.extension.getResourcesByIds
 import org.smartregister.fhircore.engine.util.extension.givenName
 import org.smartregister.fhircore.engine.util.extension.loadResource
-import org.smartregister.fhircore.engine.util.extension.patientConditions
 import org.smartregister.fhircore.engine.util.extension.shouldShowOnProfile
 import org.smartregister.fhircore.engine.util.extension.toAgeDisplay
 import org.smartregister.fhircore.engine.util.extension.yearsPassed
@@ -94,30 +101,84 @@ constructor(
     // would either be an ART or HCC number
     patient.extractOfficialIdentifier() ?: ResourceValue.BLANK
 
+  private suspend fun searchRegisterData(block: Search.() -> Unit = {}) =
+    fhirEngine.search<Patient> {
+      revInclude<Condition>(Condition.SUBJECT) {
+        filter(
+          Condition.CODE,
+          { value = of(CodeType("77386006")) },
+          { value = of(CodeType("413712001")) },
+          operation = Operation.OR,
+        )
+        filter(
+          Condition.VERIFICATION_STATUS,
+          {
+            value =
+              of(
+                CodeableConcept()
+                  .addCoding(
+                    Coding(
+                      "https://terminology.hl7.org/CodeSystem/condition-ver-status",
+                      "confirmed",
+                      null,
+                    ),
+                  ),
+              )
+          },
+        )
+        filter(
+          Condition.CLINICAL_STATUS,
+          {
+            value =
+              of(
+                CodeableConcept()
+                  .addCoding(
+                    Coding(
+                      "https://terminology.hl7.org/CodeSystem/condition-clinical",
+                      "active",
+                      null,
+                    ),
+                  ),
+              )
+          },
+        )
+      }
+      sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
+
+      block.invoke(this)
+    }
+
+  private fun List<SearchResult<Patient>>.filterValidPatientResult() = filter {
+    val patient = it.resource
+    isValidPatient(patient) &&
+      patient.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) != HealthStatus.DEFAULT
+  }
+
+  private fun List<SearchResult<Patient>>.transformToHivRegisterData() = map { searchResult ->
+    val subject = searchResult.resource
+    val conditions =
+      searchResult.revIncluded?.get(ResourceType.Condition to Condition.SUBJECT.paramName)?.map {
+        it as Condition
+      } ?: emptyList()
+    transformPatientToHivRegisterData(subject, conditions.getPregnancyStatus())
+  }
+
   override suspend fun loadRegisterData(
     currentPage: Int,
     loadAll: Boolean,
     appFeatureName: String?,
   ): List<RegisterData> {
-    val patients =
-      fhirEngine.search<Patient> {
-        filter(Patient.ACTIVE, { value = of(true) })
-        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
-        if (!loadAll) {
-          count = PaginationConstant.DEFAULT_PAGE_SIZE
-        }
-        if (currentPage > 0) {
-          from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-        }
+    val patients = searchRegisterData {
+      filter(Patient.ACTIVE, { value = of(true) })
+      if (!loadAll) {
+        count = PaginationConstant.DEFAULT_PAGE_SIZE
       }
+      if (currentPage > 0) {
+        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+      }
+    }
 
-    return patients
-      .map { it.resource }
-      .filter(this::isValidPatient)
-      .filterNot {
-        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
-      }
-      .map { transformPatientToHivRegisterData(it) }
+    return patients.filterValidPatientResult().transformToHivRegisterData()
   }
 
   override suspend fun searchByName(
@@ -125,29 +186,21 @@ constructor(
     currentPage: Int,
     appFeatureName: String?,
   ): List<RegisterData> {
-    val patients =
-      fhirEngine.search<Patient> {
-        filter(
-          Patient.NAME,
-          {
-            modifier = StringFilterModifier.CONTAINS
-            value = nameQuery
-          },
-        )
-        filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
-        operation = Operation.OR
-        count = PaginationConstant.DEFAULT_PAGE_SIZE
-        from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-        sort(DateClientParam("_lastUpdated"), Order.DESCENDING)
-      }
+    val patients = searchRegisterData {
+      filter(
+        Patient.NAME,
+        {
+          modifier = StringFilterModifier.CONTAINS
+          value = nameQuery
+        },
+      )
+      filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
+      operation = Operation.OR
+      count = PaginationConstant.DEFAULT_PAGE_SIZE
+      from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+    }
 
-    return patients
-      .map { it.resource }
-      .filter { isValidPatient(it) }
-      .filterNot {
-        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
-      }
-      .map { transformPatientToHivRegisterData(it) }
+    return patients.filterValidPatientResult().transformToHivRegisterData()
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
@@ -178,7 +231,7 @@ constructor(
           ?.filter { it.shouldShowOnProfile() }
           ?.sortedWith(compareBy(nullsLast()) { it?.detail?.code?.text?.toBigIntegerOrNull() })
           ?: listOf(),
-      conditions = patient.activeConditions(),
+      conditions = defaultRepository.activePatientConditions(patient.logicalId),
       otherPatients = patient.otherChildren(),
       guardians = patient.guardians(),
       observations = patient.observations(),
@@ -207,7 +260,11 @@ constructor(
     patient
       .guardians()
       .filterIsInstance<Patient>()
-      .map { transformPatientToHivRegisterData(it) }
+      .map {
+        val pregnancyStatus =
+          defaultRepository.activePatientConditions(patient.logicalId).getPregnancyStatus()
+        transformPatientToHivRegisterData(it, pregnancyStatus)
+      }
       .plus(
         patient.guardians().filterIsInstance<RelatedPerson>().map {
           transformRelatedPersonToHivRegisterData(it)
@@ -250,11 +307,10 @@ constructor(
       currentCarePlan = null,
     )
 
-  private suspend fun transformPatientToHivRegisterData(
+  private fun transformPatientToHivRegisterData(
     patient: Patient,
+    pregnancyStatus: PregnancyStatus = PregnancyStatus.None,
   ): RegisterData.HivRegisterData {
-    val pregnancyStatus = defaultRepository.getPregnancyStatus(patient.logicalId)
-
     return RegisterData.HivRegisterData(
       logicalId = patient.logicalId,
       identifier = hivPatientIdentifier(patient),
@@ -272,11 +328,6 @@ constructor(
       isBreastfeeding = pregnancyStatus == PregnancyStatus.BreastFeeding,
     )
   }
-
-  internal suspend fun Patient.activeConditions() =
-    defaultRepository.patientConditions(this.logicalId).filter { condition ->
-      condition.clinicalStatus.coding.any { it.code == "active" }
-    }
 
   internal suspend fun Patient.observations() =
     defaultRepository
