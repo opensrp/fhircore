@@ -18,7 +18,9 @@ package org.smartregister.fhircore.quest.data.register
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
@@ -30,6 +32,7 @@ import org.smartregister.fhircore.quest.util.mappers.RegisterViewDataMapper
 class RegisterPagingSource(
   private val registerRepository: RegisterRepository,
   private val registerViewDataMapper: RegisterViewDataMapper,
+  private val dispatcherProvider: DispatcherProvider,
 ) : PagingSource<Int, RegisterViewData>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
@@ -50,27 +53,33 @@ class RegisterPagingSource(
     return try {
       val currentPage = params.key ?: _patientPagingSourceState.currentPage
       val registerData =
-        if (_patientPagingSourceState.searchFilter != null) {
-          registerRepository.searchByName(
-            currentPage = currentPage,
-            appFeatureName = _patientPagingSourceState.appFeatureName,
-            healthModule = _patientPagingSourceState.healthModule,
-            nameQuery = _patientPagingSourceState.searchFilter!!,
-          )
-        } else if (_patientPagingSourceState.requiresFilter) {
-          registerRepository.loadRegisterFiltered(
-            currentPage = currentPage,
-            appFeatureName = _patientPagingSourceState.appFeatureName,
-            healthModule = _patientPagingSourceState.healthModule,
-            filters = _patientPagingSourceState.filters!!,
-          )
-        } else {
-          registerRepository.loadRegisterData(
-            currentPage = currentPage,
-            appFeatureName = _patientPagingSourceState.appFeatureName,
-            healthModule = _patientPagingSourceState.healthModule,
-            loadAll = _patientPagingSourceState.loadAll,
-          )
+        withContext(dispatcherProvider.io()) {
+          when {
+            _patientPagingSourceState.searchFilter != null -> {
+              registerRepository.searchByName(
+                currentPage = currentPage,
+                appFeatureName = _patientPagingSourceState.appFeatureName,
+                healthModule = _patientPagingSourceState.healthModule,
+                nameQuery = _patientPagingSourceState.searchFilter!!,
+              )
+            }
+            _patientPagingSourceState.requiresFilter -> {
+              registerRepository.loadRegisterFiltered(
+                currentPage = currentPage,
+                appFeatureName = _patientPagingSourceState.appFeatureName,
+                healthModule = _patientPagingSourceState.healthModule,
+                filters = _patientPagingSourceState.filters!!,
+              )
+            }
+            else -> {
+              registerRepository.loadRegisterData(
+                currentPage = currentPage,
+                appFeatureName = _patientPagingSourceState.appFeatureName,
+                healthModule = _patientPagingSourceState.healthModule,
+                loadAll = _patientPagingSourceState.loadAll,
+              )
+            }
+          }
         }
 
       val registerViewData =

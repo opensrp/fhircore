@@ -226,7 +226,7 @@ constructor(
           enablePlaceholders = false,
         ),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
+        RegisterPagingSource(registerRepository, registerViewDataMapper, dispatcherProvider).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               appFeatureName = appFeatureName,

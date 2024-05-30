@@ -23,17 +23,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -42,9 +42,8 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -112,43 +111,43 @@ constructor(
   private val _syncProgressMutableStateFlow = MutableStateFlow("")
   val syncProgressStateFlow = _syncProgressMutableStateFlow.asStateFlow()
 
-  private val _totalPagesCount = MutableStateFlow(1)
-  val totalRecordsCountPages = _totalPagesCount.asStateFlow()
-
   private val _startCountRegisterMutableStateFlow = MutableStateFlow("")
+  val totalRecordsCountPages =
+    _startCountRegisterMutableStateFlow
+      .filter { it.isNotBlank() }
+      .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
+      .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
+      .map { ceil(it).toInt() }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = TOTAL_PAGES_UNKNOWN)
 
-  val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
-    MutableStateFlow(emptyFlow())
+  val paginatedRegisterData =
+    combine(
+        searchText.debounce {
+          when (it.length) {
+            0 -> 2.milliseconds // when search is cleared
+            1,
+            2, -> 1200.milliseconds
+            else -> 500.milliseconds
+          }
+        },
+        currentPage,
+        refreshCounter,
+      ) { s, p, r ->
+        Triple(s, p, r)
+      }
+      .mapLatest {
+        val pagingFlow =
+          if (it.first.isNotBlank()) {
+            filterRegisterDataFlow(text = it.first)
+          } else {
+            paginateRegisterDataFlow(page = it.second)
+          }
+
+        return@mapLatest pagingFlow.cachedIn(viewModelScope).also { _isRefreshing.emit(false) }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
 
   init {
-
-    val searchFlow = _searchText.debounce(500)
-
-    viewModelScope.launch(dispatcherProvider.io()) {
-      combine(searchFlow, _currentPage, refreshCounter) { s, p, r -> Triple(s, p, r) }
-        .mapLatest {
-          val pagingFlow =
-            if (it.first.isNotBlank()) {
-              filterRegisterDataFlow(text = it.first)
-            } else {
-              paginateRegisterDataFlow(page = it.second)
-            }
-
-          return@mapLatest pagingFlow.also { _isRefreshing.emit(false) }
-        }
-        .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
-    }
-
-    viewModelScope.launch(dispatcherProvider.io()) {
-      _startCountRegisterMutableStateFlow
-        .onStart { _totalPagesCount.emit(TOTAL_PAGES_UNKNOWN) }
-        .filter { it.isNotBlank() }
-        .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
-        .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
-        .map { ceil(it).toInt() }
-        .collect { _totalPagesCount.emit(it) }
-    }
-
     syncBroadcaster.registerSyncListener(
       object : OnSyncListener {
         override fun onSync(state: SyncJobStatus) {
@@ -184,7 +183,7 @@ constructor(
   }
 
   fun refresh() {
-    _isRefreshing.value = true
+    _isRefreshing.update { true }
     _refreshCounter.update { it + 1 }
   }
 
@@ -218,7 +217,7 @@ constructor(
           enablePlaceholders = false,
         ),
       pagingSourceFactory = {
-        RegisterPagingSource(registerRepository, registerViewDataMapper).apply {
+        RegisterPagingSource(registerRepository, registerViewDataMapper, dispatcherProvider).apply {
           setPatientPagingSourceState(
             PatientPagingSourceState(
               appFeatureName = appFeatureName,
