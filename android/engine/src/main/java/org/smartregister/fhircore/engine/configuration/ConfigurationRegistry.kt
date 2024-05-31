@@ -40,7 +40,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -436,19 +435,17 @@ constructor(
             } else {
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEach { parentIt ->
+              chunkedResourceIdList.forEach { sectionComponents ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${
-                                        StringUtils.join(
-                                            parentIt,
-                                            ",",
-                                        )
-                                    }",
+                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}"
                 )
                 processCompositionManifestResources(
-                  entry.key,
-                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
-                  patientRelatedResourceTypes,
+                  resourceType = entry.key,
+                  resourceIdList =
+                    sectionComponents.map { sectionComponent ->
+                      sectionComponent.focus.extractId()
+                    },
+                  patientRelatedResourceTypes = patientRelatedResourceTypes,
                 )
               }
             }
