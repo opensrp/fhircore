@@ -437,7 +437,7 @@ constructor(
 
               chunkedResourceIdList.forEach { sectionComponents ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}"
+                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}",
                 )
                 processCompositionManifestResources(
                   resourceType = entry.key,

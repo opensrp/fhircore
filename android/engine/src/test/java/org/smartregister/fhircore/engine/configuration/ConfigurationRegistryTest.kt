@@ -35,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.net.URL
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
@@ -133,7 +134,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveResourceBundleConfigurationMissingVariantReturnsBaseResourceBundle() {
     configRegistry.configsJsonMap["strings"] = "name.title=Mr.\n" + "gender.male=Male"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_en")
-    Assert.assertNotNull(resource)
+    assertNotNull(resource)
     assertEquals("Mr.", resource?.getString("name.title"))
     assertEquals("Male", resource?.getString("gender.male"))
   }
@@ -142,7 +143,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveResourceBundleConfigurationReturnsCorrectBundle() {
     configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw")
-    Assert.assertNotNull(resource)
+    assertNotNull(resource)
     assertEquals("Bwana.", resource?.getString("name.title"))
     assertEquals("Kijana", resource?.getString("gender.male"))
   }
@@ -151,7 +152,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveResourceBundleConfigurationWithLocaleVariantReturnsCorrectBundle() {
     configRegistry.configsJsonMap["stringsSw"] = "name.title=Bwana.\n" + "gender.male=Kijana"
     val resource = configRegistry.retrieveResourceBundleConfiguration("strings_sw_KE")
-    Assert.assertNotNull(resource)
+    assertNotNull(resource)
     assertEquals("Bwana.", resource?.getString("name.title"))
     assertEquals("Kijana", resource?.getString("gender.male"))
   }
@@ -662,9 +663,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configType = ConfigType.Application,
       )
 
-    Assert.assertNotNull(applicationConfiguration)
+    assertNotNull(applicationConfiguration)
     assertEquals("thisApp", applicationConfiguration.appId)
-    Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
+    assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
     // Config cache map now contains application config
     assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
 
@@ -673,9 +674,9 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configType = ConfigType.Application,
       )
     assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
-    Assert.assertNotNull(anotherApplicationConfig)
+    assertNotNull(anotherApplicationConfig)
     assertEquals("thisApp", anotherApplicationConfig.appId)
-    Assert.assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
+    assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
   }
 
   @Test
@@ -720,16 +721,16 @@ class ConfigurationRegistryTest : RobolectricTest() {
         paramsMap = paramsMap,
       )
 
-    Assert.assertNotNull(applicationConfiguration)
+    assertNotNull(applicationConfiguration)
     assertEquals("thisApp", applicationConfiguration.appId)
-    Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
+    assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
     // Config cache map now contains application config
 
     val anotherApplicationConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
         configType = ConfigType.Application,
       )
-    Assert.assertNotNull(anotherApplicationConfig)
+    assertNotNull(anotherApplicationConfig)
     assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
   }
 
@@ -1061,5 +1062,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
       resource.logicalId,
       (parser.parseResource(resultFile.readText()) as Patient).logicalId,
     )
+  }
+
+  @Test
+  fun testPopulateConfigurationsMapShouldAddResourcesToDatabase() {
+    runBlocking {
+      // Read resource and other configs from the assets
+      val appId = "app"
+      val questionnaireId = "3440"
+      configRegistry.populateConfigurationsMap(context, Composition(), true, appId) {}
+
+      // Check if configs/app/resources/sample_questionnaire.json was added to the database
+      val questionnaire = fhirEngine.get(ResourceType.Questionnaire, questionnaireId)
+      assertTrue(configRegistry.configsJsonMap.isNotEmpty())
+      assertNotNull(questionnaire)
+      assertEquals(questionnaireId, questionnaire.logicalId)
+    }
   }
 }
