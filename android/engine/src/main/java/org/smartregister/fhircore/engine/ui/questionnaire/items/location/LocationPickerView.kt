@@ -37,6 +37,7 @@ import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
 import org.smartregister.fhircore.engine.ui.questionnaire.items.CustomQuestItemDataProvider
+import org.smartregister.fhircore.engine.ui.questionnaire.items.LocationPickerViewHolderFactory
 import timber.log.Timber
 
 class LocationPickerView(
@@ -59,11 +60,13 @@ class LocationPickerView(
   private var physicalLocatorInputEditText: TextInputEditText? = null
   var headerView: HeaderView? = null
 
-  val helperText: TextView
+  private val helperText: TextView
   private var errorView: LinearLayout
   private var errorText: TextView
 
   private var initialValue: String? = null
+
+  private var locationTye: String = LocationPickerViewHolderFactory.WIDGET_TYPE
 
   init {
     cardView = itemView.findViewById(R.id.location_picker_view)
@@ -135,8 +138,15 @@ class LocationPickerView(
 
   private fun initData() {
     customQuestItemDataProvider?.let {
-      val locations = it.fetchLocationHierarchies()
-      updateLocationData(locations = locations, isDefault = true)
+      lifecycleScope.launch {
+        val locations =
+          if (locationTye == LocationPickerViewHolderFactory.WIDGET_TYPE) {
+            (it.fetchCurrentFacilityLocationHierarchies())
+          } else {
+            it.fetchAllFacilityLocationHierarchies()
+          }
+        updateLocationData(locations = locations, isDefault = true)
+      }
     }
   }
 
@@ -246,6 +256,10 @@ class LocationPickerView(
     }
     helperText.text = requiredOrOptionalText
     helperText.visibility = View.VISIBLE
+  }
+
+  fun setType(asStringValue: String) {
+    this.locationTye = asStringValue
   }
 }
 

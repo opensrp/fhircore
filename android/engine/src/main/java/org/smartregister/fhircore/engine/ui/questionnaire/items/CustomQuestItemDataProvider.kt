@@ -16,24 +16,44 @@
 
 package org.smartregister.fhircore.engine.ui.questionnaire.items
 
+import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.get
+import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Binary
 import org.smartregister.fhircore.engine.domain.model.LocationHierarchy
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.engine.util.SystemConstants
 import timber.log.Timber
 
 class CustomQuestItemDataProvider
 @Inject
-constructor(val sharedPreferencesHelper: SharedPreferencesHelper) {
+constructor(
+  val sharedPreferencesHelper: SharedPreferencesHelper,
+  val fhirEngine: FhirEngine,
+  val gson: Gson
+) {
 
-  fun fetchLocationHierarchies(): List<LocationHierarchy> {
+  fun fetchCurrentFacilityLocationHierarchies(): List<LocationHierarchy> {
     return try {
       val type = object : TypeToken<List<LocationHierarchy>>() {}.type
       sharedPreferencesHelper.readJsonArray<List<LocationHierarchy>>(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         type,
       )
+    } catch (e: Exception) {
+      Timber.e(e)
+      listOf()
+    }
+  }
+
+  suspend fun fetchAllFacilityLocationHierarchies(): List<LocationHierarchy> {
+    return try {
+      val binary: Binary = fhirEngine.get(SystemConstants.LOCATION_HIERARCHY_BINARY)
+      val config = gson.fromJson(binary.content.decodeToString(), LocationHierarchy::class.java)
+      config.children
     } catch (e: Exception) {
       Timber.e(e)
       listOf()

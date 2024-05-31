@@ -224,7 +224,8 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
     if (
       resourceType != ResourceType.Practitioner &&
         resourceType != ResourceType.Questionnaire &&
-        resourceType != ResourceType.StructureMap
+        resourceType != ResourceType.StructureMap &&
+        resourceType != ResourceType.Binary
     ) {
       val tags = mutableMapOf("_tag" to organisationTag)
       it.second.entries.forEach { entry -> tags[entry.key] = entry.value }

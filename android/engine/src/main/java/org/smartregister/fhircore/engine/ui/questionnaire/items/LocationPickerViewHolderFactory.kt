@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.ui.questionnaire.items
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.getRequiredOrOptionalText
 import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
@@ -46,6 +47,12 @@ class LocationPickerViewHolderFactory(
         locationPickerView.headerView?.bind(questionnaireViewItem)
         locationPickerView.setRequiredOrOptionalText(
           getRequiredOrOptionalText(questionnaireViewItem, context),
+        )
+        locationPickerView.setType(
+          questionnaireViewItem.questionnaireItem
+            .getExtensionByUrl(WIDGET_EXTENSION)
+            .value
+            .asStringValue()
         )
         locationPickerView.setOnLocationChanged { value ->
           context.lifecycleScope.launch {
@@ -85,5 +92,6 @@ class LocationPickerViewHolderFactory(
   companion object {
     const val WIDGET_EXTENSION = "https://d-tree.org/fhir/extensions/location-widget"
     const val WIDGET_TYPE = "location-widget"
+    const val WIDGET_TYPE_ALL = "location-widget-all"
   }
 }

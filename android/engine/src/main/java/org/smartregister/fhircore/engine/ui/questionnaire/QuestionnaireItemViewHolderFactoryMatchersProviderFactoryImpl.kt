@@ -57,7 +57,12 @@ class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
             .let {
               if (it == null) {
                 false
-              } else it.value.asStringValue() == LocationPickerViewHolderFactory.WIDGET_TYPE
+              } else
+                it.value.asStringValue() in
+                  listOf(
+                    LocationPickerViewHolderFactory.WIDGET_TYPE,
+                    LocationPickerViewHolderFactory.WIDGET_TYPE_ALL
+                  )
             }
         },
       )

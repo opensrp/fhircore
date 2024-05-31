@@ -53,8 +53,7 @@ constructor(
   private val analytics: AnalyticReporter,
   private val sharedPreferencesHelper: SharedPreferencesHelper,
   configurationRegistry: ConfigurationRegistry,
-  private val syncBroadcaster: SyncBroadcaster
-
+  private val syncBroadcaster: SyncBroadcaster,
 ) : ViewModel() {
   private val patientId: String = savedStateHandle[NavigationArg.PATIENT_ID]!!
   val state = MutableStateFlow<DataLoadState<TransferOutScreenState>>(DataLoadState.Loading)
