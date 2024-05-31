@@ -54,6 +54,7 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -1067,12 +1068,17 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testPopulateConfigurationsMapShouldAddResourcesToDatabase() {
     runBlocking {
-      // Read resource and other configs from the assets
       val appId = "app"
       val questionnaireId = "3440"
+
+      // Verify questionnaire does not exist
+      assertThrows(ResourceNotFoundException::class.java) {
+        runBlocking { fhirEngine.get(ResourceType.Questionnaire, questionnaireId) }
+      }
+
       configRegistry.populateConfigurationsMap(context, Composition(), true, appId) {}
 
-      // Check if configs/app/resources/sample_questionnaire.json was added to the database
+      // Confirm configs/app/resources/sample_questionnaire.json was added to the database
       val questionnaire = fhirEngine.get(ResourceType.Questionnaire, questionnaireId)
       assertTrue(configRegistry.configsJsonMap.isNotEmpty())
       assertNotNull(questionnaire)
