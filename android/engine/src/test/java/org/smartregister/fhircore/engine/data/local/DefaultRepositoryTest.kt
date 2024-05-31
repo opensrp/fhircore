@@ -1494,7 +1494,7 @@ class DefaultRepositoryTest : RobolectricTest() {
             ResourceFilterExpression(
               conditionalFhirPathExpressions =
                 listOf(
-                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'"
+                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'",
                 ),
               matchAll = true,
             ),
