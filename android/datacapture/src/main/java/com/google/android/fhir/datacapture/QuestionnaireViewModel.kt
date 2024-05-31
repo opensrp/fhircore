@@ -579,12 +579,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
       .onEach {
         if (it.index == 0) {
           viewModelScope.launch(Dispatchers.IO) {
-            isLoadingNextPage.value = true
-            modificationCount.update { count -> count + 1 }
-          }
-        }
-        if (it.index == 1) {
-          viewModelScope.launch(Dispatchers.IO) {
             expressionEvaluator.detectExpressionCyclicDependency(questionnaire.item)
             questionnaire.item.flattened().filter { qItem -> qItem.calculatedExpression != null }.forEach { qItem ->
               updateQuestionnaireResponseItemWithCalculatedExpression(
@@ -592,7 +586,6 @@ internal class QuestionnaireViewModel(application: Application, state: SavedStat
                 questionnaireResponse.allItems.find { qrItem -> qrItem.linkId == qItem.linkId } ?: QuestionnaireResponseItemComponent(),
               )
             }
-            pages = getQuestionnairePages()
             isLoadingNextPage.value = false
             modificationCount.update { count -> count + 1 }
           }
