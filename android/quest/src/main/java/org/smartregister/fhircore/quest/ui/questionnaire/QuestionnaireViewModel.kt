@@ -756,16 +756,18 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
-      kotlin
-        .runCatching {
-          fhirCarePlanGenerator.generateOrUpdateCarePlan(
-            planDefinitionId = planId,
-            subject = subject,
-            data = bundle,
-            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
-          )
-        }
-        .onFailure { Timber.e(it) }
+      if (planId.isNotEmpty()) {
+        kotlin
+          .runCatching {
+            fhirCarePlanGenerator.generateOrUpdateCarePlan(
+              planDefinitionId = planId,
+              subject = subject,
+              data = bundle,
+              generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
+            )
+          }
+          .onFailure { Timber.e(it) }
+      }
     }
   }
 
