@@ -76,5 +76,4 @@ enum class SettingsOptions {
   RESET_DATA,
   INSIGHTS,
   CONTACT_HELP,
-  DOWNLOAD_DATABASE,
 }
