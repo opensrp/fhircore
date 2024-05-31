@@ -18,7 +18,9 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
+import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -306,34 +308,35 @@ constructor(
     configsLoadedCallback: (Boolean) -> Unit,
   ) {
     if (loadFromAssets) {
-      retrieveConfigsAndResourcesFromAssets(context, appId).first.forEach { fileName ->
+      retrieveAssetConfigs(context, appId).forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
-        // Use file name as the key. Conventionally navigation configs MUST end with
-        // "_config.<extension>"
+        // Use file name as the key. Conventionally configs MUST end with _config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
+        // Resource configs are saved to the database
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
-          val configKey =
-            fileName
-              .lowercase(Locale.ENGLISH)
-              .substring(
-                fileName.indexOfLast { it == '/' }.plus(1),
-                fileName.lastIndexOf(CONFIG_SUFFIX),
-              )
-              .camelCase()
-
           val configJson = context.assets.open(fileName).bufferedReader().readText()
-          configsJsonMap[configKey] = configJson
-        }
-      }
-      retrieveConfigsAndResourcesFromAssets(context).second.forEach { resourceName ->
-        val resourceJson = context.assets.open(resourceName).bufferedReader().readText()
-        try {
-          if (resourceJson.decodeResourceFromString<Resource>().resourceType != null) {
-            val localResource = resourceJson.decodeResourceFromString<Resource>()
-            addOrUpdate(localResource)
+          if (fileName.contains(RESOURCES_PATH)) {
+            try {
+              val resource = configJson.decodeResourceFromString<Resource>()
+              if (resource.resourceType != null) {
+                addOrUpdate(resource)
+              }
+            } catch (configurationException: ConfigurationException) {
+              Timber.e("Error parsing FHIR resource", configurationException)
+            } catch (dataFormatException: DataFormatException) {
+              Timber.e("Error parsing FHIR resource", dataFormatException)
+            }
+          } else {
+            val configKey =
+              fileName
+                .lowercase(Locale.ENGLISH)
+                .substring(
+                  fileName.indexOfLast { it == '/' }.plus(1),
+                  fileName.lastIndexOf(CONFIG_SUFFIX),
+                )
+                .camelCase()
+            configsJsonMap[configKey] = configJson
           }
-        } catch (e: Exception) {
-          Timber.e("Provided JSON doesn't seem to be a valid FHIR resource")
         }
       }
     } else {
@@ -363,28 +366,18 @@ constructor(
   private fun isIconConfig(configIdentifier: String) = configIdentifier.startsWith(ICON_PREFIX)
 
   /**
-   * Reads supported files from the asset/config and assets/resources directory recursively,
-   * populates all sub directory in a queue, then reads all the nested files for each.
+   * Reads supported files from the asset/config directory recursively, populates all sub directory
+   * in a queue, then reads all the nested files for each.
    *
    * @return A list of strings of config files.
    */
-  fun retrieveConfigsAndResourcesFromAssets(
-    context: Context,
-    appId: String? = null,
-  ): Pair<MutableList<String>, MutableList<String>> {
+  private fun retrieveAssetConfigs(context: Context, appId: String): MutableList<String> {
     val filesQueue = LinkedList<String>()
-    val resourcesQueue = LinkedList<String>()
     val configFiles = mutableListOf<String>()
-    val resourceFiles = mutableListOf<String>()
     context.assets.list(String.format(BASE_CONFIG_PATH, appId))?.onEach {
       if (!supportedFileExtensions.contains(it.fileExtension)) {
         filesQueue.addLast(String.format(BASE_CONFIG_PATH, appId) + "/$it")
       } else configFiles.add(String.format(BASE_CONFIG_PATH, appId) + "/$it")
-    }
-    context.assets.list(BASE_RESOURCES_PATH)?.onEach {
-      if (!supportedFileExtensions.contains(it.fileExtension)) {
-        resourcesQueue.addLast(String.format(BASE_RESOURCES_PATH) + "/$it")
-      } else resourceFiles.add(String.format(BASE_RESOURCES_PATH) + "/$it")
     }
     while (filesQueue.isNotEmpty()) {
       val currentPath = filesQueue.removeFirst()
@@ -394,15 +387,7 @@ constructor(
         } else configFiles.add("$currentPath/$it")
       }
     }
-    while (resourcesQueue.isNotEmpty()) {
-      val currentResourceFilePath = resourcesQueue.removeFirst()
-      context.assets.list(currentResourceFilePath)?.onEach {
-        if (!supportedFileExtensions.contains(it.fileExtension)) {
-          resourcesQueue.addLast(String.format(currentResourceFilePath) + "/$it")
-        } else resourceFiles.add(String.format(currentResourceFilePath) + "/$it")
-      }
-    }
-    return Pair(configFiles, resourceFiles)
+    return configFiles
   }
 
   /**
@@ -573,10 +558,7 @@ constructor(
     return if (gatewayModeHeaderValue.isNullOrEmpty()) {
       fhirResourceDataSource.getResource(searchPath)
     } else {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader(
-        gatewayModeHeaderValue,
-        searchPath,
-      )
+      fhirResourceDataSource.getResourceWithGatewayModeHeader(gatewayModeHeaderValue, searchPath)
     }
   }
 
@@ -659,7 +641,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${openSrpApplication?.getFhirServerHost().toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"
+          ?: """${openSrpApplication?.getFhirServerHost()?.toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"""
     }
 
   fun writeToFile(resource: Resource): File {
@@ -834,7 +816,6 @@ constructor(
 
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
-    const val BASE_RESOURCES_PATH = "resources"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
     const val CONFIG_SUFFIX = "_config"
     const val CONFIG_TYPE = "configType"
@@ -849,13 +830,14 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val PAGINATION_NEXT = "next"
+    const val RESOURCES_PATH = "resources/"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
      * These are hardcoded as they are not meant to be easily configurable to avoid config vs data
      * sync issues
      */
-    val FILTER_RESOURCE_LIST =
+    private val FILTER_RESOURCE_LIST =
       listOf(
         ResourceType.Questionnaire.name,
         ResourceType.StructureMap.name,

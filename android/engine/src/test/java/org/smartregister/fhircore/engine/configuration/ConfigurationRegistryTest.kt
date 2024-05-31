@@ -26,20 +26,17 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.common.reflect.TypeToken
-import com.google.gson.GsonBuilder
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
-import java.io.ByteArrayInputStream
-import java.io.File
 import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -49,23 +46,23 @@ import org.hl7.fhir.r4.model.Composition.SectionComponent
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers
 import org.smartregister.fhircore.engine.OpenSrpApplication
-import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
-import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.BASE_RESOURCES_PATH
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -76,7 +73,6 @@ import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.getPayload
 import org.smartregister.fhircore.engine.util.extension.second
 
@@ -84,52 +80,51 @@ import org.smartregister.fhircore.engine.util.extension.second
 class ConfigurationRegistryTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltRule = HiltAndroidRule(this)
 
-  @kotlinx.coroutines.ExperimentalCoroutinesApi
-  @get:Rule(order = 1)
-  val coroutineRule = CoroutineTestRule()
+  @get:Rule(order = 1) val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
+  @Inject lateinit var configService: ConfigService
+
+  @Inject lateinit var json: Json
+
+  @Inject lateinit var fhirContext: FhirContext
+
   private val context: Context = ApplicationProvider.getApplicationContext()
   private val fhirResourceService = mockk<FhirResourceService>()
   private lateinit var fhirResourceDataSource: FhirResourceDataSource
   private lateinit var configRegistry: ConfigurationRegistry
-  private lateinit var mockedContext: Context
-  private lateinit var mockedJsonParser: IParser
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltRule.inject()
     fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
-    val sharedPreferencesHelper =
-      SharedPreferencesHelper(context, GsonBuilder().setLenient().create())
     configRegistry =
       ConfigurationRegistry(
-        fhirEngine,
-        fhirResourceDataSource,
-        sharedPreferencesHelper,
-        dispatcherProvider,
-        AppConfigService(context),
-        Faker.json,
+        fhirEngine = fhirEngine,
+        fhirResourceDataSource = fhirResourceDataSource,
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        dispatcherProvider = dispatcherProvider,
+        configService = configService,
+        json = json,
         context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
         openSrpApplication =
           object : OpenSrpApplication() {
-            override fun getFhirServerHost(): URL? {
+            override fun getFhirServerHost(): URL {
               return URL("http://my_test_fhirbase_url/fhir/")
             }
           },
       )
-    mockedContext = mockk()
-    mockedJsonParser = mockk()
-    configRegistry.setNonProxy(false)
-    Assert.assertNotNull(configRegistry)
   }
 
   @Test
   fun testRetrieveResourceBundleConfigurationReturnsNull() {
-    configRegistry.configsJsonMap["stringsEn"] = "name.title=Mr.\n" + "gender.male=Male"
+    configRegistry.configsJsonMap["stringsEn"] = "name.title=Mr." + "gender.male=Male"
     val resource = configRegistry.retrieveResourceBundleConfiguration("nonexistent")
     Assert.assertNull(resource)
   }
@@ -164,7 +159,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   fun testRetrieveConfigurationParseTemplate() {
     val appId = "idOfApp"
-    configRegistry.configsJsonMap[ConfigType.Application.name] = "{\"appId\": \"${appId}\"}"
+    configRegistry.configsJsonMap[ConfigType.Application.name] =
+      """{"appId": "$appId", "configType" : "application"}"""
     val appConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(ConfigType.Application)
     assertEquals(appId, appConfig.appId)
@@ -175,10 +171,21 @@ class ConfigurationRegistryTest : RobolectricTest() {
   fun testRetrieveConfigurationParseTemplateMultiConfig() {
     val appId = "idOfApp"
     val id = "register"
-    configRegistry.configsJsonMap[ConfigType.Register.name] =
-      "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+    configRegistry.configsJsonMap[id] =
+      """{ 
+           "appId": "$appId", 
+           "id": "$id", 
+           "configType": "register", 
+           "fhirResource": {
+              "baseResource": { 
+                "resource": "Patient"
+              }
+            }
+        }
+            """
+        .trimMargin()
     val registerConfig =
-      configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register)
+      configRegistry.retrieveConfiguration<RegisterConfiguration>(ConfigType.Register, id)
     assertEquals(appId, registerConfig.appId)
     assertEquals(id, registerConfig.id)
   }
@@ -190,13 +197,25 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val id = "register"
     val configId = "idOfConfig"
     configRegistry.configsJsonMap[configId] =
-      "{\"appId\": \"${appId}\", \"id\": \"${id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+      """
+        {
+          "appId": "$appId",
+          "id": "$id",
+          "configType" : "register",
+          "fhirResource": {
+            "baseResource": {
+              "resource": "Patient"
+            }
+          }
+        }
+            """
+        .trimIndent()
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(
-        ConfigType.Register,
-        configId,
+        configType = ConfigType.Register,
+        configId = configId,
       )
-    Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
+    assertTrue(configRegistry.configCacheMap.containsKey(configId))
     assertEquals(appId, registerConfig.appId)
     assertEquals(id, registerConfig.id)
   }
@@ -210,14 +229,26 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val paramId = "registerParam"
     val configId = "idOfConfig"
     configRegistry.configsJsonMap[configId] =
-      "{\"appId\": \"@{$appId}\", \"id\": \"@{$id}\", \"fhirResource\": {\"baseResource\": { \"resource\": \"Patient\"}}}"
+      """
+        {
+          "appId": "@{$appId}",
+          "id": "@{$id}",
+          "configType": "register",
+          "fhirResource": {
+            "baseResource": {
+              "resource": "Patient"
+            }
+          }
+        }
+            """
+        .trimIndent()
     val registerConfig =
       configRegistry.retrieveConfiguration<RegisterConfiguration>(
         ConfigType.Register,
         configId,
         mapOf(appId to paramAppId, id to paramId),
       )
-    Assert.assertTrue(configRegistry.configCacheMap.containsKey(configId))
+    assertTrue(configRegistry.configCacheMap.containsKey(configId))
     assertEquals(paramAppId, registerConfig.appId)
     assertEquals(paramId, registerConfig.id)
   }
@@ -236,9 +267,10 @@ class ConfigurationRegistryTest : RobolectricTest() {
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testFetchNonWorkflowConfigResourcesNoAppId() {
-    runTest { configRegistry.fetchNonWorkflowConfigResources() }
-
-    coVerify(inverse = true) { fhirEngine.search<Composition>(any()) }
+    runTest {
+      configRegistry.fetchNonWorkflowConfigResources()
+      coVerify(inverse = true) { fhirEngine.search<Composition>(any()) }
+    }
   }
 
   @Test
@@ -265,8 +297,8 @@ class ConfigurationRegistryTest : RobolectricTest() {
       listOf(
         SearchResult(
           resource = composition,
-          null,
-          null,
+          included = null,
+          revIncluded = null,
         ),
       )
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
@@ -394,7 +426,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     val createdResourceArgumentSlot = mutableListOf<Resource>()
 
     coVerify { configRegistry.createOrUpdateRemote(capture(createdResourceArgumentSlot)) }
-    Assert.assertEquals(
+    assertEquals(
       "test-list-id",
       createdResourceArgumentSlot.filterIsInstance<ListResource>().first().id,
     )
@@ -465,7 +497,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     coEvery { fhirEngine.search<Composition>(any()) } returns listOf()
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -483,7 +515,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -501,7 +533,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -533,7 +565,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     runTest { configRegistry.loadConfigurations(appId, context) }
 
-    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -615,7 +647,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
     runTest { configRegistry.loadConfigurations(appId, context) }
 
     coVerify(inverse = true) { fhirEngine.get(ResourceType.Binary, referenceId) }
-    Assert.assertTrue(configRegistry.configsJsonMap.isEmpty())
+    assertTrue(configRegistry.configsJsonMap.isEmpty())
   }
 
   @Test
@@ -634,13 +666,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
     assertEquals("thisApp", applicationConfiguration.appId)
     Assert.assertNotNull(ConfigType.Application.name, applicationConfiguration.configType)
     // Config cache map now contains application config
-    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
 
     val anotherApplicationConfig =
       configRegistry.retrieveConfiguration<ApplicationConfiguration>(
         configType = ConfigType.Application,
       )
-    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
     Assert.assertNotNull(anotherApplicationConfig)
     assertEquals("thisApp", anotherApplicationConfig.appId)
     Assert.assertNotNull(ConfigType.Application.name, anotherApplicationConfig.configType)
@@ -698,7 +730,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configType = ConfigType.Application,
       )
     Assert.assertNotNull(anotherApplicationConfig)
-    Assert.assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
+    assertTrue(configRegistry.configCacheMap.containsKey(ConfigType.Application.name))
   }
 
   @Test
@@ -1021,158 +1053,13 @@ class ConfigurationRegistryTest : RobolectricTest() {
 
   @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
-    val resource = Faker.buildPatient().apply { id = "1661662881" }
-    val expectedFileName = "1661662881.json"
-    every { mockedContext.filesDir } returns File(ArgumentMatchers.anyString())
-    every { mockedJsonParser.encodeResourceToString(any()) } returns
-      resource.encodeResourceToString()
-    val expectedEncodedResource = mockedJsonParser.encodeResourceToString(resource)
-
+    val parser = fhirContext.newJsonParser()
+    val resource = Faker.buildPatient()
     val resultFile = configRegistry.writeToFile(resource)
-    assertEquals(expectedFileName, resultFile.name)
-    assertEquals(expectedEncodedResource, resultFile.readText())
-  }
-
-  @Test
-  fun testPopulateConfigurationsMapReadsAndSavesValidResourcesToDB() = runTest {
-    val mockedContext = mockk<Context>(relaxed = true)
-    val mockedConfigurationReg = mockk<ConfigurationRegistry>()
-    val composition = Composition().apply { id = "1234" }
-    val appId = "app/debug"
-    val resourceConfigs = mutableListOf<String>().apply { add("resources/sample_qr.json") }
-    val configFiles = mutableListOf<String>()
-    val assetFiles = Pair(configFiles, resourceConfigs)
-    val questionnaire =
-      """{
-  "resourceType": "Questionnaire",
-  "id": "3440",
-  "language": "en",
-  "name": "G6PD Test Photo Result",
-  "title": "G6PD Test Photo Result",
-  "status": "active",
-  "subjectType": [
-    "Patient"
-  ],
-  "publisher": "ONA-Systems",
-  "useContext": [
-    {
-      "code": {
-        "system": "http://hl7.org/fhir/codesystem-usage-context-type.html",
-        "code": "focus"
-      },
-      "valueCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://fhir.ona.io",
-            "code": "000002",
-            "display": "G6PD Test Photo Results"
-          }
-        ]
-      }
-    }
-  ],
-  "extension": [
-    {
-      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-targetStructureMap",
-      "valueCanonical": "https://fhir.labs.smartregister.org/StructureMap/5875"
-    },
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
-      "valueCanonical": "Library/46831"
-    },
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/cqf-library",
-      "valueCanonical": "Library/46823"
-    }
-  ],
-  "item": [
-    {
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-observationExtract",
-          "valueBoolean": true
-        }
-      ],
-      "linkId": "result_type",
-      "code": [
-        {
-          "system": "http://fhir.ona.io",
-          "code": "000001",
-          "display": "G6PD Result Type"
-        }
-      ],
-      "text": "G6PD Result Type",
-      "type": "choice",
-      "required": true,
-      "answerOption": [
-        {
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "410680006",
-            "display": "Number"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "405358009",
-            "display": "Error"
-          }
-        },
-        {
-          "valueCoding": {
-            "system": "http://snomed.info/sct",
-            "code": "385432009",
-            "display": "N/A"
-          }
-        }
-      ]
-    }
-  ]
-}
-        """
-        .trimIndent()
-    val resourceNames = arrayOf("sample_qr.json")
-    every { mockedContext.assets.list(BASE_RESOURCES_PATH) } returns resourceNames
-    every { mockedContext.assets.open(any()) } returnsMany
-      listOf(
-        ByteArrayInputStream(resourceNames[0].toByteArray()),
-      )
-    every { mockedContext.assets.open(any()) } returns
-      ByteArrayInputStream(
-        questionnaire.toByteArray(),
-      )
-    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(mockedContext) } returns
-      assetFiles
-    val loadedResources = configRegistry.retrieveConfigsAndResourcesFromAssets(mockedContext)
-    configRegistry.populateConfigurationsMap(mockedContext, composition, true, appId) {}
-    assertEquals(loadedResources, assetFiles)
-    coVerify { configRegistry.addOrUpdate(any()) }
-  }
-
-  @Test
-  fun testPopulateConfigurationsMapReadsAndSavesTestsException() = runTest {
-    val mockedContext = mockk<Context>(relaxed = true)
-    val mockedConfigurationReg = mockk<ConfigurationRegistry>()
-    val composition = Composition().apply { id = "1234" }
-    val appId = "app/debug"
-    val resourceConfigs = mutableListOf<String>().apply { add("resources/sample_qr.json") }
-    val configFiles = mutableListOf<String>()
-    val assetFiles = Pair(configFiles, resourceConfigs)
-    val resourceNames = arrayOf("sample_qr.json")
-    every { mockedContext.assets.list(BASE_RESOURCES_PATH) } returns resourceNames
-    every { mockedContext.assets.open(any()) } returnsMany
-      listOf(
-        ByteArrayInputStream(resourceNames[0].toByteArray()),
-      )
-    every { mockedContext.assets.open(any()) } returns
-      ByteArrayInputStream(
-        resourceNames[0].toByteArray(),
-      )
-    every { mockedConfigurationReg.retrieveConfigsAndResourcesFromAssets(mockedContext) } returns
-      assetFiles
-    configRegistry.populateConfigurationsMap(mockedContext, composition, true, appId) { result ->
-      assertTrue(result)
-    }
+    assertNotNull(resultFile)
+    assertEquals(
+      resource.logicalId,
+      (parser.parseResource(resultFile.readText()) as Patient).logicalId,
+    )
   }
 }
