@@ -30,21 +30,17 @@ internal object EditTextDecimalViewHolderFactory :
 
   override fun getQuestionnaireItemViewHolderDelegate() =
     object : QuestionnaireItemEditTextViewHolderDelegate(DECIMAL_INPUT_TYPE) {
-      override suspend fun handleInputText(
-        input: String?,
+      override suspend fun handleInput(
+        editable: Editable,
         questionnaireViewItem: QuestionnaireViewItem,
       ) {
-        if (input.isNullOrEmpty()) {
-          questionnaireViewItem.clearAnswer()
-          return
-        }
-        input.toDoubleOrNull()?.let {
+        editable.toString().toDoubleOrNull()?.let {
           questionnaireViewItem.setAnswer(
             QuestionnaireResponse.QuestionnaireResponseItemAnswerComponent()
               .setValue(DecimalType(it.toString())),
           )
         }
-          ?: questionnaireViewItem.setDraftAnswer(input)
+          ?: questionnaireViewItem.setDraftAnswer(editable.toString())
       }
 
       override fun updateUI(

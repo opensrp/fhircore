@@ -16,6 +16,7 @@
 
 package com.google.android.fhir.datacapture.views.factories
 
+import android.text.Editable
 import android.text.InputType
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
 import com.google.android.material.textfield.TextInputEditText
@@ -33,12 +34,16 @@ internal class EditTextStringViewHolderDelegate :
   QuestionnaireItemEditTextViewHolderDelegate(
     InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
   ) {
-  override suspend fun handleInputText(
-    input: String?,
+  override suspend fun handleInput(
+    editable: Editable,
     questionnaireViewItem: QuestionnaireViewItem,
   ) {
-    input?.let { getValue(input) }?.let { questionnaireViewItem.setAnswer(it) }
-      ?: questionnaireViewItem.clearAnswer()
+    val input = getValue(editable.toString())
+    if (input != null) {
+      questionnaireViewItem.setAnswer(input)
+    } else {
+      questionnaireViewItem.clearAnswer()
+    }
   }
 
   private fun getValue(
@@ -60,8 +65,7 @@ internal class EditTextStringViewHolderDelegate :
   ) {
     val text = questionnaireViewItem.answers.singleOrNull()?.valueStringType?.value ?: ""
     if ((text != textInputEditText.text.toString())) {
-      textInputEditText.text?.clear()
-      textInputEditText.append(text)
+      textInputEditText.setText(text)
     }
   }
 }

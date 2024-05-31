@@ -16,6 +16,7 @@
 
 package com.google.android.fhir.datacapture.contrib.views
 
+import android.text.Editable
 import android.text.InputType
 import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.views.QuestionnaireViewItem
@@ -32,12 +33,16 @@ object PhoneNumberViewHolderFactory :
   override fun getQuestionnaireItemViewHolderDelegate(): QuestionnaireItemViewHolderDelegate =
     object : QuestionnaireItemEditTextViewHolderDelegate(InputType.TYPE_CLASS_PHONE) {
 
-      override suspend fun handleInputText(
-        input: String?,
+      override suspend fun handleInput(
+        editable: Editable,
         questionnaireViewItem: QuestionnaireViewItem,
       ) {
-        input?.let { getValue(input) }?.let { questionnaireViewItem.setAnswer(it) }
-          ?: questionnaireViewItem.clearAnswer()
+        val input = getValue(editable.toString())
+        if (input != null) {
+          questionnaireViewItem.setAnswer(input)
+        } else {
+          questionnaireViewItem.clearAnswer()
+        }
       }
 
       private fun getValue(
