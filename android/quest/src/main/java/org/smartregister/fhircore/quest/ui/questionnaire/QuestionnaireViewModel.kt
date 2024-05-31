@@ -125,8 +125,8 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
-  private lateinit var questionnaireItemParentMap:
-          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>
+  private var questionnaireItemParentMap:
+          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
 
   private val questionnaireLaunchContextMap: Map<String, Resource>? = null
 
