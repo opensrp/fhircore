@@ -22,6 +22,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withContext
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import timber.log.Timber
 
 @HiltWorker
@@ -31,12 +33,15 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
   private val auditEventRepository: AuditEventRepository,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
-    Timber.e("AuditEventWorker is running")
-    auditEventRepository.createAuditEvent()
-    return Result.success()
+    return withContext(dispatcherProvider.singleThread()) {
+      Timber.e("AuditEventWorker is running")
+      auditEventRepository.createAuditEvent()
+      Result.success()
+    }
   }
 
   companion object {

@@ -36,7 +36,7 @@ constructor(
 ) : CoroutineWorker(appContext, workerParams) {
 
   override suspend fun doWork(): Result {
-    return withContext(dispatcherProvider.io()) {
+    return withContext(dispatcherProvider.singleThread()) {
       fhirResourceUtil.expireOverdueTasks()
       Result.success()
     }

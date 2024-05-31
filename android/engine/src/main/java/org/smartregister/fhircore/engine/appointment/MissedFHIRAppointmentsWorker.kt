@@ -38,7 +38,7 @@ constructor(
   val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParameters) {
   override suspend fun doWork(): Result {
-    return withContext(dispatcherProvider.io()) {
+    return withContext(dispatcherProvider.singleThread()) {
       fhirResourceUtil.handleMissedAppointment()
       Result.success()
     }

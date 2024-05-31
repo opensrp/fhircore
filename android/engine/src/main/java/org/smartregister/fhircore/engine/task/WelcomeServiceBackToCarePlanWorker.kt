@@ -31,6 +31,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Date
 import java.util.UUID
+import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -41,6 +42,7 @@ import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -55,12 +57,15 @@ constructor(
   @Assisted val appContext: Context,
   @Assisted workerParameters: WorkerParameters,
   val fhirEngine: FhirEngine,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
     return try {
-      updateCarePlanWithWelcomeService()
-      Result.success()
+      withContext(dispatcherProvider.singleThread()) {
+        updateCarePlanWithWelcomeService()
+        Result.success()
+      }
     } catch (e: Exception) {
       Timber.e(e)
       Result.failure()

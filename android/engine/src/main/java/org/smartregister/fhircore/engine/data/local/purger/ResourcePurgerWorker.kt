@@ -23,7 +23,9 @@ import androidx.work.WorkerParameters
 import com.google.android.fhir.FhirEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.withContext
 import org.joda.time.LocalTime
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
@@ -36,20 +38,23 @@ constructor(
   @Assisted workerParameters: WorkerParameters,
   val fhirEngine: FhirEngine,
   val sharedPreferencesHelper: SharedPreferencesHelper,
+  val dispatcherProvider: DispatcherProvider,
 ) : CoroutineWorker(appContext, workerParameters) {
 
   override suspend fun doWork(): Result {
-    val isOneTimeSync = inputData.getBoolean(ONE_TIME_SYNC_KEY, false)
-    val optimalHour = LocalTime().hourOfDay
-    Timber.i("Running $NAME...")
-    if ((optimalHour < 6 || optimalHour > 17) || isOneTimeSync) {
-      sharedPreferencesHelper.write(
-        SharedPreferenceKey.LAST_PURGE_KEY.name,
-        System.currentTimeMillis(),
-      )
-      ResourcePurger(fhirEngine)()
+    return withContext(dispatcherProvider.singleThread()) {
+      val isOneTimeSync = inputData.getBoolean(ONE_TIME_SYNC_KEY, false)
+      val optimalHour = LocalTime().hourOfDay
+      Timber.i("Running $NAME...")
+      if ((optimalHour < 6 || optimalHour > 17) || isOneTimeSync) {
+        sharedPreferencesHelper.write(
+          SharedPreferenceKey.LAST_PURGE_KEY.name,
+          System.currentTimeMillis(),
+        )
+        ResourcePurger(fhirEngine)()
+      }
+      Result.success()
     }
-    return Result.success()
   }
 
   companion object {

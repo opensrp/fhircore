@@ -16,9 +16,11 @@
 
 package org.smartregister.fhircore.engine.util
 
+import java.util.concurrent.Executors
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asCoroutineDispatcher
 
 interface DispatcherProvider {
   fun main(): CoroutineDispatcher = Dispatchers.Main
@@ -28,6 +30,9 @@ interface DispatcherProvider {
   fun io(): CoroutineDispatcher = Dispatchers.IO
 
   fun unconfined(): CoroutineDispatcher = Dispatchers.Unconfined
+
+  fun singleThread(): CoroutineDispatcher =
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
 
 class DefaultDispatcherProvider @Inject constructor() : DispatcherProvider
