@@ -1,0 +1,20 @@
+# Working in debug mode
+
+If you want to test local configurations or running debug application flavours you can do the following
+* Copy app configurations into assets/configs folder.
+* Rename the folder you copied to your appId name. Ensure the folder consists of the following sub-directories and files
+    - profiles
+    - registers
+    - translations
+    - application_config.json
+    - composition_config.json
+    - navigation_config.json
+    - sync_config.json
+
+* If you would like to work with local resources e.g Questionnaires, StructureMaps, planDefinitions e.t.c, create a folder called `resources`
+  inside `assets` and copy your files inside folders names. e.g Questionnaires can be added to a folder `questionnaire/your_questionnaire_files.json`. The
+  app will read these files and save your resources into sqlite db. You can now go ahead and reference the resource ids inside configurations files
+
+* Choose `variantNameDebug` as your app variant and run the app. e.g If your flavour name is called `sidCadre`, use the variant called `sidCadreDebug`
+* When asked to enter the `applicationId`, type your `appIdName/debug` inside the edit text. e.g `sidCadre/debug`
+* Proceed to input correct `usernames` and `password` and wait for the app to sync.
