@@ -47,11 +47,13 @@ fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController,
+  areViewPropertiesInterpolated: Boolean = false,
 ) {
   viewProperties.forEach { properties ->
+    val interpolatedProperties = if (areViewPropertiesInterpolated) properties else properties.interpolate(resourceData.computedValuesMap)
     GenerateView(
       modifier = generateModifier(properties),
-      properties = properties.interpolate(resourceData.computedValuesMap),
+      properties = interpolatedProperties,
       resourceData = resourceData,
       navController = navController,
     )
