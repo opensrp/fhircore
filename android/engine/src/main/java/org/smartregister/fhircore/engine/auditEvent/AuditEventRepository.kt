@@ -42,7 +42,7 @@ constructor(
       sharedPreferences.read(key = SharedPreferenceKey.PRACTITIONER_ID.name, defaultValue = null)
         ?: return
 
-    val practitioner = defaultRepository.loadResource<Practitioner>(practitionerID!!)
+    val practitioner = defaultRepository.loadResource<Practitioner>(practitionerID)
 
     val context = sharedPreferences.context
 

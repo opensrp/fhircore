@@ -51,7 +51,7 @@ constructor(
           SharedPreferenceKey.LAST_PURGE_KEY.name,
           System.currentTimeMillis(),
         )
-        ResourcePurger(fhirEngine)()
+        ResourcePurger(fhirEngine).invoke()
       }
       Result.success()
     }

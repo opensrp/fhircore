@@ -33,6 +33,7 @@ import java.util.Date
 import java.util.UUID
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
@@ -43,6 +44,7 @@ import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.extension.asDdMmmYyyy
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.referenceValue
@@ -72,43 +74,42 @@ constructor(
     }
   }
 
-  private suspend fun updateCarePlanWithWelcomeService() {
-    val tracingTagsInit =
-      tracingCodingTags
-        .map<Coding, TokenParamFilterCriterion.() -> Unit> {
-          return@map { value = of(it) }
-        }
-        .toTypedArray()
+  private suspend fun getInterruptedTreatmentTasks(page: Int) =
+    fhirEngine
+      .search<Task> {
+        filter(
+          TokenClientParam("_tag"),
+          *tracingTagsTokenParamFilterCriterion,
+          operation = Operation.OR,
+        )
+        filter(
+          Task.STATUS,
+          { value = of(Task.TaskStatus.READY.toCode()) },
+          { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
+          operation = Operation.OR,
+        )
+        filter(
+          Task.PERIOD,
+          {
+            value = of(DateTimeType.now())
+            prefix = ParamPrefixEnum.GREATERTHAN
+          },
+        )
+        from = page * PAGE_COUNT
+        count = PAGE_COUNT
+      }
+      .map { it.resource }
+      .filter { it.reasonCode.coding.any { coding -> coding.code == INTERRUPTED_TREAT_CODE } }
+      .filter {
+        it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
+          it.executionPeriod.hasStart() &&
+          it.executionPeriod.start
+            .before(Date())
+            .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
+      }
 
-    val interruptedTreatmentTasks =
-      fhirEngine
-        .search<Task> {
-          filter(TokenClientParam("_tag"), *tracingTagsInit, operation = Operation.OR)
-          filter(
-            Task.STATUS,
-            { value = of(Task.TaskStatus.READY.toCode()) },
-            { value = of(Task.TaskStatus.INPROGRESS.toCode()) },
-            operation = Operation.OR,
-          )
-          filter(
-            Task.PERIOD,
-            {
-              value = of(DateTimeType.now())
-              prefix = ParamPrefixEnum.GREATERTHAN
-            },
-          )
-        }
-        .map { it.resource }
-        .filter { it.reasonCode.coding.any { coding -> coding.code == INTERRUPTED_TREAT_CODE } }
-        .filter {
-          it.status in listOf(Task.TaskStatus.INPROGRESS, Task.TaskStatus.READY) &&
-            it.executionPeriod.hasStart() &&
-            it.executionPeriod.start
-              .before(Date())
-              .or(it.executionPeriod.start.asDdMmmYyyy() == Date().asDdMmmYyyy())
-        }
-
-    interruptedTreatmentTasks
+  private suspend fun processInterruptedTreatmentTasks(tasks: List<Task>) {
+    tasks
       .groupBy { it.`for`.reference }
       .forEach { (t, u) ->
         val patientId = IdType(t).idPart
@@ -147,6 +148,14 @@ constructor(
       }
   }
 
+  private suspend fun updateCarePlanWithWelcomeService() {
+    var start = 0
+    do {
+      val tasks = getInterruptedTreatmentTasks(start++)
+      processInterruptedTreatmentTasks(tasks)
+    } while (tasks.isNotEmpty())
+  }
+
   private suspend fun Patient.activeCarePlan() =
     fhirEngine
       .search<CarePlan> {
@@ -164,15 +173,20 @@ constructor(
     const val INTERRUPTED_TREAT_CODE = "interrupt-treat"
     const val WELCOME_SERVICE_QUESTIONNAIRE_ID = "art-client-welcome-service-back-to-care"
 
-    private val phoneTracingCoding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
-    private val homeTracingCoding = Coding("https://d-tree.org", "phone-tracing", "Phone Tracing")
     private val tracingCodingTags =
       arrayOf<Coding>(
-        phoneTracingCoding,
-        homeTracingCoding,
-        phoneTracingCoding.copy().apply { system = "http://snomed.info/sct" },
-        homeTracingCoding.copy().apply { system = "http://snomed.info/sct" },
+        ReasonConstants.homeTracingCoding,
+        ReasonConstants.phoneTracingCoding,
       )
+
+    private val tracingTagsTokenParamFilterCriterion =
+      tracingCodingTags
+        .map<Coding, TokenParamFilterCriterion.() -> Unit> {
+          return@map { value = of(CodeType(it.code)) }
+        }
+        .toTypedArray()
+
+    const val PAGE_COUNT = 500
   }
 }
 

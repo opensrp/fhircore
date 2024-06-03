@@ -21,7 +21,9 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
+import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.LocalDate
@@ -80,90 +82,116 @@ constructor(
 
   suspend fun expireOverdueTasks() {
     Timber.i("Starting task scheduler")
-    val carePlanMap = mutableMapOf<String, CarePlan>()
-    val tasksToUpdate = mutableListOf<Resource>()
 
-    fhirEngine
-      .search<Task> {
-        filter(
-          Task.STATUS,
-          { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
-          { value = of(Task.TaskStatus.READY.toCoding()) },
-          { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
-          { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
-          { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
-        )
+    suspend fun getTasks(page: Int): List<Task> =
+      fhirEngine
+        .search<Task> {
+          filter(
+            Task.STATUS,
+            { value = of(Task.TaskStatus.REQUESTED.toCoding()) },
+            { value = of(Task.TaskStatus.READY.toCoding()) },
+            { value = of(Task.TaskStatus.ACCEPTED.toCoding()) },
+            { value = of(Task.TaskStatus.INPROGRESS.toCoding()) },
+            { value = of(Task.TaskStatus.RECEIVED.toCoding()) },
+          )
 
-        filter(
-          Task.PERIOD,
-          {
-            prefix = ParamPrefixEnum.ENDS_BEFORE
-            value = of(DateTimeType(Date()))
-          },
-        )
-      }
-      .map { it.resource }
-      .filter {
-        it.hasPastEnd() &&
-          it.status in
-            arrayOf(
-              Task.TaskStatus.REQUESTED,
-              Task.TaskStatus.READY,
-              Task.TaskStatus.ACCEPTED,
-              Task.TaskStatus.INPROGRESS,
-              Task.TaskStatus.RECEIVED,
-            )
-      }
-      .onEach { task ->
-        task.status = Task.TaskStatus.FAILED
-
-        val carePlanId = task.getCarePlanId()
-
-        val carePlan =
-          carePlanId?.let { id ->
-            if (carePlanMap.containsKey(id)) {
-              carePlanMap[id]
-            } else {
-              runCatching { fhirEngine.get<CarePlan>(id) }.getOrNull()
-            }
-          }
-
-        if (carePlan != null) {
-          kotlin
-            .runCatching {
-              val index =
-                carePlan.activity.indexOfFirst { activity ->
-                  activity.outcomeReference.firstOrNull()?.reference == task.referenceValue()
-                }
-              if (index != -1) {
-                val item = carePlan.activity?.get(index)
-                item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED
-                carePlan.activity[index] = item
-                Timber.d("Updating carePlan: ${carePlan.referenceValue()}")
-                carePlanMap[carePlanId] = carePlan
-              }
-            }
-            .onFailure {
-              Timber.e(
-                "${carePlan.referenceValue()} CarePlan was not found. In consistent data ${it.message}",
-              )
-            }
+          filter(
+            Task.PERIOD,
+            {
+              prefix = ParamPrefixEnum.ENDS_BEFORE
+              value = of(DateTimeType(Date()))
+            },
+          )
+          from = page * PAGE_COUNT
+          this.count = PAGE_COUNT
         }
+        .map { it.resource }
+
+    suspend fun updateToFailedTasks(tasks: List<Task>) {
+      val tasksToUpdate = mutableListOf<Resource>()
+
+      val carePlans =
+        tasks
+          .mapNotNull { it.getCarePlanId() }
+          .map<String, TokenParamFilterCriterion.() -> Unit> {
+            return@map { of(it) }
+          }
+          .takeIf { it.isNotEmpty() }
+          ?.let {
+            fhirEngine
+              .search<CarePlan> {
+                filter(
+                  TokenClientParam("_id"),
+                  *it.toTypedArray(),
+                  operation = Operation.OR,
+                )
+              }
+              .map { it.resource }
+              .associateBy { it.logicalId }
+              .toMutableMap()
+          } ?: mutableMapOf()
+
+      tasks.onEach { task ->
+        task.status = Task.TaskStatus.FAILED
+        task
+          .getCarePlanId()
+          ?.let { carePlans[it] }
+          ?.let { carePlan ->
+            kotlin
+              .runCatching {
+                val index =
+                  carePlan.activity.indexOfFirst { activity ->
+                    activity.outcomeReference.firstOrNull()?.reference == task.referenceValue()
+                  }
+                if (index != -1) {
+                  val item = carePlan.activity?.get(index)
+                  item?.detail?.status = CarePlan.CarePlanActivityStatus.STOPPED
+                  carePlan.activity[index] = item
+                  Timber.d("Updating carePlan: ${carePlan.referenceValue()}")
+                  carePlans[carePlan.logicalId] = carePlan
+                }
+              }
+              .onFailure {
+                Timber.e(
+                  "${carePlan.referenceValue()} CarePlan was not found. In consistent data ${it.message}",
+                )
+              }
+          }
 
         Timber.d("Updating task: ${task.referenceValue()}")
         tasksToUpdate.add(task)
       }
 
-    Timber.d("Going to expire tasks = ${tasksToUpdate.size}  and carePlans = ${carePlanMap.size}")
-    fhirEngine.update(*(tasksToUpdate + carePlanMap.values).toTypedArray())
+      Timber.d("Going to expire tasks = ${tasksToUpdate.size}  and carePlans = ${carePlans.size}")
+      fhirEngine.update(*(tasksToUpdate + carePlans.values).toTypedArray())
+    }
+
+    var start = 0
+    do {
+      val tasks = getTasks(start++)
+      tasks
+        .filter {
+          it.hasPastEnd() &&
+            it.status in
+              arrayOf(
+                Task.TaskStatus.REQUESTED,
+                Task.TaskStatus.READY,
+                Task.TaskStatus.ACCEPTED,
+                Task.TaskStatus.INPROGRESS,
+                Task.TaskStatus.RECEIVED,
+              )
+        }
+        .takeIf { it.isNotEmpty() }
+        ?.let { updateToFailedTasks(it) }
+    } while (tasks.isNotEmpty())
 
     Timber.i("Done task scheduling")
   }
 
   suspend fun handleMissedAppointment() {
     Timber.i("Checking missed Appointments")
-    val tracingTasksToAdd = mutableListOf<Task>()
-    val missedAppointments =
+
+    suspend fun getAppointments(page: Int) =
       fhirEngine
         .search<Appointment> {
           filter(
@@ -179,10 +207,15 @@ constructor(
               prefix = ParamPrefixEnum.LESSTHAN
             },
           )
+          from = page * PAGE_COUNT
+          count = PAGE_COUNT
         }
-        .mapNotNull {
-          val appointment = it.resource
+        .map { it.resource }
 
+    suspend fun processAppointments(appointments: List<Appointment>) {
+      val tracingTasksToAdd = mutableListOf<Task>()
+      val missedAppointments =
+        appointments.mapNotNull { appointment ->
           if (
             !(appointment.hasStart() &&
               appointment.start.before(DateTime().withTimeAtStartOfDay().toDate()) &&
@@ -220,24 +253,30 @@ constructor(
           appointment
         }
 
-    if (tracingTasksToAdd.isNotEmpty()) {
-      defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
+      if (tracingTasksToAdd.isNotEmpty()) {
+        defaultRepository.create(addResourceTags = true, *tracingTasksToAdd.toTypedArray())
+      }
+
+      if (missedAppointments.isNotEmpty()) {
+        fhirEngine.update(*missedAppointments.toTypedArray())
+      }
+
+      Timber.i(
+        "Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}",
+      )
     }
 
-    if (missedAppointments.isNotEmpty()) {
-      fhirEngine.update(*missedAppointments.toTypedArray())
-    }
-
-    Timber.i(
-      "Updated ${missedAppointments.size} missed appointments, created tracing tasks: ${tracingTasksToAdd.size}",
-    )
+    var start = 0
+    do {
+      val appointments = getAppointments(start++)
+      processAppointments(appointments)
+    } while (appointments.isNotEmpty())
   }
 
   suspend fun handleWelcomeServiceAppointmentWorker() {
     Timber.i("Checking 'Welcome Service' appointments")
-    val tracingTasks = mutableListOf<Task>()
 
-    val proposedAppointments =
+    suspend fun getAppointments(page: Int) =
       fhirEngine
         .search<Appointment> {
           filter(
@@ -252,62 +291,76 @@ constructor(
               prefix = ParamPrefixEnum.LESSTHAN_OR_EQUALS
             },
           )
+          from = page * PAGE_COUNT
+          count = PAGE_COUNT
         }
         .map { it.resource }
-        .filter {
-          it.hasStart() &&
-            it.hasSupportingInformation() &&
-            it.supportingInformation.any { reference ->
-              reference.referenceElement.resourceType == ResourceType.Appointment.name
-            }
-        }
-        .map {
-          val supportFinishVisitAppointmentRef =
-            it.supportingInformation.first { reference ->
-              reference.referenceElement.resourceType == ResourceType.Appointment.name
-            }
-          val supportFinishVisitAppointmentRefId =
-            IdType(supportFinishVisitAppointmentRef.reference).idPart
-          val supportFinishVisitAppointment =
-            fhirEngine.get<Appointment>(supportFinishVisitAppointmentRefId)
-          Pair(it, supportFinishVisitAppointment)
-        }
 
-    val proposedAppointmentsToCancel =
-      proposedAppointments
-        .filter {
-          val finishVisitAppointment = it.second
-          finishVisitAppointment.status == Appointment.AppointmentStatus.FULFILLED
-        }
-        .map { it.first }
-
-    val proposedAppointmentsToBook =
-      proposedAppointments
-        .filter {
-          val finishVisitAppointment = it.second
-          val isValid =
-            finishVisitAppointment.status in
-              arrayOf(Appointment.AppointmentStatus.NOSHOW, Appointment.AppointmentStatus.BOOKED)
-
-          if (isValid) {
-            addToTracingList(
-                finishVisitAppointment,
-                ReasonConstants.interruptedTreatmentTracingCode,
-              )
-              ?.let { task -> tracingTasks.add(task) }
+    suspend fun processAppointments(appointments: List<Appointment>) {
+      val tracingTasks = mutableListOf<Task>()
+      val proposedAppointments =
+        appointments
+          .filter {
+            it.hasStart() &&
+              it.hasSupportingInformation() &&
+              it.supportingInformation.any { reference ->
+                reference.referenceElement.resourceType == ResourceType.Appointment.name
+              }
+          }
+          .map {
+            val supportFinishVisitAppointmentRef =
+              it.supportingInformation.first { reference ->
+                reference.referenceElement.resourceType == ResourceType.Appointment.name
+              }
+            val supportFinishVisitAppointmentRefId =
+              IdType(supportFinishVisitAppointmentRef.reference).idPart
+            val supportFinishVisitAppointment =
+              fhirEngine.get<Appointment>(supportFinishVisitAppointmentRefId)
+            Pair(it, supportFinishVisitAppointment)
           }
 
-          isValid
-        }
-        .map { it.first }
+      val proposedAppointmentsToCancel =
+        proposedAppointments
+          .filter {
+            val finishVisitAppointment = it.second
+            finishVisitAppointment.status == Appointment.AppointmentStatus.FULFILLED
+          }
+          .map { it.first }
 
-    defaultRepository.create(addResourceTags = true, *tracingTasks.toTypedArray())
-    bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
-    cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
+      val proposedAppointmentsToBook =
+        proposedAppointments
+          .filter {
+            val finishVisitAppointment = it.second
+            val isValid =
+              finishVisitAppointment.status in
+                arrayOf(Appointment.AppointmentStatus.NOSHOW, Appointment.AppointmentStatus.BOOKED)
 
-    Timber.i(
-      "proposedAppointmentsToBook: ${proposedAppointmentsToBook.size}, proposedAppointmentsToCancel: ${proposedAppointmentsToCancel.size}, tracing tasks: ${tracingTasks.size}",
-    )
+            if (isValid) {
+              addToTracingList(
+                  finishVisitAppointment,
+                  ReasonConstants.interruptedTreatmentTracingCode,
+                )
+                ?.let { task -> tracingTasks.add(task) }
+            }
+
+            isValid
+          }
+          .map { it.first }
+
+      defaultRepository.create(addResourceTags = true, *tracingTasks.toTypedArray())
+      bookWelcomeService(proposedAppointmentsToBook.toTypedArray())
+      cancelWelcomeService(proposedAppointmentsToCancel.toTypedArray())
+
+      Timber.i(
+        "proposedAppointmentsToBook: ${proposedAppointmentsToBook.size}, proposedAppointmentsToCancel: ${proposedAppointmentsToCancel.size}, tracing tasks: ${tracingTasks.size}",
+      )
+    }
+
+    var start = 0
+    do {
+      val appointments = getAppointments(start++)
+      processAppointments(appointments)
+    } while (appointments.isNotEmpty())
   }
 
   private suspend fun bookWelcomeService(appointments: Array<Appointment>) {
@@ -427,5 +480,9 @@ constructor(
     } catch (e: Exception) {
       return null
     }
+  }
+
+  companion object {
+    const val PAGE_COUNT = 500
   }
 }

@@ -21,6 +21,10 @@ import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.AuditEvent
 import org.hl7.fhir.r4.model.CarePlan
@@ -46,11 +50,19 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
     onPurgeAppointment()
   }
 
-  private suspend fun <R : Resource> query(type: ResourceType) =
-    fhirEngine.search<R>(Search(type)).map { it.resource }
+  private suspend fun <R : Resource> query(type: ResourceType): Flow<List<R>> = flow {
+    var start = 0
+    do {
+      val resources =
+        fhirEngine.search<R>(Search(type, count = 500, from = PAGE_COUNT * start++)).map {
+          it.resource
+        }
+      emit(resources)
+    } while (resources.isNotEmpty())
+  }
 
   private suspend fun <R : Resource> onPurge(type: ResourceType) =
-    query<R>(type).onEach { it.purge() }
+    query<R>(type).collect { it.purge() }
 
   private suspend fun Resource.purge() =
     try {
@@ -60,31 +72,46 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
       Timber.tag("purge:Exception").e(e.message!!)
     }
 
+  private suspend fun Iterable<Resource>.purge() {
+    try {
+      val resourceType = this.firstOrNull()?.resourceType ?: return
+      val idsToPurge = this.map { it.logicalId }.toSet()
+      fhirEngine.purge(resourceType, this.map { it.logicalId }.toSet())
+      Timber.tag("purge").d("Purged ${idsToPurge.size} resources of type '$resourceType'")
+    } catch (e: Exception) {
+      Timber.tag("purge:Exception").e(e.message!!)
+    }
+  }
+
   private suspend fun onPurgeAppointment() =
-    query<Appointment>(ResourceType.Appointment)
-      .filter { app ->
-        listOf(
-            Appointment.AppointmentStatus.ENTEREDINERROR,
-            Appointment.AppointmentStatus.CANCELLED,
-            Appointment.AppointmentStatus.NOSHOW,
-            Appointment.AppointmentStatus.FULFILLED,
-          )
-          .contains(app.status)
-      }
-      .onEach { it.purge() }
+    query<Appointment>(ResourceType.Appointment).collect { appointmentList ->
+      appointmentList
+        .filter {
+          listOf(
+              Appointment.AppointmentStatus.ENTEREDINERROR,
+              Appointment.AppointmentStatus.CANCELLED,
+              Appointment.AppointmentStatus.NOSHOW,
+              Appointment.AppointmentStatus.FULFILLED,
+            )
+            .contains(it.status)
+        }
+        .purge()
+    }
 
   private suspend fun onPurgeObservation() =
-    query<Observation>(ResourceType.Observation)
-      .filter { app ->
-        listOf(
-            Observation.ObservationStatus.ENTEREDINERROR,
-            Observation.ObservationStatus.CANCELLED,
-            Observation.ObservationStatus.FINAL,
-            Observation.ObservationStatus.CORRECTED,
-          )
-          .contains(app.status)
-      }
-      .onEach { it.purge() }
+    query<Observation>(ResourceType.Observation).collect { obsList ->
+      obsList
+        .filter {
+          listOf(
+              Observation.ObservationStatus.ENTEREDINERROR,
+              Observation.ObservationStatus.CANCELLED,
+              Observation.ObservationStatus.FINAL,
+              Observation.ObservationStatus.CORRECTED,
+            )
+            .contains(it.status)
+        }
+        .purge()
+    }
 
   /** Purge Inactive [CarePlan] together with it's associated [Task] */
   private suspend fun onPurgeInActiveCarePlanWithTasks(carePlans: List<CarePlan>) =
@@ -138,5 +165,9 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
     val carePlan = setStatus(CarePlan.CarePlanStatus.ENTEREDINERROR)
     fhirEngine.update(carePlan)
     return carePlan
+  }
+
+  companion object {
+    const val PAGE_COUNT = 500
   }
 }
