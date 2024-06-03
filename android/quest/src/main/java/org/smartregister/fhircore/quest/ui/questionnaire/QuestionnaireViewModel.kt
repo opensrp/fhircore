@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
@@ -83,7 +84,6 @@ import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocat
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -448,14 +448,46 @@ constructor(
     if (resourceIdPair != null) {
       val (resourceType, resourceId) = resourceIdPair
       val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
-      if (resource != null) {
-        val system =
-          context.getString(
-            org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
-          )
-        resource.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
-      }
+      val relatedEntityLocationTags = resource?.meta?.tag?.filter { coding ->
+        coding.system == context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+        )
+      } ?: retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
+
+      relatedEntityLocationTags?.forEach(this.meta::addTag)
     }
+  }
+
+  private suspend fun retrieveRelatedEntityTagsLinkedToSubject(
+    context: Context,
+    resourceIdPair: Pair<ResourceType, String>
+  ): List<Coding>? {
+    val (resourceType, resourceId) = resourceIdPair
+    val search = Search(ResourceType.List).apply {
+      filter(
+        ListResource.CODE,
+        {
+          value = of(
+            Coding(
+              context.getString(
+                org.smartregister.fhircore.engine.R.string.opensrp_coding_system
+              ),
+              context.getString(org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code),
+              context.getString(org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code_display)
+            )
+          )
+        })
+      filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
+    }
+    val listResource = defaultRepository.search<ListResource>(search).firstOrNull()
+    return if (listResource != null) {
+      val system =
+        context.getString(org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system)
+      val code = listResource.subject.extractId()
+      val display =
+        context.getString(org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display)
+      listOf(Coding(system, code, display))
+    } else null
   }
 
   private suspend fun retrievePreviouslyExtractedResources(
@@ -659,7 +691,7 @@ constructor(
     context: Context,
   ): Boolean {
     val validQuestionnaireResponseItems =
-      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+      ArrayList<QuestionnaireResponseItemComponent>()
     val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
     val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
 
@@ -928,7 +960,7 @@ constructor(
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
 
-  suspend fun launchContextResources(
+  private suspend fun launchContextResources(
     subjectResourceType: ResourceType?,
     subjectResourceIdentifier: String?,
     actionParameters: List<ActionParameter>,
