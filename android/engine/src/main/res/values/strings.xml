@@ -178,7 +178,7 @@
     <string name="location">Location</string>
     <string name="app_version_code">App version code</string>
     <string name="build_date">Build date</string>
-    <string name="manufacture">Manufacture</string>
+    <string name="manufacture">Manufacturer</string>
     <string name="app_versions">App version</string>
     <string name="os_version">OS Version</string>
     <string name="device_date">Date</string>
