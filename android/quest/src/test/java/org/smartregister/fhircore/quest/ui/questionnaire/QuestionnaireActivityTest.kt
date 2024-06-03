@@ -70,10 +70,10 @@ import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.decodeResourceFromString
+import org.smartregister.fhircore.engine.util.location.LocationUtils
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.util.LocationUtils
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
@@ -88,9 +88,6 @@ class QuestionnaireActivityTest : RobolectricTest() {
   private lateinit var questionnaire: Questionnaire
   private lateinit var questionnaireActivityController: ActivityController<QuestionnaireActivity>
   private lateinit var questionnaireActivity: QuestionnaireActivity
-  private lateinit var locationUtil: LocationUtils
-
-  private lateinit var locationManager: LocationManager
 
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
 
@@ -139,7 +136,9 @@ class QuestionnaireActivityTest : RobolectricTest() {
           ),
       )
     questionnaireJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("resources/sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
     questionnaire = questionnaireJson.decodeResourceFromString()
   }
 

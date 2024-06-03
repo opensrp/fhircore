@@ -158,6 +158,8 @@ constructor(
   suspend inline fun <reified R : Resource> search(search: Search) =
     fhirEngine.search<R>(search).map { it.resource }
 
+  suspend inline fun count(search: Search) = fhirEngine.count(search)
+
   /**
    * Saves a resource in the database. It also updates the [Resource.meta] _lastUpdated and
    * generates the [Resource.id] if it is missing before saving the resource.
@@ -508,7 +510,7 @@ constructor(
               )
               applyConfiguredSortAndFilters(
                 resourceConfig = resourceConfig,
-                sortData = false,
+                sortData = true,
                 configComputedRuleValues = configComputedRuleValues,
               )
             }
@@ -697,7 +699,6 @@ constructor(
       .runCatching { fhirEngine.search<Resource>(search) }
       .onSuccess { searchResult ->
         searchResult.forEach { currentSearchResult ->
-          // TODO Remove once issue resolved by Google team
           val includedResources: Map<ResourceType, List<Resource>>? =
             currentSearchResult.included
               ?.values
