@@ -222,7 +222,7 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
           ResourceType.Practitioner,
           ResourceType.Questionnaire,
           ResourceType.StructureMap,
-          ResourceType.Binary
+          ResourceType.Binary,
         )
     }
     .map { it.key to listOf("_tag" to organisationTag) }
