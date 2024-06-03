@@ -170,12 +170,20 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
         if (item.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL)) {
           item.removeExtension(EXTENSION_INITIAL_EXPRESSION_URL)
         }
-        item.initial =
-          arrayListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().apply {
-              value = actionParam.dataType?.let { actionParam.value.castToType(it) }
-            },
-          )
+        if (item.type == Questionnaire.QuestionnaireItemType.CHOICE) {
+          item.answerOption
+            .filter {
+              it.value is Coding && actionParam.value.split(",").contains((it.value as Coding).code)
+            }
+            .forEach { it.initialSelected = true }
+        } else {
+          item.initial =
+            arrayListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().apply {
+                value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+              },
+            )
+        }
       }
     if (item.item.isNotEmpty()) {
       item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)
