@@ -218,7 +218,12 @@ private fun SharedPreferencesHelper.filterByResourceLocation(
   return resourceTypePairsMap
     .filter {
       it.key !in
-        arrayOf(ResourceType.Practitioner, ResourceType.Questionnaire, ResourceType.StructureMap)
+        arrayOf(
+          ResourceType.Practitioner,
+          ResourceType.Questionnaire,
+          ResourceType.StructureMap,
+          ResourceType.Binary
+        )
     }
     .map { it.key to listOf("_tag" to organisationTag) }
     .toMap()

@@ -22,6 +22,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import org.smartregister.fhircore.engine.trace.AnalyticReporter
+import org.smartregister.fhircore.engine.trace.FirebaseAnalyticReporter
 import org.smartregister.fhircore.engine.trace.FirebasePerformanceReporter
 import org.smartregister.fhircore.engine.trace.PerformanceReporter
 
@@ -35,4 +37,6 @@ class AnalyticsModule {
   @Provides
   fun providePerformanceReporter(firebasePerformance: FirebasePerformance): PerformanceReporter =
     FirebasePerformanceReporter(firebasePerformance)
+
+  @Provides fun providesAnalyticsReporter(): AnalyticReporter = FirebaseAnalyticReporter()
 }

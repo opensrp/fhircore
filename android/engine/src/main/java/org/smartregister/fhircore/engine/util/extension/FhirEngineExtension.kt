@@ -21,6 +21,7 @@ import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
+import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -115,4 +116,21 @@ suspend inline fun <reified R : Resource> FhirEngine.getResourcesByIds(
       filter(Resource.RES_ID, *paramQueries.toTypedArray(), operation = Operation.OR)
     }
     .map { it.resource }
+}
+
+suspend fun FhirEngine.forceTagsUpdate(source: Resource) {
+  try {
+    var resource = source
+    /** Increment [Resource.meta] versionId of [source]. */
+    resource.meta.versionId?.toInt()?.plus(1)?.let {
+      /** Assign [Resource.meta] versionId of [source]. */
+      resource = resource.copy().apply { meta.versionId = "$it" }
+      /** Delete a FHIR [source] in the local storage. */
+      this.purge(resource.resourceType, resource.logicalId, forcePurge = true)
+      /** Recreate a FHIR [source] in the local storage. */
+      this.create(resource)
+    }
+  } catch (e: Exception) {
+    Timber.e(e)
+  }
 }

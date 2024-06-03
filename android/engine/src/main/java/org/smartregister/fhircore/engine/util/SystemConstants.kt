@@ -31,6 +31,8 @@ object SystemConstants {
   const val OBSERVATION_CODE_SYSTEM = "https://d-tree.org/fhir/observation-codes"
   const val CARE_PLAN_REFERENCE_SYSTEM = "https://d-tree.org/fhir/careplan-reference"
   const val QUESTIONNAIRE_REFERENCE_SYSTEM = "https://d-tree.org/fhir/procedure-code"
+  const val LOCATION_TAG = "http://smartregister.org/fhir/location-tag"
+  const val LOCATION_HIERARCHY_BINARY = "location-hierarchy"
 }
 
 object ReasonConstants {
@@ -52,6 +54,9 @@ object ReasonConstants {
     Coding(SystemConstants.REASON_CODE_SYSTEM, "missed-routine", "Missed Routine Appointment")
   var interruptedTreatmentTracingCode =
     Coding(SystemConstants.REASON_CODE_SYSTEM, "interrupted-treatment", "Interrupted Treatment")
+
+  var pendingTransferOutCode =
+    Coding("https://d-tree.org/fhir/transfer-out-status", "pending", "Pending")
 
   const val TRACING_OUTCOME_CODE = "tracing-outcome"
   const val DATE_OF_AGREED_APPOINTMENT = "date-of-agreed-appointment"

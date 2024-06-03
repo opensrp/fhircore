@@ -302,14 +302,26 @@ constructor(
               questionnaireType = QuestionnaireType.DEFAULT,
               populationResources = profile.populationResources,
             )
-          R.id.patient_transfer_out ->
-            QuestionnaireActivity.launchQuestionnaire(
-              event.context,
-              questionnaireId = PATIENT_TRANSFER_OUT,
-              clientIdentifier = patientId,
-              questionnaireType = QuestionnaireType.DEFAULT,
-              populationResources = profile.populationResources,
-            )
+          R.id.patient_transfer_out -> {
+            //            QuestionnaireActivity.launchQuestionnaire(
+            //              event.context,
+            //              questionnaireId = PATIENT_TRANSFER_OUT,
+            //              clientIdentifier = patientId,
+            //              questionnaireType = QuestionnaireType.DEFAULT,
+            //              populationResources = profile.populationResources,
+            //            )
+            patientId.let {
+              val urlParams =
+                NavigationArg.bindArgumentsOf(
+                  Pair(NavigationArg.FEATURE, AppFeature.PatientManagement.name),
+                  Pair(NavigationArg.HEALTH_MODULE, HealthModule.HIV),
+                  Pair(NavigationArg.PATIENT_ID, it),
+                )
+              event.navController.navigate(
+                route = "${MainNavigationScreen.TransferOut.route}/$it$urlParams",
+              )
+            }
+          }
           R.id.patient_change_status ->
             QuestionnaireActivity.launchQuestionnaire(
               event.context,

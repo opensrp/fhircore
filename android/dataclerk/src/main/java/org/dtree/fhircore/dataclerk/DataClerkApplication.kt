@@ -21,6 +21,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.google.android.fhir.datacapture.DataCaptureConfig
+import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.perf.ktx.performance
@@ -50,6 +51,7 @@ class DataClerkApplication : Application(), DataCaptureConfig.Provider, Configur
     if (BuildConfig.DEBUG) {
       Firebase.performance.isPerformanceCollectionEnabled = false
       Firebase.crashlytics.setCrashlyticsCollectionEnabled(false)
+      Firebase.analytics.setAnalyticsCollectionEnabled(false)
       Timber.plant(Timber.DebugTree())
     }
   }
