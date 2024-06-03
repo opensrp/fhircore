@@ -114,8 +114,9 @@ open class AppMainActivity : BaseMultiLanguageActivity(), OnSyncListener {
           state?.exceptions?.any {
             it.exception is HttpException && (it.exception as HttpException).code() == 401
           } ?: false
-        val message = if (hasAuthError) R.string.session_expired else R.string.sync_check_internet
-        showToast(getString(message))
+        if (hasAuthError) {
+          showToast(getString(R.string.session_expired))
+        }
         appMainViewModel.onEvent(
           AppMainEvent.UpdateSyncState(
             state,
