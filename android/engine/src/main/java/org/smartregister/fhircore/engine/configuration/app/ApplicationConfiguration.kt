@@ -59,4 +59,5 @@ enum class SyncStrategy {
 
 enum class LocationLogOptions {
   QUESTIONNAIRE,
+  CALCULATE_DISTANCE_RULE_EXECUTOR,
 }
