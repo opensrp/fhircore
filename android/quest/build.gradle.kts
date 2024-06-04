@@ -288,7 +288,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
-      manifestPlaceholders["appLabel"] = "GIZ EIR"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
