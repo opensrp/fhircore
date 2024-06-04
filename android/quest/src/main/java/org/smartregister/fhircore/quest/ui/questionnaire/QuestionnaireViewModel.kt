@@ -448,11 +448,14 @@ constructor(
     if (resourceIdPair != null) {
       val (resourceType, resourceId) = resourceIdPair
       val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
-      val relatedEntityLocationTags = resource?.meta?.tag?.filter { coding ->
-        coding.system == context.getString(
-          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
-        )
-      } ?: retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
+      val relatedEntityLocationTags =
+        resource?.meta?.tag?.filter { coding ->
+          coding.system ==
+            context.getString(
+              org.smartregister.fhircore.engine.R.string
+                .sync_strategy_related_entity_location_system,
+            )
+        } ?: retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
 
       relatedEntityLocationTags?.forEach(this.meta::addTag)
     }
@@ -460,34 +463,48 @@ constructor(
 
   private suspend fun retrieveRelatedEntityTagsLinkedToSubject(
     context: Context,
-    resourceIdPair: Pair<ResourceType, String>
+    resourceIdPair: Pair<ResourceType, String>,
   ): List<Coding>? {
     val (resourceType, resourceId) = resourceIdPair
-    val search = Search(ResourceType.List).apply {
-      filter(
-        ListResource.CODE,
-        {
-          value = of(
-            Coding(
-              context.getString(
-                org.smartregister.fhircore.engine.R.string.opensrp_coding_system
-              ),
-              context.getString(org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code),
-              context.getString(org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code_display)
-            )
-          )
-        })
-      filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
-    }
+    val search =
+      Search(ResourceType.List).apply {
+        filter(
+          ListResource.CODE,
+          {
+            value =
+              of(
+                Coding(
+                  context.getString(
+                    org.smartregister.fhircore.engine.R.string.opensrp_coding_system,
+                  ),
+                  context.getString(
+                    org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code
+                  ),
+                  context.getString(
+                    org.smartregister.fhircore.engine.R.string
+                      .linkage_resource_inventory_code_display
+                  ),
+                ),
+              )
+          },
+        )
+        filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
+      }
     val listResource = defaultRepository.search<ListResource>(search).firstOrNull()
     return if (listResource != null) {
       val system =
-        context.getString(org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system)
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system
+        )
       val code = listResource.subject.extractId()
       val display =
-        context.getString(org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display)
+        context.getString(
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display
+        )
       listOf(Coding(system, code, display))
-    } else null
+    } else {
+      null
+    }
   }
 
   private suspend fun retrievePreviouslyExtractedResources(
@@ -690,8 +707,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Boolean {
-    val validQuestionnaireResponseItems =
-      ArrayList<QuestionnaireResponseItemComponent>()
+    val validQuestionnaireResponseItems = ArrayList<QuestionnaireResponseItemComponent>()
     val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
     val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
 
