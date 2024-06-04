@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.p2p.dao
 
 import androidx.annotation.NonNull
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking

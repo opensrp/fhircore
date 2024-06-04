@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.data.remote.shared
 
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK
 import java.lang.reflect.Type

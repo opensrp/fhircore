@@ -21,8 +21,8 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.rest.gclient.IParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.StringParamFilterCriterion

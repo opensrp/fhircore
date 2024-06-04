@@ -19,11 +19,11 @@ package org.smartregister.fhircore.engine.data.local
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.delete
 import com.google.android.fhir.get
 import com.google.android.fhir.getLocalizedText
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton

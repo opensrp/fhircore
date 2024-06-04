@@ -18,7 +18,7 @@ package org.smartregister.fhircore.engine.data.local.tracing
 
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import io.mockk.coEvery
 import io.mockk.mockk

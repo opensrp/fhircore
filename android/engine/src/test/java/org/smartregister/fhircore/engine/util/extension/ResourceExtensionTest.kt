@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.engine.util.extension
 
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.quest.ui.patient.register
 
 import android.content.Context
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.Patient

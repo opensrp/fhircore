@@ -19,9 +19,9 @@ package org.smartregister.fhircore.engine.util.extension
 import android.database.SQLException
 import ca.uhn.fhir.util.UrlUtil
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion

@@ -67,7 +67,7 @@ constructor(
     return withContext(dispatcherProvider.singleThread()) { super.doWork() }
   }
 
-  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
+  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.SingleResourcePost
 
   override fun getFhirEngine(): FhirEngine = engine
 }

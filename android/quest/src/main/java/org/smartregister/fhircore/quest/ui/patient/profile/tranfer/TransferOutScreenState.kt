@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile.tranfer
 
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.util.SystemConstants
 import org.smartregister.fhircore.engine.util.extension.extractGivenName

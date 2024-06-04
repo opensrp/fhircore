@@ -17,12 +17,11 @@
 package org.smartregister.fhircore.engine.data.local.tracing
 
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Operation
 import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.search
-import com.google.android.fhir.testing.jsonParser
 import java.util.Date
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.CodeableConcept
@@ -40,6 +39,7 @@ import org.smartregister.fhircore.engine.domain.model.TracingOutcomeDetails
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.ReasonConstants
 import org.smartregister.fhircore.engine.util.SystemConstants
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import timber.log.Timber
@@ -237,7 +237,7 @@ class TracingRepository @Inject constructor(val fhirEngine: FhirEngine) {
 
   suspend fun getTracingAttempt(patient: Patient, tasks: List<Task>): TracingAttempt {
     val list = getPatientListResource(patient)
-    list?.let { Timber.e(jsonParser.encodeResourceToString(list)) }
+    list?.let { Timber.e(list.encodeResourceToString()) }
     return list?.let { toTracingAttempt(it) }
       ?: TracingAttempt(
         historyId = null,
