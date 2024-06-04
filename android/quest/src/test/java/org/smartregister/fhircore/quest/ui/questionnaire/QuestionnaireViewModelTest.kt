@@ -200,7 +200,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Sample questionnaire
     val questionnaireJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("resources/sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
 
     samplePatientRegisterQuestionnaire = questionnaireJson.decodeResourceFromString()
   }
