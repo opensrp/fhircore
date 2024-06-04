@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.0.0">
 <title data-rh="true">readme | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/engineering/backend"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="readme | OpenSRP Documentation"><meta data-rh="true" name="description" content="Backend application setup"><meta data-rh="true" property="og:description" content="Backend application setup"><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/engineering/backend"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/backend" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/backend" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.6faaae7e.css">
-<script src="/assets/js/runtime~main.f4269e6a.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.ea88bf3c.js" defer="defer"></script>
 <script src="/assets/js/main.44eccda5.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -110,14 +110,15 @@
 <li>Link to the <a href="https://hub.docker.com/r/onaio/fhir-gateway-plugin/tags" target="_blank" rel="noopener noreferrer">Docker image</a></li>
 <li>The main documentation for deploying can be found in the <a href="https://github.com/google/fhir-gateway/blob/main/README.md" target="_blank" rel="noopener noreferrer">Github READ ME</a>For configuration parameters, check out Read Me file for setting environment variables.</li>
 <li>For configuration parameters, check out Read Me file for setting environment variables.</li>
-<li>OpenSRP nuances: Provide/export  the System variable <code>ALLOWED_QUERIES_FILE</code> with value <code>&quot;resources/hapi_page_url_allowed_queries.json&quot;</code><a href="https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_page_url_allowed_queries.json" target="_blank" rel="noopener noreferrer">HAPI Page URL Allowed Queries</a></li>
-<li>For each deployment the configuration entries for resources here should match the specific  <code>Composition</code> resource ID and <code>Binary</code> resources IDs</li>
-<li>Refer to the <a href="https://docs.google.com/document/d/1dVFwI3B6AR-J3HTgLdbM-AJuoxMorrOqe2z7y_t_B2Y/edit?usp=sharing" target="_blank" rel="noopener noreferrer">FHIR Info Gateway Plugin Deployment Documentation</a></li>
+<li>OpenSRP nuances: Provide/export  the System variable <code>ALLOWED_QUERIES_FILE</code> with value <code>&quot;resources/hapi_page_url_allowed_queries.json&quot;</code> <a href="https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_page_url_allowed_queries.json" target="_blank" rel="noopener noreferrer">HAPI Page URL Allowed Queries</a></li>
+<li>For each deployment the configuration entries for resources here should match the specific  <code>Composition</code> resource ID and <code>Binary</code> resources IDs for the android clients</li>
+<li>Refer to the <a href="https://github.com/onaio/fhir-gateway-extension" target="_blank" rel="noopener noreferrer">FHIR Info Gateway extension documentation</a></li>
+<li>Gateway with the help of the plugins currently handle both andriod and web client requests</li>
 </ol>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="deploy-fhir-web">Deploy fhir-web<a href="#deploy-fhir-web" class="hash-link" aria-label="Direct link to Deploy fhir-web" title="Direct link to Deploy fhir-web">​</a></h2>
 <ol>
 <li>The OpenSRP 2.0 web portal deployment docs can be found <a href="https://github.com/opensrp/web/blob/master/docs/fhir-web-docker-deployment.md" target="_blank" rel="noopener noreferrer">here</a></li>
-<li>This platform doesn’t yet target the Gateway server. We are working to build plugins for it to use.</li>
+<li>This platform is now supported by the Gateway server through the <a href="https://github.com/onaio/fhir-gateway-extension" target="_blank" rel="noopener noreferrer">FHIR Info Gateway extension</a>.</li>
 </ol>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="gotchas">Gotchas<a href="#gotchas" class="hash-link" aria-label="Direct link to Gotchas" title="Direct link to Gotchas">​</a></h2>
 <ul>
