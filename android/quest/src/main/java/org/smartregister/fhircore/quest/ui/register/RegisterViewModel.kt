@@ -28,6 +28,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
@@ -446,8 +447,6 @@ constructor(
             )
         }
 
-        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
-
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
@@ -478,6 +477,10 @@ constructor(
             isSyncUpload = _isUploadSync,
             params = paramsMap,
           )
+
+        paramsMap["searchedText"]?.let {
+          onEvent(RegisterEvent.SearchRegister(it))
+        } ?: paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
       }
     }
   }

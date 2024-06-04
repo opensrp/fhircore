@@ -107,6 +107,7 @@ fun RegisterScreen(
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
           topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
           navController = navController,
+          onSearchClick = {}
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->

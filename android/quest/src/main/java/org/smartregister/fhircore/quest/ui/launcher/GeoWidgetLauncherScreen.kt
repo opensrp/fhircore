@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
@@ -31,10 +32,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
+import org.smartregister.fhircore.engine.domain.model.ActionParameter
+import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
+import org.smartregister.fhircore.quest.ui.register.RegisterEvent
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import kotlin.reflect.KFunction1
 
 const val NO_REGISTER_VIEW_COLUMN_TEST_TAG = "noRegisterViewColumnTestTag"
 const val NO_REGISTER_VIEW_TITLE_TEST_TAG = "noRegisterViewTitleTestTag"
@@ -53,6 +60,8 @@ fun GeoWidgetLauncherScreen(
   fragmentManager: FragmentManager,
   fragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
+  searchText: MutableState<String>,
+  filterLocations: (String) -> Unit
 ) {
   Scaffold(
     topBar = {
@@ -63,7 +72,7 @@ fun GeoWidgetLauncherScreen(
          * */
         TopScreenSection(
           title = geoWidgetConfiguration.topScreenSection?.title ?: "",
-          searchText = "",
+          searchText = searchText.value,
           filteredRecordsCount = 1,
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
@@ -73,6 +82,7 @@ fun GeoWidgetLauncherScreen(
           },
           isFilterIconEnabled = false,
           topScreenSection = geoWidgetConfiguration.topScreenSection,
+          onSearchClick = onSearchClick,
           navController = navController,
         ) { event ->
           when (event) {
@@ -83,7 +93,25 @@ fun GeoWidgetLauncherScreen(
               }
             ToolbarClickEvent.FilterData -> {}
             is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(navController = navController)
+              if (searchText.value.isNotEmpty()) {
+                listOf(
+                  ActionConfig(
+                    ActionTrigger.ON_CLICK,
+                    workflow = "LAUNCH_REGISTER",
+                    id = "servicePointRegister",
+                    params = listOf(
+                      ActionParameter(
+                        key = "searchedText",
+                        value = searchText.value,
+                        paramType = ActionParameterType.PARAMDATA
+                      )
+                    )
+                  )
+                ).handleClickEvent(navController = navController)
+              } else {
+                event.actions.handleClickEvent(navController = navController)
+              }
+              //event.actions.handleClickEvent(navController = navController)
             }
           }
         }

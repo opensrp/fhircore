@@ -163,6 +163,8 @@ class GeoWidgetLauncherFragment : Fragment() {
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
+                searchText = geoWidgetLauncherViewModel.searchText,
+                filterLocations = geoWidgetLauncherViewModel::filterLocations
               )
             }
           }
@@ -252,5 +254,10 @@ class GeoWidgetLauncherFragment : Fragment() {
 
   companion object {
     const val GEO_WIDGET_FRAGMENT_TAG = "geo-widget-fragment-tag"
+  }
+
+  override fun onStop() {
+    super.onStop()
+    geoWidgetLauncherViewModel.searchText.value = "" // Clear the search term
   }
 }
