@@ -173,7 +173,10 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
         if (item.type == Questionnaire.QuestionnaireItemType.CHOICE) {
           item.answerOption
             .filter {
-              it.value is Coding && actionParam.value.split(",").contains((it.value as Coding).code)
+              (it.value is Coding) &&
+                if (actionParam.value.contains(",")) {
+                  actionParam.value.split(",").contains((it.value as Coding).code)
+                } else actionParam.value == (it.value as Coding).code
             }
             .forEach { it.initialSelected = true }
         } else {
