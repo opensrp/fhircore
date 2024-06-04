@@ -91,13 +91,14 @@ You can manage users manually via the APIs and/or user interfaces for keycloak a
 1. The main documentation for deploying can be found in the [Github READ ME](https://github.com/google/fhir-gateway/blob/main/README.md)For configuration parameters, check out Read Me file for setting environment variables.
 1. For configuration parameters, check out Read Me file for setting environment variables.
 1. OpenSRP nuances: Provide/export  the System variable `ALLOWED_QUERIES_FILE` with value `"resources/hapi_page_url_allowed_queries.json"`[HAPI Page URL Allowed Queries](https://github.com/opensrp/fhir-gateway/blob/main/resources/hapi_page_url_allowed_queries.json)
-1. For each deployment the configuration entries for resources here should match the specific  `Composition` resource ID and `Binary` resources IDs
+1. For each deployment the configuration entries for resources here should match the specific  `Composition` resource ID and `Binary` resources IDs for the android clients
 1. Refer to the [FHIR Info Gateway Plugin Deployment Documentation](https://docs.google.com/document/d/1dVFwI3B6AR-J3HTgLdbM-AJuoxMorrOqe2z7y_t_B2Y/edit?usp=sharing)
+1. Gateway with the help of the plugins currently handle both andriod and web client requests
 
 ## Deploy fhir-web
 
     1. The OpenSRP 2.0 web portal deployment docs can be found [here](https://github.com/opensrp/web/blob/master/docs/fhir-web-docker-deployment.md)
-    1. This platform doesn’t yet target the Gateway server. We are working to build plugins for it to use.  
+    1. This platform is now supported by the Gateway server through the custom plugins mentioned above.
 
 
 ## Gotchas
