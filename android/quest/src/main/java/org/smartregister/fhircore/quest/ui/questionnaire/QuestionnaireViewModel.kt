@@ -478,11 +478,11 @@ constructor(
                     org.smartregister.fhircore.engine.R.string.opensrp_coding_system,
                   ),
                   context.getString(
-                    org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code
+                    org.smartregister.fhircore.engine.R.string.linkage_resource_inventory_code,
                   ),
                   context.getString(
                     org.smartregister.fhircore.engine.R.string
-                      .linkage_resource_inventory_code_display
+                      .linkage_resource_inventory_code_display,
                   ),
                 ),
               )
@@ -494,12 +494,12 @@ constructor(
     return if (listResource != null) {
       val system =
         context.getString(
-          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
         )
       val code = listResource.subject.extractId()
       val display =
         context.getString(
-          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display
+          org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
         )
       listOf(Coding(system, code, display))
     } else {
