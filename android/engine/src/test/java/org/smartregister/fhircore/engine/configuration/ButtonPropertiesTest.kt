@@ -95,5 +95,8 @@ class ButtonPropertiesTest : RobolectricTest() {
     map["status"] = "UPCOMING"
     val statusColorUpcoming = buttonProperties.statusColor(map)
     Assert.assertEquals(statusColorUpcoming, DefaultColor)
+    map["status"] = "FAILED"
+    val statusColorFailed = buttonProperties.statusColor(map)
+    Assert.assertEquals(statusColorFailed, DangerColor)
   }
 }

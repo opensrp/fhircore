@@ -103,7 +103,7 @@ object Faker {
           context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
           openSrpApplication =
             object : OpenSrpApplication() {
-              override fun getFhirServerHost(): URL? {
+              override fun getFhirServerHost(): URL {
                 return URL("http://my_test_fhirbase_url/fhir/")
               }
             },

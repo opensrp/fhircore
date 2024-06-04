@@ -554,7 +554,6 @@ constructor(
         serviceStatus =
           when (task.status) {
             Task.TaskStatus.NULL,
-            Task.TaskStatus.FAILED,
             Task.TaskStatus.RECEIVED,
             Task.TaskStatus.ENTEREDINERROR,
             Task.TaskStatus.ACCEPTED,
@@ -564,6 +563,7 @@ constructor(
               Timber.e("Task.status is null", Exception())
               ServiceStatus.UPCOMING.name
             }
+            Task.TaskStatus.FAILED -> ServiceStatus.FAILED.name
             Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
             Task.TaskStatus.READY -> ServiceStatus.DUE.name
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
