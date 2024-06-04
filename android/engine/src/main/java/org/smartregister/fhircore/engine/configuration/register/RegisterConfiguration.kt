@@ -23,6 +23,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -44,4 +45,5 @@ data class RegisterConfiguration(
     ),
   val configRules: List<RuleConfig>? = null,
   val registerFilter: RegisterFilterConfig? = null,
+  val topScreenSection: TopScreenSectionConfig? = null,
 ) : Configuration()

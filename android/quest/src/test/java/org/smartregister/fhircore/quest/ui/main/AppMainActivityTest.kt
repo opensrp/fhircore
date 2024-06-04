@@ -51,7 +51,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.extension.second
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.event.AppEvent
 import org.smartregister.fhircore.quest.event.EventBus
@@ -85,8 +84,8 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   fun testActivityIsStartedCorrectly() {
     Assert.assertNotNull(appMainActivity)
     val fragments = appMainActivity.supportFragmentManager.fragments
-    Assert.assertEquals(2, fragments.size)
-    Assert.assertTrue(fragments.second() is NavHostFragment)
+    Assert.assertEquals(1, fragments.size)
+    Assert.assertTrue(fragments.first() is NavHostFragment)
   }
 
   override fun getActivity(): Activity {

@@ -91,6 +91,7 @@ data class QuestionnaireConfig(
       barcodeLinkId = barcodeLinkId?.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
+      saveButtonText = saveButtonText?.interpolate(computedValuesMap),
     )
 }
 

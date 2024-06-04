@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.geowidget.model
+package org.smartregister.fhircore.engine.domain.model
 
 import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterContentConfig
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 
 @Serializable
-sealed class GeoWidgetEvent {
-
-  @Serializable
-  data class OpenProfile(val data: String, val geoWidgetConfiguration: GeoWidgetConfiguration) :
-    GeoWidgetEvent()
-
-  @Serializable
-  data class RegisterClient(val data: String, val questionnaire: QuestionnaireConfig) :
-    GeoWidgetEvent()
-}
+data class TopScreenSectionConfig(
+  val searchBar: RegisterContentConfig?,
+  val title: String? = null,
+  val menuIcons: List<ImageProperties>? = null,
+)
