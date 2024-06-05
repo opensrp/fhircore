@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,7 +39,6 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -102,16 +102,18 @@ fun TopScreenSection(
 ) {
   val keyboardController = LocalSoftwareKeyboardController.current
   Column(
-    modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+    modifier = modifier
+      .fillMaxWidth()
+      .background(MaterialTheme.colors.primary),
   ) {
     Row(
       modifier =
-        modifier
-          .fillMaxWidth()
-          .padding(horizontal = 16.dp, vertical = 16.dp)
-          .testTag(
-            TITLE_ROW_TEST_TAG,
-          ),
+      modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 16.dp)
+        .testTag(
+          TITLE_ROW_TEST_TAG,
+        ),
       verticalAlignment = Alignment.CenterVertically,
     ) {
       Icon(
@@ -128,9 +130,12 @@ fun TopScreenSection(
         text = title,
         fontSize = 20.sp,
         color = Color.White,
-        modifier = modifier.padding(start = 8.dp).weight(1f).testTag(TOP_ROW_TEXT_TEST_TAG),
+        modifier = modifier
+          .padding(start = 8.dp)
+          .weight(1f)
+          .testTag(TOP_ROW_TEXT_TEST_TAG),
       )
-
+      Spacer(modifier = Modifier.weight(1f))
       // if menu icons are more than two then we will add a overflow menu for other menu icons
       // to support m3 guidelines
       // https://m3.material.io/components/top-app-bar/guidelines#b1b64842-7d88-4c3f-8ffb-4183fe648c9e
@@ -178,12 +183,12 @@ fun TopScreenSection(
           )
         },
         modifier =
-          modifier
-            .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(size = 10.dp))
-            .background(Color.White)
-            .testTag(OUTLINED_BOX_TEST_TAG),
+        modifier
+          .padding(start = 8.dp, bottom = 8.dp, end = 8.dp)
+          .fillMaxWidth()
+          .clip(RoundedCornerShape(size = 10.dp))
+          .background(Color.White)
+          .testTag(OUTLINED_BOX_TEST_TAG),
         leadingIcon = {
           Icon(
             imageVector = Icons.Filled.Search,
@@ -268,16 +273,16 @@ fun RenderMenuIcons(
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
-  LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+  LazyRow{
     items(menuIcons) {
       Image(
         imageProperties = ImageProperties(imageConfig = it.imageConfig),
         navController = navController,
         tint = Color.White,
         modifier =
-          modifier
-            .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
-            .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
+        modifier
+          .clickable { onClick(ToolbarClickEvent.Actions(it.actions)) }
+          .testTag(TOP_ROW_TOGGLE_ICON_TEST_tAG),
       )
     }
   }

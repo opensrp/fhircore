@@ -29,6 +29,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.google.common.eventbus.EventBus
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
@@ -37,6 +38,7 @@ import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
+import com.mapbox.mapboxsdk.style.layers.CircleLayer
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
@@ -47,7 +49,6 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
@@ -66,6 +67,8 @@ import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import timber.log.Timber
+import java.util.LinkedList
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
@@ -100,7 +103,7 @@ class GeoWidgetFragment : Fragment() {
 
   private fun setLocationCollector() {
     viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetViewModel.featuresFlow
+      geoWidgetViewModel.results
         .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
         .collect { features ->
           val featureCollection = FeatureCollection.fromFeatures(features.toList())
@@ -321,6 +324,10 @@ class GeoWidgetFragment : Fragment() {
 
   fun addLocationsToMap(locations: Set<Feature>) {
     geoWidgetViewModel.addLocationsToMap(locations)
+  }
+
+  fun onSearchMap(value: String)  {
+    geoWidgetViewModel.onSearchQuery(value)
   }
 
   companion object {

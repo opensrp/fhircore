@@ -53,6 +53,7 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -77,7 +78,7 @@ constructor(
   val searchText = mutableStateOf("")
   private var geoWidgetConfiguration: GeoWidgetConfiguration?= null
   // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
-  private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration, configRules : List<RuleConfig>?= null) {
+  private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
     viewModelScope.launch(dispatcherProvider.io()) {
       // TODO: Loading all the data with the related resources may impact performance. This
       //  needs to be refactored in future
@@ -85,7 +86,7 @@ constructor(
         defaultRepository.searchResourcesRecursively(
           filterActiveResources = null,
           fhirResourceConfig = geoWidgetConfig.resourceConfig,
-          configRules = configRules,
+          configRules = null,
           secondaryResourceConfigs = null,
         )
 
@@ -194,11 +195,6 @@ constructor(
         searchText.value = event.searchText
       }
     }
-
-  fun filterLocations(searchText : String) {
-    retrieveLocations(geoWidgetConfiguration, )
-  }
-
   /**
    * Adds coordinates into the correct action parameter as [ActionParameter.value] if the
    * [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. *

@@ -50,8 +50,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
-        onClick = {},
-      )
+      ) {}
     }
 
     composeTestRule
@@ -81,8 +80,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
-        onClick = {},
-      )
+      ) {}
     }
 
     composeTestRule
@@ -114,8 +112,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = { clicked = true },
         navController = navController,
         isSearchBarVisible = true,
-        onClick = {},
-      )
+      ) {}
     }
 
     val trailingIcon = composeTestRule.onNodeWithTag(TRAILING_ICON_BUTTON_TEST_TAG)

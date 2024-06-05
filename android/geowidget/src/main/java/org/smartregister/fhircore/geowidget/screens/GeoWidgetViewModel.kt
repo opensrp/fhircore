@@ -17,10 +17,15 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -38,6 +43,10 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
     MutableStateFlow(setOf())
   val featuresFlow: StateFlow<Set<com.mapbox.geojson.Feature>> = _featuresFlow
 
+  private val _results by lazy { MutableStateFlow<Set<com.mapbox.geojson.Feature>>(setOf()) }
+  val results:StateFlow<Set<com.mapbox.geojson.Feature>>
+    get() = _results
+
   @VisibleForTesting
   fun addLocationToMap(feature: Feature) {
     try {
@@ -51,6 +60,7 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
         }
       val mapBoxfeature = com.mapbox.geojson.Feature.fromJson(jsonFeature.toString())
       _featuresFlow.value += mapBoxfeature
+      _results.update { featuresFlow.value }
     } catch (e: Exception) {
       Timber.e(e)
     }
@@ -58,6 +68,21 @@ class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherP
 
   fun addLocationsToMap(locations: Set<Feature>) {
     locations.forEach { location -> addLocationToMap(location) }
+  }
+
+  fun onSearchQuery(query:String) {
+    filterResults(query)
+  }
+  private fun filterResults(query:String) {
+    if (query.isNotEmpty()) {
+      _results.update {
+        featuresFlow.value.filter {
+          it.properties()?.get("name")?.asString?.contains(query, true) == true
+        }.toSet()
+      }
+    } else {
+      _results.update { featuresFlow.value }
+    }
   }
 
   fun clearLocations() {

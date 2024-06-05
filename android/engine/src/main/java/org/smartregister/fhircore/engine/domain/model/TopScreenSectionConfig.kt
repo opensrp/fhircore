@@ -25,5 +25,5 @@ data class TopScreenSectionConfig(
   val searchBar: RegisterContentConfig?,
   val title: String? = null,
   val menuIcons: List<ImageProperties>? = null,
-  val shouldShowSearchButton : Boolean = true
+  val shouldShowSearchButton : Boolean = false
 )
