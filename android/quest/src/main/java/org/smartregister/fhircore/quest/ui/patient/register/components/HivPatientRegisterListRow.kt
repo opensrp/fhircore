@@ -52,7 +52,7 @@ import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> Unit) {
+fun HivPatientRegisterListRow(data: RegisterViewData.ListItemView, onItemClick: (String) -> Unit) {
   Card(
     onClick = { onItemClick(data.logicalId) },
     modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
@@ -121,7 +121,7 @@ fun HivPatientRegisterListRow(data: RegisterViewData, onItemClick: (String) -> U
 fun PreviewHivFemalePatientRegisterRowItem() {
   HivPatientRegisterListRow(
     data =
-      RegisterViewData(
+      RegisterViewData.ListItemView(
         logicalId = "eddb38b9-5363-4bcc-8cb9-dbbc2b4cddd9",
         identifier = "      ",
         title = "Sasha Pinheiro",
@@ -140,7 +140,7 @@ fun PreviewHivFemalePatientRegisterRowItem() {
 fun PreviewHivMalePatientRegisterRowItem() {
   HivPatientRegisterListRow(
     data =
-      RegisterViewData(
+      RegisterViewData.ListItemView(
         logicalId = "1212299",
         identifier = "123456",
         title = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr",
@@ -159,7 +159,7 @@ fun PreviewHivMalePatientRegisterRowItem() {
 fun PreviewHivExposedInfantPatientRegisterRowItem() {
   HivPatientRegisterListRow(
     data =
-      RegisterViewData(
+      RegisterViewData.ListItemView(
         logicalId = "1212299",
         identifier = "909099",
         title = "Ali Coyote(Child)",
@@ -178,7 +178,7 @@ fun PreviewHivExposedInfantPatientRegisterRowItem() {
 fun PreviewHivFemalePregnantPatientRegisterRowItem() {
   HivPatientRegisterListRow(
     data =
-      RegisterViewData(
+      RegisterViewData.ListItemView(
         logicalId = "345667782",
         identifier = "556637",
         title = "Maggie Coyote(Mother)",
@@ -197,7 +197,7 @@ fun PreviewHivFemalePregnantPatientRegisterRowItem() {
 fun PreviewHivFemaleBreastfeedingPatientRegisterRowItem() {
   HivPatientRegisterListRow(
     data =
-      RegisterViewData(
+      RegisterViewData.ListItemView(
         logicalId = "345667782",
         identifier = "556637",
         title = "Maggie Coyote(Mother Breastfeeding)",

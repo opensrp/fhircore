@@ -171,7 +171,7 @@ constructor(
     val patients = searchRegisterData {
       filter(Patient.ACTIVE, { value = of(true) })
       if (!loadAll) {
-        count = PaginationConstant.DEFAULT_PAGE_SIZE
+        count = PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
       }
       if (currentPage > 0) {
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE

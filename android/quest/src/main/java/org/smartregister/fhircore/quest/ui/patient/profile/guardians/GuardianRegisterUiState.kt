@@ -27,5 +27,5 @@ data class GuardianUiState(
 
 data class GuardianPatientRegisterData(
   val profileNavRoute: GuardianProfileNavRoute,
-  val viewData: RegisterViewData,
+  val viewData: RegisterViewData.ListItemView,
 )

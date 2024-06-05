@@ -95,7 +95,7 @@ fun PreviewGuardiansScreen() {
       listOf(
         GuardianPatientRegisterData(
           viewData =
-            RegisterViewData(
+            RegisterViewData.ListItemView(
               logicalId = "eddb38b9-5363-4bcc-8cb9-dbbc2b4cddd9",
               identifier = "38",
               title = "Isabel Iguana",
@@ -108,7 +108,7 @@ fun PreviewGuardiansScreen() {
         ),
         GuardianPatientRegisterData(
           viewData =
-            RegisterViewData(
+            RegisterViewData.ListItemView(
               logicalId = "1212299",
               identifier = "    ",
               title = "Garry Iguana",

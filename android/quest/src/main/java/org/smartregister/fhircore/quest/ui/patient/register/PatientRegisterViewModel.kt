@@ -24,10 +24,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
+import androidx.paging.filter
+import androidx.paging.map
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,9 +50,9 @@ import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.components.register.TOTAL_PAGES_UNKNOWN
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -60,8 +61,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_INITIAL_LOAD_SIZE
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -92,7 +91,7 @@ constructor(
   val isRefreshing: StateFlow<Boolean>
     get() = _isRefreshing.asStateFlow()
 
-  private val _currentPage = MutableStateFlow(1)
+  private val _currentPage = MutableStateFlow(0)
   val currentPage
     get() = _currentPage.asStateFlow()
 
@@ -111,16 +110,7 @@ constructor(
   private val _syncProgressMutableStateFlow = MutableStateFlow("")
   val syncProgressStateFlow = _syncProgressMutableStateFlow.asStateFlow()
 
-  private val _startCountRegisterMutableStateFlow = MutableStateFlow("")
-  val totalRecordsCountPages =
-    _startCountRegisterMutableStateFlow
-      .filter { it.isNotBlank() }
-      .mapLatest { registerRepository.countRegisterData(appFeatureName, healthModule) }
-      .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
-      .map { ceil(it).toInt() }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = TOTAL_PAGES_UNKNOWN)
-
-  val paginatedRegisterData =
+  private val _paginatedRegisterViewData =
     combine(
         searchText.debounce {
           when (it.length) {
@@ -137,13 +127,37 @@ constructor(
       }
       .mapLatest {
         val pagingFlow =
-          if (it.first.isNotBlank()) {
-            filterRegisterDataFlow(text = it.first)
-          } else {
-            paginateRegisterDataFlow(page = it.second)
+          when {
+            it.first.isNotBlank() -> {
+              filterRegisterDataFlow(text = it.first)
+            }
+            else -> {
+              paginateRegisterDataFlow(page = it.second)
+            }
           }
 
         return@mapLatest pagingFlow.cachedIn(viewModelScope).also { _isRefreshing.emit(false) }
+      }
+
+  val pageRegisterListItemData =
+    _paginatedRegisterViewData
+      .map { pagingDataFlow ->
+        pagingDataFlow.map { pagingData ->
+          pagingData
+            .filter { it is RegisterViewData.ListItemView }
+            .map { it as RegisterViewData.ListItemView }
+        }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+
+  val pageNavigationItemViewData =
+    _paginatedRegisterViewData
+      .map { pagingDataFlow ->
+        pagingDataFlow.map { pagingData ->
+          pagingData
+            .filter { it is RegisterViewData.PageNavigationItemView }
+            .map { it as RegisterViewData.PageNavigationItemView }
+        }
       }
       .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
 
@@ -178,10 +192,6 @@ constructor(
     }
   }
 
-  fun loadCount() {
-    _startCountRegisterMutableStateFlow.update { "${refreshCounter.value}${_currentPage.value}" }
-  }
-
   fun refresh() {
     _isRefreshing.update { true }
     _refreshCounter.update { it + 1 }
@@ -190,10 +200,10 @@ constructor(
   fun isAppFeatureHousehold() =
     appFeatureName.equals(AppFeature.HouseholdManagement.name, ignoreCase = true)
 
-  fun paginateRegisterDataFlow(page: Int) =
+  private fun paginateRegisterDataFlow(page: Int) =
     getPager(appFeatureName, healthModule, loadAll = false, page = page).flow
 
-  fun filterRegisterDataFlow(text: String) =
+  private fun filterRegisterDataFlow(text: String) =
     getPager(
         appFeatureName = appFeatureName,
         healthModule = healthModule,
@@ -212,8 +222,8 @@ constructor(
     Pager(
       config =
         PagingConfig(
-          pageSize = DEFAULT_PAGE_SIZE,
-          initialLoadSize = DEFAULT_INITIAL_LOAD_SIZE,
+          pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
+          initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE,
           enablePlaceholders = false,
         ),
       pagingSourceFactory = {

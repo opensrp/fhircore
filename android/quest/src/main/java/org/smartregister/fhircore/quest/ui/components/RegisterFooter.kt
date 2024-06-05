@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.ui.components.register
+package org.smartregister.fhircore.quest.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -39,15 +37,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
+import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 const val DEFAULT_MAX_PAGE_COUNT = 20
 const val TOTAL_PAGES_UNKNOWN = -1
+const val DEFAULT_PAGE_NAV_KEY = -34
+const val DEFAULT_PAGE_NAV_CONTENT_TYPE = -34
 const val SEARCH_FOOTER_TAG = "searchFooterTag"
 const val SEARCH_FOOTER_PREVIOUS_BUTTON_TAG = "searchFooterPreviousButtonTag"
 const val SEARCH_FOOTER_NEXT_BUTTON_TAG = "searchFooterNextButtonTag"
@@ -55,32 +56,45 @@ const val SEARCH_FOOTER_PAGINATION_TAG = "searchFooterPaginationTag"
 
 @Composable
 fun RegisterFooter(
-  currentPageStateFlow: StateFlow<Int>,
-  pagesCountStateFlow: StateFlow<Int>,
+  previousButtonClickListener: () -> Unit,
+  nextButtonClickListener: () -> Unit,
+  pageNavigationPagingItems: LazyPagingItems<RegisterViewData.PageNavigationItemView>,
+  modifier: Modifier = Modifier,
+) {
+  LazyColumn(modifier = modifier) {
+    items(
+      pageNavigationPagingItems.itemCount,
+      key = pageNavigationPagingItems.itemKey { DEFAULT_PAGE_NAV_KEY },
+      contentType = pageNavigationPagingItems.itemContentType { DEFAULT_PAGE_NAV_CONTENT_TYPE },
+    ) {
+      val pagingItem = pageNavigationPagingItems[it]!!
+      RegisterFooterPageView(
+        currentPage = pagingItem.currentPage,
+        hasPreviousPage = pagingItem.hasPrev,
+        hasNextPage = pagingItem.hasNext,
+        previousButtonClickListener = previousButtonClickListener,
+        nextButtonClickListener = nextButtonClickListener,
+      )
+    }
+  }
+}
+
+@Composable
+fun RegisterFooterPageView(
+  currentPage: Int,
+  hasPreviousPage: Boolean,
+  hasNextPage: Boolean,
   previousButtonClickListener: () -> Unit,
   nextButtonClickListener: () -> Unit,
   modifier: Modifier = Modifier,
-  onCountLoaded: () -> Unit = {},
 ) {
-  val currentPageState = currentPageStateFlow.collectAsState()
-  val currentPage by remember { currentPageState }
-  val pagesCountState = pagesCountStateFlow.collectAsState()
-  val pagesCount by remember { pagesCountState }
-  val customScope = rememberCoroutineScope()
-
-  LaunchedEffect(key1 = pagesCount) {
-    if (pagesCount != TOTAL_PAGES_UNKNOWN) {
-      customScope.launch { onCountLoaded.invoke() }
-    }
-  }
-
   Row(
     modifier = modifier.fillMaxWidth().testTag(SEARCH_FOOTER_TAG),
   ) {
     Box(
       modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.Start),
     ) {
-      if (currentPage > 1) {
+      if (hasPreviousPage) {
         TextButton(
           onClick = previousButtonClickListener,
           modifier = modifier.testTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG),
@@ -102,9 +116,8 @@ fun RegisterFooter(
       color = GreyTextColor,
       text =
         stringResource(
-          id = R.string.str_page_info,
+          id = R.string.str_page,
           currentPage,
-          if (pagesCount == TOTAL_PAGES_UNKNOWN) "_" else "$pagesCount",
         ),
       modifier =
         modifier
@@ -115,7 +128,7 @@ fun RegisterFooter(
     Box(
       modifier = modifier.weight(1f).padding(4.dp).wrapContentWidth(Alignment.End),
     ) {
-      if (currentPage < pagesCount) {
+      if (hasNextPage) {
         TextButton(
           onClick = nextButtonClickListener,
           modifier = modifier.testTag(SEARCH_FOOTER_NEXT_BUTTON_TAG),
@@ -139,26 +152,50 @@ fun RegisterFooter(
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoPreviousButton() {
-  RegisterFooter(MutableStateFlow(1), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
+  RegisterFooterPageView(
+    1,
+    hasPreviousPage = true,
+    hasNextPage = true,
+    previousButtonClickListener = {},
+    nextButtonClickListener = {},
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewNoNextButton() {
-  RegisterFooter(MutableStateFlow(20), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
+  RegisterFooterPageView(
+    20,
+    true,
+    hasNextPage = false,
+    previousButtonClickListener = {},
+    nextButtonClickListener = {},
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithBothPreviousAndNextButtons() {
-  RegisterFooter(MutableStateFlow(6), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
+  RegisterFooterPageView(
+    6,
+    true,
+    hasNextPage = true,
+    previousButtonClickListener = {},
+    nextButtonClickListener = {},
+  )
 }
 
 @Composable
 @Preview(showBackground = true)
 @ExcludeFromJacocoGeneratedReport
 fun SearchFooterPreviewWithZeroResults() {
-  RegisterFooter(MutableStateFlow(6), MutableStateFlow(DEFAULT_MAX_PAGE_COUNT), {}, {})
+  RegisterFooterPageView(
+    1,
+    false,
+    hasNextPage = true,
+    previousButtonClickListener = {},
+    nextButtonClickListener = {},
+  )
 }

@@ -320,7 +320,7 @@ constructor(
       .let {
         if (!loadAll) {
           val from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
-          val to = from + PaginationConstant.DEFAULT_PAGE_SIZE
+          val to = from + PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
           it.safeSubList(from..to)
         } else {
           it

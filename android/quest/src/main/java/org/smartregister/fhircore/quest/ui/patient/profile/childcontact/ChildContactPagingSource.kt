@@ -32,7 +32,7 @@ class ChildContactPagingSource(
   private val otherChildResource: List<Resource>,
   private val registerRepository: AppRegisterRepository,
   private val registerViewDataMapper: RegisterViewDataMapper,
-) : PagingSource<Int, RegisterViewData>() {
+) : PagingSource<Int, RegisterViewData.ListItemView>() {
 
   private var _patientPagingSourceState = PatientPagingSourceState()
 
@@ -48,7 +48,9 @@ class ChildContactPagingSource(
    *
    * nextKey = if (data.isNotEmpty()) pageNumber + 1 else null
    */
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, RegisterViewData> {
+  override suspend fun load(
+    params: LoadParams<Int>,
+  ): LoadResult<Int, RegisterViewData.ListItemView> {
     return try {
       val data =
         registerRepository
@@ -68,7 +70,7 @@ class ChildContactPagingSource(
     this._patientPagingSourceState = patientPagingSourceState
   }
 
-  override fun getRefreshKey(state: PagingState<Int, RegisterViewData>): Int? {
+  override fun getRefreshKey(state: PagingState<Int, RegisterViewData.ListItemView>): Int? {
     return state.anchorPosition
   }
 }

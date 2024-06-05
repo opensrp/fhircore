@@ -44,6 +44,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
@@ -52,7 +53,6 @@ import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.isGuardianVisit
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.navigation.OverflowMenuFactory
@@ -409,7 +409,8 @@ constructor(
     }
   }
 
-  val paginatedChildrenRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+  val paginatedChildrenRegisterData:
+    MutableStateFlow<Flow<PagingData<RegisterViewData.ListItemView>>> =
     MutableStateFlow(emptyFlow())
 
   private fun paginateChildrenRegisterData(loadAll: Boolean = true) {
@@ -421,12 +422,12 @@ constructor(
     appFeatureName: String?,
     healthModule: HealthModule,
     loadAll: Boolean = true,
-  ): Pager<Int, RegisterViewData> =
+  ): Pager<Int, RegisterViewData.ListItemView> =
     Pager(
       config =
         PagingConfig(
-          pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
-          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE,
+          pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
+          initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE,
         ),
       pagingSourceFactory = {
         ChildContactPagingSource(

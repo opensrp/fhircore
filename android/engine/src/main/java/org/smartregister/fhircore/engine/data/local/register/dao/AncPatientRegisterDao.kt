@@ -69,7 +69,7 @@ constructor(
           count =
             if (loadAll) {
               countRegisterData(appFeatureName).toInt()
-            } else PaginationConstant.DEFAULT_PAGE_SIZE
+            } else PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
           from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
         }
         .map { it.resource }

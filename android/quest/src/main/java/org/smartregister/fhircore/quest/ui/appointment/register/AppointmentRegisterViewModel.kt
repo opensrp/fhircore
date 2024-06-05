@@ -18,22 +18,22 @@ package org.smartregister.fhircore.quest.ui.appointment.register
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
+import androidx.paging.map
 import com.google.android.fhir.sync.SyncJobStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Date
 import javax.inject.Inject
-import kotlin.math.ceil
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.apache.commons.lang3.time.DateUtils
@@ -51,16 +52,15 @@ import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.local.AppointmentRegisterFilter
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
-import org.smartregister.fhircore.engine.ui.components.register.TOTAL_PAGES_UNKNOWN
 import org.smartregister.fhircore.engine.ui.filter.DateFilterOption
 import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
-import org.smartregister.fhircore.quest.data.register.RegisterPagingSource.Companion.DEFAULT_PAGE_SIZE
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.StandardRegisterEvent
@@ -91,7 +91,7 @@ constructor(
   override val isRefreshing: StateFlow<Boolean>
     get() = _isRefreshing.asStateFlow()
 
-  private val _currentPage = MutableStateFlow(1)
+  private val _currentPage = MutableStateFlow(0)
   override val currentPage: StateFlow<Int>
     get() = _currentPage
 
@@ -103,14 +103,34 @@ constructor(
   val refreshCounter: StateFlow<Int>
     get() = _refreshCounter.asStateFlow()
 
-  private val _totalRecordsPagesMutableStateFlow = MutableStateFlow(1)
-  override val totalRecordsCountPages: StateFlow<Int>
-    get() = _totalRecordsPagesMutableStateFlow.asStateFlow()
-
-  override val paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+  private val _paginatedRegisterData: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
-  val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
+  override val pageRegisterListItemData:
+    StateFlow<Flow<PagingData<RegisterViewData.ListItemView>>> =
+    _paginatedRegisterData
+      .map { pagingDataFlow ->
+        pagingDataFlow.map { pagingData ->
+          pagingData
+            .filter { it is RegisterViewData.ListItemView }
+            .map { it as RegisterViewData.ListItemView }
+        }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+
+  override val pageNavigationItemViewData:
+    StateFlow<Flow<PagingData<RegisterViewData.PageNavigationItemView>>> =
+    _paginatedRegisterData
+      .map { pagingDataFlow ->
+        pagingDataFlow.map { pagingData ->
+          pagingData
+            .filter { it is RegisterViewData.PageNavigationItemView }
+            .map { it as RegisterViewData.PageNavigationItemView }
+        }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+
+  private val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
 
   private val _filtersMutableStateFlow: MutableStateFlow<AppointmentFilterState> =
@@ -150,23 +170,7 @@ constructor(
 
           return@mapLatest pagingFlow.onEach { _isRefreshing.emit(false) }
         }
-        .collect { value -> paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
-    }
-
-    viewModelScope.launch(dispatcherProvider.io()) {
-      combine(_startCountRegisterMutableStateFlow, registerFilterFlow) { s, r -> Pair(s, r) }
-        .onEach { _totalRecordsPagesMutableStateFlow.emit(TOTAL_PAGES_UNKNOWN) }
-        .filter { it.first.isNotBlank() }
-        .mapLatest {
-          registerRepository.countRegisterFiltered(
-            appFeatureName,
-            healthModule,
-            filters = it.second,
-          )
-        }
-        .map { it.toDouble().div(DEFAULT_PAGE_SIZE) }
-        .map { ceil(it).toInt() }
-        .collect { _totalRecordsPagesMutableStateFlow.emit(it) }
+        .collect { value -> _paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
 
     viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
@@ -183,10 +187,6 @@ constructor(
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
   }
 
-  override fun loadCount() {
-    _startCountRegisterMutableStateFlow.update { "${refreshCounter.value}${_currentPage.value}" }
-  }
-
   override fun refresh() {
     _isRefreshing.value = true
     _refreshCounter.value += 1
@@ -201,10 +201,13 @@ constructor(
 
   private fun filterRegisterDataFlow(text: String) =
     paginatedRegisterDataForSearch.value.map { pagingData: PagingData<RegisterViewData> ->
-      pagingData.filter {
-        it.title.contains(text, ignoreCase = true) ||
-          it.identifier.contains(text, ignoreCase = true)
-      }
+      pagingData
+        .filter { it is RegisterViewData.ListItemView }
+        .filter {
+          it as RegisterViewData.ListItemView
+          it.title.contains(text, ignoreCase = true) ||
+            it.identifier.contains(text, ignoreCase = true)
+        }
     }
 
   private fun paginateRegisterDataForSearch(filters: AppointmentRegisterFilter) {
@@ -221,8 +224,8 @@ constructor(
     Pager(
       config =
         PagingConfig(
-          pageSize = RegisterPagingSource.DEFAULT_PAGE_SIZE,
-          initialLoadSize = RegisterPagingSource.DEFAULT_INITIAL_LOAD_SIZE,
+          pageSize = PaginationConstant.DEFAULT_PAGE_SIZE,
+          initialLoadSize = PaginationConstant.DEFAULT_INITIAL_LOAD_SIZE,
           enablePlaceholders = false,
         ),
       pagingSourceFactory = {

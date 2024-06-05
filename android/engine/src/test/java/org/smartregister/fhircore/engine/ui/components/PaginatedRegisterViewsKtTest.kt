@@ -32,13 +32,13 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.components.register.NoResults
-import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
-import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_NEXT_BUTTON_TAG
-import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_PAGINATION_TAG
-import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG
-import org.smartregister.fhircore.engine.ui.components.register.SEARCH_FOOTER_TAG
 import org.smartregister.fhircore.engine.ui.components.register.SEARCH_HEADER_TEXT_TAG
+import org.smartregister.fhircore.quest.ui.components.RegisterFooter
+import org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_NEXT_BUTTON_TAG
+import org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG
+import org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG
+import org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG
 
 class PaginatedRegisterViewsKtTest : RobolectricTest() {
 
@@ -72,29 +72,47 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   fun testSearchFooterWithTenAsResultCount() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      RegisterFooter(
+      org.smartregister.fhircore.quest.ui.components.RegisterFooter(
         currentPageStateFlow = 1,
         pagesCountStateFlow = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertIsDisplayed()
 
     // Previous button not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
+    composeRule
+      .onNodeWithTag(
+        org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG,
+      )
+      .assertDoesNotExist()
 
     // Pagination text is "Page 1 of 3"
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertIsDisplayed()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertTextEquals("Page 1 of 3")
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertTextEquals("Page 1 of 3")
 
     // Next button is displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_NEXT_BUTTON_TAG)
+      .assertExists()
 
     // Clicking next button should call 'onNextButtonClick' method of 'listenerObjectSpy'
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).performClick()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_NEXT_BUTTON_TAG)
+      .performClick()
     verify { listenerObjectSpy.onNextButtonClick() }
   }
 
@@ -102,56 +120,92 @@ class PaginatedRegisterViewsKtTest : RobolectricTest() {
   fun testSearchFooterWithTenAsResultsSplitInThreePages() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      RegisterFooter(
+      org.smartregister.fhircore.quest.ui.components.RegisterFooter(
         currentPageStateFlow = 3,
         pagesCountStateFlow = 3,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertIsDisplayed()
 
     // Previous button is displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertExists()
+    composeRule
+      .onNodeWithTag(
+        org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG,
+      )
+      .assertExists()
 
     // Clicking previous button should call 'onPreviousButtonClick' method of 'listenerObjectSpy'
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).performClick()
+    composeRule
+      .onNodeWithTag(
+        org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG,
+      )
+      .performClick()
     verify { listenerObjectSpy.onPreviousButtonClick() }
 
     // Pagination text is "Page 3 of 3"
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertIsDisplayed()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertTextEquals("Page 3 of 3")
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertTextEquals("Page 3 of 3")
 
     // Next button is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_NEXT_BUTTON_TAG)
+      .assertDoesNotExist()
   }
 
   @Test
   fun testSearchFooterWithResultsFittingOnePage() {
     composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      RegisterFooter(
+      org.smartregister.fhircore.quest.ui.components.RegisterFooter(
         currentPageStateFlow = 1,
         pagesCountStateFlow = 1,
         previousButtonClickListener = { listenerObjectSpy.onPreviousButtonClick() },
         nextButtonClickListener = { listenerObjectSpy.onNextButtonClick() },
       )
     }
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_TAG).assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_TAG)
+      .assertIsDisplayed()
 
     // Previous button is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PREVIOUS_BUTTON_TAG).assertDoesNotExist()
+    composeRule
+      .onNodeWithTag(
+        org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PREVIOUS_BUTTON_TAG,
+      )
+      .assertDoesNotExist()
 
     // Pagination text is "Page 1 of 1"
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertExists()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertIsDisplayed()
-    composeRule.onNodeWithTag(SEARCH_FOOTER_PAGINATION_TAG).assertTextEquals("Page 1 of 1")
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertExists()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_PAGINATION_TAG)
+      .assertTextEquals("Page 1 of 1")
 
     // Next button is not displayed
-    composeRule.onNodeWithTag(SEARCH_FOOTER_NEXT_BUTTON_TAG).assertDoesNotExist()
+    composeRule
+      .onNodeWithTag(org.smartregister.fhircore.quest.ui.components.SEARCH_FOOTER_NEXT_BUTTON_TAG)
+      .assertDoesNotExist()
   }
 
   @Test

@@ -29,8 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -40,9 +38,9 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.ui.components.RegisterList
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileEvent
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileViewModel
-import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
@@ -51,9 +49,9 @@ fun ChildContactsProfileScreen(
   modifier: Modifier = Modifier,
   patientProfileViewModel: PatientProfileViewModel = hiltViewModel(),
 ) {
-  val profileViewData = patientProfileViewModel.patientProfileViewData.value
+  val profileViewData = patientProfileViewModel.patientProfileViewData.collectAsState().value
 
-  val pagingItems: LazyPagingItems<RegisterViewData> =
+  val pagingItems: LazyPagingItems<RegisterViewData.ListItemView> =
     patientProfileViewModel.paginatedChildrenRegisterData
       .collectAsState(emptyFlow())
       .value

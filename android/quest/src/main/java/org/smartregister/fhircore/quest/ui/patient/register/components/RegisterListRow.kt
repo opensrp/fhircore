@@ -56,14 +56,13 @@ import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.DividerColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 import org.smartregister.fhircore.engine.ui.theme.OverdueColor
-import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 import org.smartregister.fhircore.quest.ui.shared.models.ServiceMember
 
 @Composable
 fun RegisterListRow(
   modifier: Modifier = Modifier,
-  registerViewData: RegisterViewData,
+  listItemViewData: RegisterViewData.ListItemView,
   onRowClick: (String) -> Unit,
 ) {
   Row(
@@ -74,46 +73,46 @@ fun RegisterListRow(
     Column(
       modifier =
         modifier
-          .clickable { onRowClick(registerViewData.logicalId) }
+          .clickable { onRowClick(listItemViewData.logicalId) }
           .weight(0.75f)
           .padding(horizontal = 16.dp, vertical = 28.dp),
     ) {
-      if (registerViewData.serviceButtonActionable) {
+      if (listItemViewData.serviceButtonActionable) {
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
           modifier = modifier.fillMaxWidth(),
         ) {
           Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
-            Text(text = registerViewData.title)
-            RegisterListStatus(registerViewData, modifier)
+            Text(text = listItemViewData.title)
+            RegisterListStatus(listItemViewData, modifier)
           }
         }
       } else {
-        Text(text = registerViewData.title)
+        Text(text = listItemViewData.title)
         Row(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
           modifier = modifier.fillMaxWidth(),
         ) {
           Column(modifier = modifier.wrapContentWidth(Alignment.Start).weight(0.7f)) {
-            if (!registerViewData.subtitle.isNullOrEmpty()) {
+            if (!listItemViewData.subtitle.isNullOrEmpty()) {
               Text(
-                text = registerViewData.subtitle,
+                text = listItemViewData.subtitle,
                 color = DefaultColor,
                 modifier = modifier.padding(top = 4.dp),
               )
             }
-            RegisterListStatus(registerViewData, modifier)
+            RegisterListStatus(listItemViewData, modifier)
           }
           ServiceMemberIcons(
-            registerViewData,
+            listItemViewData,
             modifier = modifier.wrapContentWidth(Alignment.End).weight(0.3f),
           )
         }
       }
     }
-    if (registerViewData.showDivider) {
+    if (listItemViewData.showDivider) {
       Divider(
         modifier =
           modifier
@@ -124,10 +123,10 @@ fun RegisterListRow(
       )
     }
     Box(modifier = modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-      if (registerViewData.showServiceButton) {
-        if (registerViewData.serviceButtonActionable) {
+      if (listItemViewData.showServiceButton) {
+        if (listItemViewData.serviceButtonActionable) {
           ServiceButton(
-            registerViewData = registerViewData,
+            listItemViewData = listItemViewData,
             modifier =
               modifier
                 .wrapContentHeight(Alignment.CenterVertically)
@@ -135,7 +134,7 @@ fun RegisterListRow(
           )
         } else {
           ServiceActionSection(
-            registerViewData = registerViewData,
+            listItemViewData = listItemViewData,
             modifier =
               modifier.fillMaxHeight(0.6f).fillMaxWidth(0.9f).clip(RoundedCornerShape(4.dp)),
           )
@@ -146,15 +145,15 @@ fun RegisterListRow(
 }
 
 @Composable
-private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier) {
-  val contentColor = remember { registerViewData.serviceButtonForegroundColor.copy(alpha = 0.85f) }
+private fun ServiceButton(listItemViewData: RegisterViewData.ListItemView, modifier: Modifier) {
+  val contentColor = remember { listItemViewData.serviceButtonForegroundColor.copy(alpha = 0.85f) }
   Row(
     modifier =
       modifier
         .padding(horizontal = 8.dp)
         .clip(RoundedCornerShape(8.dp))
         .clickable { /*TODO Provide the given service*/}
-        .background(color = registerViewData.serviceButtonForegroundColor.copy(alpha = 0.1f)),
+        .background(color = listItemViewData.serviceButtonForegroundColor.copy(alpha = 0.1f)),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
@@ -164,7 +163,7 @@ private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier
       modifier = modifier.size(16.dp).padding(horizontal = 1.dp),
     )
     Text(
-      text = registerViewData.serviceText ?: "",
+      text = listItemViewData.serviceText ?: "",
       color = contentColor,
       fontSize = 12.sp,
       fontWeight = FontWeight.Bold,
@@ -176,22 +175,25 @@ private fun ServiceButton(registerViewData: RegisterViewData, modifier: Modifier
 }
 
 @Composable
-private fun RegisterListStatus(registerViewData: RegisterViewData, modifier: Modifier) {
+private fun RegisterListStatus(
+  listItemViewData: RegisterViewData.ListItemView,
+  modifier: Modifier,
+) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.padding(top = 4.dp),
   ) {
-    if (!registerViewData.status.isNullOrEmpty()) {
+    if (!listItemViewData.status.isNullOrEmpty()) {
       Text(
-        text = registerViewData.status,
+        text = listItemViewData.status,
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start),
       )
     }
-    if (!registerViewData.otherStatus.isNullOrEmpty()) {
+    if (!listItemViewData.otherStatus.isNullOrEmpty()) {
       Separator()
       Text(
-        text = registerViewData.otherStatus,
+        text = listItemViewData.otherStatus,
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start),
       )
@@ -200,29 +202,32 @@ private fun RegisterListStatus(registerViewData: RegisterViewData, modifier: Mod
 }
 
 @Composable
-private fun ServiceActionSection(registerViewData: RegisterViewData, modifier: Modifier) {
-  if (registerViewData.serviceText != null && !registerViewData.serviceButtonActionable) {
-    if (registerViewData.borderedServiceButton) {
-      Box(modifier = modifier.background(registerViewData.serviceButtonBorderColor))
+private fun ServiceActionSection(
+  listItemViewData: RegisterViewData.ListItemView,
+  modifier: Modifier,
+) {
+  if (listItemViewData.serviceText != null && !listItemViewData.serviceButtonActionable) {
+    if (listItemViewData.borderedServiceButton) {
+      Box(modifier = modifier.background(listItemViewData.serviceButtonBorderColor))
     }
     Column(
       modifier =
         modifier
-          .padding(if (registerViewData.borderedServiceButton) 1.4.dp else 0.dp)
-          .background(registerViewData.serviceButtonBackgroundColor),
+          .padding(if (listItemViewData.borderedServiceButton) 1.4.dp else 0.dp)
+          .background(listItemViewData.serviceButtonBackgroundColor),
       verticalArrangement = Arrangement.Center,
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      if (registerViewData.serviceTextIcon != null) {
+      if (listItemViewData.serviceTextIcon != null) {
         Icon(
-          painter = painterResource(id = registerViewData.serviceTextIcon),
+          painter = painterResource(id = listItemViewData.serviceTextIcon),
           contentDescription = null,
-          tint = registerViewData.serviceButtonForegroundColor,
+          tint = listItemViewData.serviceButtonForegroundColor,
         )
       }
       Text(
-        text = registerViewData.serviceText,
-        color = registerViewData.serviceButtonForegroundColor,
+        text = listItemViewData.serviceText,
+        color = listItemViewData.serviceButtonForegroundColor,
         textAlign = TextAlign.Center,
       )
     }
@@ -230,10 +235,13 @@ private fun ServiceActionSection(registerViewData: RegisterViewData, modifier: M
 }
 
 @Composable
-private fun ServiceMemberIcons(registerViewData: RegisterViewData, modifier: Modifier) {
+private fun ServiceMemberIcons(
+  listItemViewData: RegisterViewData.ListItemView,
+  modifier: Modifier,
+) {
   // Count member icons only show and display counter of the rest
-  val twoMemberIcons = remember { registerViewData.serviceMembers.take(2) }
-  if (!registerViewData.serviceButtonActionable) {
+  val twoMemberIcons = remember { listItemViewData.serviceMembers.take(2) }
+  if (!listItemViewData.serviceButtonActionable) {
     Row(modifier.padding(start = 4.dp)) {
       twoMemberIcons.forEach {
         if (it.icon != null) {
@@ -245,13 +253,13 @@ private fun ServiceMemberIcons(registerViewData: RegisterViewData, modifier: Mod
           )
         }
       }
-      if (twoMemberIcons.size == 2 && registerViewData.serviceMembers.size > 2) {
+      if (twoMemberIcons.size == 2 && listItemViewData.serviceMembers.size > 2) {
         Box(
           contentAlignment = Alignment.Center,
           modifier = modifier.clip(CircleShape).size(24.dp).background(DefaultColor.copy(0.1f)),
         ) {
           Text(
-            text = "+${registerViewData.serviceMembers.size - 2}",
+            text = "+${listItemViewData.serviceMembers.size - 2}",
             fontSize = 12.sp,
             color = Color.DarkGray,
           )
@@ -265,8 +273,8 @@ private fun ServiceMemberIcons(registerViewData: RegisterViewData, modifier: Mod
 @Preview(showBackground = true)
 fun RegisterListRowForFamilyRegisterOverduePreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(
+    listItemViewData =
+      RegisterViewData.ListItemView(
         logicalId = "1234",
         title = "John Doe, Male, 40y",
         subtitle = "#90129",
@@ -292,8 +300,8 @@ fun RegisterListRowForFamilyRegisterOverduePreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForFamilyRegisterDuePreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(
+    listItemViewData =
+      RegisterViewData.ListItemView(
         logicalId = "1234",
         title = "Ekuro Eoukot, Male, 67y",
         subtitle = "#90129",
@@ -313,8 +321,8 @@ fun RegisterListRowForFamilyRegisterDuePreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForQuestRegisterPreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(logicalId = "1234", title = "John Doe, 40y", subtitle = "Male"),
+    listItemViewData =
+      RegisterViewData.ListItemView(logicalId = "1234", title = "John Doe, 40y", subtitle = "Male"),
     onRowClick = {},
   )
 }
@@ -323,8 +331,8 @@ fun RegisterListRowForQuestRegisterPreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForRdtRegisterPreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(
+    listItemViewData =
+      RegisterViewData.ListItemView(
         logicalId = "1234",
         title = "Jackie Johnson, Female, 40y",
         status = "Last test",
@@ -338,8 +346,8 @@ fun RegisterListRowForRdtRegisterPreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForAncRegisterPreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(
+    listItemViewData =
+      RegisterViewData.ListItemView(
         logicalId = "121299",
         title = "Alberta Tuft, Female, 26Y",
         status = "ID Number: 1929102",
@@ -356,8 +364,8 @@ fun RegisterListRowForAncRegisterPreview() {
 @Preview(showBackground = true)
 fun RegisterListRowForEirRegisterPreview() {
   RegisterListRow(
-    registerViewData =
-      RegisterViewData(
+    listItemViewData =
+      RegisterViewData.ListItemView(
         logicalId = "1212299",
         title = "Mohamed Ali, Male, 26Y",
         status = "Last test",

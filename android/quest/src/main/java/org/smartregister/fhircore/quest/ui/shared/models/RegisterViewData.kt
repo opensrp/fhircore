@@ -24,24 +24,34 @@ import org.smartregister.fhircore.engine.domain.model.RegisterData
 import org.smartregister.fhircore.engine.ui.theme.DefaultColor
 import org.smartregister.fhircore.engine.ui.theme.InfoColor
 
-@Stable
-data class RegisterViewData(
-  val logicalId: String,
-  val title: String,
-  val subtitle: String? = null,
-  val status: String? = null,
-  val otherStatus: String? = null,
-  val serviceMembers: List<ServiceMember> = emptyList(),
-  val serviceText: String? = null,
-  @DrawableRes val serviceTextIcon: Int? = null,
-  val serviceButtonActionable: Boolean = false,
-  val serviceButtonForegroundColor: Color = DefaultColor,
-  val serviceButtonBackgroundColor: Color = Color.White,
-  val serviceButtonBorderColor: Color = InfoColor,
-  val borderedServiceButton: Boolean = false,
-  val showDivider: Boolean = false,
-  val showServiceButton: Boolean = true,
-  val registerType: KClass<out RegisterData> = RegisterData.DefaultRegisterData::class,
-  val identifier: String = "",
-  val customKey: String? = null,
-)
+sealed class RegisterViewData {
+
+  @Stable
+  data class ListItemView(
+    val logicalId: String,
+    val title: String,
+    val subtitle: String? = null,
+    val status: String? = null,
+    val otherStatus: String? = null,
+    val serviceMembers: List<ServiceMember> = emptyList(),
+    val serviceText: String? = null,
+    @DrawableRes val serviceTextIcon: Int? = null,
+    val serviceButtonActionable: Boolean = false,
+    val serviceButtonForegroundColor: Color = DefaultColor,
+    val serviceButtonBackgroundColor: Color = Color.White,
+    val serviceButtonBorderColor: Color = InfoColor,
+    val borderedServiceButton: Boolean = false,
+    val showDivider: Boolean = false,
+    val showServiceButton: Boolean = true,
+    val registerType: KClass<out RegisterData> = RegisterData.DefaultRegisterData::class,
+    val identifier: String = "",
+    val customKey: String? = null,
+  ) : RegisterViewData()
+
+  @Stable
+  data class PageNavigationItemView(
+    val currentPage: Int,
+    val hasNext: Boolean,
+    val hasPrev: Boolean,
+  ) : RegisterViewData()
+}

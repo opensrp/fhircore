@@ -50,16 +50,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import org.smartregister.fhircore.engine.ui.components.register.RegisterFooter
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.filter.FilterOption
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
-import org.smartregister.fhircore.quest.ui.patient.register.components.RegisterList
+import org.smartregister.fhircore.quest.ui.components.RegisterFooter
+import org.smartregister.fhircore.quest.ui.components.RegisterList
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
 
 @Composable
@@ -75,8 +74,8 @@ fun PageRegisterScreen(
   val searchTextState = registerViewModel.searchText.collectAsState()
   val searchText by remember { searchTextState }
 
-  val pagingItems: LazyPagingItems<RegisterViewData> =
-    registerViewModel.paginatedRegisterData.collectAsState().value.collectAsLazyPagingItems()
+  val pagingItems: LazyPagingItems<RegisterViewData.ListItemView> =
+    registerViewModel.pageRegisterListItemData.collectAsState().value.collectAsLazyPagingItems()
 
   Scaffold(
     topBar = {
@@ -95,21 +94,23 @@ fun PageRegisterScreen(
     bottomBar = {
       // Bottom section has a pagination footer and button with client registration action
       // Only show when filtering data is not active
-      if (pagingItems.loadState.refresh is LoadState.NotLoading && searchText.isEmpty()) {
-        registerViewModel.loadCount()
-      }
 
       Column {
         if (searchText.isEmpty() && pagingItems.itemCount > 0) {
+          val pageNavigationItems =
+            registerViewModel.pageNavigationItemViewData
+              .collectAsState()
+              .value
+              .collectAsLazyPagingItems()
+
           RegisterFooter(
-            currentPageStateFlow = registerViewModel.currentPage,
-            pagesCountStateFlow = registerViewModel.totalRecordsCountPages,
             previousButtonClickListener = {
               registerViewModel.onEvent(StandardRegisterEvent.MoveToPreviousPage)
             },
             nextButtonClickListener = {
               registerViewModel.onEvent(StandardRegisterEvent.MoveToNextPage)
             },
+            pageNavigationPagingItems = pageNavigationItems,
           )
         }
       }

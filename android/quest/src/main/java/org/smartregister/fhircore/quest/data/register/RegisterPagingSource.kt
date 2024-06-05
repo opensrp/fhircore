@@ -20,6 +20,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.domain.repository.RegisterRepository
+import org.smartregister.fhircore.engine.domain.util.PaginationConstant
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.quest.data.patient.model.PatientPagingSourceState
 import org.smartregister.fhircore.quest.ui.shared.models.RegisterViewData
@@ -82,19 +83,32 @@ class RegisterPagingSource(
           }
         }
 
-      val registerViewData =
-        registerData.map { registerViewDataMapper.transformInputToOutputModel(it) }
-      val prevKey =
-        when {
-          _patientPagingSourceState.loadAll -> if (currentPage == 0) null else currentPage - 1
-          else -> null
+      var registerViewData: MutableList<RegisterViewData> =
+        registerData.map { registerViewDataMapper.transformInputToOutputModel(it) }.toMutableList()
+      val prevKey: Int?
+      val nextKey: Int?
+      when {
+        _patientPagingSourceState.loadAll -> {
+          prevKey = if (currentPage == 0) null else currentPage - 1
+          nextKey = if (registerViewData.isNotEmpty()) currentPage + 1 else null
         }
-      val nextKey =
-        when {
-          _patientPagingSourceState.loadAll ->
-            if (registerViewData.isNotEmpty()) currentPage + 1 else null
-          else -> null
+        else -> {
+          prevKey = null
+          nextKey = null
+
+          val hasNext = registerData.size > PaginationConstant.DEFAULT_PAGE_SIZE
+          if (hasNext) {
+            registerViewData = registerViewData.subList(0, PaginationConstant.DEFAULT_PAGE_SIZE)
+          }
+          registerViewData.add(
+            RegisterViewData.PageNavigationItemView(
+              currentPage + 1,
+              hasNext,
+              hasPrev = currentPage > 0,
+            ),
+          )
         }
+      }
 
       LoadResult.Page(data = registerViewData, prevKey = prevKey, nextKey = nextKey)
     } catch (exception: Exception) {
@@ -108,10 +122,5 @@ class RegisterPagingSource(
 
   override fun getRefreshKey(state: PagingState<Int, RegisterViewData>): Int? {
     return state.anchorPosition
-  }
-
-  companion object {
-    const val DEFAULT_PAGE_SIZE = 20
-    const val DEFAULT_INITIAL_LOAD_SIZE = 20
   }
 }
