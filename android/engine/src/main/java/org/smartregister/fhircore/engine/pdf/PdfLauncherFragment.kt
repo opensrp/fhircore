@@ -91,9 +91,8 @@ class PdfLauncherFragment : DialogFragment() {
     val populatedHtml = HtmlPopulator(questionnaireResponse).populateHtml(htmlContent)
 
     withContext(Dispatchers.Main) {
-      PdfGenerator(requireContext()).generatePdfWithHtml(populatedHtml, htmlTitle)
+      PdfGenerator().generatePdfWithHtml(requireContext(), populatedHtml, htmlTitle) { dismiss() }
     }
-    dismiss()
   }
 
   companion object {

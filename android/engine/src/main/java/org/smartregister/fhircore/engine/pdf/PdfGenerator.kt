@@ -3,7 +3,9 @@ package org.smartregister.fhircore.engine.pdf
 import android.content.Context
 import android.print.PrintAttributes
 import android.print.PrintManager
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.webkit.WebViewClient
 
 /**
  * PdfGenerator creates PDF files from HTML content using Android's WebView and PrintManager.
@@ -11,10 +13,9 @@ import android.webkit.WebView
  *
  * @param context Application context for initializing WebView and PrintManager.
  */
-class PdfGenerator(context: Context) {
+class PdfGenerator {
 
-    private val webView = WebView(context)
-    private val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+    private var mWebView: WebView? = null
 
     /**
      * Generates a PDF file from the provided HTML content.
@@ -32,9 +33,25 @@ class PdfGenerator(context: Context) {
      * @param html The HTML content to be converted into a PDF.
      * @param pdfTitle The title of the PDF document.
      */
-    fun generatePdfWithHtml(html: String, pdfTitle: String) {
+    fun generatePdfWithHtml(context: Context, html: String, pdfTitle: String, onPdfPrinted: () -> Unit) {
+        val webView = WebView(context)
+        webView.webViewClient = object : WebViewClient() {
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
+
+            override fun onPageFinished(view: WebView, url: String) {
+                printPdf(context, view, pdfTitle)
+                mWebView = null
+                onPdfPrinted.invoke()
+            }
+        }
         webView.loadDataWithBaseURL(null, html, "text/HTML", "UTF-8", null)
-        val printAdapter = webView.createPrintDocumentAdapter(pdfTitle)
+        mWebView = webView
+    }
+
+    private fun printPdf(context: Context, view: WebView, pdfTitle: String) {
+        val printAdapter = view.createPrintDocumentAdapter(pdfTitle)
+        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
         printManager.print(
             pdfTitle,
             printAdapter,
