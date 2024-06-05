@@ -61,7 +61,7 @@ class QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl(
                 it.value.asStringValue() in
                   listOf(
                     LocationPickerViewHolderFactory.WIDGET_TYPE,
-                    LocationPickerViewHolderFactory.WIDGET_TYPE_ALL
+                    LocationPickerViewHolderFactory.WIDGET_TYPE_ALL,
                   )
             }
         },

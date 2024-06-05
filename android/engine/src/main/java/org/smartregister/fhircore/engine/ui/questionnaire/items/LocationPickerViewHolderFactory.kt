@@ -52,7 +52,7 @@ class LocationPickerViewHolderFactory(
           questionnaireViewItem.questionnaireItem
             .getExtensionByUrl(WIDGET_EXTENSION)
             .value
-            .asStringValue()
+            .asStringValue(),
         )
         locationPickerView.setOnLocationChanged { value ->
           context.lifecycleScope.launch {

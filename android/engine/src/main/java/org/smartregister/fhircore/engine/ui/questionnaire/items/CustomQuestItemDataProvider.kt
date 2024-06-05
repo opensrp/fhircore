@@ -33,7 +33,7 @@ class CustomQuestItemDataProvider
 constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   val fhirEngine: FhirEngine,
-  val gson: Gson
+  val gson: Gson,
 ) {
 
   fun fetchCurrentFacilityLocationHierarchies(): List<LocationHierarchy> {

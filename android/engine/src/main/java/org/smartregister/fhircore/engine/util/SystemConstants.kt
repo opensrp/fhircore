@@ -33,6 +33,21 @@ object SystemConstants {
   const val QUESTIONNAIRE_REFERENCE_SYSTEM = "https://d-tree.org/fhir/procedure-code"
   const val LOCATION_TAG = "http://smartregister.org/fhir/location-tag"
   const val LOCATION_HIERARCHY_BINARY = "location-hierarchy"
+
+  fun getIdentifierSystemFromPatientType(patientType: String): String {
+    return when (patientType) {
+      "client-already-on-art",
+      "newly-diagnosed-client", -> {
+        "https://d-tree.org/fhir/patient-identifier-art"
+      }
+      "exposed-infant" -> {
+        "https://d-tree.org/fhir/patient-identifier-hcc"
+      }
+      else -> {
+        "https://d-tree.org/fhir/patient-identifier-hts"
+      }
+    }
+  }
 }
 
 object ReasonConstants {
