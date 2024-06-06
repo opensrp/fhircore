@@ -147,8 +147,8 @@ dependencies {
   api("androidx.hilt:hilt-work:${Deps.versions.hiltWorkerVersion}")
   kapt("androidx.hilt:hilt-compiler:${Deps.versions.hiltWorkerVersion}")
 
-  api("androidx.lifecycle:lifecycle-livedata-ktx:2.8.1")
-  api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.1")
+  api("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+  api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
 
   // Jetpack - DataStore
   implementation("androidx.datastore:datastore-preferences:1.1.1")
@@ -165,10 +165,10 @@ dependencies {
   api("androidx.compose.material:material-icons-core")
   api("androidx.compose.material:material-icons-extended")
   api("androidx.compose.runtime:runtime-livedata")
-  api("androidx.lifecycle:lifecycle-runtime-compose:2.8.1")
+  api("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
   api("androidx.navigation:navigation-compose:2.7.7")
   api("androidx.hilt:hilt-navigation-compose:1.2.0")
-  api("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
+  api("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
   api("androidx.paging:paging-compose:3.3.0")
   api("androidx.activity:activity-compose:1.9.0")
   api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
