@@ -28,6 +28,8 @@ Response:
 
 #### Transmitting changes to an existing OpenSRP 2 patient's demographic details to the MPI
 
+![updating a patient in the MPI](/img/iz-domain/patient-updated-mpi.png)
+
 Request
 - Path: e.g. `/patients`
 - Method: `PUT`
@@ -47,6 +49,8 @@ Many countries use a logistics management information system (LMIS) to track com
 
 #### Transmitting stock consumption to an LMIS
 
+![storing data in the LMIS](/img/iz-domain/stock-to-lmis.png)
+
 FHIR Resources to transmit:
 - Observation
 
@@ -62,6 +66,8 @@ Response:
 ### Shared health record
 
 Analogous to the MPI's role as an authoritative list of patients, the shared health record's (SHR) role is to be an authority health record for each patient. Any system that creates or modifies patient health record information is then responsible for transmitting those additions or changes to the shared health record system. Any system that is requires access to the shared health record will have to authenticate itself, prove that it is authorized, and can then retrieve the shared health record.
+
+![updating the SHR](/img/iz-domain/shr-updated.png)
 
 #### Storing an immunization in the shared health record
 
