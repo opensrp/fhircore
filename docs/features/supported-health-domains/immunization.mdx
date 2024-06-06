@@ -10,6 +10,10 @@ A Master patient index (MPI) is an information system that maintains an authorit
 
 #### Transmitting a newly registered OpenSRP 2 patient to the MPI
 
+In this use case a patient or client has been newly registered in the mobile app and the mobile app has syncronized its data with the remote FHIR API that servers as the operational data store for the mobile app. We would now like to send this newly stored patient information to a third-party MPI so that any other participaants in the health system also have access to this new patient's information. We will also want to store the ID assigned to the new patient by the MPI in our operation data store's patient API so that we have a 1-to-1 link between our representation of the patient and the MPI's represenatation of the patient.
+
+![storing a new patient in the MPI](/img/iz-domain/patient-to-mpi.png)
+
 FHIR Resources to transmit:
 - Patient
 
@@ -43,7 +47,7 @@ Many countries use a logistics management information system (LMIS) to track com
 
 #### Transmitting stock consumption to an LMIS
 
-FHIR Resrouces to transmit:
+FHIR Resources to transmit:
 - Observation
 
 Request:
