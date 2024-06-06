@@ -22,7 +22,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -41,8 +40,6 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
-import org.smartregister.fhircore.engine.domain.model.ResourceData
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -53,7 +50,6 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
-import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -76,7 +72,8 @@ constructor(
     get() = _locationDialog
 
   val searchText = mutableStateOf("")
-  private var geoWidgetConfiguration: GeoWidgetConfiguration?= null
+  private var geoWidgetConfiguration: GeoWidgetConfiguration? = null
+
   // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
   private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
     viewModelScope.launch(dispatcherProvider.io()) {
@@ -195,6 +192,7 @@ constructor(
         searchText.value = event.searchText
       }
     }
+
   /**
    * Adds coordinates into the correct action parameter as [ActionParameter.value] if the
    * [ActionParameter.key] matches with [KEY_LATITUDE] or [KEY_LONGITUDE] constants. *

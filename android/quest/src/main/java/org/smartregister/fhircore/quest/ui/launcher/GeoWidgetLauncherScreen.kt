@@ -59,7 +59,7 @@ fun GeoWidgetLauncherScreen(
   fragment: Fragment,
   geoWidgetConfiguration: GeoWidgetConfiguration,
   searchText: MutableState<String>,
-  filterLocations: (String) -> Unit
+  onSearchClicked: (String) -> Unit,
 ) {
   Scaffold(
     topBar = {
@@ -75,10 +75,16 @@ fun GeoWidgetLauncherScreen(
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
-          onSearchTextChanged = { _ -> },
+          onSearchTextChanged = { searchText ->
+            onEvent(GeoWidgetEvent.SearchServicePoints(searchText = searchText))
+
+            if (searchText.isEmpty()) {
+              onSearchClicked("")
+            }
+          },
           isFilterIconEnabled = false,
           topScreenSection = geoWidgetConfiguration.topScreenSection,
-          onSearchClick = {  },
+          onSearchClick = { onSearchClicked(it) },
           navController = navController,
         ) { event ->
           when (event) {
@@ -91,23 +97,25 @@ fun GeoWidgetLauncherScreen(
             is ToolbarClickEvent.Actions -> {
               if (searchText.value.isNotEmpty()) {
                 listOf(
-                  ActionConfig(
-                    ActionTrigger.ON_CLICK,
-                    workflow = "LAUNCH_REGISTER",
-                    id = "servicePointRegister",
-                    params = listOf(
-                      ActionParameter(
-                        key = "searchedText",
-                        value = searchText.value,
-                        paramType = ActionParameterType.PARAMDATA
-                      )
-                    )
+                    ActionConfig(
+                      ActionTrigger.ON_CLICK,
+                      workflow = "LAUNCH_REGISTER",
+                      id = "servicePointRegister",
+                      params =
+                        listOf(
+                          ActionParameter(
+                            key = "searchedText",
+                            value = searchText.value,
+                            paramType = ActionParameterType.PARAMDATA,
+                          ),
+                        ),
+                    ),
                   )
-                ).handleClickEvent(navController = navController)
+                  .handleClickEvent(navController = navController)
               } else {
                 event.actions.handleClickEvent(navController = navController)
               }
-              //event.actions.handleClickEvent(navController = navController)
+              // event.actions.handleClickEvent(navController = navController)
             }
           }
         }

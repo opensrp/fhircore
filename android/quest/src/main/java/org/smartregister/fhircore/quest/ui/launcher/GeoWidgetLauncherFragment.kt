@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -158,20 +157,24 @@ class GeoWidgetLauncherFragment : Fragment() {
               GeoWidgetLauncherScreen(
                 openDrawer = openDrawer,
                 onEvent = geoWidgetLauncherViewModel::onEvent,
-                navController = findNavController(),
                 toolBarHomeNavigation = args.toolBarHomeNavigation,
+                navController = findNavController(),
                 modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
                 searchText = geoWidgetLauncherViewModel.searchText,
-                filterLocations = {geoWidgetFragment.onSearchMap(it) }
+                onSearchClicked = { filterLocations(it) },
               )
             }
           }
         }
       }
     }
+  }
+
+  private fun filterLocations(searchText: String) {
+    geoWidgetFragment.onSearchMap(searchText)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

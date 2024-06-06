@@ -28,7 +28,6 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlinx.coroutines.flow.Flow
@@ -478,9 +477,8 @@ constructor(
             params = paramsMap,
           )
 
-        paramsMap["searchedText"]?.let {
-          onEvent(RegisterEvent.SearchRegister(it))
-        } ?: paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
+        paramsMap["searchedText"]?.let { onEvent(RegisterEvent.SearchRegister(it)) }
+          ?: paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
       }
     }
   }
