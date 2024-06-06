@@ -24,7 +24,7 @@ sealed class MainNavigationScreen(
   val route: String,
   val showInBottomNav: Boolean = false,
 ) {
-  object Home :
+  data object Home :
     MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.clients,
       org.smartregister.fhircore.engine.R.drawable.ic_home,
@@ -32,7 +32,14 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Tasks :
+  data object Counters :
+    MainNavigationScreen(
+      R.string.counters,
+      org.smartregister.fhircore.engine.R.drawable.ic_reports,
+      "countersRoute",
+    )
+
+  data object Tasks :
     MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.tasks,
       org.smartregister.fhircore.engine.R.drawable.ic_tasks,
@@ -40,7 +47,7 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Reports :
+  data object Reports :
     MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.reports,
       org.smartregister.fhircore.engine.R.drawable.ic_reports,
@@ -48,7 +55,7 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object Settings :
+  data object Settings :
     MainNavigationScreen(
       org.smartregister.fhircore.engine.R.string.settings,
       R.drawable.ic_settings,
@@ -56,38 +63,39 @@ sealed class MainNavigationScreen(
       true,
     )
 
-  object PatientProfile :
+  data object PatientProfile :
     MainNavigationScreen(
       titleResource = org.smartregister.fhircore.engine.R.string.profile,
       route = "patientProfileRoute",
     )
 
-  object TracingProfile :
+  data object TracingProfile :
     MainNavigationScreen(
       titleResource = org.smartregister.fhircore.engine.R.string.profile,
       route = "tracingProfileRoute",
     )
 
-  object TransferOut : MainNavigationScreen(route = "transferOut")
+  data object TransferOut : MainNavigationScreen(route = "transferOut")
 
-  object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
+  data object PatientGuardians : MainNavigationScreen(route = "patientProfileGuardians")
 
-  object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
+  data object FamilyProfile : MainNavigationScreen(route = "familyProfileRoute")
 
-  object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
+  data object ViewChildContacts : MainNavigationScreen(route = "viewChildContacts")
 
-  object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
+  data object GuardianProfile : MainNavigationScreen(route = "guardianProfile")
 
-  object TracingHistory : MainNavigationScreen(route = "tracingHistory")
+  data object TracingHistory : MainNavigationScreen(route = "tracingHistory")
 
-  object TracingOutcomes : MainNavigationScreen(route = "tracingOutcome")
+  data object TracingOutcomes : MainNavigationScreen(route = "tracingOutcome")
 
-  object TracingHistoryDetails : MainNavigationScreen(route = "tracingHistoryDetails ")
+  data object TracingHistoryDetails : MainNavigationScreen(route = "tracingHistoryDetails ")
 
   companion object {
     val appScreens =
       listOf(
         Home,
+        Counters,
         Tasks,
         Reports,
         Settings,

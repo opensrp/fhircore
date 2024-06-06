@@ -32,8 +32,11 @@ import com.google.android.fhir.search.search
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.ListResource
@@ -104,9 +107,7 @@ abstract class TracingRegisterDao(
   private val filtersForValidTask: BaseSearch.() -> Unit = {
     filter(
       TokenClientParam("_tag"),
-      { value = of(tracingCoding) },
-      { value = of(alternateTracingCoding.value) },
-      operation = Operation.OR,
+      { value = of(CodeType(tracingCoding.code)) },
     )
     filter(
       Task.STATUS,
@@ -401,19 +402,30 @@ abstract class TracingRegisterDao(
       }
       .map { defaultRepository.loadResource(it.other) }
 
-  override suspend fun countRegisterFiltered(
-    appFeatureName: String?,
-    filters: RegisterFilter,
-  ): Long {
+  override suspend fun countRegisterFiltered(filters: RegisterFilter): Long {
     return searchRegister(filters, loadAll = true).count().toLong()
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    val patients =
-      fhirEngine
-        .search<Patient> { has<Task>(Task.SUBJECT) { filtersForValidTask() } }
-        .map { it.resource }
-    return patients.count { validTasks(it).any() }.toLong()
+  override suspend fun countRegisterData(): Flow<Long> {
+    var counter = 0L
+    var offset = 0
+    val pageCount = 100
+
+    return flow {
+      do {
+        val tracingPatients =
+          fhirEngine.search<Patient> {
+            has<Task>(Task.SUBJECT) { filtersForValidTask() }
+            from = offset
+            count = pageCount
+          }
+        offset += tracingPatients.size
+        val validTracingPatientsCount =
+          tracingPatients.map { it.resource }.count { validTasks(it).any() }.toLong()
+        counter += validTracingPatientsCount
+        emit(counter)
+      } while (tracingPatients.isNotEmpty())
+    }
   }
 
   private fun applicationConfiguration(): ApplicationConfiguration =

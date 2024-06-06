@@ -34,9 +34,6 @@ data class SideMenuOption(
   val healthModule: HealthModule = HealthModule.DEFAULT,
   val iconResource: Int,
   val titleResource: Int,
-  val count: Long = SIDE_MENU_COUNT_NOT_SET,
-  val getCount: suspend () -> Long = { count },
-  val showCount: Boolean = true,
+  val count: Int = 0,
+  val showCount: Boolean = false,
 )
-
-const val SIDE_MENU_COUNT_NOT_SET = -1L

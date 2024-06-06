@@ -18,6 +18,8 @@ package org.smartregister.fhircore.engine.data.local.register
 
 import com.google.android.fhir.FhirEngine
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
@@ -129,7 +131,6 @@ constructor(
   }
 
   override suspend fun countRegisterFiltered(
-    appFeatureName: String?,
     healthModule: HealthModule,
     filters: RegisterFilter,
   ): Long {
@@ -151,7 +152,6 @@ constructor(
         }
 
         registerDaoFactory.registerDaoMap[healthModule]?.countRegisterFiltered(
-          appFeatureName,
           filters,
         ) ?: 0
       }
@@ -159,12 +159,11 @@ constructor(
   }
 
   override suspend fun countRegisterData(
-    appFeatureName: String?,
     healthModule: HealthModule,
-  ): Long =
+  ): Flow<Long> =
     withContext(dispatcherProvider.io()) {
       tracer.traceSuspend("${healthModule.name.camelCase()}.countRegisterData") {
-        registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData(appFeatureName) ?: 0
+        registerDaoFactory.registerDaoMap[healthModule]?.countRegisterData() ?: emptyFlow()
       }
     }
 

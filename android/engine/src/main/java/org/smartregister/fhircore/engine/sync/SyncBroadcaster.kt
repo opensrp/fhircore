@@ -121,7 +121,7 @@ constructor(
       is SyncJobStatus.Failed,
       is SyncJobStatus.Succeeded, -> {
         if (syncJobStatus is SyncJobStatus.Failed) {
-          syncJobStatus.exceptions.forEachIndexed { _, resourceSyncException ->
+          syncJobStatus.exceptions?.forEachIndexed { _, resourceSyncException ->
             Firebase.crashlytics.recordException(resourceSyncException.exception)
           }
         }

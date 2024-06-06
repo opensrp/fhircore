@@ -28,7 +28,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.RelatedPerson
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.R
@@ -65,13 +64,11 @@ constructor(
 
   init {
     syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          when (state) {
-            is SyncJobStatus.Succeeded,
-            is SyncJobStatus.Failed, -> getProfileData()
-            else -> {}
-          }
+      { state ->
+        when (state) {
+          is SyncJobStatus.Succeeded,
+          is SyncJobStatus.Failed, -> getProfileData()
+          else -> {}
         }
       },
       viewModelScope,

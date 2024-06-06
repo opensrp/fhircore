@@ -20,7 +20,6 @@ import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.search.Order
-import com.google.android.fhir.search.count
 import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -66,10 +65,9 @@ constructor(
         .search<Condition> {
           //         [].forEach { filterBy(it) }
           sort(Patient.NAME, Order.ASCENDING)
-          count =
-            if (loadAll) {
-              countRegisterData(appFeatureName).toInt()
-            } else PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
+          if (!loadAll) {
+            count = PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
+          }
           from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
         }
         .map { it.resource }
@@ -143,7 +141,6 @@ constructor(
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?) = 0L
   //    fhirEngine.count<Condition> { getRegisterDataFilters().forEach { filterBy(it) } }
 
   private fun getVisitStatus(carePlans: List<CarePlan>): VisitStatus {

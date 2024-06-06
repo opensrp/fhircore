@@ -33,10 +33,6 @@ import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
@@ -44,7 +40,6 @@ import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.login.LoginActivity
 import org.smartregister.fhircore.engine.util.DispatcherProvider
@@ -80,31 +75,10 @@ constructor(
   val refreshDataState: MutableState<Int> = mutableStateOf(0)
   val completedTaskId: MutableStateFlow<String?> = MutableStateFlow(null)
 
-  private val computeSideMenuOptionCountsStateFlow = MutableStateFlow(false)
-
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
 
   private val applicationConfiguration: ApplicationConfiguration =
     configurationRegistry.getAppConfigs()
-  private val countsCacheMap = hashMapOf<String, Long>()
-
-  init {
-    viewModelScope.launch(dispatcherProvider.io()) {
-      computeSideMenuOptionCountsStateFlow
-        .asStateFlow()
-        .filter { it }
-        .collect {
-          val computedSideMenuOptions =
-            appMainUiState.value.sideMenuOptions.filter(SideMenuOption::showCount).map {
-              sideMenuOption ->
-              countsCacheMap[sideMenuOption.appFeatureName] = sideMenuOption.getCount()
-              sideMenuOption.copy(count = countsCacheMap[sideMenuOption.appFeatureName]!!)
-            }
-          appMainUiState.value =
-            appMainUiState.value.copy(sideMenuOptions = computedSideMenuOptions)
-        }
-    }
-  }
 
   fun retrieveAppMainUiState() {
     appMainUiState.value =
@@ -112,14 +86,7 @@ constructor(
         appTitle = applicationConfiguration.applicationName,
         currentLanguage = loadCurrentLanguage(),
         username = secureSharedPreference.retrieveSessionUsername() ?: "",
-        sideMenuOptions =
-          sideMenuOptionFactory.retrieveSideMenuOptions().map {
-            if (countsCacheMap.containsKey(it.appFeatureName)) {
-              it.copy(count = countsCacheMap[it.appFeatureName]!!)
-            } else {
-              it
-            }
-          },
+        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
         lastSyncTime = retrieveLastSyncTimestamp() ?: "",
         languages = configurationRegistry.fetchLanguages(),
         enableDeviceToDeviceSync = appFeatureManager.isFeatureActive(AppFeature.DeviceToDeviceSync),
@@ -162,7 +129,7 @@ constructor(
               event.launchManualAuth(intent)
             }
           }
-        } catch (e: Exception) {}
+        } catch (_: Exception) {}
       }
       AppMainEvent.ResumeSync -> {
         run(resumeSync)
@@ -178,14 +145,7 @@ constructor(
             appMainUiState.value =
               appMainUiState.value.copy(
                 lastSyncTime = event.lastSyncTime ?: "",
-                sideMenuOptions =
-                  sideMenuOptionFactory.retrieveSideMenuOptions().map {
-                    if (countsCacheMap.containsKey(it.appFeatureName)) {
-                      it.copy(count = countsCacheMap[it.appFeatureName]!!)
-                    } else {
-                      it
-                    }
-                  },
+                sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
               )
           }
           else ->
@@ -200,23 +160,11 @@ constructor(
     refreshDataState.value += 1
   }
 
-  fun computeSideMenuCounts() {
-    Timber.e("Load Options")
-    computeSideMenuOptionCountsStateFlow.update { true }
-  }
-
   private val resumeSync = {
     syncBroadcaster.runSync()
     appMainUiState.value =
       appMainUiState.value.copy(
-        sideMenuOptions =
-          sideMenuOptionFactory.retrieveSideMenuOptions().map {
-            if (countsCacheMap.containsKey(it.appFeatureName)) {
-              it.copy(count = countsCacheMap[it.appFeatureName]!!)
-            } else {
-              it
-            }
-          },
+        sideMenuOptions = sideMenuOptionFactory.retrieveSideMenuOptions(),
       )
   }
 

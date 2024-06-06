@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.data.local.tracing.TracingRepository
 import org.smartregister.fhircore.engine.domain.model.TracingOutcomeDetails
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 
@@ -50,15 +49,13 @@ constructor(
 
   init {
     syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          when (state) {
-            is SyncJobStatus.Succeeded,
-            is SyncJobStatus.Failed, -> {
-              fetchTracingData()
-            }
-            else -> {}
+      { state ->
+        when (state) {
+          is SyncJobStatus.Succeeded,
+          is SyncJobStatus.Failed, -> {
+            fetchTracingData()
           }
+          else -> {}
         }
       },
       viewModelScope,

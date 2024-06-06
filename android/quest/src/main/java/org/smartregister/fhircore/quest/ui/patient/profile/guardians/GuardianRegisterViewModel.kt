@@ -29,7 +29,6 @@ import org.hl7.fhir.r4.model.Patient
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.RegisterData
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.extension.extractName
 import org.smartregister.fhircore.quest.data.patient.HivPatientGuardianRepository
@@ -60,13 +59,11 @@ constructor(
 
   init {
     syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncState) {
-          when (state) {
-            is SyncState.Succeeded,
-            is SyncState.Failed, -> loadData()
-            else -> {}
-          }
+      { state ->
+        when (state) {
+          is SyncState.Succeeded,
+          is SyncState.Failed, -> loadData()
+          else -> {}
         }
       },
       viewModelScope,

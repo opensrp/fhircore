@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.RegisterFilter
 import org.smartregister.fhircore.engine.domain.model.ProfileData
@@ -39,15 +40,13 @@ interface RegisterRepository {
   ): List<RegisterData>
 
   suspend fun countRegisterFiltered(
-    appFeatureName: String? = null,
     healthModule: HealthModule,
     filters: RegisterFilter,
   ): Long
 
   suspend fun countRegisterData(
-    appFeatureName: String? = null,
     healthModule: HealthModule = HealthModule.DEFAULT,
-  ): Long
+  ): Flow<Long>
 
   suspend fun loadPatientProfileData(
     appFeatureName: String? = null,

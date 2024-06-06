@@ -38,14 +38,7 @@ constructor(
       healthModule = HealthModule.DEFAULT,
       iconResource = org.smartregister.fhircore.engine.R.drawable.ic_baby_mother,
       titleResource = R.string.all_clients,
-      showCount = true,
-      getCount =
-        suspend {
-          registerRepository.countRegisterData(
-            appFeatureName = AppFeature.PatientManagement.name,
-            healthModule = HealthModule.DEFAULT,
-          )
-        },
+      showCount = false,
     )
 
   fun retrieveSideMenuOptions(): List<SideMenuOption> {
@@ -81,14 +74,7 @@ constructor(
               HealthModule.FAMILY_PLANNING -> R.string.family_planning_clients
               else -> 0
             },
-          showCount = true,
-          getCount =
-            suspend {
-              registerRepository.countRegisterData(
-                appFeatureName = it.feature,
-                healthModule = it.healthModule!!,
-              )
-            },
+          showCount = false,
         )
       }
     return sideMenuOptions.ifEmpty { listOf(defaultSideMenu) }

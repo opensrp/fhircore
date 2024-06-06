@@ -31,7 +31,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -76,15 +75,13 @@ constructor(
 
   init {
     syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          when (state) {
-            is SyncJobStatus.Succeeded,
-            is SyncJobStatus.Failed, -> {
-              fetchFamilyProfileData()
-            }
-            else -> {}
+      { state ->
+        when (state) {
+          is SyncJobStatus.Succeeded,
+          is SyncJobStatus.Failed, -> {
+            fetchFamilyProfileData()
           }
+          else -> {}
         }
       },
       viewModelScope,

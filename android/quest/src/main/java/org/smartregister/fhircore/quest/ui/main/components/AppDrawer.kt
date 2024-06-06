@@ -56,7 +56,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.domain.model.Language
-import org.smartregister.fhircore.engine.domain.model.SIDE_MENU_COUNT_NOT_SET
 import org.smartregister.fhircore.engine.domain.model.SideMenuOption
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
@@ -104,7 +103,9 @@ fun AppDrawer(
     verticalArrangement = Arrangement.SpaceBetween,
     modifier = modifier.fillMaxHeight().background(SideMenuDarkColor),
   ) {
-    Column(modifier.background(SideMenuDarkColor).padding(16.dp)) {
+    Column(
+      modifier.background(SideMenuDarkColor).padding(16.dp),
+    ) {
       Text(
         text = appTitle,
         fontSize = 22.sp,
@@ -119,10 +120,7 @@ fun AppDrawer(
           SideMenuItem(
             iconResource = sideMenuOption.iconResource,
             title = title,
-            endText =
-              if (sideMenuOption.count == SIDE_MENU_COUNT_NOT_SET) {
-                ""
-              } else sideMenuOption.count.toString(),
+            endText = if (sideMenuOption.showCount) "${sideMenuOption.count}" else "",
             showEndText = sideMenuOption.showCount,
             onSideMenuClick = {
               openDrawer(false)
@@ -139,6 +137,19 @@ fun AppDrawer(
           )
         }
       }
+
+      SideMenuItem(
+        iconResource = org.smartregister.fhircore.engine.R.drawable.ic_reports,
+        title = stringResource(R.string.counters),
+        showEndText = false,
+        onSideMenuClick = {
+          openDrawer(false)
+          navController.navigate(
+            route = MainNavigationScreen.Counters.route,
+          )
+        },
+      )
+
       if (enableReports) {
         SideMenuItem(
           iconResource = org.smartregister.fhircore.engine.R.drawable.ic_reports,
@@ -161,7 +172,7 @@ fun AppDrawer(
           },
         )
       }
-      if (languages.isNotEmpty()) {
+      if (languages.size > 1) {
         Box {
           SideMenuItem(
             iconResource = org.smartregister.fhircore.engine.R.drawable.ic_outline_language_white,
@@ -248,7 +259,9 @@ fun SideMenuItem(
   ) {
     val alpha = if (enabled) ContentAlpha.high else ContentAlpha.disabled
 
-    Row(modifier = modifier.padding(vertical = 16.dp).alpha(alpha)) {
+    Row(
+      modifier = modifier.padding(vertical = 16.dp).alpha(alpha),
+    ) {
       Icon(
         modifier = modifier.padding(end = 10.dp).size(24.dp).alpha(alpha),
         painter = painterResource(id = iconResource),

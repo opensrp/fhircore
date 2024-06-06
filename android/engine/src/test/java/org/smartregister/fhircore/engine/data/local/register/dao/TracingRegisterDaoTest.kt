@@ -144,7 +144,7 @@ class TracingRegisterDaoTest : RobolectricTest() {
           else -> emptyList()
         }
       }
-    Assert.assertEquals(1, tracingRegisterDao.countRegisterData(appFeatureName = null))
+    Assert.assertEquals(1, tracingRegisterDao.countRegisterData())
   }
 
   @Test
@@ -295,7 +295,6 @@ class TracingRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals(
       1,
       tracingRegisterDao.countRegisterFiltered(
-        appFeatureName = null,
         filters =
           TracingRegisterFilter(
             isAssignedToMe = false,
@@ -308,7 +307,6 @@ class TracingRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals(
       1,
       tracingRegisterDao.countRegisterFiltered(
-        appFeatureName = null,
         filters =
           TracingRegisterFilter(
             isAssignedToMe = false,
@@ -321,7 +319,6 @@ class TracingRegisterDaoTest : RobolectricTest() {
     Assert.assertEquals(
       1,
       tracingRegisterDao.countRegisterFiltered(
-        appFeatureName = null,
         filters =
           TracingRegisterFilter(
             isAssignedToMe = false,

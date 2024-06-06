@@ -27,6 +27,8 @@ import java.util.Calendar
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.DateTimeType
@@ -85,16 +87,35 @@ constructor(
   private fun applicationConfiguration(): ApplicationConfiguration =
     configurationRegistry.getAppConfigs()
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
+  override suspend fun countRegisterData(): Flow<Long> {
+    var counter = 0L
+    var offset = 0
+    val pageCount = 100
     val dateOfAppointment = Calendar.getInstance().time
-    return fhirEngine
+    fhirEngine
       .search<Appointment> { genericFilter(dateOfAppointment) }
       .map { it.resource }
       .count { isAppointmentValid(it) }
       .toLong()
+
+    return flow {
+      do {
+        val appointments =
+          fhirEngine.search<Appointment> {
+            genericFilter(dateOfAppointment)
+            from = offset
+            count = pageCount
+          }
+        offset += appointments.size
+        val validAppointmentCount =
+          appointments.map { it.resource }.count { isAppointmentValid(it) }
+        counter += validAppointmentCount
+        emit(counter)
+      } while (appointments.isNotEmpty())
+    }
   }
 
-  override suspend fun countRegisterFiltered(appFeatureName: String?, filters: RegisterFilter) =
+  override suspend fun countRegisterFiltered(filters: RegisterFilter): Long =
     searchAppointments(filters, loadAll = true).count().toLong()
 
   private suspend fun patientCategoryMatches(

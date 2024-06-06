@@ -29,6 +29,8 @@ import com.google.android.fhir.search.search
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -103,6 +105,15 @@ constructor(
 
   private suspend fun searchRegisterData(block: Search.() -> Unit = {}) =
     fhirEngine.search<Patient> {
+      filter(Patient.ACTIVE, { value = of(true) })
+      filter(Patient.DECEASED, { value = of(false) })
+      filter(
+        Patient.GENDER,
+        { value = of("male") },
+        { value = of("female") },
+        operation = Operation.OR,
+      )
+
       revInclude<Condition>(Condition.SUBJECT) {
         filter(
           Condition.CODE,
@@ -169,7 +180,6 @@ constructor(
     appFeatureName: String?,
   ): List<RegisterData> {
     val patients = searchRegisterData {
-      filter(Patient.ACTIVE, { value = of(true) })
       if (!loadAll) {
         count = PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
       }
@@ -239,16 +249,39 @@ constructor(
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
-    return fhirEngine
-      .search<Patient> { filter(Patient.ACTIVE, { value = of(true) }) }
-      .map { it.resource }
-      .filter(this::isValidPatient)
-      .filterNot {
-        it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
-      }
-      .size
-      .toLong()
+  override suspend fun countRegisterData(): Flow<Long> {
+    var counter = 0L
+    var offset = 0
+    val pageCount = 100
+
+    return flow {
+      do {
+        val patients =
+          fhirEngine.search<Patient> {
+            filter(Patient.ACTIVE, { value = of(true) })
+            filter(Patient.DECEASED, { value = of(false) })
+            filter(
+              Patient.GENDER,
+              { value = of("male") },
+              { value = of("female") },
+              operation = Operation.OR,
+            )
+            from = offset
+            count = pageCount
+          }
+        offset += patients.size
+        val validPatientCount =
+          patients
+            .map { it.resource }
+            .filter(this@HivRegisterDao::isValidPatient)
+            .filterNot {
+              it.extractHealthStatusFromMeta(patientTypeMetaTagCodingSystem) == HealthStatus.DEFAULT
+            }
+            .size
+        counter += validPatientCount
+        emit(counter)
+      } while (patients.isNotEmpty())
+    }
   }
 
   override suspend fun loadPatient(patientId: String) = fhirEngine.loadResource<Patient>(patientId)

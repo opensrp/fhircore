@@ -178,15 +178,12 @@ constructor(
 
     viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
 
-    val syncStateListener =
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Succeeded
-          if (isStateCompleted) {
-            refresh()
-          }
-        }
+    val syncStateListener = OnSyncListener { state ->
+      val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Succeeded
+      if (isStateCompleted) {
+        refresh()
       }
+    }
     syncBroadcaster.registerSyncListener(syncStateListener, viewModelScope)
   }
 

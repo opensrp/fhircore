@@ -23,6 +23,8 @@ import com.google.android.fhir.search.search
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Flag
@@ -76,10 +78,9 @@ constructor(
     val families =
       fhirEngine.search<Group> {
         getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) }
-        count =
-          if (loadAll) {
-            countRegisterData(appFeatureName).toInt()
-          } else PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
+        if (!loadAll) {
+          count = PaginationConstant.DEFAULT_PAGE_SIZE + PaginationConstant.EXTRA_ITEM_COUNT
+        }
         from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
       }
 
@@ -140,14 +141,18 @@ constructor(
     )
   }
 
-  override suspend fun countRegisterData(appFeatureName: String?): Long {
+  override suspend fun countRegisterData(): Flow<Long> {
     // TODO fix this workaround for groups count
-    return fhirEngine
-      .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
-      .map { it.resource }
-      .filter { it.active && !it.name.isNullOrEmpty() }
-      .size
-      .toLong()
+    return flow {
+      val count =
+        fhirEngine
+          .search<Group> { getRegisterDataFilters(FAMILY.name).forEach { filterBy(it) } }
+          .map { it.resource }
+          .filter { it.active && !it.name.isNullOrEmpty() }
+          .size
+          .toLong()
+      emit(count)
+    }
   }
 
   private suspend fun loadFamilyHead(family: Group) =

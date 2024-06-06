@@ -45,7 +45,6 @@ import org.smartregister.fhircore.engine.data.local.register.AppRegisterReposito
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
 import org.smartregister.fhircore.engine.domain.model.ProfileData
 import org.smartregister.fhircore.engine.domain.util.PaginationConstant
-import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.engine.ui.questionnaire.QuestionnaireType
@@ -107,20 +106,18 @@ constructor(
 
   init {
     syncBroadcaster.registerSyncListener(
-      object : OnSyncListener {
-        override fun onSync(state: SyncJobStatus) {
-          when (state) {
-            is SyncJobStatus.Succeeded,
-            is SyncJobStatus.Failed, -> {
-              isSyncing.value = false
-              fetchPatientProfileDataWithChildren()
-            }
-            is SyncJobStatus.Started -> {
-              isSyncing.value = true
-            }
-            else -> {
-              isSyncing.value = false
-            }
+      { state ->
+        when (state) {
+          is SyncJobStatus.Succeeded,
+          is SyncJobStatus.Failed, -> {
+            isSyncing.value = false
+            fetchPatientProfileDataWithChildren()
+          }
+          is SyncJobStatus.Started -> {
+            isSyncing.value = true
+          }
+          else -> {
+            isSyncing.value = false
           }
         }
       },

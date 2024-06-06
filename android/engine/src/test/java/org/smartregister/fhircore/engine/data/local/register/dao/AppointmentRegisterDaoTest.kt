@@ -33,7 +33,6 @@ import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Appointment
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Practitioner

@@ -22,7 +22,7 @@ import com.google.android.fhir.sync.SyncJobStatus
  * An interface the exposes a callback method [onSync] which accepts an application level FHIR Sync
  * [State].
  */
-interface OnSyncListener {
+fun interface OnSyncListener {
   /** Callback method invoked to handle sync [state] */
   fun onSync(state: SyncJobStatus)
 }
