@@ -1,0 +1,64 @@
+# Immunization
+
+## Interoperability interfaces
+
+A critical component of immuniation tracking is the ability to connect to and share information with other information systems involved in providing and tracking care. Below we describe some common interoperability interfaces that link immunization workflows to broader health systems information infrastructure.
+
+### Master patient index
+
+A Master patient index (MPI) is an information system that maintains an authoritative list of all patients in specific geographic area, typically a country. We will focus on common use cases that are crticial to successful interoperability.
+
+#### Transmitting a newly registered OpenSRP 2 patient to the MPI
+
+FHIR Resources to transmit:
+- Patient
+
+Request:
+- Path: e.g. `/patients`
+- Method: `POST`
+- Body: Patient resource
+- Headers: Authentication token
+
+Response:
+- ID assigned by MPI
+
+#### Transmitting changes to an existing OpenSRP 2 patient's demographic details to the MPI
+
+Request
+- Path: e.g. `/patients`
+- Method: `PUT`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Map of keys and values to change those keys to (potentially nested)
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
+### Supply chain
+
+It is not possible to deliver vaccines if the physical commodities (doses in vials, hyperdermic needles, gloves, etc) are not available and there is not an effective supply chain and cold chain to move those commodities from their point of creation, or geographic zone entry, to their point or disbursement or delivery.
+
+Many countries use a logistics management information system (LMIS) to track commodities that are moving through supply chain, incuding vaccines and related vaccine delivery materials. We will describe the common use cases around transmitting stock consumption data from a FHIR API to an LMIS.
+
+#### Transmitting stock consumption to an LMIS
+
+FHIR Resrouces to transmit:
+- Observation
+
+Request:
+- Path: e.g. `/transactions`
+- Method: `POST`
+- Body: Commodity: ID, Stock change: signed integer, Reason: text
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
+### Shared health record
+
+Analogous to the MPI's role as an authoritative list of patients, the shared health record's (SHR) role is to be an authority health record for each patient. Any system that creates or modifies patient health record information is then responsible for transmitting those additions or changes to the shared health record system. Any system that is requires access to the shared health record will have to authenticate itself, prove that it is authorized, and can then retrieve the shared health record.
+
+#### Storing an immunization in the shared health record
+
+#### Storing conditions from a screening in the shared health record
