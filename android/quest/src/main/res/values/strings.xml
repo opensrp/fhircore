@@ -140,4 +140,8 @@
     <string name="filter_appointment_reason">Appointment Reason</string>
     <string name="clear_filter">Clear Filter</string>
     <string name="counters" translatable="false">Counters</string>
+    <string name="patients_counter_label">Patients</string>
+    <string name="home_tracing_conter_label">Home Tracing</string>
+    <string name="phone_tracing_counter_label">Phone Tracing</string>
+    <string name="appointments_counter_label">Appointments</string>
 </resources>

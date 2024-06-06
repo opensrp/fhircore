@@ -25,7 +25,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -44,39 +46,69 @@ constructor(
   val registerRepository: AppRegisterRepository,
 ) : ViewModel() {
 
-  private val _isRefreshing = MutableStateFlow(false)
-  val isRefreshing = _isRefreshing.asStateFlow()
+  private val _isRefreshingPatientsCount = MutableStateFlow(false)
+  val isRefreshingPatientsCountStateFlow = _isRefreshingPatientsCount.asStateFlow()
+
+  private val _isRefreshingHomeTracingCount = MutableStateFlow(false)
+  val isRefreshingHomeTracingCountStateFlow = _isRefreshingHomeTracingCount.asStateFlow()
+
+  private val _isRefreshingPhoneTracingCount = MutableStateFlow(false)
+  val isRefreshingPhoneTracingCountStateFlow = _isRefreshingPhoneTracingCount.asStateFlow()
+
+  private val _isRefreshingAppointmentsCount = MutableStateFlow(false)
+  val isRefreshingAppointmentsCountStateFlow = _isRefreshingAppointmentsCount.asStateFlow()
+
+  val isRefreshing =
+    combine(
+        _isRefreshingPatientsCount,
+        _isRefreshingHomeTracingCount,
+        _isRefreshingPhoneTracingCount,
+        _isRefreshingAppointmentsCount,
+      ) { p, ht, pt, ap ->
+        p || ht || pt || ap
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = false)
 
   private val _refreshCounter = MutableStateFlow(0)
 
   val patientsCountStateFlow =
     _refreshCounter
-      .flatMapLatest { registerRepository.countRegisterData(healthModule = HealthModule.HIV) }
-      .onEach { _isRefreshing.update { false } }
+      .onEach { _isRefreshingPatientsCount.update { true } }
+      .flatMapLatest {
+        registerRepository.countRegisterData(healthModule = HealthModule.HIV).onCompletion {
+          _isRefreshingPatientsCount.update { false }
+        }
+      }
       .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
 
   val homeTracingCountStateFlow =
     _refreshCounter
+      .onEach { _isRefreshingHomeTracingCount.update { true } }
       .flatMapLatest {
-        registerRepository.countRegisterData(healthModule = HealthModule.HOME_TRACING)
+        registerRepository
+          .countRegisterData(healthModule = HealthModule.HOME_TRACING)
+          .onCompletion { _isRefreshingHomeTracingCount.update { false } }
       }
-      .onEach { _isRefreshing.update { false } }
       .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
 
   val phoneTracingCountStateFlow =
     _refreshCounter
+      .onEach { _isRefreshingPhoneTracingCount.update { true } }
       .flatMapLatest {
-        registerRepository.countRegisterData(healthModule = HealthModule.PHONE_TRACING)
+        registerRepository
+          .countRegisterData(healthModule = HealthModule.PHONE_TRACING)
+          .onCompletion { _isRefreshingPhoneTracingCount.update { false } }
       }
-      .onEach { _isRefreshing.update { false } }
       .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
 
   val appointmentsCountStateFlow =
     _refreshCounter
+      .onEach { _isRefreshingAppointmentsCount.update { true } }
       .flatMapLatest {
-        registerRepository.countRegisterData(healthModule = HealthModule.APPOINTMENT)
+        registerRepository.countRegisterData(healthModule = HealthModule.APPOINTMENT).onCompletion {
+          _isRefreshingAppointmentsCount.update { false }
+        }
       }
-      .onEach { _isRefreshing.update { false } }
       .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
 
   init {
@@ -92,7 +124,6 @@ constructor(
   }
 
   fun refresh() {
-    _isRefreshing.update { true }
     _refreshCounter.update { it + 1 }
   }
 }

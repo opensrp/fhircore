@@ -59,7 +59,9 @@ fun CountersScreen(
   Scaffold(
     topBar = {
       Column(
-        modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
+        modifier = modifier
+          .fillMaxWidth()
+          .background(MaterialTheme.colors.primary),
       ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
@@ -84,10 +86,18 @@ fun CountersScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       val isRefreshing by countersViewModel.isRefreshing.collectAsState()
+
       val patientsCount by countersViewModel.patientsCountStateFlow.collectAsState()
+      val isRefreshingPatientsCount by countersViewModel.isRefreshingPatientsCountStateFlow.collectAsState()
+
       val homeTracingCount by countersViewModel.homeTracingCountStateFlow.collectAsState()
+      val isRefreshingHomeTracingCount by countersViewModel.isRefreshingHomeTracingCountStateFlow.collectAsState()
+
       val phoneTracingCount by countersViewModel.phoneTracingCountStateFlow.collectAsState()
+      val isRefreshingPhoneTracingCount by countersViewModel.isRefreshingPhoneTracingCountStateFlow.collectAsState()
+
       val appointmentsCount by countersViewModel.appointmentsCountStateFlow.collectAsState()
+      val isRefreshingAppointmentsCount by countersViewModel.isRefreshingAppointmentsCountStateFlow.collectAsState()
 
       SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
@@ -97,20 +107,23 @@ fun CountersScreen(
         LazyColumn {
           item {
             Card(
-              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
+              modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
               ) {
                 Column {
                   Text(
-                    text = "Patients",
-                    style = MaterialTheme.typography.h4,
+                    text = stringResource(R.string.patients_counter_label),
+                    style = MaterialTheme.typography.h4.copy(color = Color.Gray),
                   )
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$patientsCount",
-                    style = MaterialTheme.typography.h2.copy(color = Color.Gray),
+                    style = if (isRefreshingPatientsCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -119,20 +132,23 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
+              modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
               ) {
                 Column {
                   Text(
-                    text = "Home Tracing",
-                    style = MaterialTheme.typography.h4,
+                    text = stringResource(R.string.home_tracing_conter_label),
+                    style = MaterialTheme.typography.h4.copy(color = Color.Gray),
                   )
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$homeTracingCount",
-                    style = MaterialTheme.typography.h2.copy(color = Color.Gray),
+                    style = if (isRefreshingHomeTracingCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -141,20 +157,23 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
+              modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
               ) {
                 Column {
                   Text(
-                    text = "Phone Tracing",
-                    style = MaterialTheme.typography.h4,
+                    text = stringResource(R.string.phone_tracing_counter_label),
+                    style = MaterialTheme.typography.h4.copy(color = Color.Gray),
                   )
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$phoneTracingCount",
-                    style = MaterialTheme.typography.h2.copy(color = Color.Gray),
+                    style = if (isRefreshingPhoneTracingCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -163,20 +182,23 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
+              modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
               ) {
                 Column {
                   Text(
-                    text = "Appointments",
-                    style = MaterialTheme.typography.h4,
+                    text = stringResource(R.string.appointments_counter_label),
+                    style = MaterialTheme.typography.h4.copy(color = Color.Gray),
                   )
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$appointmentsCount",
-                    style = MaterialTheme.typography.h2.copy(color = Color.Gray),
+                    style = if (isRefreshingAppointmentsCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
                   )
                 }
               }
