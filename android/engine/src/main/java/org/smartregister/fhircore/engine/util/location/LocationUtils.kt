@@ -21,7 +21,7 @@ import android.content.Context
 import android.location.Location
 import android.location.LocationManager
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.Priority
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.tasks.CancellationToken
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.tasks.OnTokenCanceledListener
@@ -44,7 +44,7 @@ object LocationUtils {
     return suspendCoroutine { continuation ->
       fusedLocationClient
         .getCurrentLocation(
-          Priority.PRIORITY_HIGH_ACCURACY,
+          LocationRequest.PRIORITY_HIGH_ACCURACY,
           object : CancellationToken() {
             override fun onCanceledRequested(p0: OnTokenCanceledListener) =
               CancellationTokenSource().token
@@ -72,7 +72,7 @@ object LocationUtils {
     return suspendCoroutine { continuation ->
       fusedLocationClient
         .getCurrentLocation(
-          Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+          LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY,
           object : CancellationToken() {
             override fun onCanceledRequested(p0: OnTokenCanceledListener) =
               CancellationTokenSource().token
