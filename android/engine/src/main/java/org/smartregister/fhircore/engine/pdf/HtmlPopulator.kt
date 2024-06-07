@@ -44,13 +44,15 @@ class HtmlPopulator(
           val matcher = isNotEmptyPattern.matcher(html.substring(i))
           if (matcher.find()) {
             processIsNotEmpty(i, html, matcher)
-            // After replacement, the current index will be used twice, adding an increment/using forEach
+            // After replacement, the current index will be used twice, adding an increment/using
+            // forEach
             // will skip a character right after the current index.
 
             // For example, the '<' symbol will be skipped, not really an issue here.
             // But it will be a problem if it's an '@', which means a tag will not be detected.
             // @is-not-empty('link')Text@is-not-empty('link')<br> -> No problem
-            // @is-not-empty('link')Text@is-not-empty('link')@answer('link-b') -> The @answer tag will not be replaced, hence it will stay as a tag
+            // @is-not-empty('link')Text@is-not-empty('link')@answer('link-b') -> The @answer tag
+            // will not be replaced, hence it will stay as a tag
 
             // See below process:
 
@@ -142,8 +144,9 @@ class HtmlPopulator(
     val dateFormat = matcher.group(2)
     val answer =
       questionnaireResponseItemMap.getOrDefault(linkId, listOf()).joinToString { answer ->
-        if (dateFormat == null) answer.value.valueToString()
-        else answer.value.valueToString(dateFormat)
+        if (dateFormat == null) {
+          answer.value.valueToString()
+        } else answer.value.valueToString(dateFormat)
       }
     html.replace(i, matcher.end() + i, answer)
   }
