@@ -95,27 +95,7 @@ fun GeoWidgetLauncherScreen(
               }
             ToolbarClickEvent.FilterData -> {}
             is ToolbarClickEvent.Actions -> {
-              if (searchText.value.isNotEmpty()) {
-                listOf(
-                    ActionConfig(
-                      ActionTrigger.ON_CLICK,
-                      workflow = "LAUNCH_REGISTER",
-                      id = "servicePointRegister",
-                      params =
-                        listOf(
-                          ActionParameter(
-                            key = "searchedText",
-                            value = searchText.value,
-                            paramType = ActionParameterType.PARAMDATA,
-                          ),
-                        ),
-                    ),
-                  )
-                  .handleClickEvent(navController = navController)
-              } else {
-                event.actions.handleClickEvent(navController = navController)
-              }
-              // event.actions.handleClickEvent(navController = navController)
+              event.actions.handleClickEvent(navController = navController)
             }
           }
         }

@@ -446,6 +446,8 @@ constructor(
             )
         }
 
+        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
+
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
@@ -476,9 +478,6 @@ constructor(
             isSyncUpload = _isUploadSync,
             params = paramsMap,
           )
-
-        paramsMap["searchedText"]?.let { onEvent(RegisterEvent.SearchRegister(it)) }
-          ?: paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
       }
     }
   }
