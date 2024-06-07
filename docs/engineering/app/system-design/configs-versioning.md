@@ -1,10 +1,10 @@
-# Bundling Configurations to Target Specific App Versions
+# App Content Versioning
 
 |||
 ---|---
 Date Submitted | March 25, 2024
-Date Approved | TBD
-Status | In review
+Date Approved | April 19, 2024
+Status | Complete
 
 ## Background
 
