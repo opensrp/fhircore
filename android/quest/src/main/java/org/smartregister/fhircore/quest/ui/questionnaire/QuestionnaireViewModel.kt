@@ -488,7 +488,7 @@ constructor(
               )
           },
         )
-        if (resourceType == ResourceType.Location){
+        if (resourceType == ResourceType.Location) {
           filter(ListResource.SUBJECT, { value = "$resourceType/$resourceId" })
         } else {
           filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
