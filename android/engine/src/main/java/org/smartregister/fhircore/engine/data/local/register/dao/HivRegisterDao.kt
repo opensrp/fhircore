@@ -35,7 +35,6 @@ import org.hl7.fhir.r4.model.CodeType
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
-import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Practitioner
@@ -196,7 +195,7 @@ constructor(
     currentPage: Int,
     appFeatureName: String?,
   ): List<RegisterData> {
-    val patients = searchRegisterData {
+    val patientSearchedByName = searchRegisterData {
       filter(
         Patient.NAME,
         {
@@ -204,13 +203,21 @@ constructor(
           value = nameQuery
         },
       )
-      filter(Patient.IDENTIFIER, { value = of(Identifier().apply { value = nameQuery }) })
-      operation = Operation.OR
       count = PaginationConstant.DEFAULT_PAGE_SIZE
       from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
     }
 
-    return patients.filterValidPatientResult().transformToHivRegisterData()
+    val patientSearchedByIdentifier = searchRegisterData {
+      filter(Patient.IDENTIFIER, { value = of(nameQuery) })
+      count = PaginationConstant.DEFAULT_PAGE_SIZE
+      from = currentPage * PaginationConstant.DEFAULT_PAGE_SIZE
+    }
+
+    val patientSearchResults =
+      if (nameQuery.contains(Regex("[0-9]"))) patientSearchedByIdentifier + patientSearchedByName
+      else patientSearchedByName + patientSearchedByIdentifier
+
+    return patientSearchResults.filterValidPatientResult().transformToHivRegisterData()
   }
 
   override suspend fun loadProfileData(appFeatureName: String?, resourceId: String): ProfileData {
