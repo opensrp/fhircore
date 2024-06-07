@@ -214,8 +214,9 @@ constructor(
     }
 
     val patientSearchResults =
-      if (nameQuery.contains(Regex("[0-9]"))) patientSearchedByIdentifier + patientSearchedByName
-      else patientSearchedByName + patientSearchedByIdentifier
+      if (nameQuery.contains(Regex("[0-9]"))) {
+        patientSearchedByIdentifier + patientSearchedByName
+      } else patientSearchedByName + patientSearchedByIdentifier
 
     return patientSearchResults.filterValidPatientResult().transformToHivRegisterData()
   }

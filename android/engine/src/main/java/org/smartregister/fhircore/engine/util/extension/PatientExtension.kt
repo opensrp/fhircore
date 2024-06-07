@@ -41,6 +41,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.data.domain.PregnancyStatus
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.HealthStatus
+import org.smartregister.fhircore.engine.util.SystemConstants
 import timber.log.Timber
 
 private const val RISK = "risk"
@@ -308,14 +309,27 @@ fun Patient.extractSecondaryIdentifier(): String? {
   return null
 }
 
-fun Patient.extractOfficialIdentifier(): String? =
-  if (this.hasIdentifier()) {
-    this.identifier
-      .lastOrNull { it.use == Identifier.IdentifierUse.OFFICIAL && it.system != "WHO-HCID" }
-      ?.value
+fun Patient.extractOfficialIdentifier(): String? {
+  val patientType =
+    this.meta.tag
+      .firstOrNull { it.system == SystemConstants.PATIENT_TYPE_FILTER_TAG_VIA_META_CODINGS_SYSTEM }
+      ?.code
+  return if (this.hasIdentifier() && patientType != null) {
+    val actualId =
+      this.identifier.lastOrNull {
+        it.system == SystemConstants.getIdentifierSystemFromPatientType(patientType)
+      }
+    if (actualId != null) {
+      actualId.value
+    } else {
+      this.identifier
+        .lastOrNull { it.use == Identifier.IdentifierUse.OFFICIAL && it.system != "WHO-HCID" }
+        ?.value
+    }
   } else {
     null
   }
+}
 
 fun Coding.toHealthStatus(): HealthStatus {
   return try {

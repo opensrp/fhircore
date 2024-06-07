@@ -457,7 +457,7 @@ abstract class TracingRegisterDao(
         .getTracingAttempt(list = listResource)
         .copy(reasons = tasks.mapNotNull { task -> task.reasonCode?.codingFirstRep?.code })
 
-    val oldestTaskDate = tasks.minOfOrNull { it.authoredOn ?: it.executionPeriod.start }
+    val oldestTaskDate = tasks.minOfOrNull { it.authoredOn ?: Date() }
     val pregnancyStatus = defaultRepository.getPregnancyStatus(this.logicalId)
 
     return RegisterData.TracingRegisterData(

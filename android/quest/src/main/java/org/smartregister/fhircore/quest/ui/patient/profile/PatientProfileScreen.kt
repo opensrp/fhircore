@@ -16,6 +16,9 @@
 
 package org.smartregister.fhircore.quest.ui.patient.profile
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +35,7 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -60,6 +64,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import java.util.Locale
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.domain.util.DataLoadState
 import org.smartregister.fhircore.engine.ui.components.FormButton
 import org.smartregister.fhircore.engine.ui.theme.PatientProfileSectionsBackgroundColor
 import org.smartregister.fhircore.engine.ui.theme.WelcomeServiceBackToCareColor
@@ -88,81 +93,99 @@ fun PatientProfileScreen(
   val taskId by appMainViewModel.completedTaskId.collectAsState()
   val syncing by remember { patientProfileViewModel.isSyncing }
   val tasksId = profileViewData.tasks.map { it.actionFormId }
+  val loadingState by patientProfileViewModel.loadingState.collectAsState()
 
-  LaunchedEffect(taskId) {
-    taskId?.let { patientProfileViewModel.fetchPatientProfileDataWithChildren() }
-  }
+  val launchQuestionnaireActivityForResults =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.StartActivityForResult(),
+      onResult = {
+        if (it.resultCode == Activity.RESULT_OK && it.data != null) {
+          patientProfileViewModel.reFetch()
+        }
+      },
+    )
+
+  LaunchedEffect(taskId) { taskId?.let { patientProfileViewModel.reFetch() } }
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = { Text(stringResource(R.string.profile)) },
-        navigationIcon = {
-          IconButton(onClick = { navController.popBackStack() }) {
-            Icon(Icons.Filled.ArrowBack, null)
-          }
-        },
-        actions = {
-          IconButton(onClick = { patientProfileViewModel.reSync() }, enabled = !syncing) {
-            Icon(
-              imageVector = Icons.Outlined.Refresh,
-              contentDescription = null,
-              tint = Color.White,
-            )
-          }
-          IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
-            Icon(
-              imageVector = Icons.Outlined.MoreVert,
-              contentDescription = null,
-              tint = Color.White,
-            )
-          }
-          DropdownMenu(
-            expanded = showOverflowMenu,
-            onDismissRequest = { showOverflowMenu = false },
-          ) {
-            viewState.visibleOverflowMenuItems().forEach {
-              DropdownMenuItem(
-                onClick = {
-                  showOverflowMenu = false
-                  patientProfileViewModel.onEvent(
-                    PatientProfileEvent.OverflowMenuClick(navController, context, it.id),
-                  )
-                },
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                modifier =
-                  modifier
-                    .fillMaxWidth()
-                    .background(
-                      color =
-                        if (it.confirmAction) {
-                          it.titleColor.copy(alpha = 0.1f)
-                        } else Color.Transparent,
-                    ),
-              ) {
-                when (it.id) {
-                  R2.id.view_children -> {
-                    Text(text = profileViewData.viewChildText, color = it.titleColor)
-                  }
-                  R2.id.view_guardians -> {
-                    Text(
-                      text = stringResource(it.titleResource, profileViewData.guardians.size),
-                      color = it.titleColor,
+      Column(Modifier.fillMaxWidth()) {
+        TopAppBar(
+          title = { Text(stringResource(R.string.profile)) },
+          navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+              Icon(Icons.Filled.ArrowBack, null)
+            }
+          },
+          actions = {
+            IconButton(onClick = { patientProfileViewModel.reFetch() }, enabled = !syncing) {
+              Icon(
+                imageVector = Icons.Outlined.Refresh,
+                contentDescription = null,
+                tint = Color.White,
+              )
+            }
+            IconButton(onClick = { showOverflowMenu = !showOverflowMenu }) {
+              Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = null,
+                tint = Color.White,
+              )
+            }
+            DropdownMenu(
+              expanded = showOverflowMenu,
+              onDismissRequest = { showOverflowMenu = false },
+            ) {
+              viewState.visibleOverflowMenuItems().forEach {
+                DropdownMenuItem(
+                  onClick = {
+                    showOverflowMenu = false
+                    patientProfileViewModel.onEvent(
+                      PatientProfileEvent.OverflowMenuClick(navController, context, it.id),
                     )
-                  }
-                  else -> {
-                    Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                  },
+                  contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                  modifier =
+                    modifier
+                      .fillMaxWidth()
+                      .background(
+                        color =
+                          if (it.confirmAction) {
+                            it.titleColor.copy(alpha = 0.1f)
+                          } else Color.Transparent,
+                      ),
+                ) {
+                  when (it.id) {
+                    R2.id.view_children -> {
+                      Text(text = profileViewData.viewChildText, color = it.titleColor)
+                    }
+                    R2.id.view_guardians -> {
+                      Text(
+                        text = stringResource(it.titleResource, profileViewData.guardians.size),
+                        color = it.titleColor,
+                      )
+                    }
+                    else -> {
+                      Text(text = stringResource(id = it.titleResource), color = it.titleColor)
+                    }
                   }
                 }
               }
             }
-          }
-        },
-      )
+          },
+        )
+        if (loadingState is DataLoadState.Loading) {
+          LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+      }
     },
   ) { innerPadding ->
-    Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
-      Box(modifier = Modifier.padding(innerPadding).weight(2.0f)) {
+    Column(
+      modifier = modifier.fillMaxHeight().fillMaxWidth(),
+    ) {
+      Box(
+        modifier = Modifier.padding(innerPadding).weight(2.0f),
+      ) {
         Column(
           modifier =
             modifier
@@ -202,10 +225,10 @@ fun PatientProfileScreen(
             ) {
               profileViewData.tasks.forEach {
                 ProfileActionableItem(
-                  it,
+                  if (loadingState is DataLoadState.Loading) it.copy(actionFormId = null) else it,
                   onActionClick = { taskFormId, taskId ->
-                    patientProfileViewModel.onEvent(
-                      PatientProfileEvent.OpenTaskForm(
+                    launchQuestionnaireActivityForResults.launch(
+                      patientProfileViewModel.createLaunchTaskIntent(
                         context = context,
                         taskFormId = taskFormId,
                         taskId = taskId,
@@ -228,8 +251,11 @@ fun PatientProfileScreen(
                 FormButton(
                   formButtonData = it,
                   onFormClick = { questionnaireId, _ ->
-                    patientProfileViewModel.onEvent(
-                      PatientProfileEvent.LoadQuestionnaire(questionnaireId, context),
+                    launchQuestionnaireActivityForResults.launch(
+                      patientProfileViewModel.createLaunchQuestionnaireIntent(
+                        context = context,
+                        questionnaireId = questionnaireId,
+                      ),
                     )
                   },
                 )
@@ -285,14 +311,14 @@ fun PatientProfileScreen(
           modifier = Modifier.fillMaxWidth().padding(0.dp),
           shape = RectangleShape,
           onClick = {
-            patientProfileViewModel.onEvent(
-              PatientProfileEvent.FinishVisit(
+            launchQuestionnaireActivityForResults.launch(
+              patientProfileViewModel.createLaunchTaskIntent(
                 context = context,
-                formId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
+                taskFormId = PatientProfileViewModel.PATIENT_FINISH_VISIT,
               ),
             )
           },
-          enabled = profileViewData.tasksCompleted,
+          enabled = profileViewData.tasksCompleted && loadingState !is DataLoadState.Loading,
         ) {
           Text(
             modifier = Modifier.padding(10.dp),
