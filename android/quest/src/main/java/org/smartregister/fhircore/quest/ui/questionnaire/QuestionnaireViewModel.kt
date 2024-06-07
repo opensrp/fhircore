@@ -488,7 +488,11 @@ constructor(
               )
           },
         )
-        filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
+        if (resourceType == ResourceType.Location){
+          filter(ListResource.SUBJECT, { value = "$resourceType/$resourceId" })
+        } else {
+          filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
+        }
       }
     val listResource = defaultRepository.search<ListResource>(search).firstOrNull()
     return if (listResource != null) {
