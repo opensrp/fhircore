@@ -106,7 +106,10 @@ constructor(
           filterActiveResources = registerConfiguration.activeResourceFilters,
           configComputedRuleValues = configComputedRuleValues,
         )
-        applyFilterByRelatedEntityLocationMetaTag(filterByRelatedEntityLocation)
+        applyFilterByRelatedEntityLocationMetaTag(
+          baseResourceType = baseResourceConfig.resource,
+          filterByRelatedEntityLocation = filterByRelatedEntityLocation,
+        )
       }
     return search.count(
       onFailure = {

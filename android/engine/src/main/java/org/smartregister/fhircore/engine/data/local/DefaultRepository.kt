@@ -61,6 +61,7 @@ import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.RelatedPerson
@@ -979,7 +980,10 @@ constructor(
           sortData = true,
           configComputedRuleValues = configComputedRuleValues,
         )
-        applyFilterByRelatedEntityLocationMetaTag(filterByRelatedEntityLocationMetaTag)
+        applyFilterByRelatedEntityLocationMetaTag(
+          baseResourceConfig.resource,
+          filterByRelatedEntityLocationMetaTag,
+        )
         if (currentPage != null && pageSize != null) {
           count = pageSize
           from = currentPage * pageSize
@@ -1050,6 +1054,7 @@ constructor(
   }
 
   suspend fun Search.applyFilterByRelatedEntityLocationMetaTag(
+    baseResourceType: ResourceType,
     filterByRelatedEntityLocation: Boolean,
   ) {
     runBlocking {
@@ -1063,16 +1068,27 @@ constructor(
             ?.map { it.locationId }
             .takeIf { !it.isNullOrEmpty() }
         val filters =
-          locationIds?.map { code -> // The location Id saved as code in meta tags
-            val apply: TokenParamFilterCriterion.() -> Unit = {
-              value = of(Coding(system, code, display))
+          if (baseResourceType == ResourceType.Location) { // E.g where  _id=uuid1,uuid2
+            locationIds?.map {
+              val apply: TokenParamFilterCriterion.() -> Unit = { value = of(it) }
+              apply
             }
-            apply
+          } else {
+            locationIds?.map { code -> // The RelatedEntityLocation is retrieved from meta tag
+              val apply: TokenParamFilterCriterion.() -> Unit = {
+                value = of(Coding(system, code, display))
+              }
+              apply
+            }
           }
 
         if (!filters.isNullOrEmpty()) {
           this@applyFilterByRelatedEntityLocationMetaTag.filter(
-            TokenClientParam(TAG),
+            if (baseResourceType == ResourceType.Location) {
+              Location.RES_ID
+            } else {
+              TokenClientParam(TAG)
+            },
             *filters.toTypedArray(),
           )
         }
