@@ -98,7 +98,6 @@ constructor(
   override suspend fun loadRegisterFiltered(
     currentPage: Int,
     loadAll: Boolean,
-    appFeatureName: String?,
     healthModule: HealthModule,
     filters: RegisterFilter,
   ): List<RegisterData> {
@@ -123,7 +122,6 @@ constructor(
         registerDaoFactory.registerDaoMap[healthModule]?.loadRegisterFiltered(
           currentPage,
           loadAll,
-          appFeatureName,
           filters,
         ) ?: emptyList()
       }

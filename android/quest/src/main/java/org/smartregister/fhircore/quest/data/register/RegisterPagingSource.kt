@@ -67,7 +67,6 @@ class RegisterPagingSource(
             _patientPagingSourceState.requiresFilter -> {
               registerRepository.loadRegisterFiltered(
                 currentPage = currentPage,
-                appFeatureName = _patientPagingSourceState.appFeatureName,
                 healthModule = _patientPagingSourceState.healthModule,
                 filters = _patientPagingSourceState.filters!!,
               )
@@ -96,7 +95,7 @@ class RegisterPagingSource(
           prevKey = null
           nextKey = null
 
-          val hasNext = registerData.size > PaginationConstant.DEFAULT_PAGE_SIZE
+          val hasNext = registerViewData.size > PaginationConstant.DEFAULT_PAGE_SIZE
           if (hasNext) {
             registerViewData = registerViewData.subList(0, PaginationConstant.DEFAULT_PAGE_SIZE)
           }

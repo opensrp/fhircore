@@ -59,9 +59,7 @@ fun CountersScreen(
   Scaffold(
     topBar = {
       Column(
-        modifier = modifier
-          .fillMaxWidth()
-          .background(MaterialTheme.colors.primary),
+        modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
       ) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
@@ -88,16 +86,20 @@ fun CountersScreen(
       val isRefreshing by countersViewModel.isRefreshing.collectAsState()
 
       val patientsCount by countersViewModel.patientsCountStateFlow.collectAsState()
-      val isRefreshingPatientsCount by countersViewModel.isRefreshingPatientsCountStateFlow.collectAsState()
+      val isRefreshingPatientsCount by
+        countersViewModel.isRefreshingPatientsCountStateFlow.collectAsState()
 
       val homeTracingCount by countersViewModel.homeTracingCountStateFlow.collectAsState()
-      val isRefreshingHomeTracingCount by countersViewModel.isRefreshingHomeTracingCountStateFlow.collectAsState()
+      val isRefreshingHomeTracingCount by
+        countersViewModel.isRefreshingHomeTracingCountStateFlow.collectAsState()
 
       val phoneTracingCount by countersViewModel.phoneTracingCountStateFlow.collectAsState()
-      val isRefreshingPhoneTracingCount by countersViewModel.isRefreshingPhoneTracingCountStateFlow.collectAsState()
+      val isRefreshingPhoneTracingCount by
+        countersViewModel.isRefreshingPhoneTracingCountStateFlow.collectAsState()
 
       val appointmentsCount by countersViewModel.appointmentsCountStateFlow.collectAsState()
-      val isRefreshingAppointmentsCount by countersViewModel.isRefreshingAppointmentsCountStateFlow.collectAsState()
+      val isRefreshingAppointmentsCount by
+        countersViewModel.isRefreshingAppointmentsCountStateFlow.collectAsState()
 
       SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
@@ -107,10 +109,7 @@ fun CountersScreen(
         LazyColumn {
           item {
             Card(
-              modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
@@ -123,7 +122,10 @@ fun CountersScreen(
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$patientsCount",
-                    style = if (isRefreshingPatientsCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
+                    style =
+                      if (isRefreshingPatientsCount) {
+                        MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F))
+                      } else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -132,10 +134,7 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
@@ -148,7 +147,10 @@ fun CountersScreen(
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$homeTracingCount",
-                    style = if (isRefreshingHomeTracingCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
+                    style =
+                      if (isRefreshingHomeTracingCount) {
+                        MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F))
+                      } else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -157,10 +159,7 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
@@ -173,7 +172,10 @@ fun CountersScreen(
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$phoneTracingCount",
-                    style = if (isRefreshingPhoneTracingCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
+                    style =
+                      if (isRefreshingPhoneTracingCount) {
+                        MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F))
+                      } else MaterialTheme.typography.h2,
                   )
                 }
               }
@@ -182,10 +184,7 @@ fun CountersScreen(
 
           item {
             Card(
-              modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .height(IntrinsicSize.Min),
+              modifier = Modifier.padding(8.dp).fillMaxWidth().height(IntrinsicSize.Min),
             ) {
               Box(
                 modifier = Modifier.padding(8.dp),
@@ -198,7 +197,10 @@ fun CountersScreen(
                   Spacer(modifier = Modifier.height(8.dp))
                   Text(
                     text = "$appointmentsCount",
-                    style = if (isRefreshingAppointmentsCount) MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F)) else MaterialTheme.typography.h2,
+                    style =
+                      if (isRefreshingAppointmentsCount) {
+                        MaterialTheme.typography.h2.copy(color = Color.Gray.copy(alpha = 0.5F))
+                      } else MaterialTheme.typography.h2,
                   )
                 }
               }

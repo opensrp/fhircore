@@ -201,7 +201,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     val healthModule = HealthModule.APPOINTMENT
     val appointmentRegisterDao =
       mockk<AppointmentRegisterDao>(relaxed = true) {
-        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+        coEvery { loadRegisterFiltered(any(), any(), any()) } returns
           listOf(mockk<RegisterData.AppointmentRegisterData>())
       }
 
@@ -211,7 +211,6 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     repository.loadRegisterFiltered(
       1,
       false,
-      null,
       healthModule,
       AppointmentRegisterFilter(today, true, null, null),
     )
@@ -219,7 +218,6 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       appointmentRegisterDao.loadRegisterFiltered(
         1,
         false,
-        null,
         AppointmentRegisterFilter(today, true, null, null),
       )
     }
@@ -230,7 +228,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     val healthModule = HealthModule.PHONE_TRACING
     val phoneTracingRegisterDao =
       mockk<PhoneTracingRegisterDao>(relaxed = true) {
-        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+        coEvery { loadRegisterFiltered(any(), any(), any()) } returns
           listOf(mockk<RegisterData.TracingRegisterData>())
       }
 
@@ -239,7 +237,6 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     repository.loadRegisterFiltered(
       1,
       false,
-      null,
       healthModule,
       TracingRegisterFilter(true, null, null, null),
     )
@@ -247,7 +244,6 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       phoneTracingRegisterDao.loadRegisterFiltered(
         1,
         false,
-        null,
         TracingRegisterFilter(true, null, null, null),
       )
     }
@@ -258,7 +254,7 @@ class AppRegisterRepositoryTest : RobolectricTest() {
     val healthModule = HealthModule.APPOINTMENT
     val appointmentRegisterDao =
       mockk<AppointmentRegisterDao>(relaxed = true) {
-        coEvery { loadRegisterFiltered(any(), any(), any(), any()) } returns
+        coEvery { loadRegisterFiltered(any(), any(), any()) } returns
           listOf(mockk<RegisterData.AppointmentRegisterData>())
       }
 
@@ -275,7 +271,6 @@ class AppRegisterRepositoryTest : RobolectricTest() {
       appointmentRegisterDao.loadRegisterFiltered(
         1,
         false,
-        null,
         AppointmentRegisterFilter(today, true, null, null),
       )
     }

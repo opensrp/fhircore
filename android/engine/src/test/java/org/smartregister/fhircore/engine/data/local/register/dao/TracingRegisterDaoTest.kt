@@ -494,7 +494,6 @@ class TracingRegisterDaoTest : RobolectricTest() {
       tracingRegisterDao.loadRegisterFiltered(
         0,
         loadAll = false,
-        appFeatureName = null,
         filters =
           TracingRegisterFilter(
             isAssignedToMe = false,

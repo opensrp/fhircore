@@ -41,7 +41,6 @@ interface RegisterDao {
   suspend fun loadRegisterFiltered(
     currentPage: Int,
     loadAll: Boolean = false,
-    appFeatureName: String? = null,
     filters: RegisterFilter,
   ): List<RegisterData> {
     TODO("default")

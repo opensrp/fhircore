@@ -34,7 +34,6 @@ interface RegisterRepository {
   suspend fun loadRegisterFiltered(
     currentPage: Int,
     loadAll: Boolean = false,
-    appFeatureName: String? = null,
     healthModule: HealthModule,
     filters: RegisterFilter,
   ): List<RegisterData>
