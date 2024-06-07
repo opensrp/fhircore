@@ -576,18 +576,16 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivity(
-        Intent(context, QuestionnaireActivity::class.java)
-          .putExtras(intentBundle)
-          .putExtras(
-            intentArgs(
-              clientIdentifier = clientIdentifier,
-              groupIdentifier = groupIdentifier,
-              formName = questionnaireId,
-              questionnaireType = questionnaireType,
-              launchContexts = launchContexts,
-              populationResources = populationResources ?: ArrayList(),
-            ),
-          ),
+        createQuestionnaireIntent(
+          context = context,
+          questionnaireId = questionnaireId,
+          clientIdentifier = clientIdentifier,
+          groupIdentifier = groupIdentifier,
+          questionnaireType = questionnaireType,
+          intentBundle = intentBundle,
+          launchContexts = launchContexts,
+          populationResources = populationResources,
+        ),
       )
     }
 
@@ -602,20 +600,66 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
       populationResources: ArrayList<Resource>? = null,
     ) {
       context.startActivityForResult(
-        Intent(context, QuestionnaireActivity::class.java)
-          .putExtras(intentBundle)
-          .putExtras(
-            intentArgs(
-              clientIdentifier = clientIdentifier,
-              formName = questionnaireId,
-              questionnaireType = questionnaireType,
-              backReference = backReference,
-              launchContexts = launchContexts,
-              populationResources = populationResources ?: ArrayList(),
-            ),
-          ),
+        createQuestionnaireResultIntent(
+          context = context,
+          questionnaireId = questionnaireId,
+          clientIdentifier = clientIdentifier,
+          questionnaireType = questionnaireType,
+          backReference = backReference,
+          intentBundle = intentBundle,
+          launchContexts = launchContexts,
+          populationResources = populationResources,
+        ),
         0,
       )
+    }
+
+    fun createQuestionnaireResultIntent(
+      context: Activity,
+      questionnaireId: String,
+      clientIdentifier: String? = null,
+      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+      backReference: String? = null,
+      intentBundle: Bundle = Bundle.EMPTY,
+      launchContexts: Map<String, Resource> = emptyMap(),
+      populationResources: ArrayList<Resource>? = null,
+    ): Intent {
+      return Intent(context, QuestionnaireActivity::class.java)
+        .putExtras(intentBundle)
+        .putExtras(
+          intentArgs(
+            clientIdentifier = clientIdentifier,
+            formName = questionnaireId,
+            questionnaireType = questionnaireType,
+            backReference = backReference,
+            launchContexts = launchContexts,
+            populationResources = populationResources ?: ArrayList(),
+          ),
+        )
+    }
+
+    fun createQuestionnaireIntent(
+      context: Context,
+      questionnaireId: String,
+      clientIdentifier: String? = null,
+      groupIdentifier: String? = null,
+      questionnaireType: QuestionnaireType = QuestionnaireType.DEFAULT,
+      intentBundle: Bundle = Bundle.EMPTY,
+      launchContexts: Map<String, Resource> = emptyMap(),
+      populationResources: ArrayList<Resource>? = null,
+    ): Intent {
+      return Intent(context, QuestionnaireActivity::class.java)
+        .putExtras(intentBundle)
+        .putExtras(
+          intentArgs(
+            clientIdentifier = clientIdentifier,
+            groupIdentifier = groupIdentifier,
+            formName = questionnaireId,
+            questionnaireType = questionnaireType,
+            launchContexts = launchContexts,
+            populationResources = populationResources ?: ArrayList(),
+          ),
+        )
     }
   }
 }
