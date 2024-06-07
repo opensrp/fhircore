@@ -1,5 +1,43 @@
 # Immunization
 
+OpenSRP 2 is used to support various use cases related to immunization in community and primary healthcare settings. Here we describe our immunization reference app so that health implementors and releated stakeholders can evaluate how it fits into their health care systems.
+
+## Features and functionality
+
+[TBC]
+
+## Quickstart guide
+
+[TBC]
+
+### Deploying the health information infrastructure
+
+[TBC]
+
+### Deploying the reference content
+
+[TBC]
+
+### Configuration and adapting the content
+
+[TBC]
+
+## Reference app user guide
+
+[TBC]
+
+### Logging in and getting started
+
+[TBC]
+
+### Registering a patient
+
+[TBC]
+
+### Recording vaccinations
+
+[TBC]
+
 ## Interoperability interfaces
 
 A critical component of immuniation tracking is the ability to connect to and share information with other information systems involved in providing and tracking care. Below we describe some common interoperability interfaces that link immunization workflows to broader health systems information infrastructure.
@@ -27,6 +65,8 @@ Response:
 - ID assigned by MPI
 
 #### Transmitting changes to an existing OpenSRP 2 patient's demographic details to the MPI
+
+In this use case there is an existing OpenSRP 2 patient that has already been stored in the MPI. OpenSRP 2 has received the patient's ID from the MPI and stored it in its own FHIR Patient resource. Suppose a user of the mobile app edits the patient's details, eventually we would like to propagate these changes to the MPI, ensuring eventually consistency between patient data in the operational FHIR API and the MPI.
 
 ![updating a patient in the MPI](/img/iz-domain/patient-updated-mpi.png)
 
@@ -65,10 +105,42 @@ Response:
 
 ### Shared health record
 
-Analogous to the MPI's role as an authoritative list of patients, the shared health record's (SHR) role is to be an authority health record for each patient. Any system that creates or modifies patient health record information is then responsible for transmitting those additions or changes to the shared health record system. Any system that is requires access to the shared health record will have to authenticate itself, prove that it is authorized, and can then retrieve the shared health record.
+Analogous to the MPI's role as an authoritative list of patients, the shared health record's (SHR) role is to be an authority health record for each patient. Any system that creates or modifies patient health record information is then responsible for transmitting those additions or changes to the shared health record system. Any system that is requires access to the shared health record will have to authenticate itself, prove that it is authorized, and can then retrieve the shared health record. Shared health records are typicall structured to follow a well defined standard within FHIR, such as the [internation patient summary (IPS)](https://www.hl7.org/fhir/uv/ips/). This way shared health records are portable between any systems that understands the IPS standard.
 
 ![updating the SHR](/img/iz-domain/shr-updated.png)
 
 #### Storing an immunization in the shared health record
 
+We assume the patient already has a shared health record identified by their MPI ID number. The MPI can manage this by creating an empty shared health record whenever it creates a new patient. The FHIR data store has received new FHIR Observation resources that represent a vaccine being delivered. It then sends the new Observations to the shared health record API along with the patient's MPI. The shared health record services interprets and extracts information from the Observations to update the stored record for the patient.
+
+FHIR Resources to transmit:
+- Observation
+
+Request:
+- Path: e.g. `/update`
+- Method: `POST`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Observations to store
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
 #### Storing conditions from a screening in the shared health record
+
+This use case is similar to above except that instead a vaccine being delivered and new FHIR Observation resources being created, we assume an assessment or screening has been complianted and a new condition is discovered in the patient, represented by a new FHIR Condition resource. The FHIR data store receives new FHIR Condition resources and sends it to the shared health record API along with the patient's MPI ID. The shared health record services then interprets and extracts information from the Condition to update the stored record for the patient.
+
+FHIR Resources to transmit:
+- Condition
+
+Request:
+- Path: e.g. `/update`
+- Method: `POST`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Conditions to store
+- Headers: Authentication token
+
+Response:
+- Success or failure
