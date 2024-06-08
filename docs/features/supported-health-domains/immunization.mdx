@@ -1,10 +1,34 @@
 # Immunization
 
-OpenSRP 2 is used to support various use cases related to immunization in community and primary healthcare settings. Here we describe our immunization reference app so that health implementors and releated stakeholders can evaluate how it fits into their health care systems.
+The OpenSRP Electronic Immunization Registries (EIR) Package empowers healthcare workers to seamlessly manage and coordinate immunization delivery at the facility and community level within a WHO standards-based platform. Even in offline settings, Ona’s EIR tool enables you to accurately register households and individuals at both the facility and community level; efficiently enroll patients in their care plans ensuring that no one falls through the cracks; schedule immunization follow-up tasks so that every patient receives their vaccines on time; and record immunizations accurately.   Data is automatically tallied for the health workers with all data flowing in real-time dashboards for decision making reducing the burden of time consuming paper-based reporting.
+
+The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which enables it to support the WHO SMART Guidelines and ensures seamless interoperability with other national platforms like DHIS2.
+
+> Get the details of a child’s immunizations and record vaccines one-by-one or all at-once
+>
+> ![immunization record](/img/iz-domain/iz-profile.png)
+
+> View all the clients registered in your health system and see their upcoming immunizations
+>
+> ![child register](/img/iz-domain/child-register.png)
 
 ## Features and functionality
 
-[TBC]
+- *Patient registration and management* - register patients, capture demographic data and assign unique user ids while checking to prevent duplicate registrations.
+- *WHO Immunization Care Guidelines* - automatically creates immunization schedules based on WHO guidelines.  The EIR package currently supports all WHO child immunization, Covid-19 and HPV vaccine recommendations.  It can be expanded to support new vaccines (eg. Malaria) and localized to align with MoH country guidelines.
+- *Record Services* - record patient immunizations including the antigen/vaccine, dose, lot and date given.  Track when vaccines are refused and capture the reason why.
+- *Optimizes for on and off-line settings* - Works offline and is designed to work equally well in a facility or outreach setting.
+- *CHW Companion App* - ensure no child is missed with an included CHW application that enables team based care between facility staff and CHWs at the community level.  Eg. All children registered by CHWs will automatically enroll for care at the facility.
+- *Safety monitoring* - record when a patient experiences adverse events and link this to the specific vaccine and lot number to help ensure patient follow-up.
+- *Growth Monitoring* - the application supports growth and nutrition monitoring including automatic Z-score calculation and MUAC measurements.
+- *Stock Management* - a built in stock module supports stock-taking, resupply, consumption tracking, and wastage that is automatically calculated based on usage in the app.  The stock module can be integrated with LMIS helping to provide important visibility on vaccine demand to prevent stockouts.
+- *Vital Statistics* - optional CRVS module to capture birth and death notifications and/or registrations and the issuance of birth certificates.
+- *In-app Reporting* - automatically calculate immunization service data statistics eliminating the need for time consuming paper-based tally sheets.
+- *Real-time Analytics* - visualize program data on interactive dashboards with rich geospatial support to show coverage and risk areas.
+- *Client Messaging* - leverage built integrations with platforms like RapidPro and Turn to send immunization reminders and educational messaging that can increase vaccine demand and uptake.
+- *Precision health* - leverage the built in geo-widget to target at risk communities and households for service delivery.
+- *Integrations* - built in integration ensures all data flows seamlessly into DHIS2. Integrations with common LMIS, CRVS are also possible.
+- *Interoperability* - OpenSRP is HL7 FHIR native ensuring best-in class interoperability to enable seamless two-way data flows with other systems.
 
 ## Quickstart guide
 
