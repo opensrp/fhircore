@@ -114,7 +114,7 @@ constructor(
         tasks
           .mapNotNull { it.getCarePlanId() }
           .map<String, TokenParamFilterCriterion.() -> Unit> {
-            return@map { of(it) }
+            return@map { value = of(it) }
           }
           .takeIf { it.isNotEmpty() }
           ?.let {

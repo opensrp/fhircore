@@ -54,7 +54,7 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
     var start = 0
     do {
       val resources =
-        fhirEngine.search<R>(Search(type, count = 500, from = PAGE_COUNT * start++)).map {
+        fhirEngine.search<R>(Search(type, count = PAGE_COUNT, from = PAGE_COUNT * start++)).map {
           it.resource
         }
       emit(resources)
@@ -123,15 +123,18 @@ class ResourcePurger(private val fhirEngine: FhirEngine) {
       .filter { it.isNotEmpty() }
       .collect { patients ->
         val patientIdsReferenceParamFilterCriteria =
-          patients.map(Patient::logicalId).map<String, ReferenceParamFilterCriterion.() -> Unit> {
-            return@map { value = "${ResourceType.Patient.name}/$it" }
-          }
-        val carePlans =
-          fhirEngine
-            .search<CarePlan> {
-              filter(CarePlan.SUBJECT, *patientIdsReferenceParamFilterCriteria.toTypedArray())
+          patients.map(Patient::logicalId).chunked(50) {
+            it.map<String, ReferenceParamFilterCriterion.() -> Unit> {
+              return@map { value = "${ResourceType.Patient.name}/$it" }
             }
+          }
+        val carePlans = mutableListOf<CarePlan>()
+        patientIdsReferenceParamFilterCriteria.forEach {
+          fhirEngine
+            .search<CarePlan> { filter(CarePlan.SUBJECT, *it.toTypedArray()) }
             .map { it.resource }
+            .let { carePlans.addAll(it) }
+        }
 
         carePlans
           .groupBy { it.subject.reference }
