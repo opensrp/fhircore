@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-engineering/app/system-design/configs-versioning" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.0.0">
+<title data-rh="true">App Content Versioning | OpenSRP Documentation</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://opensrp.github.io/engineering/app/system-design/configs-versioning"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="App Content Versioning | OpenSRP Documentation"><meta data-rh="true" name="description" content="|||"><meta data-rh="true" property="og:description" content="|||"><link data-rh="true" rel="icon" href="/img/opensrp-favicon.png"><link data-rh="true" rel="canonical" href="https://opensrp.github.io/engineering/app/system-design/configs-versioning"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/app/system-design/configs-versioning" hreflang="en"><link data-rh="true" rel="alternate" href="https://opensrp.github.io/engineering/app/system-design/configs-versioning" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.6faaae7e.css">
+<script src="/assets/js/runtime~main.a42a91e5.js" defer="defer"></script>
+<script src="/assets/js/main.622f49b9.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/img/opensrp-logo.png" alt="OpenSRP Documentation" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/img/opensrp-logo.png" alt="OpenSRP Documentation" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">Docs</b></a></div><div class="navbar__items navbar__items--right"><a href="https://opensrp.io/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Home</a><a href="https://opensrp.io/about/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">About</a><a class="navbar__item navbar__link nav-active" href="/">Docs</a><a href="https://opensrp.io/screenshots/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Screenshots</a><a href="https://opensrp.io/impact/" target="_self" rel="noopener noreferrer" class="navbar__item navbar__link">Impact</a><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/">Overview</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/project-information">Project Information</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link">FEATURES</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/features/app-features">App Features</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/features/admin-dashboard-features">Admin Dashboard Features</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/features/supported-health-domains">Supported Domains</a><button aria-label="Expand sidebar category &#x27;Supported Domains&#x27;" type="button" class="clean-btn menu__caret"></button></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--active">ENGINEERING</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" aria-expanded="true" tabindex="0" href="/engineering/app">App</a><button aria-label="Collapse sidebar category &#x27;App&#x27;" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/app/developer-setup">Developer setup</a><button aria-label="Expand sidebar category &#x27;Developer setup&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-3 menu__list-item"><a class="menu__link" tabindex="0" href="/engineering/app/automated-releases">Releases</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/app/configuring">Configuring</a><button aria-label="Expand sidebar category &#x27;Configuring&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/app/datastore">Data storage</a><button aria-label="Expand sidebar category &#x27;Data storage&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-3 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" aria-expanded="true" tabindex="0" href="/engineering/app/system-design/configs-versioning">System Design</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-4 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/engineering/app/system-design/configs-versioning">App Content Versioning</a></li></ul></li></ul></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/engineering/admin-dashboard">Admin Dashboard</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/engineering/backend">Backend</a><button aria-label="Expand sidebar category &#x27;Backend&#x27;" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" tabindex="0" href="/engineering/integrations/dhis2">Integrations</a></div></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link">DESIGN</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/design/introduction">Design</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-2 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" aria-expanded="false" tabindex="0" href="/design/testing">Testing</a><button aria-label="Expand sidebar category &#x27;Testing&#x27;" type="button" class="clean-btn menu__caret"></button></div></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">ENGINEERING</span><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/engineering/app"><span itemprop="name">App</span></a><meta itemprop="position" content="2"></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">System Design</span><meta itemprop="position" content="3"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">App Content Versioning</span><meta itemprop="position" content="4"></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><h1>App Content Versioning</h1>
+<table><thead><tr><th></th><th></th></tr></thead><tbody><tr><td>Date Submitted</td><td>March 25, 2024</td></tr><tr><td>Date Approved</td><td>April 19, 2024</td></tr><tr><td>Status</td><td>Complete</td></tr></tbody></table>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="background">Background<a href="#background" class="hash-link" aria-label="Direct link to Background" title="Direct link to Background">​</a></h2>
+<p>We need to ensure compatibility between FHIR configs downloaded from the server and the version of the OpenSRP 2 app. With OpenSRP still in active development and ongoing changes to how configs are defined, implementing version-based content limitations is crucial to ensuring that the application functions correctly. This allows us to streamline the user experience and maintain consistency across different versions of the application.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="switch-from-composition-to-implementationguide">Switch from Composition to ImplementationGuide<a href="#switch-from-composition-to-implementationguide" class="hash-link" aria-label="Direct link to Switch from Composition to ImplementationGuide" title="Direct link to Switch from Composition to ImplementationGuide">​</a></h2>
+<p>OpenSRP currently uses a Composition resource to group the resources that define an OpenSRP 2 application. Storing versioning information in the Composition resource is non-trivial and ad hoc.</p>
+<p>An ImplementationGuide (IG) is designed with versioning support and rich metadata such as licensing information, authors, publication status, etc. IGs are the typical wrapper for a set of resources that define a healthcare workflow or system.</p>
+<p>An IG has a <code>useContext</code> field whose data type is a <code>UsageContext</code> that has <code>valueRange</code> (Range) as one of the allowed types. Range has <code>low</code> and <code>high</code> values which we will use define the app versions supported by the configs. It also has a <code>version</code> field, we will use this to define the version of the content.</p>
+<p>The <code>useContext.valueRange</code> defines the lowest and highest APK versions it is compatible with.</p>
+<p>The IG’s <code>definition</code> field maps to the <code>section</code> field of the composition.</p>
+<ul>
+<li><code>resource.reference</code> maps to <code>section.focus.reference</code></li>
+<li><code>resource.name</code> maps to <code>section.focus.identifier.value</code></li>
+</ul>
+<p>ImplementationGuide</p>
+<div class="codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">  - version</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  - useContext (valueRange)</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - low</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - high</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  - definition</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    - resource</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - reference</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">      - name</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>ImplementationGuides are used to package all related resources to manage workflows e.g. immunization IG, malaria IG, HIV IG, etc. To align with how others use IGs, the ideal approach in OpenSRP would be to link all resources referenced in the Composition resource’s section in the implementation guide and fully switch to using an IG instead of a Composition resource</p>
+<p>For the first iteration of the switch, an implementation guide will be created and the existing Composition resource referenced in the IG.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="sequenced-work-plan">Sequenced Work Plan<a href="#sequenced-work-plan" class="hash-link" aria-label="Direct link to Sequenced Work Plan" title="Direct link to Sequenced Work Plan">​</a></h2>
+<ol>
+<li>
+<p>Add an ImplementationGuide that references the existing composition config
+<a href="https://github.com/opensrp/fhircore/issues/3150" target="_blank" rel="noopener noreferrer">GitHub Issue #3150</a></p>
+<ol>
+<li>
+<p>Create an IG with at least the fields below:</p>
+<ul>
+<li><code>url</code> - globally unique URI for the implementation guide</li>
+<li><code>version</code> - sequential version number of the config</li>
+<li><code>name</code> - computer friendly name for the IG</li>
+<li><code>status</code> - publication status of the IG</li>
+<li><code>packageId</code> - package name for the IG</li>
+<li><code>fhirVersion</code> - FHIR version(s) the IG targets</li>
+<li><code>useContext.valueRange</code> - a range of lowest and highest supported APK version codes. Using the version code over the SEMVER version simplifies filtering by range when fetching from the server</li>
+<li><code>definition.resource</code> - a reference to the existing Composition resource</li>
+</ul>
+</li>
+<li>
+<p>Update OpenSRP to support syncing using both IG and Composition resources.</p>
+<ul>
+<li>For apps that do not have an IG, follow the current sync flow using the Composition config</li>
+<li>For apps that have an IG configured:<!-- -->
+<ul>
+<li>Fetch the highest version of the IG config from the server whose useContext range applies for the app’s version.</li>
+<li>Use the composition config referenced in the IG and follow the standard sync using composition config.</li>
+</ul>
+</li>
+<li>In cases where both an IG and a composition config are defined for an app, the IG takes precedence over the composition. The flow in (ii) applies.</li>
+<li>If both IG and composition resources are not available, the app should fail with a message to the user</li>
+</ul>
+</li>
+<li>
+<p>Document how to set IG’s version and useContext range values</p>
+<ul>
+<li>
+<p>The IG <code>useContext</code> value should be a range of the app&#x27;s supported version codes. Using version codes over the app&#x27;s semantic version allows us to more easily filter from the server by range.</p>
+<ul>
+<li>useContext.valueRange.low - minimum supported version code. Skip this value if the support starts from the earliest version</li>
+<li>useContext.valueRange.high - maximum supported version code. Skip this value if the support starts from low and supports every version above that</li>
+</ul>
+<div class="codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#393A34;--prism-background-color:#f6f8fa"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-text codeBlock_bY9V thin-scrollbar" style="color:#393A34;background-color:#f6f8fa"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#393A34"><span class="token plain">&quot;useContext&quot;: [</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    &quot;valueRange&quot;: {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    &quot;low&quot;: {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        &quot;value&quot;: 1</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    },</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    &quot;high&quot;: {</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">        &quot;value&quot;: 10</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">    }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">  }</span><br></span><span class="token-line" style="color:#393A34"><span class="token plain">]</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+</li>
+<li>
+<p>To ensure there are no missing or improperly referenced configs, and that correct versioning is done, validation will be required in fhir-tooling:</p>
+<ul>
+<li>FHIR content verification CI tool</li>
+<li>Additional checks for missing configs, invalid versioning, etc. to be done when uploading using fhir-tooling</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p>Display version and useContext info in app
+<a href="https://github.com/opensrp/fhircore/issues/3151" target="_blank" rel="noopener noreferrer">GitHub Issue #3151</a></p>
+<ul>
+<li>Add IG version and useContext values to the application’s settings screen</li>
+</ul>
+</li>
+<li>
+<p><strong>[TBD, review with PM/TPM/Dev, requires product owner sign-off]</strong> Tag generated content with version of IG. This can be valuable when troubleshooting. Below are some of the considerations to guide the decision on whether to do this</p>
+<ul>
+<li>Pros<!-- -->
+<ul>
+<li>Useful for debug purposes - provides crucial information during debugging sessions. It allows developers to quickly identify which version of the IG was used to generate specific content, aiding in diagnosing and resolving issues more efficiently. It is also easy to correlate inconsistencies or errors directly to the version of the IG tagged in the resources</li>
+<li>Track failure back to version of content - a clear audit trail of content changes and their corresponding IG versions is maintained</li>
+<li>Tags can be used to identify resources that need to be migrated in case of an issue tied to a specific version of configs</li>
+</ul>
+</li>
+<li>Cons<!-- -->
+<ul>
+<li>Increases data size - introduces additional metadata which can slightly increase the overall data size, albeit minimally.</li>
+<li>Adds code complexity to do tagging</li>
+<li>Additional work needs to be done when creating resources to include version information</li>
+<li>When a resource was created with an earlier version of configs and edit is done with a newer version, the updated resource may need to be upgraded to include fields and other information added (if any) in the newer version</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>[TBD]</strong> Restrict the ability to sync IG based on useContext within version of app doing the syncing eg. get the latest IG version valid for app version</p>
+<ul>
+<li>There may be multiple versions of an IG for a given app. How should OpenSRP pick the version of the IG to fetch and use to sync?<!-- -->
+<ul>
+<li>Select the most recent version, i.e., IG with highest version number for the given app version</li>
+</ul>
+</li>
+<li>How should the app handle cases where a valid IG does not exist for the version of the app?<!-- -->
+<ul>
+<li>The app should provide appropriate feedback to the user, indicating that IG syncing is not available for their current app version. This could be accompanied by instructions on how to update the app to a version that is supported</li>
+<li>The app could also offer fallback functionality or access to alternative resources if IG syncing is not possible.</li>
+</ul>
+</li>
+<li>Do the version filters only apply to configs and not to content generated in the app?<!-- -->
+<ul>
+<li>Version filters should primarily apply to configs</li>
+<li>Content generated within the app may not necessarily be restricted by version filters unless it directly interacts with IG-related functionalities. However, it&#x27;s essential to ensure that any generated content remains compatible with the selected IG version to maintain data integrity and interoperability.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="questions">Questions<a href="#questions" class="hash-link" aria-label="Direct link to Questions" title="Direct link to Questions">​</a></h3>
+<ol>
+<li>
+<p>Why change from a Composition resource to an IG resource?</p>
+<ul>
+<li>
+<p>We will have some added LOE to convert from using the Composition to the IG. Do we need to maintain backward compatibility?</p>
+<ul>
+<li>IGs can be rendered and published - opens up</li>
+<li>Latest version of the SDK has a KM</li>
+</ul>
+<p><em>An IG resource will be created for the versions of the app that they support. Resource.reference field of the IG references the exisiting composition resource.</em></p>
+</li>
+</ul>
+</li>
+<li>
+<p>How do we handle bundling of the IG resource using the Workflow manager?</p>
+<ul>
+<li>An IG is a metadata resource, not a normal resource. It is referenced by a URL rather than an identifier as is the case with composition resources.</li>
+<li>How will workflow manager discriminate how if processes a content IG vs Workflow IG?<!-- -->
+<ul>
+<li>The workflow manager should always assume that the IG it is receiving is a workflow IG</li>
+</ul>
+</li>
+<li>Also, they are packaged as maven dependencies? TBD</li>
+</ul>
+</li>
+<li>
+<p>IG focuses on bundling workflows as opposed to resources.</p>
+<ul>
+<li>An app can have multiple IGs that define different workflows.<!-- -->
+<ul>
+<li>NB: A workflow is a set of resources. For example you can have an antenatal care IG or an Application IG.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>How does the app know what version of the IG/Composition to load? E.g</p>
+<ul>
+<li>
+<p>0.1.0 APK version uses Composition/IG version 2</p>
+</li>
+<li>
+<p>2.0.0 - 3.0.5 APK version uses Composition/IG version 4</p>
+<ul>
+<li>The app points to an IG and the IG points to a composition resource</li>
+<li>The app should receive the latest IG depending on the range of the version number of the APK.</li>
+</ul>
+<p><em>Currently, the composition resource fetched is based on the appId.</em></p>
+<p><em>FHIR spec version R4B does not have an identifier field for IG. This means that we are not able to use the appId to fetch an IG resource. Here are the proposed approaches on how to specify the IG to use:</em></p>
+<p><em>Configure a URL reference to the IG in the app’s build configurations.</em></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Versioning structure to be used</p>
+<ul>
+<li>
+<p>Questionnaire/001 =&gt; Questionnaire/002 - Use 2 files</p>
+</li>
+<li>
+<p>Questionnaire/001/_history/1 =&gt; Questionnaire/001/_history/2 - The same file leverage FHIR version</p>
+</li>
+<li>
+<p>Does your HAPI FHIR server support versioning using _<em>history</em></p>
+<p>_As highlighted in bullet (c), as not all FHIR servers support resource versioning, the approach to be applied in this case is use of a different identifier for configs with breaking changes.  _</p>
+</li>
+</ul>
+</li>
+<li>
+<p>The process of releasing a content IG</p>
+<ul>
+<li>Any content that changes requires a new identifier<!-- -->
+<ul>
+<li>Case 1 - Routine, non-breaking changes to configs that do not require an app update<!-- -->
+<ul>
+<li>Requires no action on the IG</li>
+</ul>
+</li>
+<li>Case 2 - Changes made to configs require a specific version of the app to work<!-- -->
+<ul>
+<li>All updated resources/configs are created with new identifiers</li>
+<li>A copy of the composition resource is created with a new identifier. References to the changed configs are added to the composition config</li>
+<li>A copy of the IG is created, with a different URL to the older version. The new IG resource then references the new composition created in (2) above</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="theme-doc-footer-edit-meta-row row"><div class="col"><a href="https://github.com/opensrp/fhircore/tree/main/docs/engineering/app/system-design/configs-versioning.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_vwxv"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/engineering/app/datastore/tagging"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">Tagging Resources</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/engineering/admin-dashboard"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Admin Dashboard</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#background" class="table-of-contents__link toc-highlight">Background</a></li><li><a href="#switch-from-composition-to-implementationguide" class="table-of-contents__link toc-highlight">Switch from Composition to ImplementationGuide</a></li><li><a href="#sequenced-work-plan" class="table-of-contents__link toc-highlight">Sequenced Work Plan</a><ul><li><a href="#questions" class="table-of-contents__link toc-highlight">Questions</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title"></div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://opensrp.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">OpenSRP<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://ona.io" target="_blank" rel="noopener noreferrer" class="footer__link-item">Ona<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2024 Ona Systems</div></div></div></footer></div>
+</body>
+</html>
