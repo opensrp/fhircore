@@ -25,16 +25,33 @@ import org.smartregister.fhircore.engine.util.extension.formatDate
 import org.smartregister.fhircore.engine.util.extension.makeItReadable
 import org.smartregister.fhircore.engine.util.extension.valueToString
 
+/**
+ * HtmlPopulator class is responsible for processing an HTML template by replacing custom tags with
+ * data from a QuestionnaireResponse. The class uses various regex patterns to find and replace
+ * custom tags such as @is-not-empty, @answer-as-list, @answer, @submitted-date, and @contains.
+ *
+ * @property questionnaireResponse The QuestionnaireResponse object containing data for replacement.
+ */
 class HtmlPopulator(
   private val questionnaireResponse: QuestionnaireResponse,
 ) {
 
+  // Map to store questionnaire response items keyed by their linkId
   private val questionnaireResponseItemMap =
     questionnaireResponse.allItems.associateBy(
       keySelector = { it.linkId },
       valueTransform = { it.answer },
     )
 
+  /**
+   * Populates the provided HTML template with data from the QuestionnaireResponse.
+   *
+   * After a tag got replaced, the current index will be used twice, adding an increment will skip a
+   * character right after the current index.
+   *
+   * @param rawHtml The raw HTML template containing custom tags to be replaced.
+   * @return The populated HTML with all custom tags replaced by corresponding data.
+   */
   fun populateHtml(rawHtml: String): String {
     val html = StringBuilder(rawHtml)
     var i = 0
@@ -42,53 +59,7 @@ class HtmlPopulator(
       when {
         html.startsWith("@is-not-empty", i) -> {
           val matcher = isNotEmptyPattern.matcher(html.substring(i))
-          if (matcher.find()) {
-            processIsNotEmpty(i, html, matcher)
-            // After replacement, the current index will be used twice, adding an increment/using
-            // forEach
-            // will skip a character right after the current index.
-
-            // For example, the '<' symbol will be skipped, not really an issue here.
-            // But it will be a problem if it's an '@', which means a tag will not be detected.
-            // @is-not-empty('link')Text@is-not-empty('link')<br> -> No problem
-            // @is-not-empty('link')Text@is-not-empty('link')@answer('link-b') -> The @answer tag
-            // will not be replaced, hence it will stay as a tag
-
-            // See below process:
-
-            // Case 1
-            // 1. Given: <p>@is-not-empty('link')Text@is-not-empty('link')</p>
-            // 2. The first '@' will be detected, and it's index is 3
-            // 3. If link answer exist, both tags will be replaced by 'Text'
-            // 4. Since the index is not incremented, it stays 3 in the next iteration, but the
-            // value of the index has changed from '@' to 'T'
-            // 5. Index 3 with 'T' as it's value is detected
-            // 6. The flow goes to the ELSE, then the index is incremented, from 3 to 4, with value
-            // respectively 'T' to 'e'
-            // 7. On the next iteration, index 4 will go to the ELSE, and the process continues
-
-            // Case 2
-            // 1. Given: <p>@is-not-empty('link')Text@is-not-empty('link')</p>
-            // 2. The first '@' will be detected, and it's index is 3
-            // 3. If link answer not exist, both tags will be replaced by ''
-            // 4. Since the index is not incremented, it stays 3 in the next iteration, but the
-            // value of the index has changed from '@' to '<'
-            // 5. Index 3 with '<' as it's value is detected
-            // 6. The flow goes to the ELSE, then the index is incremented, from 3 to 4, with value
-            // respectively '<' to '/'
-            // 7. On the next iteration, index 4 will go to the ELSE, and the process continues
-
-            // Note 1: We are not simply matching the '@' symbol, but instead matching the tag
-            // itself e.g. @is-not-empty
-            // Note 2: An '@' symbol inside an email will not be affected because of Note 1 e.g.
-            // sample@gmail.com
-          } else {
-            i++
-            // Prevents an infinite loop where regex cannot find any match:
-            // 1. There is only 1 tag, where it should be a pair
-            // 2. There is a pair of tag, but each has different link id
-            // 3. Other regex matching issues, but underline is, the @is-not-empty tag do exist
-          }
+          if (matcher.find()) processIsNotEmpty(i, html, matcher) else i++
         }
         html.startsWith("@answer-as-list", i) -> {
           val matcher = answerAsListPattern.matcher(html.substring(i))
@@ -112,6 +83,14 @@ class HtmlPopulator(
     return html.toString()
   }
 
+  /**
+   * Processes the @is-not-empty tag by checking if the specified linkId has an answer. Replaces the
+   * tag with the content if the answer exists, otherwise removes the tag.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
   private fun processIsNotEmpty(i: Int, html: StringBuilder, matcher: Matcher) {
     val linkId = matcher.group(1)
     val content = matcher.group(2) ?: ""
@@ -129,6 +108,14 @@ class HtmlPopulator(
     }
   }
 
+  /**
+   * Processes the @answer-as-list tag by replacing it with a list of answers for the specified
+   * linkId.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
   private fun processAnswerAsList(i: Int, html: StringBuilder, matcher: Matcher) {
     val linkId = matcher.group(1)
     val answerAsList =
@@ -139,6 +126,13 @@ class HtmlPopulator(
     html.replace(i, matcher.end() + i, answerAsList)
   }
 
+  /**
+   * Processes the @answer tag by replacing it with the answer for the specified linkId.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
   private fun processAnswer(i: Int, html: StringBuilder, matcher: Matcher) {
     val linkId = matcher.group(1)
     val dateFormat = matcher.group(2)
@@ -151,6 +145,13 @@ class HtmlPopulator(
     html.replace(i, matcher.end() + i, answer)
   }
 
+  /**
+   * Processes the @submitted-date tag by replacing it with the formatted date.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
   private fun processSubmittedDate(i: Int, html: StringBuilder, matcher: Matcher) {
     val dateFormat = matcher.group(1)
     val date =
@@ -162,6 +163,14 @@ class HtmlPopulator(
     html.replace(i, matcher.end() + i, date)
   }
 
+  /**
+   * Processes the @contains tag by checking if the specified linkId contains the indicator.
+   * Replaces the tag with the content if the indicator is found, otherwise removes the tag.
+   *
+   * @param i The starting index of the tag in the HTML.
+   * @param html The StringBuilder containing the HTML.
+   * @param matcher The Matcher object for the regex pattern.
+   */
   private fun processContains(i: Int, html: StringBuilder, matcher: Matcher) {
     val linkId = matcher.group(1)
     val indicator = matcher.group(2) ?: ""
