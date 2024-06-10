@@ -64,6 +64,9 @@ fun PatientRegisterScreen(
   val firstTimeSync by remember { firstTimeSyncState }
   val searchTextState = patientRegisterViewModel.searchText.collectAsState()
   val searchText by remember { searchTextState }
+
+  val searchedTextState = patientRegisterViewModel.searchedText.collectAsState()
+  val searchedText by remember { searchedTextState }
   val patientRegistrationLauncher =
     rememberLauncherForActivityResult(
       contract = ActivityResultContracts.StartActivityForResult(),
@@ -109,7 +112,7 @@ fun PatientRegisterScreen(
       // Bottom section has a pagination footer and button with client registration action
       // Only show when filtering data is not active
       Column {
-        if (searchText.isEmpty() && pagingItems.itemCount > 0) {
+        if (searchedText.isEmpty() && pagingItems.itemCount > 0) {
           val pageNavigationItems =
             patientRegisterViewModel.pageNavigationItemViewData
               .collectAsState()
@@ -128,7 +131,7 @@ fun PatientRegisterScreen(
         }
 
         if (
-          searchText.isEmpty() &&
+          searchedText.isEmpty() &&
             (patientRegisterViewModel.isAppFeatureHousehold() ||
               patientRegisterViewModel.isRegisterFormViaSettingExists())
         ) {
@@ -159,7 +162,7 @@ fun PatientRegisterScreen(
       }
       // Only show counter during search
       var iModifier = Modifier.padding(top = 0.dp)
-      if (searchText.isNotEmpty()) {
+      if (searchedText.isNotEmpty()) {
         iModifier = Modifier.padding(top = 32.dp)
         RegisterHeader(resultCount = pagingItems.itemCount)
       }

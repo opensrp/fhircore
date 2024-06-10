@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.plus
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.AppFeatureManager
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -98,6 +99,18 @@ constructor(
   val searchText: StateFlow<String>
     get() = _searchText.asStateFlow()
 
+  val searchedText: StateFlow<String> =
+    searchText
+      .debounce {
+        when (it.length) {
+          0 -> 2.milliseconds // when search is cleared
+          1,
+          2, -> 1200.milliseconds
+          else -> 500.milliseconds
+        }
+      }
+      .stateIn(viewModelScope, SharingStarted.Lazily, searchText.value)
+
   private val _refreshCounter = MutableStateFlow(0)
   val refreshCounter: StateFlow<Int>
     get() = _refreshCounter.asStateFlow()
@@ -111,14 +124,7 @@ constructor(
 
   private val _paginatedRegisterViewData =
     combine(
-        searchText.debounce {
-          when (it.length) {
-            0 -> 2.milliseconds // when search is cleared
-            1,
-            2, -> 1200.milliseconds
-            else -> 500.milliseconds
-          }
-        },
+        searchedText,
         currentPage,
         refreshCounter,
       ) { s, p, r ->
@@ -147,7 +153,11 @@ constructor(
             .map { it as RegisterViewData.ListItemView }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = emptyFlow(),
+      )
 
   val pageNavigationItemViewData =
     _paginatedRegisterViewData
@@ -158,7 +168,11 @@ constructor(
             .map { it as RegisterViewData.PageNavigationItemView }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = emptyFlow(),
+      )
 
   init {
     syncBroadcaster.registerSyncListener(
@@ -289,7 +303,7 @@ constructor(
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null).isNullOrBlank()
 
   fun progressMessage() =
-    if (searchText.value.isEmpty()) {
+    if (searchedText.value.isEmpty()) {
       ""
     } else {
       configurationRegistry.context.resources.getString(R.string.search_progress_message)

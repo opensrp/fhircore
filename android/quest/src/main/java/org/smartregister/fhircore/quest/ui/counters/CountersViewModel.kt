@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.plus
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
 import org.smartregister.fhircore.engine.data.local.register.AppRegisterRepository
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
@@ -79,7 +80,11 @@ constructor(
           _isRefreshingPatientsCount.update { false }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = 0L,
+      )
 
   val homeTracingCountStateFlow =
     _refreshCounter
@@ -89,7 +94,11 @@ constructor(
           .countRegisterData(healthModule = HealthModule.HOME_TRACING)
           .onCompletion { _isRefreshingHomeTracingCount.update { false } }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = 0L,
+      )
 
   val phoneTracingCountStateFlow =
     _refreshCounter
@@ -99,7 +108,11 @@ constructor(
           .countRegisterData(healthModule = HealthModule.PHONE_TRACING)
           .onCompletion { _isRefreshingPhoneTracingCount.update { false } }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = 0L,
+      )
 
   val appointmentsCountStateFlow =
     _refreshCounter
@@ -109,7 +122,11 @@ constructor(
           _isRefreshingAppointmentsCount.update { false }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = 0L)
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = 0L,
+      )
 
   init {
 

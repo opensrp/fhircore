@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import org.apache.commons.lang3.time.DateUtils
 import org.smartregister.fhircore.engine.appfeature.AppFeature
 import org.smartregister.fhircore.engine.appfeature.model.HealthModule
@@ -116,7 +117,11 @@ constructor(
             .map { it as RegisterViewData.ListItemView }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = emptyFlow(),
+      )
 
   override val pageNavigationItemViewData:
     StateFlow<Flow<PagingData<RegisterViewData.PageNavigationItemView>>> =
@@ -128,7 +133,11 @@ constructor(
             .map { it as RegisterViewData.PageNavigationItemView }
         }
       }
-      .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = emptyFlow())
+      .stateIn(
+        viewModelScope.plus(dispatcherProvider.io()),
+        SharingStarted.Lazily,
+        initialValue = emptyFlow(),
+      )
 
   private val paginatedRegisterDataForSearch: MutableStateFlow<Flow<PagingData<RegisterViewData>>> =
     MutableStateFlow(emptyFlow())
@@ -136,8 +145,6 @@ constructor(
   private val _filtersMutableStateFlow: MutableStateFlow<AppointmentFilterState> =
     MutableStateFlow(AppointmentFilterState.default())
   val filtersStateFlow: StateFlow<AppointmentFilterState> = _filtersMutableStateFlow.asStateFlow()
-
-  private val _startCountRegisterMutableStateFlow = MutableStateFlow("")
 
   init {
     val searchFlow = _searchText.debounce(500)
@@ -173,7 +180,9 @@ constructor(
         .collect { value -> _paginatedRegisterData.emit(value.cachedIn(viewModelScope)) }
     }
 
-    viewModelScope.launch { registerFilterFlow.collect { paginateRegisterDataForSearch(it) } }
+    viewModelScope.launch(dispatcherProvider.io()) {
+      registerFilterFlow.collect { paginateRegisterDataForSearch(it) }
+    }
 
     val syncStateListener = OnSyncListener { state ->
       val isStateCompleted = state is SyncJobStatus.Failed || state is SyncJobStatus.Succeeded
