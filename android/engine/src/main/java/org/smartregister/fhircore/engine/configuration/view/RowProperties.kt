@@ -47,6 +47,7 @@ data class RowProperties(
     return this.copy(
       backgroundColor = backgroundColor?.interpolate(computedValuesMap),
       visible = visible.interpolate(computedValuesMap),
+      clickable = clickable.interpolate(computedValuesMap)
     )
   }
 }
