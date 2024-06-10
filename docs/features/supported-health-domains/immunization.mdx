@@ -1,0 +1,164 @@
+# Immunization
+
+The OpenSRP Electronic Immunization Registries (EIR) Package empowers healthcare workers to seamlessly manage and coordinate immunization delivery at the facility and community level within a WHO standards-based platform. Even in offline settings, Ona’s EIR tool enables you to accurately register households and individuals at both the facility and community level; efficiently enroll patients in their care plans ensuring that no one falls through the cracks; schedule immunization follow-up tasks so that every patient receives their vaccines on time; and record immunizations accurately.   Data is automatically tallied for the health workers with all data flowing in real-time dashboards for decision making reducing the burden of time consuming paper-based reporting.
+
+The EIR package leverages the next-gen FHIR-native OpenSRP 2 platform, which enables it to support the WHO SMART Guidelines and ensures seamless interoperability with other national platforms like DHIS2.
+
+![immunization record](/img/iz-domain/iz-profile-register.png)
+
+## Features and functionality
+
+- *Patient registration and management* - register patients, capture demographic data and assign unique user ids while checking to prevent duplicate registrations.
+- *WHO Immunization Care Guidelines* - automatically creates immunization schedules based on WHO guidelines.  The EIR package currently supports all WHO child immunization, Covid-19 and HPV vaccine recommendations.  It can be expanded to support new vaccines (eg. Malaria) and localized to align with MoH country guidelines.
+- *Record Services* - record patient immunizations including the antigen/vaccine, dose, lot and date given.  Track when vaccines are refused and capture the reason why.
+- *Optimizes for on and off-line settings* - Works offline and is designed to work equally well in a facility or outreach setting.
+- *CHW Companion App* - ensure no child is missed with an included CHW application that enables team based care between facility staff and CHWs at the community level.  Eg. All children registered by CHWs will automatically enroll for care at the facility.
+- *Safety monitoring* - record when a patient experiences adverse events and link this to the specific vaccine and lot number to help ensure patient follow-up.
+- *Growth Monitoring* - the application supports growth and nutrition monitoring including automatic Z-score calculation and MUAC measurements.
+- *Stock Management* - a built in stock module supports stock-taking, resupply, consumption tracking, and wastage that is automatically calculated based on usage in the app.  The stock module can be integrated with LMIS helping to provide important visibility on vaccine demand to prevent stockouts.
+- *Vital Statistics* - optional CRVS module to capture birth and death notifications and/or registrations and the issuance of birth certificates.
+- *In-app Reporting* - automatically calculate immunization service data statistics eliminating the need for time consuming paper-based tally sheets.
+- *Real-time Analytics* - visualize program data on interactive dashboards with rich geospatial support to show coverage and risk areas.
+- *Client Messaging* - leverage built integrations with platforms like RapidPro and Turn to send immunization reminders and educational messaging that can increase vaccine demand and uptake.
+- *Precision health* - leverage the built in geo-widget to target at risk communities and households for service delivery.
+- *Integrations* - built in integration ensures all data flows seamlessly into DHIS2. Integrations with common LMIS, CRVS are also possible.
+- *Interoperability* - OpenSRP is HL7 FHIR native ensuring best-in class interoperability to enable seamless two-way data flows with other systems.
+
+## Quickstart guide
+
+[TBC]
+
+### Deploying the health information infrastructure
+
+[TBC]
+
+### Deploying the reference content
+
+[TBC]
+
+### Configuration and adapting the content
+
+[TBC]
+
+## Reference app user guide
+
+[TBC]
+
+### Logging in and getting started
+
+[TBC]
+
+### Registering a patient
+
+[TBC]
+
+### Recording vaccinations
+
+[TBC]
+
+## Interoperability interfaces
+
+A critical component of immuniation tracking is the ability to connect to and share information with other information systems involved in providing and tracking care. Below we describe some common interoperability interfaces that link immunization workflows to broader health systems information infrastructure.
+
+### Master patient index
+
+A Master patient index (MPI) is an information system that maintains an authoritative list of all patients in specific geographic area, typically a country. We will focus on common use cases that are crticial to successful interoperability.
+
+#### Transmitting a newly registered OpenSRP 2 patient to the MPI
+
+In this use case a patient or client has been newly registered in the mobile app and the mobile app has syncronized its data with the remote FHIR API that servers as the operational data store for the mobile app. We would now like to send this newly stored patient information to a third-party MPI so that any other participaants in the health system also have access to this new patient's information. We will also want to store the ID assigned to the new patient by the MPI in our operation data store's patient API so that we have a 1-to-1 link between our representation of the patient and the MPI's represenatation of the patient.
+
+![storing a new patient in the MPI](/img/iz-domain/patient-to-mpi.png)
+
+FHIR Resources to transmit:
+- Patient
+
+Request:
+- Path: e.g. `/patients`
+- Method: `POST`
+- Body: Patient resource
+- Headers: Authentication token
+
+Response:
+- ID assigned by MPI
+
+#### Transmitting changes to an existing OpenSRP 2 patient's demographic details to the MPI
+
+In this use case there is an existing OpenSRP 2 patient that has already been stored in the MPI. OpenSRP 2 has received the patient's ID from the MPI and stored it in its own FHIR Patient resource. Suppose a user of the mobile app edits the patient's details, eventually we would like to propagate these changes to the MPI, ensuring eventually consistency between patient data in the operational FHIR API and the MPI.
+
+![updating a patient in the MPI](/img/iz-domain/patient-updated-mpi.png)
+
+Request
+- Path: e.g. `/patients`
+- Method: `PUT`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Map of keys and values to change those keys to (potentially nested)
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
+### Supply chain
+
+It is not possible to deliver vaccines if the physical commodities (doses in vials, hyperdermic needles, gloves, etc) are not available and there is not an effective supply chain and cold chain to move those commodities from their point of creation, or geographic zone entry, to their point or disbursement or delivery.
+
+Many countries use a logistics management information system (LMIS) to track commodities that are moving through supply chain, incuding vaccines and related vaccine delivery materials. We will describe the common use cases around transmitting stock consumption data from a FHIR API to an LMIS.
+
+#### Transmitting stock consumption to an LMIS
+
+![storing data in the LMIS](/img/iz-domain/stock-to-lmis.png)
+
+FHIR Resources to transmit:
+- Observation
+
+Request:
+- Path: e.g. `/transactions`
+- Method: `POST`
+- Body: Commodity: ID, Stock change: signed integer, Reason: text
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
+### Shared health record
+
+Analogous to the MPI's role as an authoritative list of patients, the shared health record's (SHR) role is to be an authority health record for each patient. Any system that creates or modifies patient health record information is then responsible for transmitting those additions or changes to the shared health record system. Any system that is requires access to the shared health record will have to authenticate itself, prove that it is authorized, and can then retrieve the shared health record. Shared health records are typicall structured to follow a well defined standard within FHIR, such as the [internation patient summary (IPS)](https://www.hl7.org/fhir/uv/ips/). This way shared health records are portable between any systems that understands the IPS standard.
+
+![updating the SHR](/img/iz-domain/shr-updated.png)
+
+#### Storing an immunization in the shared health record
+
+We assume the patient already has a shared health record identified by their MPI ID number. The MPI can manage this by creating an empty shared health record whenever it creates a new patient. The FHIR data store has received new FHIR Observation resources that represent a vaccine being delivered. It then sends the new Observations to the shared health record API along with the patient's MPI. The shared health record services interprets and extracts information from the Observations to update the stored record for the patient.
+
+FHIR Resources to transmit:
+- Observation
+
+Request:
+- Path: e.g. `/update`
+- Method: `POST`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Observations to store
+- Headers: Authentication token
+
+Response:
+- Success or failure
+
+#### Storing conditions from a screening in the shared health record
+
+This use case is similar to above except that instead a vaccine being delivered and new FHIR Observation resources being created, we assume an assessment or screening has been complianted and a new condition is discovered in the patient, represented by a new FHIR Condition resource. The FHIR data store receives new FHIR Condition resources and sends it to the shared health record API along with the patient's MPI ID. The shared health record services then interprets and extracts information from the Condition to update the stored record for the patient.
+
+FHIR Resources to transmit:
+- Condition
+
+Request:
+- Path: e.g. `/update`
+- Method: `POST`
+- Parameters
+    - ID: `[Patient.identifier[first where type=MPI].value]`
+- Body: Conditions to store
+- Headers: Authentication token
+
+Response:
+- Success or failure
