@@ -1,21 +1,26 @@
 ---
-sidebar_label: Keycloak
+sidebar_label: Identity Access Management
 ---
 
-#
+# Identity Access management
 
-## Keycloak user management
+OpenSRP 2 can work with many identity and access management (IAM) systems but has been most widely tested with the open source Keycloak identity and access management platform.
+
+## Setting up Keycloak
 
 1. Create the user on Keycloak
 1. Create the required groups, e.g. create the `PROVIDER` and `SUPERVISOR` groups
+    1. Create client groups e.g `ANDROID_PRACTITIONER` group for practitioners using android devices or `WEB_PRACTITIONER` group for practitioners using the fhir web.
 1. Create roles for all the resources your application uses, e.g. for permissions on the `Patient` resource create the roles `GET_PATIENT`, `PUT_PATIENT`, `POST_PATIENT`. The KeyCloak definition is as follows:
-    1. `HTTP` methods define the permissions a user can have on any endpoint. We also use an additional `Manage` role which is a composite of the 4 `HTTP` method roles
+    1. HTTP methods define the permissions a user can have on any endpoint. We also use an additional `Manage` role which is a composite of the 4 HTTP method roles
     1. The Permissions checker plugin currently handles the `POST`, `GET`, `PUT`, `DELETE` HTTP methods
     1. The permissions use the following format: `[HTTP_METHOD]_[RESOURCE_NAME]`. Where `RESOURCE_NAME` is the FHIR resource name, e.g `Patient`.
+    1. Create client roles e.g `ANDROID_CLIENT` for android clients or `WEB_CLIENT` for web clients
 
-> **Note:** Keycloak Roles are case sensitive. OpenSRP 2 uses uppercase letters in its role naming.  
+> **Note:** Keycloak Roles are case sensitive. OpenSRP 2 uses uppercase letters in its role naming.
 
 4. Assign the roles to the corresponding group, e.g. for the above assign to `PROVIDER`
+    1. For client roles, assign `ANDROID_CLIENT` to `ANDROID_PRACTITIONER` or `WEB_CLIENT` to `WEB_PRACTITIONER`
 1. Assign the created Group, e.g. Provider to the user
 1. Add a new user attribute with the key `fhir_core_app_id` and a value corresponding to the user’s assigned android client application id on the Composition resource (`composition_config.json`).
 1. Create a protocol mapper with Mapper Type `User Attribute` at the client level, area path (Keycloak v20+) `Clients` > `Client Details` > `Dedicated Scopes` > `Add mapper`. The **User attribute** and **Token claim name** field values should match the attribute key `fhir_core_app_id` created in the previous step.
