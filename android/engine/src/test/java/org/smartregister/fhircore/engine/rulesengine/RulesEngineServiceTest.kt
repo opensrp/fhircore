@@ -236,6 +236,16 @@ class RulesEngineServiceTest : RobolectricTest() {
   }
 
   @Test
+  fun `generateTaskServiceStatus() should return FAILED when Task#status is FAILED`() {
+    val task = Task().apply { status = Task.TaskStatus.FAILED }
+
+    Assert.assertEquals(
+      ServiceStatus.FAILED.name,
+      rulesEngineService.generateTaskServiceStatus(task),
+    )
+  }
+
+  @Test
   fun `generateTaskServiceStatus() should return OVERDUE when Task#executionPeriod#hasEnd() and Task#executionPeriod#end#before(today())`() {
     val sdf = SimpleDateFormat("dd/MM/yyyy")
     val startDate: Date? = sdf.parse("01/01/2023")

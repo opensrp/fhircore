@@ -113,18 +113,22 @@ fun UserSettingScreen(
   username: String?,
   practitionerLocation: String?,
   fullname: String?,
-  allowSwitchingLanguages: Boolean,
   selectedLanguage: String,
   languages: List<Language>,
-  showDatabaseResetConfirmation: Boolean,
   progressBarState: Pair<Boolean, Int>,
   isDebugVariant: Boolean = false,
   onEvent: (UserSettingsEvent) -> Unit,
   mainNavController: NavController,
   appVersionPair: Pair<Int, String>? = null,
-  allowP2PSync: Boolean,
   lastSyncTime: String?,
   showProgressIndicatorFlow: MutableStateFlow<Boolean>,
+  enableManualSync: Boolean,
+  allowSwitchingLanguages: Boolean,
+  showDatabaseResetConfirmation: Boolean,
+  enableAppInsights: Boolean,
+  showOfflineMaps: Boolean = false,
+  allowP2PSync: Boolean = false,
+  enableHelpContacts: Boolean = false,
 ) {
   val context = LocalContext.current
   val (showProgressBar, messageResource) = progressBarState
@@ -212,20 +216,25 @@ fun UserSettingScreen(
         }
       }
       Divider(color = DividerColor)
-      UserSettingRow(
-        icon = Icons.Rounded.Sync,
-        text = stringResource(id = R.string.sync),
-        clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
-      )
 
-      UserSettingRow(
-        icon = Icons.Rounded.Map,
-        text = stringResource(id = R.string.offline_map),
-        clickListener = { onEvent(UserSettingsEvent.OnLaunchOfflineMap(true, context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_OFFLINE_MAP),
-        canSwitchToScreen = true,
-      )
+      if (enableManualSync) {
+        UserSettingRow(
+          icon = Icons.Rounded.Sync,
+          text = stringResource(id = R.string.sync),
+          clickListener = { onEvent(UserSettingsEvent.SyncData(context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_SYNC),
+        )
+      }
+
+      if (showOfflineMaps) {
+        UserSettingRow(
+          icon = Icons.Rounded.Map,
+          text = stringResource(id = R.string.offline_map),
+          clickListener = { onEvent(UserSettingsEvent.OnLaunchOfflineMap(true, context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_OFFLINE_MAP),
+          canSwitchToScreen = true,
+        )
+      }
 
       // Language option
       if (allowSwitchingLanguages) {
@@ -323,23 +332,28 @@ fun UserSettingScreen(
         )
       }
 
-      UserSettingRow(
-        icon = Icons.Rounded.Insights,
-        text = stringResource(id = R.string.insights),
-        clickListener = {
-          onEvent(UserSettingsEvent.ShowInsightsScreen(navController = mainNavController))
-        },
-        modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
-        showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
-        canSwitchToScreen = true,
-      )
-      UserSettingRow(
-        icon = Icons.Rounded.Phone,
-        text = stringResource(id = R.string.contact_help),
-        clickListener = { onEvent(UserSettingsEvent.ShowContactView(true, context)) },
-        modifier = modifier.testTag(USER_SETTING_ROW_CONTACT_HELP),
-        canSwitchToScreen = true,
-      )
+      if (enableAppInsights) {
+        UserSettingRow(
+          icon = Icons.Rounded.Insights,
+          text = stringResource(id = R.string.insights),
+          clickListener = {
+            onEvent(UserSettingsEvent.ShowInsightsScreen(navController = mainNavController))
+          },
+          modifier = modifier.testTag(USER_SETTING_ROW_INSIGHTS),
+          showProgressIndicator = showProgressIndicatorFlow.collectAsState().value,
+          canSwitchToScreen = true,
+        )
+      }
+
+      if (enableHelpContacts) {
+        UserSettingRow(
+          icon = Icons.Rounded.Phone,
+          text = stringResource(id = R.string.contact_help),
+          clickListener = { onEvent(UserSettingsEvent.ShowContactView(true, context)) },
+          modifier = modifier.testTag(USER_SETTING_ROW_CONTACT_HELP),
+          canSwitchToScreen = true,
+        )
+      }
 
       UserSettingRow(
         icon = Icons.Rounded.Logout,
@@ -484,17 +498,21 @@ fun UserSettingPreview() {
     username = "Jam",
     fullname = "Jam Kenya",
     practitionerLocation = "Gateway Remote Location",
-    allowSwitchingLanguages = true,
     selectedLanguage = java.util.Locale.ENGLISH.toLanguageTag(),
     languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-    showDatabaseResetConfirmation = false,
     progressBarState = Pair(false, R.string.resetting_app),
     isDebugVariant = true,
     onEvent = {},
     mainNavController = rememberNavController(),
     appVersionPair = Pair(1, "1.0.1"),
-    allowP2PSync = true,
     lastSyncTime = "05:30 PM, Mar 3",
     showProgressIndicatorFlow = MutableStateFlow(false),
+    enableManualSync = true,
+    allowSwitchingLanguages = true,
+    showDatabaseResetConfirmation = false,
+    enableAppInsights = true,
+    showOfflineMaps = true,
+    allowP2PSync = true,
+    enableHelpContacts = true,
   )
 }

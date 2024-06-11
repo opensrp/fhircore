@@ -109,7 +109,10 @@ android {
 
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -288,7 +291,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
-      manifestPlaceholders["appLabel"] = "GIZ EIR"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
@@ -324,6 +327,13 @@ android {
       applicationIdSuffix = ".demoEir"
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
+    }
+
+    create("vamosJuntos") {
+      dimension = "apps"
+      applicationIdSuffix = ".vamosJuntos"
+      versionNameSuffix = "-vamosJuntos"
+      manifestPlaceholders["appLabel"] = "Vamos Juntos"
     }
   }
 
