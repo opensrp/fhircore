@@ -37,8 +37,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class QuestionnaireExtensionTest {
+class QuestionnaireExtensionTest : RobolectricTest() {
   private lateinit var questionniare: Questionnaire
   private lateinit var questionniareResponse: QuestionnaireResponse
   private lateinit var questionniareResponseItemComponent:
