@@ -125,6 +125,11 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  private var questionnaireItemParentMap:
+          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
+
+  private val questionnaireLaunchContextMap: Map<String, Resource>? = null
+
   suspend fun loadQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
     prePopulationParams: List<ActionParameter>? = emptyList(),
@@ -452,12 +457,13 @@ constructor(
       }
 
     questionnaireConfig.planDefinitions?.forEach { planId ->
-      kotlin
-        .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
-        .onFailure {
-          Timber.e(it)
-          extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-        }
+      if (planId.isNotEmpty())
+          kotlin
+            .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+            .onFailure {
+              Timber.e(it)
+              extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+            }
     }
 
     fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
@@ -709,7 +715,7 @@ constructor(
    * @param questionnaireResponse QuestionnaireResponse to validate
    * @param context Context to use in validation
    */
-  fun isQuestionnaireResponseValid(
+  suspend fun isQuestionnaireResponseValid(
     questionnaire: Questionnaire,
     questionnaireResponse: QuestionnaireResponse,
     context: Context
@@ -722,7 +728,9 @@ constructor(
       QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire,
         questionnaireResponse,
-        context
+        context,
+        questionnaireItemParentMap,
+        questionnaireLaunchContextMap
       )
       true
     } catch (e: IllegalArgumentException) {

@@ -96,6 +96,8 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   @Inject lateinit var parser: IParser
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
+  private var questionnaireLaunchContextMap: Map<String, Resource>? = null
+  private var questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
   internal lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig
@@ -511,25 +513,27 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open fun handleQuestionnaireSubmit() {
     saveProcessingAlertDialog = showProgressAlert(this, R.string.form_progress_message)
 
-    val questionnaireResponse = getQuestionnaireResponse()
-    if (!validQuestionnaireResponse(questionnaireResponse)) {
-      saveProcessingAlertDialog.dismiss()
+    lifecycleScope.launch {
+      val questionnaireResponse = getQuestionnaireResponse()
+      if (!validQuestionnaireResponse(questionnaireResponse)) {
+        saveProcessingAlertDialog.dismiss()
 
-      AlertDialogue.showErrorAlert(
-        this,
-        R.string.questionnaire_alert_invalid_message,
-        R.string.questionnaire_alert_invalid_title
-      )
-      return
+        AlertDialogue.showErrorAlert(
+          this@QuestionnaireActivity,
+          R.string.questionnaire_alert_invalid_message,
+          R.string.questionnaire_alert_invalid_title
+        )
+        return@launch
+      }
+
+      if (currentLocation != null) {
+        questionnaireResponse.contained.add(
+          ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
+        )
+      }
+
+      handleQuestionnaireResponse(questionnaireResponse)
     }
-
-    if (currentLocation != null) {
-      questionnaireResponse.contained.add(
-        ResourceUtils.createFhirLocationFromGpsLocation(gpsLocation = currentLocation!!),
-      )
-    }
-
-    handleQuestionnaireResponse(questionnaireResponse)
 
     questionnaireViewModel.extractionProgress.observe(this) { result ->
       onPostSave(result, questionnaireResponse)
@@ -574,11 +578,13 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
     finish()
   }
 
-  fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
+  suspend fun validQuestionnaireResponse(questionnaireResponse: QuestionnaireResponse) =
     QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = questionnaire,
         questionnaireResponse = questionnaireResponse,
-        context = this
+        context = this,
+        launchContextMap = questionnaireLaunchContextMap,
+        questionnaireItemParentMap = questionnaireItemParentMap
       )
       .values
       .flatten()
