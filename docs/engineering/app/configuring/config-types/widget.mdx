@@ -651,6 +651,66 @@ height | The height of the Spacer. | Yes | _ |
 backgroundColor | The background color of the view, specified as a string in the format "#RRGGBB" or "#AARRGGBB". If this property is null, the view will use its parent's background color. | No | #FFFFFF |
 padding | Offsets the content of the view by a specific number of pixels. This should be a number | No | 0 |
 
+## Stack view widget
+The Stack View Widget can hold a list of child views, allowing you to arrange them one on top of the other.
+The Stack View acts as a container that vertically stacks its child views. It provides a way to create layered layouts where elements can be positioned on top of each other. This makes it ideal for use cases like:
+- Overlaying informational elements like badges or icons on top of content.
+- Creating progress indicators or loaders that sit on top of the main view.
+- Implementing toasts or pop-up notifications that appear above the primary content.
+### Example JSON:
+```json
+{
+  "viewType": "STACK",
+  "backgroundColor": "successColor",
+  "size": 100,
+  "opacity": 0.1,
+  "children": [
+    {
+      "viewType": "IMAGE",
+      "alignment": "CENTER",
+      "size": 90,
+      "imageConfig": {
+        "type": "local",
+        "reference": "ic_main_image"
+      },
+      "isCircular": false
+    },
+    {
+      "viewType": "IMAGE",
+      "size": 38,
+      "visible": "true",
+      "imageConfig": {
+        "type": "local",
+        "reference": "ic_alert_triangle"
+      },
+      "isCircular": true
+    }
+  ]
+}
+```
+### Config properties of STACK VIEW WIDGET
+The Stack View Widget inherits common properties from the ViewProperties class. These properties allow you to configure the general appearance and behavior of the stack, including:
+- weight
+- backgroundColor
+- padding
+- borderRadius
+- alignment
+- fillMaxWidth
+- fillMaxHeight
+- clickable
+- visible
+
+Stack view specific properties include :
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+viewType | Specifies the type of view. In this case, it's always `STACK` to identify it during runtime | Yes | [STACK]|
+backgroundColor | this represents the background color of the container view, specified as a color code in the format "#RRGGBB" or "#AARRGGBB". If null, it indicates a transparent background. | | String? |
+opacity |  Opacity of the view, ranging from 0.0 (fully transparent) to 1.0 (fully opaque).| No | Float |
+size |  Height of the stack view in pixels. If not set, the stack will wrap its content | No | Int |
+children |  List of child view definitions. Each child view definition should be a valid JSON object representing a supported view type (e.g., COMPUNDTEXT, IMAGE, BUTTON)..| | List |
+
+
 ## Personal Data Widgets
 Personal data widget, defines personal data like age to it's corresponding value in a more organised way.It takes a list of mapped items as input.It contains various properties that defines its behavior.
 

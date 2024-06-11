@@ -56,7 +56,7 @@ enum class ViewType {
 
   /** A type of view component used to render divider between views */
   @JsonNames("border", "Border") BORDER,
-
-  /** TO:DO provide a detailed description */
+  
+  /** A type of view component used to overlay different views */
   @JsonNames("stack", "Stack") STACK,
 }

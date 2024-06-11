@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.datastore.ProtoDataStore
@@ -109,8 +110,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     setupLocationServices()
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-    val topMenuConfigId =
-      topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
+    val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+    val topMenuConfigId = clickAction?.id ?: topMenuConfig.id
     navHostFragment =
       NavHostFragment.create(
         R.navigation.application_nav_graph,
@@ -160,34 +161,25 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
-    navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
-    syncListenerManager.registerSyncListener(this, lifecycle)
-    setStartDestination()
+    // Create NavController after fragment has been attached
+    navHostFragment.apply {
+      val graph =
+        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+          val startDestination =
+            when (appMainViewModel.applicationConfiguration.navigationStartDestination) {
+              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+              else -> R.id.registerFragment
+            }
+          setStartDestination(startDestination)
+        }
+      navController.addOnDestinationChangedListener(sentryNavListener)
+      navController.graph = graph
+    }
   }
 
   override fun onPause() {
     super.onPause()
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
-  }
-
-  private fun setStartDestination() {
-    val navController = navHostFragment.navController
-    val startDestination =
-      when (appMainViewModel.applicationConfiguration.launcherType) {
-        LauncherType.MAP -> {
-          R.id.geoWidgetLauncherFragment
-        }
-        else -> {
-          R.id.registerFragment
-        }
-      }
-    // Inflate the navigation graph
-    val navInflater = navController.navInflater
-    val graph = navInflater.inflate(R.navigation.application_nav_graph)
-    // Set the start destination
-    graph.setStartDestination(startDestination)
-    // Set the modified NavGraph to the NavController
-    navController.graph = graph
   }
 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {
@@ -218,18 +210,24 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
   }
 
   private fun setupLocationServices() {
-    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+    if (
+      appMainViewModel.applicationConfiguration.logGpsLocation.contains(
+        LocationLogOptions.CALCULATE_DISTANCE_RULE_EXECUTOR,
+      )
+    ) {
+      fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-    if (!LocationUtils.isLocationEnabled(this)) {
-      openLocationServicesSettings()
-    }
+      if (!LocationUtils.isLocationEnabled(this)) {
+        openLocationServicesSettings()
+      }
 
-    if (!hasLocationPermissions()) {
-      launchLocationPermissionsDialog()
-    }
+      if (!hasLocationPermissions()) {
+        launchLocationPermissionsDialog()
+      }
 
-    if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
-      fetchLocation()
+      if (LocationUtils.isLocationEnabled(this) && hasLocationPermissions()) {
+        fetchLocation()
+      }
     }
   }
 

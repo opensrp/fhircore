@@ -24,7 +24,6 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.spyk
-import java.net.URL
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
@@ -38,7 +37,7 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
-import org.smartregister.fhircore.engine.OpenSrpApplication
+import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -57,6 +56,8 @@ object Faker {
   }
 
   private val testDispatcher = UnconfinedTestDispatcher()
+  private val configService =
+    AppConfigService(ApplicationProvider.getApplicationContext<HiltTestApplication>())
 
   private val testDispatcherProvider =
     object : DispatcherProvider {
@@ -98,15 +99,9 @@ object Faker {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
-          configService = mockk(),
+          configService = configService,
           json = json,
           context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-          openSrpApplication =
-            object : OpenSrpApplication() {
-              override fun getFhirServerHost(): URL? {
-                return URL("http://my_test_fhirbase_url/fhir/")
-              }
-            },
         ),
       )
 
