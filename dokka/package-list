@@ -2,7 +2,6 @@ $dokka.format:html-v1
 $dokka.linkExtension:html
 
 module:engine
-org.smartregister.fhircore.engine
 org.smartregister.fhircore.engine.auth
 org.smartregister.fhircore.engine.configuration
 org.smartregister.fhircore.engine.configuration.app
