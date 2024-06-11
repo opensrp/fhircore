@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.quest.integration
 
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.LocalChange
 import com.google.android.fhir.SearchResult
@@ -27,7 +28,6 @@ import com.google.android.fhir.sync.upload.SyncUploadProgress
 import com.google.android.fhir.sync.upload.UploadRequestResult
 import com.google.gson.Gson
 import dagger.hilt.android.testing.HiltTestApplication
-import java.net.URL
 import java.time.OffsetDateTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -36,12 +36,12 @@ import kotlinx.serialization.json.Json
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Composition
 import org.hl7.fhir.r4.model.OperationOutcome
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.AuthConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -161,15 +161,25 @@ object Faker {
     val configService =
       object : ConfigService {
         override fun provideAuthConfiguration(): AuthConfiguration {
-          TODO("Not yet implemented")
+          return AuthConfiguration(
+            fhirServerBaseUrl = "http://fake.base.url.com",
+            oauthServerBaseUrl = "http://fake.keycloak.url.com",
+            clientId = "fake-client-id",
+            accountType = InstrumentationRegistry.getInstrumentation().context.packageName,
+          )
         }
 
         override fun defineResourceTags(): List<ResourceTag> {
-          TODO("Not yet implemented")
-        }
-
-        override fun provideConfigurationSyncPageSize(): String {
-          TODO("Not yet implemented")
+          return listOf(
+            ResourceTag(
+              type = ResourceType.Location.name,
+              tag =
+                Coding().apply {
+                  system = "http://fake.tag.com/Location#system"
+                  display = "Practitioner Location"
+                },
+            ),
+          )
         }
       }
 
@@ -190,12 +200,6 @@ object Faker {
         dispatcherProvider = DefaultDispatcherProvider(),
         json = json,
         context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-        openSrpApplication =
-          object : OpenSrpApplication() {
-            override fun getFhirServerHost(): URL? {
-              return URL("http://my_test_fhirbase_url/fhir/")
-            }
-          },
       )
 
     runBlocking {

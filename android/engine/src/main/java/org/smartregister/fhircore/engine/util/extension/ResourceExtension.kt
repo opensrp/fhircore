@@ -75,10 +75,10 @@ const val REFERENCE = "reference"
 const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
-fun Base?.valueToString(): String {
+fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
   return when {
     this == null -> return ""
-    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
+    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable(datePattern)
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
     this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
