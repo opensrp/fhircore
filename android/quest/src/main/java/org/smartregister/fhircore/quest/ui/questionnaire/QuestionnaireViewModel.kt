@@ -448,23 +448,28 @@ constructor(
     if (resourceIdPair != null) {
       val (resourceType, resourceId) = resourceIdPair
       val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
-      val relatedEntityLocationTags =
+      var relatedEntityLocationTags =
         resource?.meta?.tag?.filter { coding ->
           coding.system ==
             context.getString(
               org.smartregister.fhircore.engine.R.string
                 .sync_strategy_related_entity_location_system,
             )
-        } ?: retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
+        }
 
-      relatedEntityLocationTags?.forEach(this.meta::addTag)
+      if (relatedEntityLocationTags.isNullOrEmpty()) {
+        relatedEntityLocationTags =
+          retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
+      }
+
+      relatedEntityLocationTags.forEach(this.meta::addTag)
     }
   }
 
   private suspend fun retrieveRelatedEntityTagsLinkedToSubject(
     context: Context,
     resourceIdPair: Pair<ResourceType, String>,
-  ): List<Coding>? {
+  ): List<Coding> {
     val (resourceType, resourceId) = resourceIdPair
     val search =
       Search(ResourceType.List).apply {
@@ -494,8 +499,8 @@ constructor(
           filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
         }
       }
-    val listResource = defaultRepository.search<ListResource>(search).firstOrNull()
-    return if (listResource != null) {
+
+    return defaultRepository.search<ListResource>(search).map { listResource ->
       val system =
         context.getString(
           org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
@@ -505,9 +510,7 @@ constructor(
         context.getString(
           org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
         )
-      listOf(Coding(system, code, display))
-    } else {
-      null
+      Coding(system, code, display)
     }
   }
 
