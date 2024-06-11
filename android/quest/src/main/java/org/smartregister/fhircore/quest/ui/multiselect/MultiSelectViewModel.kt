@@ -141,11 +141,9 @@ constructor(
     }
   }
 
-  fun saveSelectedLocations(context: Context) {
-    viewModelScope.launch {
-      context.syncLocationIdsProtoStore.updateData {
-        selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
-      }
+  suspend fun saveSelectedLocations(context: Context) {
+    context.syncLocationIdsProtoStore.updateData {
+      selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
     }
   }
 
