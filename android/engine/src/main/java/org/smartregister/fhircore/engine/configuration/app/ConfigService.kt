@@ -70,8 +70,6 @@ interface ConfigService {
     return tags
   }
 
-  fun provideConfigurationSyncPageSize(): String
-
   /**
    * Provide a list of custom search parameters.
    *

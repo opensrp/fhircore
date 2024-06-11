@@ -26,6 +26,7 @@ import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
 import com.google.android.fhir.logicalId
 import com.google.gson.Gson
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -72,6 +73,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
@@ -111,31 +113,31 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
 
-  @Inject lateinit var configService: ConfigService
-
   @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var parser: IParser
+
+  @BindValue
+  val configService: ConfigService =
+    spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
-  private lateinit var spiedConfigService: ConfigService
 
   @Before
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
     sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
-    spiedConfigService = spyk(configService)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,
         dispatcherProvider = dispatcherProvider,
         sharedPreferencesHelper = sharedPreferenceHelper,
         configurationRegistry = configurationRegistry,
-        configService = spiedConfigService,
+        configService = configService,
         configRulesExecutor = configRulesExecutor,
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
@@ -313,27 +315,25 @@ class DefaultRepositoryTest : RobolectricTest() {
   @Test
   fun testCreateShouldNotDuplicateMetaTagsWithSameSystemCode() {
     val system = "https://smartregister.org/location-tag-id"
-    val code = "86453"
-    val anotherCode = "10200"
-    val coding = Coding(system, code, "Location")
-    val anotherCoding = Coding(system, anotherCode, "Location")
+    val coding = Coding(system, "86453", "Location")
+    val anotherCoding = Coding(system, "10200", "Location")
     val resource = Patient().apply { meta.addTag(coding) }
 
     // Meta contains 1 tag with code 86453
     Assert.assertEquals(1, resource.meta.tag.size)
     val firstTag = resource.meta.tag.first()
-    Assert.assertEquals(code, firstTag.code)
+    Assert.assertEquals("86453", firstTag.code)
     Assert.assertEquals(system, firstTag.system)
 
     coEvery { fhirEngine.create(any()) } returns listOf(resource.id)
-    every { spiedConfigService.provideResourceTags(sharedPreferenceHelper) } returns
+    every { configService.provideResourceTags(sharedPreferenceHelper) } returns
       listOf(coding, anotherCoding)
     runBlocking { defaultRepository.create(true, resource) }
 
     // Expecting 2 tags; tag with code 86453 should not be duplicated.
     Assert.assertEquals(2, resource.meta.tag.size)
     Assert.assertNotNull(resource.meta.lastUpdated)
-    Assert.assertNotNull(resource.meta.getTag(system, code))
+    Assert.assertNotNull(resource.meta.getTag(system, "86453"))
   }
 
   @Test
