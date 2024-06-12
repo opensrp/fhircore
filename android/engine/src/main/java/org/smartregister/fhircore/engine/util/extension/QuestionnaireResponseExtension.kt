@@ -60,6 +60,7 @@ private fun List<QuestionnaireResponse.QuestionnaireResponseItemComponent>.packR
           }
       }
   return map { it.linkId }.distinct().map { linkIdToPackedResponseItems[it]!! }
+}
 
 /** Pre-order list of all questionnaire response items in the questionnaire. */
 val QuestionnaireResponse.allItems: List<QuestionnaireResponse.QuestionnaireResponseItemComponent>
