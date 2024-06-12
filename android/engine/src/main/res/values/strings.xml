@@ -140,9 +140,6 @@
     <string name="sync_strategy_practitioner_system" translatable="false">https://smartregister.org/practitioner-tag-id</string>
     <string name="sync_strategy_related_entity_location_system" translatable="false">https://smartregister.org/related-entity-location-tag-id</string>
     <string name="sync_strategy_related_entity_location_display" translatable="false">Related Entity Location</string>
-    <string name="opensrp_coding_system" translatable="false">http://smartregister.org/</string>
-    <string name="linkage_resource_inventory_code" translatable="false">22138876</string>
-    <string name="linkage_resource_inventory_code_display" translatable="false">Supply Inventory List"</string>
     <string name="sync_strategy_careteam_display" translatable="false">Practitioner CareTeam</string>
     <string name="sync_strategy_location_display" translatable="false">Practitioner Location</string>
     <string name="sync_strategy_organization_display" translatable="false">Practitioner Organization</string>
