@@ -16,12 +16,14 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
+import android.content.Context
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
@@ -33,7 +35,6 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -51,11 +52,11 @@ constructor(
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
-  val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
   private val knowledgeManager: KnowledgeManager,
   override val fhirPathDataExtractor: FhirPathDataExtractor,
   override val parser: IParser,
+  @ApplicationContext override val context: Context,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -66,6 +67,7 @@ constructor(
     configRulesExecutor = configRulesExecutor,
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
+    context = context,
   ) {
 
   /**
