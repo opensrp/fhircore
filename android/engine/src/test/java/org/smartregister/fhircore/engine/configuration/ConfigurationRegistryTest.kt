@@ -773,7 +773,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest {
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
     compositionSections.add(
@@ -804,41 +804,42 @@ class ConfigurationRegistryTest : RobolectricTest() {
           },
         )
       }
+    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
 
     val finalBundle =
       Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    fhirEngine.create(composition)
+    runTest {
+      fhirEngine.create(composition)
 
-    coEvery {
-      fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
-    } returns Bundle().apply { addEntry().resource = composition }
+      coEvery {
+        fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
+      } returns Bundle().apply { addEntry().resource = composition }
 
-    coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader(
-        "list-entries",
-        "List?_id=46464&_page=1&_count=200",
-      )
-    } returns bundle
+      coEvery {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          "List?_id=46464&_page=1&_count=200",
+        )
+      } returns bundle
 
-    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
+      coEvery {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          nextPageUrlLink,
+        )
+      } returns finalBundle
 
-    coEvery {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader(
-        "list-entries",
-        nextPageUrlLink,
-      )
-    } returns finalBundle
+      configRegistry.fetchNonWorkflowConfigResources()
 
-    configRegistry.fetchNonWorkflowConfigResources()
-
-    coVerify {
-      fhirResourceDataSource.getResourceWithGatewayModeHeader(
-        "list-entries",
-        nextPageUrlLink,
-      )
+      coVerify {
+        fhirResourceDataSource.getResourceWithGatewayModeHeader(
+          "list-entries",
+          nextPageUrlLink,
+        )
+      }
     }
   }
 
