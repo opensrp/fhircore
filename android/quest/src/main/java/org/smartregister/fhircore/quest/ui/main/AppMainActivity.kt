@@ -42,6 +42,7 @@ import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -110,8 +111,8 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     setupLocationServices()
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
     val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-    val topMenuConfigId =
-      topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }?.id ?: topMenuConfig.id
+    val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+    val topMenuConfigId = clickAction?.id ?: topMenuConfig.id
     navHostFragment =
       NavHostFragment.create(
         R.navigation.application_nav_graph,
@@ -132,28 +133,26 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      lifecycleScope.launch {
-        retrieveAppMainUiState()
-        if (isDeviceOnline()) {
-          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-          // if we need to trigger sync based on assigned locations or not
-          if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-            if (
-              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
-            ) {
-              triggerSync()
-            }
-          } else {
+      retrieveAppMainUiState()
+      if (isDeviceOnline()) {
+        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+        // if we need to trigger sync based on assigned locations or not
+        if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
+          if (
+            applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+              runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
+          ) {
             triggerSync()
           }
         } else {
-          showToast(
-            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-            Toast.LENGTH_LONG,
-          )
+          triggerSync()
         }
+      } else {
+        showToast(
+          getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+          Toast.LENGTH_LONG,
+        )
       }
       schedulePeriodicJobs()
     }
@@ -161,34 +160,25 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
-    navHostFragment.navController.addOnDestinationChangedListener(sentryNavListener)
-    syncListenerManager.registerSyncListener(this, lifecycle)
-    setStartDestination()
+    // Create NavController after fragment has been attached
+    navHostFragment.apply {
+      val graph =
+        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+          val startDestination =
+            when (appMainViewModel.applicationConfiguration.navigationStartDestination) {
+              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+              else -> R.id.registerFragment
+            }
+          setStartDestination(startDestination)
+        }
+      navController.addOnDestinationChangedListener(sentryNavListener)
+      navController.graph = graph
+    }
   }
 
   override fun onPause() {
     super.onPause()
     navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
-  }
-
-  private fun setStartDestination() {
-    val navController = navHostFragment.navController
-    val startDestination =
-      when (appMainViewModel.applicationConfiguration.launcherType) {
-        LauncherType.MAP -> {
-          R.id.geoWidgetLauncherFragment
-        }
-        else -> {
-          R.id.registerFragment
-        }
-      }
-    // Inflate the navigation graph
-    val navInflater = navController.navInflater
-    val graph = navInflater.inflate(R.navigation.application_nav_graph)
-    // Set the start destination
-    graph.setStartDestination(startDestination)
-    // Set the modified NavGraph to the NavController
-    navController.graph = graph
   }
 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {

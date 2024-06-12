@@ -33,7 +33,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.spyk
-import java.net.URL
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -59,7 +58,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.MANIFEST_PROCESSOR_BATCH_SIZE
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry.Companion.PAGINATION_NEXT
@@ -115,12 +113,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
         configService = configService,
         json = json,
         context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
-        openSrpApplication =
-          object : OpenSrpApplication() {
-            override fun getFhirServerHost(): URL {
-              return URL("http://my_test_fhirbase_url/fhir/")
-            }
-          },
       )
   }
 
