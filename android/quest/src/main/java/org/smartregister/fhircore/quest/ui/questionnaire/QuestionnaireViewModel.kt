@@ -420,9 +420,9 @@ constructor(
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-        questionnaireConfig,
-        context,
-        subjectType,
+        questionnaireConfig = questionnaireConfig,
+        context = context,
+        subjectType = subjectType,
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
@@ -462,7 +462,12 @@ constructor(
           retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
       }
 
-      relatedEntityLocationTags.forEach(this.meta::addTag)
+      relatedEntityLocationTags.forEach {
+        val existingTag = this.meta.getTag(it.system, it.code)
+        if (existingTag == null) {
+          this.meta.addTag(it)
+        }
+      }
     }
   }
 
