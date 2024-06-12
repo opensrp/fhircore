@@ -174,6 +174,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 

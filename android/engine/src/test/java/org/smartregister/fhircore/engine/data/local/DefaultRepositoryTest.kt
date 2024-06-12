@@ -30,6 +30,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -55,7 +56,6 @@ import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
-import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
@@ -126,6 +126,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
@@ -145,6 +146,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         configRulesExecutor = configRulesExecutor,
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
+        context = context,
       )
   }
 
@@ -203,30 +205,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.search<Patient>(any()) }
-  }
-
-  @Test
-  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() = runTest {
-    val coding = Coding("https://system.co", "codi", "Condition code")
-    val condition = Condition().apply { code = CodeableConcept(coding) }
-
-    fhirEngine.create(condition)
-
-    runBlocking {
-      val actualPatients =
-        defaultRepository.searchCondition(
-          dataRequirement =
-            DataRequirement().apply {
-              type = Enumerations.ResourceType.CONDITION.toCode()
-              addCodeFilter(
-                DataRequirement.DataRequirementCodeFilterComponent()
-                  .addCode(coding)
-                  .setPath("code"),
-              )
-            },
-        )
-      Assert.assertEquals(1, actualPatients.size)
-    }
   }
 
   @Test
@@ -581,6 +559,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -658,6 +637,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
@@ -1254,9 +1234,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test
@@ -1361,9 +1341,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -1428,9 +1408,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test

@@ -119,6 +119,7 @@ class FhirResourceExpireWorkerTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 
