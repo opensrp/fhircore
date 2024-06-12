@@ -110,16 +110,32 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     super.onCreate(savedInstanceState)
     setupLocationServices()
     setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
-    val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-    val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-    val topMenuConfigId = clickAction?.id ?: topMenuConfig.id
+
+    val startDestinationConfig =
+      appMainViewModel.applicationConfiguration.navigationStartDestination
+    val startDestinationArgs =
+      when (startDestinationConfig.launcherType) {
+        LauncherType.REGISTER -> {
+          val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+          val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+          val topMenuConfigId = clickAction?.id ?: topMenuConfig.id
+          bundleOf(
+            NavigationArg.SCREEN_TITLE to
+              if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
+                topMenuConfig.display
+              } else startDestinationConfig.screenTitle,
+            NavigationArg.REGISTER_ID to
+              if (startDestinationConfig.id.isNullOrEmpty()) {
+                topMenuConfigId
+              } else startDestinationConfig.id,
+          )
+        }
+        LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
+      }
     navHostFragment =
       NavHostFragment.create(
-        R.navigation.application_nav_graph,
-        bundleOf(
-          NavigationArg.SCREEN_TITLE to topMenuConfig.display,
-          NavigationArg.REGISTER_ID to topMenuConfigId,
-        ),
+        graphResId = R.navigation.application_nav_graph,
+        startDestinationArgs = startDestinationArgs,
       )
 
     supportFragmentManager
@@ -165,9 +181,11 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       val graph =
         navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
           val startDestination =
-            when (appMainViewModel.applicationConfiguration.navigationStartDestination) {
+            when (
+              appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType
+            ) {
               LauncherType.MAP -> R.id.geoWidgetLauncherFragment
-              else -> R.id.registerFragment
+              LauncherType.REGISTER -> R.id.registerFragment
             }
           setStartDestination(startDestination)
         }

@@ -51,7 +51,11 @@ data class ApplicationConfiguration(
     ),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
   val usePractitionerAssignedLocationOnSync: Boolean = true,
-  val navigationStartDestination: LauncherType = LauncherType.REGISTER,
+  val navigationStartDestination: NavigationStartDestinationConfig =
+    NavigationStartDestinationConfig(
+      launcherType = LauncherType.REGISTER,
+      id = null,
+    ),
 ) : Configuration()
 
 enum class SyncStrategy {
