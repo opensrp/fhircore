@@ -42,6 +42,7 @@ import java.time.Instant
 import javax.inject.Inject
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
@@ -132,28 +133,26 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
     // Setup the drawer and schedule jobs
     appMainViewModel.run {
-      lifecycleScope.launch {
-        retrieveAppMainUiState()
-        if (isDeviceOnline()) {
-          // Do not schedule sync until location selected when strategy is RelatedEntityLocation
-          // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
-          // if we need to trigger sync based on assigned locations or not
-          if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
-            if (
-              applicationConfiguration.usePractitionerAssignedLocationOnSync ||
-                syncLocationIdsProtoStore.data.firstOrNull()?.isNotEmpty() == true
-            ) {
-              triggerSync()
-            }
-          } else {
+      retrieveAppMainUiState()
+      if (isDeviceOnline()) {
+        // Do not schedule sync until location selected when strategy is RelatedEntityLocation
+        // Use applicationConfiguration.usePractitionerAssignedLocationOnSync to identify
+        // if we need to trigger sync based on assigned locations or not
+        if (applicationConfiguration.syncStrategy.contains(SyncStrategy.RelatedEntityLocation)) {
+          if (
+            applicationConfiguration.usePractitionerAssignedLocationOnSync ||
+              runBlocking { syncLocationIdsProtoStore.data.firstOrNull() }?.isNotEmpty() == true
+          ) {
             triggerSync()
           }
         } else {
-          showToast(
-            getString(org.smartregister.fhircore.engine.R.string.sync_failed),
-            Toast.LENGTH_LONG,
-          )
+          triggerSync()
         }
+      } else {
+        showToast(
+          getString(org.smartregister.fhircore.engine.R.string.sync_failed),
+          Toast.LENGTH_LONG,
+        )
       }
       schedulePeriodicJobs()
     }
