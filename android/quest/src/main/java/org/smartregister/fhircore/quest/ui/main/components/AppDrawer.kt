@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import SubsequentSyncDetailsBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,15 +31,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +60,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -60,12 +70,14 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
+import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
-import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
+import org.smartregister.fhircore.engine.ui.theme.SubsequentSyncBarTextColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
@@ -74,6 +86,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -99,7 +112,7 @@ fun AppDrawer(
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-
+  Timber.d("AppDrawer : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}")
   val navigationConfiguration = appUiState.navigationConfiguration
   Scaffold(
     topBar = {
@@ -193,23 +206,73 @@ private fun NavBottomSection(
   openDrawer: (Boolean) -> Unit,
 ) {
   val context = LocalContext.current
-  Box(
-    modifier =
-      modifier
-        .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-        .background(SideMenuBottomItemDarkColor)
-        .padding(horizontal = 16.dp, vertical = 4.dp),
-  ) {
-    SideMenuItem(
-      modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
-      endText = appUiState.lastSyncTime,
-      showEndText = true,
-      endTextColor = SubtitleTextColor,
+  val coroutineScope = rememberCoroutineScope()
+
+  var showSyncBar by remember { mutableStateOf(false) }
+  var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
+
+  LaunchedEffect(appUiState.isSyncCompleted, appUiState.progressPercentage) {
+    if (appUiState.isSyncCompleted && appUiState.progressPercentage == 100) {
+      backgroundColor = SuccessColor.copy(alpha = 0.17f)
+      showSyncBar = true
+      coroutineScope.launch {
+        delay(60000L)
+        showSyncBar = false
+        backgroundColor = SideMenuTopItemDarkColor
+      }
+    } else if (!appUiState.isSyncCompleted) {
+      backgroundColor = DangerColor.copy(alpha = 0.17f)
+    }
+  }
+
+  if (!appUiState.isSyncUpload) {
+    Box(
+      modifier =
+        modifier
+          .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
+          .background(backgroundColor)
+          .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
+      if (showSyncBar) {
+        SyncCompleteStatus(
+          modifier = modifier,
+          imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+          title = "Sync Complete",
+          endText = "",
+          endTextColor = Color.White,
+          showEndText = false,
+          onCancelButtonClick = {},
+        )
+      } else if (!appUiState.isSyncCompleted) {
+        SyncCompleteStatus(
+          modifier = modifier,
+          imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
+          title = "Sync error",
+          endText = "",
+          endTextColor = Color.White,
+          showEndText = false,
+        ) {
+          openDrawer(false)
+          onSideMenuClick(AppMainEvent.SyncData(context))
+        }
+      } else {
+        SideMenuItem(
+          modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+          imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+          title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
+          endText = appUiState.lastSyncTime,
+          showEndText = true,
+          endTextColor = SubtitleTextColor,
+        ) {
+          openDrawer(false)
+          onSideMenuClick(AppMainEvent.SyncData(context))
+        }
+      }
+    }
+  } else {
+    SubsequentSyncDetailsBar(appUiState = appUiState) {
+      onSideMenuClick(AppMainEvent.CancelSyncData(context))
       openDrawer(false)
-      onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }
 }
@@ -370,6 +433,45 @@ private fun SideMenuItem(
         tint = MenuItemColor,
         modifier = modifier.padding(0.dp).testTag(SIDE_MENU_ITEM_END_ICON_TEST_TAG),
       )
+    }
+  }
+}
+
+@Composable
+private fun SyncCompleteStatus(
+  modifier: Modifier = Modifier,
+  imageConfig: ImageConfig? = null,
+  title: String,
+  endText: String = "",
+  endTextColor: Color = Color.White,
+  showEndText: Boolean,
+  endImageVector: ImageVector? = null,
+  onCancelButtonClick: () -> Unit,
+) {
+  Row(
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = modifier.fillMaxWidth().testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Row(
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Image(
+        paddingEnd = 10,
+        imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
+        tint = SuccessColor,
+        navController = rememberNavController(),
+      )
+      SideMenuItemText(title = title, textColor = SubsequentSyncBarTextColor)
+    }
+    if (showEndText) {
+      TextButton(
+        onClick = { onCancelButtonClick() },
+        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
+      ) {
+        Text(text = "RETRY")
+      }
     }
   }
 }

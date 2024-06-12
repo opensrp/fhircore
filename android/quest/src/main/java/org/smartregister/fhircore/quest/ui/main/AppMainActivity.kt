@@ -34,6 +34,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
+import com.google.android.fhir.sync.SyncJobStatus
+import com.google.android.fhir.sync.SyncOperation
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
@@ -295,7 +297,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
     )
   }
 
-  fun fetchLocation() {
+  private fun fetchLocation() {
     val context = this
     lifecycleScope.launch {
       val retrievedLocation =
@@ -327,6 +329,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
               lastSyncTime = formatLastSyncTimestamp(syncJobStatus.timestamp),
             ),
           )
+          appMainUiState.value.isSyncUpload = false
         }
       }
       is CurrentSyncJobStatus.Failed -> {
@@ -339,6 +342,16 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
           )
         }
       }
+      is CurrentSyncJobStatus.Running ->
+        if (syncJobStatus.inProgressSyncJob is SyncJobStatus.InProgress) {
+          val isSyncUpload =
+            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
+              SyncOperation.UPLOAD
+          appMainViewModel.appMainUiState.value =
+            appMainViewModel.appMainUiState.value.copy(
+              isSyncUpload = isSyncUpload,
+            )
+        }
       else -> {
         // Do nothing
       }

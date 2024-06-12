@@ -19,8 +19,11 @@ package org.smartregister.fhircore.quest.ui.main
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
@@ -110,6 +113,12 @@ constructor(
   private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
   private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
+  private val percentageProgress by mutableIntStateOf(0)
+
+  private var isUploadSync by mutableStateOf(false)
+
+  private var isUploadSyncCompleted by mutableStateOf(false)
+
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
@@ -144,6 +153,9 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
+          progressPercentage = percentageProgress,
+          isSyncUpload = isUploadSync,
+          isSyncCompleted = isUploadSyncCompleted,
         )
     }
 
@@ -172,6 +184,14 @@ constructor(
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
+      is AppMainEvent.CancelSyncData -> {
+        viewModelScope.launch {
+          workManager.cancelUniqueWork(
+            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+          )
+          isUploadSync = false
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
@@ -179,6 +199,7 @@ constructor(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
           )
+          isUploadSyncCompleted = true
           viewModelScope.launch { retrieveAppMainUiState() }
         }
       }

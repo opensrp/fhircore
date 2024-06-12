@@ -198,11 +198,17 @@ class RegisterFragment : Fragment(), OnSyncListener {
             )
           }
         } else {
+          val isSyncUpload =
+            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
+              SyncOperation.UPLOAD
           emitPercentageProgress(
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD,
+            isSyncUpload,
           )
+          appMainViewModel.appMainUiState.value =
+            appMainViewModel.appMainUiState.value.copy(
+              isSyncUpload = isSyncUpload,
+            )
         }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
@@ -214,6 +220,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
               duration = SnackbarDuration.Long,
             ),
           )
+          appMainViewModel.appMainUiState.value =
+            appMainViewModel.appMainUiState.value.copy(
+              isSyncUpload = false,
+              isSyncCompleted = true,
+            )
         }
       }
       is CurrentSyncJobStatus.Failed -> {
@@ -228,6 +239,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
               actionLabel = getString(R.string.ok).uppercase(),
             ),
           )
+          appMainViewModel.appMainUiState.value =
+            appMainViewModel.appMainUiState.value.copy(
+              isSyncCompleted = false,
+            )
         }
       }
       else -> {
@@ -298,6 +313,10 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
+      appMainViewModel.appMainUiState.value =
+        appMainViewModel.appMainUiState.value.copy(
+          progressPercentage = percentageProgress,
+        )
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }

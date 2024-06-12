@@ -25,6 +25,9 @@ data class AppMainUiState(
   val username: String,
   val lastSyncTime: String,
   val currentLanguage: String,
+  var progressPercentage: Int = 0,
+  var isSyncUpload: Boolean = false,
+  var isSyncCompleted: Boolean = true,
   val languages: List<Language>,
   val navigationConfiguration: NavigationConfiguration,
   val registerCountMap: Map<String, Long> = emptyMap(),
@@ -35,6 +38,9 @@ fun appMainUiStateOf(
   username: String = "",
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
+  progressPercentage: Int = 0,
+  isSyncUpload: Boolean = false,
+  isSyncCompleted: Boolean = true,
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
   registerCountMap: Map<String, Long> = emptyMap(),
@@ -47,5 +53,8 @@ fun appMainUiStateOf(
     languages = languages,
     navigationConfiguration = navigationConfiguration,
     registerCountMap = registerCountMap,
+    progressPercentage = progressPercentage,
+    isSyncUpload = isSyncUpload,
+    isSyncCompleted = isSyncCompleted,
   )
 }
