@@ -34,6 +34,7 @@ import com.google.android.fhir.datacapture.R
 import com.google.android.fhir.datacapture.extensions.getRequiredOrOptionalText
 import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.localizedFlyoverSpanned
+import com.google.android.fhir.datacapture.extensions.toSpanned
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
 import com.google.android.fhir.datacapture.extensions.unit
 import com.google.android.fhir.datacapture.validation.ValidationResult
@@ -96,7 +97,7 @@ abstract class QuestionnaireItemEditTextViewHolderDelegate(private val rawInputT
   override fun bind(questionnaireViewItem: QuestionnaireViewItem) {
     header.bind(questionnaireViewItem)
     with(textInputLayout) {
-      hint = questionnaireViewItem.enabledDisplayItems.localizedFlyoverSpanned
+      hint = questionnaireViewItem.enabledDisplayItems.localizedFlyoverSpanned ?: "&zwj;".toSpanned()
       helperText = getRequiredOrOptionalText(questionnaireViewItem, context)
     }
     displayValidationResult(questionnaireViewItem.validationResult)
