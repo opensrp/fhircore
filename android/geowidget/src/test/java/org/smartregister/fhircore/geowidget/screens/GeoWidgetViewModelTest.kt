@@ -18,6 +18,7 @@ package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -95,14 +96,15 @@ class GeoWidgetViewModelTest {
     defaultRepository =
       spyk(
         DefaultRepository(
-          fhirEngine,
-          coroutinesTestRule.testDispatcherProvider,
-          sharedPreferencesHelper,
-          configurationRegistry,
-          configService,
-          configRulesExecutor,
+          fhirEngine = fhirEngine,
+          dispatcherProvider = coroutinesTestRule.testDispatcherProvider,
+          sharedPreferencesHelper = sharedPreferencesHelper,
+          configurationRegistry = configurationRegistry,
+          configService = configService,
+          configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
     geoWidgetViewModel = spyk(GeoWidgetViewModel(coroutinesTestRule.testDispatcherProvider))

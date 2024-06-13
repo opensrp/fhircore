@@ -18,8 +18,8 @@ package org.smartregister.fhircore.engine.task
 
 import android.content.Context
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
