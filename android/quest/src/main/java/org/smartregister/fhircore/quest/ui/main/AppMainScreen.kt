@@ -47,6 +47,7 @@ import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.appointment.register.AppointmentRegisterScreen
 import org.smartregister.fhircore.quest.ui.counters.CountersScreen
 import org.smartregister.fhircore.quest.ui.family.profile.FamilyProfileScreen
+import org.smartregister.fhircore.quest.ui.insights.InsightsScreen
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.patient.profile.PatientProfileScreen
 import org.smartregister.fhircore.quest.ui.patient.profile.childcontact.ChildContactsProfileScreen
@@ -183,6 +184,8 @@ private fun AppMainNavigationGraph(
         MainNavigationScreen.Counters ->
           composable(route = it.route) { CountersScreen(navController = navController) }
         MainNavigationScreen.Tasks -> composable(MainNavigationScreen.Tasks.route) {}
+        MainNavigationScreen.Insights ->
+          composable(route = it.route) { InsightsScreen(navController = navController) }
         MainNavigationScreen.Reports ->
           measureReportNavigationGraph(navController, measureReportViewModel)
         MainNavigationScreen.Settings ->
