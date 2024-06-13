@@ -56,6 +56,7 @@ data class ApplicationConfiguration(
       launcherType = LauncherType.REGISTER,
       id = null,
     ),
+  val codingSystems: List<CodingSystemConfig> = emptyList(),
 ) : Configuration()
 
 enum class SyncStrategy {
