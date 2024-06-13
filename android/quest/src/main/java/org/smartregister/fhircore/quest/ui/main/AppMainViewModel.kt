@@ -49,6 +49,7 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
+import org.smartregister.fhircore.engine.sync.CustomResourceSyncWorker
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -258,6 +259,11 @@ constructor(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
+      )
+
+      schedulePeriodically<CustomResourceSyncWorker>(
+        workId = CustomResourceSyncWorker.WORK_ID,
+        repeatInterval = applicationConfiguration.syncInterval
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->

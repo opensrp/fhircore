@@ -28,6 +28,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.SearchParamType
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
@@ -114,6 +116,7 @@ constructor(
     // TODO: expressionValue supports for Organization and Publisher literals for now
     syncConfig.parameter
       .map { it.resource as SearchParameter }
+      .filter { it.type == Enumerations.SearchParamType.TOKEN }
       .forEach { sp ->
         val paramName = sp.name // e.g. organization
         val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement

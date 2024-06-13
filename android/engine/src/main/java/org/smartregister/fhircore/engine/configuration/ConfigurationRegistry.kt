@@ -44,11 +44,14 @@ import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Composition
+import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ImplementationGuide
 import org.hl7.fhir.r4.model.ListResource
 import org.hl7.fhir.r4.model.MetadataResource
+import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.SearchParameter
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
@@ -456,6 +459,16 @@ constructor(
         Timber.d("Done fetching application configurations remotely")
       }
     }
+  }
+
+  fun fetchURLForCustomResource() : List<String> {
+    val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
+    syncConfig.parameter.map { it.resource as SearchParameter }
+      .filter { it.type == Enumerations.SearchParamType.SPECIAL }
+      .forEach { sp ->
+
+      }
+    return emptyList()
   }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
