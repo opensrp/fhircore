@@ -67,6 +67,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingItems
 import org.smartregister.fhircore.engine.util.extension.showToast
 import timber.log.Timber
+import kotlin.system.measureTimeMillis
 
 /**
  * Launches Questionnaire/ Implement a subclass of this [QuestionnaireActivity] to provide
@@ -297,7 +298,10 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
         questionnaireConfig = resultPair.first
         questionnaire = resultPair.second
 
-        populateInitialValues(questionnaire)
+        val t = measureTimeMillis {
+          populateInitialValues(questionnaire)
+        }
+        Timber.d("populateInitialValues took $t ms : cachedxxx")
       }
       .onFailure {
         Timber.e(it)

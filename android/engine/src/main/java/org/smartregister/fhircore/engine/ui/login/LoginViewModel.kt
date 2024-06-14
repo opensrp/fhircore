@@ -21,6 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.jsonwebtoken.Jwts
 import java.net.UnknownHostException
@@ -28,8 +29,10 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
+import org.hl7.fhir.r4.model.StructureMap
 import org.jetbrains.annotations.TestOnly
 import org.smartregister.fhircore.engine.auth.AccountAuthenticator
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
@@ -49,11 +52,14 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
+import org.smartregister.fhircore.engine.util.extension.loadResource
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
+import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
+import kotlin.system.measureTimeMillis
 
 @HiltViewModel
 class LoginViewModel
@@ -69,6 +75,7 @@ constructor(
   val fhirResourceService: FhirResourceService,
   val configurationRegistry: ConfigurationRegistry,
   private val appConfigs: AppConfigService,
+  private val fhirEngine: FhirEngine,
 ) : ViewModel() {
 
   private val _launchDialPad: MutableLiveData<String?> = MutableLiveData(null)
@@ -163,6 +170,9 @@ constructor(
       val trimmedUsername = _username.value!!.trim()
       val passwordAsCharArray = _password.value!!.toCharArray()
       if (offline) {
+
+          warmCache()
+
         verifyCredentials(trimmedUsername, passwordAsCharArray)
         return
       }
@@ -173,6 +183,8 @@ constructor(
       val existingCredentials = secureSharedPreference.retrieveCredentials()
       val multiUserLoginAttempted =
         existingCredentials?.username?.equals(trimmedUsername, true) == false
+
+        warmCache()
 
       when {
         multiUserLoginAttempted -> {
@@ -207,9 +219,34 @@ constructor(
         _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
       }
       _showProgressBar.postValue(false)
-    } finally {
-      ContentCache.invalidate()
     }
+  }
+  private suspend fun warmCache() {
+      val timeInMillis = measureTimeMillis {
+
+      val registrationResourceId = "patient-demographic-registration"
+
+       val registrationQuestionnaire = fhirEngine.loadResource<Questionnaire>(registrationResourceId)?.
+        apply { this.url = this.url ?: this.referenceValue() }
+
+        val registrationQuestionnaireStructureMap = fhirEngine.loadResource<StructureMap>(registrationResourceId)?.
+        apply { this.url = this.url ?: this.referenceValue() }
+
+        registrationQuestionnaire?.let {
+          ContentCache.saveResource(it)
+
+        }
+
+        registrationQuestionnaireStructureMap?.let {
+          ContentCache.saveResource(it)
+
+        }
+
+        Timber.d("Cached Questionnaire ${registrationQuestionnaire?.idPart} and url ${registrationQuestionnaire?.url}")
+      }
+
+      Timber.d("Cache reset in $timeInMillis ms")
+
   }
 
   private fun verifyCredentials(username: String, password: CharArray) {
