@@ -178,9 +178,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     questionnaireConfig =
       QuestionnaireConfig(
-        id =
-          "e5155788-8831-4916-a3f5-486915ce34b211", // Same as ID in
-                                                    // sample_patient_registration.json
+        id = "e5155788-8831-4916-a3f5-486915ce34b211", // Same as ID in
+        // sample_patient_registration.json
         title = "Patient registration",
         type = "DEFAULT",
       )
