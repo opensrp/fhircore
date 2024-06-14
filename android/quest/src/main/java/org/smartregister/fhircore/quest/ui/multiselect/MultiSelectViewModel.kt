@@ -25,7 +25,7 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
@@ -66,6 +66,7 @@ constructor(
       val resourcesMap =
         defaultRepository
           .searchResourcesRecursively(
+            filterByRelatedEntityLocationMetaTag = false,
             fhirResourceConfig = multiSelectViewConfig.resourceConfig,
             filterActiveResources = null,
             secondaryResourceConfigs = null,
@@ -140,11 +141,9 @@ constructor(
     }
   }
 
-  fun saveSelectedLocations(context: Context) {
-    viewModelScope.launch {
-      context.syncLocationIdsProtoStore.updateData {
-        selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
-      }
+  suspend fun saveSelectedLocations(context: Context) {
+    context.syncLocationIdsProtoStore.updateData {
+      selectedNodes.map { SyncLocationToggleableState(it.key, it.value) }
     }
   }
 

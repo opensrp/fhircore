@@ -16,9 +16,12 @@
 
 package org.smartregister.fhircore.engine.data.local.register
 
+import android.app.Application
+import androidx.compose.ui.state.ToggleableState
+import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -32,9 +35,11 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.CarePlan
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Encounter
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Meta
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
@@ -43,23 +48,28 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
+import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
+import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.CountResultConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
+import org.smartregister.fhircore.engine.domain.model.SyncLocationToggleableState
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 
 private const val PATIENT_REGISTER = "patientRegister"
@@ -112,6 +122,7 @@ class RegisterRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
   }
@@ -444,6 +455,66 @@ class RegisterRepositoryTest : RobolectricTest() {
           ),
         ),
     )
+
+  @Ignore("Check why group meta tag is not set ")
+  @Test
+  fun testLoadRegisterDataWithAfterFilterByRelatedEntityLocation() {
+    val locationId = "location1"
+    runTest(timeout = 90.seconds) {
+      val group1 =
+        createGroup("group1", active = true, members = listOf(patient)).apply {
+          meta =
+            Meta().apply {
+              addTag(
+                Coding(
+                  "https://smartregister.org/related-entity-location-tag-id",
+                  locationId,
+                  "Related Entity Location",
+                ),
+              )
+            }
+        }
+      val group2 = createGroup("group2", active = true, members = listOf(patient))
+      val task = createTask("task1", null, patient.asReference())
+
+      // Replace Household Register configuration
+      val registerConfiguration =
+        configurationRegistry.retrieveConfiguration<RegisterConfiguration>(
+          configType = ConfigType.Register,
+          configId = HOUSEHOLD_REGISTER_ID,
+        )
+      configurationRegistry.configCacheMap.clear()
+      configurationRegistry.configsJsonMap[HOUSEHOLD_REGISTER_ID] =
+        registerConfiguration
+          .copy(
+            filterDataByRelatedEntityLocation = true,
+            fhirResource =
+              FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Group)),
+          )
+          .encodeJson()
+
+      // Set locations
+      ApplicationProvider.getApplicationContext<Application>()
+        .syncLocationIdsProtoStore
+        .updateData { listOf(SyncLocationToggleableState(locationId, ToggleableState.On)) }
+
+      // Prepare resources
+      fhirEngine.run {
+        create(patient)
+        create(group1)
+        create(group2)
+        create(task)
+      }
+
+      val result = registerRepository.loadRegisterData(0, HOUSEHOLD_REGISTER_ID)
+
+      Assert.assertEquals(1, result.size)
+
+      // Re-set register configuration
+      configurationRegistry.configsJsonMap[HOUSEHOLD_REGISTER_ID] =
+        registerConfiguration.encodeJson()
+    }
+  }
 
   private fun createCarePlan(id: String, subject: Reference, encounter: Reference? = null) =
     CarePlan().apply {

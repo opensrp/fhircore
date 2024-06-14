@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.quest.ui.main
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -28,7 +27,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.android.fhir.sync.CurrentSyncJobStatus
@@ -42,24 +40,18 @@ import javax.inject.Inject
 import kotlin.time.Duration
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.QuestionnaireResponse
-import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.Task
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
-import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.report.measure.MeasureReportConfiguration
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -81,7 +73,6 @@ import org.smartregister.fhircore.engine.util.extension.tryParse
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.report.measure.worker.MeasureReportMonthPeriodWorker
-import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
 import org.smartregister.fhircore.quest.util.extensions.decodeBinaryResourcesToBitmap
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -110,15 +101,6 @@ constructor(
       ),
     )
 
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
-
-  private val percentageProgress by mutableIntStateOf(0)
-
-  private var isUploadSync by mutableStateOf(false)
-
-  private var isUploadSyncCompleted by mutableStateOf(false)
-
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
   }
@@ -130,6 +112,11 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+  private val percentageProgress by mutableIntStateOf(0)
+  private var isUploadSync by mutableStateOf(false)
+  private var isUploadSyncCompleted by mutableStateOf(false)
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
@@ -142,7 +129,7 @@ constructor(
       .decodeBinaryResourcesToBitmap(viewModelScope, registerRepository)
   }
 
-  suspend fun retrieveAppMainUiState(refreshAll: Boolean = true) {
+  fun retrieveAppMainUiState(refreshAll: Boolean = true) {
     if (refreshAll) {
       appMainUiState.value =
         appMainUiStateOf(
@@ -159,7 +146,10 @@ constructor(
         )
     }
 
-    // Count data for configured registers by populating the register count map
+    countRegisterData()
+  }
+
+  fun countRegisterData() {
     viewModelScope.launch {
       navigationConfiguration.run {
         clientRegisters.countRegisterData()
@@ -200,7 +190,7 @@ constructor(
             formatLastSyncTimestamp(event.state.timestamp),
           )
           isUploadSyncCompleted = true
-          viewModelScope.launch { retrieveAppMainUiState() }
+          retrieveAppMainUiState()
         }
       }
       is AppMainEvent.TriggerWorkflow ->
@@ -235,31 +225,6 @@ constructor(
     }
   }
 
-  fun launchFamilyRegistrationWithLocationId(
-    context: Context,
-    locationId: String,
-    questionnaireConfig: QuestionnaireConfig,
-  ) {
-    viewModelScope.launch {
-      val prePopulateLocationIdParameter =
-        ActionParameter(
-          key = "locationId",
-          paramType = ActionParameterType.PREPOPULATE,
-          dataType = Enumerations.DataType.STRING,
-          resourceType = ResourceType.Location,
-          value = locationId,
-          linkId = "household-location-reference",
-        )
-      if (context is QuestionnaireHandler) {
-        context.launchQuestionnaire(
-          context = context,
-          questionnaireConfig = questionnaireConfig,
-          actionParams = listOf(prePopulateLocationIdParameter),
-        )
-      }
-    }
-  }
-
   private suspend fun List<NavigationMenuConfig>.countRegisterData() {
     // Set count for registerId against its value. Use action Id; otherwise default to menu id
     return this.filter { it.showCount }
@@ -291,26 +256,6 @@ constructor(
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
-
-  fun launchProfileFromGeoWidget(
-    navController: NavController,
-    geoWidgetConfigId: String,
-    resourceId: String,
-  ) {
-    val geoWidgetConfiguration =
-      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
-        ConfigType.GeoWidget,
-        geoWidgetConfigId,
-      )
-    onEvent(
-      AppMainEvent.OpenProfile(
-        navController = navController,
-        profileId = geoWidgetConfiguration.profileId,
-        resourceId = resourceId,
-        resourceConfig = geoWidgetConfiguration.resourceConfig,
-      ),
-    )
-  }
 
   /** This function is used to schedule tasks that are intended to run periodically */
   fun schedulePeriodicJobs() {
