@@ -23,13 +23,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import ca.uhn.fhir.context.FhirContext
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.datacapture.mapping.StructureMapExtractionContext
 import com.google.android.fhir.datacapture.validation.NotValidated
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import com.google.android.fhir.datacapture.validation.Valid
 import com.google.android.fhir.db.ResourceNotFoundException
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
 import com.google.android.fhir.search.search
@@ -46,6 +46,7 @@ import org.hl7.fhir.r4.context.IWorkerContext
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Basic
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.Library
@@ -66,6 +67,7 @@ import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
 import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
@@ -82,7 +84,6 @@ import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocat
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.clearText
 import org.smartregister.fhircore.engine.util.extension.cqfLibraryUrls
-import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractByStructureMap
 import org.smartregister.fhircore.engine.util.extension.extractId
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -417,9 +418,9 @@ constructor(
     ) {
       // Set the Group's Related Entity Location meta tag on QuestionnaireResponse then save.
       questionnaireResponse.applyRelatedEntityLocationMetaTag(
-        questionnaireConfig,
-        context,
-        subjectType,
+        questionnaireConfig = questionnaireConfig,
+        context = context,
+        subjectType = subjectType,
       )
       defaultRepository.addOrUpdate(resource = questionnaireResponse)
     }
@@ -445,14 +446,75 @@ constructor(
     if (resourceIdPair != null) {
       val (resourceType, resourceId) = resourceIdPair
       val resource = loadResource(resourceType = resourceType, resourceIdentifier = resourceId)
-      if (resource != null) {
-        val system =
-          context.getString(
-            org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
-          )
-        resource.meta.tag.filter { coding -> coding.system == system }.forEach(this.meta::addTag)
+      var relatedEntityLocationTags =
+        resource?.meta?.tag?.filter { coding ->
+          coding.system ==
+            context.getString(
+              org.smartregister.fhircore.engine.R.string
+                .sync_strategy_related_entity_location_system,
+            )
+        }
+
+      if (relatedEntityLocationTags.isNullOrEmpty()) {
+        relatedEntityLocationTags =
+          retrieveRelatedEntityTagsLinkedToSubject(context, resourceIdPair)
+      }
+
+      relatedEntityLocationTags?.forEach {
+        val existingTag = this.meta.getTag(it.system, it.code)
+        if (existingTag == null) {
+          this.meta.addTag(it)
+        }
       }
     }
+  }
+
+  private suspend fun retrieveRelatedEntityTagsLinkedToSubject(
+    context: Context,
+    resourceIdPair: Pair<ResourceType, String>,
+  ): List<Coding>? {
+    val system =
+      context.getString(
+        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_system,
+      )
+    val display =
+      context.getString(
+        org.smartregister.fhircore.engine.R.string.sync_strategy_related_entity_location_display,
+      )
+    val (resourceType, resourceId) = resourceIdPair
+
+    if (resourceType == ResourceType.Location) {
+      return listOf(Coding(system, resourceId, display))
+    }
+
+    applicationConfiguration.codingSystems
+      .find { it.usage == CodingSystemUsage.LOCATION_LINKAGE }
+      ?.coding
+      ?.let { linkageResourceCode ->
+        val search =
+          Search(ResourceType.List).apply {
+            filter(
+              ListResource.CODE,
+              {
+                value =
+                  of(
+                    Coding(
+                      linkageResourceCode.system,
+                      linkageResourceCode.code,
+                      linkageResourceCode.display,
+                    ),
+                  )
+              },
+            )
+            filter(ListResource.ITEM, { value = "$resourceType/$resourceId" })
+          }
+
+        return defaultRepository.search<ListResource>(search).map { listResource ->
+          Coding(system, listResource.subject.extractId(), display)
+        }
+      }
+
+    return null
   }
 
   private suspend fun retrievePreviouslyExtractedResources(
@@ -655,8 +717,7 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Boolean {
-    val validQuestionnaireResponseItems =
-      ArrayList<QuestionnaireResponse.QuestionnaireResponseItemComponent>()
+    val validQuestionnaireResponseItems = ArrayList<QuestionnaireResponseItemComponent>()
     val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
     val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
 
@@ -753,16 +814,18 @@ constructor(
     questionnaireConfig: QuestionnaireConfig,
   ) {
     questionnaireConfig.planDefinitions?.forEach { planId ->
-      kotlin
-        .runCatching {
-          fhirCarePlanGenerator.generateOrUpdateCarePlan(
-            planDefinitionId = planId,
-            subject = subject,
-            data = bundle,
-            generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
-          )
-        }
-        .onFailure { Timber.e(it) }
+      if (planId.isNotEmpty()) {
+        kotlin
+          .runCatching {
+            fhirCarePlanGenerator.generateOrUpdateCarePlan(
+              planDefinitionId = planId,
+              subject = subject,
+              data = bundle,
+              generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
+            )
+          }
+          .onFailure { Timber.e(it) }
+      }
     }
   }
 
@@ -923,7 +986,7 @@ constructor(
     return questionnaireResponses.maxByOrNull { it.meta.lastUpdated }
   }
 
-  suspend fun launchContextResources(
+  private suspend fun launchContextResources(
     subjectResourceType: ResourceType?,
     subjectResourceIdentifier: String?,
     actionParameters: List<ActionParameter>,

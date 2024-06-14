@@ -42,11 +42,17 @@ data class ApplicationConfiguration(
   val showLogo: Boolean = true,
   val taskBackgroundWorkerBatchSize: Int = 500,
   val eventWorkflows: List<EventWorkflow> = emptyList(),
+  val settingsScreenMenuOptions: List<SettingsOptions> =
+    listOf(
+      SettingsOptions.MANUAL_SYNC,
+      SettingsOptions.SWITCH_LANGUAGES,
+      SettingsOptions.RESET_DATA,
+      SettingsOptions.INSIGHTS,
+    ),
   val logGpsLocation: List<LocationLogOptions> = emptyList(),
-  val usePractitionerAssignedLocationOnSync: Boolean =
-    true, // TODO This defaults to scheduling periodic sync, otherwise use sync location ids from
-  // location selector
-  val launcherType: LauncherType = LauncherType.REGISTER,
+  val usePractitionerAssignedLocationOnSync: Boolean = true,
+  val navigationStartDestination: LauncherType = LauncherType.REGISTER,
+  val codingSystems: List<CodingSystemConfig> = emptyList(),
 ) : Configuration()
 
 enum class SyncStrategy {
@@ -59,4 +65,14 @@ enum class SyncStrategy {
 
 enum class LocationLogOptions {
   QUESTIONNAIRE,
+  CALCULATE_DISTANCE_RULE_EXECUTOR,
+}
+
+enum class SettingsOptions {
+  MANUAL_SYNC,
+  OFFLINE_MAPS,
+  SWITCH_LANGUAGES,
+  RESET_DATA,
+  INSIGHTS,
+  CONTACT_HELP,
 }

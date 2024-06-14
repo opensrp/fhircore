@@ -21,10 +21,10 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -172,6 +172,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
@@ -199,7 +200,9 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Sample questionnaire
     val questionnaireJson =
-      context.assets.open("sample_patient_registration.json").bufferedReader().use { it.readText() }
+      context.assets.open("resources/sample_patient_registration.json").bufferedReader().use {
+        it.readText()
+      }
 
     samplePatientRegisterQuestionnaire = questionnaireJson.decodeResourceFromString()
   }
