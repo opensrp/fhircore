@@ -10,8 +10,7 @@
         <argument
             android:name="geoWidgetId"
             app:argType="string"
-            app:nullable="true"
-            android:defaultValue="locationMap"/>
+            app:nullable="true"/>
         <argument
             android:name="toolBarHomeNavigation"
             android:defaultValue="OPEN_DRAWER"

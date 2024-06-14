@@ -21,10 +21,10 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.workflow.FhirOperator
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -172,12 +172,14 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           configRulesExecutor = configRulesExecutor,
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
     questionnaireConfig =
       QuestionnaireConfig(
-        id = "754", // Same as ID in sample_patient_registration.json
+        id = "e5155788-8831-4916-a3f5-486915ce34b211", // Same as ID in
+        // sample_patient_registration.json
         title = "Patient registration",
         type = "DEFAULT",
       )
@@ -600,8 +602,8 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaireBarcodeItem =
       newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
-    Assert.assertTrue(barCodeItemValue is StringType)
-    Assert.assertEquals(
+    Assert.assertFalse(barCodeItemValue is StringType)
+    Assert.assertNull(
       newQuestionnaireConfig.resourceIdentifier,
       barCodeItemValue?.primitiveValue(),
     )
