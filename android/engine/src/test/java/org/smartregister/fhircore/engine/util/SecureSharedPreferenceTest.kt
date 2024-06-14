@@ -49,7 +49,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   fun testSaveCredentialsAndRetrieveSessionToken() {
     secureSharedPreference.saveMultiCredentials(
       username = "userName",
-      password = "!@#$".toCharArray()
+      password = "!@#$".toCharArray(),
     )
     Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
   }
@@ -60,7 +60,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
     secureSharedPreference.saveMultiCredentials(
       username = "userName",
-      password = "!@#$".toCharArray()
+      password = "!@#$".toCharArray(),
     )
 
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
@@ -74,7 +74,7 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   fun testDeleteCredentialReturnsNull() {
     secureSharedPreference.saveMultiCredentials(
       username = "userName",
-      password = "!@#$".toCharArray()
+      password = "!@#$".toCharArray(),
     )
     Assert.assertNotNull(secureSharedPreference.retrieveCredentials())
     secureSharedPreference.deleteCredentials()
