@@ -98,7 +98,6 @@ fun SubsequentSyncDetailsBar(
         }
       }
       Spacer(modifier = Modifier.width(16.dp))
-      // AnimatedVectorDrawable()
       TextButton(
         onClick = { onCancelButtonClick() },
         colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
@@ -108,27 +107,3 @@ fun SubsequentSyncDetailsBar(
     }
   }
 }
-
-// @Preview()
-// @Composable
-// fun PreviewSubsequentSyncDetailsBar() {
-//    SubsequentSyncDetailsBar(
-//        appUiState = appMainUiStateOf(
-//            appTitle = "MOH VTS",
-//            username = "Demo",
-//            lastSyncTime = "05:30 PM, Mar 3",
-//            currentLanguage = "English",
-//            progressPercentage = 80,
-//            languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
-//            navigationConfiguration =
-//            NavigationConfiguration(
-//                appId = "appId",
-//                configType = ConfigType.Navigation.name,
-//                staticMenu = listOf(),
-//                clientRegisters = listOf(),
-//                menuActionButton =
-//                NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
-//            ),
-//        )
-//    )
-// }

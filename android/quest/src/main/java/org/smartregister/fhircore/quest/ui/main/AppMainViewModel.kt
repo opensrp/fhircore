@@ -100,6 +100,14 @@ constructor(
           ),
       ),
     )
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+
+  private val percentageProgress by mutableIntStateOf(0)
+
+  private var isUploadSync by mutableStateOf(false)
+
+  private var isUploadSyncCompleted by mutableStateOf(SyncStatus.UNKNOWN)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -112,11 +120,6 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
-  private val percentageProgress by mutableIntStateOf(0)
-  private var isUploadSync by mutableStateOf(false)
-  private var isUploadSyncCompleted by mutableStateOf(false)
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
@@ -142,7 +145,7 @@ constructor(
           registerCountMap = registerCountMap,
           progressPercentage = percentageProgress,
           isSyncUpload = isUploadSync,
-          isSyncCompleted = isUploadSyncCompleted,
+          syncStatus = isUploadSyncCompleted,
         )
     }
 
@@ -189,8 +192,9 @@ constructor(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
           )
-          isUploadSyncCompleted = true
           retrieveAppMainUiState()
+          isUploadSyncCompleted = SyncStatus.SUCCEEDED
+          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
