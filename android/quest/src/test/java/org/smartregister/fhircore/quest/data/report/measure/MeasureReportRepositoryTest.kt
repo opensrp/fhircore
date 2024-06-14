@@ -113,22 +113,23 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 
     measureReportRepository =
       MeasureReportRepository(
-        fhirEngine,
-        DefaultDispatcherProvider(),
-        mockk(),
-        configurationRegistry,
-        mockk(),
-        mockk(),
-        registerRepository,
-        fhirOperator,
-        knowledgeManager,
-        mockk(),
-        parser,
+        fhirEngine = fhirEngine,
+        dispatcherProvider = DefaultDispatcherProvider(),
+        sharedPreferencesHelper = mockk(),
+        configurationRegistry = configurationRegistry,
+        configService = mockk(),
+        configRulesExecutor = mockk(),
+        fhirOperator = fhirOperator,
+        knowledgeManager = knowledgeManager,
+        fhirPathDataExtractor = mockk(),
+        parser = parser,
+        context = ApplicationProvider.getApplicationContext(),
       )
   }
 
