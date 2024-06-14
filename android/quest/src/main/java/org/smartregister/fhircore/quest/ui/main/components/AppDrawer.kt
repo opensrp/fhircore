@@ -203,6 +203,16 @@ fun AppDrawer(
           }
         }
       }
+
+      SideMenuItem(
+        iconResource = org.smartregister.fhircore.engine.R.drawable.ic_insights,
+        title = stringResource(R.string.insights, username),
+        showEndText = false,
+        onSideMenuClick = {
+          openDrawer(false)
+          navController.navigate(MainNavigationScreen.Insights.route)
+        },
+      )
       SideMenuItem(
         iconResource = R.drawable.ic_settings,
         title = stringResource(org.smartregister.fhircore.engine.R.string.settings, username),

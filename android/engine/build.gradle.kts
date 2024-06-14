@@ -196,7 +196,7 @@ dependencies {
   api("org.smartregister:common:0.1.0-alpha05-preview3-SNAPSHOT") { isTransitive = true }
 
   //  api("org.smartregister:engine:1.0.0-preview7.1-SNAPSHOT") {
-  api("org.smartregister:engine:1.0.0-preview8-PERF-TEST-SNAPSHOT") {
+  api("org.smartregister:engine:1.0.0-preview9-PERF-TEST-SNAPSHOT") {
     //    api("org.smartregister:engine:1.0.0-preview7.1-PERF-TEST5-SNAPSHOT") {
     isTransitive = true
     exclude(group = "com.google.android.fhir", module = "common")

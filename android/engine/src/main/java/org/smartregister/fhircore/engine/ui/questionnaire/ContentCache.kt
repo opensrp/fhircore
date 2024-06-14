@@ -26,10 +26,10 @@ object ContentCache {
   private val cacheSize: Int = maxMemory / 8
   private val cache = LruCache<String, Resource>(cacheSize)
 
-  suspend fun saveResource(resourceId: String, resource: Resource) =
-    withContext(Dispatchers.IO) { cache.put("${resource.resourceType.name}/$resourceId", resource) }
+  suspend fun saveResource(resource: Resource) =
+    withContext(Dispatchers.IO) { cache.put("${resource.resourceType.name}/${resource.idPart}", resource.copy()) }
 
-  fun getResource(resourceId: String) = cache[resourceId]
+  fun getResource(resourceId: String) = cache[resourceId]?.copy()
 
   suspend fun invalidate() = withContext(Dispatchers.IO) { cache.evictAll() }
 }
