@@ -93,6 +93,7 @@ import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
 import org.smartregister.fhircore.engine.util.extension.formatDate
@@ -117,6 +118,8 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var parser: IParser
 
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   @BindValue
   val configService: ConfigService =
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
@@ -131,7 +134,7 @@ class DefaultRepositoryTest : RobolectricTest() {
   fun setUp() {
     hiltRule.inject()
     dispatcherProvider = DefaultDispatcherProvider()
-    sharedPreferenceHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferenceHelper = SharedPreferencesHelper(application, gson, secureSharedPreference)
     defaultRepository =
       DefaultRepository(
         fhirEngine = fhirEngine,

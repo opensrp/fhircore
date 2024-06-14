@@ -368,7 +368,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     val secureSharedPreference = spyk(secureSharedPreference)
     every { secureSharedPreference.get256RandomBytes() } returns passwordSalt
-    secureSharedPreference.saveCredentials(sampleUsername, passwd.toCharArray())
+    secureSharedPreference.saveMultiCredentials(sampleUsername, passwd.toCharArray())
     val tokenAuthenticator =
       spyk(
         TokenAuthenticator(
@@ -388,7 +388,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testFindAccountShouldReturnAnAccount() {
-    secureSharedPreference.saveCredentials(sampleUsername, "sirikali".toCharArray())
+    secureSharedPreference.saveMultiCredentials(sampleUsername, "sirikali".toCharArray())
     val account = Account(sampleUsername, PROVIDER)
     every { accountManager.getAccountsByType(any()) } returns arrayOf(account)
     val resultAccount = tokenAuthenticator.findCurrentLoggedInAccount()

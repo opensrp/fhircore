@@ -30,6 +30,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
+import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 
@@ -40,6 +41,8 @@ class ConfigServiceTest : RobolectricTest() {
 
   @Inject lateinit var gson: Gson
 
+  @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
   private val application = ApplicationProvider.getApplicationContext<Application>()
 
   private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
@@ -49,7 +52,7 @@ class ConfigServiceTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    sharedPreferencesHelper = SharedPreferencesHelper(application, gson)
+    sharedPreferencesHelper = SharedPreferencesHelper(application, gson, secureSharedPreference)
   }
 
   @Test

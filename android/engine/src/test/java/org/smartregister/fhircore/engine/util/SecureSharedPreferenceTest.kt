@@ -47,7 +47,10 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testSaveCredentialsAndRetrieveSessionToken() {
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+    secureSharedPreference.saveMultiCredentials(
+      username = "userName",
+      password = "!@#$".toCharArray()
+    )
     Assert.assertEquals("userName", secureSharedPreference.retrieveSessionUsername()!!)
   }
 
@@ -55,7 +58,10 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   fun testRetrieveCredentials() {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
 
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+    secureSharedPreference.saveMultiCredentials(
+      username = "userName",
+      password = "!@#$".toCharArray()
+    )
 
     Assert.assertEquals("userName", secureSharedPreference.retrieveCredentials()!!.username)
     Assert.assertEquals(
@@ -66,7 +72,10 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
 
   @Test
   fun testDeleteCredentialReturnsNull() {
-    secureSharedPreference.saveCredentials(username = "userName", password = "!@#$".toCharArray())
+    secureSharedPreference.saveMultiCredentials(
+      username = "userName",
+      password = "!@#$".toCharArray()
+    )
     Assert.assertNotNull(secureSharedPreference.retrieveCredentials())
     secureSharedPreference.deleteCredentials()
     Assert.assertNull(secureSharedPreference.retrieveCredentials())
@@ -75,7 +84,8 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Test
   fun testSaveAndRetrievePin() {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-100, 0, 100, 101)
-    secureSharedPreference.saveSessionPin(pin = "1234".toCharArray())
+    val username = secureSharedPreference.retrieveSessionUsername()!!
+    secureSharedPreference.saveSessionPin(username, pin = "1234".toCharArray())
     Assert.assertEquals(
       "1234".toCharArray().toPasswordHash(byteArrayOf(-100, 0, 100, 101)),
       secureSharedPreference.retrieveSessionPin(),
@@ -87,8 +97,8 @@ internal class SecureSharedPreferenceTest : RobolectricTest() {
   @Test
   fun testResetSharedPrefsClearsData() {
     every { secureSharedPreference.get256RandomBytes() } returns byteArrayOf(-128, 100, 112, 127)
-
-    secureSharedPreference.saveSessionPin(pin = "6699".toCharArray())
+    val username = secureSharedPreference.retrieveSessionUsername()!!
+    secureSharedPreference.saveSessionPin(username, pin = "6699".toCharArray())
 
     val retrievedSessionPin = secureSharedPreference.retrieveSessionPin()
 
