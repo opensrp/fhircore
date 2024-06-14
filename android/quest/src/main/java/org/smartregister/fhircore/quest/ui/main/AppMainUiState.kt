@@ -39,7 +39,7 @@ fun appMainUiStateOf(
   lastSyncTime: String = "",
   currentLanguage: String = Locale.ENGLISH.displayName,
   progressPercentage: Int = 0,
-  isSyncUpload: Boolean = false,
+  isSyncUplTroad: Boolean = false,
   syncStatus: SyncStatus = SyncStatus.UNKNOWN,
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
