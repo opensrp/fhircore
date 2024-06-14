@@ -64,6 +64,7 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -223,7 +224,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
           appMainViewModel.appMainUiState.value =
             appMainViewModel.appMainUiState.value.copy(
               isSyncUpload = false,
-              isSyncCompleted = true,
+              isSyncCompleted = SyncStatus.SUCCEEDED,
             )
         }
       }
@@ -241,7 +242,8 @@ class RegisterFragment : Fragment(), OnSyncListener {
           )
           appMainViewModel.appMainUiState.value =
             appMainViewModel.appMainUiState.value.copy(
-              isSyncCompleted = false,
+              isSyncUpload = false,
+              isSyncCompleted = SyncStatus.FAILED,
             )
         }
       }

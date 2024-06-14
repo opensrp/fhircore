@@ -27,7 +27,7 @@ data class AppMainUiState(
   val currentLanguage: String,
   var progressPercentage: Int = 0,
   var isSyncUpload: Boolean = false,
-  var isSyncCompleted: Boolean = true,
+  var isSyncCompleted: SyncStatus = SyncStatus.UNKNOWN,
   val languages: List<Language>,
   val navigationConfiguration: NavigationConfiguration,
   val registerCountMap: Map<String, Long> = emptyMap(),
@@ -40,7 +40,7 @@ fun appMainUiStateOf(
   currentLanguage: String = Locale.ENGLISH.displayName,
   progressPercentage: Int = 0,
   isSyncUpload: Boolean = false,
-  isSyncCompleted: Boolean = true,
+  syncStatus: SyncStatus = SyncStatus.UNKNOWN,
   languages: List<Language> = emptyList(),
   navigationConfiguration: NavigationConfiguration,
   registerCountMap: Map<String, Long> = emptyMap(),
@@ -55,6 +55,12 @@ fun appMainUiStateOf(
     registerCountMap = registerCountMap,
     progressPercentage = progressPercentage,
     isSyncUpload = isSyncUpload,
-    isSyncCompleted = isSyncCompleted,
+    isSyncCompleted = syncStatus,
   )
+}
+
+enum class SyncStatus {
+  SUCCEEDED,
+  FAILED,
+  UNKNOWN,
 }

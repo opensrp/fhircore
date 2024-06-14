@@ -70,12 +70,10 @@ import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenu
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
-import org.smartregister.fhircore.engine.ui.theme.DangerColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
-import org.smartregister.fhircore.engine.ui.theme.SubsequentSyncBarTextColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -83,6 +81,7 @@ import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
@@ -210,18 +209,19 @@ private fun NavBottomSection(
 
   var showSyncBar by remember { mutableStateOf(false) }
   var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
-
   LaunchedEffect(appUiState.isSyncCompleted, appUiState.progressPercentage) {
-    if (appUiState.isSyncCompleted && appUiState.progressPercentage == 100) {
-      backgroundColor = SuccessColor.copy(alpha = 0.17f)
+    if (
+      appUiState.isSyncCompleted == SyncStatus.SUCCEEDED && appUiState.progressPercentage == 100
+    ) {
+      backgroundColor = Color(0xFF1DB11B).copy(alpha = 0.17f)
       showSyncBar = true
       coroutineScope.launch {
         delay(60000L)
         showSyncBar = false
         backgroundColor = SideMenuTopItemDarkColor
       }
-    } else if (!appUiState.isSyncCompleted) {
-      backgroundColor = DangerColor.copy(alpha = 0.17f)
+    } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
+      backgroundColor = Color(0xFFDF0E1A).copy(alpha = 0.17f)
     }
   }
 
@@ -238,19 +238,15 @@ private fun NavBottomSection(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_success"),
           title = "Sync Complete",
-          endText = "",
-          endTextColor = Color.White,
           showEndText = false,
           onCancelButtonClick = {},
         )
-      } else if (!appUiState.isSyncCompleted) {
+      } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
         SyncCompleteStatus(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
           title = "Sync error",
-          endText = "",
-          endTextColor = Color.White,
-          showEndText = false,
+          showEndText = true,
         ) {
           openDrawer(false)
           onSideMenuClick(AppMainEvent.SyncData(context))
@@ -442,10 +438,7 @@ private fun SyncCompleteStatus(
   modifier: Modifier = Modifier,
   imageConfig: ImageConfig? = null,
   title: String,
-  endText: String = "",
-  endTextColor: Color = Color.White,
   showEndText: Boolean,
-  endImageVector: ImageVector? = null,
   onCancelButtonClick: () -> Unit,
 ) {
   Row(
@@ -459,12 +452,13 @@ private fun SyncCompleteStatus(
     ) {
       Image(
         paddingEnd = 10,
-        imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
+        imageProperties = ImageProperties(imageConfig = imageConfig, size = 50),
         tint = SuccessColor,
         navController = rememberNavController(),
       )
-      SideMenuItemText(title = title, textColor = SubsequentSyncBarTextColor)
+      SideMenuItemText(title = title, textColor = Color.White)
     }
+    Spacer(modifier = Modifier.width(16.dp))
     if (showEndText) {
       TextButton(
         onClick = { onCancelButtonClick() },
