@@ -16,8 +16,12 @@
 
 package org.smartregister.fhircore.quest.event
 
-sealed class ToolbarClickEvent {
-  object FilterData : ToolbarClickEvent()
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 
-  object Navigate : ToolbarClickEvent()
+sealed class ToolbarClickEvent {
+  data object FilterData : ToolbarClickEvent()
+
+  data object Navigate : ToolbarClickEvent()
+
+  data class Actions(val actions: List<ActionConfig>) : ToolbarClickEvent()
 }

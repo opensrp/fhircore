@@ -16,7 +16,7 @@
 
 package org.smartregister.fhircore.quest.util.mappers
 
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
