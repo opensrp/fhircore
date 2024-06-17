@@ -36,6 +36,8 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import okhttp3.internal.http.RealResponseBody
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CareTeam
@@ -46,6 +48,7 @@ import org.hl7.fhir.r4.model.Organization
 import org.hl7.fhir.r4.model.OrganizationAffiliation
 import org.hl7.fhir.r4.model.Practitioner
 import org.hl7.fhir.r4.model.PractitionerRole
+import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.StringType
 import org.junit.After
 import org.junit.Assert
@@ -194,11 +197,31 @@ internal class LoginViewModelTest : RobolectricTest() {
   @Test
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy",
+        ),
+      )
+    secureSharedPreference.saveCredentials(thisUsername, thisPassword.toCharArray())
+    val practitioner =
+      practitionerDetails().apply { fhirPractitionerDetails.id = "$thisUsername-practitioner-id" }
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       PractitionerDetails(),
     )
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_ID.name,
+      practitioner.fhirPractitionerDetails?.id,
+    )
     every { tokenAuthenticator.sessionActive() } returns true
+
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
     Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
@@ -213,14 +236,108 @@ internal class LoginViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testUnSuccessfulOnlineLoginUsingDifferentUsername() {
+  fun testSuccessfulOnlineLoginForDifferentUserInTheSameLocationWithSyncStrategyLocation() =
+    runTest {
+      updateCredentials()
+      secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+      sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
+      sharedPreferencesHelper.write(
+        SharedPreferenceKey.PRACTITIONER_ID.name,
+        "nativeUser-practitioner-id",
+      )
+
+      coEvery {
+        tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+      } returns
+        Result.success(
+          OAuthResponse(
+            accessToken = "very_new_top_of_the_class_access_token",
+            tokenType = "you_guess_it",
+            refreshToken = "another_very_refreshing_token",
+            refreshExpiresIn = 540000,
+            scope = "open_my_guy",
+          ),
+        )
+      coEvery { keycloakService.fetchUserInfo() } returns
+        Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+      val bundle =
+        Bundle().apply {
+          addEntry(
+            Bundle.BundleEntryComponent().apply {
+              resource =
+                practitionerDetails().apply {
+                  fhirPractitionerDetails =
+                    FhirPractitionerDetails().apply {
+                      practitionerId = StringType("my-test-practitioner-id")
+                      locations = mutableListOf(Location().apply { id = "test-location" })
+                    }
+                }
+            },
+          )
+        }
+      coEvery { fhirResourceService.getResource(any()) } returns bundle
+      every { tokenAuthenticator.sessionActive() } returns false
+
+      loginViewModel.login(mockedActivity(isDeviceOnline = true))
+      advanceUntilIdle()
+
+      Assert.assertFalse(loginViewModel.showProgressBar.value!!)
+      Assert.assertTrue(loginViewModel.navigateToHome.value!!)
+
+      // Login was successful savePractitionerDetails was called
+      val practitionerDetailsSlot = slot<PractitionerDetails>()
+      verify {
+        loginViewModel.savePractitionerDetails(capture(practitionerDetailsSlot), any(), any())
+      }
+
+      Assert.assertNotNull(practitionerDetailsSlot.captured)
+    }
+
+  @Test
+  fun testUnSuccessfulOnlineLoginForDifferentUserInDifferentLocationWithSyncStrategyLocation() {
     updateCredentials()
     secureSharedPreference.saveCredentials("nativeUser", "n4t1veP5wd".toCharArray())
+    sharedPreferencesHelper.write(ResourceType.Location.name, listOf("test-location"))
+    sharedPreferencesHelper.write(
+      SharedPreferenceKey.PRACTITIONER_ID.name,
+      "nativeUser-practitioner-id",
+    )
+
+    coEvery {
+      tokenAuthenticator.fetchAccessToken(thisUsername, thisPassword.toCharArray())
+    } returns
+      Result.success(
+        OAuthResponse(
+          accessToken = "very_new_top_of_the_class_access_token",
+          tokenType = "you_guess_it",
+          refreshToken = "another_very_refreshing_token",
+          refreshExpiresIn = 540000,
+          scope = "open_my_guy",
+        ),
+      )
+    coEvery { keycloakService.fetchUserInfo() } returns
+      Response.success(UserInfo(keycloakUuid = "awesome_uuid"))
+    val bundle =
+      Bundle().apply {
+        addEntry(
+          Bundle.BundleEntryComponent().apply {
+            resource =
+              practitionerDetails().apply {
+                fhirPractitionerDetails =
+                  FhirPractitionerDetails().apply {
+                    practitionerId = StringType("my-test-practitioner-id")
+                    locations = mutableListOf(Location().apply { id = "another-test-location" })
+                  }
+              }
+          },
+        )
+      }
+    coEvery { fhirResourceService.getResource(any()) } returns bundle
     every { tokenAuthenticator.sessionActive() } returns false
+
     loginViewModel.login(mockedActivity(isDeviceOnline = true))
-    Assert.assertFalse(loginViewModel.showProgressBar.value!!)
     Assert.assertEquals(
-      LoginErrorState.MULTI_USER_LOGIN_ATTEMPT,
+      LoginErrorState.ERROR_MATCHING_SYNC_STRATEGY,
       loginViewModel.loginErrorState.value!!,
     )
   }
@@ -267,12 +384,12 @@ internal class LoginViewModelTest : RobolectricTest() {
     Assert.assertTrue(loginViewModel.navigateToHome.value!!)
 
     // Login was successful savePractitionerDetails was called
-    val bundleSlot = slot<Bundle>()
-    verify { loginViewModel.savePractitionerDetails(capture(bundleSlot), any(), any()) }
+    val practitionerDetailsSlot = slot<PractitionerDetails>()
+    verify {
+      loginViewModel.savePractitionerDetails(capture(practitionerDetailsSlot), any(), any())
+    }
 
-    Assert.assertNotNull(bundleSlot.captured)
-    Assert.assertTrue(bundleSlot.captured.entry.isNotEmpty())
-    Assert.assertTrue(bundleSlot.captured.entry[0].resource is PractitionerDetails)
+    Assert.assertNotNull(practitionerDetailsSlot.captured)
   }
 
   @Test
@@ -515,18 +632,10 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsChaRole() {
     coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitionerId = StringType("my-test-practitioner-id")
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply { practitionerId = StringType("my-test-practitioner-id") }
+      },
       UserInfo(),
     ) {}
     Assert.assertNotNull(
@@ -538,29 +647,23 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsChaRoleWithIdentifier() {
     coEvery { defaultRepository.createRemote(true, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitioners =
-                      listOf(
-                        Practitioner().apply {
-                          identifier =
-                            listOf(
-                              Identifier().apply {
-                                use = Identifier.IdentifierUse.SECONDARY
-                                value = "cha"
-                              },
-                            )
-                        },
-                      )
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier =
+                    listOf(
+                      Identifier().apply {
+                        use = Identifier.IdentifierUse.SECONDARY
+                        value = "cha"
+                      },
+                    )
+                },
+              )
+          }
+      },
       UserInfo(
         keycloakUuid = "cha",
       ),
@@ -574,40 +677,33 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSavePractitionerDetailsSupervisorRole() {
     coEvery { defaultRepository.createRemote(false, any()) } just runs
     loginViewModel.savePractitionerDetails(
-      Bundle()
-        .addEntry(
-          Bundle.BundleEntryComponent().apply {
-            resource =
-              practitionerDetails().apply {
-                fhirPractitionerDetails =
-                  FhirPractitionerDetails().apply {
-                    practitioners =
-                      listOf(
-                        Practitioner().apply {
-                          identifier.add(
-                            Identifier().apply {
-                              use = Identifier.IdentifierUse.SECONDARY
-                              value = "my-test-practitioner-id"
-                            },
-                          )
-                        },
-                      )
-                    careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
-                    organizations = listOf(Organization().apply { id = "my-organization-id" })
-                    locations = listOf(Location().apply { id = "my-organization-id" })
-                    locationHierarchyList =
-                      listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
-                    groups = listOf(Group().apply { id = "my-group-id" })
-                    practitionerRoles =
-                      listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
-                    organizationAffiliations =
-                      listOf(
-                        OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
-                      )
-                  }
-              }
-          },
-        ),
+      practitionerDetails().apply {
+        fhirPractitionerDetails =
+          FhirPractitionerDetails().apply {
+            practitioners =
+              listOf(
+                Practitioner().apply {
+                  identifier.add(
+                    Identifier().apply {
+                      use = Identifier.IdentifierUse.SECONDARY
+                      value = "my-test-practitioner-id"
+                    },
+                  )
+                },
+              )
+            careTeams = listOf(CareTeam().apply { id = "my-care-team-id" })
+            organizations = listOf(Organization().apply { id = "my-organization-id" })
+            locations = listOf(Location().apply { id = "my-organization-id" })
+            locationHierarchyList =
+              listOf(LocationHierarchy().apply { id = "my-location-hierarchy-id" })
+            groups = listOf(Group().apply { id = "my-group-id" })
+            practitionerRoles = listOf(PractitionerRole().apply { id = "my-practitioner-role-id" })
+            organizationAffiliations =
+              listOf(
+                OrganizationAffiliation().apply { id = "my-organization-affiliation-id" },
+              )
+          }
+      },
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
