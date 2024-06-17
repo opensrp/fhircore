@@ -31,7 +31,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,6 +51,7 @@ import org.smartregister.fhircore.engine.configuration.view.PersonalDataProperti
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.view.ServiceCardProperties
 import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -119,6 +120,9 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.End
                 ViewAlignment.CENTER -> Alignment.CenterHorizontally
                 ViewAlignment.NONE -> Alignment.Start
+                else -> {
+                  Alignment.Start
+                }
               },
             modifier =
               modifier
@@ -191,6 +195,9 @@ fun GenerateView(
                 ViewAlignment.END -> Alignment.Bottom
                 ViewAlignment.CENTER -> Alignment.CenterVertically
                 ViewAlignment.NONE -> Alignment.CenterVertically
+                else -> {
+                  Alignment.CenterVertically
+                }
               },
             modifier =
               modifier
@@ -259,6 +266,13 @@ fun GenerateView(
         Image(
           modifier = modifier,
           imageProperties = properties as ImageProperties,
+          resourceData = resourceData,
+          navController = navController,
+        )
+      ViewType.STACK ->
+        StackView(
+          modifier = modifier,
+          stackViewProperties = properties as StackViewProperties,
           resourceData = resourceData,
           navController = navController,
         )

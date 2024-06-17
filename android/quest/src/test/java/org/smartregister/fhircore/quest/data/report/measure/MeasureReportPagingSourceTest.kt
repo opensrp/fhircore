@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -61,6 +62,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
   @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var parser: IParser
+
+  @Inject lateinit var locationService: LocationService
 
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
@@ -82,6 +85,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
           dispatcherProvider = dispatcherProvider,
+          locationService = locationService,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
@@ -103,6 +107,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 

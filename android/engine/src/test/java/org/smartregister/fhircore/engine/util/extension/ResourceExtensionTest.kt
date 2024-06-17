@@ -21,7 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -894,5 +894,18 @@ class ResourceExtensionTest : RobolectricTest() {
     val patient = Patient().apply { this.id = "123456" }
     patient.appendOrganizationInfo(listOf("Organization/12345"))
     Assert.assertEquals("Organization/12345", patient.managingOrganization.reference)
+  }
+
+  @Test
+  fun `prepareQuestionsForEditing should set readOnly correctly when readOnlyLinkIds passed`() {
+    val questionnaire = Questionnaire()
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "1" })
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "2" })
+    questionnaire.item.add(Questionnaire.QuestionnaireItemComponent().apply { linkId = "3" })
+    questionnaire.item.prepareQuestionsForEditing("", readOnlyLinkIds = listOf("1", "3"))
+
+    Assert.assertTrue(questionnaire.item[0].readOnly)
+    Assert.assertFalse(questionnaire.item[1].readOnly)
+    Assert.assertTrue(questionnaire.item[2].readOnly)
   }
 }

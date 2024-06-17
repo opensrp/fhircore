@@ -45,9 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ContentScaleType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ImageType
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageShape
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -175,6 +177,11 @@ fun ClickableImageIcon(
       }
       ICON_TYPE_REMOTE ->
         if (imageConfig.decodedBitmap != null) {
+          val imageType = imageProperties.imageConfig?.imageType
+          val colorFilter =
+            if (imageType == ImageType.SVG || imageType == ImageType.PNG) tint else null
+          val contentScale =
+            convertContentScaleTypeToContentScale(imageProperties.imageConfig!!.contentScale)
           Image(
             modifier =
               Modifier.testTag(SIDE_MENU_ITEM_REMOTE_ICON_TEST_TAG)
@@ -183,11 +190,25 @@ fun ClickableImageIcon(
                 .fillMaxSize(0.9f),
             bitmap = imageConfig.decodedBitmap!!.asImageBitmap(),
             contentDescription = null,
-            contentScale = ContentScale.Crop,
-            colorFilter = ColorFilter.tint(tint ?: imageProperties.imageConfig?.color.parseColor()),
+            alpha = imageProperties.imageConfig!!.alpha,
+            contentScale = contentScale,
+            colorFilter = colorFilter?.let { ColorFilter.tint(it) },
           )
         }
     }
+  }
+}
+
+fun convertContentScaleTypeToContentScale(
+  contentScale: ContentScaleType,
+): ContentScale {
+  return when (contentScale) {
+    ContentScaleType.FIT -> ContentScale.Fit
+    ContentScaleType.CROP -> ContentScale.Crop
+    ContentScaleType.FILLHEIGHT -> ContentScale.Crop
+    ContentScaleType.INSIDE -> ContentScale.Inside
+    ContentScaleType.NONE -> ContentScale.None
+    ContentScaleType.FILLBOUNDS -> ContentScale.FillBounds
   }
 }
 

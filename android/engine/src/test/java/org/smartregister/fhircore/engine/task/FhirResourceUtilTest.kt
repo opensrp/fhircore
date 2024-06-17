@@ -267,7 +267,9 @@ class FhirResourceUtilTest : RobolectricTest() {
           }
       }
 
-    coEvery { fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED) } returns true
+    coEvery {
+      fhirEngine.get<Task>(any()).status.isIn(TaskStatus.COMPLETED, TaskStatus.FAILED)
+    } returns true
 
     coEvery { defaultRepository.update(any()) } just runs
 

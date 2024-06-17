@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
@@ -43,6 +43,7 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
@@ -67,6 +68,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider,
+  val locationService: LocationService,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -87,6 +89,7 @@ constructor(
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
         put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
+        put(LOCATION_SERVICE, locationService)
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {
@@ -348,6 +351,11 @@ constructor(
               SharedPreferenceKey.PRACTITIONER_LOCATION.name,
               "",
             )
+          SharedPreferenceKey.PRACTITIONER_LOCATION_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+              "",
+            )
           else -> ""
         }
       } catch (exception: Exception) {
@@ -546,7 +554,6 @@ constructor(
         serviceStatus =
           when (task.status) {
             Task.TaskStatus.NULL,
-            Task.TaskStatus.FAILED,
             Task.TaskStatus.RECEIVED,
             Task.TaskStatus.ENTEREDINERROR,
             Task.TaskStatus.ACCEPTED,
@@ -556,6 +563,7 @@ constructor(
               Timber.e("Task.status is null", Exception())
               ServiceStatus.UPCOMING.name
             }
+            Task.TaskStatus.FAILED -> ServiceStatus.FAILED.name
             Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
             Task.TaskStatus.READY -> ServiceStatus.DUE.name
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
@@ -569,6 +577,7 @@ constructor(
 
   companion object {
     private const val SERVICE = "service"
+    private const val LOCATION_SERVICE = "locationService"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
     private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"

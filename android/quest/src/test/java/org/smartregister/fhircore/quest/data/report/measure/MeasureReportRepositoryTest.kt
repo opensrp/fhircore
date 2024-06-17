@@ -46,6 +46,7 @@ import org.smartregister.fhircore.engine.configuration.report.measure.ReportConf
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_YYYY_MM_DD
@@ -69,6 +70,8 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Inject lateinit var knowledgeManager: KnowledgeManager
 
+  @Inject lateinit var locationService: LocationService
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private lateinit var measureReportConfiguration: MeasureReportConfiguration
@@ -90,6 +93,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
           dispatcherProvider = dispatcherProvider,
+          locationService = locationService,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
@@ -109,22 +113,23 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 
     measureReportRepository =
       MeasureReportRepository(
-        fhirEngine,
-        DefaultDispatcherProvider(),
-        mockk(),
-        configurationRegistry,
-        mockk(),
-        mockk(),
-        registerRepository,
-        fhirOperator,
-        knowledgeManager,
-        mockk(),
-        parser,
+        fhirEngine = fhirEngine,
+        dispatcherProvider = DefaultDispatcherProvider(),
+        sharedPreferencesHelper = mockk(),
+        configurationRegistry = configurationRegistry,
+        configService = mockk(),
+        configRulesExecutor = mockk(),
+        fhirOperator = fhirOperator,
+        knowledgeManager = knowledgeManager,
+        fhirPathDataExtractor = mockk(),
+        parser = parser,
+        context = ApplicationProvider.getApplicationContext(),
       )
   }
 

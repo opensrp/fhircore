@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.Button
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
@@ -85,19 +85,28 @@ fun RegisterScreen(
   Scaffold(
     topBar = {
       Column {
-        // Top section has toolbar and a results counts view
+        /*
+         * Top section has toolbar and a results counts view
+         * by default isSearchBarVisible is visible
+         * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
-          title = registerUiState.screenTitle,
+          title =
+            registerUiState.screenTitle.ifEmpty {
+              registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
+            }, // backward compatibility for screen title
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
+          isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { searchText ->
             onEvent(RegisterEvent.SearchRegister(searchText = searchText))
           },
           isFilterIconEnabled = filterActions?.isNotEmpty() ?: false,
+          topScreenSection = registerUiState.registerConfiguration?.topScreenSection,
+          navController = navController,
         ) { event ->
           when (event) {
             ToolbarClickEvent.Navigate ->
@@ -108,6 +117,11 @@ fun RegisterScreen(
             ToolbarClickEvent.FilterData -> {
               onEvent(RegisterEvent.ResetFilterRecordsCount)
               filterActions?.handleClickEvent(navController)
+            }
+            is ToolbarClickEvent.Actions -> {
+              event.actions.handleClickEvent(
+                navController = navController,
+              )
             }
           }
         }

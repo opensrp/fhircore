@@ -109,7 +109,10 @@ android {
 
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -248,11 +251,19 @@ android {
       versionNameSuffix = "-sidCadre"
       manifestPlaceholders["appLabel"] = "KaderKu"
     }
+
     create("sidEir") {
       dimension = "apps"
       applicationIdSuffix = ".sidEir"
       versionNameSuffix = "-sidEir"
       manifestPlaceholders["appLabel"] = "VaksinatorKu"
+    }
+
+    create("sidEcd") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEcd"
+      versionNameSuffix = "-sidEcd"
+      manifestPlaceholders["appLabel"] = "PaudKu"
     }
 
     create("diabetesCompass") {
@@ -280,7 +291,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
-      manifestPlaceholders["appLabel"] = "GIZ EIR"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
@@ -296,23 +307,33 @@ android {
       versionNameSuffix = "-who_eir"
       manifestPlaceholders["appLabel"] = "WHO EIR"
     }
+
     create("psi-eswatini") {
       dimension = "apps"
       applicationIdSuffix = ".psi_eswatini"
       versionNameSuffix = "-psi_eswatini"
       manifestPlaceholders["appLabel"] = "PSI WFA"
     }
+
     create("eusm") {
       dimension = "apps"
       applicationIdSuffix = ".eusm"
       versionNameSuffix = "-eusm"
       manifestPlaceholders["appLabel"] = "EUSM"
     }
+
     create("demoEir") {
       dimension = "apps"
       applicationIdSuffix = ".demoEir"
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
+    }
+
+    create("vamosJuntos") {
+      dimension = "apps"
+      applicationIdSuffix = ".vamosJuntos"
+      versionNameSuffix = "-vamosJuntos"
+      manifestPlaceholders["appLabel"] = "Vamos Juntos"
     }
   }
 
@@ -438,6 +459,8 @@ dependencies {
   // Android Test dependencies
   androidTestImplementation(libs.junit)
   androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
 
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }

@@ -24,9 +24,9 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
 import com.google.android.fhir.knowledge.KnowledgeManager
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
