@@ -876,7 +876,8 @@ constructor(
                 planDefinitionId = planId,
                 subject = subject,
                 data = bundle,
-                generateCarePlanWithWorkflowApi = questionnaireConfig.generateCarePlanWithWorkflowApi,
+                generateCarePlanWithWorkflowApi =
+                  questionnaireConfig.generateCarePlanWithWorkflowApi,
               )
             carePlan?.let {
               with(validationErrorsMap) {
@@ -890,6 +891,7 @@ constructor(
             }
           }
           .onFailure { Timber.e(it) }
+      }
     }
   }
 
