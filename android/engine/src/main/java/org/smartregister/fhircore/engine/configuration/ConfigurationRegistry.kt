@@ -52,7 +52,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -92,8 +91,9 @@ constructor(
   val configService: ConfigService,
   val json: Json,
   @ApplicationContext val context: Context,
-  private var openSrpApplication: OpenSrpApplication?,
 ) {
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
 
   val configsJsonMap = mutableMapOf<String, String>()
   val configCacheMap = mutableMapOf<String, Configuration>()
@@ -101,9 +101,7 @@ constructor(
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
   private val fhirContext = FhirContext.forR4Cached()
-
-  @Inject lateinit var knowledgeManager: KnowledgeManager
-
+  private val authConfiguration = configService.provideAuthConfiguration()
   private val jsonParser = fhirContext.newJsonParser()
 
   /**
@@ -405,8 +403,7 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
-    // Reset configurations before loading new ones
+  suspend fun fetchNonWorkflowConfigResources() {
     configCacheMap.clear()
     sharedPreferencesHelper.read(SharedPreferenceKey.APP_ID.name, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
@@ -638,7 +635,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: """${openSrpApplication?.getFhirServerHost()?.toString()?.trimEnd { it == '/' }}/${this.referenceValue()}"""
+          ?: """${authConfiguration.fhirServerBaseUrl.trimEnd { it == '/' }}/${this.referenceValue()}"""
     }
 
   fun writeToFile(resource: Resource): File {

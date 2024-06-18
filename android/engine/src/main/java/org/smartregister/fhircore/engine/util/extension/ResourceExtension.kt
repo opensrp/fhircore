@@ -21,8 +21,8 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam
 import com.google.android.fhir.datacapture.extensions.createQuestionnaireResponseItem
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -75,10 +75,10 @@ const val REFERENCE = "reference"
 const val PARTOF = "part-of"
 private val fhirR4JsonParser = FhirContext.forR4Cached().getCustomJsonParser()
 
-fun Base?.valueToString(): String {
+fun Base?.valueToString(datePattern: String = "dd-MMM-yyyy"): String {
   return when {
     this == null -> return ""
-    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable()
+    this.isDateTime -> (this as BaseDateTimeType).value.makeItReadable(datePattern)
     this.isPrimitive -> (this as PrimitiveType<*>).asStringValue()
     this is Coding -> display ?: code
     this is CodeableConcept -> this.stringValue()
