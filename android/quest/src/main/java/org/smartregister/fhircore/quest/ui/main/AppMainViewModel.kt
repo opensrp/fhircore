@@ -263,7 +263,7 @@ constructor(
 
       schedulePeriodically<CustomResourceSyncWorker>(
         workId = CustomResourceSyncWorker.WORK_ID,
-        repeatInterval = applicationConfiguration.syncInterval
+        repeatInterval = applicationConfiguration.syncInterval,
       )
 
       measureReportConfigurations.forEach { measureReportConfig ->

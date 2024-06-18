@@ -28,6 +28,7 @@ import com.google.android.fhir.knowledge.KnowledgeManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
+import java.net.URLEncoder
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
 import java.util.LinkedList
@@ -460,15 +461,28 @@ constructor(
       }
     }
   }
-
-  fun fetchURLForCustomResource() : List<String> {
+  //TODO : WIP - Needs to handle all case
+  fun fetchURLForCustomResource(): List<String> {
+    val BASE_URL = ""
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-    syncConfig.parameter.map { it.resource as SearchParameter }
-      .filter { it.type == Enumerations.SearchParamType.SPECIAL }
-      .forEach { sp ->
+    val resourceTypeToParams = mutableMapOf<String, MutableList<String>>()
 
+    syncConfig.parameter
+      .map { it.resource as SearchParameter }
+      .filter { it.type == Enumerations.SearchParamType.SPECIAL }
+      .forEach { searchParam ->
+        val resource = searchParam
+        val queryParams = "${resource.code}=${URLEncoder.encode(resource.expression, "UTF-8")}"
+        resourceTypeToParams
+          .getOrPut(resource.base.first().toString()) { mutableListOf() }
+          .add(queryParams)
       }
-    return emptyList()
+    val urls =
+      resourceTypeToParams.map { (resourceType, params) ->
+        "$BASE_URL/$resourceType?${params.joinToString("&")}"
+      }
+
+    return urls
   }
 
   suspend fun fetchRemoteImplementationGuideByAppId(
