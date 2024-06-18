@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.util.extension
 
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.DecimalType
@@ -36,8 +37,9 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 
-class QuestionnaireExtensionTest {
+class QuestionnaireExtensionTest : RobolectricTest() {
   private lateinit var questionniare: Questionnaire
   private lateinit var questionniareResponse: QuestionnaireResponse
   private lateinit var questionniareResponseItemComponent:
@@ -271,6 +273,85 @@ class QuestionnaireExtensionTest {
       emptyList<Questionnaire.QuestionnaireItemInitialComponent>(),
       innerQuestionnaireItemComponent.initial,
     )
+  }
+
+  @Test
+  fun testQuestionnaireItemAnswerOptionComponentPrepopulateNoChange() {
+    val theLinkId = "linkId"
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply { linkId = theLinkId }
+    listOf(questionnaireItemComponent).prePopulateInitialValues("", emptyList())
+    Assert.assertEquals(
+      emptyList<Questionnaire.QuestionnaireItemAnswerOptionComponent>(),
+      questionnaireItemComponent.answerOption,
+    )
+  }
+
+  @Test
+  fun testQuestionnaireItemAnswerOptionComponentPrepopulateSingleChoiceItem() {
+    val theLinkId = "Diagnosis"
+    val valueToSelect = "malaria"
+    val malariaQuestionnaireItemAnswerOptionComponent =
+      Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
+        value = Coding().apply { code = "malaria" }
+      }
+    val fluQuestionnaireItemAnswerOptionComponent =
+      Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
+        value = Coding().apply { code = "flu" }
+      }
+    val prePopulationParams =
+      listOf(ActionParameter("key", linkId = theLinkId, value = valueToSelect))
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = theLinkId
+        answerOption =
+          listOf(
+            malariaQuestionnaireItemAnswerOptionComponent,
+            fluQuestionnaireItemAnswerOptionComponent,
+          )
+        type = Questionnaire.QuestionnaireItemType.CHOICE
+      }
+
+    Assert.assertFalse(questionnaireItemComponent.answerOption[0].initialSelected)
+    Assert.assertFalse(questionnaireItemComponent.answerOption[1].initialSelected)
+
+    listOf(questionnaireItemComponent).prePopulateInitialValues("@{", prePopulationParams)
+
+    Assert.assertTrue(questionnaireItemComponent.answerOption[0].initialSelected)
+    Assert.assertFalse(questionnaireItemComponent.answerOption[1].initialSelected)
+  }
+
+  @Test
+  fun testQuestionnaireItemAnswerOptionComponentPrepopulateMultipleChoiceItems() {
+    val theLinkId = "Diagnosis"
+    val valueToSelect = "malaria,flu"
+    val malariaQuestionnaireItemAnswerOptionComponent =
+      Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
+        value = Coding().apply { code = "malaria" }
+      }
+    val fluQuestionnaireItemAnswerOptionComponent =
+      Questionnaire.QuestionnaireItemAnswerOptionComponent().apply {
+        value = Coding().apply { code = "flu" }
+      }
+    val prePopulationParams =
+      listOf(ActionParameter("key", linkId = theLinkId, value = valueToSelect))
+    val questionnaireItemComponent =
+      Questionnaire.QuestionnaireItemComponent().apply {
+        linkId = theLinkId
+        answerOption =
+          listOf(
+            malariaQuestionnaireItemAnswerOptionComponent,
+            fluQuestionnaireItemAnswerOptionComponent,
+          )
+        type = Questionnaire.QuestionnaireItemType.CHOICE
+      }
+    Assert.assertFalse(questionnaireItemComponent.answerOption[0].initialSelected)
+    Assert.assertFalse(questionnaireItemComponent.answerOption[1].initialSelected)
+
+    listOf(questionnaireItemComponent).prePopulateInitialValues("@{", prePopulationParams)
+
+    Assert.assertTrue(questionnaireItemComponent.answerOption[0].initialSelected)
+    Assert.assertTrue(questionnaireItemComponent.answerOption[1].initialSelected)
   }
 
   @Test

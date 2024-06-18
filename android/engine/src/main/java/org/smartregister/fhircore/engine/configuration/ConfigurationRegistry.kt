@@ -18,7 +18,9 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
+import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.context.FhirContext
+import ca.uhn.fhir.parser.DataFormatException
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
@@ -38,7 +40,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.ByteString.Companion.decodeBase64
-import org.apache.commons.lang3.StringUtils
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -51,7 +52,6 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
-import org.smartregister.fhircore.engine.OpenSrpApplication
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
@@ -90,8 +90,9 @@ constructor(
   val configService: ConfigService,
   val json: Json,
   @ApplicationContext val context: Context,
-  private var openSrpApplication: OpenSrpApplication?,
 ) {
+
+  @Inject lateinit var knowledgeManager: KnowledgeManager
 
   val configsJsonMap = mutableMapOf<String, String>()
   val configCacheMap = mutableMapOf<String, Configuration>()
@@ -99,9 +100,7 @@ constructor(
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK
   private val fhirContext = FhirContext.forR4Cached()
-
-  @Inject lateinit var knowledgeManager: KnowledgeManager
-
+  private val authConfiguration = configService.provideAuthConfiguration()
   private val jsonParser = fhirContext.newJsonParser()
 
   /**
@@ -297,7 +296,7 @@ constructor(
     }
   }
 
-  private suspend fun populateConfigurationsMap(
+  suspend fun populateConfigurationsMap(
     context: Context,
     composition: Composition,
     loadFromAssets: Boolean,
@@ -307,21 +306,33 @@ constructor(
     if (loadFromAssets) {
       retrieveAssetConfigs(context, appId).forEach { fileName ->
         // Create binary config from asset and add to map, skip composition resource
-        // Use file name as the key. Conventionally navigation configs MUST end with
-        // "_config.<extension>"
+        // Use file name as the key. Conventionally configs MUST end with _config.<extension>"
         // File names in asset should match the configType/id (MUST be unique) in the config JSON
+        // Resource configs are saved to the database
         if (!fileName.equals(String.format(COMPOSITION_CONFIG_PATH, appId), ignoreCase = true)) {
-          val configKey =
-            fileName
-              .lowercase(Locale.ENGLISH)
-              .substring(
-                fileName.indexOfLast { it == '/' }.plus(1),
-                fileName.lastIndexOf(CONFIG_SUFFIX),
-              )
-              .camelCase()
-
           val configJson = context.assets.open(fileName).bufferedReader().readText()
-          configsJsonMap[configKey] = configJson
+          if (fileName.contains(RESOURCES_PATH)) {
+            try {
+              val resource = configJson.decodeResourceFromString<Resource>()
+              if (resource.resourceType != null) {
+                addOrUpdate(resource)
+              }
+            } catch (configurationException: ConfigurationException) {
+              Timber.e("Error parsing FHIR resource", configurationException)
+            } catch (dataFormatException: DataFormatException) {
+              Timber.e("Error parsing FHIR resource", dataFormatException)
+            }
+          } else {
+            val configKey =
+              fileName
+                .lowercase(Locale.ENGLISH)
+                .substring(
+                  fileName.indexOfLast { it == '/' }.plus(1),
+                  fileName.lastIndexOf(CONFIG_SUFFIX),
+                )
+                .camelCase()
+            configsJsonMap[configKey] = configJson
+          }
         }
       }
     } else {
@@ -391,8 +402,7 @@ constructor(
    * Type'?_id='comma,separated,list,of,ids'
    */
   @Throws(UnknownHostException::class, HttpException::class)
-  suspend fun fetchNonWorkflowConfigResources(isInitialLogin: Boolean = true) {
-    // Reset configurations before loading new ones
+  suspend fun fetchNonWorkflowConfigResources() {
     configCacheMap.clear()
     preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, null)?.let { appId ->
       val parsedAppId = appId.substringBefore(TYPE_REFERENCE_DELIMITER).trim()
@@ -421,14 +431,17 @@ constructor(
             } else {
               val chunkedResourceIdList = entry.value.chunked(MANIFEST_PROCESSOR_BATCH_SIZE)
 
-              chunkedResourceIdList.forEach { parentIt ->
+              chunkedResourceIdList.forEach { sectionComponents ->
                 Timber.d(
-                  "Fetching config resource ${entry.key}: with ids ${StringUtils.join(parentIt,",")}",
+                  "Fetching config resource ${entry.key}: with ids ${sectionComponents.joinToString(",")}",
                 )
                 processCompositionManifestResources(
-                  entry.key,
-                  parentIt.map { sectionComponent -> sectionComponent.focus.extractId() },
-                  patientRelatedResourceTypes,
+                  resourceType = entry.key,
+                  resourceIdList =
+                    sectionComponents.map { sectionComponent ->
+                      sectionComponent.focus.extractId()
+                    },
+                  patientRelatedResourceTypes = patientRelatedResourceTypes,
                 )
               }
             }
@@ -621,7 +634,7 @@ constructor(
     this.apply {
       url =
         url
-          ?: "${openSrpApplication?.getFhirServerHost().toString().trimEnd { it == '/' }}/${this.referenceValue()}"
+          ?: """${authConfiguration.fhirServerBaseUrl.trimEnd { it == '/' }}/${this.referenceValue()}"""
     }
 
   fun writeToFile(resource: Resource): File {
@@ -794,7 +807,6 @@ constructor(
       resourceTypes.distinctBy { it.name }.joinToString(","),
     )
 
-
   companion object {
     const val BASE_CONFIG_PATH = "configs/%s"
     const val COMPOSITION_CONFIG_PATH = "configs/%s/composition_config.json"
@@ -811,13 +823,14 @@ constructor(
     const val TYPE_REFERENCE_DELIMITER = "/"
     const val DEFAULT_COUNT = 200
     const val PAGINATION_NEXT = "next"
+    const val RESOURCES_PATH = "resources/"
 
     /**
      * The list of resources whose types can be synced down as part of the Composition configs.
      * These are hardcoded as they are not meant to be easily configurable to avoid config vs data
      * sync issues
      */
-    val FILTER_RESOURCE_LIST =
+    private val FILTER_RESOURCE_LIST =
       listOf(
         ResourceType.Questionnaire.name,
         ResourceType.StructureMap.name,

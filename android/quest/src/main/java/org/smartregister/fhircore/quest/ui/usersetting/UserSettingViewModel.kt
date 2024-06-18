@@ -35,6 +35,7 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
@@ -109,7 +110,11 @@ constructor(
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun allowSwitchingLanguages() = languages.size > 1
+  fun enableMenuOption(settingOption: SettingsOptions) =
+    applicationConfiguration.settingsScreenMenuOptions.contains(settingOption)
+
+  fun allowSwitchingLanguages() =
+    enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
 
   //TODO: Reads an object type ---> AppMainEvent

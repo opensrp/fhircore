@@ -108,6 +108,7 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 

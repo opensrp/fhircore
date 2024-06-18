@@ -79,6 +79,7 @@ constructor(
           fhirResourceConfig = geoWidgetConfig.resourceConfig,
           configRules = null,
           secondaryResourceConfigs = null,
+          filterByRelatedEntityLocationMetaTag = false,
         )
 
       repositoryResourceDataList.forEach { repositoryResourceData ->
