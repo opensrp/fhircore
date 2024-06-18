@@ -1106,9 +1106,6 @@ constructor(
           uniqueIdAssignmentConfig.dataQueries.forEach {
             filterBy(dataQuery = it, configComputedRuleValues = emptyMap())
           }
-          if (uniqueIdAssignmentConfig.resource == ResourceType.Group) {
-            filter(TokenClientParam(ACTIVE), { value = of(true) })
-          }
           if (uniqueIdAssignmentConfig.sortConfigs != null) {
             sort(uniqueIdAssignmentConfig.sortConfigs)
           } else {
