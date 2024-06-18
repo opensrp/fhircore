@@ -182,8 +182,4 @@ constructor(
     paramsMap: Map<String, String>?,
   ): RegisterConfiguration =
     configurationRegistry.retrieveConfiguration(ConfigType.Register, registerId, paramsMap)
-
-  companion object {
-    const val ACTIVE = "active"
-  }
 }
