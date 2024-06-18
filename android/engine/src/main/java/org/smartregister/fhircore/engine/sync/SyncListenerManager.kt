@@ -28,7 +28,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
-import org.hl7.fhir.SearchParamType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Parameters
 import org.hl7.fhir.r4.model.ResourceType
@@ -39,7 +38,6 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -102,29 +100,31 @@ constructor(
 
   /** Retrieve registry sync params */
   fun loadSyncParams(): Map<ResourceType, Map<String, String>> {
-    val pairs = mutableListOf<Pair<ResourceType, MutableMap<String, String>>>()
-
+    val syncParamsMap = mutableMapOf<ResourceType, MutableMap<String, String>>()
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
-
     val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
 
-    val relatedResourceTypes: List<String>? =
-      sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
+    // Retrieve REL locationIds otherwise return null
+    val locationIds = runBlocking {
+      context.syncLocationIdsProtoStore.data
+        .firstOrNull()
+        ?.filter { it.toggleableState == ToggleableState.On }
+        ?.map { it.locationId }
+        .takeIf { !it.isNullOrEmpty() }
+    }
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
-    // TODO: expressionValue supports for Organization and Publisher literals for now
     syncConfig.parameter
+      .asSequence()
       .map { it.resource as SearchParameter }
-      .filter { it.type == Enumerations.SearchParamType.TOKEN }
-      .forEach { sp ->
-        val paramName = sp.name // e.g. organization
+      .filterNot { it.type == Enumerations.SearchParamType.SPECIAL }
+      .forEach { searchParameter ->
+        val paramName = searchParameter.name
         val paramLiteral = "#$paramName" // e.g. #organization in expression for replacement
-        val paramExpression = sp.expression
+        val paramExpression = searchParameter.expression
         val expressionValue =
           when (paramName) {
-            // TODO: Does not support multi organization yet,
-            // https://github.com/opensrp/fhircore/issues/1550
             ConfigurationRegistry.ORGANIZATION ->
               mandatoryTags
                 .firstOrNull {
@@ -135,59 +135,27 @@ constructor(
             ConfigurationRegistry.COUNT -> appConfig.remoteSyncPageSize.toString()
             else -> null
           }?.let {
-            // replace the evaluated value into expression for complex expressions
-            // e.g. #organization -> 123
-            // e.g. patient.organization eq #organization -> patient.organization eq 123
+            // Replace the evaluated expression with actual value .g. #organization -> 123
             paramExpression?.replace(paramLiteral, it)
           }
 
-        // for each entity in base create and add param map
-        // [Patient=[ name=Abc, organization=111 ], Encounter=[ type=MyType, location=MyHospital
-        // ],..]
-        if (relatedResourceTypes.isNullOrEmpty()) {
-            sp.base.mapNotNull { it.code }
-          } else {
-            relatedResourceTypes
-          }
-          .forEach { clinicalResource ->
-            val resourceType = ResourceType.fromCode(clinicalResource)
-            val pair = pairs.find { it.first == resourceType }
-            if (pair == null) {
-              pairs.add(
-                Pair(
-                  resourceType,
-                  expressionValue?.let { mutableMapOf(sp.code to expressionValue) }
-                    ?: mutableMapOf(),
-                ),
-              )
-            } else {
-              expressionValue?.let {
-                // add another parameter if there is a matching resource type
-                // e.g. [(Patient, {organization=105})] to [(Patient, {organization=105,
-                // _count=100})]
-                val updatedPair = pair.second.apply { put(sp.code, expressionValue) }
-                val index = pairs.indexOfFirst { it.first == resourceType }
-                pairs.set(index, Pair(resourceType, updatedPair))
-              }
-            }
+        // Create query param for each ResourceType p e.g.[Patient=[name=Abc, organization=111]
+        searchParameter.base
+          .mapNotNull { it.code }
+          .forEach { resource ->
+            val resourceType = ResourceType.fromCode(resource)
+            val resourceQueryParamMap =
+              syncParamsMap
+                .getOrPut(resourceType) { mutableMapOf() }
+                .apply {
+                  expressionValue?.let { value -> put(searchParameter.code, value) }
+                  locationIds?.let { ids -> put(SYNC_LOCATION_IDS, ids.joinToString(",")) }
+                }
+            syncParamsMap[resourceType] = resourceQueryParamMap
           }
       }
-
-    // Set sync locations Location query params
-    runBlocking {
-      context.syncLocationIdsProtoStore.data
-        .firstOrNull()
-        ?.filter { it.toggleableState == ToggleableState.On }
-        ?.map { it.locationId }
-        .takeIf { !it.isNullOrEmpty() }
-        ?.let { locationIds ->
-          pairs.forEach { it.second[SYNC_LOCATION_IDS] = locationIds.joinToString(",") }
-        }
-    }
-
-    Timber.i("SYNC CONFIG $pairs")
-
-    return mapOf(*pairs.toTypedArray())
+    Timber.i("Resource sync parameters $syncParamsMap")
+    return syncParamsMap
   }
 
   companion object {

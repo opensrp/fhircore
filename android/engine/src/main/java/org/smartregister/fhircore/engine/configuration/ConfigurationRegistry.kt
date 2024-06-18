@@ -461,13 +461,12 @@ constructor(
     }
   }
 
-  fun fetchURLForCustomResource() : List<String> {
+  fun fetchURLForCustomResource(): List<String> {
     val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-    syncConfig.parameter.map { it.resource as SearchParameter }
+    syncConfig.parameter
+      .map { it.resource as SearchParameter }
       .filter { it.type == Enumerations.SearchParamType.SPECIAL }
-      .forEach { sp ->
-
-      }
+      .forEach { sp -> }
     return emptyList()
   }
 
