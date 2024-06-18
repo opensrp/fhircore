@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.search.Order
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -93,7 +92,6 @@ import org.smartregister.fhircore.engine.domain.model.KeyValueConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceFilterExpression
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
-import org.smartregister.fhircore.engine.domain.model.SortConfig
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
@@ -1425,51 +1423,51 @@ class DefaultRepositoryTest : RobolectricTest() {
 
   @Test
   fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() =
-    runTest(timeout = 60.seconds) {
-      val coding = Coding().apply { code = "phn" }
+    runTest(timeout = 30.seconds) {
       val group1 =
         Group().apply {
           id = "grp1"
           addCharacteristic(
             Group.GroupCharacteristicComponent(
-              CodeableConcept(coding),
-              CodeableConcept(Coding().apply { code = "1234" }),
-              BooleanType(false),
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "1234" },
+              BooleanType(true),
             ),
           )
           addCharacteristic(
             Group.GroupCharacteristicComponent(
-              CodeableConcept(coding),
-              CodeableConcept(Coding().apply { code = "1235" }),
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "123456" },
               BooleanType(false),
             ),
           )
           active = true
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
         }
 
       val group2 =
         Group().apply {
           id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "56789" },
+              BooleanType(false),
+            ),
+          )
           active = false
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
         }
-
-      fhirEngine.create(group1, group2)
 
       val uniqueIdAssignmentConfig =
         UniqueIdAssignmentConfig(
           linkId = "phn",
           idFhirPathExpression =
             "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
-          readOnly = true,
+          readOnly = false,
           resource = ResourceType.Group,
-          sortConfigs =
-            listOf(
-              SortConfig(
-                paramName = "_lastUpdated",
-                dataType = Enumerations.DataType.DATE,
-                order = Order.DESCENDING,
-              ),
-            ),
           resourceFilterExpression =
             ResourceFilterExpression(
               conditionalFhirPathExpressions =
@@ -1479,9 +1477,12 @@ class DefaultRepositoryTest : RobolectricTest() {
               matchAll = true,
             ),
         )
+
+      fhirEngine.create(group1, group2)
       val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
       Assert.assertNotNull(resource)
       Assert.assertTrue(resource is Group)
-      Assert.assertEquals("phn", (resource as Group).characteristicFirstRep.code.text)
+      Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
+      Assert.assertFalse(resource.characteristic[1].exclude)
     }
 }
