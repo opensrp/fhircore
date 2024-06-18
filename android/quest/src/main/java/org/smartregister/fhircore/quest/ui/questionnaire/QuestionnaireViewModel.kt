@@ -77,8 +77,6 @@ import org.smartregister.fhircore.engine.domain.model.isReadOnly
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
@@ -119,13 +117,11 @@ constructor(
   private val parser = FhirContext.forR4Cached().newJsonParser()
 
   private val authenticatedOrganizationIds by lazy {
-    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME,null)
+    preferenceDataStore.readOnce(PreferenceDataStore.ORGANIZATION_NAME, null)
   }
 
   private val practitionerId: String? by lazy {
-    preferenceDataStore
-      .readOnce(PreferenceDataStore.PRACTITIONER_ID, null)
-      ?.extractLogicalIdUuid()
+    preferenceDataStore.readOnce(PreferenceDataStore.PRACTITIONER_ID, null)?.extractLogicalIdUuid()
   }
 
   private val _questionnaireProgressStateLiveData = MutableLiveData<QuestionnaireProgressState?>()

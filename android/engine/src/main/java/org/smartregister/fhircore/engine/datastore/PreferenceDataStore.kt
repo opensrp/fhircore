@@ -23,23 +23,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import okhttp3.Dispatcher
-import kotlin.coroutines.CoroutineContext
 
 @Singleton
-class PreferenceDataStore @Inject constructor(@ApplicationContext val context: Context, val dataStore: DataStore<Preferences>) {
+class PreferenceDataStore
+@Inject
+constructor(@ApplicationContext val context: Context, val dataStore: DataStore<Preferences>) {
   fun <T> read(key: Preferences.Key<T>) =
     dataStore.data
       .catch { exception ->
@@ -52,9 +48,7 @@ class PreferenceDataStore @Inject constructor(@ApplicationContext val context: C
       .map { preferences -> preferences[key] as T }
 
   fun <T> readOnce(key: Preferences.Key<T>, defaultValue: T? = null) = runBlocking {
-    dataStore.data.map {preferences ->
-      preferences[key] ?: defaultValue
-    }.firstOrNull()
+    dataStore.data.map { preferences -> preferences[key] ?: defaultValue }.firstOrNull()
   }
 
   suspend fun <T> write(key: Preferences.Key<T>, value: T) {

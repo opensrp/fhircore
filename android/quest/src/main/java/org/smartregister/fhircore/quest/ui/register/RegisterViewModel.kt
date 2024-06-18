@@ -453,8 +453,8 @@ constructor(
         registerUiState.value =
           RegisterUiState(
             screenTitle = currentRegisterConfiguration.registerTitle ?: screenTitle,
-            isFirstTimeSync = //TODO: Reads an object type ---> OffsetDateTime
-              sharedPreferencesHelper
+            isFirstTimeSync = // TODO: Reads an object type ---> OffsetDateTime
+            sharedPreferencesHelper
                 .read(
                   SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
                   null,

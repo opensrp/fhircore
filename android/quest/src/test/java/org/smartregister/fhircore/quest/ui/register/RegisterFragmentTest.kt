@@ -74,6 +74,7 @@ class RegisterFragmentTest : RobolectricTest() {
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var dispatcherProvider: DispatcherProvider
+
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @BindValue

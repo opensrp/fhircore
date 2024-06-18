@@ -50,8 +50,6 @@ import org.smartregister.fhircore.engine.configuration.report.measure.MeasureRep
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
-import org.smartregister.fhircore.engine.domain.model.ActionParameter
-import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.task.FhirCompleteCarePlanWorker
@@ -97,7 +95,7 @@ constructor(
       appMainUiStateOf(
         navigationConfiguration =
           NavigationConfiguration(
-            preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, "") ?:"",
+            preferenceDataStore.readOnce(PreferenceDataStore.APP_ID, "") ?: "",
           ),
       ),
     )
@@ -156,7 +154,7 @@ constructor(
   fun onEvent(event: AppMainEvent) {
     when (event) {
       is AppMainEvent.SwitchLanguage -> {
-        //TODO: Writes an object type --->AppMainEvent
+        // TODO: Writes an object type --->AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           setAppLocale(event.language.tag)
@@ -173,7 +171,7 @@ constructor(
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
-          //TODO: Writes an object type ---> OffsetDateTime
+          // TODO: Writes an object type ---> OffsetDateTime
           sharedPreferencesHelper.write(
             SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
             formatLastSyncTimestamp(event.state.timestamp),
@@ -226,8 +224,7 @@ constructor(
       }
   }
 
-
-  //TODO : Read an object type ---> AppMainEvent
+  // TODO : Read an object type ---> AppMainEvent
   private fun loadCurrentLanguage() =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -244,7 +241,7 @@ constructor(
     return if (parse == null) "" else simpleDateFormat.format(parse)
   }
 
-  //TODO: Reads an object type ---> OffsetDateTime
+  // TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 

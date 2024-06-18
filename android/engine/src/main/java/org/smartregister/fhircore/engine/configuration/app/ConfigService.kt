@@ -16,16 +16,12 @@
 
 package org.smartregister.fhircore.engine.configuration.app
 
-import androidx.compose.runtime.collectAsState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.firstOrNull
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.r4.model.SearchParameter
 import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.sync.ResourceTag
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
@@ -42,7 +38,10 @@ interface ConfigService {
    * Provide a list of [Coding] that represents [ResourceTag]. [Coding] can be directly appended to
    * a FHIR resource.
    */
-  fun provideResourceTags(preferenceDataStore: PreferenceDataStore,sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
+  fun provideResourceTags(
+    preferenceDataStore: PreferenceDataStore,
+    sharedPreferencesHelper: SharedPreferencesHelper
+  ): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
       when (strategy.type) {
@@ -58,7 +57,7 @@ interface ConfigService {
         }
         APP_VERSION -> tags.add(strategy.tag.copy())
         else -> {
-          //ToDO: This is an object type
+          // ToDO: This is an object type
           val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
           if (ids.isNullOrEmpty()) {
             strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }

@@ -68,7 +68,7 @@ constructor(
     fhirPathDataExtractor = fhirPathDataExtractor,
     parser = parser,
     context = context,
-    preferenceDataStore = preferenceDataStore
+    preferenceDataStore = preferenceDataStore,
   ) {
 
   override suspend fun loadRegisterData(

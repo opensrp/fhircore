@@ -87,6 +87,7 @@ class AppSettingViewModelTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+
   @Inject lateinit var preferenceDataStore: PreferenceDataStore
 
   @Inject lateinit var fhirEngine: FhirEngine

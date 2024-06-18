@@ -127,7 +127,7 @@ internal class LoginViewModelTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           dispatcherProvider = dispatcherProvider,
           workManager = workManager,
-          preferenceDataStore = preferenceDataStore
+          preferenceDataStore = preferenceDataStore,
         ),
       )
   }
@@ -199,7 +199,7 @@ internal class LoginViewModelTest : RobolectricTest() {
   fun testSuccessfulOnlineLoginWithActiveSessionWithSavedPractitionerDetails() {
     updateCredentials()
 
-    //TODO: THIS IS AN OBJECT TYPE ---->?PRACTITIONER DETAILS
+    // TODO: THIS IS AN OBJECT TYPE ---->?PRACTITIONER DETAILS
     sharedPreferencesHelper.write(
       SharedPreferenceKey.PRACTITIONER_DETAILS.name,
       PractitionerDetails(),
@@ -536,7 +536,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo(),
     ) {}
     Assert.assertNotNull(
-      //TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
@@ -573,7 +573,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       ),
     ) {}
     Assert.assertNotNull(
-      //TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }
@@ -619,7 +619,7 @@ internal class LoginViewModelTest : RobolectricTest() {
       UserInfo().apply { keycloakUuid = "my-test-practitioner-id" },
     ) {}
     Assert.assertNotNull(
-      //TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
+      // TODO: READS OBJECT TYPE -----> PRACTITIONER DETAILS
       sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_DETAILS.name),
     )
   }

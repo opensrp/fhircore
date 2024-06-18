@@ -91,8 +91,7 @@ constructor(
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
 
-
-  //TODO: Reads an object type ---> UserInfo
+  // TODO: Reads an object type ---> UserInfo
   fun retrieveUserInfo() =
     sharedPreferencesHelper.read<UserInfo>(
       key = SharedPreferenceKey.USER_INFO.name,
@@ -106,7 +105,7 @@ constructor(
 
   fun retrieveCareTeam() = preferenceDataStore.readOnce(PreferenceDataStore.CARE_TEAM_NAME, null)
 
-  //TODO: Reads an object type ---> OffsetDateTime
+  // TODO: Reads an object type ---> OffsetDateTime
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
@@ -116,8 +115,7 @@ constructor(
   fun allowSwitchingLanguages() =
     enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
-
-  //TODO: Reads an object type ---> AppMainEvent
+  // TODO: Reads an object type ---> AppMainEvent
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
         sharedPreferencesHelper.read(SharedPreferenceKey.LANG.name, Locale.ENGLISH.toLanguageTag())
@@ -152,7 +150,7 @@ constructor(
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
-        //TODO : Write an object type ---> AppMainEvent
+        // TODO : Write an object type ---> AppMainEvent
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
           configurationRegistry.clearConfigsCache()

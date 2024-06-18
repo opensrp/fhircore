@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.app
 
 import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule

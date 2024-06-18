@@ -34,7 +34,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -206,7 +205,7 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
-    //ToDo : This is an object --->Practitioner Details
+    // ToDo : This is an object --->Practitioner Details
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
@@ -410,7 +409,7 @@ constructor(
     }
   }
 
-  //ToDo : This is an object ----> userinfo
+  // ToDo : This is an object ----> userinfo
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
@@ -433,17 +432,17 @@ constructor(
     viewModelScope.launch {
       preferenceDataStore.write(
         key = PreferenceDataStore.PRACTITIONER_ID,
-        value = fhirPractitionerDetails.fhirPractitionerDetails?.id?: "",
+        value = fhirPractitionerDetails.fhirPractitionerDetails?.id ?: "",
       )
-      //ToDo: This is an object type ----> pratictioner details
+      // ToDo: This is an object type ----> pratictioner details
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_DETAILS.name,
         fhirPractitionerDetails,
       )
-      preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ",") )
+      preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ","))
       preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
       preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))
-      //ToDo: This is an object type ----> Location hierarchy
+      // ToDo: This is an object type ----> Location hierarchy
       sharedPreferences.write(
         SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
         locationHierarchies,
@@ -462,7 +461,7 @@ constructor(
       )
       preferenceDataStore.write(
         key = PreferenceDataStore.PRACTITIONER_LOCATION_ID,
-        value = location.joinToString(separator = "")
+        value = location.joinToString(separator = ""),
       )
     }
   }
