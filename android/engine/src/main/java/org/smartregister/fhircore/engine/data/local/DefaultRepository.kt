@@ -29,8 +29,6 @@ import ca.uhn.fhir.rest.gclient.TokenClientParam
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
-import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
 import com.google.android.fhir.search.filter.ReferenceParamFilterCriterion
 import com.google.android.fhir.search.filter.TokenParamFilterCriterion
@@ -1099,16 +1097,12 @@ constructor(
 
   suspend fun retrieveUniqueIdAssignmentResource(
     uniqueIdAssignmentConfig: UniqueIdAssignmentConfig?,
-    computedValuesMap: Map<String, Any>,
   ): Resource? {
     if (uniqueIdAssignmentConfig != null) {
       val search =
         Search(uniqueIdAssignmentConfig.resource).apply {
           uniqueIdAssignmentConfig.dataQueries.forEach {
-            filterBy(dataQuery = it, configComputedRuleValues = computedValuesMap)
-          }
-          if (uniqueIdAssignmentConfig.resource == ResourceType.Group) {
-            filter(TokenClientParam(ACTIVE), { value = of(true) })
+            filterBy(dataQuery = it, configComputedRuleValues = emptyMap())
           }
           if (uniqueIdAssignmentConfig.sortConfigs != null) {
             sort(uniqueIdAssignmentConfig.sortConfigs)

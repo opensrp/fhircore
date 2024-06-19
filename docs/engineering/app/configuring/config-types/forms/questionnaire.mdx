@@ -328,72 +328,6 @@ triggerConditions | This defines an array of condition for to be met for the eve
 eventResourceId |  uniqueId of resource id to be closed |  yes   |               |
 eventResources | A list of resources to close(Type of ResourceConfig) |    yes           |     |      |
 
-
-## Hiding characters in a questionnaire
-We can hide sensitive information typed on a questionnaire through adding a linkId extension. A sample linkId with password-widget extension looks like
-``` json
-{
-  "extension": [
-    {
-      "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
-      "valueString": "password-widget"
-    },
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/minLength",
-      "valueInteger": 16
-    },
-    {
-      "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-      "valueString": "NIK number should be of 16 digits"
-    },
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/regex",
-      "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
-    },
-    {
-      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
-      "valueCodeableConcept": {
-        "coding": [
-          {
-            "system": "http://hl7.org/fhir/questionnaire-display-category",
-            "code": "instructions"
-          }
-        ]
-      }
-    }
-  ],
-  "linkId": "82a80049-8d2d-4008-81aa-55356b9d6628",
-  "text": "NIK number",
-  "_text": {
-    "extension": [
-      {
-        "url": "http://hl7.org/fhir/StructureDefinition/translation",
-        "extension": [
-          {
-            "url": "lang",
-            "valueCode": "id"
-          },
-          {
-            "url": "content",
-            "valueString": "Nomor Induk Kependudukan (NIK)"
-          }
-        ]
-      }
-    ]
-  },
-  "type": "string",
-  "required": false,
-  "maxLength": 16
-}
-```
-Below is the specific extension for this. The extension is validated at class called [PasswordViewHolderFactory](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/PasswordViewHolderFactory.kt)
-``` json
-  {
-          "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
-          "valueString": "password-widget"
-        }
-```
-
 ## Unique ID assignment
 
 Unique IDs are unique identifier values assigned to a resource (e.g. Patient) and are associated with a single entity.
@@ -545,4 +479,73 @@ When an ID is used, the characteristic entry with that ID is updated to be exclu
     }
   ]
 }
+```
+
+## Hiding characters in a questionnaire
+
+Sensitive information typed on a questionnaire can be hidden through adding a linkId extension. A sample linkId with password-widget extension looks like
+
+``` json
+{
+  "extension": [
+    {
+      "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+      "valueString": "password-widget"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/minLength",
+      "valueInteger": 16
+    },
+    {
+      "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+      "valueString": "NIK number should be of 16 digits"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/regex",
+      "valueString": "^\\+?(?:[()\\h-]*\\d[()\\h-]*){16}$"
+    },
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-displayCategory",
+      "valueCodeableConcept": {
+        "coding": [
+          {
+            "system": "http://hl7.org/fhir/questionnaire-display-category",
+            "code": "instructions"
+          }
+        ]
+      }
+    }
+  ],
+  "linkId": "82a80049-8d2d-4008-81aa-55356b9d6628",
+  "text": "NIK number",
+  "_text": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/translation",
+        "extension": [
+          {
+            "url": "lang",
+            "valueCode": "id"
+          },
+          {
+            "url": "content",
+            "valueString": "Nomor Induk Kependudukan (NIK)"
+          }
+        ]
+      }
+    ]
+  },
+  "type": "string",
+  "required": false,
+  "maxLength": 16
+}
+```
+
+Below is the specific extension for this. The extension is validated in this class [PasswordViewHolderFactory](https://github.com/opensrp/fhircore/blob/main/android/quest/src/main/java/org/smartregister/fhircore/quest/ui/sdc/PasswordViewHolderFactory.kt)
+
+``` json
+  {
+    "url": "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl",
+    "valueString": "password-widget"
+  }
 ```
