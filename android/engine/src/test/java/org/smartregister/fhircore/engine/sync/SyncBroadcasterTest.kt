@@ -109,7 +109,7 @@ class SyncBroadcasterTest : RobolectricTest() {
         .sorted(),
     )
 
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 
@@ -175,7 +175,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
     sharedPreferencesHelper.resetSharedPrefs()
 
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 
@@ -204,7 +204,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveOrganizationId() {
     val organizationId = "organization-id"
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     // Resource types that can be filtered based on Organization
     val resourceTypes =
@@ -232,7 +232,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(careTeamId)) }
@@ -243,7 +243,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(locationId)) }
@@ -254,7 +254,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHavePractitionerIdNotSupported() {
     val practitionerId = "practitioner-id"
     sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(practitionerId)) }

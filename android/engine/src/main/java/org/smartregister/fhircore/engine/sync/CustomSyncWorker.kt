@@ -20,15 +20,17 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.android.fhir.sync.concatParams
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.net.UnknownHostException
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
-import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import retrofit2.HttpException
+import retrofit2.Response
+import timber.log.Timber
 
 @HiltWorker
 class CustomSyncWorker
@@ -38,22 +40,35 @@ constructor(
   @Assisted workerParams: WorkerParameters,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
-  val defaultRepository: DefaultRepository,
   val fhirResourceDataSource: FhirResourceDataSource,
 ) : CoroutineWorker(appContext, workerParams) {
   override suspend fun doWork(): Result {
     return withContext(dispatcherProvider.io()) {
       try {
-        val urlList = configurationRegistry.fetchURLForCustomResource()
-        val bundle = fhirResourceDataSource.getResource(urlList.first())
-        defaultRepository.create(
-          addResourceTags = true,
-          resource = bundle.entry.map { it.resource }.toTypedArray(),
-        )
+        with(configurationRegistry) {
+          val (resourceSearchParams, _) = loadResourceSearchParams()
+          resourceSearchParams
+            .map { "${it.key}?${it.value.concatParams()}" }
+            .forEach { url ->
+              fetchResources(
+                gatewayModeHeaderValue = ConfigurationRegistry.FHIR_GATEWAY_MODE_HEADER_VALUE,
+                url = url,
+              )
+            }
+        }
         Result.success()
       } catch (httpException: HttpException) {
+        Timber.e(httpException)
+        val response: Response<*>? = httpException.response()
+        if (response != null && (400..503).contains(response.code())) {
+          Timber.e("HTTP exception ${response.code()} -> ${response.errorBody()}")
+        }
         Result.failure()
       } catch (unknownHostException: UnknownHostException) {
+        Timber.e(unknownHostException)
+        Result.failure()
+      } catch (exception: Exception) {
+        Timber.e(exception)
         Result.failure()
       }
     }

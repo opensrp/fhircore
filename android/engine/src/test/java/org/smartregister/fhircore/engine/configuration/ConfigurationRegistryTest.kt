@@ -25,7 +25,6 @@ import com.google.android.fhir.SearchResult
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Search
-import com.google.common.reflect.TypeToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
@@ -1020,30 +1019,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       assertEquals("composition-id-1", requestPathArgumentSlot.last().id)
       assertEquals(ResourceType.Composition, requestPathArgumentSlot.last().resourceType)
     }
-
-  @Test
-  fun testSaveSyncSharedPreferencesShouldVerifyDataSave() {
-    val resourceType =
-      listOf(ResourceType.Task, ResourceType.Patient, ResourceType.Task, ResourceType.Patient)
-
-    configRegistry.saveSyncSharedPreferences(resourceType)
-
-    val savedSyncResourcesResult =
-      configRegistry.sharedPreferencesHelper.read(
-        SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-        null,
-      )!!
-    val listResourceTypeToken = object : TypeToken<List<ResourceType>>() {}.type
-    val savedSyncResourceTypes: List<ResourceType> =
-      configRegistry.sharedPreferencesHelper.gson.fromJson(
-        savedSyncResourcesResult,
-        listResourceTypeToken,
-      )
-
-    assertEquals(2, savedSyncResourceTypes.size)
-    assertEquals(ResourceType.Task, savedSyncResourceTypes.first())
-    assertEquals(ResourceType.Patient, savedSyncResourceTypes.last())
-  }
 
   @Test
   fun writeToFileWithMetadataResourceWithNameShouldCreateFileWithResourceName() {
