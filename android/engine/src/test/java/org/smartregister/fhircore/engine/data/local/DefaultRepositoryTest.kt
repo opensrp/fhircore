@@ -49,6 +49,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
@@ -76,6 +77,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
@@ -1418,4 +1420,69 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.create(resource, isLocalOnly = true) }
   }
+
+  @Test
+  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() =
+    runTest(timeout = 30.seconds) {
+      val group1 =
+        Group().apply {
+          id = "grp1"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "1234" },
+              BooleanType(true),
+            ),
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "123456" },
+              BooleanType(false),
+            ),
+          )
+          active = true
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val group2 =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "56789" },
+              BooleanType(false),
+            ),
+          )
+          active = false
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = "phn",
+          idFhirPathExpression =
+            "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+          readOnly = false,
+          resource = ResourceType.Group,
+          resourceFilterExpression =
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions =
+                listOf(
+                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'",
+                ),
+              matchAll = true,
+            ),
+        )
+
+      fhirEngine.create(group1, group2)
+      val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+      Assert.assertNotNull(resource)
+      Assert.assertTrue(resource is Group)
+      Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
+      Assert.assertFalse(resource.characteristic[1].exclude)
+    }
 }
