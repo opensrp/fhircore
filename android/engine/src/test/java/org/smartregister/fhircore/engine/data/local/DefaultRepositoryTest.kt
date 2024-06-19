@@ -22,13 +22,14 @@ import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.gson.Gson
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -48,12 +49,12 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Address
+import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.CarePlan
 import org.hl7.fhir.r4.model.CodeableConcept
 import org.hl7.fhir.r4.model.Coding
 import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.ContactPoint
-import org.hl7.fhir.r4.model.DataRequirement
 import org.hl7.fhir.r4.model.DateTimeType
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
@@ -76,6 +77,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.app.fakes.Faker
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.UniqueIdAssignmentConfig
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.event.UpdateWorkflowValueConfig
@@ -122,6 +124,7 @@ class DefaultRepositoryTest : RobolectricTest() {
     spyk(AppConfigService(ApplicationProvider.getApplicationContext()))
   private val application = ApplicationProvider.getApplicationContext<Application>()
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private lateinit var dispatcherProvider: DefaultDispatcherProvider
   private lateinit var sharedPreferenceHelper: SharedPreferencesHelper
   private lateinit var defaultRepository: DefaultRepository
@@ -141,6 +144,7 @@ class DefaultRepositoryTest : RobolectricTest() {
         configRulesExecutor = configRulesExecutor,
         fhirPathDataExtractor = fhirPathDataExtractor,
         parser = parser,
+        context = context,
       )
   }
 
@@ -199,30 +203,6 @@ class DefaultRepositoryTest : RobolectricTest() {
     }
 
     coVerify { fhirEngine.search<Patient>(any()) }
-  }
-
-  @Test
-  fun searchShouldReturn1ConditionGivenConditionTypeDataRequirement() = runTest {
-    val coding = Coding("https://system.co", "codi", "Condition code")
-    val condition = Condition().apply { code = CodeableConcept(coding) }
-
-    fhirEngine.create(condition)
-
-    runBlocking {
-      val actualPatients =
-        defaultRepository.searchCondition(
-          dataRequirement =
-            DataRequirement().apply {
-              type = Enumerations.ResourceType.CONDITION.toCode()
-              addCodeFilter(
-                DataRequirement.DataRequirementCodeFilterComponent()
-                  .addCode(coding)
-                  .setPath("code"),
-              )
-            },
-        )
-      Assert.assertEquals(1, actualPatients.size)
-    }
   }
 
   @Test
@@ -577,6 +557,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
     coEvery { fhirEngine.search<RelatedPerson>(any()) } returns
@@ -654,6 +635,7 @@ class DefaultRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = fhirPathDataExtractor,
           parser = parser,
+          context = context,
         ),
       )
 
@@ -1250,9 +1232,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test
@@ -1357,9 +1339,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   // TODO Refactor/Remove after https://github.com/opensrp/fhircore/issues/2488
@@ -1424,9 +1406,9 @@ class DefaultRepositoryTest : RobolectricTest() {
     coVerify { fhirEngine.update(capture(conditionSlot)) }
     val capturedCode = conditionSlot.captured.clinicalStatus.coding.first()
     Assert.assertEquals("37793d31-def5-40bd-a2e3-fdaf5a0ddc53", conditionSlot.captured.id)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
-    Assert.assertEquals(DefaultRepository.SNOMED_SYSTEM, capturedCode.system)
-    Assert.assertEquals(DefaultRepository.PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_CODE, capturedCode.code)
+    Assert.assertEquals(SNOMED_SYSTEM, capturedCode.system)
+    Assert.assertEquals(PATIENT_CONDITION_RESOLVED_DISPLAY, capturedCode.display)
   }
 
   @Test
@@ -1438,4 +1420,69 @@ class DefaultRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.create(resource, isLocalOnly = true) }
   }
+
+  @Test
+  fun testRetrieveUniqueIdAssignmentResourceShouldReturnAResource() =
+    runTest(timeout = 30.seconds) {
+      val group1 =
+        Group().apply {
+          id = "grp1"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "1234" },
+              BooleanType(true),
+            ),
+          )
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "123456" },
+              BooleanType(false),
+            ),
+          )
+          active = true
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val group2 =
+        Group().apply {
+          id = "grp2"
+          addCharacteristic(
+            Group.GroupCharacteristicComponent(
+              CodeableConcept().apply { text = "phn" },
+              CodeableConcept().apply { text = "56789" },
+              BooleanType(false),
+            ),
+          )
+          active = false
+          type = Group.GroupType.DEVICE
+          name = "Unique IDs"
+        }
+
+      val uniqueIdAssignmentConfig =
+        UniqueIdAssignmentConfig(
+          linkId = "phn",
+          idFhirPathExpression =
+            "Group.characteristic.where(exclude=false and code.text='phn').first().value.text",
+          readOnly = false,
+          resource = ResourceType.Group,
+          resourceFilterExpression =
+            ResourceFilterExpression(
+              conditionalFhirPathExpressions =
+                listOf(
+                  "Group.active = true and Group.type = 'device' and Group.name = 'Unique IDs'",
+                ),
+              matchAll = true,
+            ),
+        )
+
+      fhirEngine.create(group1, group2)
+      val resource = defaultRepository.retrieveUniqueIdAssignmentResource(uniqueIdAssignmentConfig)
+      Assert.assertNotNull(resource)
+      Assert.assertTrue(resource is Group)
+      Assert.assertEquals("1234", (resource as Group).characteristic[0].valueCodeableConcept.text)
+      Assert.assertFalse(resource.characteristic[1].exclude)
+    }
 }

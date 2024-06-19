@@ -41,8 +41,6 @@ private const val LOCATION_COORDINATES_DATASTORE_JSON = "location_coordinates.js
 
 private const val SYNC_LOCATION_IDS = "sync_location_ids.json"
 
-private const val TAG = "Proto DataStore"
-
 val Context.practitionerProtoStore: DataStore<PractitionerDetails> by
   dataStore(
     fileName = PRACTITIONER_DETAILS_DATASTORE_JSON,

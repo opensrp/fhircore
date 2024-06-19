@@ -23,7 +23,7 @@ import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import ca.uhn.fhir.parser.IParser
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -106,6 +106,7 @@ class ProfileViewModelTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
     coEvery {

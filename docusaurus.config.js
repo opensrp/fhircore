@@ -120,6 +120,14 @@ const config = {
         darkTheme: darkCodeTheme,
 	additionalLanguages: ['bash', 'diff', 'json'],
       },
+      algolia: {
+              appId: 'OE0COOL9QP',
+              apiKey: '68b7fbf7f5c4b5ed49eb02c5d92d1577',
+              indexName: 'opensrp',
+              searchPagePath: 'search',
+              debug:false
+
+            },
     }),
 };
 
