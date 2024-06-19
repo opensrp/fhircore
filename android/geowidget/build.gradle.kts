@@ -20,11 +20,7 @@ android {
 
   defaultConfig {
     minSdk = BuildConfigs.minSdk
-    buildConfigField(
-      "String",
-      "MAPBOX_SDK_TOKEN",
-      System.getenv("MAPBOX_SDK_TOKEN") ?: """"${project.extra["MAPBOX_SDK_TOKEN"]}"""",
-    )
+    buildConfigField("String", "MAPBOX_SDK_TOKEN", """"${project.extra["MAPBOX_SDK_TOKEN"]}"""")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
 
