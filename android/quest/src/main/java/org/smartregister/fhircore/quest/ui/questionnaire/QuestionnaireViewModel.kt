@@ -135,9 +135,13 @@ constructor(
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
 
+  var uniqueIdResource: Resource? = null
+
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
-   * retrieved [Questionnaire] can be pre-populated with computed values from the Rules engine.
+   * retrieved [Questionnaire] can be pre-populated with computed values from the Rules engine as
+   * well as include initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
+   * [QuestionnaireConfig.uniqueIdAssignment] properties.
    */
   suspend fun retrieveQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
@@ -195,6 +199,31 @@ constructor(
                 readOnly = true
               }
             }
+        }
+
+        // Set configured openSrpId on Questionnaire
+        questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
+          find(uniqueIdAssignmentConfig.linkId)?.apply {
+            // Extract ID from a Group, should be modified in future to support other resources
+            val uniqueIdResource =
+              defaultRepository.retrieveUniqueIdAssignmentResource(
+                questionnaireConfig.uniqueIdAssignment,
+              )
+
+            val extractedId =
+              fhirPathDataExtractor.extractValue(
+                base = uniqueIdResource,
+                expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+              )
+            if (uniqueIdResource != null && extractedId.isNotEmpty()) {
+              initial =
+                mutableListOf(
+                  Questionnaire.QuestionnaireItemInitialComponent()
+                    .setValue(StringType(extractedId)),
+                )
+            }
+            readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
+          }
         }
       }
     return questionnaire
@@ -292,10 +321,44 @@ constructor(
 
       softDeleteResources(questionnaireConfig)
 
+      retireUsedQuestionnaireUniqueId(questionnaireConfig, currentQuestionnaireResponse)
+
       val idTypes =
         bundle.entry?.map { IdType(it.resource.resourceType.name, it.resource.logicalId) }
           ?: emptyList()
       onSuccessfulSubmission(idTypes, currentQuestionnaireResponse)
+    }
+  }
+
+  suspend fun retireUsedQuestionnaireUniqueId(
+    questionnaireConfig: QuestionnaireConfig,
+    questionnaireResponse: QuestionnaireResponse,
+  ) {
+    if (questionnaireConfig.uniqueIdAssignment != null) {
+      val uniqueIdLinkId = questionnaireConfig.uniqueIdAssignment!!.linkId
+      val submittedUniqueId =
+        questionnaireResponse.find(uniqueIdLinkId)?.answer?.first()?.value.toString()
+
+      // Update Group resource. Can be extended in future to support other resources
+      if (uniqueIdResource is Group) {
+        with(uniqueIdResource as Group) {
+          val characteristic = this.characteristic[this.quantity]
+          if (
+            characteristic.hasValueCodeableConcept() &&
+              characteristic.valueCodeableConcept.text == submittedUniqueId
+          ) {
+            characteristic.exclude = true
+            this.quantity++
+            this.active =
+              this.quantity <
+                this.characteristic.size // Mark Group as inactive when all IDs are retired
+            defaultRepository.addOrUpdate(resource = this)
+          }
+        }
+      }
+      Timber.i(
+        "ID '$submittedUniqueId' used'",
+      )
     }
   }
 
