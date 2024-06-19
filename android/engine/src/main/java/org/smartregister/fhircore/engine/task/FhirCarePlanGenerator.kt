@@ -21,8 +21,8 @@ import androidx.annotation.VisibleForTesting
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.util.TerserUtil
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.get
-import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.search
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Date

@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import androidx.test.core.app.ApplicationProvider
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
