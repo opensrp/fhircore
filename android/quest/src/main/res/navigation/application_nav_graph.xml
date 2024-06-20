@@ -9,8 +9,9 @@
         android:name="org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherFragment">
         <argument
             android:name="geoWidgetId"
+            android:defaultValue=""
             app:argType="string"
-            app:nullable="true"/>
+            app:nullable="false" />
         <argument
             android:name="toolBarHomeNavigation"
             android:defaultValue="OPEN_DRAWER"

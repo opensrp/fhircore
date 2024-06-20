@@ -23,6 +23,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.core.os.bundleOf
+import androidx.navigation.findNavController
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -94,7 +95,7 @@ class AppMainActivityTest {
       grantPermission()
       Assert.assertEquals(
         R.id.registerFragment,
-        it.navHostFragment.navController.currentDestination?.id,
+        it.findNavController(R.id.nav_host).currentDestination?.id,
       )
     }
     composeTestRule.onNodeWithTag(REGISTER_SCREEN_BOX_TAG).assertIsDisplayed()
@@ -105,7 +106,7 @@ class AppMainActivityTest {
   fun navigationToUserSettingFragmentShouldShowUserSettingsScreen() {
     composeTestRule.activityRule.scenario.onActivity {
       grantPermission()
-      it.navHostFragment.navController.navigate(R.id.userSettingFragment)
+      it.findNavController(R.id.nav_host).navigate(R.id.userSettingFragment)
     }
 
     composeTestRule.onNodeWithTag(USER_SETTING_ROW_LOGOUT).assertExists()
@@ -119,21 +120,23 @@ class AppMainActivityTest {
 
     composeTestRule.activityRule.scenario.onActivity {
       grantPermission()
-      it.navHostFragment.navController.navigate(
-        R.id.profileFragment,
-        bundleOf(
-          NavigationArg.PROFILE_ID to "defaultProfile",
-          NavigationArg.RESOURCE_CONFIG to resourceConfig,
-          NavigationArg.PARAMS to
-            arrayOf(
-              ActionParameter(
-                key = "anyId",
-                paramType = ActionParameterType.PARAMDATA,
-                value = "anyValue",
+      it
+        .findNavController(R.id.nav_host)
+        .navigate(
+          R.id.profileFragment,
+          bundleOf(
+            NavigationArg.PROFILE_ID to "defaultProfile",
+            NavigationArg.RESOURCE_CONFIG to resourceConfig,
+            NavigationArg.PARAMS to
+              arrayOf(
+                ActionParameter(
+                  key = "anyId",
+                  paramType = ActionParameterType.PARAMDATA,
+                  value = "anyValue",
+                ),
               ),
-            ),
-        ),
-      )
+          ),
+        )
     }
 
     composeTestRule.onNodeWithTag(PROFILE_TOP_BAR_TEST_TAG).assertIsDisplayed()
@@ -144,13 +147,15 @@ class AppMainActivityTest {
   fun navigationToMeasureReportFragmentShouldShowMeasureReportScreen() {
     composeTestRule.activityRule.scenario.onActivity {
       grantPermission()
-      it.navHostFragment.navController.navigate(
-        R.id.measureReportFragment,
-        bundleOf(
-          NavigationArg.REPORT_ID to "serviceDeliveryMeasureReport",
-          NavigationArg.RESOURCE_ID to "",
-        ),
-      )
+      it
+        .findNavController(R.id.nav_host)
+        .navigate(
+          R.id.measureReportFragment,
+          bundleOf(
+            NavigationArg.REPORT_ID to "serviceDeliveryMeasureReport",
+            NavigationArg.RESOURCE_ID to "",
+          ),
+        )
     }
 
     composeTestRule.onNodeWithTag(SCREEN_TITLE).assertIsDisplayed()
