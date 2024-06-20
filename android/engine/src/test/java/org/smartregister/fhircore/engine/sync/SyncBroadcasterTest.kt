@@ -37,7 +37,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
@@ -54,7 +53,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -64,6 +63,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     MockKAnnotations.init(this)
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(sharedPreferencesHelper, dispatcherProvider)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
@@ -90,25 +91,6 @@ class SyncBroadcasterTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      arrayOf(
-          ResourceType.CarePlan.name,
-          ResourceType.Condition.name,
-          ResourceType.Encounter.name,
-          ResourceType.Group.name,
-          ResourceType.Library.name,
-          ResourceType.Observation.name,
-          ResourceType.Patient.name,
-          ResourceType.PlanDefinition.name,
-          ResourceType.Questionnaire.name,
-          ResourceType.QuestionnaireResponse.name,
-          ResourceType.StructureMap.name,
-          ResourceType.Task.name,
-        )
-        .sorted(),
-    )
-
     val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
@@ -120,6 +102,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Encounter,
           ResourceType.Group,
           ResourceType.Library,
+          ResourceType.Measure,
           ResourceType.Observation,
           ResourceType.Patient,
           ResourceType.PlanDefinition,

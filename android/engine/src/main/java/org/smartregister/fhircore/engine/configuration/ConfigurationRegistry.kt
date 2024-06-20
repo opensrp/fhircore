@@ -31,7 +31,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
 import java.net.UnknownHostException
-import java.nio.charset.StandardCharsets
 import java.util.LinkedList
 import java.util.Locale
 import java.util.PropertyResourceBundle
@@ -43,7 +42,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
-import okio.ByteString.Companion.decodeBase64
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
@@ -61,8 +59,6 @@ import org.json.JSONObject
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
-import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
-import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.di.NetworkModule
@@ -83,7 +79,6 @@ import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.referenceValue
 import org.smartregister.fhircore.engine.util.extension.retrieveCompositionSections
 import org.smartregister.fhircore.engine.util.extension.searchCompositionByIdentifier
-import org.smartregister.fhircore.engine.util.extension.tryDecodeJson
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.helper.LocalizationHelper
 import retrofit2.HttpException
@@ -749,27 +744,6 @@ constructor(
   private fun ResourceConfig.dependentResourceTypes(target: MutableList<ResourceType>) {
     target.add(resource)
     relatedResources.forEach { it.dependentResourceTypes(target) }
-  }
-
-  fun processResultBundleBinaries(
-    binary: Binary,
-    patientRelatedResourceTypes: MutableList<ResourceType>,
-  ) {
-    binary.data.decodeToString().decodeBase64()?.string(StandardCharsets.UTF_8)?.let {
-      val config =
-        it.tryDecodeJson<RegisterConfiguration>() ?: it.tryDecodeJson<ProfileConfiguration>()
-
-      when (config) {
-        is RegisterConfiguration ->
-          config.fhirResource.dependentResourceTypes(
-            patientRelatedResourceTypes,
-          )
-        is ProfileConfiguration ->
-          config.fhirResource.dependentResourceTypes(
-            patientRelatedResourceTypes,
-          )
-      }
-    }
   }
 
   fun loadResourceSearchParams(): Pair<Map<String, Map<String, String>>, ResourceSearchParams> {
