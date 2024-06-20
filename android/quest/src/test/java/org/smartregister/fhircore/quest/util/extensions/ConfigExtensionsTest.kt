@@ -82,7 +82,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Inject lateinit var registerRepository: RegisterRepository
 
-  private val navController = mockk<NavController>(relaxUnitFun = true)
+  private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
   private val navigationMenuConfig by lazy {
     NavigationMenuConfig(
