@@ -34,6 +34,7 @@ import com.mapbox.geojson.MultiPoint
 import com.mapbox.geojson.Point
 import com.mapbox.mapboxsdk.Mapbox
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
+import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
@@ -91,7 +92,13 @@ class GeoWidgetFragment : Fragment() {
     savedInstanceState: Bundle?,
   ): View {
     Mapbox.getInstance(requireContext(), BuildConfig.MAPBOX_SDK_TOKEN)
-    return setupViews()
+    val view = setupViews()
+    mapView.onCreate(savedInstanceState)
+    return view
+  }
+
+  fun setKujakuMapview(kujakuMapView: KujakuMapView) {
+    mapView = kujakuMapView
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -123,24 +130,29 @@ class GeoWidgetFragment : Fragment() {
   }
 
   private fun setUpMapView(): KujakuMapView {
-    return KujakuMapView(requireActivity()).apply {
-      id = R.id.kujaku_widget
-      val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
-      getMapAsync { mapboxMap ->
-        mapboxMap.setStyle(builder) { style ->
-          geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
-          addIconsLayer(style)
-          addMapStyle(style)
-          if (geoJsonSource != null && featureCollection != null) {
-            geoJsonSource!!.setGeoJson(featureCollection)
+    return try {
+      KujakuMapView(requireActivity()).apply {
+        id = R.id.kujaku_widget
+        val builder = Style.Builder().fromUri(context.getString(R.string.style_map_fhir_core))
+        getMapAsync { mapboxMap ->
+          mapboxMap.setStyle(builder) { style ->
+            geoJsonSource = style.getSourceAs(context.getString(R.string.data_set_quest))
+            addIconsLayer(style)
+            addMapStyle(style)
+            if (geoJsonSource != null && featureCollection != null) {
+              geoJsonSource!!.setGeoJson(featureCollection)
+            }
           }
         }
-      }
 
-      if (showAddLocationButton) {
-        setOnAddLocationListener(this)
+        if (showAddLocationButton) {
+          setOnAddLocationListener(this)
+        }
+        setOnClickLocationListener(this)
       }
-      setOnClickLocationListener(this)
+    } catch (e: MapboxConfigurationException) {
+      Timber.e(e)
+      mapView
     }
   }
 
