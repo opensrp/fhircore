@@ -75,8 +75,7 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Before
   fun setUp() {
     hiltRule.inject()
-    appMainActivity =
-      spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
+    appMainActivity = spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().get())
     every { appMainActivity.eventBus } returns eventBus
   }
 
