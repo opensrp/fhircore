@@ -166,16 +166,14 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP -> {
         val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-        val isMapFragmentExists =
-          navController.currentBackStack.value.any { it.destination.id == mapFragmentDestination }
+        val isMapFragmentExists = navController.destinationExistsInBackstack(mapFragmentDestination)
         if (isMapFragmentExists) {
           navController.popBackStack(mapFragmentDestination, false)
-        } else {
-          navController.navigate(
-            resId = mapFragmentDestination,
-            args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
-          )
         }
+        navController.navigate(
+          resId = mapFragmentDestination,
+          args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
+        )
       }
       ApplicationWorkflow.LAUNCH_DIALLER -> {
         val actionParameter = interpolatedParams.first()
@@ -205,6 +203,15 @@ fun List<ActionConfig>.handleClickEvent(
       }
       else -> return
     }
+  }
+}
+
+fun NavController.destinationExistsInBackstack(route: Int): Boolean {
+  return try {
+    this.getBackStackEntry(route)
+    true
+  } catch (e: IllegalArgumentException) {
+    false
   }
 }
 

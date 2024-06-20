@@ -22,6 +22,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -384,6 +385,9 @@ class ConfigExtensionsTest : RobolectricTest() {
         trigger = ActionTrigger.ON_CLICK,
         workflow = ApplicationWorkflow.LAUNCH_MAP.name,
       )
+    every { navController.getBackStackEntry(any(Int::class)) } throws IllegalArgumentException()
+    every { navController.popBackStack(any(Int::class), any(Boolean::class)) } returns false
+
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
@@ -392,6 +396,27 @@ class ConfigExtensionsTest : RobolectricTest() {
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.GEO_WIDGET_ID))
+  }
+
+  @Test
+  fun testLaunchGeoWidgetMapActionOnClickPopsBackstackIfMapFragmentExists() {
+    val clickAction =
+      ActionConfig(
+        id = "geoWidgetId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_MAP.name,
+      )
+    val backStackEntry = mockk<NavBackStackEntry>(relaxed = true)
+
+    every { navController.getBackStackEntry(any(Int::class)) } returns backStackEntry
+    every { navController.popBackStack(any(Int::class), any(Boolean::class)) } returns false
+
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBoolean = slot<Boolean>()
+    verify { navController.popBackStack(capture(slotInt), capture(slotBoolean)) }
+    Assert.assertEquals(MainNavigationScreen.GeoWidgetLauncher.route, slotInt.captured)
+    Assert.assertFalse(slotBoolean.captured)
   }
 
   @Test
