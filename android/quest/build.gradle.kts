@@ -1,3 +1,4 @@
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import java.text.SimpleDateFormat
@@ -29,7 +30,7 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
@@ -345,6 +346,11 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+  }
+
+  applicationVariants.all {
+    val variant = this
+    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
   }
 
   splits {
