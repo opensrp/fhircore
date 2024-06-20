@@ -30,7 +30,7 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.layout.buildDirectory}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
