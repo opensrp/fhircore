@@ -34,7 +34,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Bundle as FhirR4ModelBundle
-import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
@@ -44,6 +43,10 @@ import org.smartregister.fhircore.engine.data.remote.auth.KeycloakService
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
 import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.CARE_TEAM_ID
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.LOCATION_ID
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore.Keys.ORGANIZATION_ID
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
@@ -67,6 +70,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val accountAuthenticator: AccountAuthenticator,
   val sharedPreferences: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val defaultRepository: DefaultRepository,
   val configService: ConfigService,
@@ -201,6 +205,7 @@ constructor(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
     onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
+    // ToDo : This is an object --->Practitioner Details
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
         key = SharedPreferenceKey.PRACTITIONER_DETAILS.name,
@@ -315,19 +320,19 @@ constructor(
         val locationHierarchies =
           practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
 
-        val careTeamIds =
+        val careTeamId =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
               careTeams.map { it.id.extractLogicalIdUuid() }
             }
           }
-        val organizationIds =
+        val organizationId =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
               organizations.map { it.id.extractLogicalIdUuid() }
             }
           }
-        val locationIds =
+        val locationId =
           withContext(dispatcherProvider.io()) {
             defaultRepository.createRemote(false, *locations.toTypedArray()).run {
               locations.map { it.id.extractLogicalIdUuid() }
@@ -366,14 +371,14 @@ constructor(
         }
 
         if (practitionerId.isNotEmpty()) {
-          writePractitionerDetailsToShredPref(
+          writePractitionerDetailsToPreference(
             careTeam = careTeam,
             organization = organization,
             location = location,
             fhirPractitionerDetails = practitionerDetails,
-            careTeams = careTeamIds,
-            organizations = organizationIds,
-            locations = locationIds,
+            careTeamId = careTeamId,
+            organizationId = organizationId,
+            locationId = locationId,
             locationHierarchies = locationHierarchies,
           )
         } else {
@@ -386,14 +391,14 @@ constructor(
                 identifier.hasValue() &&
                 identifier.value == userInfo!!.keycloakUuid
             ) {
-              writePractitionerDetailsToShredPref(
+              writePractitionerDetailsToPreference(
                 careTeam = careTeam,
                 organization = organization,
                 location = location,
                 fhirPractitionerDetails = practitionerDetails,
-                careTeams = careTeamIds,
-                organizations = organizationIds,
-                locations = locationIds,
+                careTeamId = careTeamId,
+                organizationId = organizationId,
+                locationId = locationId,
                 locationHierarchies = locationHierarchies,
               )
             }
@@ -404,6 +409,7 @@ constructor(
     }
   }
 
+  // ToDo : This is an object ----> userinfo
   private fun writeUserInfo(
     userInfo: UserInfo?,
   ) {
@@ -413,47 +419,51 @@ constructor(
     )
   }
 
-  fun writePractitionerDetailsToShredPref(
+  fun writePractitionerDetailsToPreference(
     careTeam: List<String>,
     organization: List<String>,
     location: List<String>,
     fhirPractitionerDetails: PractitionerDetails,
-    careTeams: List<String>,
-    organizations: List<String>,
-    locations: List<String>,
+    careTeamId: List<String>,
+    organizationId: List<String>,
+    locationId: List<String>,
     locationHierarchies: List<LocationHierarchy>,
   ) {
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_ID.name,
-      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
-    )
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
-      fhirPractitionerDetails,
-    )
-    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
-    sharedPreferences.write(ResourceType.Organization.name, organizations)
-    sharedPreferences.write(ResourceType.Location.name, locations)
-    sharedPreferences.write(
-      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-      locationHierarchies,
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
-      value = location.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.CARE_TEAM.name,
-      value = careTeam.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.ORGANIZATION.name,
-      value = organization.joinToString(separator = ""),
-    )
-    sharedPreferences.write(
-      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
-      value = locations.joinToString(separator = ""),
-    )
+    viewModelScope.launch {
+      preferenceDataStore.write(
+        key = PreferenceDataStore.PRACTITIONER_ID,
+        value = fhirPractitionerDetails.fhirPractitionerDetails?.id ?: "",
+      )
+      // ToDo: This is an object type ----> pratictioner details
+      sharedPreferences.write(
+        SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+        fhirPractitionerDetails,
+      )
+      preferenceDataStore.write(CARE_TEAM_ID, careTeamId.joinToString(separator = ","))
+      preferenceDataStore.write(ORGANIZATION_ID, organizationId.joinToString(separator = ","))
+      preferenceDataStore.write(LOCATION_ID, locationId.joinToString(separator = ","))
+      // ToDo: This is an object type ----> Location hierarchy
+      sharedPreferences.write(
+        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+        locationHierarchies,
+      )
+      preferenceDataStore.write(
+        key = PreferenceDataStore.PRACTITIONER_LOCATION_NAME,
+        value = location.joinToString(separator = ","),
+      )
+      preferenceDataStore.write(
+        key = PreferenceDataStore.CARE_TEAM_NAME,
+        value = careTeam.joinToString(separator = ","),
+      )
+      preferenceDataStore.write(
+        key = PreferenceDataStore.ORGANIZATION_NAME,
+        value = organization.joinToString(separator = ","),
+      )
+      preferenceDataStore.write(
+        key = PreferenceDataStore.PRACTITIONER_LOCATION_ID,
+        value = location.joinToString(separator = ""),
+      )
+    }
   }
 
   fun downloadNowWorkflowConfigs() {

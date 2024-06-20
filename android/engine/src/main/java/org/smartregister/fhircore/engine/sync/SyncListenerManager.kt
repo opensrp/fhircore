@@ -35,9 +35,9 @@ import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import timber.log.Timber
 
@@ -54,6 +54,7 @@ constructor(
   val sharedPreferencesHelper: SharedPreferencesHelper,
   @ApplicationContext val context: Context,
   val dispatcherProvider: DefaultDispatcherProvider,
+  val preferenceDataStore: PreferenceDataStore,
 ) {
   private val appConfig by lazy {
     configurationRegistry.retrieveConfiguration<ApplicationConfiguration>(
@@ -105,10 +106,14 @@ constructor(
     val organizationResourceTag =
       configService.defineResourceTags().find { it.type == ResourceType.Organization.name }
 
-    val mandatoryTags = configService.provideResourceTags(sharedPreferencesHelper)
+    val mandatoryTags =
+      configService.provideResourceTags(
+        sharedPreferencesHelper = sharedPreferencesHelper,
+        preferenceDataStore = preferenceDataStore
+      )
 
     val relatedResourceTypes: List<String>? =
-      sharedPreferencesHelper.read(SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name)
+      preferenceDataStore.readOnce(PreferenceDataStore.REMOTE_SYNC_RESOURCES)?.split(",")
 
     // TODO Does not support nested parameters i.e. parameters.parameters...
     // TODO: expressionValue supports for Organization and Publisher literals for now

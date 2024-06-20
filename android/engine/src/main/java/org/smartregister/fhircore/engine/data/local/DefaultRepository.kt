@@ -75,6 +75,7 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.event.EventWorkflow
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.register.ActiveResourceFilterConfig
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.Code
 import org.smartregister.fhircore.engine.domain.model.DataQuery
@@ -107,6 +108,7 @@ constructor(
   open val fhirEngine: FhirEngine,
   open val dispatcherProvider: DispatcherProvider,
   open val sharedPreferencesHelper: SharedPreferencesHelper,
+  open val preferenceDataStore: PreferenceDataStore,
   open val configurationRegistry: ConfigurationRegistry,
   open val configService: ConfigService,
   open val configRulesExecutor: ConfigRulesExecutor,
@@ -183,7 +185,11 @@ constructor(
         generateMissingId()
       }
       if (addResourceTags) {
-        val tags = configService.provideResourceTags(sharedPreferencesHelper)
+        val tags =
+          configService.provideResourceTags(
+            preferenceDataStore = preferenceDataStore,
+            sharedPreferencesHelper = sharedPreferencesHelper
+          )
         tags.forEach {
           val existingTag = currentResource.meta.getTag(it.system, it.code)
           if (existingTag == null) {

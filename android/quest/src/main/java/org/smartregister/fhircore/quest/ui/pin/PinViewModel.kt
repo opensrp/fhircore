@@ -31,10 +31,9 @@ import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.datastore.PreferenceDataStore
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
-import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.clearPasswordInMemory
 import org.smartregister.fhircore.engine.util.toPasswordHash
 
@@ -42,7 +41,7 @@ import org.smartregister.fhircore.engine.util.toPasswordHash
 class PinViewModel
 @Inject
 constructor(
-  val sharedPreferences: SharedPreferencesHelper,
+  val preferenceDataStore: PreferenceDataStore,
   val secureSharedPreference: SecureSharedPreference,
   val configurationRegistry: ConfigurationRegistry,
   val dispatcherProvider: DispatcherProvider,
@@ -122,7 +121,7 @@ constructor(
 
     if (launchAppSettingScreen) {
       secureSharedPreference.deleteCredentials()
-      sharedPreferences.remove(SharedPreferenceKey.APP_ID.name)
+      viewModelScope.launch { preferenceDataStore.remove(PreferenceDataStore.APP_ID) }
       _navigateToSettings.value = true
     } else {
       _navigateToLogin.value = true
