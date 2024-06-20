@@ -39,12 +39,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
+import org.smartregister.fhircore.quest.ui.register.RegisterUiState
 import timber.log.Timber
 
 @Composable
 fun SubsequentSyncDetailsBar(
   modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
+  registerUiState: RegisterUiState = RegisterUiState(),
   showRemainingUploadTime: Boolean = true,
   showSyncPercentage: Boolean = true,
   onCancelButtonClick: () -> Unit,
