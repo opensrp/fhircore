@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import android.os.Build
+import android.os.Bundle
 import com.mapbox.geojson.FeatureCollection
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -75,7 +76,7 @@ class GeoWidgetFragmentTest {
   }
 
   @Test
-  fun test_add_and_cancel_location_points() {
+  fun testAddAndCancelLocationPoints() {
     // Mock dependencies
     val mockFeatureCollection = mockk<FeatureCollection>(relaxed = true)
     val mockGeoJsonSource = mockk<GeoJsonSource>(relaxed = true)
@@ -88,5 +89,29 @@ class GeoWidgetFragmentTest {
 
     // Verify mocks
     verify { kujakuMapView.addPoint(any(), any()) }
+  }
+
+  @Test
+  fun testOnCreateViewAddsSavedStateToMapView() {
+    val activity = Robolectric.buildActivity(GeoWidgetTestActivity::class.java).create().get()
+
+    val geowidgetFragment = GeoWidgetFragment()
+
+    var kujakuMapView = mockk<KujakuMapView>(relaxed = true)
+
+    geowidgetFragment.setKujakuMapview(kujakuMapView)
+
+    activity.supportFragmentManager
+      .beginTransaction()
+      .add(android.R.id.content, geowidgetFragment, "")
+      .commitNow()
+
+    every { kujakuMapView.parent } returns null
+
+    val savedInstanceBundle: Bundle = mockk()
+
+    geowidgetFragment.onCreateView(activity.layoutInflater, null, savedInstanceBundle)
+
+    verify { kujakuMapView.onCreate(savedInstanceBundle) }
   }
 }
