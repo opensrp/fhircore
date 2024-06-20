@@ -17,6 +17,9 @@
 package org.smartregister.fhircore.geowidget.screens
 
 import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
+import org.smartregister.fhircore.engine.util.annotation.ExcludeFromJacocoGeneratedReport
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 22-08-2022. */
+@ExcludeFromJacocoGeneratedReport
+@AndroidEntryPoint
 class GeoWidgetTestActivity : AppCompatActivity()

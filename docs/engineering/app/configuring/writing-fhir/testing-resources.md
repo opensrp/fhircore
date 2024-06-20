@@ -92,7 +92,7 @@ We can also perform search examples via URL as described in the [search paramete
 3. All patient observations by patient name  - http://hapi.fhir.org/baseR4/Observation?subject.name=xxx
 4. All patient observations by patient id  - http://hapi.fhir.org/baseR4/Observation?patient=Patient/id
 5. All BP observations by code - http://hapi.fhir.org/baseR4/Observation?patient=Patient/id&code=http://lonic.org|15074-8
-    > NB. the BP code used was http://lonic.org|15074-8
+    > NB. the BP code used was http://lonic.org/?param=15074-8
 
 ## Step 3 - Bundles
 
