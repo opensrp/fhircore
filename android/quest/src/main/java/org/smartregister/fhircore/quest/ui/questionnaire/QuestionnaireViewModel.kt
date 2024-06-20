@@ -784,14 +784,14 @@ constructor(
     questionnaireResponse: QuestionnaireResponse,
     context: Context,
   ): Boolean {
-    val validQuestionnaireResponseItems = ArrayList<QuestionnaireResponseItemComponent>()
-    val validQuestionnaireItems = ArrayList<Questionnaire.QuestionnaireItemComponent>()
-    val questionnaireItemsMap = questionnaire.item.groupBy { it.linkId }
+    val validQuestionnaireResponseItems = mutableListOf<QuestionnaireResponseItemComponent>()
+    val validQuestionnaireItems = mutableListOf<Questionnaire.QuestionnaireItemComponent>()
+    val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
 
     // Only validate items that are present on both Questionnaire and the QuestionnaireResponse
     questionnaireResponse.item.forEach {
       if (questionnaireItemsMap.containsKey(it.linkId)) {
-        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId).first()
+        val questionnaireItem = questionnaireItemsMap.getValue(it.linkId)
         validQuestionnaireResponseItems.add(it)
         validQuestionnaireItems.add(questionnaireItem)
       }
