@@ -113,6 +113,7 @@ fun AppDrawer(
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
   Timber.d("AppDrawer : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}")
   val navigationConfiguration = appUiState.navigationConfiguration
+
   Scaffold(
     topBar = {
       Column(modifier = modifier.background(SideMenuDarkColor)) {
@@ -199,7 +200,7 @@ fun AppDrawer(
 
 @Composable
 private fun NavBottomSection(
-  modifier: Modifier,
+  modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
@@ -213,7 +214,7 @@ private fun NavBottomSection(
     if (
       appUiState.isSyncCompleted == SyncStatus.SUCCEEDED && appUiState.progressPercentage == 100
     ) {
-      backgroundColor = Color(0xFF1DB11B).copy(alpha = 0.17f)
+      backgroundColor = Color(0xFF1DB11B)
       showSyncBar = true
       coroutineScope.launch {
         delay(60000L)
@@ -221,7 +222,7 @@ private fun NavBottomSection(
         backgroundColor = SideMenuTopItemDarkColor
       }
     } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
-      backgroundColor = Color(0xFFDF0E1A).copy(alpha = 0.17f)
+      backgroundColor = Color(0xFFDF0E1A)
     }
   }
 
@@ -231,7 +232,14 @@ private fun NavBottomSection(
         modifier
           .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
           .background(backgroundColor)
-          .padding(horizontal = 16.dp, vertical = 4.dp),
+          .background(
+            if (showSyncBar) {
+              Color.White.copy(alpha = 0.83f)
+            } else {
+              Color.Transparent
+            }
+          )
+          .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
       if (showSyncBar) {
         SyncCompleteStatus(

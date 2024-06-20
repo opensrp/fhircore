@@ -206,10 +206,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
             isSyncUpload,
           )
-          appMainViewModel.appMainUiState.value =
-            appMainViewModel.appMainUiState.value.copy(
-              isSyncUpload = isSyncUpload,
-            )
+          appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
         }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
@@ -221,11 +218,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               duration = SnackbarDuration.Long,
             ),
           )
-          appMainViewModel.appMainUiState.value =
-            appMainViewModel.appMainUiState.value.copy(
-              isSyncUpload = false,
-              isSyncCompleted = SyncStatus.SUCCEEDED,
-            )
+          appMainViewModel.trackSyncStatus(false, SyncStatus.SUCCEEDED)
         }
       }
       is CurrentSyncJobStatus.Failed -> {
@@ -240,11 +233,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               actionLabel = getString(R.string.ok).uppercase(),
             ),
           )
-          appMainViewModel.appMainUiState.value =
-            appMainViewModel.appMainUiState.value.copy(
-              isSyncUpload = false,
-              isSyncCompleted = SyncStatus.FAILED,
-            )
+          appMainViewModel.trackSyncStatus(false, SyncStatus.FAILED)
         }
       }
       else -> {
@@ -320,10 +309,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
-      appMainViewModel.appMainUiState.value =
-        appMainViewModel.appMainUiState.value.copy(
-          progressPercentage = percentageProgress,
-        )
+      appMainViewModel.trackSyncUploadPercentage(percentageProgress)
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }

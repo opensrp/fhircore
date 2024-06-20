@@ -322,6 +322,19 @@ constructor(
     }
   }
 
+  fun trackSyncStatus(isSyncUpload: Boolean, syncStatus: SyncStatus){
+    appMainUiState.value = appMainUiState.value.copy(
+      isSyncUpload = isSyncUpload,
+      isSyncCompleted = syncStatus
+    )
+  }
+
+  fun trackSyncUploadPercentage(progressPercentage: Int){
+    appMainUiState.value = appMainUiState.value.copy(
+      progressPercentage = progressPercentage
+    )
+  }
+
   companion object {
     const val SYNC_TIMESTAMP_INPUT_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"
     const val SYNC_TIMESTAMP_OUTPUT_FORMAT = "MMM d, hh:mm aa"

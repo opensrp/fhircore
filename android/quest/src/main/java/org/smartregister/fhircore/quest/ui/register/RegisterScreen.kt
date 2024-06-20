@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.register
 
+import SubsequentSyncDetailsBar
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -239,6 +240,10 @@ fun RegisterScreen(
         ) {
           // TODO Implement the updated sync UI with the progress indicator, cancel button here
           // TODO show progress indicator and animated gif if syncNotificationBarExpanded = false
+          //pass the register UI State
+          SubsequentSyncDetailsBar(appUiState = null, registerUiState = registerUiState){
+
+          }
         }
       }
     }

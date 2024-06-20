@@ -341,6 +341,7 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
             appMainViewModel.appMainUiState.value.copy(
               isSyncUpload = isSyncUpload,
             )
+          appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
         }
       else -> {
         // Do nothing

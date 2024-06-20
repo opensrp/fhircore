@@ -28,6 +28,7 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -40,21 +41,27 @@ import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
-import timber.log.Timber
 
 @Composable
 fun SubsequentSyncDetailsBar(
   modifier: Modifier = Modifier,
-  appUiState: AppMainUiState,
+  appUiState: AppMainUiState?,
   registerUiState: RegisterUiState = RegisterUiState(),
   showRemainingUploadTime: Boolean = true,
   showSyncPercentage: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
-  Timber.d(
-    "AppDrawer SubsequentSyncDetailsBar : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}",
-  )
-  val progress by remember { mutableFloatStateOf(appUiState.progressPercentage.toFloat() / 100) }
+  val registerProgress by registerUiState.progressPercentage.collectAsState(initial = 0)
+  val progress by remember {
+    mutableFloatStateOf(
+      if (appUiState == null) {
+        (registerProgress.toFloat()) / 100
+      } else {
+        (appUiState.progressPercentage.toFloat()) / 100
+      }
+    )
+  }
+
   val backgroundColor = Color(0xFF002B4A)
 
   Box(
