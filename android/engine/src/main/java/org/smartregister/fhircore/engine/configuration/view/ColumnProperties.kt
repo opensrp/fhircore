@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import android.os.Parcelable
 import androidx.compose.foundation.layout.Arrangement
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
@@ -41,6 +42,7 @@ data class ColumnProperties(
   val arrangement: ColumnArrangement? = null,
   val children: List<ViewProperties> = emptyList(),
   val showDivider: String = "false",
+  val actions: List<ActionConfig> = emptyList(),
 ) : ViewProperties(), Parcelable {
   override fun interpolate(computedValuesMap: Map<String, Any>): ColumnProperties {
     return this.copy(

@@ -1,0 +1,496 @@
+# FHIRPath expressions
+Paths are defined using [FhirPath](http://hl7.org/fhirpath), which is an expression language defined by FHIR. In its simplest form, this can take the form of a single dotted path:
+```
+Patient.name.given
+```
+In the example above, the FHIRPath expression matches all of the patient's given names.
+
+# Using expressions
+The [Form Behavior](http://build.fhir.org/ig/HL7/sdc/behavior.html), [Questionnaire Population](http://build.fhir.org/ig/HL7/sdc/populate.html) and [Data Extraction](http://build.fhir.org/ig/HL7/sdc/extraction.html) all rely on (or have features that rely on) the use of [expressions](http://hl7.org/fhir/R4/metadatatypes.html#Expression).
+
+# Expression extensions
+Expressions are introduced into Questionnaires using extensions - none of the 'core' data elements of Questionnaire makes use of extensions because they're considered an 'advanced' capability that is not currently supported by a large portion of the systems that make use of the Questioannaire resource. The extensions that make use of expressions and are supported in Android FHIR SDK are shown in the table below. Check out all types of [available expression extensions](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions)
+| Extension | Specs | Example |
+| --------- | ----- | ------- |
+| [variable](http://hl7.org/fhir/R4/extension-variable.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using variable](http://build.fhir.org/ig/HL7/sdc/examples.html#calculatedexpression) |
+| [initialExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-initialExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using initialExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#initialexpression) |
+| [enableWhenExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-enableWhenExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using enableWhenExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#enableexamples) |
+| [calculatedExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using calculatedExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#calculatedexpression) |
+| [answerExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-answerExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using answerExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#reference-resource-profile-lookup) |
+| [candidateExpression](http://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-candidateExpression.html) | [purpose and usage](http://build.fhir.org/ig/HL7/sdc/expressions.html#expression-extensions) | [Using candidateExpression](http://build.fhir.org/ig/HL7/sdc/examples.html#candidateExpression) |
+
+## Variable
+The variable expression sets a variable that is available for use in expressions within the same item and any descendant items. It has three main uses:
+- It allows a complex calculation to be done once and used in multiple other places. (E.g. Determining the score for one group within the questionnaire response that will then be used in calculations on subsequent groups.)
+- It allows a calculation to be done closer to the root of the questionnaire response or at the root of the questionnaire response where there is access to more of or all the answers from the questionnaire response. The calculated value might then be used as the answer to a descendant question. (Expressions cannot access answers that are not descendants of the current node.)
+- It allows the retrieval of FHIR resources from the database by using X-FHIR-Query when the questionnaire is opened. The retrieved information can then be utilized within the questionnaire through other variables or extensions that utilize expressions
+
+The content type of a variable can be pretty much anything. It can be a collection or an individual item. It can be a simple element, a complex type, a resource or even a Bundle of resources.
+The variable can be referenced by its name. Variable expressions SHALL specify a name. It is not allowed to define variable names that are already reserved by the base specification or by other variables in the questionnaire.
+
+### How to evaluate the variable expression
+Variable expressions can be defined at the questionnaire and questionnaire item levels. The Structure Data Capture Library provides separate APIs to evaluate variable expressions defined at either questionnaire or questionnaire item level.
+
+#### Sample Questionnaire for Questionnaire level variable expressions
+```
+{
+  "resourceType": "Questionnaire",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/StructureDefinition/variable",
+      "valueExpression": {
+        "name": "weight",
+        "language": "text/fhirpath",
+        "expression": "%resource.repeat(item).where(linkId='3.3.1').item.answer.valueDecimal"
+      }
+    }
+  ],
+  "item": [
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
+          "valueCoding": {
+            "system": "http://unitsofmeasure.org",
+            "code": "kg"
+          }
+        }
+      ],
+      "linkId": "3.3.1",
+      "text": "Weight (kg)",
+      "type": "decimal"
+    }
+  ]
+}
+```
+#### API to evaluate variable expressions defined at the questionnaire level
+To evaluate variable expressions defined at Questionnaire level, we have to pass a variable expression, Questionnaire, QuestionnaireResponse and an optional varaiblesMap
+```kotlin
+ internal fun evaluateQuestionnaireVariableExpression(
+    expression: Expression,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    variablesMap: MutableMap<String, Base?> = mutableMapOf()
+  ): Base?
+```
+#### Sample Questionnaire for Questionnaire item level variable expressions
+```
+"item": [
+  {
+    "linkId": "/groupA",
+    "text": "Group A",
+    "type": "group",
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+          "name": "X",
+          "language": "text/fhirpath",
+          "expression": "item.where(linkId='/groupA/fieldB').answer[0].valueInteger"
+        }
+      },
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+          "name": "Y",
+          "language": "text/fhirpath",
+          "expression": "%X + 2",
+          "comment": "References another variable on the same group"
+        }
+      }
+    ],
+    "item": [
+      {
+        "linkId": "/groupA/fieldB",
+        "text": "Field B",
+        "type": "integer"
+      }
+    ]
+  }
+]
+```
+#### API to evaluate variable expressions defined at Questionnaire item level
+To evaluate variable expressions defined at Questionnaire item level, we have to pass a variable expression, questionnaire, QuestionnaireResponse, questionnaireItemParentMap,QuestionnaireItem and an optional varaiblesMap
+
+```kotlin
+internal fun evaluateQuestionnaireItemVariableExpression(
+    expression: Expression,
+    questionnaire: Questionnaire,
+    questionnaireResponse: QuestionnaireResponse,
+    questionnaireItemParentMap:
+      Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent>,
+    questionnaireItem: Questionnaire.QuestionnaireItemComponent,
+    variablesMap: MutableMap<String, Base?> = mutableMapOf()
+  ): Base?
+```
+#### Sample of retrieving resources from the database using variable expression
+```
+{
+  "resourceType": "Questionnaire",
+  "extension": [
+    {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext",
+        "extension": [
+            {
+                "url": "name",
+                "valueCoding": {
+                    "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+                    "code": "patient",
+                    "display": "Patient"
+                }
+            },
+            {
+                "url": "type",
+                "valueCode": "Patient"
+            }
+        ]
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "qrs-searched",
+            "language": "application/x-fhir-query",
+            "expression": "QuestionnaireResponse?subject={{%patient.id.replaceMatches('/_history/.*', '')}}&questionnaire=Questionnaire/54"
+        }
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "qr-resource",
+            "language": "text/fhirpath",
+            "expression": "%qrs-searched.entry.first().resource"
+        }
+    },
+    {
+        "url": "http://hl7.org/fhir/StructureDefinition/variable",
+        "valueExpression": {
+            "name": "answer-1",
+            "language": "text/fhirpath",
+            "expression": "%qr-resource.item.descendants().where(linkId='1').answer.value"
+        }
+    }
+  ],
+  "item": [
+  ...
+  ]
+}
+```
+
+## Initial Expression
+
+Besides using [initial](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.initial) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing a default answer on questionnaire load, [initial expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-initialExpression.html) is another alternate way of providing default answer based on a FHIRPath expression i.e. rather than specifying a fixed value, the value is calculable.
+- It is a Questionnaire.item-level extension
+- Examples could be
+  - current date i.e. `today() + 7 days` or
+  - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in the current context can be referred to by %resource. i.e. `%resource.item.where(linkId='weight').answer.first()`
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.birthDate`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
+  - an expression based on `variable` extension. i.e. `%weight * 0.25`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
+
+Both of the approaches are mutually exclusive and only one of these can be specified.
+
+```json
+{ "item": [
+          {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-initialExpression",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today() + 7 days"
+                }
+              }
+            ],
+            "linkId": "3.1",
+            "text": "Next follow up date",
+            "type": "date",
+          }
+        ]
+	}
+```
+
+## EnableWhen Expression
+
+`enableWhen` aka skip logic controls which questions, groups and display items would show or hide based on answers of other referenced questions within the response.
+Besides using [enableWhen](http://hl7.org/fhir/R4/questionnaire-definitions.html#Questionnaire.item.enableWhen) property in [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) for providing skip logic, [enableWhen expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-enableWhenExpression.html) is another alternate way of providing skip logic based on a dynamic fhirpath expression.
+
+- Elements that are not enabled are hidden from the user and can not be edited
+- It needs to be evaluated each time any of the answers it depends on changes
+- Any constraints associated with non-enabled elements i.e. [required](https://build.fhir.org/ig/HL7/sdc/behavior.html#required) or [minOccurs](https://build.fhir.org/ig/HL7/sdc/behavior.html#minOccurs) are ignored and no answers are stored for these.
+- Examples could be
+  - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in current context can be referred by %resource. i.e. `%resource.item.where(linkId='weight').answer.first() > 45`
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.deceased = flase`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
+  - an expression based on `variable` extension. i.e. `%weight > 60`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
+
+Both of the approaches are mutually exclusive and only one of these can specified.
+
+```json
+{
+   "extension":[
+      {
+         "url":"http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-enableWhenExpression",
+         "valueExpression":{
+            "language":"text/fhirpath",
+            "expression":"%resource.repeat(item).where(linkId='gender').answer.value.code ='female' and %resource.repeat(item).where(linkId='age').answer.value > 49"
+         }
+      }
+   ],
+   "linkId":"3.1",
+   "text":"Is women or non reproductive age",
+   "type":"boolean"
+}
+
+```
+
+## Calculated expression
+
+[Calculated Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-calculatedExpression.html) is an extension which allows to set answers to [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) (generally but not limited to [readOnly](https://build.fhir.org/ig/HL7/sdc/behavior.html#readOnly) or [hidden](https://build.fhir.org/ig/HL7/sdc/rendering.html#hidden)). The calculation is dynamic via a [fhirpath](http://hl7.org/fhirpath) expression which can be based on answers of other Questionnaire.items.
+
+- Unlike [initialExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#initialExpression) extension, instead of only setting value on Questionnaire.item loading, this extension- keeps updating the value as soon as the answers of dependent questions change.
+- Mostly it is used for displaying or calculating scores, patient age, BMI, estimated cost etc
+- In most cases, 'calculated' answers are 'readOnly', however, the extension can be applied to any Questionnaire.item.
+- For modifiable Questionnaire.item if a user has edited the answer of calculated expression, it can no longer be changed based on expression i.e. an edited item does not update by expression anymore
+- Examples could be
+  - an expression based on current QuestionnaireResponse.item.answer. The QuestionnaireResponse in current context can be referred by %resource. i.e. `%resource.item.where(linkId='weight').answer.first()`
+  - an expression of based on launch context or information queried from external sources i.e. `%patient.active`, full example questionnaire can be found [here](https://build.fhir.org/ig/HL7/sdc/Questionnaire-demographics.json.html).
+  - an expression based on `variable` extension. i.e. `%weight + 20`. See variable rules [here](http://hl7.org/fhir/R4/extension-variable.html)
+
+``` json
+{"item": [
+    {
+      "linkId": "birthdate",
+      "text": "Birth Date",
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-calculatedExpression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%resource.repeat(item).where(linkId='age-years' and answer.empty().not()).select(today() - answer.value)"
+          }
+        }
+      ]
+    },
+    {
+      "linkId": "age-years",
+      "text": "Age years",
+      "type": "quantity",
+      "initial": [{
+        "valueQuantity": {
+          "unit": "years",
+          "system": "http://unitsofmeasure.org",
+          "code": "years"
+        }
+      }]
+    }
+  ]
+  }
+```
+
+## Answer expression
+
+The possible answers for a [Questionnaire.item](https://hl7.org/fhir/R4/questionnaire.html) are restricted or validated based on it type. The allowed value of a Questionnaire.item must conform to an enumerated set. The answerOption the possible allowed values and the type of  answerOption must match the type of the question. (Coding type is used for choice and open-choice)
+
+Mainly answers can be enumerated  by three ways
+- [answerOption](https://build.fhir.org/ig/HL7/sdc/examples.html#answeroption) are hardcoded set of option values and works well when there is a small number of choices and support variety of question types
+- [answerValueSet](https://build.fhir.org/ig/HL7/sdc/behavior.html#answerValueSet) element only supports 'string' and Coding elements. It is better when set of codes is large or dynamic e.g. SNOMED or LOINC codes
+- **[answerExpression](https://build.fhir.org/ig/HL7/sdc/expressions.html#answerExpression) extension** allows a FHIR Query, FHIRPath, or CQL (not implemented yet) expression that can be resolved to a list of permitted answers.
+  - Expression must evaluate to a collection with the same type as the Questionnaire.item.type
+  - If the type is Reference it should evaluate to resources allowed as the referenced type
+  - It is often used with [Choice Column](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-choiceColumn.html) extension to provide display or UI definitions
+  - Currently Choice Column is applicable only for reference type. With a Reference choiceColumn allows selection of fields from the resource evaulated by x-fhir-query e.g. `name.first().given.first() + ' ' + name.first().family` for the full name of a Patient or Practitioner.
+  - For multiple repetitions of the Choice Column extension the columns (concatenated values separated by space) are displayed in the same order as the extensions appear on the Questionnaire.item. If multiple columns are marked with `"forDisplay": true`, the display value used will be a space-separated concatenation of all column
+- Examples of expression are
+  - [FHIR Query](http://hl7.org/fhir/R4/search.html) i.e. `Patient?active=true&name=john`
+  - [FHIRPath](http://hl7.org/fhirpath) which must conform to item type i.e. `%resource.item.where(type='choice' and answer.empty().not()).answer`
+  - [CQL](http://cql.hl7.org/) - not implemented yet
+
+All three mechanisms are mutually exclusive and only one can appear on same question
+
+Use of other [Value Constraint](https://build.fhir.org/ig/HL7/sdc/behavior.html#value-constraint) elements is redundant and confusing, hence, when using any of these to restrict answers do not make use of any of the other Value Constraint extensions.
+
+```json
+{"item": [
+  {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+        "valueExpression": {
+          "language": "application/x-fhir-query",
+          "expression": "Practitioner?active=true&_sort=family,given"
+        }
+      },
+      {
+        "extension": [
+          {
+            "url": "path",
+            "valueString": "name.where(use='official').family + ', ' + name.where(use='official').given.first()"
+          },
+          {
+            "url": "forDisplay",
+            "valueBoolean": true
+          }
+        ],
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn"
+      },
+      {
+        "extension": [
+          {
+            "url": "path",
+            "valueString": "'(' + gender + ')'"
+          },
+          {
+            "url": "forDisplay",
+            "valueBoolean": true
+          }
+        ],
+        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn"
+      }
+    ],
+    "linkId": "1.0.0",
+    "text": "Preferred practitioner",
+    "type": "reference"
+  }
+]
+}
+```
+
+## CQF expression
+
+[Cqf-expression](http://hl7.org/fhir/R4B/extension-cqf-expression.html) is used in [Questionnaire.item.text](https://build.fhir.org/questionnaire-definitions.html#Questionnaire.item.text) to make it a dynamic text. Dynamic text in this context refers to the ability to run FHIRPath, including variables, to the text content. As a result, the displayed text can dynamically change based on various parameters, such as the responses to other questionnaire items. In essence, the content of [Questionnaire.item.text](https://build.fhir.org/questionnaire-definitions.html#Questionnaire.item.text) can adapt and respond to the answers provided to other questions within the questionnaire.
+
+Facts about Cqf-expression:
+- Cqf-expression is declared in the `_text` property as extension
+- If the Cqf-expression has NOT been evaluated yet, you will see the text declared in the text property
+- Using the [translation extension](https://build.fhir.org/ig/HL7/fhir-extensions/StructureDefinition-translation.html) alongside Cqf-expression is not supported
+
+```
+{
+  "linkId": "1",
+  "text": "The text you will ONLY see, if cqf-expression has NOT been evaluated yet",
+  "_text": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/cqf-expression",
+        "valueExpression": {
+          "language": "text/fhirpath",
+          "expression": "'My name is ' + %name"
+        }
+      }
+    ]
+  },
+  "type": "display"
+}
+```
+
+## Answer Options Toggle Expression
+
+[Answer Options Toggle Expression](https://build.fhir.org/ig/HL7/sdc/StructureDefinition-sdc-questionnaire-answerOptionsToggleExpression.html) extension is used to show/hide an option of choice type (Radio Button, Checkboxes, etc) questionnaire item based on a defined predicate.
+
+```
+{
+  "extension": [
+    {
+      "url": "option",
+      "valueCoding": {
+        "code": "option-A"
+      }
+    },
+    {
+      "url": "expression",
+      "valueExpression": {
+        "language": "text/fhirpath",
+        "expression": "true"
+      }
+    }
+  ],
+  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
+}
+```
+
+### Nested extension: option and expression
+
+#### Option extension defines which option to show/hide
+
+```
+{
+  "url": "option",
+  "valueCoding": {
+    "code": "option-A"
+  }
+}
+```
+
+#### Expression extension decides whether to show/hide the option
+- Accepts a FHIRPath expression, which means you can also pass a [variable](https://docs.opensrp.io/engineering/android-app/writing-fhir/fhir_path#variable) to it, to make the expression short
+- If the evaluated result is true, the option will be shown. If the evaluated result is false, the option will be hidden
+
+```
+{
+  "url": "expression",
+  "valueExpression": {
+    "language": "text/fhirpath",
+    "expression": "%should-show-option-a"
+  }
+}
+```
+
+### Full example:
+
+```
+{
+  "extension": [
+    {
+      "extension": [
+        {
+          "url": "option",
+          "valueCoding": {
+            "code": "option-A"
+          }
+        },
+        {
+          "url": "expression",
+          "valueExpression": {
+            "language": "text/fhirpath",
+            "expression": "%should-show-option-a"
+          }
+        }
+      ],
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerOptionsToggleExpression"
+    }
+  ],
+  "linkId": "1",
+  "text": "question",
+  "type": "choice",
+  "answerOption": [
+    {
+      "valueCoding": {
+        "code": "option-a",
+        "display": "A"
+      }
+    },
+    {
+      "valueCoding": {
+        "code": "option-b",
+        "display": "B"
+      }
+    },
+    {
+      "valueCoding": {
+        "code": "option-c",
+        "display": "C"
+      }
+    }
+  ]
+}
+```
+
+## Gotchas
+When working with dates, please note that according to the FHIR spec, if the duration value is specified as a whole number _(e.g. 1 month)_ such as when you write `today + '1 month'`, then when the duration is added or subtracted to a given date(time), the outcome is rounded to the nearest natural calendar division - e.g. Feb. 1 + 1 mo = March 1, not March 2 or 3 (since 1 month is defined in UCUM as 30 days).
+
+**Examples of rounding off to closest calendar division:**
+
+> Normal calculation - Feb 1, 2023 + 30 days = March 3, 2023.
+> FHIR Path spec - Feb 1, 2023 + 1 month  = March 1, 2023
+
+
+Check out the FHIR documentation link here for reference https://hl7.org/fhir/R4/datatypes.html#Distance

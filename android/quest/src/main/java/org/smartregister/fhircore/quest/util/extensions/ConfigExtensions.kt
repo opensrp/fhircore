@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,62 +16,109 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Binary
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.decodeJson
+import org.smartregister.fhircore.engine.util.extension.decodeToBitmap
+import org.smartregister.fhircore.engine.util.extension.encodeJson
+import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.engine.util.extension.interpolate
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
+const val PRACTITIONER_ID = "practitionerId"
+
 fun List<ActionConfig>.handleClickEvent(
   navController: NavController,
   resourceData: ResourceData? = null,
   navMenu: NavigationMenuConfig? = null,
+  context: Context? = null,
 ) {
   val onClickAction =
     this.find { it.trigger.isIn(ActionTrigger.ON_CLICK, ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION) }
+
   onClickAction?.let { theConfig ->
     val computedValuesMap = resourceData?.computedValuesMap ?: emptyMap()
     val actionConfig = theConfig.interpolate(computedValuesMap)
-    when (onClickAction.workflow) {
+    val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
+    val practitionerId =
+      interpolatedParams
+        .find { it.paramType == ActionParameterType.RESOURCE_ID && it.key == PRACTITIONER_ID }
+        ?.value
+    val resourceId =
+      interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
+        ?: resourceData?.baseResourceId
+    when (actionConfig.workflow?.let { ApplicationWorkflow.valueOf(it) }) {
       ApplicationWorkflow.LAUNCH_QUESTIONNAIRE -> {
         actionConfig.questionnaire?.let { questionnaireConfig ->
           val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
 
+          // Questionnaire is NOT launched via navigation component. It is started for result.
           if (navController.context is QuestionnaireHandler) {
-            (navController.context as QuestionnaireHandler).launchQuestionnaire<Any>(
+            (navController.context as QuestionnaireHandler).launchQuestionnaire(
               context = navController.context,
               questionnaireConfig = questionnaireConfigInterpolated,
-              actionParams = interpolateActionParamsValue(actionConfig, resourceData).toList(),
-              baseResourceId = resourceData?.baseResourceId,
-              baseResourceType = resourceData?.baseResourceType?.name,
+              actionParams = interpolatedParams,
             )
           }
         }
       }
       ApplicationWorkflow.LAUNCH_PROFILE -> {
-        val interpolatedParams = interpolateActionParamsValue(actionConfig, resourceData)
-        val resourceId =
-          interpolatedParams.find { it.paramType == ActionParameterType.RESOURCE_ID }?.value
-            ?: resourceData?.baseResourceId
         actionConfig.id?.let { id ->
           val args =
             bundleOf(
               NavigationArg.PROFILE_ID to id,
               NavigationArg.RESOURCE_ID to resourceId,
               NavigationArg.RESOURCE_CONFIG to actionConfig.resourceConfig,
-              NavigationArg.PARAMS to interpolatedParams,
+              NavigationArg.PARAMS to interpolatedParams.toTypedArray(),
             )
-          navController.navigate(MainNavigationScreen.Profile.route, args)
+          val navOptions =
+            when (actionConfig.popNavigationBackStack) {
+              false,
+              null, -> null
+              true ->
+                navController.currentDestination?.id?.let { currentDestId ->
+                  navOptions(resId = currentDestId, inclusive = true)
+                }
+            }
+          navController.navigate(
+            resId = MainNavigationScreen.Profile.route,
+            args = args,
+            navOptions = navOptions,
+          )
         }
       }
       ApplicationWorkflow.LAUNCH_REGISTER -> {
@@ -80,7 +127,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.REGISTER_ID, actionConfig.id ?: navMenu?.id),
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
-            Pair(NavigationArg.PARAMS, interpolateActionParamsValue(actionConfig, resourceData)),
+            Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
           )
 
         // If value != null, we are navigating FROM a register; disallow same register navigation
@@ -104,17 +151,50 @@ fun List<ActionConfig>.handleClickEvent(
         }
       }
       ApplicationWorkflow.LAUNCH_REPORT -> {
-        val args = bundleOf(Pair(NavigationArg.REPORT_ID, actionConfig.id))
+        val args =
+          bundleOf(
+            Pair(NavigationArg.REPORT_ID, actionConfig.id),
+            Pair(NavigationArg.RESOURCE_ID, practitionerId?.extractLogicalIdUuid() ?: ""),
+          )
+
         navController.navigate(MainNavigationScreen.Reports.route, args)
       }
       ApplicationWorkflow.LAUNCH_SETTINGS ->
         navController.navigate(MainNavigationScreen.Settings.route)
+      ApplicationWorkflow.LAUNCH_INSIGHT_SCREEN ->
+        navController.navigate(MainNavigationScreen.Insight.route)
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP ->
         navController.navigate(
-          MainNavigationScreen.GeoWidget.route,
-          bundleOf(NavigationArg.CONFIG_ID to actionConfig.id),
+          MainNavigationScreen.GeoWidgetLauncher.route,
+          bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
         )
+      ApplicationWorkflow.LAUNCH_DIALLER -> {
+        val actionParameter = interpolatedParams.first()
+        val patientPhoneNumber = actionParameter.value
+        val intent = Intent(Intent.ACTION_DIAL)
+        intent.data = Uri.parse("tel:$patientPhoneNumber")
+        ContextCompat.startActivity(navController.context, intent, null)
+      }
+      ApplicationWorkflow.COPY_TEXT -> {
+        val copyTextActionParameter = interpolatedParams.first()
+        val clipboardManager =
+          context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText(null, copyTextActionParameter.value)
+        clipboardManager.setPrimaryClip(clipData)
+        context.showToast(
+          context.getString(R.string.copy_text_success_message, copyTextActionParameter.value),
+          Toast.LENGTH_LONG,
+        )
+      }
+      ApplicationWorkflow.LAUNCH_LOCATION_SELECTOR -> {
+        val args =
+          bundleOf(
+            NavigationArg.SCREEN_TITLE to (actionConfig.display ?: navMenu?.display ?: ""),
+            NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
+          )
+        navController.navigate(MainNavigationScreen.LocationSelector.route, args)
+      }
       else -> return
     }
   }
@@ -122,8 +202,9 @@ fun List<ActionConfig>.handleClickEvent(
 
 fun interpolateActionParamsValue(actionConfig: ActionConfig, resourceData: ResourceData?) =
   actionConfig.params
-    .map { it.interpolate(resourceData?.computedValuesMap ?: emptyMap()) }
-    .toTypedArray()
+    .encodeJson()
+    .interpolate(resourceData?.computedValuesMap ?: emptyMap())
+    .decodeJson<List<ActionParameter>>()
 
 /**
  * Apply navigation options. Restrict destination to only use a single instance in the back stack.
@@ -138,5 +219,79 @@ fun navOptions(resId: Int, inclusive: Boolean = false, singleOnTop: Boolean = tr
 fun Array<ActionParameter>?.toParamDataMap(): Map<String, String> =
   this?.asSequence()
     ?.filter { it.paramType == ActionParameterType.PARAMDATA }
-    ?.associate { it.key to it.value }
-    ?: emptyMap()
+    ?.associate { it.key to it.value } ?: emptyMap()
+
+fun List<OverflowMenuItemConfig>.decodeBinaryResourcesToBitmap(
+  coroutineScope: CoroutineScope,
+  registerRepository: RegisterRepository,
+) {
+  this.forEach {
+    val resourceId = it.icon!!.reference!!.extractLogicalIdUuid()
+    coroutineScope.launch() {
+      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+        it.icon!!.decodedBitmap = binary.data.decodeToBitmap()
+      }
+    }
+  }
+}
+
+fun Sequence<NavigationMenuConfig>.decodeBinaryResourcesToBitmap(
+  coroutineScope: CoroutineScope,
+  registerRepository: RegisterRepository,
+) {
+  this.forEach {
+    val resourceId = it.menuIconConfig!!.reference!!.extractLogicalIdUuid()
+    coroutineScope.launch() {
+      registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+        it.menuIconConfig!!.decodedBitmap = binary.data.decodeToBitmap()
+      }
+    }
+  }
+}
+
+suspend fun loadRemoteImagesBitmaps(
+  views: List<ViewProperties>,
+  registerRepository: RegisterRepository,
+  computedValuesMap: Map<String, Any>,
+) {
+  suspend fun ViewProperties.loadIcons() {
+    when (this.viewType) {
+      ViewType.IMAGE -> {
+        val imageProps = this as ImageProperties
+        if (
+          !imageProps.imageConfig?.reference.isNullOrEmpty() &&
+            imageProps.imageConfig?.type == ICON_TYPE_REMOTE
+        ) {
+          val resourceId =
+            imageProps.imageConfig!!
+              .reference!!
+              .interpolate(computedValuesMap)
+              .extractLogicalIdUuid()
+          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+            imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
+          }
+        }
+      }
+      ViewType.ROW -> {
+        val container = this as RowProperties
+        container.children.forEach { it.loadIcons() }
+      }
+      ViewType.COLUMN -> {
+        val container = this as ColumnProperties
+        container.children.forEach { it.loadIcons() }
+      }
+      ViewType.CARD -> {
+        val card = this as CardViewProperties
+        card.content.forEach { it.loadIcons() }
+      }
+      ViewType.LIST -> {
+        val list = this as ListProperties
+        list.registerCard.views.forEach { it.loadIcons() }
+      }
+      else -> {
+        // Handle any other view types if needed
+      }
+    }
+  }
+  views.forEach { it.loadIcons() }
+}

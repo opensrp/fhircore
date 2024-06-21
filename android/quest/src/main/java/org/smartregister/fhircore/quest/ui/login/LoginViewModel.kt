@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Constraints
 import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -56,6 +55,7 @@ import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.practitionerEndpointUrl
 import org.smartregister.fhircore.engine.util.extension.valueToString
 import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.PractitionerDetails
 import retrofit2.HttpException
 import timber.log.Timber
@@ -135,10 +135,10 @@ constructor(
                 _loginErrorState.postValue(LoginErrorState.ERROR_FETCHING_USER)
               }
             },
-            onFetchPractitioner = { bundleResult ->
+            onFetchPractitioner = { bundleResult, userInfo ->
               if (bundleResult.isSuccess) {
                 val bundle = bundleResult.getOrDefault(FhirR4ModelBundle())
-                savePractitionerDetails(bundle) {
+                savePractitionerDetails(bundle, userInfo) {
                   _showProgressBar.postValue(false)
                   updateNavigateHome(true)
                 }
@@ -199,7 +199,7 @@ constructor(
     username: String,
     password: CharArray,
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit,
+    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
     val practitionerDetails =
       sharedPreferences.read<PractitionerDetails>(
@@ -212,7 +212,13 @@ constructor(
     } else {
       // Prevent user from logging in with different credentials
       val existingCredentials = secureSharedPreference.retrieveCredentials()
-      if (existingCredentials != null && !username.equals(existingCredentials.username, true)) {
+      if (
+        existingCredentials != null &&
+          !username.equals(
+            existingCredentials.username,
+            true,
+          )
+      ) {
         _showProgressBar.postValue(false)
         _loginErrorState.postValue(LoginErrorState.MULTI_USER_LOGIN_ATTEMPT)
       } else {
@@ -240,32 +246,40 @@ constructor(
 
   suspend fun fetchPractitioner(
     onFetchUserInfo: (Result<UserInfo>) -> Unit,
-    onFetchPractitioner: (Result<FhirR4ModelBundle>) -> Unit,
+    onFetchPractitioner: (Result<FhirR4ModelBundle>, UserInfo?) -> Unit,
   ) {
     try {
       val userInfo = keycloakService.fetchUserInfo().body()
       if (userInfo != null && !userInfo.keycloakUuid.isNullOrEmpty()) {
+        writeUserInfo(userInfo = userInfo)
         onFetchUserInfo(Result.success(userInfo))
         try {
           val bundle =
             fhirResourceService.getResource(url = userInfo.keycloakUuid!!.practitionerEndpointUrl())
-          onFetchPractitioner(Result.success(bundle))
+          onFetchPractitioner(Result.success(bundle), userInfo)
         } catch (httpException: HttpException) {
-          onFetchPractitioner(Result.failure(httpException))
+          onFetchPractitioner(Result.failure(httpException), userInfo)
           Timber.e(httpException.response()?.errorBody()?.charStream()?.readText())
         } catch (unknownHostException: UnknownHostException) {
-          onFetchPractitioner(Result.failure(unknownHostException))
-          Timber.e(unknownHostException, "An error occurred fetching the practitioner details")
+          onFetchPractitioner(Result.failure(unknownHostException), userInfo)
+          Timber.e(
+            unknownHostException,
+            "An error occurred fetching the practitioner details",
+          )
         } catch (socketTimeoutException: SocketTimeoutException) {
-          onFetchPractitioner(Result.failure(socketTimeoutException))
-          Timber.e(socketTimeoutException, "An error occurred fetching the practitioner details")
+          onFetchPractitioner(Result.failure(socketTimeoutException), userInfo)
+          Timber.e(
+            socketTimeoutException,
+            "An error occurred fetching the practitioner details",
+          )
         } catch (exception: Exception) {
-          onFetchPractitioner(Result.failure(exception))
+          onFetchPractitioner(Result.failure(exception), userInfo)
           Timber.e(exception, "An error occurred fetching the practitioner details")
         }
       } else {
         onFetchPractitioner(
           Result.failure(NullPointerException("Keycloak user is null. Failed to fetch user.")),
+          userInfo,
         )
       }
     } catch (httpException: HttpException) {
@@ -282,56 +296,173 @@ constructor(
     }
   }
 
-  fun savePractitionerDetails(bundle: FhirR4ModelBundle, postProcess: () -> Unit) {
+  fun savePractitionerDetails(
+    bundle: FhirR4ModelBundle,
+    userInfo: UserInfo?,
+    postProcess: () -> Unit,
+  ) {
     if (bundle.entry.isNullOrEmpty()) return
     viewModelScope.launch {
-      val practitionerDetails = bundle.entry.first().resource as PractitionerDetails
-      val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
-      val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
-      val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
-      val locationHierarchies =
-        practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
-      val careTeamIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
-            careTeams.map { it.id.extractLogicalIdUuid() }
+      bundle.entry.forEach { entry ->
+        val practitionerDetails = entry.resource as PractitionerDetails
+
+        val careTeams = practitionerDetails.fhirPractitionerDetails?.careTeams ?: listOf()
+        val organizations = practitionerDetails.fhirPractitionerDetails?.organizations ?: listOf()
+        val locations = practitionerDetails.fhirPractitionerDetails?.locations ?: listOf()
+        val practitioners = practitionerDetails.fhirPractitionerDetails?.practitioners ?: listOf()
+        val practitionerId =
+          practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString()
+        val locationHierarchies =
+          practitionerDetails.fhirPractitionerDetails?.locationHierarchyList ?: listOf()
+
+        val careTeamIds =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+              careTeams.map { it.id.extractLogicalIdUuid() }
+            }
           }
+        val organizationIds =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+              organizations.map { it.id.extractLogicalIdUuid() }
+            }
+          }
+        val locationIds =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+              locations.map { it.id.extractLogicalIdUuid() }
+            }
+          }
+
+        val location =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *locations.toTypedArray()).run {
+              locations.map { it.name }
+            }
+          }
+
+        val careTeam =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *careTeams.toTypedArray()).run {
+              careTeams.map { it.name }
+            }
+          }
+        val organization =
+          withContext(dispatcherProvider.io()) {
+            defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
+              organizations.map { it.name }
+            }
+          }
+
+        defaultRepository.createRemote(false, *practitioners.toTypedArray())
+        practitionerDetails.fhirPractitionerDetails?.groups?.toTypedArray()?.let {
+          defaultRepository.createRemote(false, *it)
         }
-      val organizationIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.createRemote(false, *organizations.toTypedArray()).run {
-            organizations.map { it.id.extractLogicalIdUuid() }
-          }
+        practitionerDetails.fhirPractitionerDetails?.practitionerRoles?.toTypedArray()?.let {
+          defaultRepository.createRemote(false, *it)
         }
-      val locationIds =
-        withContext(dispatcherProvider.io()) {
-          defaultRepository.createRemote(false, *locations.toTypedArray()).run {
-            locations.map { it.id.extractLogicalIdUuid() }
-          }
+        practitionerDetails.fhirPractitionerDetails?.organizationAffiliations?.toTypedArray()?.let {
+          defaultRepository.createRemote(false, *it)
         }
 
-      sharedPreferences.write(
-        key = SharedPreferenceKey.PRACTITIONER_ID.name,
-        value = practitionerDetails.fhirPractitionerDetails?.practitionerId.valueToString(),
-      )
-      sharedPreferences.write(SharedPreferenceKey.PRACTITIONER_DETAILS.name, practitionerDetails)
-      sharedPreferences.write(ResourceType.CareTeam.name, careTeamIds)
-      sharedPreferences.write(ResourceType.Organization.name, organizationIds)
-      sharedPreferences.write(ResourceType.Location.name, locationIds)
-      sharedPreferences.write(
-        SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
-        locationHierarchies,
-      )
-
+        if (practitionerId.isNotEmpty()) {
+          writePractitionerDetailsToShredPref(
+            careTeam = careTeam,
+            organization = organization,
+            location = location,
+            fhirPractitionerDetails = practitionerDetails,
+            careTeams = careTeamIds,
+            organizations = organizationIds,
+            locations = locationIds,
+            locationHierarchies = locationHierarchies,
+          )
+        } else {
+          // The assumption here is that only 1 practitioner is returned from the server in the
+          // practitioner details
+          practitioners.firstOrNull()?.identifier?.forEach { identifier ->
+            if (
+              identifier.hasUse() &&
+                identifier.use == org.hl7.fhir.r4.model.Identifier.IdentifierUse.SECONDARY &&
+                identifier.hasValue() &&
+                identifier.value == userInfo!!.keycloakUuid
+            ) {
+              writePractitionerDetailsToShredPref(
+                careTeam = careTeam,
+                organization = organization,
+                location = location,
+                fhirPractitionerDetails = practitionerDetails,
+                careTeams = careTeamIds,
+                organizations = organizationIds,
+                locations = locationIds,
+                locationHierarchies = locationHierarchies,
+              )
+            }
+          }
+        }
+      }
       postProcess()
     }
   }
 
+  private fun writeUserInfo(
+    userInfo: UserInfo?,
+  ) {
+    sharedPreferences.write(
+      key = SharedPreferenceKey.USER_INFO.name,
+      value = userInfo,
+    )
+  }
+
+  fun writePractitionerDetailsToShredPref(
+    careTeam: List<String>,
+    organization: List<String>,
+    location: List<String>,
+    fhirPractitionerDetails: PractitionerDetails,
+    careTeams: List<String>,
+    organizations: List<String>,
+    locations: List<String>,
+    locationHierarchies: List<LocationHierarchy>,
+  ) {
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_ID.name,
+      value = fhirPractitionerDetails.fhirPractitionerDetails?.id,
+    )
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_DETAILS.name,
+      fhirPractitionerDetails,
+    )
+    sharedPreferences.write(ResourceType.CareTeam.name, careTeams)
+    sharedPreferences.write(ResourceType.Organization.name, organizations)
+    sharedPreferences.write(ResourceType.Location.name, locations)
+    sharedPreferences.write(
+      SharedPreferenceKey.PRACTITIONER_LOCATION_HIERARCHIES.name,
+      locationHierarchies,
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+      value = location.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.CARE_TEAM.name,
+      value = careTeam.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.ORGANIZATION.name,
+      value = organization.joinToString(separator = ""),
+    )
+    sharedPreferences.write(
+      key = SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+      value = locations.joinToString(separator = ""),
+    )
+  }
+
   fun downloadNowWorkflowConfigs() {
-    val oneTimeWorkRequest: OneTimeWorkRequest =
+    workManager.enqueue(
       OneTimeWorkRequestBuilder<ConfigDownloadWorker>()
-        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-        .build()
-    workManager.enqueue(oneTimeWorkRequest)
+        .setConstraints(
+          Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+        )
+        .build(),
+    )
   }
 }

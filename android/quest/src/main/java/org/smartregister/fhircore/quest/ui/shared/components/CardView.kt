@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,11 +33,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import org.hl7.fhir.r4.model.ResourceType
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.CompoundTextProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageShape
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.SpacerProperties
 import org.smartregister.fhircore.engine.configuration.view.TextCase
+import org.smartregister.fhircore.engine.configuration.view.TextFontWeight
+import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
@@ -53,51 +59,58 @@ fun CardView(
   resourceData: ResourceData,
   navController: NavController,
 ) {
-  val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
-  Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
-    // Header section
-    Spacer(modifier = modifier.height(8.dp))
-    Row(
-      modifier = modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.Top,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      if (viewProperties.header != null) {
-        CompoundText(
-          modifier =
-            modifier
-              .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
-              .wrapContentWidth(Alignment.Start),
-          compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
-          resourceData = resourceData,
-          navController = navController,
-        )
-        if (viewProperties.headerAction != null && headerActionVisible) {
+  // Check if card is visible
+  if (viewProperties.visible.toBoolean()) {
+    val headerActionVisible = viewProperties.headerAction?.visible.toBoolean()
+    Column(modifier = modifier.background(viewProperties.headerBackgroundColor.parseColor())) {
+      // Header section
+      Row(
+        modifier =
+          modifier
+            .fillMaxWidth()
+            .conditional(viewProperties.header != null, { padding(top = 24.dp, bottom = 8.dp) }),
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        if (viewProperties.header != null) {
           CompoundText(
-            modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
-            compoundTextProperties = viewProperties.headerAction!!,
+            modifier =
+              modifier
+                .conditional(headerActionVisible, { weight(if (headerActionVisible) 0.6f else 1f) })
+                .wrapContentWidth(Alignment.Start),
+            compoundTextProperties = viewProperties.header!!.copy(textCase = TextCase.UPPER_CASE),
+            resourceData = resourceData,
+            navController = navController,
+          )
+          if (viewProperties.headerAction != null && headerActionVisible) {
+            CompoundText(
+              modifier = modifier.wrapContentWidth(Alignment.End).weight(0.4f),
+              compoundTextProperties = viewProperties.headerAction!!,
+              resourceData = resourceData,
+              navController = navController,
+            )
+          }
+        }
+      }
+      // Card section
+      Card(
+        elevation = viewProperties.elevation.dp,
+        modifier =
+          modifier
+            .padding(
+              start = viewProperties.padding.dp,
+              end = viewProperties.padding.dp,
+            )
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
+      ) {
+        Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
+          ViewRenderer(
+            viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
           )
         }
-      }
-    }
-    Spacer(modifier = modifier.height(8.dp))
-    // Card section
-    Card(
-      elevation = viewProperties.elevation.dp,
-      modifier =
-        modifier
-          .padding(horizontal = viewProperties.padding.dp)
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(viewProperties.cornerSize.dp)),
-    ) {
-      Column(modifier = modifier.padding(viewProperties.contentPadding.dp)) {
-        ViewRenderer(
-          viewProperties = viewProperties.content,
-          resourceData = resourceData,
-          navController = navController,
-        )
       }
     }
   }
@@ -166,8 +179,7 @@ private fun CardViewWithPaddingPreview() {
                   ),
               ),
             ),
-          header =
-            CompoundTextProperties(fontSize = 18.0f, primaryTextColor = "#6F7274", padding = 16),
+          header = null,
         ),
       resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
       navController = rememberNavController(),
@@ -188,6 +200,73 @@ private fun CardViewWithoutPaddingAndHeaderPreview() {
               CompoundTextProperties(
                 primaryText = "Richard Brown, M, 21",
                 primaryTextColor = "#000000",
+              ),
+            ),
+        ),
+      resourceData = ResourceData("id", ResourceType.Patient, emptyMap()),
+      navController = rememberNavController(),
+    )
+  }
+}
+
+@PreviewWithBackgroundExcludeGenerated
+@Composable
+private fun CardViewImageWithItems() {
+  Column(modifier = Modifier.fillMaxWidth()) {
+    CardView(
+      viewProperties =
+        CardViewProperties(
+          fillMaxWidth = true,
+          viewType = ViewType.CARD,
+          content =
+            listOf(
+              RowProperties(
+                viewType = ViewType.ROW,
+                alignment = ViewAlignment.START,
+                children =
+                  listOf(
+                    ImageProperties(
+                      imageConfig = ImageConfig(ICON_TYPE_LOCAL, "ic_service_points"),
+                      backgroundColor = "dangerColor",
+                      size = 70,
+                      shape = ImageShape.CIRCLE,
+                    ),
+                    ColumnProperties(
+                      viewType = ViewType.COLUMN,
+                      weight = 0.7f,
+                      children =
+                        listOf(
+                          CompoundTextProperties(
+                            primaryText = "Richard Brown, M, 21",
+                            primaryTextColor = "#000000",
+                            primaryTextFontWeight = TextFontWeight.BOLD,
+                          ),
+                          SpacerProperties(height = 8f),
+                          CompoundTextProperties(
+                            primaryText = "Richard Brown, M, 21",
+                            primaryTextColor = "#000000",
+                          ),
+                          SpacerProperties(height = 8f),
+                          CompoundTextProperties(
+                            secondaryText = "Service point description",
+                            primaryTextColor = "#000000",
+                          ),
+                          SpacerProperties(height = 16f),
+                          CompoundTextProperties(
+                            secondaryText = "Number of items",
+                            primaryTextColor = "#000000",
+                          ),
+                          ButtonProperties(
+                            status = "COMPLETED",
+                            viewType = ViewType.BUTTON,
+                            text = "COVID Vaccination",
+                            fillMaxWidth = false,
+                            startIcon = ImageConfig("ic_home", ICON_TYPE_LOCAL),
+                            alignment = ViewAlignment.CENTER,
+                          ),
+                        ),
+                    ),
+                  ),
               ),
             ),
         ),

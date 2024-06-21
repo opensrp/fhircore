@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
       fhirServerBaseUrl = "http://fake.base.url.com",
       oauthServerBaseUrl = "http://fake.keycloak.url.com",
       clientId = "fake-client-id",
-      clientSecret = "siri-fake",
       accountType = context.packageName,
     )
 
@@ -71,8 +70,6 @@ class AppConfigService @Inject constructor(@ApplicationContext val context: Cont
           },
       ),
     )
-
-  override fun provideConfigurationSyncPageSize(): String = "100"
 
   companion object {
     const val CARETEAM_SYSTEM = "http://fake.tag.com/CareTeam#system"

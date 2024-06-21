@@ -1,0 +1,63 @@
+---
+title: Syncronization
+---
+
+# Sync configuration
+
+This configuration is used to configure which resources are to be synced to and from the server. For every resource there is an optional property for indicating how the data (per resource) should be filter (search parameter).
+
+:::note
+An application should only have one `sync` configuration
+:::
+
+## Configuration Details
+
+### Parameter Resource
+
+```json
+{
+  "resourceType": "Parameters",
+  "configType": "sync",
+  "parameter": [
+    // ... list of search parameters ...
+  ]
+}
+
+```
+
+## List of Search Parameters
+
+The configration includes a list of search parameters, each represented as an object within the 'parameter' array.
+
+``` json
+{
+  "resource": {
+    "resourceType": "SearchParameter",
+    "name": "organization",
+    "code": "organization",
+    "base": ["Patient"],
+    "type": "token",
+    "expression": "#organization"
+  }
+}
+
+```
+
+## Config properties
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+appId | Unique identifier for the application | Yes | |
+configType | Type of configuration | Yes |  `sync` |
+resource | Represents a serach parameter configuration | Yes |  |
+resourceType | Specifies that the resource is a "SearchParameter" | Yes | |
+name | Describes the name of the search parameter such as "organization" | Yes | |
+code | Represents the code associated with the search parameter such as "organization" | Yes |  |
+base | Lists the resource types that this search parameter is applicable to, such as "Patient." | Yes |  |
+type | Specifies the type of the search parameter, e.g., "token." | Yes | |
+expression | : Defines the FHIRPath expression used for searching, e.g., "#organization." | Yes | |
+
+
+## Full Configuration
+
+The file can consist of  multiple search parameters, each represented as an object within the "parameter" array. The parameters cover a variety of FHIR resources such as Patient, Group, Encounter, Observation, Condition, CarePlan, QuestionnaireResponse, Questionnaire, StructureMap, Task, Library, Measure, MeasureReport, and Location.

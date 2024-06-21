@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ const val DROPDOWN_MENU_TEST_TAG = "dropDownMenuTestTag"
 const val FAB_BUTTON_TEST_TAG = "fabButtonTestTag"
 const val PROFILE_TOP_BAR_TEST_TAG = "profileTopBarTestTag"
 const val PROFILE_TOP_BAR_ICON_TEST_TAG = "profileTopBarIconTestTag"
+const val PADDING_BOTTOM_WITH_FAB = 80
+const val PADDING_BOTTOM_WITHOUT_FAB = 32
 
 @Composable
 fun ProfileScreen(
@@ -94,7 +96,7 @@ fun ProfileScreen(
   LaunchedEffect(Unit) {
     snackStateFlow.hookSnackBar(scaffoldState, profileUiState.resourceData, navController)
   }
-
+  val fabActions = profileUiState.profileConfiguration?.fabActions
   Scaffold(
     scaffoldState = scaffoldState,
     topBar = {
@@ -118,8 +120,6 @@ fun ProfileScreen(
       }
     },
     floatingActionButton = {
-      val fabActions = profileUiState.profileConfiguration?.fabActions
-
       if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
         ExtendedFab(
           modifier = Modifier.testTag(FAB_BUTTON_TEST_TAG),
@@ -140,7 +140,13 @@ fun ProfileScreen(
       )
     },
   ) { innerPadding ->
-    Box(modifier = modifier.background(Color.White).fillMaxSize().padding(innerPadding)) {
+    Box(
+      modifier =
+        modifier
+          .background(profileUiState.profileConfiguration?.contentBackgroundColor.parseColor())
+          .fillMaxSize()
+          .padding(innerPadding),
+    ) {
       if (profileUiState.showDataLoadProgressIndicator) {
         CircularProgressIndicator(
           modifier = modifier.align(Alignment.Center).size(24.dp),
@@ -148,12 +154,21 @@ fun ProfileScreen(
           color = MaterialTheme.colors.primary,
         )
       }
-      LazyColumn(state = lazyListState) {
+      LazyColumn(
+        state = lazyListState,
+        modifier =
+          Modifier.padding(
+            bottom =
+              if (!fabActions.isNullOrEmpty() && fabActions.first().visible) {
+                PADDING_BOTTOM_WITH_FAB.dp
+              } else PADDING_BOTTOM_WITHOUT_FAB.dp,
+          ),
+      ) {
         item(key = profileUiState.resourceData?.baseResourceId) {
           ViewRenderer(
             viewProperties = profileUiState.profileConfiguration?.views ?: emptyList(),
-            resourceData = profileUiState.resourceData
-                ?: ResourceData("", ResourceType.Patient, emptyMap()),
+            resourceData =
+              profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
           )
         }
@@ -226,8 +241,8 @@ private fun RenderSimpleAppTopBar(
   ) {
     ViewRenderer(
       viewProperties = topBarConfig.content,
-      resourceData = profileUiState.resourceData
-          ?: ResourceData("", ResourceType.Patient, emptyMap()),
+      resourceData =
+        profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
       navController = navController,
     )
   }
@@ -292,56 +307,60 @@ private fun ProfileTopAppBarMenuAction(
   navController: NavController,
   modifier: Modifier = Modifier,
 ) {
-  var showOverflowMenu by remember { mutableStateOf(false) }
-  IconButton(
-    onClick = { showOverflowMenu = !showOverflowMenu },
-    modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
-  ) {
-    Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White)
-  }
+  if (!profileUiState.profileConfiguration?.overFlowMenuItems.isNullOrEmpty()) {
+    var showOverflowMenu by remember { mutableStateOf(false) }
+    IconButton(
+      onClick = { showOverflowMenu = !showOverflowMenu },
+      modifier = modifier.testTag(DROPDOWN_MENU_TEST_TAG),
+    ) {
+      Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = null, tint = Color.White)
+    }
 
-  DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
-    profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
-      val overflowMenuItemConfig =
-        it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
-      if (!overflowMenuItemConfig.visible.toBoolean()) return@forEach
-      val enabled = overflowMenuItemConfig.enabled.toBoolean()
-      if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
-      val contentColor =
-        if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
+    DropdownMenu(expanded = showOverflowMenu, onDismissRequest = { showOverflowMenu = false }) {
+      profileUiState.profileConfiguration?.overFlowMenuItems?.forEach {
+        val overflowMenuItemConfig =
+          it.interpolate(profileUiState.resourceData?.computedValuesMap ?: emptyMap())
+        if (!overflowMenuItemConfig.visible.toBoolean()) return@forEach
+        val enabled = overflowMenuItemConfig.enabled.toBoolean()
+        if (overflowMenuItemConfig.showSeparator) Divider(color = DividerColor, thickness = 1.dp)
+        val contentColor =
+          if (enabled) overflowMenuItemConfig.titleColor.parseColor() else DefaultColor
 
-      DropdownMenuItem(
-        enabled = enabled,
-        onClick = {
-          showOverflowMenu = false
-          onEvent(
-            ProfileEvent.OverflowMenuClick(
+        DropdownMenuItem(
+          enabled = enabled,
+          onClick = {
+            showOverflowMenu = false
+            onEvent(
+              ProfileEvent.OverflowMenuClick(
+                navController = navController,
+                resourceData = profileUiState.resourceData,
+                overflowMenuItemConfig = overflowMenuItemConfig,
+              ),
+            )
+          },
+          contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+          modifier =
+            modifier
+              .fillMaxWidth()
+              .background(
+                color =
+                  if (overflowMenuItemConfig.confirmAction) {
+                    overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
+                  } else {
+                    Color.Transparent
+                  },
+              ),
+        ) {
+          Row {
+            Image(
+              imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
+              tint = contentColor,
               navController = navController,
-              resourceData = profileUiState.resourceData,
-              overflowMenuItemConfig = overflowMenuItemConfig,
-            ),
-          )
-        },
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        modifier =
-          modifier
-            .fillMaxWidth()
-            .background(
-              color =
-                if (overflowMenuItemConfig.confirmAction) {
-                  overflowMenuItemConfig.backgroundColor.parseColor().copy(alpha = 0.1f)
-                } else {
-                  Color.Transparent
-                },
-            ),
-      ) {
-        Row {
-          Image(
-            imageProperties = ImageProperties(imageConfig = overflowMenuItemConfig.icon),
-            tint = contentColor,
-          )
-          if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
-          Text(text = overflowMenuItemConfig.title, color = contentColor)
+              resourceData = profileUiState.resourceData!!,
+            )
+            if (overflowMenuItemConfig.icon != null) Spacer(modifier = Modifier.width(4.dp))
+            Text(text = overflowMenuItemConfig.title, color = contentColor)
+          }
         }
       }
     }

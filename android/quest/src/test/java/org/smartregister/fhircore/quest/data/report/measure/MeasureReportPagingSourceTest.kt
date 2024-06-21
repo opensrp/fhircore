@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.search.Search
+import com.google.android.fhir.SearchResult
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.coEvery
@@ -45,7 +46,9 @@ import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.rulesengine.RulesFactory
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
@@ -55,6 +58,13 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
 
   @Inject lateinit var fhirPathDataExtractor: FhirPathDataExtractor
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var parser: IParser
+
+  @Inject lateinit var locationService: LocationService
+
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private val fhirEngine: FhirEngine = mockk()
   private val registerId = "register id"
@@ -74,7 +84,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineTestRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
+          locationService = locationService,
         ),
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
@@ -94,6 +105,9 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
           configurationRegistry = configurationRegistry,
           configService = mockk(),
           configRulesExecutor = mockk(),
+          fhirPathDataExtractor = fhirPathDataExtractor,
+          parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 
@@ -135,7 +149,8 @@ class MeasureReportPagingSourceTest : RobolectricTest() {
   @Test
   @kotlinx.serialization.ExperimentalSerializationApi
   fun testRetrieveSubjectsWithResults() {
-    coEvery { fhirEngine.search<Patient>(any<Search>()) } returns listOf(Patient())
+    coEvery { fhirEngine.search<Patient>(any()) } returns
+      listOf(SearchResult(resource = Patient(), null, null))
     runBlocking(Dispatchers.Default) {
       val data = measureReportPagingSource.retrieveSubjects()
       Assert.assertEquals(1, data.size)

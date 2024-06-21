@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,33 +41,34 @@ interface ConfigService {
   fun provideResourceTags(sharedPreferencesHelper: SharedPreferencesHelper): List<Coding> {
     val tags = mutableListOf<Coding>()
     defineResourceTags().forEach { strategy ->
-      if (strategy.type == ResourceType.Practitioner.name) {
-        val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
-        if (id.isNullOrBlank()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-        } else {
-          strategy.tag.let { tag ->
-            tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
-          }
-        }
-      } else {
-        val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
-        if (ids.isNullOrEmpty()) {
-          strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
-        } else {
-          ids.forEach { id ->
+      when (strategy.type) {
+        ResourceType.Practitioner.name -> {
+          val id = sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_ID.name, null)
+          if (id.isNullOrBlank() || id.isEmpty()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
             strategy.tag.let { tag ->
               tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
             }
           }
         }
+        APP_VERSION -> tags.add(strategy.tag.copy())
+        else -> {
+          val ids = sharedPreferencesHelper.read<List<String>>(strategy.type)
+          if (ids.isNullOrEmpty()) {
+            strategy.tag.let { tag -> tags.add(tag.copy().apply { code = "Not defined" }) }
+          } else {
+            ids.forEach { id ->
+              strategy.tag.let { tag ->
+                tags.add(tag.copy().apply { code = id.extractLogicalIdUuid() })
+              }
+            }
+          }
+        }
       }
     }
-
     return tags
   }
-
-  fun provideConfigurationSyncPageSize(): String
 
   /**
    * Provide a list of custom search parameters.
@@ -91,5 +92,6 @@ interface ConfigService {
 
   companion object {
     const val ACTIVE_SEARCH_PARAM = "active"
+    const val APP_VERSION = "AppVersion"
   }
 }

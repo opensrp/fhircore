@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,9 @@ class ProfileFragment : Fragment() {
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
-  val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
-  val profileViewModel by viewModels<ProfileViewModel>()
-  val appMainViewModel by activityViewModels<AppMainViewModel>()
+  private val profileFragmentArgs by navArgs<ProfileFragmentArgs>()
+  private val profileViewModel by viewModels<ProfileViewModel>()
+  private val appMainViewModel by activityViewModels<AppMainViewModel>()
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -102,9 +102,8 @@ class ProfileFragment : Fragment() {
         eventBus.events
           .getFor(MainNavigationScreen.Profile.eventId(profileFragmentArgs.profileId))
           .onEach { appEvent ->
-            when (appEvent) {
-              is AppEvent.OnSubmitQuestionnaire ->
-                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
+              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
             }
           }
           .launchIn(viewLifecycleOwner.lifecycleScope)

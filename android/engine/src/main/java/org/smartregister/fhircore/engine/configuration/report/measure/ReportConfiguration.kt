@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.configuration.report.measure
 
 import kotlinx.serialization.Serializable
+import org.smartregister.fhircore.engine.domain.model.RoundingStrategy
 
 @Serializable
 data class ReportConfiguration(
@@ -26,4 +27,11 @@ data class ReportConfiguration(
   val url: String = "",
   val module: String = "",
   val subjectXFhirQuery: String? = null,
-)
+  val roundingStrategy: RoundingStrategy? = DEFAULT_ROUNDING_STRATEGY,
+  val roundingPrecision: Int? = DEFAULT_ROUNDING_PRECISION,
+) {
+  companion object {
+    val DEFAULT_ROUNDING_STRATEGY = RoundingStrategy.ROUND_UP
+    val DEFAULT_ROUNDING_PRECISION = 0
+  }
+}

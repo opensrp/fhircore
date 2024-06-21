@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,19 @@ sealed class ConfigType(
   val parseAsResource: Boolean = false,
   val multiConfig: Boolean = false,
 ) {
-  object Application : ConfigType("application")
+  data object Application : ConfigType("application")
 
-  object Sync : ConfigType("sync", true)
+  data object Sync : ConfigType(name = "sync", parseAsResource = true)
 
-  object Navigation : ConfigType("navigation")
+  data object Navigation : ConfigType("navigation")
 
-  object Register : ConfigType("register", multiConfig = true)
+  data object Register : ConfigType(name = "register", multiConfig = true)
 
-  object MeasureReport : ConfigType("measureReport", multiConfig = true)
+  data object MeasureReport : ConfigType(name = "measureReport", multiConfig = true)
 
-  object Profile : ConfigType("profile", multiConfig = true)
+  data object Profile : ConfigType(name = "profile", multiConfig = true)
 
-  object GeoWidget : ConfigType("geoWidget", multiConfig = true)
+  data object GeoWidget : ConfigType(name = "geoWidget", multiConfig = true)
+
+  data object DataMigration : ConfigType(name = "dataMigration", multiConfig = true)
 }

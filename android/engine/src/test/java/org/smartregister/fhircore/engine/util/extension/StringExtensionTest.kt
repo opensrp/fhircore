@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ class StringExtensionTest {
   @Test
   fun practitionerEndpointUrlShouldMatch() {
     Assert.assertEquals(
-      "practitioner-details?keycloak-uuid=my-keycloak-id",
+      "PractitionerDetail?keycloak-uuid=my-keycloak-id",
       "my-keycloak-id".practitionerEndpointUrl(),
     )
   }

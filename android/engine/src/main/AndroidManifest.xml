@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="org.smartregister.fhircore.engine">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,12 +13,6 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application>
-
-        <activity
-            android:name=".HiltActivityForTest"
-            android:exported="false"
-            android:theme="@style/AppTheme" />
-
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
@@ -31,5 +24,6 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+        <activity android:name=".util.test.HiltActivityForTest" />
     </application>
 </manifest>

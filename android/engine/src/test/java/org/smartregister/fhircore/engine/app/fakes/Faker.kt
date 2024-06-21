@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,18 @@
 
 package org.smartregister.fhircore.engine.app.fakes
 
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.CarePlan
@@ -32,6 +37,7 @@ import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
 import org.hl7.fhir.r4.model.StringType
+import org.smartregister.fhircore.engine.app.AppConfigService
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
@@ -49,9 +55,24 @@ object Faker {
     useAlternativeNames = true
   }
 
+  private val testDispatcher = UnconfinedTestDispatcher()
+  private val configService =
+    AppConfigService(ApplicationProvider.getApplicationContext<HiltTestApplication>())
+
+  private val testDispatcherProvider =
+    object : DispatcherProvider {
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun main() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
+
   fun buildTestConfigurationRegistry(
     sharedPreferencesHelper: SharedPreferencesHelper = mockk(),
-    dispatcherProvider: DispatcherProvider = mockk(),
+    dispatcherProvider: DispatcherProvider = testDispatcherProvider,
   ): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
@@ -78,10 +99,13 @@ object Faker {
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = sharedPreferencesHelper,
           dispatcherProvider = dispatcherProvider,
-          configService = mockk(),
+          configService = configService,
           json = json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
         ),
       )
+
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
 
     runBlocking {
       configurationRegistry.loadConfigurations(

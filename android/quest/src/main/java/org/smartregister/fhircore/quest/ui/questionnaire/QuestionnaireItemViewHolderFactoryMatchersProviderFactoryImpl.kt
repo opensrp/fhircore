@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,18 @@ package org.smartregister.fhircore.quest.ui.questionnaire
 import com.google.android.fhir.datacapture.QuestionnaireFragment
 import com.google.android.fhir.datacapture.QuestionnaireItemViewHolderFactoryMatchersProviderFactory
 import com.google.android.fhir.datacapture.contrib.views.barcode.BarCodeReaderViewHolderFactory
+import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationGpsCoordinateViewHolderFactory
+import com.google.android.fhir.datacapture.contrib.views.locationwidget.LocationWidgetViewHolderFactory
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import org.smartregister.fhircore.quest.ui.sdc.PasswordViewHolderFactory
+
+const val OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER =
+  "org.smartregister.fhircore.quest.QuestionnaireItemViewHolderFactoryMatchersProvider"
+private const val BARCODE_URL = "https://smartregister.org/barcode-type-widget-extension"
+const val BARCODE_NAME = "barcode"
+private const val PASSWORD_EXTENSION_URL =
+  "https://github.com/google/android-fhir/StructureDefinition/questionnaire-itemControl"
+private const val PASSWORD_VALUE = "password-widget"
 
 object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   QuestionnaireItemViewHolderFactoryMatchersProviderFactory {
@@ -27,17 +38,25 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
   override fun get(
     provider: String,
   ): QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider {
-    return QuestionnaireItemViewHolderFactoryMatchersProviderImpl
+    return when (provider) {
+      OPENSRP_ITEM_VIEWHOLDER_FACTORY_MATCHERS_PROVIDER ->
+        OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl
+      else -> throw NotImplementedError()
+    }
   }
 
-  object QuestionnaireItemViewHolderFactoryMatchersProviderImpl :
+  object OpenSRPQuestionnaireItemViewHolderFactoryMatchersProviderImpl :
     QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatchersProvider() {
-
-    const val BARCODE_URL = "https://fhir.labs.smartregister.org/barcode-type-widget-extension"
-    const val BARCODE_NAME = "barcode"
 
     override fun get(): List<QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher> {
       return listOf(
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          PasswordViewHolderFactory,
+        ) { questionnaireItem ->
+          questionnaireItem.getExtensionByUrl(PASSWORD_EXTENSION_URL).let {
+            if (it == null) false else it.value.toString() == PASSWORD_VALUE
+          }
+        },
         QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
           BarCodeReaderViewHolderFactory,
         ) { questionnaireItem ->
@@ -45,6 +64,14 @@ object QuestionnaireItemViewHolderFactoryMatchersProviderFactoryImpl :
             if (it == null) false else it.value.asStringValue() == BARCODE_NAME
           }
         },
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = LocationGpsCoordinateViewHolderFactory,
+          matches = LocationGpsCoordinateViewHolderFactory::matcher,
+        ),
+        QuestionnaireFragment.QuestionnaireItemViewHolderFactoryMatcher(
+          factory = LocationWidgetViewHolderFactory,
+          matches = LocationWidgetViewHolderFactory::matcher,
+        ),
       )
     }
   }

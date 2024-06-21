@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.IParser
 import org.smartregister.model.location.LocationHierarchy
 import org.smartregister.model.practitioner.FhirPractitionerDetails
-import org.smartregister.model.practitioner.KeycloakUserDetails
 import org.smartregister.model.practitioner.PractitionerDetails
-import org.smartregister.model.practitioner.UserBioData
 
 fun FhirContext.getCustomJsonParser(): IParser {
   return this.apply {
@@ -31,8 +29,6 @@ fun FhirContext.getCustomJsonParser(): IParser {
           PractitionerDetails::class.java,
           FhirPractitionerDetails::class.java,
           LocationHierarchy::class.java,
-          KeycloakUserDetails::class.java,
-          UserBioData::class.java,
         ),
       )
     }

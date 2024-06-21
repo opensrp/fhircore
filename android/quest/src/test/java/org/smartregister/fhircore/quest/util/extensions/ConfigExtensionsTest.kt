@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,156 @@
 
 package org.smartregister.fhircore.quest.util.extensions
 
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import javax.inject.Inject
+import junit.framework.TestCase.assertNotNull
 import kotlin.test.assertEquals
+import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
+import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
+import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
+import org.smartregister.fhircore.engine.configuration.view.CardViewProperties
+import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
+import org.smartregister.fhircore.engine.configuration.view.ImageProperties
+import org.smartregister.fhircore.engine.configuration.view.ListProperties
+import org.smartregister.fhircore.engine.configuration.view.RowProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.domain.model.ActionConfig
 import org.smartregister.fhircore.engine.domain.model.ActionParameter
 import org.smartregister.fhircore.engine.domain.model.ActionParameterType
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.OverflowMenuItemConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
+import org.smartregister.fhircore.engine.domain.model.ViewType
+import org.smartregister.fhircore.engine.util.extension.showToast
+import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.app.fakes.Faker
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
-import org.smartregister.fhircore.quest.ui.questionnaire.QuestionnaireActivity
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 
+@HiltAndroidTest
 class ConfigExtensionsTest : RobolectricTest() {
+  @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var defaultRepository: DefaultRepository
+
+  @Inject lateinit var registerRepository: RegisterRepository
 
   private val navController = mockk<NavController>(relaxUnitFun = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
   private val navigationMenuConfig by lazy {
-    NavigationMenuConfig(id = "id", display = "menu", visible = true)
+    NavigationMenuConfig(
+      id = "id",
+      display = "menu",
+      visible = true,
+      menuIconConfig =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
   }
+  private val overflowMenuItemConfig by lazy {
+    OverflowMenuItemConfig(
+      visible = "true",
+      icon =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
+  }
+  private val imageProperties =
+    ImageProperties(
+      imageConfig =
+        ImageConfig(
+          type = ICON_TYPE_REMOTE,
+          reference = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+        ),
+    )
+
+  private val profileConfiguration =
+    ProfileConfiguration(
+      id = "1",
+      appId = "a",
+      fhirResource =
+        FhirResourceConfig(
+          baseResource = ResourceConfig(resource = ResourceType.Patient),
+          relatedResources =
+            listOf(
+              ResourceConfig(
+                resource = ResourceType.Encounter,
+              ),
+              ResourceConfig(
+                resource = ResourceType.Task,
+              ),
+            ),
+        ),
+      views =
+        listOf(
+          CardViewProperties(
+            viewType = ViewType.CARD,
+            content =
+              listOf(
+                ListProperties(
+                  viewType = ViewType.LIST,
+                  registerCard =
+                    RegisterCardConfig(
+                      views =
+                        listOf(
+                          ColumnProperties(
+                            viewType = ViewType.COLUMN,
+                            children =
+                              listOf(
+                                RowProperties(
+                                  viewType = ViewType.ROW,
+                                  children =
+                                    listOf(
+                                      imageProperties,
+                                    ),
+                                ),
+                              ),
+                          ),
+                        ),
+                    ),
+                ),
+              ),
+          ),
+        ),
+    )
+
+  private val binaryImage = Faker.buildBinaryResource()
   private val patient = Faker.buildPatient()
   private val resourceData by lazy {
     ResourceData(
@@ -67,6 +177,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    hiltAndroidRule.inject()
     every { navController.context } returns context
   }
 
@@ -77,13 +188,13 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -92,6 +203,66 @@ class ConfigExtensionsTest : RobolectricTest() {
       resourceConfig,
       slotBundle.captured.getParcelable(NavigationArg.RESOURCE_CONFIG),
     )
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsTrue() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = true,
+      )
+    every { navController.currentDestination } returns
+      NavDestination(navigatorName = "navigating").apply { id = 2384 }
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertTrue(slotNavOptions.captured.isPopUpToInclusive())
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsFalse() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = false,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
+  }
+
+  @Test
+  fun testLaunchProfileActionOnClickWhenPopBackStackIsNull() {
+    val clickAction =
+      ActionConfig(
+        id = "profileId",
+        trigger = ActionTrigger.ON_QUESTIONNAIRE_SUBMISSION,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
+        popNavigationBackStack = null,
+      )
+    listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
+    val slotInt = slot<Int>()
+    val slotBundle = slot<Bundle>()
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
+    Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
+    Assert.assertEquals(4, slotBundle.captured.size())
+    Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
   }
 
   @Test
@@ -109,14 +280,14 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "profileId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_PROFILE,
+        workflow = ApplicationWorkflow.LAUNCH_PROFILE.name,
         resourceConfig = resourceConfig,
         params = params,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify { navController.navigate(capture(slotInt), capture(slotBundle), null) }
     Assert.assertEquals(MainNavigationScreen.Profile.route, slotInt.captured)
     Assert.assertEquals(4, slotBundle.captured.size())
     Assert.assertEquals("profileId", slotBundle.captured.getString(NavigationArg.PROFILE_ID))
@@ -136,7 +307,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "registerId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = "menu",
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -169,7 +340,10 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Test
   fun testLaunchSettingsActionOnClick() {
     val clickAction =
-      ActionConfig(trigger = ActionTrigger.ON_CLICK, workflow = ApplicationWorkflow.LAUNCH_SETTINGS)
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_SETTINGS.name,
+      )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     verify { navController.navigate(capture(slotInt)) }
@@ -182,15 +356,24 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "reportId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REPORT,
+        workflow = ApplicationWorkflow.LAUNCH_REPORT.name,
+        params =
+          listOf(
+            ActionParameter(
+              value = "practitioner_id",
+              key = "practitionerId",
+              paramType = ActionParameterType.RESOURCE_ID,
+            ),
+          ),
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(MainNavigationScreen.Reports.route, slotInt.captured)
-    Assert.assertEquals(1, slotBundle.captured.size())
+    Assert.assertEquals(2, slotBundle.captured.size())
     Assert.assertEquals("reportId", slotBundle.captured.getString(NavigationArg.REPORT_ID))
+    Assert.assertEquals("practitioner_id", slotBundle.captured.getString(NavigationArg.RESOURCE_ID))
   }
 
   @Test
@@ -199,16 +382,73 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = "geoWidgetId",
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_MAP,
+        workflow = ApplicationWorkflow.LAUNCH_MAP.name,
       )
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
-    Assert.assertEquals(MainNavigationScreen.GeoWidget.route, slotInt.captured)
+    Assert.assertEquals(MainNavigationScreen.GeoWidgetLauncher.route, slotInt.captured)
     verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
     Assert.assertEquals(1, slotBundle.captured.size())
-    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.CONFIG_ID))
+    Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.GEO_WIDGET_ID))
+  }
+
+  @Test
+  fun testLaunchDiallerOnClick() {
+    val patientWithPhoneNumber = patient.copy()
+    patientWithPhoneNumber.apply {
+      addTelecom(
+        ContactPoint().apply { this.value = "0700000000" },
+      )
+    }
+
+    val computedValuesWithPhoneNumberMutable = resourceData.computedValuesMap.toMutableMap()
+    computedValuesWithPhoneNumberMutable["patientPhoneNumber"] =
+      patientWithPhoneNumber.telecom.first().value
+    val computedValuesWithPhoneNumber = computedValuesWithPhoneNumberMutable.toMap()
+
+    val resourceDataWithPhoneNumber =
+      ResourceData(
+        baseResourceId = patient.logicalId,
+        baseResourceType = ResourceType.Patient,
+        computedValuesMap = computedValuesWithPhoneNumber,
+      )
+
+    val clickAction =
+      ActionConfig(
+        id = "diallerId",
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.LAUNCH_DIALLER.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "patientPhoneNumber",
+              value = "@{patientPhoneNumber}",
+              paramType = ActionParameterType.PARAMDATA,
+            ),
+          ),
+      )
+
+    listOf(clickAction)
+      .handleClickEvent(
+        navController = navController,
+        resourceData = resourceDataWithPhoneNumber,
+      ) // make a clicking action
+
+    // make sure no errors thrown when the new activity is started. should return nothing
+    every { context.startActivity(any()) } returns Unit
+
+    // make sure correct function with correct signature is called
+    verify {
+      context.startActivity(
+        withArg {
+          assertEquals(it.action, Intent.ACTION_DIAL)
+          assertEquals(it.data, Uri.parse("tel:0700000000"))
+        },
+        null,
+      )
+    }
   }
 
   @Test
@@ -217,7 +457,7 @@ class ConfigExtensionsTest : RobolectricTest() {
       ActionConfig(
         id = null,
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_REGISTER,
+        workflow = ApplicationWorkflow.LAUNCH_REGISTER.name,
         display = null,
         toolBarHomeNavigation = ToolBarHomeNavigation.NAVIGATE_BACK,
       )
@@ -243,7 +483,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC,
+        workflow = ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC.name,
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify { context.startActivity(any()) }
@@ -261,18 +501,16 @@ class ConfigExtensionsTest : RobolectricTest() {
     val clickAction =
       ActionConfig(
         trigger = ActionTrigger.ON_CLICK,
-        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE,
+        workflow = ApplicationWorkflow.LAUNCH_QUESTIONNAIRE.name,
         questionnaire = QuestionnaireConfig(id = "qid", title = "Form"),
       )
     listOf(clickAction).handleClickEvent(navController, resourceData)
     verify {
-      (navController.context as QuestionnaireHandler).launchQuestionnaire<QuestionnaireActivity>(
+      (navController.context as QuestionnaireHandler).launchQuestionnaire(
         context = any(),
-        intentBundle = any(),
+        extraIntentBundle = any(),
         questionnaireConfig = any(),
         actionParams = emptyList(),
-        baseResourceId = patient.logicalId,
-        baseResourceType = patient.resourceType.name,
       )
     }
   }
@@ -281,7 +519,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(
@@ -329,7 +567,7 @@ class ConfigExtensionsTest : RobolectricTest() {
     val actionConfig =
       ActionConfig(
         ActionTrigger.ON_CLICK,
-        ApplicationWorkflow.LAUNCH_PROFILE,
+        ApplicationWorkflow.LAUNCH_PROFILE.name,
         params =
           listOf(
             ActionParameter(
@@ -383,5 +621,112 @@ class ConfigExtensionsTest : RobolectricTest() {
     val array =
       arrayOf(ActionParameter(key = "k", value = "v", paramType = ActionParameterType.PARAMDATA))
     Assert.assertEquals(mapOf("k" to "v"), array.toParamDataMap())
+  }
+
+  @Test
+  fun testShowToastWhenAnImageWithActionParamsIsPressed() {
+    val context = mockk<Context>(relaxed = true)
+    val navController = NavController(context)
+    val mockClipboardManager = mockk<ClipboardManager>()
+    val clickAction =
+      ActionConfig(
+        trigger = ActionTrigger.ON_CLICK,
+        workflow = ApplicationWorkflow.COPY_TEXT.name,
+        params =
+          listOf(
+            ActionParameter(
+              key = "copyText",
+              paramType = ActionParameterType.PARAMDATA,
+              value = "https://my-url",
+            ),
+          ),
+      )
+    val text = "Link ${clickAction.params.first().value} copied successfully"
+    every { context.getSystemService(Context.CLIPBOARD_SERVICE) } returns mockClipboardManager
+    every {
+      context.getString(R.string.copy_text_success_message, clickAction.params.first().value)
+    } returns text
+    every { mockClipboardManager.setPrimaryClip(any()) } returns Unit
+    listOf(clickAction).handleClickEvent(navController, resourceData, context = context)
+    verify { context.showToast(text, Toast.LENGTH_LONG) }
+  }
+
+  @Test
+  fun decodeBinaryResourcesToBitmapOnNavigationMenuClientRegistersDoneCorrectly(): Unit =
+    runBlocking {
+      defaultRepository.create(addResourceTags = true, binaryImage)
+      val navigationMenuConfigs = sequenceOf(navigationMenuConfig)
+      runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
+      assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
+    }
+
+  @Test
+  fun decodeBinaryResourcesToBitmapOnOverflowMenuConfigDoneCorrectly(): Unit = runBlocking {
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    val navigationMenuConfigs = listOf(overflowMenuItemConfig)
+    runBlocking { navigationMenuConfigs.decodeBinaryResourcesToBitmap(this, registerRepository) }
+    assertNotNull(navigationMenuConfig.menuIconConfig!!.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenProfileConfiguration(): Unit = runBlocking {
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      profileConfiguration.views,
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenCardViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenListViewProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(cardViewProperties.content[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenColumnProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(listViewProperties.registerCard.views[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
+  }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenRowProperties(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    defaultRepository.create(addResourceTags = true, binaryImage)
+    loadRemoteImagesBitmaps(
+      listOf(columnProperties.children[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+    assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
 }

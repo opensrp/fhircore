@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.smartregister.fhircore.engine.util.extension
 
 import com.google.android.fhir.datacapture.extensions.asStringValue
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.datacapture.extensions.targetStructureMap
-import com.google.android.fhir.logicalId
 import java.util.Locale
 import org.hl7.fhir.r4.model.BooleanType
 import org.hl7.fhir.r4.model.Bundle
@@ -49,14 +49,19 @@ fun QuestionnaireResponse.QuestionnaireResponseItemComponent.asLabel() =
     ""
   }
 
-fun Questionnaire.isExtractionCandidate() =
+fun Questionnaire.extractByStructureMap() =
   this.targetStructureMap != null ||
     this.extension.any { it.url.contains("sdc-questionnaire-itemExtractionContext") }
 
 fun Questionnaire.cqfLibraryIds() =
   this.extension
-    .filter { it.url.contains("cqf-library") }
+    .filter { it.url.contains("cqf-library", ignoreCase = true) }
     .mapNotNull { it.value?.asStringValue()?.replace("Library/", "") }
+
+fun Questionnaire.cqfLibraryUrls() =
+  this.extension
+    .filter { it.url.contains("cqf-library", ignoreCase = true) }
+    .mapNotNull { it.value?.asStringValue() }
 
 fun QuestionnaireResponse.findSubject(bundle: Bundle?) =
   IdType(this.subject.reference).let { subject ->
@@ -155,9 +160,7 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
   forEach { item ->
     prePopulationParams
       .firstOrNull {
-        it.linkId == item.linkId &&
-          !it.value.isNullOrEmpty() &&
-          !it.value.contains(interpolationPrefix)
+        it.linkId == item.linkId && it.value.isNotEmpty() && !it.value.contains(interpolationPrefix)
       }
       ?.let { actionParam ->
         /**
@@ -167,12 +170,23 @@ fun List<Questionnaire.QuestionnaireItemComponent>.prePopulateInitialValues(
         if (item.hasExtension(EXTENSION_INITIAL_EXPRESSION_URL)) {
           item.removeExtension(EXTENSION_INITIAL_EXPRESSION_URL)
         }
-        item.initial =
-          arrayListOf(
-            Questionnaire.QuestionnaireItemInitialComponent().apply {
-              value = actionParam.dataType?.let { actionParam.value.castToType(it) }
-            },
-          )
+        if (item.type == Questionnaire.QuestionnaireItemType.CHOICE) {
+          item.answerOption
+            .filter {
+              (it.value is Coding) &&
+                if (actionParam.value.contains(",")) {
+                  actionParam.value.split(",").contains((it.value as Coding).code)
+                } else actionParam.value == (it.value as Coding).code
+            }
+            .forEach { it.initialSelected = true }
+        } else {
+          item.initial =
+            arrayListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().apply {
+                value = actionParam.dataType?.let { actionParam.value.castToType(it) }
+              },
+            )
+        }
       }
     if (item.item.isNotEmpty()) {
       item.item.prePopulateInitialValues(interpolationPrefix, prePopulationParams)

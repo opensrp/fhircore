@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.view.ButtonProperties
 import org.smartregister.fhircore.engine.configuration.view.ButtonType
 import org.smartregister.fhircore.engine.configuration.view.ViewAlignment
+import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.domain.model.ViewType
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.ui.theme.DangerColor
@@ -44,7 +45,6 @@ class ButtonPropertiesTest : RobolectricTest() {
       enabled = "@{enabled}",
       text = "@{text}",
       status = "@{status}",
-      smallSized = false,
       fontSize = 14.0f,
       actions = emptyList(),
       buttonType = ButtonType.MEDIUM,
@@ -58,7 +58,20 @@ class ButtonPropertiesTest : RobolectricTest() {
     map["enabled"] = "true"
     map["text"] = "ANC Visit"
     val interpolatedButton = buttonProperties.interpolate(map)
-    Assert.assertEquals("DUE", interpolatedButton.status)
+    Assert.assertEquals(ServiceStatus.DUE.name, interpolatedButton.status)
+    Assert.assertEquals("#FFA500", interpolatedButton.backgroundColor)
+    Assert.assertEquals("true", interpolatedButton.enabled)
+    Assert.assertEquals("ANC Visit", interpolatedButton.text)
+  }
+
+  @Test
+  fun testInterpolateInButtonPropertiesUpcoming() {
+    val map = mutableMapOf<String, String>()
+    map["backgroundColor"] = "#FFA500"
+    map["enabled"] = "true"
+    map["text"] = "ANC Visit"
+    val interpolatedButton = buttonProperties.interpolate(map)
+    Assert.assertEquals(ServiceStatus.UPCOMING.name, interpolatedButton.status)
     Assert.assertEquals("#FFA500", interpolatedButton.backgroundColor)
     Assert.assertEquals("true", interpolatedButton.enabled)
     Assert.assertEquals("ANC Visit", interpolatedButton.text)
@@ -82,5 +95,8 @@ class ButtonPropertiesTest : RobolectricTest() {
     map["status"] = "UPCOMING"
     val statusColorUpcoming = buttonProperties.statusColor(map)
     Assert.assertEquals(statusColorUpcoming, DefaultColor)
+    map["status"] = "FAILED"
+    val statusColorFailed = buttonProperties.statusColor(map)
+    Assert.assertEquals(statusColorFailed, DangerColor)
   }
 }

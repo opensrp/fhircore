@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ class FakeConfigService @Inject constructor() : ConfigService {
       fhirServerBaseUrl = "https://fhir-server.com",
       oauthServerBaseUrl = "https://fhir-oauth-server.com/oauth",
       clientId = "client-id",
-      clientSecret = "client-secret",
       accountType = "account-type",
     )
   }
@@ -70,10 +69,6 @@ class FakeConfigService @Inject constructor() : ConfigService {
           },
       ),
     )
-
-  override fun provideConfigurationSyncPageSize(): String {
-    return "100"
-  }
 
   companion object {
     const val CARETEAM_SYSTEM = "http://fake.tag.com/CareTeam#system"

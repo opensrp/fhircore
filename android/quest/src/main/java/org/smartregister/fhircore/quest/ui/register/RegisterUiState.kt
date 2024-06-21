@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ data class RegisterUiState(
   val registerConfiguration: RegisterConfiguration? = null,
   val registerId: String = "",
   val totalRecordsCount: Long = 0,
+  val filteredRecordsCount: Long = 0,
   val pagesCount: Int = 1,
   val progressPercentage: Flow<Int> = flowOf(0),
   val isSyncUpload: Flow<Boolean> = flowOf(false),
+  val params: Map<String, String> = emptyMap(),
 )

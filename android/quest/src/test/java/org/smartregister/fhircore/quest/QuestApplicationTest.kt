@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest
 
+import android.content.Intent
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -25,11 +26,13 @@ import io.mockk.spyk
 import io.sentry.Sentry
 import io.sentry.android.core.SentryAndroid
 import io.sentry.android.core.SentryAndroidOptions
+import kotlin.test.assertNotNull
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
+import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 
 @HiltAndroidTest
 class QuestApplicationTest : RobolectricTest() {
@@ -43,7 +46,6 @@ class QuestApplicationTest : RobolectricTest() {
     application = QuestApplication()
     application.referenceUrlResolver = mockk()
     application.xFhirQueryResolver = mockk()
-    application.workerFactory = mockk()
   }
 
   @Test
@@ -90,5 +92,16 @@ class QuestApplicationTest : RobolectricTest() {
     val config = application.workManagerConfiguration
 
     Assert.assertNotNull(config)
+  }
+
+  @Test
+  fun testOnCreate() {
+    hiltRule.inject()
+    application.onCreate()
+
+    val intent = Intent(application, AppSettingActivity::class.java)
+    application.startActivity(intent)
+    assertNotNull(application.referenceUrlResolver)
+    assertNotNull(application.xFhirQueryResolver)
   }
 }

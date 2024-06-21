@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,24 +33,34 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import javax.inject.Inject
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.quest.data.DataMigration
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 
 @HiltAndroidTest
 class ConfigDownloadWorkerTest : RobolectricTest() {
 
   @get:Rule(order = 0) val hiltAndroidRule = HiltAndroidRule(this)
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var defaultRepository: DefaultRepository
   private val configurationRegistry = mockk<ConfigurationRegistry>()
   private lateinit var configDownloadWorker: ConfigDownloadWorker
+  private lateinit var dataMigration: DataMigration
 
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    dataMigration = mockk()
     configDownloadWorker =
       TestListenableWorkerBuilder<ConfigDownloadWorker>(ApplicationProvider.getApplicationContext())
         .setWorkerFactory(ConfigDownloadWorkerFactory())
@@ -72,6 +82,7 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun testThatDoWorkCallsDownloadNonWorkflowConfigs() {
     coEvery { configurationRegistry.fetchNonWorkflowConfigResources() } just runs
+    coEvery { dataMigration.migrate() } just runs
     runTest {
       val result = configDownloadWorker.doWork()
       coVerify { configurationRegistry.fetchNonWorkflowConfigResources() }
@@ -89,7 +100,9 @@ class ConfigDownloadWorkerTest : RobolectricTest() {
         appContext = appContext,
         workerParams = workerParameters,
         configurationRegistry = configurationRegistry,
-        dispatcherProvider = this@ConfigDownloadWorkerTest.coroutineTestRule.testDispatcherProvider,
+        dispatcherProvider = dispatcherProvider,
+        defaultRepository = defaultRepository,
+        dataMigration = dataMigration,
       )
     }
   }

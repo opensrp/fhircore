@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,9 @@ object NavigationArg {
   const val SCREEN_TITLE = "screenTitle"
   const val RESOURCE_ID = "resourceId"
   const val RESOURCE_CONFIG = "resourceConfig"
-  const val CONFIG_ID = "configId"
+  const val MULTI_SELECT_VIEW_CONFIG = "multiSelectViewConfig"
+  const val GEO_WIDGET_ID = "geoWidgetId"
   const val REPORT_ID = "reportId"
   const val PARAMS = "params"
   const val TOOL_BAR_HOME_NAVIGATION = "toolBarHomeNavigation"
-
-  /** Create route paths */
-  fun routePathsOf(vararg navArg: String): String =
-    "?" + navArg.toList().joinToString("&") { "$it={$it}" }
-
-  /** Bind nav arguments values */
-  fun bindArgumentsOf(vararg navArg: Pair<String, String?>): String =
-    "?" + navArg.joinToString("&") { "${it.first}=${it.second}" }
 }

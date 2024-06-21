@@ -1,0 +1,32 @@
+{
+  "version": 8,
+  "name": "base-layer-switcher-style",
+  "metadata": {
+    "mapbox:autocomposite": true,
+    "mapbox:type": "default",
+    "mapbox:sdk-support": {
+      "js": "0.40.0",
+      "android": "5.2.0",
+      "ios": "3.7.0"
+    }
+  },
+  "center": [
+    34.314754256941,
+    2.540735335247092
+  ],
+  "zoom": 6.419880084517846,
+  "bearing": 0,
+  "pitch": 0,
+  "sources": {},
+  "sprite": "mapbox://sprites/ona/cj6sktb780f0l2rqrg3pqsehx/6f6dlcjqa04nic4ak4vxtf2rm",
+  "glyphs": "mapbox://fonts/ona/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": {
+        "background-color": "hsl(0, 0%, 100%)"
+      }
+    }
+  ]
+}

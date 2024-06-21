@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package org.smartregister.fhircore.engine.auth
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.accounts.AccountManagerFuture
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -33,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.verifyOrder
 import java.io.IOException
 import java.net.UnknownHostException
@@ -53,6 +56,7 @@ import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
 import org.smartregister.fhircore.engine.util.toPasswordHash
 import retrofit2.HttpException
@@ -66,6 +70,8 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @ExperimentalCoroutinesApi @get:Rule val coroutineRule = CoroutineTestRule()
 
   @Inject lateinit var secureSharedPreference: SecureSharedPreference
+
+  @Inject lateinit var dispatcherProvider: DispatcherProvider
 
   @Inject lateinit var configService: ConfigService
   private val oAuthService: OAuthService = mockk()
@@ -84,7 +90,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -121,13 +127,15 @@ class TokenAuthenticatorTest : RobolectricTest() {
   fun testGetAccessTokenShouldInvalidateExpiredToken() {
     val account = Account(sampleUsername, PROVIDER)
     val accessToken = "gibberishaccesstoken"
+    val accountManagerFuture = mockk<AccountManagerFuture<Bundle>>()
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
     every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every { accountManagerFuture.result } returns bundleOf()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any(), true, any(), any())
-    } returns mockk()
+    } returns accountManagerFuture
 
     tokenAuthenticator.getAccessToken()
 
@@ -146,22 +154,26 @@ class TokenAuthenticatorTest : RobolectricTest() {
   @Test
   fun testGetAccessTokenShouldCatchOperationCanceledAndIOAndAuthenticatorExceptions() {
     val account = Account(sampleUsername, PROVIDER)
+    val accountManagerFutureBundle = mockk<AccountManagerFuture<Bundle>>()
     every { tokenAuthenticator.findAccount() } returns account
     every { tokenAuthenticator.isTokenActive(any()) } returns false
     val accessToken = "gibberishaccesstoken"
     every { accountManager.peekAuthToken(account, AUTH_TOKEN_TYPE) } returns accessToken
     every { accountManager.invalidateAuthToken(account.type, accessToken) } just runs
+    every { accountManagerFutureBundle.result } throws OperationCanceledException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws OperationCanceledException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManagerFutureBundle.result } throws IOException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws IOException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
+    every { accountManagerFutureBundle.result } throws AuthenticatorException()
     every {
       accountManager.getAuthToken(account, AUTH_TOKEN_TYPE, any<Bundle>(), true, any(), any())
-    } throws AuthenticatorException()
+    } returns accountManagerFutureBundle
     Assert.assertEquals(accessToken, tokenAuthenticator.getAccessToken())
   }
 
@@ -181,7 +193,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),
@@ -295,8 +307,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
     every { tokenAuthenticator.findAccount() } returns account
     every { accountManager.getPassword(account) } returns refreshToken
 
-    val refreshTokenSlot = slot<String>()
-    coEvery { oAuthService.logout(any(), any(), capture(refreshTokenSlot)) } returns
+    coEvery { oAuthService.logout(any(), any()) } returns
       Response.success(200, mockk<RealResponseBody>())
 
     every { accountManager.invalidateAuthToken(account.type, any()) } just runs
@@ -314,14 +325,14 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
     val httpException = HttpException(Response.success(null))
 
-    coEvery { oAuthService.logout(any(), any(), any()) }.throws(httpException)
+    coEvery { oAuthService.logout(any(), any()) }.throws(httpException)
 
     var result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<HttpException>(httpException), result)
 
     val unknownHostException = UnknownHostException()
 
-    coEvery { oAuthService.logout(any(), any(), any()) }.throws(unknownHostException)
+    coEvery { oAuthService.logout(any(), any()) }.throws(unknownHostException)
 
     result = tokenAuthenticator.logout()
     Assert.assertEquals(Result.failure<UnknownHostException>(unknownHostException), result)
@@ -329,6 +340,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
 
   @Test
   fun testRefreshTokenShouldReturnToken() {
+    val account = Account(sampleUsername, PROVIDER)
     val accessToken = "soRefreshingNewToken"
     val oAuthResponse =
       OAuthResponse(
@@ -339,11 +351,13 @@ class TokenAuthenticatorTest : RobolectricTest() {
         scope = SCOPE,
       )
     coEvery { oAuthService.fetchToken(any()) } returns oAuthResponse
+    every { accountManager.setPassword(account, any()) } just runs
 
     val currentRefreshToken = "oldRefreshToken"
-    val newAccessToken = tokenAuthenticator.refreshToken(currentRefreshToken)
+    val newAccessToken = tokenAuthenticator.refreshToken(account, currentRefreshToken)
     Assert.assertNotNull(newAccessToken)
     Assert.assertEquals(accessToken, newAccessToken)
+    verify { accountManager.setPassword(eq(account), oAuthResponse.refreshToken) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
@@ -361,7 +375,7 @@ class TokenAuthenticatorTest : RobolectricTest() {
           secureSharedPreference = secureSharedPreference,
           configService = configService,
           oAuthService = oAuthService,
-          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          dispatcherProvider = dispatcherProvider,
           accountManager = accountManager,
           context = context,
         ),

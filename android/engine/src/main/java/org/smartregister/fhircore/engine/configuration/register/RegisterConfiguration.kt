@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.smartregister.fhircore.engine.configuration.Configuration
 import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 
 @Serializable
 data class RegisterConfiguration(
@@ -32,7 +33,6 @@ data class RegisterConfiguration(
   val registerTitle: String? = null,
   val fhirResource: FhirResourceConfig,
   val secondaryResources: List<FhirResourceConfig>? = null,
-  val filter: RegisterContentConfig? = null,
   val searchBar: RegisterContentConfig? = null,
   val registerCard: RegisterCardConfig = RegisterCardConfig(),
   val fabActions: List<NavigationMenuConfig> = emptyList(),
@@ -44,4 +44,7 @@ data class RegisterConfiguration(
       ActiveResourceFilterConfig(resourceType = ResourceType.Group, active = true),
     ),
   val configRules: List<RuleConfig>? = null,
+  val registerFilter: RegisterFilterConfig? = null,
+  val filterDataByRelatedEntityLocation: Boolean = false,
+  val topScreenSection: TopScreenSectionConfig? = null,
 ) : Configuration()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,104 +16,62 @@
 
 package org.smartregister.fhircore.geowidget.util.extensions
 
-import java.math.BigDecimal
-import java.util.UUID
-import org.apache.commons.codec.binary.Base64
-import org.hl7.fhir.r4.model.Attachment
-import org.hl7.fhir.r4.model.Extension
-import org.hl7.fhir.r4.model.Location
+import com.google.gson.JsonElement
 import org.json.JSONArray
 import org.json.JSONObject
-import org.smartregister.fhircore.geowidget.KujakuFhirCoreConverter
+import org.smartregister.fhircore.geowidget.model.Coordinates
+import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.Geometry
 
-typealias Coordinate = Pair<Double, Double>
+fun Feature.getGeoJsonGeometry(): JSONObject {
+  geometry ?: return JSONObject()
 
-val Location.boundaryGeoJsonExtAttachment: Attachment?
-  get() {
-    return if (hasBoundaryGeoJsonExt) {
-      getExtensionByUrl(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).value as Attachment
-    } else {
-      return null
-    }
-  }
+  val geometryObject = JSONObject()
 
-val Location.hasBoundaryGeoJsonExt
-  get(): Boolean {
-    if (hasExtension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)) {
-      val boundaryGeoJsonFeature =
-        getExtensionByUrl(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL)
-      if (boundaryGeoJsonFeature.value is Attachment) {
-        val attachment = boundaryGeoJsonFeature.value as Attachment
-
-        if (
-          attachment.contentType != null && attachment.contentType.equals("application/geo+json")
-        ) {
-          return true
-        }
-      }
-    }
-    return false
-  }
-
-fun Location.updateBoundaryGeoJsonProperties(feature: JSONObject) {
-  if (hasBoundaryGeoJsonExt) {
-    val featureFromExt =
-      Base64.decodeBase64(boundaryGeoJsonExtAttachment!!.data).run { JSONObject(String(this)) }
-
-    // Copy over the properties
-    val extFeatureProperties = featureFromExt.optJSONObject("properties")
-    extFeatureProperties?.keys()?.forEach { key ->
-      if (!feature.optJSONObject("properties").has(key)) {
-        feature.getJSONObject("properties").put(key, extFeatureProperties.get(key))
-      }
-    }
-  }
+  /* TODO: Currently Geometry only supports type @Point. Point Geometry has coordinates with a JSONArray
+  having only 2 double values whereas any other Type has a different structure having JSONArray
+  with an Array of elements. See below examples
+  Point: {"geometry": { "type": "Point", "coordinates": [ 45.487, -25.208]}}
+  LineString: {"geometry": {"type": "LineString", "coordinates": [ [717, 1246.3812 ], [703.1146]]}}
+   */
+  geometryObject.put("type", geometry.type)
+  geometryObject.put(
+    "coordinates",
+    JSONArray(
+      arrayOf(
+        geometry.coordinates?.get(0)?.longitude,
+        geometry.coordinates?.get(0)?.latitude,
+      ),
+    ),
+  )
+  return geometryObject
 }
 
-fun Location.getGeoJsonGeometry(): JSONObject {
-  val geometry = JSONObject()
-
-  geometry.put("type", "Point")
-  geometry.put("coordinates", JSONArray(arrayOf(position.longitude, position.latitude)))
-
-  // Boundary GeoJson Extension geometry overrides any lat, long declared in the Location.lat
-  // & Location.long
-  if (hasBoundaryGeoJsonExt) {
-    val featureFromExt =
-      Base64.decodeBase64(boundaryGeoJsonExtAttachment!!.data).run { JSONObject(String(this)) }
-    return featureFromExt.getJSONObject("geometry")
-  }
-  return geometry
-}
-
-fun generateLocation(featureJSONObject: JSONObject, coordinates: Coordinate): Location {
-  val (longitude, latitude) = coordinates
-
-  return Location().apply {
-    id = UUID.randomUUID().toString()
-    status = Location.LocationStatus.INACTIVE
-    position =
-      Location.LocationPositionComponent().apply {
-        this.longitude = BigDecimal(longitude)
-        this.latitude = BigDecimal(latitude)
-      }
-
-    extension =
-      listOf(
-        Extension(KujakuFhirCoreConverter.BOUNDARY_GEOJSON_EXT_URL).apply {
-          setValue(
-            Attachment().apply {
-              contentType = "application/geo+json"
-              data = Base64.encodeBase64(featureJSONObject.toString().encodeToByteArray())
-            },
-          )
-        },
-      )
-  }
-}
-
-fun JSONObject.coordinates(): Coordinate? {
+fun JSONObject.geometry(): Geometry? {
   return optJSONObject("geometry")?.run {
-    optJSONArray("coordinates")?.run { Coordinate(optDouble(0), optDouble(1)) }
+    optJSONArray("coordinates")?.run {
+      Geometry(
+        listOf(
+          Coordinates(
+            optDouble(0),
+            optDouble(1),
+          ),
+        ),
+      )
+    }
   }
+}
+
+fun Map<String, JsonElement>.featureProperties(): Map<String, Any> {
+  val properties = hashMapOf<String, Any>()
+  forEach { (key, value) -> properties[key] = value.asString }
+  return properties
+}
+
+fun Feature.getProperties(): JSONObject {
+  properties ?: return JSONObject()
+
+  val propertiesObject = JSONObject()
+  properties.forEach { key, value -> propertiesObject.put(key, value) }
+  return propertiesObject
 }

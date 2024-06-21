@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,19 @@
 
 package org.smartregister.fhircore.engine.domain.model
 
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+
 enum class QuestionnaireType {
   DEFAULT,
   EDIT,
   READ_ONLY,
-  ;
-
-  fun isDefault() = this == DEFAULT
-
-  fun isEditMode() = this == EDIT
-
-  fun isReadOnly() = this == READ_ONLY
 }
+
+fun QuestionnaireConfig.isDefault() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.DEFAULT
+
+fun QuestionnaireConfig.isEditable() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.EDIT
+
+fun QuestionnaireConfig.isReadOnly() =
+  QuestionnaireType.valueOf(this.type) == QuestionnaireType.READ_ONLY

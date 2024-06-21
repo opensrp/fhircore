@@ -1,0 +1,133 @@
+# Working with rules
+
+Rules are used to define logic and conditions for evaluating and processing healthcare data. FHIR rules can be used to validate data, create alerts and notifications based on certain conditions, or trigger workflows and other automated processes.
+Rules can also be used to extract specific data from a FHIR resource or to transform data from one format to another.
+
+## Using the `extractValue()` rule
+
+To extract specific data value in the sample JSON below, include **extractValue()** and add the required parameters to the method in order to extract the required value.
+
+``` json
+"rules": [
+    {
+      "name": "familyName",
+      "condition": "true",
+      "actions": [
+        "data.put('familyName', fhirPath.extractValue(Group, 'Group.name'))"
+      ]
+    },
+    {
+      "name": "familyId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyId', fhirPath.extractValue(Group, 'Group.identifier[0].value'))"
+      ]
+    },
+    {
+      "name": "familyLogicalId",
+      "condition": "true",
+      "actions": [
+        "data.put('familyLogicalId', fhirPath.extractValue(Group, 'Group.id'))"
+      ]
+    }
+  ],
+```
+
+### Configuring the properties of the `extractValue()`
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+name | Provides a descriptive name for the rule to be extracted | Yes | |
+condition | Indicates that the rule should always be evaluated | Yes | true |
+actions | Specifies the specific operations to be performed when the rule is evaluated | Yes | |
+
+The **"data.put()"** function is used to store the extracted data in a data object, using a key-value pair format.
+
+## Using the `evaluateToBoolean()` rule
+
+This rule is used within the rules engine or workflow to be able to determine whether an expression or condition is true or not. To evaluate specific data in the sample JSON below, include **evaluateToBoolean()** and add the required parameters to the method in order to determine whether the output is true or false.
+
+``` json
+    {
+      "name": "isPregnant",
+      "condition": "true",
+      "actions": [
+        "data.put('isPregnant', service.evaluateToBoolean(data.get('activeConditions'), \"Condition.code.text = 'Pregnant' \", false))"
+      ]
+    },
+```
+
+### Configuring the properties of the `evaluateToBoolean()`
+
+|Property | Description | Required | Default |
+|--|--|:--:|:--:|
+name | Provides a descriptive name for the rule to be extracted | Yes | |
+condition | Indicates that the rule should always be evaluated | Yes | true |
+actions | Specifies the specific operations to be performed when the rule is evaluated | Yes | List |
+description | Provides relevant information about the rule to be evaluated | | |
+priority | Specifies the priority of the component. The priority value determines the order in which the components are evaluated and executed. Lower values indicate higher priority | | 1 |
+
+### Passing parameters to `evaluateToBoolean()`
+
+1. `context`, e.g. `data.get('activeConditions')`, specifies the context or data from which the expression is being evaluated
+2. `FhirPathExpression`, e.g. `"Condition.code.text = 'Pregnant' \"`, specifies the expression to be evaluated. It contains the logical operators and variables that refernce values from the context
+3. An optional `defaultValue`, e.g. `false`, specifies a boolean default to be returned if the expression results in an error or does not produce a boolean value
+
+
+## Using the `generateTaskServiceStatus()` rule
+
+This rule is used within the rules engine or workflow to generate the correct service status when given the `Task.status` . Only one parameter is passed of the type `TaskStatus`. Below is an example:
+
+```
+
+...
+    {
+      "name": "serviceStatus",
+      "condition": "true",
+      "actions": [
+        "data.put('serviceStatus', service.generateTaskServiceStatus(Task))"
+      ]
+    }
+```
+
+## Reading practitioner details from shared preferences using rules
+Below is a sample rules config to extract practitioner details from shared preferences. Note, the parameter passed inside  extractPractitionerInfoFromSharedPrefs
+should be named as shown on the rule. i.e
+
+|ParamName  | Description | SharedPrefKey |
+|--|--|:--:|
+practitionerId | This is the assigned practitioner's ID | PRACTITIONER_ID |
+organization | This is the assigned practitioner's Organization | ORGANIZATION |
+careTeam | This is the assigned practitioner's Care Team | CARE_TEAM |
+practitionerLocation | This is the assigned practitioner's Location | PRACTITIONER_LOCATION |
+
+``` json
+        {
+          "name": "practitionerId",
+          "condition": "true",
+          "actions": [
+            "data.put('practitionerId',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_ID'))"
+          ]
+        },
+        {
+          "name": "careTeam",
+          "condition": "true",
+          "actions": [
+            "data.put('careTeam',service.extractPractitionerInfoFromSharedPrefs('CARE_TEAM'))"
+          ]
+        },
+        {
+          "name": "organization",
+          "condition": "true",
+          "actions": [
+            "data.put('organization',service.extractPractitionerInfoFromSharedPrefs('ORGANIZATION'))"
+          ]
+        },
+        {
+          "name": "practitionerLocation",
+          "condition": "true",
+          "actions": [
+            "data.put('practitionerLocation',service.extractPractitionerInfoFromSharedPrefs('PRACTITIONER_LOCATION'))"
+          ]
+        }
+```

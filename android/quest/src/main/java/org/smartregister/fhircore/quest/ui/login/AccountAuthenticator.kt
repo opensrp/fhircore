@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,10 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.net.UnknownHostException
 import java.util.Locale
 import javax.inject.Inject
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator
 import org.smartregister.fhircore.engine.data.remote.shared.TokenAuthenticator.Companion.AUTH_TOKEN_TYPE
-import retrofit2.HttpException
 import timber.log.Timber
 
 class AccountAuthenticator
@@ -79,14 +77,11 @@ constructor(
       if (!refreshToken.isNullOrEmpty()) {
         authToken =
           try {
-            tokenAuthenticator.refreshToken(refreshToken)
+            tokenAuthenticator.refreshToken(account, refreshToken)
           } catch (ex: Exception) {
             Timber.e(ex)
-            when (ex) {
-              is HttpException,
-              is UnknownHostException, -> ""
-              else -> throw ex
-            }
+            // any form of exception will unset token to empty, thereby forcing re-login
+            ""
           }
       }
     }

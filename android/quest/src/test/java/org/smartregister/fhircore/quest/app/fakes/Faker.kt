@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,19 @@ package org.smartregister.fhircore.quest.app.fakes
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
+import dagger.hilt.android.testing.HiltTestApplication
 import io.mockk.coEvery
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import java.util.Calendar
 import java.util.Date
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.Json
+import org.hl7.fhir.r4.model.Basic
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.DateType
 import org.hl7.fhir.r4.model.Enumerations
@@ -35,7 +41,9 @@ import org.smartregister.fhircore.engine.auth.AuthCredentials
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceDataSource
 import org.smartregister.fhircore.engine.data.remote.fhir.resource.FhirResourceService
+import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
+import org.smartregister.fhircore.quest.app.AppConfigService
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
 
 object Faker {
@@ -52,6 +60,26 @@ object Faker {
 
   private const val APP_DEBUG = "app/debug"
 
+  private val sampleImageJSONString =
+    "{\n" +
+      "  \"id\": \"d60ff460-7671-466a-93f4-c93a2ebf2077\",\n" +
+      "  \"resourceType\": \"Binary\",\n" +
+      "  \"contentType\": \"image/jpeg\",\n" +
+      "  \"data\": \"iVBORw0KGgoAAAANSUhEUgAAAFMAAABTCAYAAADjsjsAAAAABHNCSVQICAgIfAhkiAAAABl0RVh0U29mdHdhcmUAZ25vbWUtc2NyZWVuc2hvdO8Dvz4AAAAtdEVYdENyZWF0aW9uIFRpbWUARnJpIDE5IEFwciAyMDI0IDA3OjIxOjM4IEFNIEVBVIqENmYAAADTSURBVHic7dDBCcAgAMBAdf/p+nQZXSIglLsJQube3xkk1uuAPzEzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjNkZsjMkJkhM0NmhswMmRkyM2RmyMyQmSEzQ2aGzAyZGTIzZGbIzJCZITNDZobMDJkZMjN0AXiwBCviCqIRAAAAAElFTkSuQmCC\"\n" +
+      "}"
+  private val testDispatcher = UnconfinedTestDispatcher()
+  private val configService = AppConfigService(ApplicationProvider.getApplicationContext())
+  private val testDispatcherProvider =
+    object : DispatcherProvider {
+      override fun default() = testDispatcher
+
+      override fun io() = testDispatcher
+
+      override fun main() = testDispatcher
+
+      override fun unconfined() = testDispatcher
+    }
+
   fun buildTestConfigurationRegistry(): ConfigurationRegistry {
     val fhirResourceService = mockk<FhirResourceService>()
     val fhirResourceDataSource = spyk(FhirResourceDataSource(fhirResourceService))
@@ -63,11 +91,14 @@ object Faker {
           fhirEngine = mockk(),
           fhirResourceDataSource = fhirResourceDataSource,
           sharedPreferencesHelper = mockk(),
-          dispatcherProvider = mockk(),
-          configService = mockk(),
+          dispatcherProvider = testDispatcherProvider,
+          configService = configService,
           json = json,
+          context = ApplicationProvider.getApplicationContext<HiltTestApplication>(),
         ),
       )
+
+    coEvery { configurationRegistry.addOrUpdate(any()) } just runs
 
     runBlocking {
       configurationRegistry.loadConfigurations(
@@ -109,6 +140,15 @@ object Faker {
     }
   }
 
+  fun buildBasicResource(
+    id: String = "sampleId",
+  ): Basic {
+    return Basic().apply {
+      this.id = id
+      this.identifierFirstRep.value = id
+    }
+  }
+
   open class TestLoginActivity : LoginActivity() {
     override fun pinActive() = true
 
@@ -125,5 +165,15 @@ object Faker {
     override fun pinEnabled() = true
 
     override fun deviceOnline() = true
+  }
+
+  fun buildBinaryResource(
+    id: String = "d60ff460-7671-466a-93f4-c93a2ebf2077",
+  ): Binary {
+    return Binary().apply {
+      this.id = id
+      this.contentType = "image/jpeg"
+      this.data = sampleImageJSONString.toByteArray()
+    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.datacapture.mapping.ResourceMapper
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.context.SimpleWorkerContext
 import org.hl7.fhir.r4.model.Bundle
 import org.hl7.fhir.r4.model.Immunization
@@ -32,7 +33,6 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.ResourceType
 import org.hl7.fhir.utilities.npm.FilesystemPackageCacheManager
-import org.hl7.fhir.utilities.npm.ToolsVersion
 import org.junit.Assert
 import org.junit.Test
 import org.smartregister.fhircore.engine.util.helper.TransformSupportServices
@@ -51,7 +51,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val registrationQuestionnaireResponseString: String =
       "content/general/family/questionnaire-response-standard.json".readFile()
     val registrationStructureMap = "content/general/family/family-registration.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -84,7 +84,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/general/disease-registration-resources/questionnaire_response.json".readFile()
     val immunizationStructureMap =
       "content/general/disease-registration-resources/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -118,7 +118,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val immunizationJson = "content/eir/immunization/immunization-1.json".readFile()
     val immunizationStructureMap = "content/eir/immunization/structure-map.txt".readFile()
     val questionnaireJson = "content/eir/immunization/questionnaire.json".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -138,7 +138,14 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, immunization)
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Patient.name.lowercase() to patient,
+            ResourceType.Immunization.name.lowercase() to immunization,
+          ),
+        )
     }
 
     structureMapUtilities.transform(contextR4, questionnaireResponse, structureMap, targetResource)
@@ -165,10 +172,17 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     var questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, patient, relatedPerson)
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Patient.name.lowercase() to patient,
+            ResourceType.RelatedPerson.name.lowercase() to relatedPerson,
+          ),
+        )
     }
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -200,10 +214,17 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     var questionnaireResponse: QuestionnaireResponse
 
     runBlocking {
-      questionnaireResponse = ResourceMapper.populate(questionnaire, immunization, Patient())
+      questionnaireResponse =
+        ResourceMapper.populate(
+          questionnaire,
+          mapOf(
+            ResourceType.Immunization.name.lowercase() to immunization,
+            ResourceType.Patient.name.lowercase() to Patient(),
+          ),
+        )
     }
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -227,7 +248,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
   fun `convert StructureMap to JSON`() {
     val patientRegistrationStructureMap =
       "patient-registration-questionnaire/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
@@ -246,7 +267,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "patient-registration-questionnaire/questionnaire-response.json".readFile()
     val patientRegistrationStructureMap =
       "patient-registration-questionnaire/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -277,7 +298,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val adverseEventQuestionnaireResponse =
       "content/eir/adverse-event/questionnaire-response.json".readFile()
     val adverseEventStructureMap = "content/eir/adverse-event/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -306,7 +327,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val vitalSignQuestionnaireResponse =
       "content/anc/vital-signs/metric/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap = "content/anc/vital-signs/metric/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -335,7 +356,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/anc/vital-signs/standard/questionnaire-response-pulse-rate.json".readFile()
     val vitalSignStructureMap = "content/anc/vital-signs/standard/structure-map.txt".readFile()
 
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -363,7 +384,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val locationQuestionnaireResponseString: String =
       "content/general/location/location-response-sample.json".readFile()
     val locationStructureMap = "content/general/location/location-structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -391,7 +412,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
       "content/general/supply-chain/questionnaire-response-standard.json".readFile()
     val physicalInventoryCountStructureMap =
       "content/general/supply-chain/physical_inventory_count_and_stock.map".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -429,7 +450,7 @@ class StructureMapUtilitiesTest : RobolectricTest() {
     val vitalSignQuestionnaireResponse =
       "content/anc/preg-outcome/questionnaire-response.json".readFile()
     val vitalSignStructureMap = "content/anc/preg-outcome/structure-map.txt".readFile()
-    val packageCacheManager = FilesystemPackageCacheManager(true, ToolsVersion.TOOLS_VERSION)
+    val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply {
@@ -454,5 +475,34 @@ class StructureMapUtilitiesTest : RobolectricTest() {
         it.resource.resourceType != null && it.resource.resourceType == ResourceType.Task
       }
     Assert.assertTrue(taskList.size == 10)
+  }
+
+  @Test(expected = FHIRException::class)
+  fun `perform extraction for patient registration`() {
+    val locationQuestionnaireResponseString: String =
+      "content/general/who-eir/patient_registration_questionnaire_response.json".readFile()
+    val locationStructureMap =
+      "content/general/who-eir/patient_registration_structure_map.txt".readFile()
+    val packageCacheManager = FilesystemPackageCacheManager(true)
+    val contextR4 =
+      SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
+        .apply {
+          setExpansionProfile(Parameters())
+          isCanRunWithoutTerminology = true
+        }
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+      org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap = structureMapUtilities.parse(locationStructureMap, "IMMZ-C-QRToPatient")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+      iParser.parseResource(QuestionnaireResponse::class.java, locationQuestionnaireResponseString)
+
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    Assert.assertEquals(2, targetResource.entry.size)
+    Assert.assertEquals("Patient", targetResource.entry[0].resource.resourceType.toString())
+    Assert.assertEquals("Condition", targetResource.entry[0].resource.resourceType.toString())
   }
 }

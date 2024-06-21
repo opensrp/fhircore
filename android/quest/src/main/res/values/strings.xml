@@ -87,6 +87,9 @@
     <string name="record_as_anc">Record as ANC</string>
     <string name="pregnancy_outcome">Pregnancy Outcome</string>
     <string name="registers">Registers</string>
+    <string name="title_no_location_set">No Location Set</string>
+    <string name="message_location_set">Set location to sync data and load service points</string>
+    <string name="positive_button_location_set">Set location</string>
 
     <string name="questionnaire_response_name" translatable="false">%1$s (%2$s)</string>
     <string name="due_on">Due on %1$s</string>
@@ -100,8 +103,21 @@
     <string name="error_fetching_user_details">Failed to fetch user details</string>
     <string name="questionnaire_not_found">Questionnaire not found.  Sync all questionnaires to fix</string>
     <string name="no_visits">No visits</string>
-    <string name="questionnaire_response_broken">Questionnaire response broken</string>
+    <string name="questionnaire_response_invalid">Questionnaire response invalid</string>
     <string name="app_version_tag_url" translatable="false">https://smartregister.org/app-version</string>
     <string name="application_version" translatable="false">Application Version</string>
+    <string name="missing_subject_type">Missing subject type on questionnaire. Provide Questionnaire.subjectType to resolve.</string>
+    <string name="missing_questionnaire_config">QuestionnaireConfig is required but missing.</string>
+    <string name="error_populating_questionnaire">Error populating some questionnaire fields. Invalid QuestionnaireResponse.</string>
+    <string name="extraction_in_progress">Processing questionnaire data…</string>
+    <string name="loading_questionnaire">Loading questionnaire…</string>
+    <string name="clear_all">Clear All</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="location_permissions_denied">Location Access Denied: To capture GPS coordinates, please enable location permissions in your device settings.</string>
+    <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
+    <string name="copy_text_success_message">Link %1$s copied successfully</string>
+    <string name="submit_questionnaire">Submit</string>
 
 </resources>

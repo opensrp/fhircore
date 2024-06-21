@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.flow.emptyFlow
 import org.smartregister.fhircore.engine.ui.components.CircularProgressBar
 import org.smartregister.fhircore.engine.ui.components.ErrorMessage
@@ -85,9 +86,13 @@ fun MeasureReportSubjectsScreen(
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
       LazyColumn {
-        items(pagingItems, key = { it.logicalId }) {
+        items(
+          count = pagingItems.itemCount,
+          key = pagingItems.itemKey { it.logicalId },
+          contentType = pagingItems.itemContentType(),
+        ) { index ->
           MeasureReportSubjectRow(
-            measureReportSubjectViewData = it!!,
+            measureReportSubjectViewData = pagingItems[index]!!,
             onRowClick = { subjectViewData ->
               measureReportViewModel.onEvent(MeasureReportEvent.OnSubjectSelected(subjectViewData))
               navController.popBackStack()

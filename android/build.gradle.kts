@@ -2,28 +2,28 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-  repositories {
-    google()
-    maven(url = "https://plugins.gradle.org/m2/")
-    maven(url = "https://oss.sonatype.org/content/repositories/snapshots/")
-  }
-
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-    classpath("org.jetbrains.kotlin:kotlin-serialization:1.7.10")
-    classpath("com.google.dagger:hilt-android-gradle-plugin:2.42")
-    classpath("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
-    classpath("com.diffplug.spotless:spotless-plugin-gradle:6.19.0")
-    classpath("gradle.plugin.org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.12.0")
-    classpath("de.mannodermaus.gradle.plugins:android-junit5:1.8.2.1")
-    classpath("com.android.tools.build:gradle:7.1.3")
-    classpath("org.jetbrains.dokka:dokka-base:1.8.20")
+    classpath(libs.kotlin.gradle.plugin)
+    classpath(libs.coveralls.gradle.plugin)
+    classpath(libs.gradle)
+    classpath(libs.dokka.base)
   }
 }
 
-plugins { id("org.jetbrains.dokka") version "1.8.20" }
+plugins {
+  alias(libs.plugins.org.jetbrains.kotlin.jvm)
+  alias(libs.plugins.kt3k.coveralls)
+  alias(libs.plugins.kotlin.serialization)
+  alias(libs.plugins.dagger.hilt.android) apply false
+  alias(libs.plugins.androidx.navigation.safeargs) apply false
+  alias(libs.plugins.org.jetbrains.dokka)
+  alias(libs.plugins.org.owasp.dependencycheck)
+  alias(libs.plugins.com.diffplug.spotless) apply false
+  alias(libs.plugins.android.junit5) apply false
+}
 
 tasks.dokkaHtmlMultiModule {
   moduleName.set("OpenSRP")
@@ -34,13 +34,21 @@ tasks.dokkaHtmlMultiModule {
   }
 }
 
+apply(from = "mapbox.gradle.kts")
+
 allprojects {
   repositories {
+    gradlePluginPortal()
     mavenLocal()
     google()
     mavenCentral()
     maven(url = "https://oss.sonatype.org/content/repositories/snapshots")
+    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     maven(url = "https://jcenter.bintray.com/")
+    apply(plugin = "org.owasp.dependencycheck")
+    tasks.dependencyCheckAggregate{
+      dependencyCheck.formats.add("XML")
+    }
   }
 }
 
@@ -52,18 +60,17 @@ subprojects {
   }
 
   configure<SpotlessExtension> {
-    val lintVersion = "0.49.0"
 
     kotlin {
       target("**/*.kt")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
       licenseHeaderFile("${project.rootProject.projectDir}/license-header.txt")
     }
 
     kotlinGradle {
       target("*.gradle.kts")
-      ktlint(lintVersion)
+      ktlint(BuildConfigs.ktLintVersion)
       ktfmt().googleStyle()
     }
 
@@ -85,16 +92,16 @@ subprojects {
     resolutionStrategy {
       eachDependency {
         when (requested.group) {
-          "org.jacoco" -> useVersion("0.8.7")
+          "org.jacoco" -> useVersion(BuildConfigs.jacocoVersion)
         }
       }
     }
   }
 
-  tasks.withType<Test> {
+ tasks.withType<Test> {
     configure<JacocoTaskExtension> {
       isIncludeNoLocationClasses = true
-      excludes = listOf("jdk.internal.*")
+      excludes = listOf("jdk.internal.*", "**org.hl7*")
     }
   }
 }

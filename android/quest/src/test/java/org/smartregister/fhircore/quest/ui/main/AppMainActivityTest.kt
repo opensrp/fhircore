@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import androidx.activity.result.ActivityResult
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
+import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -36,6 +37,9 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import java.io.Serializable
+import java.time.OffsetDateTime
+import junit.framework.TestCase
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.junit.Assert
@@ -62,17 +66,17 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @BindValue
   val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
 
-  @BindValue val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk()
+  @BindValue
+  val fhirCarePlanGenerator: FhirCarePlanGenerator = mockk(relaxed = true, relaxUnitFun = true)
 
-  @BindValue val eventBus: EventBus = mockk()
-
-  lateinit var appMainActivity: AppMainActivity
+  private lateinit var appMainActivity: AppMainActivity
+  private var eventBus: EventBus = mockk(relaxUnitFun = true, relaxed = true)
 
   @Before
   fun setUp() {
     hiltRule.inject()
-    appMainActivity =
-      spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().resume().get())
+    appMainActivity = spyk(Robolectric.buildActivity(AppMainActivity::class.java).create().get())
+    every { appMainActivity.eventBus } returns eventBus
   }
 
   @Test
@@ -90,70 +94,52 @@ class AppMainActivityTest : ActivityRobolectricTest() {
   @Test
   fun testOnSyncWithSyncStateInProgress() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD))
+    val initialSyncTime = viewModel.appMainUiState.value.lastSyncTime
 
-    // Timestamp will only updated for states Glitch, Finished or Failed. Defaults to empty
-    Assert.assertTrue(viewModel.appMainUiState.value.lastSyncTime.isEmpty())
-  }
-
-  @Test
-  fun testOnSyncWithSyncStateGlitch() {
-    val viewModel = appMainActivity.appMainViewModel
-    val timestamp = "2022-05-19"
-    viewModel.sharedPreferencesHelper.write(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, timestamp)
-
-    val syncJobStatus = SyncJobStatus.Glitch(exceptions = emptyList())
-    val syncJobStatusTimestamp = syncJobStatus.timestamp
-
-    appMainActivity.onSync(syncJobStatus)
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-
-    // Timestamp updated to the SyncJobStatus timestamp
-    Assert.assertEquals(
-      viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.formatLastSyncTimestamp(syncJobStatusTimestamp)!!,
+    appMainActivity.onSync(
+      CurrentSyncJobStatus.Running(SyncJobStatus.InProgress(SyncOperation.DOWNLOAD)),
     )
+
+    // Timestamp will only updated for Finished.
+    Assert.assertEquals(initialSyncTime, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedRetrievesTimestamp() {
+  fun testOnSyncWithSyncStateFailedDoesNotUpdateTimestamp() {
     val viewModel = appMainActivity.appMainViewModel
     viewModel.sharedPreferencesHelper.write(
       SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name,
       "2022-05-19",
     )
-    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
+    val initialTimestamp = viewModel.appMainUiState.value.lastSyncTime
+    val syncJobStatus = CurrentSyncJobStatus.Failed(OffsetDateTime.now())
+    appMainActivity.onSync(syncJobStatus)
 
-    Assert.assertNotNull(viewModel.retrieveLastSyncTimestamp())
-    Assert.assertEquals(
-      viewModel.appMainUiState.value.lastSyncTime,
-      viewModel.retrieveLastSyncTimestamp(),
-    )
+    // Timestamp not update if status is Failed. Initial timestamp remains the same
+    Assert.assertEquals(initialTimestamp, viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
-  fun testOnSyncWithSyncStateFailedWhenTimestampIsNull() {
+  fun testOnSyncWithSyncStateFailedWhenTimestampIsNotNull() {
     val viewModel = appMainActivity.appMainViewModel
-    appMainActivity.onSync(SyncJobStatus.Failed(listOf()))
-    Assert.assertEquals(viewModel.appMainUiState.value.lastSyncTime, "")
+    appMainActivity.onSync(CurrentSyncJobStatus.Failed(OffsetDateTime.now()))
+    Assert.assertNotNull(viewModel.appMainUiState.value.lastSyncTime)
   }
 
   @Test
-  fun testOnSyncWithSyncStateFinished() {
+  fun testOnSyncWithSyncStateSucceded() {
     val viewModel = appMainActivity.appMainViewModel
-    val stateFinished = SyncJobStatus.Finished()
-    appMainActivity.onSync(stateFinished)
+    val stateSucceded = CurrentSyncJobStatus.Succeeded(OffsetDateTime.now())
+    appMainActivity.onSync(stateSucceded)
 
     Assert.assertEquals(
-      viewModel.formatLastSyncTimestamp(timestamp = stateFinished.timestamp),
+      viewModel.formatLastSyncTimestamp(timestamp = stateSucceded.timestamp),
       viewModel.retrieveLastSyncTimestamp(),
     )
   }
 
   @Test
   fun testOnSubmitQuestionnaireShouldUpdateLiveData() = runTest {
-    every { eventBus.events } returns mockk()
-    coEvery { eventBus.triggerEvent(any()) } just runs
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
         -1,
@@ -176,11 +162,11 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
     Assert.assertNotNull(onSubmitQuestionnaireSlot)
     val questionnaireSubmission = onSubmitQuestionnaireSlot.captured.questionnaireSubmission
-    Assert.assertEquals("Task/12345", questionnaireSubmission?.questionnaireConfig?.taskId)
-    Assert.assertEquals("questionnaireId", questionnaireSubmission?.questionnaireConfig?.id)
+    Assert.assertEquals("Task/12345", questionnaireSubmission.questionnaireConfig.taskId)
+    Assert.assertEquals("questionnaireId", questionnaireSubmission.questionnaireConfig.id)
     Assert.assertEquals(
       QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS,
-      questionnaireSubmission?.questionnaireResponse?.status,
+      questionnaireSubmission.questionnaireResponse.status,
     )
   }
 
@@ -190,8 +176,6 @@ class AppMainActivityTest : ActivityRobolectricTest() {
     val refreshLiveDataMock = mockk<MutableLiveData<Boolean?>>()
     every { refreshLiveDataMock.postValue(true) } just runs
     every { appMainActivity.appMainViewModel } returns appMainViewModel
-    every { eventBus.events } returns mockk()
-    coEvery { eventBus.triggerEvent(any()) } returns mockk()
 
     appMainActivity.onSubmitQuestionnaire(
       ActivityResult(
@@ -210,13 +194,25 @@ class AppMainActivityTest : ActivityRobolectricTest() {
         },
       ),
     )
-
-    coVerify { eventBus.triggerEvent(any()) }
+    val onSubmitQuestionnaireSlot = slot<AppEvent.OnSubmitQuestionnaire>()
+    coVerify { eventBus.triggerEvent(capture(onSubmitQuestionnaireSlot)) }
+    Assert.assertNotNull(onSubmitQuestionnaireSlot)
   }
 
   @Test
   fun testStartForResult() {
-    val event = appMainActivity.startForResult
-    Assert.assertNotNull(event)
+    val resultLauncher = appMainActivity.startForResult
+    Assert.assertNotNull(resultLauncher)
+  }
+
+  @Test
+  fun `setupLocationServices should launch location permissions dialog if permissions are not granted`() {
+    val fusedLocationProviderClient =
+      LocationServices.getFusedLocationProviderClient(appMainActivity)
+    assertNotNull(fusedLocationProviderClient)
+    TestCase.assertFalse(appMainActivity.hasLocationPermissions())
+
+    val dialog = appMainActivity.launchLocationPermissionsDialog()
+    assertNotNull(dialog)
   }
 }

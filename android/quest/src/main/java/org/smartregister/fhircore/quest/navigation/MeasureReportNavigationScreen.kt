@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package org.smartregister.fhircore.quest.navigation
 
 sealed class MeasureReportNavigationScreen(val route: String) {
-  object MeasureReportList : MeasureReportNavigationScreen("reportMeasuresList")
+  object MeasureReportModule : MeasureReportNavigationScreen("reportMeasuresModule")
 
-  object ReportTypeSelector : MeasureReportNavigationScreen("reportTypeSelector")
+  object ReportDateSelector : MeasureReportNavigationScreen("reportDateSelector")
 
   object SubjectsList : MeasureReportNavigationScreen("subjectsList")
 

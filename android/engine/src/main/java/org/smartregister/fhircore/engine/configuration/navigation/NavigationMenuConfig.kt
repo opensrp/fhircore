@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,12 @@ data class NavigationMenuConfig(
 @Serializable
 @Parcelize
 data class ImageConfig(
-  val type: String = ICON_TYPE_LOCAL,
+  var type: String = ICON_TYPE_LOCAL,
   val reference: String? = null,
+  val color: String? = null,
+  val alpha: Float = 1.0f,
+  val imageType: ImageType = ImageType.SVG,
+  val contentScale: ContentScaleType = ContentScaleType.FIT,
   @Contextual var decodedBitmap: Bitmap? = null,
 ) : Parcelable, java.io.Serializable {
   fun interpolate(computedValuesMap: Map<String, Any>): ImageConfig {
@@ -54,3 +58,18 @@ data class ImageConfig(
 
 const val ICON_TYPE_LOCAL = "local"
 const val ICON_TYPE_REMOTE = "remote"
+
+enum class ImageType {
+  JPEG,
+  PNG,
+  SVG,
+}
+
+enum class ContentScaleType {
+  FIT,
+  CROP,
+  FILLHEIGHT,
+  INSIDE,
+  NONE,
+  FILLBOUNDS,
+}

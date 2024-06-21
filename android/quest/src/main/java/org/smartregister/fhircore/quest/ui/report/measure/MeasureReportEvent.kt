@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,17 @@ sealed class MeasureReportEvent {
   data class OnSelectMeasure(
     val reportConfigurations: List<ReportConfiguration>? = emptyList(),
     val navController: NavController,
+    val practitionerId: String? = "",
   ) : MeasureReportEvent()
 
   data class OnDateRangeSelected(val newDateRange: androidx.core.util.Pair<Long, Long>) :
     MeasureReportEvent()
 
-  data class GenerateReport(val navController: NavController, val context: Context) :
-    MeasureReportEvent()
+  data class OnDateSelected(
+    val navController: NavController,
+    val context: Context,
+    val practitionerId: String? = null,
+  ) : MeasureReportEvent()
 
   data class OnReportTypeChanged(
     val measureReportType: MeasureReport.MeasureReportType,

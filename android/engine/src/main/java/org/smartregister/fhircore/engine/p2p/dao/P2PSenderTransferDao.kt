@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import java.util.TreeSet
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
@@ -26,6 +26,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
 import org.smartregister.p2p.dao.SenderTransferDao
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
@@ -40,7 +41,7 @@ constructor(
 
   override fun getP2PDataTypes(): TreeSet<DataType> = getDataTypes()
 
-  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
+  override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): RecordCount {
     return runBlocking { countTotalRecordsForSync(highestRecordIdMap) }
   }
 
@@ -65,24 +66,26 @@ constructor(
       }
     }
 
-    Timber.e("Fetching resources from base dao of type  $dataType.name")
+    Timber.i("Fetching resources from base dao of type  $dataType.name")
     highestRecordId =
       (if (records.isNotEmpty()) {
-        records.last().meta?.lastUpdated?.time ?: highestRecordId
+        records.last().resource.meta?.lastUpdated?.time ?: highestRecordId
       } else {
         lastUpdated
       })
 
     val jsonArray = JSONArray()
     records.forEach {
-      jsonArray.put(jsonParser.encodeResourceToString(it))
+      jsonArray.put(jsonParser.encodeResourceToString(it.resource))
       highestRecordId =
-        if (it.meta?.lastUpdated?.time!! > highestRecordId) {
-          it.meta?.lastUpdated?.time!!
+        if (it.resource.meta?.lastUpdated?.time!! > highestRecordId) {
+          it.resource.meta?.lastUpdated?.time!!
         } else {
           highestRecordId
         }
-      Timber.e("Sending ${it.resourceType} with id ====== ${it.logicalId}")
+      Timber.i(
+        "Sending ${it.resource.resourceType} with id ====== ${it.resource.logicalId} and lastUpdated = ${it.resource.meta?.lastUpdated?.time!!}",
+      )
     }
 
     Timber.e("New highest Last updated at value is $highestRecordId")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.profile.ManagingEntityConfig
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
-import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
 import org.smartregister.fhircore.engine.util.extension.interpolate
 
 @Serializable
 @Parcelize
 data class ActionConfig(
   val trigger: ActionTrigger,
-  val workflow: ApplicationWorkflow? = null,
+  val workflow: String? = null,
   val id: String? = null,
   val display: String? = null,
   val rules: List<RuleConfig>? = null,
@@ -42,6 +41,7 @@ data class ActionConfig(
   val resourceConfig: FhirResourceConfig? = null,
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   val popNavigationBackStack: Boolean? = null,
+  val multiSelectViewConfig: MultiSelectViewConfig? = null,
 ) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {
@@ -52,6 +52,8 @@ data class ActionConfig(
 
   fun interpolate(computedValuesMap: Map<String, Any>): ActionConfig =
     this.copy(
+      id = id?.interpolate(computedValuesMap),
+      workflow = workflow?.interpolate(computedValuesMap),
       display = display?.interpolate(computedValuesMap),
       managingEntity =
         managingEntity?.copy(
@@ -65,6 +67,7 @@ data class ActionConfig(
           managingEntityReassignedMessage =
             managingEntity.managingEntityReassignedMessage.interpolate(computedValuesMap),
         ),
+      params = params.map { it.interpolate(computedValuesMap) },
     )
 
   companion object {

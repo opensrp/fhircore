@@ -1,13 +1,17 @@
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
+import java.io.FileReader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-
-buildscript {
-  apply(from = "../jacoco.gradle.kts")
-  apply(from = "../properties.gradle.kts")
-  apply(from = "../ktlint.gradle.kts")
-}
+import org.json.JSONArray
+import org.json.JSONObject
 
 plugins {
+  `jacoco-report`
+  `project-properties`
+  `ktlint`
   id("com.android.application")
   id("kotlin-android")
   id("kotlin-kapt")
@@ -26,7 +30,7 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
@@ -48,14 +52,17 @@ sonar {
 }
 
 android {
-  compileSdk = 33
+  compileSdk = BuildConfigs.compileSdk
+
+  val buildDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
+  namespace = "org.smartregister.fhircore.quest"
 
   defaultConfig {
-    applicationId = "org.smartregister.opensrp"
-    minSdk = 26
-    targetSdk = 33
-    versionCode = 3
-    versionName = "0.2.4"
+    applicationId = BuildConfigs.applicationId
+    minSdk = BuildConfigs.minSdk
+    versionCode = BuildConfigs.versionCode
+    versionName = BuildConfigs.versionName
     multiDexEnabled = true
 
     buildConfigField("boolean", "SKIP_AUTH_CHECK", "false")
@@ -63,15 +70,20 @@ android {
     buildConfigField("String", "OAUTH_BASE_URL", """"${project.extra["OAUTH_BASE_URL"]}"""")
     buildConfigField("String", "OAUTH_CLIENT_ID", """"${project.extra["OAUTH_CLIENT_ID"]}"""")
     buildConfigField("String", "OAUTH_SCOPE", """"${project.extra["OAUTH_SCOPE"]}"""")
-    buildConfigField(
-      "String",
-      "OAUTH_CLIENT_SECRET",
-      """"${project.extra["OAUTH_CLIENT_SECRET"]}"""",
-    )
+    buildConfigField("String", "OPENSRP_APP_ID", """${project.extra["OPENSRP_APP_ID"]}""")
     buildConfigField("String", "CONFIGURATION_SYNC_PAGE_SIZE", """"100"""")
     buildConfigField("String", "SENTRY_DSN", """"${project.extra["SENTRY_DSN"]}"""")
+    buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
 
     testInstrumentationRunner = "org.smartregister.fhircore.quest.QuestTestRunner"
+    testInstrumentationRunnerArguments["additionalTestOutputDir"] = "/sdcard/Download"
+    testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] =
+      "ACTIVITY-MISSING,CODE-COVERAGE,DEBUGGABLE,UNLOCKED,EMULATOR"
+
+    // The following argument makes the Android Test Orchestrator run its
+    // "pm clear" command after each test invocation. This command ensures
+    // that the app's state is completely cleared between tests.
+    testInstrumentationRunnerArguments["clearPackageData"] = "true"
   }
 
   signingConfigs {
@@ -87,16 +99,26 @@ android {
   }
 
   buildTypes {
-    getByName("debug") { isTestCoverageEnabled = true }
+    getByName("debug") { enableUnitTestCoverage = true }
+    create("benchmark") {
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("debug")
+      isDebuggable = true
+    }
+
+    create("debugNonProxy") { initWith(getByName("debug")) }
 
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
 
-  packagingOptions {
+  packaging {
     resources.excludes.addAll(
       listOf(
         "META-INF/ASL-2.0.txt",
@@ -127,23 +149,26 @@ android {
 
   compileOptions {
     isCoreLibraryDesugaringEnabled = true
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
-    jvmTarget = JavaVersion.VERSION_11.toString()
+    jvmTarget = JavaVersion.VERSION_17.toString()
     freeCompilerArgs = listOf("-Xjvm-default=all-compatibility", "-opt-in=kotlin.RequiresOptIn")
   }
 
   buildFeatures {
     compose = true
     viewBinding = true
+    dataBinding = true
+    buildConfig = true
   }
 
-  composeOptions { kotlinCompilerExtensionVersion = "1.3.0" }
+  composeOptions { kotlinCompilerExtensionVersion = BuildConfigs.kotlinCompilerExtensionVersion }
 
   testOptions {
+    execution = "ANDROIDX_TEST_ORCHESTRATOR"
     animationsDisabled = true
 
     unitTests {
@@ -152,7 +177,7 @@ android {
     }
   }
 
-  testCoverage { jacocoVersion = "0.8.7" }
+  testCoverage { jacocoVersion = BuildConfigs.jacocoVersion }
 
   lint { abortOnError = false }
 
@@ -170,6 +195,13 @@ android {
       applicationIdSuffix = ".ecbis"
       versionNameSuffix = "-ecbis"
       manifestPlaceholders["appLabel"] = "MOH eCBIS"
+    }
+
+    create("ecbis_preview") {
+      dimension = "apps"
+      applicationIdSuffix = ".ecbis_preview"
+      versionNameSuffix = "-ecbis_preview"
+      manifestPlaceholders["appLabel"] = "MOH eCBIS Preview"
     }
 
     create("g6pd") {
@@ -207,18 +239,46 @@ android {
       manifestPlaceholders["appLabel"] = "MOH eCHIS"
     }
 
-    create("bunda") {
+    create("sidBunda") {
       dimension = "apps"
-      applicationIdSuffix = ".bunda"
-      versionNameSuffix = "-bunda"
-      manifestPlaceholders["appLabel"] = "Bunda App"
+      applicationIdSuffix = ".sidBunda"
+      versionNameSuffix = "-sidBunda"
+      manifestPlaceholders["appLabel"] = "BidanKu"
     }
 
-    create("wdf") {
+    create("sidCadre") {
       dimension = "apps"
-      applicationIdSuffix = ".wdf"
-      versionNameSuffix = "-wdf"
+      applicationIdSuffix = ".sidCadre"
+      versionNameSuffix = "-sidCadre"
+      manifestPlaceholders["appLabel"] = "KaderKu"
+    }
+
+    create("sidEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEir"
+      versionNameSuffix = "-sidEir"
+      manifestPlaceholders["appLabel"] = "VaksinatorKu"
+    }
+
+    create("sidEcd") {
+      dimension = "apps"
+      applicationIdSuffix = ".sidEcd"
+      versionNameSuffix = "-sidEcd"
+      manifestPlaceholders["appLabel"] = "PaudKu"
+    }
+
+    create("diabetesCompass") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompass"
+      versionNameSuffix = "-diabetesCompass"
       manifestPlaceholders["appLabel"] = "Diabetes Compass"
+    }
+
+    create("diabetesCompassClinic") {
+      dimension = "apps"
+      applicationIdSuffix = ".diabetesCompassClinic"
+      versionNameSuffix = "-diabetesCompassClinic"
+      manifestPlaceholders["appLabel"] = "Diabetes Compass Clinic"
     }
 
     create("zeir") {
@@ -228,11 +288,53 @@ android {
       manifestPlaceholders["appLabel"] = "ZEIR"
     }
 
+    create("gizEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".gizeir"
+      versionNameSuffix = "-gizeir"
+      manifestPlaceholders["appLabel"] = "EIR"
+    }
+
     create("engage") {
       dimension = "apps"
       applicationIdSuffix = ".engage"
       versionNameSuffix = "-engage"
       manifestPlaceholders["appLabel"] = "Engage"
+    }
+
+    create("eir") {
+      dimension = "apps"
+      applicationIdSuffix = ".who_eir"
+      versionNameSuffix = "-who_eir"
+      manifestPlaceholders["appLabel"] = "WHO EIR"
+    }
+
+    create("psi-eswatini") {
+      dimension = "apps"
+      applicationIdSuffix = ".psi_eswatini"
+      versionNameSuffix = "-psi_eswatini"
+      manifestPlaceholders["appLabel"] = "PSI WFA"
+    }
+
+    create("eusm") {
+      dimension = "apps"
+      applicationIdSuffix = ".eusm"
+      versionNameSuffix = "-eusm"
+      manifestPlaceholders["appLabel"] = "EUSM"
+    }
+
+    create("demoEir") {
+      dimension = "apps"
+      applicationIdSuffix = ".demoEir"
+      versionNameSuffix = "-demoEir"
+      manifestPlaceholders["appLabel"] = "OpenSRP EIR"
+    }
+
+    create("vamosJuntos") {
+      dimension = "apps"
+      applicationIdSuffix = ".vamosJuntos"
+      versionNameSuffix = "-vamosJuntos"
+      manifestPlaceholders["appLabel"] = "Vamos Juntos"
     }
   }
 
@@ -244,6 +346,11 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+  }
+
+  applicationVariants.all {
+    val variant = this
+    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
   }
 
   splits {
@@ -302,12 +409,7 @@ tasks.withType<Test> {
   maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
 }
 
-configurations {
-  all {
-    exclude(group = "commons-logging")
-    exclude(group = "xpp3")
-  }
-}
+configurations { all { exclude(group = "xpp3") } }
 
 dependencies {
   coreLibraryDesugaring(libs.core.desugar)
@@ -320,25 +422,22 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.cql.measure.evaluator)
+  implementation(libs.play.services.location)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
   kapt(libs.dagger.hilt.compiler)
 
-  testRuntimeOnly(libs.junit.jupiter.engine)
-  testRuntimeOnly(libs.junit.vintage.engine)
+  testRuntimeOnly(libs.bundles.junit.jupiter.runtime)
 
   // Unit test dependencies
   testImplementation(libs.junit.jupiter.api)
   testImplementation(libs.robolectric)
-  testImplementation(libs.junit)
-  testImplementation(libs.junit.ktx)
-  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.bundles.junit.test)
   testImplementation(libs.core.testing)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
-  testImplementation(libs.hilt.android.testing)
+  testImplementation(libs.dagger.hilt.android.testing)
   testImplementation(libs.navigation.testing)
   testImplementation(libs.kotlin.test)
   testImplementation(libs.work.testing)
@@ -349,20 +448,110 @@ dependencies {
   //    debugImplementation(libs.leakcanary.android)
 
   // Annotation processors for test
-  kaptTest(libs.hilt.android.compiler)
-  kaptAndroidTest(libs.hilt.android.compiler)
+  kaptTest(libs.dagger.hilt.android.compiler)
+  kaptAndroidTest(libs.dagger.hilt.android.compiler)
 
   androidTestUtil(libs.orchestrator)
 
   // Android test dependencies
-  androidTestImplementation(libs.junit)
-  androidTestImplementation(libs.junit.ktx)
+  androidTestImplementation(libs.bundles.junit.test)
   androidTestImplementation(libs.runner)
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.dagger.hilt.android.testing)
   androidTestImplementation(libs.mockk.android)
+  androidTestImplementation(libs.benchmark.junit)
+  androidTestImplementation(libs.work.testing)
+  androidTestImplementation(libs.navigation.testing)
+  // Android Test dependencies
+  androidTestImplementation(libs.junit)
+  androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.rules)
+  androidTestImplementation(libs.uiautomator)
+
   ktlint(libs.ktlint.main) {
     attributes { attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL)) }
   }
   ktlint(project(":linting"))
 }
+
+/**
+ * This task compares the performance benchmark results to the expected benchmark results and throws
+ * an error if the result is past the expected result and margin. A message will also be printed if
+ * the performance significantly improves.
+ */
+task("evaluatePerformanceBenchmarkResults") {
+  val expectedPerformanceLimitsFile = project.file("expected-results.json")
+  val resultsFile = project.file("org.smartregister.opensrp.ecbis-benchmarkData.json")
+
+  doLast {
+    if (resultsFile.exists()) {
+      // Read the expectations file
+      val expectedResultsMap: HashMap<String, HashMap<String, Double>> = hashMapOf()
+
+      JSONObject(FileReader(expectedPerformanceLimitsFile).readText()).run {
+        keys().forEach { key ->
+          val resultMaxDeltaMap: HashMap<String, Double> = hashMapOf()
+          val methodExpectedResults = this.getJSONObject(key.toString())
+
+          methodExpectedResults.keys().forEach { expectedResultsKey ->
+            resultMaxDeltaMap.put(
+              expectedResultsKey.toString(),
+              methodExpectedResults.getDouble(expectedResultsKey.toString()),
+            )
+          }
+
+          expectedResultsMap[key.toString()] = resultMaxDeltaMap
+        }
+      }
+
+      // Loop through the results file updating the results
+      JSONObject(FileReader(resultsFile).readText()).run {
+        getJSONArray("benchmarks").iterator().forEach { any ->
+          val benchmarkResult = any as JSONObject
+          val fullName = benchmarkResult.getTestName()
+          val timings = benchmarkResult.getJSONObject("metrics").getJSONObject("timeNs")
+
+          val median = timings.getDouble("median")
+          val expectedTimings = expectedResultsMap[fullName]
+
+          if (expectedTimings == null) {
+            System.err.println(
+              "Metrics for $fullName could not be found in expected-results.json. Kindly add this to the file",
+            )
+          } else {
+            val expectedMaxTiming = (expectedTimings.get("max") ?: 0e1)
+            val timingMargin = (expectedTimings.get("margin") ?: 0e1)
+
+            if (median > (expectedMaxTiming + timingMargin)) {
+              throw Exception(
+                "$fullName test passes the threshold of ${expectedMaxTiming + timingMargin} Ns. The timing is $median Ns",
+              )
+            } else if (median <= (expectedMaxTiming - timingMargin)) {
+              System.out.println(
+                "Improvement: Test $fullName took $median vs min of ${expectedMaxTiming - timingMargin}",
+              )
+            } else {
+              System.out.println(
+                "Test $fullName took $median vs Range[${expectedMaxTiming - timingMargin} to ${expectedMaxTiming + timingMargin}] Ns",
+              )
+            }
+          }
+        }
+      }
+    } else {
+      throw Exception(
+        "Results file could not be found in  ${resultsFile.path}. Make sure this file is on the devices. It should be listed in the previous step after adb shell ls /sdcard/Download/",
+      )
+    }
+  }
+}
+
+fun JSONObject.getTestName(): String {
+  val className = getString("className").substringAfterLast(".")
+  val methodName = getString("name").substringAfterLast("_")
+
+  return "$className#$methodName"
+}
+
+operator fun JSONArray.iterator(): Iterator<JSONObject> =
+  (0 until length()).asSequence().map { get(it) as JSONObject }.iterator()

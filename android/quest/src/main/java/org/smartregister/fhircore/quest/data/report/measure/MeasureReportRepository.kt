@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,30 @@
 
 package org.smartregister.fhircore.quest.data.report.measure
 
+import android.content.Context
+import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
+import com.google.android.fhir.knowledge.KnowledgeManager
 import com.google.android.fhir.search.search
 import com.google.android.fhir.workflow.FhirOperator
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
+import org.hl7.fhir.r4.model.Measure
 import org.hl7.fhir.r4.model.MeasureReport
+import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.report.measure.ReportConfiguration
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.data.local.register.RegisterRepository
 import org.smartregister.fhircore.engine.rulesengine.ConfigRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.asReference
+import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
 import org.smartregister.fhircore.quest.ui.report.measure.MeasureReportViewModel
 import timber.log.Timber
 
@@ -46,8 +52,11 @@ constructor(
   override val configurationRegistry: ConfigurationRegistry,
   override val configService: ConfigService,
   override val configRulesExecutor: ConfigRulesExecutor,
-  val registerRepository: RegisterRepository,
   private val fhirOperator: FhirOperator,
+  private val knowledgeManager: KnowledgeManager,
+  override val fhirPathDataExtractor: FhirPathDataExtractor,
+  override val parser: IParser,
+  @ApplicationContext override val context: Context,
 ) :
   DefaultRepository(
     fhirEngine = fhirEngine,
@@ -56,6 +65,9 @@ constructor(
     configurationRegistry = configurationRegistry,
     configService = configService,
     configRulesExecutor = configRulesExecutor,
+    fhirPathDataExtractor = fhirPathDataExtractor,
+    parser = parser,
+    context = context,
   ) {
 
   /**
@@ -75,6 +87,7 @@ constructor(
     endDateFormatted: String,
     subjects: List<String>,
     existing: List<MeasureReport>,
+    practitionerId: String?,
   ): List<MeasureReport> {
     val measureReport = mutableListOf<MeasureReport>()
     try {
@@ -83,21 +96,23 @@ constructor(
           subjects
             .map {
               runMeasureReport(
-                measureUrl,
-                MeasureReportViewModel.SUBJECT,
-                startDateFormatted,
-                endDateFormatted,
-                it,
+                measureUrl = measureUrl,
+                reportType = MeasureReportViewModel.SUBJECT,
+                startDateFormatted = startDateFormatted,
+                endDateFormatted = endDateFormatted,
+                subject = it,
+                practitionerId = practitionerId,
               )
             }
             .forEach { subject -> measureReport.add(subject) }
         } else {
           runMeasureReport(
-              measureUrl,
-              MeasureReportViewModel.POPULATION,
-              startDateFormatted,
-              endDateFormatted,
-              null,
+              measureUrl = measureUrl,
+              reportType = MeasureReportViewModel.POPULATION,
+              startDateFormatted = startDateFormatted,
+              endDateFormatted = endDateFormatted,
+              subject = null,
+              practitionerId = practitionerId,
             )
             .also { measureReport.add(it) }
         }
@@ -129,20 +144,24 @@ constructor(
    * @param endDateFormatted end date of measure period with format yyyy-MM-dd
    * @param subject the individual subject reference (ResourceType/id) to run report for
    */
-  private fun runMeasureReport(
+  private suspend fun runMeasureReport(
     measureUrl: String,
     reportType: String,
     startDateFormatted: String,
     endDateFormatted: String,
     subject: String?,
+    practitionerId: String?,
   ): MeasureReport {
     return fhirOperator.evaluateMeasure(
-      measureUrl = measureUrl,
+      measure =
+        knowledgeManager
+          .loadResources(ResourceType.Measure.name, measureUrl, null, null, null)
+          .firstOrNull() as Measure,
       start = startDateFormatted,
       end = endDateFormatted,
       reportType = reportType,
-      subject = subject,
-      practitioner = null,
+      subjectId = subject,
+      practitioner = practitionerId.takeIf { it?.isNotBlank() == true },
     )
   }
 
@@ -156,14 +175,15 @@ constructor(
   suspend fun fetchSubjects(config: ReportConfiguration): List<String> {
     if (config.subjectXFhirQuery?.isNotEmpty() == true) {
       try {
-        return fhirEngine.search(config.subjectXFhirQuery!!).map {
+        return fhirEngine.search(config.subjectXFhirQuery!!).map { searchResult ->
           // prevent missing subject where MeasureEvaluator looks for Group members and skips the
           // Group itself
-          if (it is Group && !it.hasMember()) {
-            it.addMember(Group.GroupMemberComponent(it.asReference()))
-            update(it)
+          val resource = searchResult.resource
+          if (resource is Group && !resource.hasMember()) {
+            resource.addMember(Group.GroupMemberComponent(resource.asReference()))
+            update(resource)
           }
-          "${it.resourceType.name}/${it.logicalId}"
+          "${resource.resourceType.name}/${resource.logicalId}"
         }
       } catch (e: FHIRException) {
         Timber.e(e, "When fetching subjects for measure report")

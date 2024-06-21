@@ -3,7 +3,9 @@ sidebar_position: 2
 sidebar_label: App Features
 ---
 
-# App Features (release v0.2.3–0.2.4)
+# App Features
+
+As of release [**v1.0.1**](https://github.com/opensrp/fhircore/releases/tag/v1.0.1-opensrp-rc1) (September 21st, 2023)
 
 ## Patient and family registration
 
@@ -12,6 +14,10 @@ A common step in community health programs is creating a list of all persons and
 Patients and households are associated to a health worker through a location. A health worker is assigned to a specific area or set of areas, and every person they register is assigned to the same area or set of areas.
 
 In cases where patients visit or health workers cover multiple clinics across area, both the patient and the health worker would be assigned to a higher level location. For example, instead of being assigned to a village, they would be assigned to a facility area or county. That would result in a patient showing up on any of the facility patient lists in that higher level area, and for that patients medical record to be synced to the health worker's device.
+
+### Editing submitted data
+
+You can configure the app to allow data editing to fix mistakes or account for changes to information like name or address. Configuration options give you the flexibility to specify what fields can be edited. It is important to assess the downstream impacts of edits when designing your app.
 
 ## Finding patients
 
@@ -41,13 +47,13 @@ A range of input fields are available: text/string, , number, boolean, single ch
 
 Field styling is flexible with regards to font size and styling. Labels for form can use any font (applying to the entire form), and individual words or sections can have fonts be styled as italic, bold, underline, and color. The back and next button colors and font can also be configured.
 
-To style without any changes in the FHIRCore/SDK, use HTML tags as part of the question text. The following tags were proven to be applicable to use:
+To style without any changes in the FHIRCore/SDK, use HTML tags as part of the question text. The following tags are supported:
 
-- Bold:  <b\>text </b\>
-- Italic: <i\>text</i\>
-- Underline: <u\>text</u\>
-- Strikethrough: <s\>text</s\>
-- Coloring: <span style="color:#006EB8"\>text</span\>
+- Bold:  `<b>text </b>`
+- Italic: `<i>text</i>`
+- Underline: `<u>text</u>`
+- Strikethrough: `<s>text</s>`
+- Coloring: `<span style="color:#006EB8">text</span>`
 
 #### Progress bar
 
@@ -83,7 +89,7 @@ Data can be transferred without exposing the patient records in the OpenSRP app.
 
 Tasks are used to identify patients that are due for health services. They are meant to help health workers prioritize who to visit at any given time by prominently appearing in the register list views.
 
-![](/img/tasks.png)
+![task management](/img/tasks.png)
 
 Tasks in OpenSRP can fit into five categories: (1) inactive and not completable, (2) inactive but completable, (3) active and due, (4) overdue, and (5) expired. Tasks are represented in the app in both register lists and profiles in configurable colors. They are listed in order of due date, and can be configured to be listed according to other criteria stored in the Task.
 
@@ -94,7 +100,7 @@ Tasks can be due on a specific day or for a time period. The primary settings fo
 OpenSRP can generate easy-to-understand indicators used by community health workers to track progress, celebrate successes, and learn about gaps in coverage.
 Indicators are calculated from a user's patient list (and so show a health worker's achievements) and are often tied to goals or targets set by health supervisors.
 
-![](/img/in-app-reporting.png)
+![in-app reporting](/img/in-app-reporting.png)
 
 ## Stock and commodity management
 
@@ -102,7 +108,7 @@ OpenSRP makes stock and commodity management easier for health workers to antici
 
 When stock is received by a health worker, they use a consumption log form to document commodities received. As commodities are provided or used with patients during health services, stock is automatically deducted. If a stock level reaches a predetermined threshold, the app will highlight that commodity so the health worker can obtain more. During the next commodity refill, the app can calculate the correct balance the health worker should receive.
 
-![](/img/stock.png)
+![stock management](/img/stock.png)
 
 ## Multi-language support
 
@@ -112,8 +118,27 @@ OpenSRP supports multiple languages through translatable built in content and us
 
 OpenSRP supports peer-to-peer data transfer using “WiFi-direct” technology so that 2 off-line devices can connect to each other and synchronize information from one device to another. The receiving device will only be able to view devices it has permission to view, even though it may receive and store in its device database information it does not have permission to view.
 
-![](/img/p2p.png)
+![p2p data transfer](/img/p2p.png)
 
-## Roadmap for 2023–2024
-- Editing submitted form data
+## Sync insights
+
+Through sync insights OpenSRP makes it possible to understand which data has been synced back to the remote server and what data remains unsynced on your device. These insights help provide assurances that data is synced securely and timely. Sync insights also helps the health worker navigate and troubleshoot data connectivity issues, and is invaluable to teams when providing remote support.
+
+![sync insights](/img/sync-insights.png)
+
+## Known limitations and potential risks
+
+OpenSRP 2 allows a large amount of flexiblity in the creation of apps that run on it. This means that an app's correctness, usability, and effectiveness is dependent upon the content written for that app. To address this it is important to have a comprehensive testing and quality assurance process for the app's content.
+
+Relatedly, an app's content is run through the various software layers of OpenSRP 2, including the Android FHIR SDK and it's underlying libraries, e.g. cql-ruler. A change in these components may affect the way the content is interpreted, and it is therefore essential to validate existing app content against new releases of OpenSRP 2 before upgrading.
+
+## Roadmap features
+
+- Background capture of GPS linked to stored with specific actions (in progress)
+- Content versioning linked to release versioning (in progress)
 - Draft and in-progress forms
+- Library of content configuration patterns and common use cases, e.g.:
+    - Editing data that is not related to further generated data, e.g. names
+    - Editing data that is related to further generated data, e.g. age or pregnancy status
+    - Load all the members of a family into a Questionnaire, e.g. to select a caregiver.
+- Questionnaire widget to capture GPS (in progress)

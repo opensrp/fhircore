@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
+import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
+import org.smartregister.fhircore.engine.data.remote.model.response.UserInfo
+import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SecureSharedPreference
@@ -46,6 +51,8 @@ import org.smartregister.fhircore.engine.util.extension.refresh
 import org.smartregister.fhircore.engine.util.extension.setAppLocale
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.spaceByUppercase
+import org.smartregister.fhircore.quest.BuildConfig
+import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.appsetting.AppSettingActivity
 import org.smartregister.fhircore.quest.ui.login.AccountAuthenticator
 import org.smartregister.fhircore.quest.ui.login.LoginActivity
@@ -68,17 +75,41 @@ constructor(
   val languages by lazy { configurationRegistry.fetchLanguages() }
   val showDBResetConfirmationDialog = MutableLiveData(false)
   val progressBarState = MutableLiveData(Pair(false, 0))
+  val showProgressIndicatorFlow = MutableStateFlow(false)
   val unsyncedResourcesMutableSharedFlow = MutableSharedFlow<List<Pair<String, Int>>>()
   private val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application)
   }
+  private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
+  val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
+
+  val appVersionCode = BuildConfig.VERSION_CODE
+  val appVersionName = BuildConfig.VERSION_NAME
+  val buildDate = BuildConfig.BUILD_DATE
 
   fun retrieveUsername(): String? = secureSharedPreference.retrieveSessionUsername()
+
+  fun retrieveUserInfo() =
+    sharedPreferencesHelper.read<UserInfo>(
+      key = SharedPreferenceKey.USER_INFO.name,
+    )
+
+  fun practitionerLocation() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.PRACTITIONER_LOCATION.name, null)
+
+  fun retrieveOrganization() =
+    sharedPreferencesHelper.read(SharedPreferenceKey.ORGANIZATION.name, null)
+
+  fun retrieveCareTeam() = sharedPreferencesHelper.read(SharedPreferenceKey.CARE_TEAM.name, null)
 
   fun retrieveLastSyncTimestamp(): String? =
     sharedPreferencesHelper.read(SharedPreferenceKey.LAST_SYNC_TIMESTAMP.name, null)
 
-  fun allowSwitchingLanguages() = languages.size > 1
+  fun enableMenuOption(settingOption: SettingsOptions) =
+    applicationConfiguration.settingsScreenMenuOptions.contains(settingOption)
+
+  fun allowSwitchingLanguages() =
+    enableMenuOption(SettingsOptions.SWITCH_LANGUAGES) && languages.size > 1
 
   fun loadSelectedLanguage(): String =
     Locale.forLanguageTag(
@@ -107,23 +138,36 @@ constructor(
         if (event.context.isDeviceOnline()) {
           viewModelScope.launch(dispatcherProvider.main()) { syncBroadcaster.runOneTimeSync() }
         } else {
-          event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
+          event.context.showToast(
+            event.context.getString(R.string.sync_failed),
+            Toast.LENGTH_LONG,
+          )
         }
       }
       is UserSettingsEvent.SwitchLanguage -> {
         sharedPreferencesHelper.write(SharedPreferenceKey.LANG.name, event.language.tag)
         event.context.run {
+          configurationRegistry.clearConfigsCache()
           setAppLocale(event.language.tag)
           getActivity()?.refresh()
         }
       }
       is UserSettingsEvent.ShowResetDatabaseConfirmationDialog ->
-        showDBResetConfirmationDialog.postValue(event.isShow)
+        showDBResetConfirmationDialog.postValue(
+          event.isShow,
+        )
       is UserSettingsEvent.ResetDatabaseFlag -> if (event.isReset) this.resetAppData(event.context)
       is UserSettingsEvent.ShowLoaderView ->
-        updateProgressBarState(event.show, event.messageResourceId)
+        updateProgressBarState(
+          event.show,
+          event.messageResourceId,
+        )
       is UserSettingsEvent.SwitchToP2PScreen -> startP2PScreen(context = event.context)
-      is UserSettingsEvent.ShowInsightsView -> renderInsightsView(event.context)
+      is UserSettingsEvent.ShowContactView -> {}
+      is UserSettingsEvent.OnLaunchOfflineMap -> {}
+      is UserSettingsEvent.ShowInsightsScreen -> {
+        event.navController.navigate(MainNavigationScreen.Insight.route)
+      }
     }
   }
 
@@ -152,28 +196,25 @@ constructor(
 
   fun enabledDeviceToDeviceSync(): Boolean = applicationConfiguration.deviceToDeviceSync != null
 
-  fun renderInsightsView(context: Context) {
+  fun fetchUnsyncedResources() {
     viewModelScope.launch {
       withContext(dispatcherProvider.io()) {
+        showProgressIndicatorFlow.emit(true)
         val unsyncedResources =
           fhirEngine
             .getUnsyncedLocalChanges()
-            .groupingBy { it.localChange.resourceType.spaceByUppercase() }
+            .distinctBy { it.resourceId }
+            .groupingBy { it.resourceType.spaceByUppercase() }
             .eachCount()
             .map { it.key to it.value }
 
-        if (unsyncedResources.isNullOrEmpty()) {
-          withContext(dispatcherProvider.main()) {
-            context.showToast(context.getString(R.string.all_data_synced))
-          }
-        } else {
-          unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
-        }
+        showProgressIndicatorFlow.emit(false)
+        unsyncedResourcesMutableSharedFlow.emit(unsyncedResources)
       }
     }
   }
 
-  fun dismissInsightsView() {
-    viewModelScope.launch { unsyncedResourcesMutableSharedFlow.emit(listOf()) }
+  suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
+    _snackBarStateFlow.emit(snackBarMessageConfig)
   }
 }

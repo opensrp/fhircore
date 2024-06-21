@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import com.google.android.fhir.FhirEngine
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.SearchResult
+import com.google.android.fhir.datacapture.extensions.logicalId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -101,7 +102,10 @@ class P2PSenderTransferDaoTest : RobolectricTest() {
         offset = 0,
         Patient::class.java,
       )
-    } returns listOf(expectedPatient)
+    } returns
+      listOf(
+        SearchResult(resource = expectedPatient, revIncluded = emptyMap(), included = emptyMap()),
+      )
     val patientDataType = DataType(ResourceType.Patient.name, DataType.Filetype.JSON, 1)
 
     val actualJsonData =

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,17 @@
 
 package org.smartregister.fhircore.quest.ui.shared.models
 
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 
+/**
+ * This data class represents the result of a Questionnaire submission. (Optionally,
+ * [extractedResourceIds] can be used to reference the extracted [Bundle.entry] resources.
+ */
 data class QuestionnaireSubmission(
   val questionnaireConfig: QuestionnaireConfig,
   val questionnaireResponse: QuestionnaireResponse,
+  val extractedResourceIds: List<IdType> = emptyList(),
 )

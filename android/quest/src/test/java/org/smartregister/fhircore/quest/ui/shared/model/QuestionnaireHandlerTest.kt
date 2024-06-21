@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,12 @@ package org.smartregister.fhircore.quest.ui.shared.model
 
 import android.content.Context
 import android.content.Intent
-import androidx.activity.result.ActivityResult
 import androidx.core.os.bundleOf
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.test.runTest
 import org.hl7.fhir.r4.model.Enumerations
 import org.junit.Before
 import org.junit.Rule
@@ -74,7 +71,7 @@ class QuestionnaireHandlerTest : RobolectricTest() {
       .launch(
         Intent(context, QuestionnaireActivity::class.java)
           .putExtras(
-            QuestionnaireActivity.intentArgs(
+            QuestionnaireActivity.intentBundle(
               questionnaireConfig = questionnaire,
               actionParams = params,
             ),
@@ -83,14 +80,5 @@ class QuestionnaireHandlerTest : RobolectricTest() {
       )
 
     verify { (context as QuestionnaireHandler).startForResult.launch(any()) }
-  }
-
-  @Test
-  fun testOnSubmitQuestionnaire() = runTest {
-    val activityResult = mockk<ActivityResult>(relaxed = true)
-
-    (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult)
-
-    coVerify { (context as QuestionnaireHandler).onSubmitQuestionnaire(activityResult) }
   }
 }

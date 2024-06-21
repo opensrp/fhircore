@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
-import com.google.android.fhir.logicalId
+import com.google.android.fhir.datacapture.extensions.logicalId
 import com.google.android.fhir.search.Order
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -42,8 +43,12 @@ import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
 import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
+import org.smartregister.fhircore.engine.rulesengine.services.LocationService
 import org.smartregister.fhircore.engine.util.DispatcherProvider
+import org.smartregister.fhircore.engine.util.SharedPreferenceKey
+import org.smartregister.fhircore.engine.util.extension.SDF_DD_MMM_YYYY
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.daysPassed
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -63,6 +68,7 @@ constructor(
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
   val dispatcherProvider: DispatcherProvider,
+  val locationService: LocationService,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -74,11 +80,16 @@ constructor(
    * [RepositoryResourceData.relatedResourcesCountMap]. All related resources of same type are
    * flattened in a map for ease of usage in the rule engine.
    */
-  fun fireRules(rules: Rules, repositoryResourceData: RepositoryResourceData?): Map<String, Any> {
+  fun fireRules(
+    rules: Rules,
+    repositoryResourceData: RepositoryResourceData?,
+    params: Map<String, String>,
+  ): Map<String, Any> {
     facts =
       Facts().apply {
         put(FHIR_PATH, fhirPathDataExtractor)
-        put(DATA, mutableMapOf<String, Any>())
+        put(DATA, mutableMapOf<String, Any>().apply { putAll(params) })
+        put(LOCATION_SERVICE, locationService)
         put(SERVICE, rulesEngineService)
       }
     if (repositoryResourceData != null) {
@@ -197,10 +208,10 @@ constructor(
 
     /**
      * This function returns a true or false value if any ( [matchAll]= false) or all ( [matchAll]=
-     * true) of the [resources] satisfy the [fhirPathExpression] provided
+     * true) of the [resources] satisfy the [conditionalFhirPathExpression] provided
      *
-     * [resources] List of resources the expressions are run against [fhirPathExpression] An
-     * expression to run against the provided resources [matchAll] When true the function checks
+     * [resources] List of resources the expressions are run against [conditionalFhirPathExpression]
+     * An expression to run against the provided resources [matchAll] When true the function checks
      * whether all of the resources fulfill the expression provided
      *
      * ```
@@ -210,23 +221,21 @@ constructor(
     @JvmOverloads
     fun evaluateToBoolean(
       resources: List<Resource>?,
-      fhirPathExpression: String,
+      conditionalFhirPathExpression: String,
       matchAll: Boolean = false,
     ): Boolean =
       if (matchAll) {
         resources?.all { base ->
-          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+          fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
-        }
-          ?: false
+        } ?: false
       } else {
         resources?.any { base ->
-          fhirPathDataExtractor.extractData(base, fhirPathExpression).any {
+          fhirPathDataExtractor.extractData(base, conditionalFhirPathExpression).any {
             it.isBooleanPrimitive && it.primitiveValue().toBoolean()
           }
-        }
-          ?: false
+        } ?: false
       }
 
     /**
@@ -237,17 +246,27 @@ constructor(
      * return Comma Separated Values of 'CHILD' (to be serialized into [ServiceMemberIcon]) for
      * each.
      */
+    @JvmOverloads
     fun mapResourcesToLabeledCSV(
       resources: List<Resource>?,
       fhirPathExpression: String,
       label: String,
+      matchAllExtraConditions: Boolean? = false,
+      vararg extraConditions: Any? = emptyArray(),
     ): String =
       resources
-        ?.mapNotNull {
+        ?.mapNotNull { resource ->
           if (
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+            fhirPathDataExtractor.extractData(resource, fhirPathExpression).any { base ->
               base.isBooleanPrimitive && base.primitiveValue().toBoolean()
-            }
+            } &&
+              if (matchAllExtraConditions == true && extraConditions.isNotEmpty()) {
+                extraConditions.all { it is Boolean && it == true }
+              } else if (matchAllExtraConditions == false && extraConditions.isNotEmpty()) {
+                extraConditions.any { it is Boolean && it == true }
+              } else {
+                true
+              }
           ) {
             label
           } else {
@@ -255,8 +274,7 @@ constructor(
           }
         }
         ?.distinctBy { it }
-        ?.joinToString(",")
-        ?: ""
+        ?.joinToString(",") ?: ""
 
     /**
      * Transforms a [resource] into [label] if the [fhirPathExpression] is evaluated to true.
@@ -289,12 +307,65 @@ constructor(
     fun prettifyDate(inputDate: Date): String = inputDate.prettifyDate()
 
     /**
+     * This function takes [inputDate] and returns a difference (for examples 15, 30 etc) between
+     * inputDate and the currentDate
+     */
+    fun daysPassed(inputDate: String, pattern: String = SDF_DD_MMM_YYYY): String =
+      inputDate.parseDate(pattern)?.daysPassed().toString()
+
+    /**
      * This function takes [inputDateString] like 2022-7-1 and returns a difference (for examples 7
      * hours ago, 2 days ago, 5 months ago, 3 years ago etc) [inputDateString] can give given as
      * 2022-02 or 2022
      */
     fun prettifyDate(inputDateString: String): String {
       return PrettyTime().format(DateTime(inputDateString).toDate())
+    }
+
+    /**
+     * This function fetches assignment data separately that is; PractitionerId,
+     * PractitionerCareTeam, PractitionerOrganization and PractitionerLocation, using rules on the
+     * configs.
+     */
+    fun extractPractitionerInfoFromSharedPrefs(practitionerKey: String): String? {
+      val key = SharedPreferenceKey.valueOf(practitionerKey)
+      try {
+        return when (key) {
+          SharedPreferenceKey.PRACTITIONER_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_ID.name,
+              "",
+            )
+          SharedPreferenceKey.CARE_TEAM ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.CARE_TEAM.name,
+              "",
+            )
+          SharedPreferenceKey.ORGANIZATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.ORGANIZATION.name,
+              "",
+            )
+          SharedPreferenceKey.PRACTITIONER_LOCATION ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION.name,
+              "",
+            )
+          SharedPreferenceKey.PRACTITIONER_LOCATION_ID ->
+            configurationRegistry.sharedPreferencesHelper.read(
+              SharedPreferenceKey.PRACTITIONER_LOCATION_ID.name,
+              "",
+            )
+          else -> ""
+        }
+      } catch (exception: Exception) {
+        if (exception is IllegalArgumentException) {
+          Timber.e("key is not a member of practitioner keys: ", exception)
+        } else {
+          Timber.e("An exception occurred while fetching your key from sharedPrefs: ", exception)
+        }
+      }
+      return ""
     }
 
     /**
@@ -330,17 +401,61 @@ constructor(
 
     /**
      * This function filters resources provided the condition extracted from the
-     * [fhirPathExpression] is met
+     * [conditionalFhirPathExpression] is met
      */
-    fun filterResources(resources: List<Resource>?, fhirPathExpression: String): List<Resource> {
-      if (fhirPathExpression.isEmpty()) {
+    fun filterResources(
+      resources: List<Resource>?,
+      conditionalFhirPathExpression: String,
+    ): List<Resource> {
+      if (conditionalFhirPathExpression.isEmpty()) {
         return emptyList()
       }
       return resources?.filter {
-        fhirPathDataExtractor.extractValue(it, fhirPathExpression).toBoolean()
-      }
-        ?: emptyList()
+        fhirPathDataExtractor.extractValue(it, conditionalFhirPathExpression).toBoolean()
+      } ?: emptyList()
     }
+
+    /**
+     * Filters [Resource] s by comparing the given [value] against the value obtained after
+     * extracting data on each [Resource] using FHIRPath with the provided [fhirPathExpression]. The
+     * value is cast to the [DataType] to facilitate comparison using the [compareTo] function which
+     * returns zero if this object is equal to the specified other object, a negative number if it's
+     * less than other, or a positive number if it's greater than other.
+     *
+     * Please NOTE the order of comparison. The value extracted from FHIRPath is compared against
+     * the provided [value]
+     */
+    fun filterResources(
+      resources: List<Resource>?,
+      fhirPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ) =
+      runCatching {
+          resources?.filter {
+            fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
+              when (DataType.valueOf(dataType)) {
+                DataType.BOOLEAN ->
+                  base.castToBoolean(base).value.compareTo(value as Boolean) in compareToResult
+                DataType.DATE ->
+                  base.castToDate(base).value.compareTo(value as Date) in compareToResult
+                DataType.DATETIME ->
+                  base.castToDateTime(base).value.compareTo(value as Date) in compareToResult
+                DataType.DECIMAL ->
+                  base.castToDecimal(base).value.compareTo(value as BigDecimal) in compareToResult
+                DataType.INTEGER ->
+                  base.castToInteger(base).value.compareTo(value as Int) in compareToResult
+                DataType.STRING ->
+                  base.castToString(base).value.compareTo(value as String) in compareToResult
+                else -> {
+                  false
+                }
+              }
+            }
+          }
+        }
+        .getOrNull()
 
     /**
      * This function combines all string indexes to a list separated by the separator and regex
@@ -385,13 +500,12 @@ constructor(
     ): Long =
       relatedResourceCounts
         ?.find { parentResourceId.equals(it.parentResourceId, ignoreCase = true) }
-        ?.count
-        ?: 0
+        ?.count ?: 0
 
     /**
      * This function sorts [resources] by comparing the values extracted by FHIRPath using the
-     * [fhirPathExpression]. The [dataType] is required for ordering of the. You can optionally
-     * specify the [Order] of sorting.
+     * [fhirPathExpression]. The [dataType] is required for ordering of the items. You can
+     * optionally specify the [Order] of sorting.
      */
     @JvmOverloads
     fun sortResources(
@@ -399,35 +513,38 @@ constructor(
       fhirPathExpression: String,
       dataType: String,
       order: String = Order.ASCENDING.name,
-    ): List<Resource>? {
-      val mappedResources =
-        resources?.mapNotNull {
-          val extractedValue: Base? =
-            fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
-          val sortingValue: Comparable<*>? =
-            when (DataType.valueOf(dataType)) {
-              DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
-              DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
-              DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
-              DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
-              DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
-              DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
-              else -> {
-                Timber.e(
-                  "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
-                )
-                null
-              }
+    ): List<Resource>? =
+      runCatching {
+          val mappedResources =
+            resources?.mapNotNull {
+              val extractedValue: Base? =
+                fhirPathDataExtractor.extractData(it, fhirPathExpression).firstOrNull()
+              val sortingValue: Comparable<*>? =
+                when (DataType.valueOf(dataType)) {
+                  DataType.BOOLEAN -> extractedValue?.castToBoolean(extractedValue)?.value
+                  DataType.DATE -> extractedValue?.castToDate(extractedValue)?.value
+                  DataType.DATETIME -> extractedValue?.castToDateTime(extractedValue)?.value
+                  DataType.DECIMAL -> extractedValue?.castToDecimal(extractedValue)?.value
+                  DataType.INTEGER -> extractedValue?.castToInteger(extractedValue)?.value
+                  DataType.STRING -> extractedValue?.castToString(extractedValue)?.value
+                  else -> {
+                    Timber.e(
+                      "Sorting only works for primitive types, sorting by the data type $dataType is not allowed. Implement sorting strategy for the data type $dataType.",
+                    )
+                    null
+                  }
+                }
+              if (sortingValue != null) Pair(sortingValue, it) else null
             }
-          if (sortingValue != null) Pair(sortingValue, it) else null
-        }
 
-      return when (Order.valueOf(order)) {
-        Order.ASCENDING -> mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
-        Order.DESCENDING ->
-          mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
-      }
-    }
+          return when (Order.valueOf(order)) {
+            Order.ASCENDING ->
+              mappedResources?.sortedWith(compareBy { it.first })?.map { it.second }
+            Order.DESCENDING ->
+              mappedResources?.sortedWith(compareByDescending { it.first })?.map { it.second }
+          }
+        }
+        .getOrNull()
 
     fun generateTaskServiceStatus(task: Task): String {
       val serviceStatus: String
@@ -437,7 +554,6 @@ constructor(
         serviceStatus =
           when (task.status) {
             Task.TaskStatus.NULL,
-            Task.TaskStatus.FAILED,
             Task.TaskStatus.RECEIVED,
             Task.TaskStatus.ENTEREDINERROR,
             Task.TaskStatus.ACCEPTED,
@@ -447,6 +563,7 @@ constructor(
               Timber.e("Task.status is null", Exception())
               ServiceStatus.UPCOMING.name
             }
+            Task.TaskStatus.FAILED -> ServiceStatus.FAILED.name
             Task.TaskStatus.REQUESTED -> ServiceStatus.UPCOMING.name
             Task.TaskStatus.READY -> ServiceStatus.DUE.name
             Task.TaskStatus.CANCELLED -> ServiceStatus.EXPIRED.name
@@ -459,8 +576,8 @@ constructor(
   }
 
   companion object {
-
     private const val SERVICE = "service"
+    private const val LOCATION_SERVICE = "locationService"
     private const val INCLUSIVE_SIX_DIGIT_MINIMUM = 100000
     private const val INCLUSIVE_SIX_DIGIT_MAXIMUM = 999999
     private const val DEFAULT_REGEX = "(?<=^|,)[\\s,]*(\\w[\\w\\s]*)(?=[\\s,]*$|,)"

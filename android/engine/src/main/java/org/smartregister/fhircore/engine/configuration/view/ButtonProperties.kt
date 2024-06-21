@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ data class ButtonProperties(
   override val weight: Float = 0f,
   override val backgroundColor: String? = null,
   override val padding: Int = 0,
-  override val borderRadius: Int = 2,
+  override val borderRadius: Int = 14,
   override val alignment: ViewAlignment = ViewAlignment.NONE,
   override val fillMaxWidth: Boolean = true,
   override val fillMaxHeight: Boolean = false,
@@ -47,11 +47,14 @@ data class ButtonProperties(
   val enabled: String = "true",
   val text: String? = null,
   val status: String,
-  val smallSized: Boolean = false,
   val fontSize: Float = 14.0f,
   val actions: List<ActionConfig> = emptyList(),
   val buttonType: ButtonType = ButtonType.MEDIUM,
   val startIcon: ImageConfig? = null,
+  val letterSpacing: Int = 0,
+  val backgroundOpacity: Float = 0f,
+  val colorOpacity: Float = 0f,
+  val statusIconSize: Int = 16,
 ) : ViewProperties(), Parcelable {
   /**
    * This function determines the status color to display depending on the value of the service
@@ -67,6 +70,7 @@ data class ButtonProperties(
       ServiceStatus.COMPLETED -> DefaultColor
       ServiceStatus.IN_PROGRESS -> WarningColor
       ServiceStatus.EXPIRED -> DefaultColor
+      ServiceStatus.FAILED -> DangerColor
     }
   }
 

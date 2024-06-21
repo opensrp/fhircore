@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@
 package org.smartregister.fhircore.engine.p2p.dao
 
 import ca.uhn.fhir.context.FhirContext
-import ca.uhn.fhir.context.FhirVersionEnum
 import ca.uhn.fhir.parser.IParser
 import ca.uhn.fhir.rest.gclient.DateClientParam
+import ca.uhn.fhir.rest.gclient.StringClientParam
 import ca.uhn.fhir.rest.param.ParamPrefixEnum
 import com.google.android.fhir.FhirEngine
+import com.google.android.fhir.SearchResult
+import com.google.android.fhir.search.Order
 import com.google.android.fhir.search.Search
-import com.google.android.fhir.search.SearchQuery
 import com.google.android.fhir.sync.SyncDataParams
 import java.util.Date
 import java.util.TreeSet
@@ -37,6 +38,7 @@ import org.smartregister.fhircore.engine.configuration.app.ApplicationConfigurat
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isValidResourceType
 import org.smartregister.fhircore.engine.util.extension.resourceClassType
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.sync.DataType
 
 open class BaseP2PTransferDao
@@ -46,7 +48,7 @@ constructor(
   open val configurationRegistry: ConfigurationRegistry,
 ) {
 
-  protected val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+  protected val jsonParser: IParser = FhirContext.forR4Cached().newJsonParser()
 
   open fun getDataTypes(): TreeSet<DataType> {
     val appRegistry =
@@ -90,44 +92,41 @@ constructor(
     batchSize: Int,
     offset: Int,
     classType: Class<out Resource>,
-  ): List<Resource> {
+  ): List<SearchResult<Resource>> {
     return withContext(dispatcherProvider.io()) {
-      val searchQuery =
-        SearchQuery(
-          """
-            SELECT a.serializedResource
-              FROM ResourceEntity a
-              LEFT JOIN DateIndexEntity b
-              ON a.resourceType = b.resourceType AND a.resourceUuid = b.resourceUuid AND b.index_name = "_lastUpdated"
-              LEFT JOIN DateTimeIndexEntity c
-              ON a.resourceType = c.resourceType AND a.resourceUuid = c.resourceUuid AND c.index_name = "_lastUpdated"
-              WHERE a.resourceType = "${classType.newInstance().resourceType}"
-              AND a.resourceUuid IN (
-              SELECT resourceUuid FROM DateTimeIndexEntity
-              WHERE resourceType = "${classType.newInstance().resourceType}" AND index_name = "_lastUpdated" AND index_to >= ?
-              )
-              ORDER BY b.index_from ASC, c.index_from ASC
-              LIMIT ? OFFSET ?
-                    """
-            .trimIndent(),
-          listOf(lastRecordUpdatedAt, batchSize, offset),
-        )
+      val search =
+        Search(type = classType.newInstance().resourceType).apply {
+          filter(
+            DateClientParam(SyncDataParams.LAST_UPDATED_KEY),
+            {
+              value = of(DateTimeType(Date(lastRecordUpdatedAt)))
+              prefix = ParamPrefixEnum.GREATERTHAN_OR_EQUALS
+            },
+          )
 
-      fhirEngine.search(searchQuery)
+          sort(StringClientParam(SyncDataParams.LAST_UPDATED_KEY), Order.ASCENDING)
+          count = batchSize
+          from = offset
+        }
+      fhirEngine.search(search)
     }
   }
 
-  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): Long {
-    var recordCount: Long = 0
+  suspend fun countTotalRecordsForSync(highestRecordIdMap: HashMap<String, Long>): RecordCount {
+    var totalRecordCount: Long = 0
+    val resourceCountMap: HashMap<String, Long> = HashMap()
 
     getDataTypes().forEach {
       it.name.resourceClassType().let { classType ->
         val lastRecordId = highestRecordIdMap[it.name] ?: 0L
         val searchCount = getSearchObjectForCount(lastRecordId, classType)
-        recordCount += fhirEngine.count(searchCount)
+        val resourceCount = fhirEngine.count(searchCount)
+        totalRecordCount += resourceCount
+        resourceCountMap[it.name] = resourceCount
       }
     }
-    return recordCount
+
+    return RecordCount(totalRecordCount, resourceCountMap)
   }
 
   fun getSearchObjectForCount(lastRecordUpdatedAt: Long, classType: Class<out Resource>): Search {

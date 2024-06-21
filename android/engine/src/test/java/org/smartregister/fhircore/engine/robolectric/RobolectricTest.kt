@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,26 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import org.smartregister.fhircore.engine.FhirEngineProviderTestRule
 import org.smartregister.fhircore.engine.app.fakes.FakeKeyStore
 
 @RunWith(FhircoreTestRunner::class)
 @Config(sdk = [Build.VERSION_CODES.O_MR1], application = HiltTestApplication::class)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
+  @get:Rule(order = 20) val fhirEngineProviderTestRule = FhirEngineProviderTestRule()
+
   @Throws(InterruptedException::class)
   fun <T> getLiveDataValue(liveData: LiveData<T>): T? {
     val data = arrayOfNulls<Any>(1)
     val latch = CountDownLatch(1)
     val observer: Observer<T> =
       object : Observer<T> {
-        override fun onChanged(o: T?) {
-          data[0] = o
+        override fun onChanged(value: T) {
+          data[0] = value
           latch.countDown()
           liveData.removeObserver(this)
         }
