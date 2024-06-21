@@ -775,12 +775,11 @@ constructor(
             ORGANIZATION ->
               mandatoryTags
                 .firstOrNull {
-                  it.display.contentEquals(organizationResourceTag?.tag?.display, ignoreCase = true)
+                  it.system.contentEquals(organizationResourceTag?.tag?.system, ignoreCase = true)
                 }
                 ?.code
-            ID -> paramExpression
             COUNT -> appConfig.remoteSyncPageSize.toString()
-            else -> null
+            else -> paramExpression
           }?.let { paramExpression?.replace(paramLiteral, it) }
 
         // Create query param for each ResourceType p e.g.[Patient=[name=Abc, organization=111]
