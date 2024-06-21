@@ -241,7 +241,7 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
   @Test
   @kotlinx.coroutines.ExperimentalCoroutinesApi
-  fun testRetrieveSubjectsHandlesFhirException() {
+  fun testRetrieveSubjectHandlesFhirException() {
     val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
     coEvery { fhirEngine.search<Patient>(any()) } throws FHIRException("")
 
