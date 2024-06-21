@@ -24,9 +24,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Constraints
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.android.fhir.sync.CurrentSyncJobStatus
@@ -262,14 +259,6 @@ constructor(
         workId = FhirCompleteCarePlanWorker.WORK_ID,
         duration = Duration.tryParse(applicationConfiguration.taskCompleteCarePlanJobDuration),
         requiresNetwork = false,
-      )
-
-      workManager.enqueue(
-        OneTimeWorkRequestBuilder<CustomSyncWorker>()
-          .setConstraints(
-            Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
-          )
-          .build(),
       )
 
       schedulePeriodically<CustomSyncWorker>(

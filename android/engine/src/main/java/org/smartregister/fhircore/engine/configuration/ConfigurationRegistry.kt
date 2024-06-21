@@ -546,11 +546,11 @@ constructor(
         }
         .getOrThrow()
 
-    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url ?: ""
+    val nextPageUrl = resultBundle.getLink(PAGINATION_NEXT)?.url
 
     processResultBundleEntries(resultBundle.entry)
 
-    if (nextPageUrl.isNotEmpty()) {
+    if (!nextPageUrl.isNullOrEmpty()) {
       fetchResources(
         gatewayModeHeaderValue = gatewayModeHeaderValue,
         url = nextPageUrl,
@@ -809,9 +809,7 @@ constructor(
           }
       }
 
-    val searchParamPair = Pair(customResourceSearchParams, fhirResourceSearchParams)
-    Timber.i("Resource sync parameters $searchParamPair")
-    return searchParamPair
+    return Pair(customResourceSearchParams, fhirResourceSearchParams)
   }
 
   companion object {

@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.sync
 
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -53,6 +54,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
+
+  @Inject lateinit var workManager: WorkManager
   private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
@@ -81,6 +84,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = syncListenerManager,
+          workManager = workManager,
           context = context,
         ),
       )
