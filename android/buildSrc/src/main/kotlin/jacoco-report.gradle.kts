@@ -1,7 +1,7 @@
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
 val isApplication = (project.name == "quest")
-val actualProjectName = if(isApplication) "opensrp" else project.name
+val actualProjectName : String = if(isApplication) "opensrp" else project.name
 
 project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
   val tasksList = mutableSetOf(
@@ -94,10 +94,10 @@ project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
 
   val moduleVariant = if(isApplication) "${actualProjectName}Debug" else "debug"
   val javaDebugTree =
-    fileTree(baseDir = "${project.buildDir}/intermediates/javac/${moduleVariant}/classes/")
+    fileTree(baseDir = "${project.layout.buildDirectory.get()}/intermediates/javac/${moduleVariant}/classes/")
       .exclude(excludes)
   val kotlinDebugTree =
-    fileTree(baseDir = "${project.buildDir}/tmp/kotlin-classes/${moduleVariant}").exclude(excludes)
+    fileTree(baseDir = "${project.layout.buildDirectory.get()}/tmp/kotlin-classes/${moduleVariant}").exclude(excludes)
   val mainSrc = "${project.projectDir}/src/main/java"
   val kotlinSrc = "${project.projectDir}/src/main/kotlin"
 
@@ -105,7 +105,7 @@ project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
   classDirectories.setFrom(files(listOf(javaDebugTree, kotlinDebugTree)))
 
   executionData.setFrom(
-    fileTree(baseDir = project.buildDir) {
+    fileTree(baseDir = project.layout.buildDirectory.get()) {
       include(
         listOf(
           "outputs/unit_test_code_coverage/${moduleVariant}UnitTest/test${if(isApplication) actualProjectName.capitalize() else ""}DebugUnitTest.exec",

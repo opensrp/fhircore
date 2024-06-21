@@ -156,6 +156,7 @@ constructor(
         val repositoryResourceDataList =
           defaultRepository
             .searchResourcesRecursively(
+              filterByRelatedEntityLocationMetaTag = false,
               filterActiveResources = null,
               fhirResourceConfig = migrationConfig.resourceConfig,
               configRules = null,

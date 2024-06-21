@@ -20,7 +20,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.commitNow
-import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.BindValue
@@ -124,7 +123,6 @@ class ProfileFragmentTest : RobolectricTest() {
     // Simulate the returned value of loadProfile
     coEvery { registerRepository.loadProfileData(any(), any(), paramsList = emptyArray()) } returns
       RepositoryResourceData(resource = Faker.buildPatient())
-    Navigation.setViewNavController(mainActivity.navHostFragment.requireView(), navController)
     mainActivity.supportFragmentManager.run {
       commitNow { add(profileFragment, ProfileFragment::class.java.simpleName) }
       executePendingTransactions()

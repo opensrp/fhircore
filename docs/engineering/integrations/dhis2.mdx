@@ -1,0 +1,203 @@
+# DHIS2
+
+## Introduction
+
+This is a guide to implementing system integration between OpenSRP 2 and DHIS2 aggregate for those projects, organizations, and Ministries of Health that it is beneficial to. DHIS2 is an open source software platform for reporting, analysis and dissemination of data for all health programs, developed by the Health Information Systems Program at the University of Oslo.
+
+## Intended Audience
+
+This documented is intended to give guidance to software engineers working on the integration tasks. It spells out the technical details of the integration and serves as a guide to the in-country DHIS2 technical team role. It also defines various teams' involvement in the process and servers as a general guide to project stakeholders, both internal and external.
+
+## Problem Statement
+
+Various health projects, health organizations, and Ministries of Health have a reporting requirement need for all data collected at the community and facility levels using the OpenSRP 2 application. Such reports are always an aggregate of the patient level row data as defined by the reporting indicators.
+
+For instances where the OpenSRP 2 app collects data that is defined by the community reporting indicators, it is necessary for such data to be included in the national aggregate dataset based on agreed reporting locations and disaggregation. The most appropriate way to achieve this is by automating the reporting process for collected data from the OpenSRP 2 app into DHIS2, hence the need for this integration.
+
+## Proposed Solution
+
+### System Overview
+
+The architecture diagram below shows the overall system architecture and how it integrates with DHIS2. It depicts the components as currently implemented for OpenSRP 2 and the ELT process undertaken by deployed pipelines that is responsible for packaging the expected reporting payloads and pushing them to a target instance of DHIS2 aggregate through the DHIS2's APIs.
+
+![DHIS2 architecture diagram](/img/integrations/dhis2-architecture.png)
+
+### Proposed Integration Process
+
+As depicted in the architecture diagram, the data flows from a FHIR compliant server into a SQL database serving as the data warehouse. This is achieved through integration pipelines depending on the deployment architecture and infrastructure that has been set up.
+Aggregation of defined DHIS2 indicators are created as materialized views in the reporting SQL database together with a DHIS2 ID lookup table for both the organization units and data elements. The aggregated data is then packaged into the bulk JSON payload format per data elements defined in the tracked dataset.
+
+An Airbyte pipeline is then deployed to read from the materialized views as the source and push these packaged records to DHIS2 through the DHIS2 API endpoint for bulk uploads.
+
+## Using the DHIS2 Web API
+
+The Web API is a component which makes it possible for external systems to access and manipulate data stored in an instance of DHIS2. More precisely, it provides a programmatic interface to a wide range of exposed data and service methods for other applications.
+
+### Authentication
+
+DHIS2 support multiple authentication methods including Basic Authentication and Oauth2, we recommend authenticating integration pipelines through OAuth2 because of its generality and security features.
+
+DHIS2 supports the OAuth2 authentication protocol. OAuth2 is an open standard for authorization which allows third-party clients to connect on behalf of a DHIS2 user and get a reusable bearer token for subsequent requests to the Web API. DHIS2 does not support fine-grained OAuth2 roles but rather provides applications access based on the role of the DHIS2 user.
+
+Each client for which you want to allow OAuth 2 authentication must be registered in DHIS2. To add a new OAuth2 client go to `Apps > Settings > OAuth2 Clients` in the user interface, click `Add new` and enter the desired client name and the grant types.
+
+### Adding a client using the Web API
+
+An OAuth2 client can be added through the Web API. As an example, we can send a payload like this:
+
+```
+{
+    "name": "OAuth2 Demo Client",
+    "cid": "demo",
+    "secret": "1e6db50c-0fee-11e5-98d0-3c15c2c6caf6",
+    "grantTypes": ["password", "refresh_token", "authorization_code"],
+    "redirectUris": ["http://www.example.org"]
+}
+```
+
+The payload can be sent with the following curl command:
+
+```
+SERVER="https://play.dhis2.org/dev"
+curl -X POST -H "Content-Type: application/json" -d @client.json
+  -u admin:district "$SERVER/api/oAuth2Clients"
+```
+
+## Using DHIS2 Data APIs
+
+### Data Values
+
+DHIS2 provides available default [API resources](https://docs.dhis2.org/en/develop/develop.html) used to interact with to push/pull data to and from DHIS2. Data to be sent to DHIS2 is packaged in a specific format (usually XML, JSON or CSV) before being sent through a know API resource.
+
+To send data values you can make a request to the following resource:
+
+```
+POST /api/dataValueSets
+```
+
+An example post in JSON format is as below:
+
+```
+{
+    "dataSet": "dataSetID",
+    "completeDate": "date",
+    "period": "period",
+    "orgUnit": "orgUnitID",
+    "attributeOptionCombo": "aocID",
+    "dataValues": [
+        {
+            "dataElement": "dataElementID",
+            "categoryOptionCombo": "cocID",
+            "value": "1",
+            "comment": "comment1"
+        },
+        {
+            "dataElement": "dataElementID",
+            "categoryOptionCombo": "cocID",
+            "value": "2",
+            "comment": "comment2"
+        },
+        {
+            "dataElement": "dataElementID",
+            "categoryOptionCombo": "cocID",
+            "value": "3",
+            "comment": "comment3"
+        }
+    ]
+}
+```
+
+All data sent to DHIS2 must be attached to a defined dataset within DHIS2, datasets are created prior with unique IDs, that you can then use when while sending data.  All organizational related data must to tagged to the existing organizational units available within the instance based on their unique identifiers, below is a resource to get all available org units within DHIS2:
+
+```
+https://play.dhis2.org/api/29/organisationUnits/
+```
+
+To retrieve a singe org unit we use the same URL resource with the specific Org unit identifier as show below:
+
+```
+https://play.dhis2.org/api/29/organisationUnits/b8vgwksn6sR
+```
+
+To create a new org unit we use the same resource with a POST/PUT request.
+
+### Datasets
+
+You can view a sample dataset by making a GET request to its API URL and passing its ID, for example:
+
+```
+https://play.dhis2.org/api/29/dataSets/Kgv79BpL35c.json
+```
+
+Each dataset will have associated data elements, these are the identifiers or datapoints for the dataset. We send data to these identifiers that is associated with the dataset as described below.
+
+Here is a sample payload to send data to three data elements:
+
+```
+{
+    "dataSet": "pBOMPrpg1QX",
+    "completeDate": "2014-02-03",
+    "period": "201401",
+    "orgUnit": "DiszpKrYNg8",
+    "dataValues": [
+        {
+            "dataElement": "f7n9E0hX8qk",
+            "value": "1"
+        },
+        {
+            "dataElement": "Ix2HsbDMLea",
+            "value": "2"
+        },
+        {
+            "dataElement": "eY5ehpbEsB7",
+            "value": "3"
+        }
+    ]
+}
+```
+
+From our dataset example above we can package a payload to our two data elements by making a POST request to the DataValueSet URL as shown below:
+
+```
+https://play.dhis2.org/api/29/dataValueSets/
+```
+
+with the payload:
+
+```
+{
+    "dataSet": "maUfHbXG7eD",
+    "completeDate": "2023-01-03",
+    "period": "202210",
+    "orgUnit": "i6724gjuOkw",
+    "dataValues": [
+        {
+            "dataElement": "Psxm301oJH1",
+            "value": "19"
+        },
+        {
+            "dataElement": "Yt0klR6lDPn",
+            "value": "11"
+        }
+    ]
+}
+```
+
+This POST request will create a new import for new records, if a similar payload is pushed again the mergemode (import mode) will be a REPLACE meaning it will replace the original data values. This can be used to edit previous records.
+
+### Parameters
+To generate the report in the required DHIS2 format, a number of parameters must be defined and provided. Below are the required parameters for each report(Dataset):
+
+Parameter|Description
+---|---
+dataSet|Each of the reports in DHIS2 has a dataset ID, to identify each report
+completeDate|The date the report was completed
+period|The period in which the report is being posted against
+orgUnit|This is the location/organization unit in which the report belongs to as per the settings in DHIS2
+attributeOptionCombo|Used for extra dimensions for an entire data set and depends on the configurations of the DHIS2 server
+dataElement|The identifier of each reported record
+categoryOptionCombo|This is the options that are defined for each data element
+value|The actual value of the count per indicator
+comment|Any additional comment that is needed.
+
+These parameters will be represented in JSON as per the section on the payload to DHIS2.

@@ -262,8 +262,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
         eventBus.events
           .getFor(MainNavigationScreen.Home.eventId(registerFragmentArgs.registerId))
           .onEach { appEvent ->
-            if (appEvent is AppEvent.OnSubmitQuestionnaire) {
-              handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+            when (appEvent) {
+              is AppEvent.OnSubmitQuestionnaire ->
+                handleQuestionnaireSubmission(appEvent.questionnaireSubmission)
+              is AppEvent.RefreshRegisterData -> {
+                appMainViewModel.countRegisterData()
+                refreshRegisterData()
+              }
             }
           }
           .launchIn(lifecycleScope)

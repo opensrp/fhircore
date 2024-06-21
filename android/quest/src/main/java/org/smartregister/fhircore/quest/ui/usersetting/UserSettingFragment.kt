@@ -42,6 +42,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.R
+import org.smartregister.fhircore.engine.configuration.app.SettingsOptions
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.sync.OnSyncListener
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
@@ -97,19 +98,27 @@ class UserSettingFragment : Fragment(), OnSyncListener {
                 username = userSettingViewModel.retrieveUsername(),
                 practitionerLocation = userSettingViewModel.practitionerLocation(),
                 fullname = userSettingViewModel.retrieveUserInfo()?.name,
-                allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
                 selectedLanguage = userSettingViewModel.loadSelectedLanguage(),
-                allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
                 languages = userSettingViewModel.languages,
                 onEvent = userSettingViewModel::onEvent,
-                showDatabaseResetConfirmation =
-                  userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
                 progressBarState =
                   userSettingViewModel.progressBarState.observeAsState(Pair(false, 0)).value,
                 isDebugVariant = BuildConfig.DEBUG,
                 mainNavController = findNavController(),
                 lastSyncTime = userSettingViewModel.retrieveLastSyncTimestamp(),
                 showProgressIndicatorFlow = userSettingViewModel.showProgressIndicatorFlow,
+                enableManualSync =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.MANUAL_SYNC),
+                allowSwitchingLanguages = userSettingViewModel.allowSwitchingLanguages(),
+                showDatabaseResetConfirmation =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.RESET_DATA) &&
+                    userSettingViewModel.showDBResetConfirmationDialog.observeAsState(false).value,
+                enableAppInsights = userSettingViewModel.enableMenuOption(SettingsOptions.INSIGHTS),
+                showOfflineMaps =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.OFFLINE_MAPS),
+                allowP2PSync = userSettingViewModel.enabledDeviceToDeviceSync(),
+                enableHelpContacts =
+                  userSettingViewModel.enableMenuOption(SettingsOptions.CONTACT_HELP),
               )
             }
           }
