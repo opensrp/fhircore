@@ -253,5 +253,4 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
   }
-
 }
