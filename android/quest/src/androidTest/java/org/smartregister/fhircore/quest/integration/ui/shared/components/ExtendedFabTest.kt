@@ -127,8 +127,8 @@ class ExtendedFabTest {
 
   @Test
   fun testFloatingButtonWhenAnimateIsFalse() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      composeRule.mainClock.autoAdvance = false
       ExtendedFab(
         fabActions =
           listOf(
@@ -165,8 +165,8 @@ class ExtendedFabTest {
 
   @Test
   fun testFloatingButtonWhenAnimateIsTrue() {
+    composeRule.mainClock.autoAdvance = false
     composeRule.setContent {
-      composeRule.mainClock.autoAdvance = false
       ExtendedFab(
         fabActions =
           listOf(
