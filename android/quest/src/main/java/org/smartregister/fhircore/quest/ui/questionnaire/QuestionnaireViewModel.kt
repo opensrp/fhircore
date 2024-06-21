@@ -91,6 +91,7 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
+import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
 import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
 import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
@@ -799,7 +800,10 @@ constructor(
     return QuestionnaireResponseValidator.validateQuestionnaireResponse(
         questionnaire = Questionnaire().apply { item = validQuestionnaireItems },
         questionnaireResponse =
-          QuestionnaireResponse().apply { item = validQuestionnaireResponseItems },
+          QuestionnaireResponse().apply {
+            item = validQuestionnaireResponseItems
+            packRepeatedGroups()
+          },
         context = context,
       )
       .values
