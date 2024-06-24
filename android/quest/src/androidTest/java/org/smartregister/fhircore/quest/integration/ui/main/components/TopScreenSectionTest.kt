@@ -50,7 +50,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
-        onSearchClick = {}
+        onSearchClick = {},
       ) {}
     }
 
@@ -81,7 +81,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = listener,
         navController = navController,
         isSearchBarVisible = true,
-        onSearchClick = {}
+        onSearchClick = {},
       ) {}
     }
 
@@ -114,7 +114,7 @@ class TopScreenSectionTest {
         onSearchTextChanged = { clicked = true },
         navController = navController,
         isSearchBarVisible = true,
-        onSearchClick = {}
+        onSearchClick = {},
       ) {}
     }
 
