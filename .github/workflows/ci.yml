@@ -6,6 +6,8 @@ name: CI
 on:
   pull_request:
     branches: [ main ]
+  merge_group:
+    branches: [ main ]
 
 env:
  FHIRCORE_USERNAME: ${{ secrets.FHIRCORE_USERNAME }}
