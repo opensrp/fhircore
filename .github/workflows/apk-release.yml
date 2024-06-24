@@ -15,6 +15,7 @@ env:
 
 jobs:
   release:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Cancel previous workflow runs

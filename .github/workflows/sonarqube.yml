@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+env:
+  MAPBOX_SDK_TOKEN: ${{ secrets.MAPBOX_SDK_TOKEN }}
 
 jobs:
   build:
