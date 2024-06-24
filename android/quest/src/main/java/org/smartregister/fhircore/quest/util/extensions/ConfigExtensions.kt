@@ -166,14 +166,15 @@ fun List<ActionConfig>.handleClickEvent(
       ApplicationWorkflow.DEVICE_TO_DEVICE_SYNC -> startP2PScreen(navController.context)
       ApplicationWorkflow.LAUNCH_MAP -> {
         val mapFragmentDestination = MainNavigationScreen.GeoWidgetLauncher.route
-        val isMapFragmentExists =
-          navController.currentBackStack.value.any { it.destination.id == mapFragmentDestination }
+
+        val isMapFragmentExists = navController.currentDestination?.id == mapFragmentDestination
         if (isMapFragmentExists) {
           navController.popBackStack(mapFragmentDestination, false)
         } else {
           navController.navigate(
             resId = mapFragmentDestination,
             args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
+            navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
           )
         }
       }
