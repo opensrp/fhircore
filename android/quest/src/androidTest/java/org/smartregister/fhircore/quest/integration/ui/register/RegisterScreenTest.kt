@@ -91,6 +91,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -131,6 +132,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
 
@@ -174,6 +176,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
 
@@ -214,6 +217,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
@@ -253,6 +257,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }

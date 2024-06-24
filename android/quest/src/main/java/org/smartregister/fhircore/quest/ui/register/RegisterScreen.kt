@@ -224,7 +224,17 @@ fun RegisterScreen(
         )
       }
 
-      Column(modifier = Modifier.background(backgroundColor)) {
+      Column(
+        modifier =
+          Modifier.background(backgroundColor)
+            .background(
+              if (applyBackgroundColor) {
+                Color.White.copy(alpha = 0.83f)
+              } else {
+                Color.Transparent
+              },
+            ),
+      ) {
         Box(
           modifier =
             Modifier.weight(1f)
@@ -261,14 +271,22 @@ fun RegisterScreen(
                   .height(20.dp)
                   .width(40.dp)
                   .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                  .background(Color(0xFF012B4A))
+                  .background(backgroundColor)
+                  .background(
+                    if (applyBackgroundColor) {
+                      Color.White.copy(alpha = 0.83f)
+                    } else {
+                      Color.Transparent
+                    },
+                  )
                   .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
               contentAlignment = Alignment.Center,
             ) {
               Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                tint = Color.White,
+                tint =
+                  if (backgroundColor == SideMenuTopItemDarkColor) Color.White else backgroundColor,
                 modifier = Modifier.size(16.dp),
               )
             }
@@ -286,6 +304,13 @@ fun RegisterScreen(
                     Color.White.copy(alpha = 0.83f)
                   } else {
                     Color.Transparent
+                  },
+                )
+                .then(
+                  if (applyBackgroundColor) {
+                    Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                  } else {
+                    Modifier
                   },
                 ),
           ) {

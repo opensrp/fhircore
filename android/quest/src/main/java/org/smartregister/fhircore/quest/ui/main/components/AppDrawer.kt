@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -464,7 +465,7 @@ fun SyncCompleteStatus(
       if (showImage) {
         Image(
           paddingEnd = 10,
-          imageProperties = ImageProperties(imageConfig = imageConfig, size = 50),
+          imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
           tint = SuccessColor,
           navController = rememberNavController(),
         )
@@ -485,11 +486,17 @@ fun SyncCompleteStatus(
 }
 
 @Composable
-private fun SideMenuItemText(title: String, textColor: Color, textSize: Int = 18) {
+private fun SideMenuItemText(
+  title: String,
+  textColor: Color,
+  textSize: Int = 18,
+  boldText: Boolean = false,
+) {
   Text(
     text = title,
     color = textColor,
     fontSize = textSize.sp,
+    fontWeight = if (boldText) FontWeight.Bold else FontWeight.Normal,
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
 }
