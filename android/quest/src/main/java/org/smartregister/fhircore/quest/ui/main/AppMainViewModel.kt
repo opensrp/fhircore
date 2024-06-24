@@ -182,7 +182,7 @@ constructor(
           workManager.cancelUniqueWork(
             "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
           )
-          isUploadSync = false
+          trackSyncStatus(false, SyncStatus.UNKNOWN)
         }
       }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
@@ -304,6 +304,21 @@ constructor(
     }
   }
 
+  fun trackSyncStatus(isSyncUpload: Boolean, syncStatus: SyncStatus) {
+    appMainUiState.value =
+      appMainUiState.value.copy(
+        isSyncUpload = isSyncUpload,
+        isSyncCompleted = syncStatus,
+      )
+  }
+
+  fun trackSyncUploadPercentage(progressPercentage: Int) {
+    appMainUiState.value =
+      appMainUiState.value.copy(
+        progressPercentage = progressPercentage,
+      )
+  }
+
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {
     questionnaireSubmission.questionnaireConfig.taskId?.let { taskId ->
       val status: Task.TaskStatus =
@@ -320,19 +335,6 @@ constructor(
         )
       }
     }
-  }
-
-  fun trackSyncStatus(isSyncUpload: Boolean, syncStatus: SyncStatus){
-    appMainUiState.value = appMainUiState.value.copy(
-      isSyncUpload = isSyncUpload,
-      isSyncCompleted = syncStatus
-    )
-  }
-
-  fun trackSyncUploadPercentage(progressPercentage: Int){
-    appMainUiState.value = appMainUiState.value.copy(
-      progressPercentage = progressPercentage
-    )
   }
 
   companion object {

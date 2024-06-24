@@ -63,4 +63,5 @@ enum class SyncStatus {
   SUCCEEDED,
   FAILED,
   UNKNOWN,
+  INPROGRESS,
 }

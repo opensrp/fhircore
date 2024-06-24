@@ -165,7 +165,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
+                onClick = appMainViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
+                appUiState = appMainViewModel.appMainUiState.value,
                 searchText = registerViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
@@ -206,7 +208,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
             isSyncUpload,
           )
-          appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
+          if (isSyncUpload) {
+            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.INPROGRESS)
+          } else {
+            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
+          }
         }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
@@ -223,7 +229,6 @@ class RegisterFragment : Fragment(), OnSyncListener {
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        syncJobStatus.toString()
         // Show error message in snackBar message
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(

@@ -23,6 +23,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,17 +41,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -62,10 +66,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.ConfigType
+import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.configuration.register.RegisterConfiguration
 import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
@@ -75,8 +82,13 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.ui.components.register.LoaderDialog
 import org.smartregister.fhircore.engine.ui.components.register.RegisterHeader
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
+import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainEvent
+import org.smartregister.fhircore.quest.ui.main.AppMainUiState
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
+import org.smartregister.fhircore.quest.ui.main.components.SyncCompleteStatus
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
@@ -98,7 +110,9 @@ fun RegisterScreen(
   modifier: Modifier = Modifier,
   openDrawer: (Boolean) -> Unit,
   onEvent: (RegisterEvent) -> Unit,
+  onClick: (AppMainEvent) -> Unit,
   registerUiState: RegisterUiState,
+  appUiState: AppMainUiState? = null,
   searchText: MutableState<String>,
   currentPage: MutableState<Int>,
   pagingItems: LazyPagingItems<ResourceData>,
@@ -106,21 +120,54 @@ fun RegisterScreen(
   toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
 ) {
   val lazyListState: LazyListState = rememberLazyListState()
+  var syncNotificationBarExpanded by remember { mutableStateOf(false) }
+  val coroutineScope = rememberCoroutineScope()
+
+  var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
+  var showSyncBar by remember { mutableStateOf(false) }
+  var applyBackgroundColor by remember { mutableStateOf(false) }
+
+  LaunchedEffect(
+    appUiState?.isSyncCompleted,
+    appUiState?.progressPercentage,
+    registerUiState.isFirstTimeSync,
+  ) {
+    when {
+      appUiState?.isSyncCompleted == SyncStatus.SUCCEEDED &&
+        appUiState.progressPercentage == 100 -> {
+        backgroundColor = Color(0xFF1DB11B)
+        showSyncBar = true
+        applyBackgroundColor = true
+        coroutineScope.launch {
+          delay(60000L)
+          showSyncBar = false
+          applyBackgroundColor = false
+          backgroundColor = SideMenuTopItemDarkColor
+        }
+      }
+      appUiState?.isSyncCompleted == SyncStatus.FAILED -> {
+        backgroundColor = Color(0xFFDF0E1A)
+        showSyncBar = true
+      }
+      appUiState?.isSyncCompleted == SyncStatus.INPROGRESS -> {
+        showSyncBar = true
+      }
+      else -> {
+        showSyncBar = false
+      }
+    }
+  }
 
   Scaffold(
     topBar = {
       Column {
-        /*
-         * Top section has toolbar and a results counts view
-         * by default isSearchBarVisible is visible
-         * */
         val filterActions = registerUiState.registerConfiguration?.registerFilter?.dataFilterActions
         TopScreenSection(
           modifier = modifier.testTag(TOP_REGISTER_SCREEN_TEST_TAG),
           title =
             registerUiState.screenTitle.ifEmpty {
               registerUiState.registerConfiguration?.topScreenSection?.title ?: ""
-            }, // backward compatibility for screen title
+            },
           searchText = searchText.value,
           filteredRecordsCount = registerUiState.filteredRecordsCount,
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
@@ -144,13 +191,10 @@ fun RegisterScreen(
               filterActions?.handleClickEvent(navController)
             }
             is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(
-                navController = navController,
-              )
+              event.actions.handleClickEvent(navController)
             }
           }
         }
-        // Only show counter during search
         if (searchText.value.isNotEmpty()) RegisterHeader(resultCount = pagingItems.itemCount)
       }
     },
@@ -167,7 +211,6 @@ fun RegisterScreen(
     },
   ) { innerPadding ->
     Box(modifier = modifier.padding(innerPadding)) {
-      var syncNotificationBarExpanded by remember { mutableStateOf(false) }
       if (registerUiState.isFirstTimeSync) {
         val isSyncUpload = registerUiState.isSyncUpload.collectAsState(initial = false).value
         LoaderDialog(
@@ -180,8 +223,8 @@ fun RegisterScreen(
           showPercentageProgress = true,
         )
       }
-      // TODO this background color should be dynamic depending on sync status; extract to variable
-      Column(modifier = Modifier.background(Color(0xFF012B4A))) {
+
+      Column(modifier = Modifier.background(backgroundColor)) {
         Box(
           modifier =
             Modifier.weight(1f)
@@ -210,39 +253,65 @@ fun RegisterScreen(
               }
             }
           }
-          // TODO hide this and the sync bar notification sections if all data has been synced;
-          // remember to also change the outer column background to White to reset the UI
-          Box(
-            modifier =
-              Modifier.align(Alignment.BottomStart)
-                .padding(start = 16.dp)
-                .height(20.dp)
-                .width(40.dp)
-                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .background(Color(0xFF012B4A))
-                .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
-            contentAlignment = Alignment.Center,
-          ) {
-            Icon(
-              imageVector = Icons.Default.KeyboardArrowDown,
-              contentDescription = null,
-              tint = Color.White,
-              modifier = Modifier.size(16.dp),
-            )
+          if (showSyncBar) {
+            Box(
+              modifier =
+                Modifier.align(Alignment.BottomStart)
+                  .padding(start = 16.dp)
+                  .height(20.dp)
+                  .width(40.dp)
+                  .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                  .background(Color(0xFF012B4A))
+                  .clickable { syncNotificationBarExpanded = !syncNotificationBarExpanded },
+              contentAlignment = Alignment.Center,
+            ) {
+              Icon(
+                imageVector = Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp),
+              )
+            }
           }
         }
-        Box(
-          modifier =
-            Modifier.fillMaxWidth()
-              .height(if (syncNotificationBarExpanded) 64.dp else 32.dp)
-              .animateContentSize()
-              .background(Color(0xFF012B4A)),
-        ) {
-          // TODO Implement the updated sync UI with the progress indicator, cancel button here
-          // TODO show progress indicator and animated gif if syncNotificationBarExpanded = false
-          //pass the register UI State
-          SubsequentSyncDetailsBar(appUiState = null, registerUiState = registerUiState){
-
+        if (showSyncBar) {
+          Box(
+            modifier =
+              Modifier.fillMaxWidth()
+                .height(IntrinsicSize.Min)
+                .animateContentSize()
+                .background(backgroundColor)
+                .background(
+                  if (applyBackgroundColor) {
+                    Color.White.copy(alpha = 0.83f)
+                  } else {
+                    Color.Transparent
+                  },
+                ),
+          ) {
+            val context = LocalContext.current
+            if (applyBackgroundColor) {
+              SyncCompleteStatus(
+                modifier = modifier,
+                imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+                title = "Sync Complete",
+                showEndText = false,
+                showImage = syncNotificationBarExpanded,
+                onCancelButtonClick = {},
+              )
+            } else if (
+              appUiState != null && appUiState.isSyncUpload && appUiState.progressPercentage != 100
+            ) {
+              if (syncNotificationBarExpanded) {
+                SubsequentSyncDetailsBar(appUiState = appUiState) {
+                  onClick(AppMainEvent.CancelSyncData(context))
+                }
+              } else {
+                SubsequentSyncDetailsBar(appUiState = appUiState, hideExtraInformation = false) {
+                  onClick(AppMainEvent.CancelSyncData(context))
+                }
+              }
+            }
           }
         }
       }
@@ -327,6 +396,7 @@ fun RegisterScreenWithDataPreview() {
       modifier = Modifier,
       openDrawer = {},
       onEvent = {},
+      onClick = {},
       registerUiState = registerUiState,
       searchText = searchText,
       currentPage = currentPage,

@@ -22,9 +22,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -237,9 +239,9 @@ private fun NavBottomSection(
               Color.White.copy(alpha = 0.83f)
             } else {
               Color.Transparent
-            }
+            },
           )
-          .padding(horizontal = 16.dp, vertical = 4.dp)
+          .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
       if (showSyncBar) {
         SyncCompleteStatus(
@@ -442,29 +444,33 @@ private fun SideMenuItem(
 }
 
 @Composable
-private fun SyncCompleteStatus(
-  modifier: Modifier = Modifier,
+fun SyncCompleteStatus(
+  modifier: Modifier,
   imageConfig: ImageConfig? = null,
   title: String,
   showEndText: Boolean,
+  showImage: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier.fillMaxWidth().testTag(SIDE_MENU_ITEM_MAIN_ROW_TEST_TAG),
+    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Row(
-      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 16.dp),
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 10.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Image(
-        paddingEnd = 10,
-        imageProperties = ImageProperties(imageConfig = imageConfig, size = 50),
-        tint = SuccessColor,
-        navController = rememberNavController(),
-      )
-      SideMenuItemText(title = title, textColor = Color.White)
+      if (showImage) {
+        Image(
+          paddingEnd = 10,
+          imageProperties = ImageProperties(imageConfig = imageConfig, size = 50),
+          tint = SuccessColor,
+          navController = rememberNavController(),
+        )
+      }
+      val syncTextStatusSize = if (showImage) 18 else 13
+      SideMenuItemText(title = title, textColor = Color(0xFF282828), syncTextStatusSize)
     }
     Spacer(modifier = Modifier.width(16.dp))
     if (showEndText) {
@@ -479,11 +485,11 @@ private fun SyncCompleteStatus(
 }
 
 @Composable
-private fun SideMenuItemText(title: String, textColor: Color) {
+private fun SideMenuItemText(title: String, textColor: Color, textSize: Int = 18) {
   Text(
     text = title,
     color = textColor,
-    fontSize = 18.sp,
+    fontSize = textSize.sp,
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
 }

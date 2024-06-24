@@ -28,7 +28,6 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -40,28 +39,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
-import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import timber.log.Timber
 
 @Composable
 fun SubsequentSyncDetailsBar(
   modifier: Modifier = Modifier,
-  appUiState: AppMainUiState?,
-  registerUiState: RegisterUiState = RegisterUiState(),
-  showRemainingUploadTime: Boolean = true,
-  showSyncPercentage: Boolean = true,
+  appUiState: AppMainUiState,
+  hideExtraInformation: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
-  val registerProgress by registerUiState.progressPercentage.collectAsState(initial = 0)
-  val progress by remember {
-    mutableFloatStateOf(
-      if (appUiState == null) {
-        (registerProgress.toFloat()) / 100
-      } else {
-        (appUiState.progressPercentage.toFloat()) / 100
-      }
-    )
-  }
-
+  Timber.d(
+    "AppDrawer SubsequentSyncDetailsBar : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}",
+  )
+  val progress by remember { mutableFloatStateOf(appUiState.progressPercentage.toFloat() / 100) }
   val backgroundColor = Color(0xFF002B4A)
 
   Box(
@@ -82,7 +72,7 @@ fun SubsequentSyncDetailsBar(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.weight(1f),
       ) {
-        if (showSyncPercentage) {
+        if (hideExtraInformation) {
           Text(
             text = "${(progress * 100).toInt()}% Syncing...",
             color = Color.White,
@@ -92,11 +82,11 @@ fun SubsequentSyncDetailsBar(
         }
         LinearProgressIndicator(
           progress = progress,
-          color = backgroundColor.copy(alpha = 0.6f),
-          backgroundColor = Color.Gray,
+          color = Color(0xFF28B8F9),
+          backgroundColor = Color.White,
           modifier = Modifier.fillMaxWidth(),
         )
-        if (showRemainingUploadTime) {
+        if (hideExtraInformation) {
           Text(
             text = "Calculating mins remaining...",
             color = SubtitleTextColor,
@@ -107,11 +97,13 @@ fun SubsequentSyncDetailsBar(
         }
       }
       Spacer(modifier = Modifier.width(16.dp))
-      TextButton(
-        onClick = { onCancelButtonClick() },
-        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
-      ) {
-        Text(text = "CANCEL")
+      if (hideExtraInformation) {
+        TextButton(
+          onClick = { onCancelButtonClick() },
+          colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
+        ) {
+          Text(text = "CANCEL")
+        }
       }
     }
   }
