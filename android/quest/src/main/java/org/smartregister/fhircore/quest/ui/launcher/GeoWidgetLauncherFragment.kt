@@ -74,32 +74,21 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class GeoWidgetLauncherFragment : Fragment() {
+
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var geoWidgetFragment: GeoWidgetFragment
+  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
-  private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
-  private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      args.geoWidgetId,
-      emptyMap(),
-    )
-  }
+  private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    Timber.i("GeoWidgetLauncherFragment onCreate")
-  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    Timber.i("GeoWidgetLauncherFragment onCreateView")
     buildGeoWidgetFragment()
 
     return ComposeView(requireContext()).apply {
@@ -115,7 +104,6 @@ class GeoWidgetLauncherFragment : Fragment() {
           }
         }
 
-        // Close side menu (drawer) when activity is not in foreground
         val lifecycleEvent = rememberLifecycleEvent()
         LaunchedEffect(lifecycleEvent) {
           if (lifecycleEvent == Lifecycle.Event.ON_PAUSE) scaffoldState.drawerState.close()
@@ -130,7 +118,6 @@ class GeoWidgetLauncherFragment : Fragment() {
         }
 
         AppTheme {
-          // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
@@ -157,9 +144,9 @@ class GeoWidgetLauncherFragment : Fragment() {
               GeoWidgetLauncherScreen(
                 openDrawer = openDrawer,
                 onEvent = geoWidgetLauncherViewModel::onEvent,
-                toolBarHomeNavigation = args.toolBarHomeNavigation,
                 navController = findNavController(),
-                modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
+                toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
+                modifier = Modifier.fillMaxSize(),
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
@@ -187,6 +174,11 @@ class GeoWidgetLauncherFragment : Fragment() {
   }
 
   private fun buildGeoWidgetFragment() {
+    geoWidgetConfiguration =
+      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
+        configType = ConfigType.GeoWidget,
+        configId = navArgs.geoWidgetId,
+      )
     geoWidgetFragment =
       GeoWidgetFragment.builder()
         .setUseGpsOnAddingLocation(false)
@@ -255,13 +247,8 @@ class GeoWidgetLauncherFragment : Fragment() {
       }
     }
   }
-
-  companion object {
-    const val GEO_WIDGET_FRAGMENT_TAG = "geo-widget-fragment-tag"
-  }
-
   override fun onStop() {
     super.onStop()
-    geoWidgetLauncherViewModel.searchText.value = "" // Clear the search term
+    geoWidgetLauncherViewModel.searchText.value = ""
   }
 }

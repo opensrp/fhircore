@@ -30,7 +30,6 @@ data class GeoWidgetConfiguration(
   override var appId: String,
   override var configType: String = ConfigType.GeoWidget.name,
   val id: String,
-  val profileId: String,
   val topScreenSection: TopScreenSectionConfig? = null,
   val registrationQuestionnaire: QuestionnaireConfig,
   val mapLayers: List<MapLayerConfig> = listOf(MapLayerConfig(MapLayer.STREET, true)),
