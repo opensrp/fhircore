@@ -29,10 +29,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.core.os.bundleOf
-import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.SyncJobStatus
 import com.google.android.fhir.sync.SyncOperation
@@ -48,7 +47,6 @@ import kotlinx.coroutines.runBlocking
 import org.hl7.fhir.r4.model.IdType
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
-import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.configuration.app.LocationLogOptions
 import org.smartregister.fhircore.engine.configuration.app.SyncStrategy
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
@@ -57,10 +55,8 @@ import org.smartregister.fhircore.engine.datastore.syncLocationIdsProtoStore
 import org.smartregister.fhircore.engine.domain.model.LauncherType
 import org.smartregister.fhircore.engine.rulesengine.services.LocationCoordinate
 import org.smartregister.fhircore.engine.sync.OnSyncListener
-import org.smartregister.fhircore.engine.sync.SyncBroadcaster
 import org.smartregister.fhircore.engine.sync.SyncListenerManager
 import org.smartregister.fhircore.engine.ui.base.BaseMultiLanguageActivity
-import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.isDeviceOnline
 import org.smartregister.fhircore.engine.util.extension.parcelable
 import org.smartregister.fhircore.engine.util.extension.serializable
@@ -80,20 +76,11 @@ import timber.log.Timber
 @ExperimentalMaterialApi
 open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, OnSyncListener {
 
-  @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-
-  @Inject lateinit var configService: ConfigService
-
   @Inject lateinit var syncListenerManager: SyncListenerManager
-
-  @Inject lateinit var syncBroadcaster: SyncBroadcaster
-
-  @Inject lateinit var fhirEngine: FhirEngine
 
   @Inject lateinit var protoDataStore: ProtoDataStore
 
   @Inject lateinit var eventBus: EventBus
-  lateinit var navHostFragment: NavHostFragment
   val appMainViewModel by viewModels<AppMainViewModel>()
   private val sentryNavListener =
     SentryNavigationListener(enableNavigationBreadcrumbs = true, enableNavigationTracing = true)
@@ -108,27 +95,56 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
       }
     }
 
+  /**
+   * When the NavHostFragment is inflated using FragmentContainerView, if you attempt to use
+   * findNavController in the onCreate() of the Activity, the nav controller cannot be found. This
+   * is because when the fragment is inflated in the constructor of FragmentContainerView, the
+   * fragmentManager is in the INITIALIZING state, and therefore the added fragment only goes up to
+   * initializing. For the nav controller to be properly set, the fragment view needs to be created
+   * and onViewCreated() needs to be dispatched, which does not happen until the ACTIVITY_CREATED
+   * state. As a workaround retrieve the navController from the [NavHostFragment]
+   */
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setupLocationServices()
-    setContentView(FragmentContainerView(this).apply { id = R.id.nav_host })
-    val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
-    val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
-    val topMenuConfigId = clickAction?.id ?: topMenuConfig.id
-    navHostFragment =
-      NavHostFragment.create(
-        R.navigation.application_nav_graph,
-        bundleOf(
-          NavigationArg.SCREEN_TITLE to topMenuConfig.display,
-          NavigationArg.REGISTER_ID to topMenuConfigId,
-        ),
-      )
+    setContentView(R.layout.activity_main)
 
-    supportFragmentManager
-      .beginTransaction()
-      .replace(R.id.nav_host, navHostFragment)
-      .setPrimaryNavigationFragment(navHostFragment)
-      .commit()
+    val startDestinationConfig =
+      appMainViewModel.applicationConfiguration.navigationStartDestination
+    val startDestinationArgs =
+      when (startDestinationConfig.launcherType) {
+        LauncherType.REGISTER -> {
+          val topMenuConfig = appMainViewModel.navigationConfiguration.clientRegisters.first()
+          val clickAction = topMenuConfig.actions?.find { it.trigger == ActionTrigger.ON_CLICK }
+          bundleOf(
+            NavigationArg.SCREEN_TITLE to
+              if (startDestinationConfig.screenTitle.isNullOrEmpty()) {
+                topMenuConfig.display
+              } else startDestinationConfig.screenTitle,
+            NavigationArg.REGISTER_ID to
+              if (startDestinationConfig.id.isNullOrEmpty()) {
+                clickAction?.id ?: topMenuConfig.id
+              } else startDestinationConfig.id,
+          )
+        }
+        LauncherType.MAP -> bundleOf(NavigationArg.GEO_WIDGET_ID to startDestinationConfig.id)
+      }
+
+    // Retrieve the navController directly from the NavHostFragment
+    val navController =
+      (supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment).navController
+
+    val graph =
+      navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
+        val startDestination =
+          when (appMainViewModel.applicationConfiguration.navigationStartDestination.launcherType) {
+            LauncherType.MAP -> R.id.geoWidgetLauncherFragment
+            LauncherType.REGISTER -> R.id.registerFragment
+          }
+        setStartDestination(startDestination)
+      }
+
+    navController.setGraph(graph, startDestinationArgs)
 
     // Register sync listener then run sync in that order
     syncListenerManager.registerSyncListener(this, lifecycle)
@@ -162,25 +178,12 @@ open class AppMainActivity : BaseMultiLanguageActivity(), QuestionnaireHandler, 
 
   override fun onResume() {
     super.onResume()
-    // Create NavController after fragment has been attached
-    navHostFragment.apply {
-      val graph =
-        navController.navInflater.inflate(R.navigation.application_nav_graph).apply {
-          val startDestination =
-            when (appMainViewModel.applicationConfiguration.navigationStartDestination) {
-              LauncherType.MAP -> R.id.geoWidgetLauncherFragment
-              else -> R.id.registerFragment
-            }
-          setStartDestination(startDestination)
-        }
-      navController.addOnDestinationChangedListener(sentryNavListener)
-      navController.graph = graph
-    }
+    findNavController(R.id.nav_host).addOnDestinationChangedListener(sentryNavListener)
   }
 
   override fun onPause() {
     super.onPause()
-    navHostFragment.navController.removeOnDestinationChangedListener(sentryNavListener)
+    findNavController(R.id.nav_host).removeOnDestinationChangedListener(sentryNavListener)
   }
 
   override suspend fun onSubmitQuestionnaire(activityResult: ActivityResult) {

@@ -21,6 +21,8 @@ on:
         required: true
         type: boolean
         default: false
+env:
+  MAPBOX_SDK_TOKEN: ${{ secrets.MAPBOX_SDK_TOKEN }}
 jobs:
    build:
       runs-on: ubuntu-latest

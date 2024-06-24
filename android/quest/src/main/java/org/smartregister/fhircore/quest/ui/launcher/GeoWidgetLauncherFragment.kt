@@ -74,32 +74,21 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class GeoWidgetLauncherFragment : Fragment() {
+
   @Inject lateinit var eventBus: EventBus
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
   private lateinit var geoWidgetFragment: GeoWidgetFragment
+  private lateinit var geoWidgetConfiguration: GeoWidgetConfiguration
   private val geoWidgetLauncherViewModel by viewModels<GeoWidgetLauncherViewModel>()
-  private val args by navArgs<GeoWidgetLauncherFragmentArgs>()
-  private val geoWidgetConfiguration: GeoWidgetConfiguration by lazy {
-    configurationRegistry.retrieveConfiguration(
-      ConfigType.GeoWidget,
-      args.geoWidgetId,
-      emptyMap(),
-    )
-  }
+  private val navArgs by navArgs<GeoWidgetLauncherFragmentArgs>()
   private val appMainViewModel by activityViewModels<AppMainViewModel>()
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    Timber.i("GeoWidgetLauncherFragment onCreate")
-  }
 
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?,
   ): View {
-    Timber.i("GeoWidgetLauncherFragment onCreateView")
     buildGeoWidgetFragment()
 
     return ComposeView(requireContext()).apply {
@@ -158,7 +147,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                 openDrawer = openDrawer,
                 onEvent = geoWidgetLauncherViewModel::onEvent,
                 navController = findNavController(),
-                toolBarHomeNavigation = args.toolBarHomeNavigation,
+                toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
                 modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
@@ -181,6 +170,11 @@ class GeoWidgetLauncherFragment : Fragment() {
   }
 
   private fun buildGeoWidgetFragment() {
+    geoWidgetConfiguration =
+      configurationRegistry.retrieveConfiguration<GeoWidgetConfiguration>(
+        configType = ConfigType.GeoWidget,
+        configId = navArgs.geoWidgetId,
+      )
     geoWidgetFragment =
       GeoWidgetFragment.builder()
         .setUseGpsOnAddingLocation(false)
@@ -248,9 +242,5 @@ class GeoWidgetLauncherFragment : Fragment() {
         )
       }
     }
-  }
-
-  companion object {
-    const val GEO_WIDGET_FRAGMENT_TAG = "geo-widget-fragment-tag"
   }
 }
