@@ -247,6 +247,7 @@ class GeoWidgetLauncherFragment : Fragment() {
       }
     }
   }
+
   override fun onStop() {
     super.onStop()
     geoWidgetLauncherViewModel.searchText.value = ""
