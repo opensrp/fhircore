@@ -80,6 +80,7 @@ const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
+const val SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG = "searchIconSearchBarTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 
 @Composable
@@ -206,6 +207,7 @@ fun TopScreenSection(
                   Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "",
+                    modifier = modifier.testTag(SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG),
                   )
                 }
               }

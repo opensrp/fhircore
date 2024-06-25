@@ -167,6 +167,36 @@ class GeoWidgetViewModelTest {
     Assert.assertEquals(0, result.size)
   }
 
+  @Test
+  fun `test filtering locations`() {
+    // Given
+    val feature1 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id1",
+        type = "type1",
+        serverVersion = 1,
+        properties = mapOf("name" to "nairobi"),
+      )
+    val feature2 =
+      Feature(
+        geometry = Geometry(coordinates = listOf(Coordinates(0.0, 0.0))),
+        id = "id2",
+        type = "type2",
+        serverVersion = 2,
+        properties = mapOf("name" to "perth"),
+      )
+    val features = setOf(feature1, feature2)
+    viewModel.addLocationsToMap(features)
+
+    // When
+    viewModel.onSearchQuery("nairobi")
+
+    // Then
+    val result = runBlocking { viewModel.results.first() }
+    Assert.assertEquals(1, result.size)
+  }
+
   fun `test mapping service point keys to types`() {
     // Given
     val expectedMap = mutableMapOf<String, ServicePointType>()

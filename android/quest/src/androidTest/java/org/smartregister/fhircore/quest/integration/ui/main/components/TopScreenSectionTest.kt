@@ -26,8 +26,10 @@ import io.mockk.mockk
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 import org.smartregister.fhircore.quest.ui.main.components.LEADING_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.OUTLINED_BOX_TEST_TAG
+import org.smartregister.fhircore.quest.ui.main.components.SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TITLE_ROW_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_ICON_TEST_TAG
 import org.smartregister.fhircore.quest.ui.main.components.TOP_ROW_TEXT_TEST_TAG
@@ -122,5 +124,25 @@ class TopScreenSectionTest {
     trailingIcon.assertExists()
     trailingIcon.performClick()
     Assert.assertTrue(clicked)
+  }
+
+  @Test
+  fun testTopScreenSectionRendersTitleRowWithSearchButtonCorrectly() {
+    composeTestRule.setContent {
+      TopScreenSection(
+        title = "All Clients",
+        searchText = "search text",
+        onSearchTextChanged = listener,
+        navController = navController,
+        isSearchBarVisible = true,
+        onSearchClick = {},
+        topScreenSection = TopScreenSectionConfig(searchBar = null, shouldShowSearchButton = true),
+      ) {}
+    }
+
+    composeTestRule
+      .onNodeWithTag(SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
