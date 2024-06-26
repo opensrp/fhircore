@@ -19,6 +19,7 @@ package org.smartregister.fhircore.engine.rulesengine
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.test.core.app.ApplicationProvider
+import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.spyk
@@ -40,6 +41,7 @@ import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.register.RegisterCardConfig
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.ListResource
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -60,18 +62,23 @@ class ResourceDataRulesExecutorTest : RobolectricTest() {
   private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
   private lateinit var rulesFactory: RulesFactory
   private lateinit var resourceDataRulesExecutor: ResourceDataRulesExecutor
+  @Inject lateinit var fhirContext: FhirContext
+  private lateinit var defaultRepository: DefaultRepository
 
   @Before
   @kotlinx.coroutines.ExperimentalCoroutinesApi
   fun setUp() {
     hiltAndroidRule.inject()
+    defaultRepository = mockk(relaxed = true)
     rulesFactory =
       spyk(
         RulesFactory(
           context = ApplicationProvider.getApplicationContext(),
           configurationRegistry = configurationRegistry,
           fhirPathDataExtractor = fhirPathDataExtractor,
-          dispatcherProvider = coroutineRule.testDispatcherProvider
+          dispatcherProvider = coroutineRule.testDispatcherProvider,
+          fhirContext = fhirContext,
+          defaultRepository = defaultRepository,
         )
       )
     resourceDataRulesExecutor = ResourceDataRulesExecutor(rulesFactory)
