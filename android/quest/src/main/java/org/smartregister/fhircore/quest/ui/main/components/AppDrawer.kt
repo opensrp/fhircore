@@ -236,7 +236,7 @@ private fun NavBottomSection(
           .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
           .background(backgroundColor)
           .background(
-            if (showSyncBar) {
+            if (showSyncBar || appUiState.isSyncCompleted == SyncStatus.FAILED) {
               Color.White.copy(alpha = 0.83f)
             } else {
               Color.Transparent
@@ -257,6 +257,7 @@ private fun NavBottomSection(
           modifier = modifier,
           imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
           title = "Sync error",
+          syncSuccess = false,
           showEndText = true,
         ) {
           openDrawer(false)
@@ -451,6 +452,8 @@ fun SyncCompleteStatus(
   title: String,
   showEndText: Boolean,
   showImage: Boolean = true,
+  syncSuccess: Boolean = true,
+  description: String? = null,
   onCancelButtonClick: () -> Unit,
 ) {
   Row(
@@ -466,18 +469,37 @@ fun SyncCompleteStatus(
         Image(
           paddingEnd = 10,
           imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
-          tint = SuccessColor,
+          tint = if (syncSuccess) SuccessColor else Color(0xFFDF0E1A),
           navController = rememberNavController(),
         )
       }
       val syncTextStatusSize = if (showImage) 18 else 13
-      SideMenuItemText(title = title, textColor = Color(0xFF282828), syncTextStatusSize)
+      Column { // Wrap SideMenuItemText and description in a Column
+        SideMenuItemText(
+          title = title,
+          textColor = Color(0xFF282828),
+          syncTextStatusSize,
+          boldText = true,
+        )
+        // Check if the description is not null and then display it
+        if (description != null) {
+          Text(
+            text = description,
+            color = Color.Gray,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(top = 4.dp), // Add some padding at the top
+          )
+        }
+      }
+      // TODO add a n additional descriptive text below the SideMenuItemText
+      // kinda like a description
+      // however this will be shown under only certain condition
     }
     Spacer(modifier = Modifier.width(16.dp))
     if (showEndText) {
       TextButton(
         onClick = { onCancelButtonClick() },
-        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
+        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF0077CC)),
       ) {
         Text(text = "RETRY")
       }

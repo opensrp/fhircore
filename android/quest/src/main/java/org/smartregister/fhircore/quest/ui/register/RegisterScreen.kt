@@ -148,6 +148,13 @@ fun RegisterScreen(
       appUiState?.isSyncCompleted == SyncStatus.FAILED -> {
         backgroundColor = Color(0xFFDF0E1A)
         showSyncBar = true
+        applyBackgroundColor = true
+        coroutineScope.launch {
+          delay(60000L)
+          showSyncBar = false
+          applyBackgroundColor = false
+          backgroundColor = SideMenuTopItemDarkColor
+        }
       }
       appUiState?.isSyncCompleted == SyncStatus.INPROGRESS -> {
         showSyncBar = true
@@ -336,6 +343,15 @@ fun RegisterScreen(
                   onClick(AppMainEvent.CancelSyncData(context))
                 }
               }
+            } else {
+              SyncCompleteStatus(
+                modifier = modifier,
+                imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+                title = "Sync Complete",
+                showEndText = false,
+                showImage = syncNotificationBarExpanded,
+                onCancelButtonClick = {},
+              )
             }
           }
         }
