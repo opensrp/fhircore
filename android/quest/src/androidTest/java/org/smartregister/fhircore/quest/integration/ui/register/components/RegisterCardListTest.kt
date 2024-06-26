@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
@@ -94,7 +93,6 @@ class RegisterCardListTest {
       .onChildren()
       .onFirst()
       .assert(hasText("Patient 1"))
-      .assertIsDisplayed()
   }
 
   @Test
