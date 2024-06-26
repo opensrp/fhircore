@@ -802,7 +802,17 @@ constructor(
       }
     }
 
-    return questionnaireResponse ?: QuestionnaireResponse()
+    // Generate questionnaireResponse with items present in current questionnaire
+    val newQuestionnaireResponseItems: MutableList<QuestionnaireResponse.QuestionnaireResponseItemComponent> = mutableListOf()
+    val questionnaireItemsMap = questionnaire.item.associateBy { it.linkId }
+
+    questionnaireResponse?.item?.forEach {
+      if (questionnaireItemsMap.containsKey(it.linkId)) {
+        newQuestionnaireResponseItems.add(it)
+      }
+    }
+
+    return questionnaireResponse?.apply { item = newQuestionnaireResponseItems } ?: QuestionnaireResponse()
   }
 
   /**
