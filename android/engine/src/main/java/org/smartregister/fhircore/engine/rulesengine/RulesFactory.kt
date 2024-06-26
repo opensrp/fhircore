@@ -17,8 +17,12 @@
 package org.smartregister.fhircore.engine.rulesengine
 
 import android.content.Context
+import ca.uhn.fhir.context.FhirContext
 import com.google.android.fhir.logicalId
 import com.google.android.fhir.search.Order
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.Option
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -26,6 +30,9 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 import kotlin.system.measureTimeMillis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r4.model.Base
 import org.hl7.fhir.r4.model.Enumerations.DataType
 import org.hl7.fhir.r4.model.Patient
@@ -38,6 +45,7 @@ import org.joda.time.DateTime
 import org.ocpsoft.prettytime.PrettyTime
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.domain.model.RelatedResourceCount
 import org.smartregister.fhircore.engine.domain.model.RepositoryResourceData
 import org.smartregister.fhircore.engine.domain.model.RuleConfig
@@ -45,6 +53,7 @@ import org.smartregister.fhircore.engine.domain.model.ServiceMemberIcon
 import org.smartregister.fhircore.engine.domain.model.ServiceStatus
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.SDF_E_MMM_DD_YYYY
+import org.smartregister.fhircore.engine.util.extension.encodeResourceToString
 import org.smartregister.fhircore.engine.util.extension.extractAge
 import org.smartregister.fhircore.engine.util.extension.extractGender
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
@@ -64,7 +73,9 @@ constructor(
   @ApplicationContext val context: Context,
   val configurationRegistry: ConfigurationRegistry,
   val fhirPathDataExtractor: FhirPathDataExtractor,
-  val dispatcherProvider: DispatcherProvider
+  val dispatcherProvider: DispatcherProvider,
+  val fhirContext: FhirContext,
+  val defaultRepository: DefaultRepository,
 ) : RulesListener() {
   val rulesEngineService = RulesEngineService()
   private var facts: Facts = Facts()
@@ -130,6 +141,11 @@ constructor(
 
   /** Provide access to utility functions accessible to the users defining rules in JSON format. */
   inner class RulesEngineService {
+
+    val parser = fhirContext.newJsonParser()
+
+    private var conf: Configuration =
+      Configuration.defaultConfiguration().apply { addOptions(Option.DEFAULT_PATH_LEAF_TO_NULL) }
 
     /**
      * This function creates a property key from the string [value] and uses the key to retrieve the
@@ -524,6 +540,51 @@ constructor(
           }
         }
         .getOrNull()
+
+    @JvmOverloads
+    fun updateResource(
+      resource: Resource?,
+      path: String?,
+      value: Any,
+      purgeAffectedResources: Boolean = false,
+      createLocalChangeEntitiesAfterPurge: Boolean = false
+    ) {
+      if (resource == null || path.isNullOrEmpty()) return
+
+      val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
+
+      val updatedResourceDocument =
+        jsonParse.apply {
+          // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
+          if (path.startsWith("\$") && value != null) {
+            set(path, value)
+          }
+          if (path.startsWith(
+              resource.resourceType.name,
+              ignoreCase = true,
+            ) && value != null
+          ) {
+            set(
+              path.replace(resource.resourceType.name, "\$"),
+              value,
+            )
+          }
+        }
+
+      val resourceDefinition: Class<out IBaseResource>? =
+        FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
+
+      val updatedResource =
+        parser.parseResource(resourceDefinition, updatedResourceDocument.jsonString())
+      CoroutineScope(dispatcherProvider.io()).launch {
+        if (purgeAffectedResources) {
+          defaultRepository.purge(updatedResource as Resource, forcePurge = true)
+        }
+        if (createLocalChangeEntitiesAfterPurge) {
+          defaultRepository.addOrUpdate(resource = updatedResource as Resource)
+        } else defaultRepository.createRemote(resource = *arrayOf(updatedResource as Resource))
+      }
+    }
   }
 
   companion object {
