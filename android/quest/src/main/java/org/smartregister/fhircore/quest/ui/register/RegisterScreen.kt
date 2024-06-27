@@ -104,6 +104,9 @@ const val REGISTER_CARD_TEST_TAG = "registerCardListTestTag"
 const val FIRST_TIME_SYNC_DIALOG = "firstTimeSyncTestTag"
 const val FAB_BUTTON_REGISTER_TEST_TAG = "fabTestTag"
 const val TOP_REGISTER_SCREEN_TEST_TAG = "topScreenTestTag"
+const val SYNC_SUCCESS_TAG = "syncSuccessTag"
+const val SYNC_ERROR_TAG = "syncErrorTag"
+const val SYNC_PROGRESS_BAR_TAG = "syncProgressBarTag"
 
 @Composable
 fun RegisterScreen(
@@ -319,7 +322,8 @@ fun RegisterScreen(
                   } else {
                     Modifier
                   },
-                ),
+                )
+                .testTag(SYNC_SUCCESS_TAG),
           ) {
             val context = LocalContext.current
             if (applyBackgroundColor) {
@@ -335,19 +339,26 @@ fun RegisterScreen(
               appUiState != null && appUiState.isSyncUpload && appUiState.progressPercentage != 100
             ) {
               if (syncNotificationBarExpanded) {
-                SubsequentSyncDetailsBar(appUiState = appUiState) {
+                SubsequentSyncDetailsBar(
+                  appUiState = appUiState,
+                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+                ) {
                   onClick(AppMainEvent.CancelSyncData(context))
                 }
               } else {
-                SubsequentSyncDetailsBar(appUiState = appUiState, hideExtraInformation = false) {
+                SubsequentSyncDetailsBar(
+                  appUiState = appUiState,
+                  hideExtraInformation = false,
+                  modifier = Modifier.testTag(SYNC_PROGRESS_BAR_TAG),
+                ) {
                   onClick(AppMainEvent.CancelSyncData(context))
                 }
               }
             } else {
               SyncCompleteStatus(
-                modifier = modifier,
-                imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-                title = "Sync Complete",
+                modifier = modifier.testTag(SYNC_ERROR_TAG),
+                imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
+                title = "Sync error",
                 showEndText = false,
                 showImage = syncNotificationBarExpanded,
                 onCancelButtonClick = {},
