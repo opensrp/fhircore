@@ -546,7 +546,7 @@ constructor(
       resource: Resource?,
       path: String?,
       value: Any,
-      purgeAffectedResources: Boolean = false,
+      purgeAffectedResources: Boolean = true,
       createLocalChangeEntitiesAfterPurge: Boolean = false
     ) {
       if (resource == null || path.isNullOrEmpty()) return
