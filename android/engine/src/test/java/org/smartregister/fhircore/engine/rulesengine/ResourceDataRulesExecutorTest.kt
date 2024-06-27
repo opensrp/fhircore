@@ -22,6 +22,7 @@ import androidx.test.core.app.ApplicationProvider
 import ca.uhn.fhir.context.FhirContext
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.mockk
 import io.mockk.spyk
 import java.util.LinkedList
 import javax.inject.Inject
