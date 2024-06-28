@@ -62,6 +62,7 @@ data class QuestionnaireConfig(
   val managingEntityRelationshipCode: String? = null,
   val linkIds: List<LinkIdConfig>? = null,
   val htmlBinaryId: String? = null,
+  val htmlTitle: String? = null,
 ) : java.io.Serializable, Parcelable {
 
   fun interpolate(computedValuesMap: Map<String, Any>) =
@@ -92,7 +93,9 @@ data class QuestionnaireConfig(
       barcodeLinkId = barcodeLinkId?.interpolate(computedValuesMap),
       cqlInputResources = cqlInputResources?.map { it.interpolate(computedValuesMap) },
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
+      saveButtonText = saveButtonText?.interpolate(computedValuesMap),
       htmlBinaryId = htmlBinaryId?.interpolate(computedValuesMap),
+      htmlTitle = htmlTitle?.interpolate(computedValuesMap),
     )
 }
 
