@@ -42,6 +42,7 @@ import org.hl7.fhir.r4.model.Condition
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.ListResource
+import org.hl7.fhir.r4.model.Location
 import org.hl7.fhir.r4.model.Observation
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Resource
@@ -1022,5 +1023,96 @@ class RulesFactoryTest : RobolectricTest() {
         )
       }
     }
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithNullResources() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(null, "$.resourceType", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithBlankResources() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(listOf(), "$.resourceType", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithBlankJsonPathExpression() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(getListOfResource(), "", "STRING", "Group", 0)
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithInvalidJsonPathExpression() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.date",
+        "STRING",
+        "Group",
+        0
+      )
+    Assert.assertNull(results)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathWithInvalidDataType() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "code",
+        "Group",
+        0
+      )
+    Assert.assertEquals(0, results?.size)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathFieldWithValidResourcesAndJsonPathExpressionAndDataTypeAndCompareToResultAndNonExistentValue() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "STRING",
+        "Patient",
+        0
+      )
+
+    Assert.assertEquals(0, results?.size)
+  }
+
+  @Test
+  fun testFilterResourcesByJsonPathFieldWithValidResourcesAndJsonPathExpressionAndDataTypeAndValueAndCompareToResult() {
+    val results =
+      rulesEngineService.filterResourcesByJsonPath(
+        getListOfResource(),
+        "$.resourceType",
+        "STRING",
+        "Group",
+        0
+      )
+
+    Assert.assertEquals(2, results?.size)
+    with(results?.first() as Resource) {
+      Assert.assertEquals("group-id-1", id)
+      Assert.assertEquals("Group", resourceType.name)
+    }
+  }
+
+  private fun getListOfResource(): List<Resource> {
+    return listOf(
+      Group().apply { id = "group-id-1" },
+      Location().apply { id = "location-id-1" },
+      ListResource().apply {
+        id = "list-id-1"
+        addEntry().apply { item.apply { reference = "Group/group-id-1" } }
+      },
+      Group().apply { id = "group-id-2" }
+    )
   }
 }

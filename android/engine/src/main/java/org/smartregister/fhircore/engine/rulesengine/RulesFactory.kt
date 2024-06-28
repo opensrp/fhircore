@@ -516,7 +516,7 @@ constructor(
       vararg compareToResult: Any,
     ) =
       runCatching {
-          //      val compareToResult = listOf(1,-1,0)
+          // val compareToResult = listOf(1,-1,0)
           resources?.filter {
             fhirPathDataExtractor.extractData(it, fhirPathExpression).any { base ->
               when (DataType.valueOf(dataType)) {
@@ -540,6 +540,48 @@ constructor(
           }
         }
         .getOrNull()
+
+    fun filterResourcesByJsonPath(
+      resources: List<Resource>?,
+      jsonPathExpression: String,
+      dataType: String,
+      value: Any,
+      vararg compareToResult: Any,
+    ): List<Resource>? {
+      if (resources.isNullOrEmpty() || jsonPathExpression.isBlank()) return null
+
+      val expression =
+        if (jsonPathExpression.startsWith("\$")) {
+          jsonPathExpression
+        } else {
+          jsonPathExpression.replace(
+            jsonPathExpression.substring(0, jsonPathExpression.indexOf(".")),
+            "\$"
+          )
+        }
+
+      return runCatching {
+          resources.filter {
+            val document = JsonPath.using(conf).parse(it.encodeResourceToString())
+            val result: Any = document.read(expression)
+
+            when (DataType.valueOf(dataType.uppercase())) {
+              DataType.BOOLEAN -> (result as Boolean).compareTo(value as Boolean) in compareToResult
+              DataType.DATE -> (result as Date).compareTo(value as Date) in compareToResult
+              DataType.DATETIME ->
+                (result as DateTime).compareTo(value as DateTime) in compareToResult
+              DataType.DECIMAL ->
+                (result as BigDecimal).compareTo(value as BigDecimal) in compareToResult
+              DataType.INTEGER -> (result as Int).compareTo(value as Int) in compareToResult
+              DataType.STRING -> (result as String).compareTo(value as String) in compareToResult
+              else -> {
+                false
+              }
+            }
+          }
+        }
+        .getOrNull()
+    }
 
     @JvmOverloads
     fun updateResource(
