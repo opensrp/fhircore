@@ -69,8 +69,8 @@ class PdfLauncherFragmentTest {
         pdfLauncherViewModel.retrieveQuestionnaireResponse(
           anyString(),
           anyString(),
-          any(ResourceType::class.java)
-        )
+          any(ResourceType::class.java),
+        ),
       )
       .thenReturn(QuestionnaireResponse())
 

@@ -78,7 +78,7 @@ constructor(
       filter(QuestionnaireResponse.SUBJECT, { value = "$subjectType/$subjectId" })
       filter(
         QuestionnaireResponse.QUESTIONNAIRE,
-        { value = "${ResourceType.Questionnaire}/$questionnaireId" }
+        { value = "${ResourceType.Questionnaire}/$questionnaireId" },
       )
       count = 1
       from = 0
