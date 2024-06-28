@@ -34,6 +34,7 @@ import javax.inject.Inject
 import kotlin.test.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import org.hl7.fhir.exceptions.FHIRException
 import org.hl7.fhir.r4.model.Group
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Reference
@@ -113,22 +114,23 @@ class MeasureReportRepositoryTest : RobolectricTest() {
           configRulesExecutor = mockk(),
           fhirPathDataExtractor = mockk(),
           parser = parser,
+          context = ApplicationProvider.getApplicationContext(),
         ),
       )
 
     measureReportRepository =
       MeasureReportRepository(
-        fhirEngine,
-        DefaultDispatcherProvider(),
-        mockk(),
-        configurationRegistry,
-        mockk(),
-        mockk(),
-        registerRepository,
-        fhirOperator,
-        knowledgeManager,
-        mockk(),
-        parser,
+        fhirEngine = fhirEngine,
+        dispatcherProvider = DefaultDispatcherProvider(),
+        sharedPreferencesHelper = mockk(),
+        configurationRegistry = configurationRegistry,
+        configService = mockk(),
+        configRulesExecutor = mockk(),
+        fhirOperator = fhirOperator,
+        knowledgeManager = knowledgeManager,
+        fhirPathDataExtractor = mockk(),
+        parser = parser,
+        context = ApplicationProvider.getApplicationContext(),
       )
   }
 
@@ -236,5 +238,19 @@ class MeasureReportRepositoryTest : RobolectricTest() {
 
     coVerify { fhirEngine.search<Patient>(any()) }
     coVerify(inverse = true) { fhirEngine.update(any<Group>()) }
+  }
+
+  @Test
+  @kotlinx.coroutines.ExperimentalCoroutinesApi
+  fun testRetrieveSubjectHandlesFhirException() {
+    val reportConfiguration = ReportConfiguration(subjectXFhirQuery = "Patient")
+    coEvery { fhirEngine.search<Patient>(any()) } throws FHIRException("")
+
+    runBlocking(Dispatchers.Default) {
+      val data = measureReportRepository.fetchSubjects(reportConfiguration)
+      assertEquals(0, data.size)
+    }
+
+    coVerify { fhirEngine.search<Patient>(any()) }
   }
 }

@@ -1,3 +1,4 @@
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.api.variant.FilterConfiguration.FilterType
 import java.io.FileReader
 import java.text.SimpleDateFormat
@@ -29,7 +30,7 @@ sonar {
     property("sonar.kotlin.source.version", libs.kotlin)
     property(
       "sonar.androidLint.reportPaths",
-      "${project.buildDir}/reports/lint-results-opensrpDebug.xml",
+      "${project.layout.buildDirectory.get()}/reports/lint-results-opensrpDebug.xml",
     )
     property("sonar.host.url", System.getenv("SONAR_HOST_URL"))
     property("sonar.login", System.getenv("SONAR_TOKEN"))
@@ -109,7 +110,10 @@ android {
 
     getByName("release") {
       isMinifyEnabled = false
-      proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+      proguardFiles(
+        getDefaultProguardFile("proguard-android-optimize.txt"),
+        "proguard-rules.pro",
+      )
       signingConfig = signingConfigs.getByName("release")
     }
   }
@@ -288,7 +292,7 @@ android {
       dimension = "apps"
       applicationIdSuffix = ".gizeir"
       versionNameSuffix = "-gizeir"
-      manifestPlaceholders["appLabel"] = "GIZ EIR"
+      manifestPlaceholders["appLabel"] = "EIR"
     }
 
     create("engage") {
@@ -325,6 +329,13 @@ android {
       versionNameSuffix = "-demoEir"
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
+
+    create("vamosJuntos") {
+      dimension = "apps"
+      applicationIdSuffix = ".vamosJuntos"
+      versionNameSuffix = "-vamosJuntos"
+      manifestPlaceholders["appLabel"] = "Vamos Juntos"
+    }
   }
 
   applicationVariants.all {
@@ -335,6 +346,11 @@ android {
       "app_name",
       "\"${variant.mergedFlavor.manifestPlaceholders["appLabel"]}\"",
     )
+  }
+
+  applicationVariants.all {
+    val variant = this
+    tasks.register("jacocoTestReport${variant.name.capitalizeUS()}")
   }
 
   splits {

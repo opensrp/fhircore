@@ -10,8 +10,6 @@ import android.webkit.WebViewClient
 /**
  * PdfGenerator creates PDF files from HTML content using Android's WebView and PrintManager.
  * Must be initialized on the Main thread.
- *
- * @param context Application context for initializing WebView and PrintManager.
  */
 class PdfGenerator {
 
@@ -30,6 +28,7 @@ class PdfGenerator {
      * pdfGenerator.generatePdfWithHtml(htmlContent, "SamplePDF")
      * ```
      *
+     * @param context Application context for initializing WebView and PrintManager.
      * @param html The HTML content to be converted into a PDF.
      * @param pdfTitle The title of the PDF document.
      */
