@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2023 Ona Systems, Inc
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.smartregister.fhircore.engine.pdf
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
-import org.hl7.fhir.r4.model.Binary
 import javax.inject.Inject
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
@@ -54,9 +54,10 @@ constructor(
   suspend fun retrieveQuestionnaireResponse(
     questionnaireId: String,
     subjectId: String,
-    subjectType: ResourceType
+    subjectType: ResourceType,
   ): QuestionnaireResponse? {
-    val searchQuery = createQuestionnaireResponseSearchQuery(questionnaireId, subjectId, subjectType)
+    val searchQuery =
+      createQuestionnaireResponseSearchQuery(questionnaireId, subjectId, subjectType)
     return defaultRepository.search<QuestionnaireResponse>(searchQuery).firstOrNull()
   }
 
@@ -71,11 +72,14 @@ constructor(
   private fun createQuestionnaireResponseSearchQuery(
     questionnaireId: String,
     subjectId: String,
-    subjectType: ResourceType
+    subjectType: ResourceType,
   ): Search {
     return Search(ResourceType.QuestionnaireResponse).apply {
       filter(QuestionnaireResponse.SUBJECT, { value = "$subjectType/$subjectId" })
-      filter(QuestionnaireResponse.QUESTIONNAIRE, { value = "${ResourceType.Questionnaire}/$questionnaireId" })
+      filter(
+        QuestionnaireResponse.QUESTIONNAIRE,
+        { value = "${ResourceType.Questionnaire}/$questionnaireId" }
+      )
       count = 1
       from = 0
     }
