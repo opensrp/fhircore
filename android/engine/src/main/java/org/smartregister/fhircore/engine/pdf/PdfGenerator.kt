@@ -13,9 +13,10 @@ import android.webkit.WebViewClient
  *
  * @param context Application context for initializing WebView and PrintManager.
  */
-class PdfGenerator {
+class PdfGenerator(private val context: Context) {
 
     private var mWebView: WebView? = null
+    private val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
 
     /**
      * Generates a PDF file from the provided HTML content.
@@ -30,18 +31,17 @@ class PdfGenerator {
      * pdfGenerator.generatePdfWithHtml(htmlContent, "SamplePDF")
      * ```
      *
-     * @param context Application context for initializing WebView and PrintManager.
      * @param html The HTML content to be converted into a PDF.
      * @param pdfTitle The title of the PDF document.
      */
-    fun generatePdfWithHtml(context: Context, html: String, pdfTitle: String, onPdfPrinted: () -> Unit) {
+    fun generatePdfWithHtml(html: String, pdfTitle: String, onPdfPrinted: () -> Unit) {
         val webView = WebView(context)
         webView.webViewClient = object : WebViewClient() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest) = false
 
             override fun onPageFinished(view: WebView, url: String) {
-                printPdf(context, view, pdfTitle)
+                printPdf(view, pdfTitle)
                 mWebView = null
                 onPdfPrinted.invoke()
             }
@@ -50,9 +50,8 @@ class PdfGenerator {
         mWebView = webView
     }
 
-    private fun printPdf(context: Context, view: WebView, pdfTitle: String) {
+    private fun printPdf(view: WebView, pdfTitle: String) {
         val printAdapter = view.createPrintDocumentAdapter(pdfTitle)
-        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
         printManager.print(
             pdfTitle,
             printAdapter,
