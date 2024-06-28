@@ -100,7 +100,6 @@ data class QuestionnaireConfig(
         uniqueIdAssignment?.copy(linkId = uniqueIdAssignment.linkId.interpolate(computedValuesMap)),
       linkIds = linkIds?.onEach { it.linkId.interpolate(computedValuesMap) },
       saveButtonText = saveButtonText?.interpolate(computedValuesMap),
-      saveButtonText = saveButtonText?.interpolate(computedValuesMap),
       htmlBinaryId = htmlBinaryId?.interpolate(computedValuesMap),
       htmlTitle = htmlTitle?.interpolate(computedValuesMap),
     )
