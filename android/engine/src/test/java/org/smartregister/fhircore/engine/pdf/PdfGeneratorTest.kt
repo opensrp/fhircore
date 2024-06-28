@@ -17,50 +17,60 @@
 package org.smartregister.fhircore.engine.pdf
 
 import android.content.Context
-import android.print.PrintDocumentAdapter
+import android.print.PrintAttributes
 import android.print.PrintManager
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentCaptor
+import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations
+import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class PdfGeneratorTest {
 
-  @Mock private lateinit var context: Context
+  @Mock
+  private lateinit var mockContext: Context
 
-  @Mock private lateinit var printManager: PrintManager
+  @Mock
+  private lateinit var mockWebView: WebView
 
-  @Mock private lateinit var webView: WebView
+  @Mock
+  private lateinit var mockPrintManager: PrintManager
 
-  @Mock private lateinit var printDocumentAdapter: PrintDocumentAdapter
+  @Captor
+  private lateinit var webViewClientCaptor: ArgumentCaptor<WebViewClient>
 
   private lateinit var pdfGenerator: PdfGenerator
 
   @Before
   fun setUp() {
-    MockitoAnnotations.initMocks(this)
-    `when`(context.getSystemService(Context.PRINT_SERVICE)).thenReturn(printManager)
-    pdfGenerator = PdfGenerator(context, webView) // Inject the mock webView
+    `when`(mockContext.getSystemService(Context.PRINT_SERVICE)).thenReturn(mockPrintManager)
+    pdfGenerator = PdfGenerator(mockContext)
   }
 
   @Test
   fun testGeneratePdfWithHtml() {
     val htmlContent = "<html><body><h1>Hello, World!</h1></body></html>"
     val pdfTitle = "SamplePDF"
+    val onPdfPrinted = mock(Runnable::class.java)
 
-    `when`(webView.createPrintDocumentAdapter(pdfTitle)).thenReturn(printDocumentAdapter)
+    doAnswer {
+      val webView = it.getArgument<WebView>(0)
+      webViewClientCaptor.value.onPageFinished(webView, "")
+      null
+    }.`when`(mockWebView).loadDataWithBaseURL(null, htmlContent, "text/HTML", "UTF-8", null)
 
-    pdfGenerator.generatePdfWithHtml(htmlContent, pdfTitle)
+    pdfGenerator.generatePdfWithHtml(htmlContent, pdfTitle, onPdfPrinted::run)
+    verify(mockWebView).webViewClient = webViewClientCaptor.capture()
 
-    verify(webView).loadDataWithBaseURL(null, htmlContent, "text/HTML", "UTF-8", null)
-    verify(webView).createPrintDocumentAdapter(pdfTitle)
-    verify(printManager).print(eq(pdfTitle), eq(printDocumentAdapter), eq(null))
+    val printAdapter = mockWebView.createPrintDocumentAdapter(pdfTitle)
+    verify(mockPrintManager).print(eq(pdfTitle), eq(printAdapter), any(PrintAttributes::class.java))
+
+    verify(onPdfPrinted).run()
   }
 }
