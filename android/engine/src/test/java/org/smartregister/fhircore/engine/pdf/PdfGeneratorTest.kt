@@ -27,23 +27,24 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito.*
+import org.mockito.Mockito.any
+import org.mockito.Mockito.doAnswer
+import org.mockito.Mockito.eq
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class PdfGeneratorTest {
 
-  @Mock
-  private lateinit var mockContext: Context
+  @Mock private lateinit var mockContext: Context
 
-  @Mock
-  private lateinit var mockWebView: WebView
+  @Mock private lateinit var mockWebView: WebView
 
-  @Mock
-  private lateinit var mockPrintManager: PrintManager
+  @Mock private lateinit var mockPrintManager: PrintManager
 
-  @Captor
-  private lateinit var webViewClientCaptor: ArgumentCaptor<WebViewClient>
+  @Captor private lateinit var webViewClientCaptor: ArgumentCaptor<WebViewClient>
 
   private lateinit var pdfGenerator: PdfGenerator
 
@@ -60,10 +61,12 @@ class PdfGeneratorTest {
     val onPdfPrinted = mock(Runnable::class.java)
 
     doAnswer {
-      val webView = it.getArgument<WebView>(0)
-      webViewClientCaptor.value.onPageFinished(webView, "")
-      null
-    }.`when`(mockWebView).loadDataWithBaseURL(null, htmlContent, "text/HTML", "UTF-8", null)
+        val webView = it.getArgument<WebView>(0)
+        webViewClientCaptor.value.onPageFinished(webView, "")
+        null
+      }
+      .`when`(mockWebView)
+      .loadDataWithBaseURL(null, htmlContent, "text/HTML", "UTF-8", null)
 
     pdfGenerator.generatePdfWithHtml(htmlContent, pdfTitle, onPdfPrinted::run)
     verify(mockWebView).webViewClient = webViewClientCaptor.capture()
