@@ -26,6 +26,15 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 
+/**
+ * ViewModel for managing PDF generation related operations.
+ *
+ * This ViewModel provides methods for retrieving [QuestionnaireResponse] and [Binary] resources
+ * required for generating PDFs.
+ *
+ * @param defaultRepository The repository for accessing local data.
+ * @param dispatcherProvider The dispatcher provider for coroutine context management.
+ */
 @HiltViewModel
 class PdfLauncherViewModel
 @Inject
@@ -35,12 +44,12 @@ constructor(
 ) : ViewModel() {
 
   /**
-   * Retrieve the QuestionnaireResponse for the given questionnaire and subject.
+   * Retrieve the [QuestionnaireResponse] for the given questionnaire and subject.
    *
    * @param questionnaireId The ID of the questionnaire.
    * @param subjectId The ID of the subject.
-   * @param subjectType The type of the subject.
-   * @return The QuestionnaireResponse if found, otherwise null.
+   * @param subjectType The type of the subject (resource type).
+   * @return The [QuestionnaireResponse] if found, otherwise null.
    */
   suspend fun retrieveQuestionnaireResponse(
     questionnaireId: String,
@@ -52,12 +61,12 @@ constructor(
   }
 
   /**
-   * Create a search query for QuestionnaireResponse.
+   * Create a search query for [QuestionnaireResponse].
    *
    * @param questionnaireId The ID of the questionnaire.
    * @param subjectId The ID of the subject.
-   * @param subjectType The type of the subject.
-   * @return The search query for QuestionnaireResponse.
+   * @param subjectType The type of the subject (resource type).
+   * @return The search query for [QuestionnaireResponse].
    */
   private fun createQuestionnaireResponseSearchQuery(
     questionnaireId: String,
@@ -73,10 +82,10 @@ constructor(
   }
 
   /**
-   * Retrieve the Binary resource for the given binary ID.
+   * Retrieve the [Binary] resource for the given binary ID.
    *
    * @param binaryId The ID of the binary resource.
-   * @return The Binary resource if found, otherwise null.
+   * @return The [Binary] resource if found, otherwise null.
    */
   suspend fun retrieveBinary(binaryId: String): Binary? {
     return defaultRepository.loadResource<Binary>(binaryId)

@@ -33,6 +33,12 @@ import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
+/**
+ * A fragment for generating and displaying a PDF based on a questionnaire response.
+ *
+ * This fragment uses the provided [QuestionnaireConfig] to retrieve a questionnaire response,
+ * populate an HTML template with the response data, and generate a PDF.
+ */
 @AndroidEntryPoint
 class PdfLauncherFragment : DialogFragment() {
 
