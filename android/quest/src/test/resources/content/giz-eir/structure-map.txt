@@ -1,0 +1,342 @@
+map "https://fhir.giz-eir.smartregister.org/fhir/StructureMap/13031694" = 'PatientRegistration'
+
+uses "http://hl7.org/fhir/StructureDefinition/QuestionnaireReponse" as source
+uses "http://hl7.org/fhir/StructureDefinition/Patient" as target
+
+group EirPatientRegistration(source src: QuestionnaireResponse, target bundle: Bundle) {
+    src -> bundle.id = uuid() "r_bundle_id";
+    src -> bundle.type = 'collection' "r_bundle_type";
+    src -> bundle.entry as entry,
+        entry.resource = create('RelatedPerson') as motherPatient then {
+            src -> bundle.entry as entry, entry.resource = create('Encounter') as encounter then
+                ExtractMotherPatient(src, motherPatient, bundle),
+                ExtractChildPatient(src, motherPatient, encounter, bundle),
+                ExtractLocation(src, motherPatient, encounter, bundle) "r_bundle_entries";
+        } "r_mother_p";
+}
+
+group ExtractMotherPatient(source src: QuestionnaireResponse, target motherPatient: Patient, target bundle: Bundle) {
+    src -> motherPatient.id = uuid() "r_patient_id";
+
+    src.item where(linkId = 'caregiver-id' and answer.value.exists()) then {
+        src.item where(linkId = 'caregiver-present' and answer.value = true) then {
+            src->motherPatient.id = create("id") as patient_id then {
+                src -> patient_id.value = evaluate(src, $this.item.where(linkId='caregiver-id').answer.value.trim()) "r_patient_id_value";
+            } "r_item_cnd_id";
+        } "r_caregiver_present";
+    } "r_check_patient_id_value";
+
+    src.item where(linkId = 'caregiver-present' and answer.value = false) then {
+
+        src -> motherPatient.active = true "r_patient_active";
+
+        src -> motherPatient.identifier = create('Identifier') as clientId then {
+            src -> clientId.use = "usual" "r_patient_identifier_path_eir_id_use";
+            src -> clientId.system = "https://fhir.demo.smartregister.org/fhir/eir-id" "r_patient_identifier_path_eir_id_system";
+            src -> clientId.value = evaluate(src, $this.item.where(linkId = '0d77d40f-098b-4329-9199-33b6e77aa864').answer.value) "r_patient_identifier_path_eir_id_value";
+        } "r_patient_identifier_path_eir_id";
+
+        src -> motherPatient.name = create('HumanName') as patientName then {
+            src -> patientName.use = 'official' "r_patient_name_use";
+            src -> patientName.text = evaluate(src, ($this.item.where(linkId = '9d017fa4-56d3-4d9b-b5f6-f9b3ba7d17a3').answer.value | $this.item.where(linkId = '7b41d922-376c-49bf-f6a8-faaa681e9ef6').answer.value | $this.item.where(linkId = '76bad83a-f061-4b22-8b4f-a95cbd5be4da').answer.value).join(' ').trim()) "r_patient_name_full";
+
+            src -> patientName.given = evaluate(src, ($this.item.where(linkId = '9d017fa4-56d3-4d9b-b5f6-f9b3ba7d17a3').answer.value.trim())) "r_patient_name_given_first";
+
+            src.item where(linkId = '7b41d922-376c-49bf-f6a8-faaa681e9ef6' and answer.value.exists()) then {
+                src -> patientName.given = evaluate(src, $this.item.where(linkId = '7b41d922-376c-49bf-f6a8-faaa681e9ef6').answer.value.trim()) "r_patient_name_given_middle";
+            } "r_patient_name_given_middle_check";
+
+            src -> patientName.family = evaluate(src, $this.item.where(linkId = '76bad83a-f061-4b22-8b4f-a95cbd5be4da').answer.value.trim()) "r_patient_family_name_family";
+        } "r_patient_name";
+
+        src.item as patientDob where(linkId = 'aa1ddb98-87a4-48a6-9d8c-4c80de1ec277') then {
+            patientDob.answer first as birthDate then {
+                birthDate.value as val -> motherPatient.birthDate = val "r_patient_dob_answer_value";
+            } "r_patient_dob_answer";
+        } "r_patient_dob";
+
+        src.item where(linkId = '8ebf5364-6bdc-4e45-89a7-28c65ce019b7' and answer.value > 0) then {
+            src.item where(linkId = 'ccc4bdbc-869c-451f-b52b-607cb80f06c2' and answer.value.code = "years") then {
+                src.item as patientAge where(linkId = '8ebf5364-6bdc-4e45-89a7-28c65ce019b7') -> motherPatient.birthDate = evaluate(patientAge, today() - (($this.answer.value * 365 + 1).toString() + " days").toQuantity()) "r_patient_age_years";
+            } "r_patient_age_years_check";
+
+            src.item where(linkId = 'ccc4bdbc-869c-451f-b52b-607cb80f06c2' and answer.value.code = "weeks") then {
+                src.item as patientAge where(linkId = '8ebf5364-6bdc-4e45-89a7-28c65ce019b7') -> motherPatient.birthDate = evaluate(patientAge, today() - ($this.answer.value.toString() + " weeks").toQuantity()) "r_patient_age_weeks";
+            } "r_patient_age_weeks_check";
+        } "r_patient_age";
+
+        src.item where(linkId = '50330b11-c520-4f45-a8f4-44771097788d' and answer.value.code = "male") then {
+            src -> motherPatient.gender = "male" "r_patient_gender_male";
+        } "r_patient_gender_male";
+
+        src.item where(linkId = '50330b11-c520-4f45-a8f4-44771097788d' and answer.value.code = "female") then {
+            src -> motherPatient.gender = "female" "r_patient_gender_female";
+        } "r_patient_gender_female";
+
+        src.item where(linkId = '50330b11-c520-4f45-a8f4-44771097788d' and answer.value.code = "biological-sex-not-specified") then {
+            src -> motherPatient.gender = "other" "r_patient_gender_unspecified";
+
+            src -> motherPatient.extension = create('Extension') as extension then {
+                src -> extension.url = "http://example.org/sexual-orientation" "r_patient_gender_unspecified_url";
+                src -> extension.value = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-NullFlavor", "OTH") as coding then {
+                        src -> coding.display = 'Other' "r_patient_gender_unspecified_ext_coding_display";
+                    } "r_patient_gender_unspecified_ext_coding";
+
+                    src -> concept.coding = c("http://example.org/sexual-orientation", "NA") as coding then {
+                        src -> coding.display = 'Biological sex not specified' "r_patient_gender_unspecified_ext_orientation_coding_display";
+                    } "r_patient_gender_unspecified_ext_orientation_coding";
+                    src -> concept.text = 'Unspecified' "r_patient_gender_unspecified_ext_orientation_coding_text";
+                } "r_patient_gender_unspecified_ext_value";
+            } "r_patient_gender_unspecified_ext";
+        } "r_patient_gender_unspecified";
+
+        src.item where(linkId = '50330b11-c520-4f45-a8f4-44771097788d' and answer.value.code = "intersex") then {
+            src -> motherPatient.gender = "other" "r_patient_gender_intersex";
+
+            src -> motherPatient.extension = create('Extension') as extension then {
+                src -> extension.url = "http://example.org/sexual-orientation" "r_patient_gender_intersex_url";
+                src -> extension.value = create('CodeableConcept') as concept then {
+                    src -> concept.coding = c("http://terminology.hl7.org/CodeSystem/v3-NullFlavor", "OTH") as coding then {
+                        src -> coding.display = 'Other' "r_patient_gender_intersex_ext_coding_display";
+                    } "r_patient_gender_intersex_ext_coding";
+
+                    src -> concept.coding = c("http://example.org/sexual-orientation", "NA") as coding then {
+                        src -> coding.display = 'Biological sex not specified' "r_patient_gender_intersex_ext_orientation_coding_display";
+                    } "r_patient_gender_intersex_ext_orientation_coding";
+                    src -> concept.text = 'Intersex' "r_patient_gender_intersex_ext_orientation_coding_text";
+                } "r_patient_gender_intersex_ext_value";
+            } "r_patient_gender_intersex_ext";
+        } "r_patient_gender_intersex";
+
+        src.item where(linkId = '8d420cab-a72b-4190-ff05-306135edb39e' and answer.value.exists()) then {
+            src -> motherPatient.identifier = create('Identifier') as nationalIdNumber then {
+                src -> nationalIdNumber.use = "official" "r_patient_identifier_national_id_use";
+                src -> nationalIdNumber.system = evaluate(src, $this.item.where(linkId = '59d21749-f4d7-4725-bec5-e924d3ce1eeb').answer.value.system) "r_patient_identifier_national_id_system";
+                src -> nationalIdNumber.value = evaluate(src, $this.item.where(linkId = '8d420cab-a72b-4190-ff05-306135edb39e').answer.value) "r_patient_identifier_national_id_value";
+            } "r_patient_identifier_national_id";
+        } "r_patient_identifier_national_id_check";
+
+        src.item where(linkId = '30667e76-8f1c-452c-cecd-fb99dfea485c' and answer.value.exists()) then {
+            src -> motherPatient.identifier = create('Identifier') as vaccinationCardNumber then {
+                src -> vaccinationCardNumber.use = "official" "r_patient_identifier_vaccination_card_number_use";
+                src -> vaccinationCardNumber.system = "https://fhir.demo.smartregister.org/fhir/vaccination-card-number" "r_patient_identifier_vaccination_card_number_system";
+                src -> vaccinationCardNumber.value = evaluate(src, $this.item.where(linkId = '30667e76-8f1c-452c-cecd-fb99dfea485c').answer.value) "r_patient_identifier_vaccination_card_number_value";
+            } "r_patient_identifier_id_national_id";
+        } "r_patient_identifier_vaccination_card_number_check";
+
+        src -> motherPatient.address = create('Address') as patientAddress then {
+            src -> patientAddress.use = "home" "r_patient_address_use";
+            src -> patientAddress.type = "physical" "r_patient_address_type";
+            src -> patientAddress.text = evaluate(src, $this.item.where(linkId ='73e1680b-23f6-41b4-c0d7-7f14b8b6a758').answer.value) "r_patient_address_text_home_address";
+        } "r_address";
+
+    } "r_check_patient_not_exists";
+}
+
+group ExtractChildPatient(source src: QuestionnaireResponse, target motherPatient: RelatedPerson, target encounter: Encounter, target bundle: Bundle) {
+
+    src -> bundle.entry as entry, entry.resource = create('Patient') as childPatient then {
+
+        src then ExtractEncounter(src, motherPatient, childPatient, encounter, bundle) "r_enc";
+        src -> childPatient.id = uuid() "r_patient_id";
+        src -> childPatient.active = true "r_patient_active";
+
+        src -> childPatient.identifier = create('Identifier') as clientId then {
+            src -> clientId.use = "usual" "r_patient_identifier_path_eir_id_use";
+            src -> clientId.system = "https://fhir.demo.smartregister.org/fhir/eir-id" "r_patient_identifier_path_eir_id_system";
+            src -> clientId.value = 343877 "r_patient_identifier_path_eir_id_value";
+        } "r_patient_identifier_path_eir_id";
+
+        src -> childPatient.name = create('HumanName') as patientName then {
+            src -> patientName.use = 'official' "r_patient_name_use";
+            src -> patientName.text = evaluate(src, $this.item.where(linkId = 'a23b1abb-6c10-487c-94c4-43318da81e5f').answer.value.trim()) "r_patient_name_full";
+            src -> patientName.given = evaluate(src, $this.item.where(linkId = 'a23b1abb-6c10-487c-94c4-43318da81e5f').answer.value.trim()) "r_patient_name_given_first";
+            src -> patientName.family = evaluate(src, $this.item.where(linkId = 'a23b1abb-6c10-487c-94c4-43318da81e5f').answer.value.trim()) "r_patient_family_name_family";
+        } "r_patient_name";
+
+        src.item as patientDob where(linkId = 'ffd72b7a-473a-43bc-80ed-449224e5f216') then {
+            patientDob.answer first as birthDate then {
+                birthDate.value as val -> childPatient.birthDate = val "r_patient_dob_answer_value";
+            } "r_patient_dob_answer";
+        } "r_patient_dob";
+
+        src.item where(linkId = '5b3ba7d2-98fe-45c7-8783-00659a2721b2' and answer.value > 0) then {
+            src.item where(linkId = 'ff36c6b9-8975-4a2c-a9d1-f65d8d4b8f6f' and answer.value.code = "years") then {
+                src.item as patientAge where(linkId = '5b3ba7d2-98fe-45c7-8783-00659a2721b2') -> childPatient.birthDate = evaluate(patientAge, today() - (($this.answer.value * 365 + 1).toString() + " days").toQuantity()) "r_patient_age_years";
+            } "r_patient_age_years_check";
+
+            src.item where(linkId = 'ff36c6b9-8975-4a2c-a9d1-f65d8d4b8f6f' and answer.value.code = "weeks") then {
+                src.item as patientAge where(linkId = '5b3ba7d2-98fe-45c7-8783-00659a2721b2') -> childPatient.birthDate = evaluate(patientAge, today() - ($this.answer.value.toString() + " weeks").toQuantity()) "r_patient_age_weeks";
+            } "r_patient_age_weeks_check";
+        } "r_patient_age";
+
+        src -> childPatient.gender = evaluate(src, $this.item.where(linkId = 'a128c2e1-3273-40e6-909c-91944232b061').answer.value.code) "r_patient_gender";
+
+        src -> childPatient.link = create("Patient_Link") as patientLink then {
+            src -> patientLink.other = reference(motherPatient) "r_child_p_link";
+            src -> patientLink.type = "seealso" "r_code_type";
+        } "r_patient_link";
+
+        // extract weight observation
+        src.item where(linkId = 'b33a4361-e9ff-49dd-afbd-b80c91a119ea' and answer.value.exists()) then {
+            src -> evaluate(src, $this.item.where(linkId = 'b33a4361-e9ff-49dd-afbd-b80c91a119ea').answer.value.toString()) as childWeight,
+                create('string') as disp then {
+                    src -> disp.value = "Birth weight" "r_obs_disp";
+                    src then ExtractSpecificObservation(src, bundle, childWeight, disp, childPatient, encounter) "r_extract_weight_obs";
+                } "r_obs_props";
+        } "r_weight_obs";
+
+        // extract height observation
+        src.item where(linkId = '21922181-ec78-481d-97f9-9d91a2b31e1f' and answer.value.exists()) then {
+            src -> evaluate(src, $this.item.where(linkId = '21922181-ec78-481d-97f9-9d91a2b31e1f').answer.value.toString()) as childHeight,
+                create('string') as disp then {
+                    src -> disp.value = "Birth height" "r_obs_disp";
+                    src then ExtractSpecificObservation(src, bundle, childHeight, disp, childPatient, encounter) "r_extract_weight_obs";
+                } "r_obs_props";
+        } "r_weight_obs";
+
+    } "r_child_patient";
+}
+
+group ExtractEncounter(source src: QuestionnaireResponse, source caregiver: RelatedPerson, source patient: Patient, target encounter: Encounter, target bundle: Bundle) {
+    src -> encounter.id = uuid() "r_en_id";
+    src -> encounter.status = 'finished' "r_en_st";
+    src -> encounter.class = c("http://terminology.hl7.org/CodeSystem/v3-ActCode", "HH") "r_en_cls";
+    src -> encounter.subject = reference(patient) "r_en_sub";
+
+    src -> encounter.type = create('CodeableConcept') as concept then {
+        src -> concept.coding = create("Coding") as coding then {
+            src -> coding.system = "http://snomed.info/sct" "r_p_coding_system";
+            src -> coding.code = "184048005" "r_p_coding_code";
+            src -> coding.display = "Registration" "r_p_coding_display";
+        } "r_p_meta_coding";
+        src -> concept.text = "Registration" "r_en_typ_text";
+    } "r_en_typ";
+
+
+    src -> encounter.priority = create('CodeableConcept') as concept then {
+        src -> concept.coding = create("Coding") as coding then {
+            src -> coding.system = "http://terminology.hl7.org/ValueSet/v3-ActPriority" "r_p_coding_system";
+            src -> coding.code = "EL" "r_p_coding_code";
+            src -> coding.display = "elective" "r_p_coding_display";
+        } "r_p_meta_coding";
+        src -> concept.text = 'elective' "r_en_prio_text";
+    } "r_en_prio";
+
+
+    src -> encounter.period = create('Period') as enPeriod then {
+        src -> enPeriod.start = evaluate(src, now()) "r_en_per_start";
+        src -> enPeriod.end = evaluate(src, now()) "r_en_per_end";
+    } "r_en_per";
+
+    src -> encounter.reasonCode = create('CodeableConcept') as concept then {
+        src -> concept.coding = create("Coding") as coding then {
+            src -> coding.system = "http://smartregsiter.org/" "r_p_coding_system";
+            src -> coding.code = "patient_registration" "r_p_coding_code";
+            src -> coding.display = "EIR Patient Registration" "r_p_coding_display";
+        } "r_p_meta_coding";
+        src -> concept.text = 'EIR Patient Registration' "r_en_text";
+    } "r_en_reason";
+
+    src -> encounter.participant = create("Encounter_Participant") as participant then {
+        src -> participant.individual = reference(caregiver) "r_enc_part_ac";
+    } "r_enc_part";
+
+    src.item where(linkId = 'location-id' and answer.value.exists()) then {
+        src -> encounter.location = create("Encounter_Location") as location then {
+            src -> location.location = create('Reference') as ref then {
+                src -> ref.reference = evaluate(src, "Location/" + $this.item.where(linkId = "location-id").answer.value) "r_enc_part_ac";
+            } "enc_loc_ref";
+        } "r_enc_loc";
+    } "r_enc_loc";
+}
+
+group ExtractLocation(source src : QuestionnaireResponse, source caregiver: RelatedPerson, target encounter: Encounter, target bundle: Bundle){
+    src.item where(linkId = 'caregiver-present' and answer.value = false) then {
+        src -> bundle.entry as entry, entry.resource = create("Location") as servicePointLocation then {
+            src -> servicePointLocation.id = uuid() "r_loc_id";
+            src -> servicePointLocation.name = evaluate(caregiver, $this.name[0].text + " Location") "r_loc_name";
+
+            src.item as locationWidgetItem where(linkId='location-widget') then {
+                src -> servicePointLocation.position = create("Location_Position") as position then {
+                    locationWidgetItem.item as itemLatitude where(linkId='latitude') then {
+                        src -> position.latitude = evaluate(src, itemLatitude.answer.value) "r-position-latitude";
+                    } "r-latitude-item";
+                    locationWidgetItem.item as itemLongitude where(linkId='longitude') then {
+                        src -> position.longitude = evaluate(src, itemLongitude.answer.value) "r-position-longitude";
+                    } "r-longitude-item";
+                } "r_position_data";
+            } "r_service_point_loc";
+
+            src -> servicePointLocation.type = create('CodeableConcept') as concept then {
+                src -> concept.coding = create("Coding") as coding then {
+                    src -> coding.system = "http://terminology.hl7.org/CodeSystem/v3-RoleCode" "r_coding_system";
+                    src -> coding.code = "238497" "r_coding_code";
+                    src -> coding.display = "Caregiver Location" "r_coding_display";
+                } "r_coding";
+                src -> concept.text = 'Caregiver Location' "r_en_text";
+            } "r_loc_type";
+
+            src -> encounter.location = create("Encounter_Location") as location then {
+                src -> location.location = reference(servicePointLocation) "r_enc_part_ac";
+            } "r_enc_loc";
+
+            src then ExtractList(src, caregiver, servicePointLocation, bundle) "r_extract_list";
+        } "r-loc-lat-lng";
+    } "r_caregiver_not_present";
+}
+
+group ExtractList(source src : QuestionnaireResponse, source caregiver: RelatedPerson, source location: Location, target bundle: Bundle){
+    src.item where(linkId = 'caregiver-present' and answer.value = false) then {
+        src -> bundle.entry as entry, entry.resource = create('List') as list then {
+
+            src -> list.id = uuid() "r_id";
+            src -> list.status = "current" "r_status";
+            src -> list.title = "Caregiver" "r_title";
+            src -> list.subject = reference(location) "r_subject";
+            src -> list.code = create('CodeableConcept') as concept then {
+                src -> concept.coding = create('Coding') as coding then {
+                    src -> coding.system = "http://smartregister.org/" "r_coding_system";
+                    src -> coding.code = "234234435" "r_coding_code";
+                    src -> coding.display = "Caregivers" "r_coding_display";
+                } "r_coding";
+                src -> concept.text = "Caregiver location" "r_concept_text";
+            } "r_cc";
+            src -> list.entry = create('List_Entry') as listEntry then {
+                src -> listEntry.flag = create('CodeableConcept') as concept then {
+                    src -> concept.coding = create('Coding') as coding then {
+                        src -> coding.system = "http://smartregister.org/" "r_coding_system";
+                        src -> coding.code = "22138876" "r_coding_code";
+                        src -> coding.display = "Caregivers" "r_coding_display";
+                    } "r_coding";
+                    src -> concept.text = "Caregivers" "r_concept_text";
+                } "r_cc";
+                src -> listEntry.date = evaluate(src, now()) "r_date";
+                src -> listEntry.item = reference(caregiver) "r_item";
+            } "r_entry";
+        } "r_list";
+    } "r_caregiver_not_present";
+}
+
+group ExtractSpecificObservation(source src : QuestionnaireResponse, target bundle : Bundle, source val: String, source disp: String, source patient: Patient, source encounter: Encounter) {
+    src -> bundle.entry as entry, entry.resource = create('Observation') as obs then {
+        src -> obs.id = uuid() "r_observation_id";
+        src -> obs.subject = reference(patient) "r_en_sub";
+        src -> obs.effective = evaluate(src, now()) "r_effective_current_date_time";
+        src -> obs.performer = evaluate(src, $this.generalPractitioner.first()) "r_observation_performer";
+
+        src.item as weightItem where (linkId = "b33a4361-e9ff-49dd-afbd-b80c91a119ea") then {
+            src -> obs.value = create('CodeableConcept') as codeableConcept then {
+                src -> codeableConcept.text = val "r_tasks_done_obs_value_display";
+                src -> codeableConcept.coding = create("Coding") as coding then {
+                     src -> coding.system = "http://snomed.info/sct" "r_p_coding_system";
+                     src -> coding.code = "27113001" "r_p_coding_code";
+                     src -> coding.display = disp "r_p_coding_display";
+                 } "r_p_meta_coding";
+            } "r_tasks_done_obs_value";
+        } "r_obs_value_item";
+
+        src -> obs.encounter = reference(encounter) "r_observation_encounter";
+    } "r_observation";
+}

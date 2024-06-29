@@ -46,6 +46,7 @@ import org.smartregister.fhircore.quest.robolectric.RobolectricTest
  */
 class StructureMapUtilitiesTest : RobolectricTest() {
 
+  private val jsonParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
   @Test
   fun `perform family extraction`() {
     val registrationQuestionnaireResponseString: String =
@@ -246,19 +247,42 @@ class StructureMapUtilitiesTest : RobolectricTest() {
 
   @Test
   fun `convert StructureMap to JSON`() {
+    val registrationQuestionnaireResponseString: String =
+            "content/giz-eir/questionnaire-response-standard.json".readFile()
     val patientRegistrationStructureMap =
-      "patient-registration-questionnaire/structure-map.txt".readFile()
+      "content/giz-eir/structure-map.txt".readFile()
     val packageCacheManager = FilesystemPackageCacheManager(true)
     val contextR4 =
       SimpleWorkerContext.fromPackage(packageCacheManager.loadPackage("hl7.fhir.r4.core", "4.0.1"))
         .apply { isCanRunWithoutTerminology = true }
-    val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
-    val structureMap =
-      structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
-    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
-    val mapString = iParser.encodeResourceToString(structureMap)
+    //val structureMapUtilities = org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4)
+   // val structureMap =
+   //   structureMapUtilities.parse(patientRegistrationStructureMap, "PatientRegistration")
+    //val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    //val mapString = iParser.encodeResourceToString(structureMap)
 
-    Assert.assertNotNull(mapString)
+    val transformSupportServices = TransformSupportServices(contextR4)
+    val structureMapUtilities =
+            org.hl7.fhir.r4.utils.StructureMapUtilities(contextR4, transformSupportServices)
+    val structureMap =
+            structureMapUtilities.parse(patientRegistrationStructureMap, "eCBIS Family Registration")
+    val iParser: IParser = FhirContext.forCached(FhirVersionEnum.R4).newJsonParser()
+    val targetResource = Bundle()
+    val baseElement =
+            iParser.parseResource(
+                    QuestionnaireResponse::class.java,
+                    registrationQuestionnaireResponseString,
+            )
+
+    println(iParser.encodeResourceToString(structureMap))
+    structureMapUtilities.transform(contextR4, baseElement, structureMap, targetResource)
+
+    targetResource.entry.forEach {
+      println(jsonParser.encodeResourceToString(it.resource))
+    }
+
+    Assert.assertTrue(targetResource.entry.isNotEmpty())
+    //Assert.assertNotNull(mapString)
   }
 
   @Test
