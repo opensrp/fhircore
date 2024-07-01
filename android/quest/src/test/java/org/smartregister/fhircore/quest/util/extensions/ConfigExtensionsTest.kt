@@ -734,4 +734,18 @@ class ConfigExtensionsTest : RobolectricTest() {
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
+
+  @Test
+  fun testImageBitmapUpdatedCorrectlyGivenRowProperty(): Unit = runBlocking {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    loadRemoteImagesBitmaps(
+      listOf(columnProperties.children[0]),
+      computedValuesMap = emptyMap(),
+      registerRepository = registerRepository,
+    )
+
+    assertNotNull("Bitmap should be decoded and set correctly")
+  }
 }

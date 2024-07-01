@@ -36,6 +36,7 @@ import org.smartregister.fhircore.engine.configuration.view.ColumnProperties
 import org.smartregister.fhircore.engine.configuration.view.ImageProperties
 import org.smartregister.fhircore.engine.configuration.view.ListProperties
 import org.smartregister.fhircore.engine.configuration.view.RowProperties
+import org.smartregister.fhircore.engine.configuration.view.StackViewProperties
 import org.smartregister.fhircore.engine.configuration.view.ViewProperties
 import org.smartregister.fhircore.engine.configuration.workflow.ActionTrigger
 import org.smartregister.fhircore.engine.configuration.workflow.ApplicationWorkflow
@@ -58,6 +59,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
+import timber.log.Timber
 
 const val PRACTITIONER_ID = "practitionerId"
 
@@ -271,13 +273,24 @@ suspend fun loadRemoteImagesBitmaps(
           !imageProps.imageConfig?.reference.isNullOrEmpty() &&
             imageProps.imageConfig?.type == ICON_TYPE_REMOTE
         ) {
-          val resourceId =
-            imageProps.imageConfig!!
-              .reference!!
-              .interpolate(computedValuesMap)
-              .extractLogicalIdUuid()
-          registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-            imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
+          try {
+            val resourceId =
+              imageProps.imageConfig
+                ?.reference
+                ?.interpolate(computedValuesMap)
+                ?.extractLogicalIdUuid()
+
+            if (resourceId != null) {
+              registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
+                imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
+              }
+            } else {
+              Timber.e("Failed to decode image: Resource ID is null.")
+            }
+          } catch (nullPointerException: NullPointerException) {
+            Timber.e("Failed to decode image due to a null value: ${nullPointerException.message}")
+          } catch (exception: Exception) {
+            Timber.e("Failed to decode image with error: ${exception.message}")
           }
         }
       }
@@ -296,6 +309,10 @@ suspend fun loadRemoteImagesBitmaps(
       ViewType.LIST -> {
         val list = this as ListProperties
         list.registerCard.views.forEach { it.loadIcons() }
+      }
+      ViewType.STACK -> {
+        val stack = this as StackViewProperties
+        stack.children.forEach { it.loadIcons() }
       }
       else -> {
         // Handle any other view types if needed
