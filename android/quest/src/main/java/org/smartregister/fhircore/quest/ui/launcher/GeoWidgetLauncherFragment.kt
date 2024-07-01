@@ -104,7 +104,6 @@ class GeoWidgetLauncherFragment : Fragment() {
           }
         }
 
-        // Close side menu (drawer) when activity is not in foreground
         val lifecycleEvent = rememberLifecycleEvent()
         LaunchedEffect(lifecycleEvent) {
           if (lifecycleEvent == Lifecycle.Event.ON_PAUSE) scaffoldState.drawerState.close()
@@ -119,7 +118,6 @@ class GeoWidgetLauncherFragment : Fragment() {
         }
 
         AppTheme {
-          // Register screen provides access to the side navigation
           Scaffold(
             drawerGesturesEnabled = scaffoldState.drawerState.isOpen,
             scaffoldState = scaffoldState,
@@ -148,16 +146,22 @@ class GeoWidgetLauncherFragment : Fragment() {
                 onEvent = geoWidgetLauncherViewModel::onEvent,
                 navController = findNavController(),
                 toolBarHomeNavigation = navArgs.toolBarHomeNavigation,
-                modifier = Modifier.fillMaxSize(), // Adjust the modifier as needed
+                modifier = Modifier.fillMaxSize(),
                 fragmentManager = childFragmentManager,
                 fragment = fragment,
                 geoWidgetConfiguration = geoWidgetConfiguration,
+                searchText = geoWidgetLauncherViewModel.searchText,
+                onSearchClicked = { filterLocations(it) },
               )
             }
           }
         }
       }
     }
+  }
+
+  private fun filterLocations(searchText: String) {
+    geoWidgetFragment.onSearchMap(searchText)
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -242,5 +246,10 @@ class GeoWidgetLauncherFragment : Fragment() {
         )
       }
     }
+  }
+
+  override fun onStop() {
+    super.onStop()
+    geoWidgetLauncherViewModel.searchText.value = ""
   }
 }

@@ -107,16 +107,15 @@ class GeoWidgetFragment : Fragment() {
 
   private fun setLocationCollector() {
     viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetViewModel.featuresFlow
-        .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
-        .collect { features ->
-          val featureCollection = FeatureCollection.fromFeatures(features.toList())
-          this@GeoWidgetFragment.featureCollection = featureCollection
-          if (geoJsonSource != null && featureCollection != null) {
-            geoJsonSource!!.setGeoJson(featureCollection)
-            zoomToLocationsOnMap(featureCollection)
-          }
+      geoWidgetViewModel.results.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED).collect {
+        features ->
+        val featureCollection = FeatureCollection.fromFeatures(features.toList())
+        this@GeoWidgetFragment.featureCollection = featureCollection
+        if (geoJsonSource != null && featureCollection != null) {
+          geoJsonSource!!.setGeoJson(featureCollection)
+          zoomToLocationsOnMap(featureCollection)
         }
+      }
     }
   }
 
@@ -333,6 +332,10 @@ class GeoWidgetFragment : Fragment() {
 
   fun addLocationsToMap(locations: Set<Feature>) {
     geoWidgetViewModel.addLocationsToMap(locations)
+  }
+
+  fun onSearchMap(value: String) {
+    geoWidgetViewModel.onSearchQuery(value)
   }
 
   companion object {

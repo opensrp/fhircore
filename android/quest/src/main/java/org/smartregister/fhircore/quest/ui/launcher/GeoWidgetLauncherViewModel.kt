@@ -17,16 +17,19 @@
 package org.smartregister.fhircore.quest.ui.launcher
 
 import android.content.Context
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
@@ -67,6 +70,9 @@ constructor(
   private val _locationDialog = MutableLiveData<String>()
   val locationDialog: LiveData<String>
     get() = _locationDialog
+
+  val searchText = mutableStateOf("")
+  private var geoWidgetConfiguration: GeoWidgetConfiguration? = null
 
   // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
   private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
@@ -126,6 +132,7 @@ constructor(
     // through Location Selector Feature/Screen
     // todo - for now we are calling this method, once location Selector is developed, we can remove
     // this line
+    this.geoWidgetConfiguration = configuration
     retrieveLocations(configuration)
   }
 
@@ -183,8 +190,7 @@ constructor(
   fun onEvent(event: GeoWidgetEvent) =
     when (event) {
       is GeoWidgetEvent.SearchServicePoints -> {
-        // TODO: here the search bar query will be processed
-        ""
+        searchText.value = event.searchText
       }
     }
 

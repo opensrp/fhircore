@@ -18,11 +18,11 @@ package org.smartregister.fhircore.quest.ui.main.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -79,6 +80,7 @@ const val TRAILING_ICON_TEST_TAG = "trailingIconTestTag"
 const val TRAILING_ICON_BUTTON_TEST_TAG = "trailingIconButtonTestTag"
 const val LEADING_ICON_TEST_TAG = "leadingIconTestTag"
 const val SEARCH_FIELD_TEST_TAG = "searchFieldTestTag"
+const val SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG = "searchIconSearchBarTestTag"
 const val TOP_ROW_TOGGLE_ICON_TEST_tAG = "topRowToggleIconTestTag"
 
 @Composable
@@ -93,9 +95,11 @@ fun TopScreenSection(
   onSearchTextChanged: (String) -> Unit,
   isFilterIconEnabled: Boolean = false,
   topScreenSection: TopScreenSectionConfig? = null,
+  onSearchClick: (String) -> Unit,
   navController: NavController,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
+  val keyboardController = LocalSoftwareKeyboardController.current
   Column(
     modifier = modifier.fillMaxWidth().background(MaterialTheme.colors.primary),
   ) {
@@ -187,17 +191,37 @@ fun TopScreenSection(
           )
         },
         trailingIcon = {
-          if (searchText.isNotEmpty()) {
-            IconButton(
-              onClick = { onSearchTextChanged("") },
-              modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-            ) {
-              Icon(
-                imageVector = Icons.Filled.Clear,
-                CLEAR,
-                tint = Color.Gray,
-                modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-              )
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp),
+          ) {
+            if (searchText.isNotEmpty()) {
+              if (topScreenSection?.shouldShowSearchButton == true) {
+                IconButton(
+                  onClick = {
+                    keyboardController?.hide()
+                    onSearchClick(searchText)
+                  },
+                  modifier = Modifier.size(28.dp),
+                ) {
+                  Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "",
+                    modifier = modifier.testTag(SEARCH_ICON_ON_SEARCH_BAR_TEST_TAG),
+                  )
+                }
+              }
+              IconButton(
+                onClick = { onSearchTextChanged("") },
+                modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+              ) {
+                Icon(
+                  imageVector = Icons.Filled.Clear,
+                  CLEAR,
+                  tint = Color.Gray,
+                  modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
+                )
+              }
             }
           }
         },
@@ -244,7 +268,7 @@ fun RenderMenuIcons(
   modifier: Modifier,
   onClick: (ToolbarClickEvent) -> Unit,
 ) {
-  LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+  LazyRow {
     items(menuIcons) {
       Image(
         imageProperties = ImageProperties(imageConfig = it.imageConfig),
@@ -272,6 +296,7 @@ fun TopScreenSectionWithFilterItemOverNinetyNinePreview() {
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    onSearchClick = {},
   )
 }
 
@@ -288,6 +313,7 @@ fun TopScreenSectionWithFilterCountNinetyNinePreview() {
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    onSearchClick = {},
   )
 }
 
@@ -312,6 +338,7 @@ fun TopScreenSectionNoFilterIconPreview() {
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    onSearchClick = {},
   )
 }
 
@@ -337,6 +364,7 @@ fun TopScreenSectionWithFilterIconAndToggleIconPreview() {
             ImageProperties(imageConfig = ImageConfig(reference = "ic_service_points")),
           ),
       ),
+    onSearchClick = {},
   )
 }
 
@@ -353,5 +381,6 @@ fun TopScreenSectionWithToggleIconPreview() {
     onClick = {},
     isSearchBarVisible = true,
     navController = rememberNavController(),
+    onSearchClick = {},
   )
 }
