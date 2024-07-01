@@ -330,11 +330,11 @@ android {
       manifestPlaceholders["appLabel"] = "OpenSRP EIR"
     }
 
-    create("vamosJuntos") {
+    create("contigo") {
       dimension = "apps"
-      applicationIdSuffix = ".vamosJuntos"
-      versionNameSuffix = "-vamosJuntos"
-      manifestPlaceholders["appLabel"] = "Vamos Juntos"
+      applicationIdSuffix = ".contigo"
+      versionNameSuffix = "-contigo"
+      manifestPlaceholders["appLabel"] = "Contigo"
     }
   }
 
