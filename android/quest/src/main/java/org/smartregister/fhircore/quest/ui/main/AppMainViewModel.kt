@@ -18,8 +18,11 @@ package org.smartregister.fhircore.quest.ui.main
 
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModel
@@ -97,6 +100,14 @@ constructor(
           ),
       ),
     )
+  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
+  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
+
+  private val percentageProgress by mutableIntStateOf(0)
+
+  private var isUploadSync by mutableStateOf(false)
+
+  private var isUploadSyncCompleted by mutableStateOf(SyncStatus.UNKNOWN)
 
   val applicationConfiguration: ApplicationConfiguration by lazy {
     configurationRegistry.retrieveConfiguration(ConfigType.Application, paramsMap = emptyMap())
@@ -109,8 +120,6 @@ constructor(
   private val measureReportConfigurations: List<MeasureReportConfiguration> by lazy {
     configurationRegistry.retrieveConfigurations(ConfigType.MeasureReport)
   }
-  private val simpleDateFormat = SimpleDateFormat(SYNC_TIMESTAMP_OUTPUT_FORMAT, Locale.getDefault())
-  private val registerCountMap: SnapshotStateMap<String, Long> = mutableStateMapOf()
 
   fun retrieveIconsAsBitmap() {
     navigationConfiguration.clientRegisters
@@ -134,6 +143,9 @@ constructor(
           languages = configurationRegistry.fetchLanguages(),
           navigationConfiguration = navigationConfiguration,
           registerCountMap = registerCountMap,
+          progressPercentage = percentageProgress,
+          isSyncUpload = isUploadSync,
+          syncStatus = isUploadSyncCompleted,
         )
     }
 
@@ -165,6 +177,14 @@ constructor(
           event.context.showToast(event.context.getString(R.string.sync_failed), Toast.LENGTH_LONG)
         }
       }
+      is AppMainEvent.CancelSyncData -> {
+        viewModelScope.launch {
+          workManager.cancelUniqueWork(
+            "org.smartregister.fhircore.engine.sync.AppSyncWorker-oneTimeSync",
+          )
+          trackSyncStatus(false, SyncStatus.UNKNOWN)
+        }
+      }
       is AppMainEvent.OpenRegistersBottomSheet -> displayRegisterBottomSheet(event)
       is AppMainEvent.UpdateSyncState -> {
         if (event.state is CurrentSyncJobStatus.Succeeded) {
@@ -173,6 +193,8 @@ constructor(
             formatLastSyncTimestamp(event.state.timestamp),
           )
           retrieveAppMainUiState()
+          isUploadSyncCompleted = SyncStatus.SUCCEEDED
+          viewModelScope.launch { retrieveAppMainUiState() }
         }
       }
       is AppMainEvent.TriggerWorkflow ->
@@ -280,6 +302,21 @@ constructor(
     viewModelScope.launch {
       syncBroadcaster.schedulePeriodicSync(applicationConfiguration.syncInterval)
     }
+  }
+
+  fun trackSyncStatus(isSyncUpload: Boolean, syncStatus: SyncStatus) {
+    appMainUiState.value =
+      appMainUiState.value.copy(
+        isSyncUpload = isSyncUpload,
+        isSyncCompleted = syncStatus,
+      )
+  }
+
+  fun trackSyncUploadPercentage(progressPercentage: Int) {
+    appMainUiState.value =
+      appMainUiState.value.copy(
+        progressPercentage = progressPercentage,
+      )
   }
 
   suspend fun onQuestionnaireSubmission(questionnaireSubmission: QuestionnaireSubmission) {

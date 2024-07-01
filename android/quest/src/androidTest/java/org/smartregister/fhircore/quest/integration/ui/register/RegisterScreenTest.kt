@@ -39,9 +39,15 @@ import org.junit.Rule
 import org.junit.Test
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationBottomSheetRegisterConfig
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationConfiguration
+import org.smartregister.fhircore.engine.configuration.navigation.NavigationMenuConfig
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
+import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.quest.integration.Faker
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
+import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.register.FAB_BUTTON_REGISTER_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.FIRST_TIME_SYNC_DIALOG
 import org.smartregister.fhircore.quest.ui.register.NO_REGISTER_VIEW_COLUMN_TEST_TAG
@@ -49,6 +55,8 @@ import org.smartregister.fhircore.quest.ui.register.NoRegisterDataView
 import org.smartregister.fhircore.quest.ui.register.REGISTER_CARD_TEST_TAG
 import org.smartregister.fhircore.quest.ui.register.RegisterScreen
 import org.smartregister.fhircore.quest.ui.register.RegisterUiState
+import org.smartregister.fhircore.quest.ui.register.SYNC_PROGRESS_BAR_TAG
+import org.smartregister.fhircore.quest.ui.register.SYNC_SUCCESS_TAG
 import org.smartregister.fhircore.quest.ui.register.TOP_REGISTER_SCREEN_TEST_TAG
 
 @HiltAndroidTest
@@ -56,6 +64,44 @@ class RegisterScreenTest {
   @get:Rule val composeTestRule = createComposeRule()
 
   private val noResults = NoResultsConfig()
+
+  private val navigationConfiguration =
+    NavigationConfiguration(
+      appId = "appId",
+      configType = ConfigType.Navigation.name,
+      staticMenu = listOf(),
+      clientRegisters =
+        listOf(
+          NavigationMenuConfig(id = "id3", visible = true, display = "Register 1"),
+          NavigationMenuConfig(id = "id4", visible = false, display = "Register 2"),
+        ),
+      bottomSheetRegisters =
+        NavigationBottomSheetRegisterConfig(
+          visible = true,
+          display = "My Register",
+          registers =
+            listOf(NavigationMenuConfig(id = "id2", visible = true, display = "Title My Register")),
+        ),
+      menuActionButton =
+        NavigationMenuConfig(id = "id1", visible = true, display = "Register Household"),
+    )
+
+  val appUiState =
+    appMainUiStateOf(
+      appTitle = "MOH VTS",
+      username = "Demo",
+      lastSyncTime = "05:30 PM, Mar 3",
+      currentLanguage = "English",
+      progressPercentage = 50,
+      syncStatus = SyncStatus.INPROGRESS,
+      isSyncUpload = true,
+      languages = listOf(Language("en", "English"), Language("sw", "Swahili")),
+      navigationConfiguration =
+        navigationConfiguration.copy(
+          bottomSheetRegisters =
+            navigationConfiguration.bottomSheetRegisters?.copy(display = "Random name"),
+        ),
+    )
 
   @Test
   fun testFloatingActionButtonIsDisplayed() {
@@ -91,6 +137,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -131,6 +178,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
 
@@ -174,6 +222,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
 
@@ -214,6 +263,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.onNodeWithTag(FIRST_TIME_SYNC_DIALOG, useUnmergedTree = true)
@@ -253,6 +303,7 @@ class RegisterScreenTest {
         currentPage = currentPage,
         pagingItems = pagingItems,
         navController = rememberNavController(),
+        onClick = {},
       )
     }
     composeTestRule.waitUntil(5_000) { true }
@@ -293,5 +344,95 @@ class RegisterScreenTest {
       .onNodeWithTag(NO_REGISTER_VIEW_COLUMN_TEST_TAG, useUnmergedTree = true)
       .onChildAt(1)
       .assertExists()
+  }
+
+  @Test
+  fun testSyncInProgress() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(50),
+        isSyncUpload = flowOf(true),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        appUiState = appUiState,
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+        onClick = {},
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SYNC_PROGRESS_BAR_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun testSyncSucceeded() {
+    val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+    val registerUiState =
+      RegisterUiState(
+        screenTitle = "Register101",
+        isFirstTimeSync = false,
+        registerConfiguration =
+          configurationRegistry.retrieveConfiguration(ConfigType.Register, "householdRegister"),
+        registerId = "register101",
+        totalRecordsCount = 1,
+        filteredRecordsCount = 0,
+        pagesCount = 0,
+        progressPercentage = flowOf(100),
+        isSyncUpload = flowOf(false),
+        params = emptyMap(),
+      )
+    val searchText = mutableStateOf("")
+    val currentPage = mutableStateOf(0)
+
+    composeTestRule.setContent {
+      val data = listOf(ResourceData("1", ResourceType.Patient, emptyMap()))
+      val pagingItems = flowOf(PagingData.from(data)).collectAsLazyPagingItems()
+      RegisterScreen(
+        modifier = Modifier,
+        openDrawer = {},
+        onEvent = {},
+        registerUiState = registerUiState,
+        appUiState =
+          appUiState.copy(
+            isSyncCompleted = SyncStatus.SUCCEEDED,
+            progressPercentage = 100,
+          ),
+        searchText = searchText,
+        currentPage = currentPage,
+        pagingItems = pagingItems,
+        navController = rememberNavController(),
+        onClick = {},
+      )
+    }
+
+    composeTestRule
+      .onNodeWithTag(SYNC_SUCCESS_TAG, useUnmergedTree = true)
+      .assertExists()
+      .assertIsDisplayed()
   }
 }

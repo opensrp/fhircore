@@ -64,6 +64,7 @@ import org.smartregister.fhircore.quest.event.EventBus
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.models.QuestionnaireSubmission
@@ -164,7 +165,9 @@ class RegisterFragment : Fragment(), OnSyncListener {
               RegisterScreen(
                 openDrawer = openDrawer,
                 onEvent = registerViewModel::onEvent,
+                onClick = appMainViewModel::onEvent,
                 registerUiState = registerViewModel.registerUiState.value,
+                appUiState = appMainViewModel.appMainUiState.value,
                 searchText = registerViewModel.searchText,
                 currentPage = registerViewModel.currentPage,
                 pagingItems = pagingItems,
@@ -198,11 +201,18 @@ class RegisterFragment : Fragment(), OnSyncListener {
             )
           }
         } else {
+          val isSyncUpload =
+            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
+              SyncOperation.UPLOAD
           emitPercentageProgress(
             syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress,
-            (syncJobStatus.inProgressSyncJob as SyncJobStatus.InProgress).syncOperation ==
-              SyncOperation.UPLOAD,
+            isSyncUpload,
           )
+          if (isSyncUpload) {
+            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.INPROGRESS)
+          } else {
+            appMainViewModel.trackSyncStatus(isSyncUpload, SyncStatus.UNKNOWN)
+          }
         }
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
@@ -214,11 +224,11 @@ class RegisterFragment : Fragment(), OnSyncListener {
               duration = SnackbarDuration.Long,
             ),
           )
+          appMainViewModel.trackSyncStatus(false, SyncStatus.SUCCEEDED)
         }
       }
       is CurrentSyncJobStatus.Failed -> {
         refreshRegisterData()
-        syncJobStatus.toString()
         // Show error message in snackBar message
         lifecycleScope.launch {
           registerViewModel.emitSnackBarState(
@@ -228,6 +238,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
               actionLabel = getString(R.string.ok).uppercase(),
             ),
           )
+          appMainViewModel.trackSyncStatus(false, SyncStatus.FAILED)
         }
       }
       else -> {
@@ -303,6 +314,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
   ) {
     lifecycleScope.launch {
       val percentageProgress: Int = calculateActualPercentageProgress(progressSyncJobStatus)
+      appMainViewModel.trackSyncUploadPercentage(percentageProgress)
       registerViewModel.emitPercentageProgressState(percentageProgress, isUploadSync)
     }
   }
