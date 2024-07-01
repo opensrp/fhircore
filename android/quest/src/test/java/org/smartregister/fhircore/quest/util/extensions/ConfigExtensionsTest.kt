@@ -82,7 +82,7 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Inject lateinit var registerRepository: RegisterRepository
 
-  private val navController = mockk<NavController>(relaxUnitFun = true)
+  private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
   private val navigationMenuConfig by lazy {
     NavigationMenuConfig(
@@ -387,9 +387,14 @@ class ConfigExtensionsTest : RobolectricTest() {
     listOf(clickAction).handleClickEvent(navController = navController, resourceData = resourceData)
     val slotInt = slot<Int>()
     val slotBundle = slot<Bundle>()
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    val slotNavOptions = slot<NavOptions>()
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
     Assert.assertEquals(MainNavigationScreen.GeoWidgetLauncher.route, slotInt.captured)
-    verify { navController.navigate(capture(slotInt), capture(slotBundle)) }
+    verify {
+      navController.navigate(capture(slotInt), capture(slotBundle), capture(slotNavOptions))
+    }
     Assert.assertEquals(1, slotBundle.captured.size())
     Assert.assertEquals("geoWidgetId", slotBundle.captured.getString(NavigationArg.GEO_WIDGET_ID))
   }

@@ -772,7 +772,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
   }
 
   @Test
-  fun testThatNextIsInvokedWhenItExistsInABundleLink() = runTest {
+  fun testThatNextIsInvokedWhenItExistsInABundleLink() {
     val appId = "theAppId"
     val compositionSections = mutableListOf<SectionComponent>()
     compositionSections.add(
@@ -803,14 +803,14 @@ class ConfigurationRegistryTest : RobolectricTest() {
           },
         )
       }
+    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
 
     val finalBundle =
       Bundle().apply { entry = listOf(BundleEntryComponent().setResource(listResource)) }
 
     configRegistry.sharedPreferencesHelper.write(SharedPreferenceKey.APP_ID.name, appId)
 
-    fhirEngine.create(composition)
-
+    runBlocking { fhirEngine.create(composition) }
     coEvery {
       fhirResourceDataSource.getResource("Composition?identifier=theAppId&_count=200")
     } returns Bundle().apply { addEntry().resource = composition }
@@ -822,8 +822,6 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns bundle
 
-    val nextPageUrlLink = bundle.getLink(PAGINATION_NEXT).url
-
     coEvery {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
         "list-entries",
@@ -831,7 +829,7 @@ class ConfigurationRegistryTest : RobolectricTest() {
       )
     } returns finalBundle
 
-    configRegistry.fetchNonWorkflowConfigResources()
+    runBlocking { configRegistry.fetchNonWorkflowConfigResources() }
 
     coVerify {
       fhirResourceDataSource.getResourceWithGatewayModeHeader(
