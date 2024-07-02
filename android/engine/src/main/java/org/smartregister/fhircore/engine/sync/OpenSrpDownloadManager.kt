@@ -25,11 +25,12 @@ import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 
 class OpenSrpDownloadManager(
-  syncParams: ResourceSearchParams,
+  resourceSearchParams: ResourceSearchParams,
   val context: ResourceParamsBasedDownloadWorkManager.TimestampContext,
 ) : DownloadWorkManager {
 
-  private val downloadWorkManager = ResourceParamsBasedDownloadWorkManager(syncParams, context)
+  private val downloadWorkManager =
+    ResourceParamsBasedDownloadWorkManager(resourceSearchParams, context)
 
   override suspend fun getNextRequest(): DownloadRequest? = downloadWorkManager.getNextRequest()
 

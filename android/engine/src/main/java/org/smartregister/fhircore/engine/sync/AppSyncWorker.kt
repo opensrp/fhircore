@@ -43,7 +43,7 @@ constructor(
 
   override fun getDownloadWorkManager(): DownloadWorkManager =
     OpenSrpDownloadManager(
-      syncParams = syncListenerManager.loadSyncParams(),
+      resourceSearchParams = syncListenerManager.loadResourceSearchParams(),
       context = appTimeStampContext,
     )
 

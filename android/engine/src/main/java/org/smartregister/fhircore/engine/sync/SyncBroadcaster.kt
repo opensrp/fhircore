@@ -19,6 +19,8 @@ package org.smartregister.fhircore.engine.sync
 import android.content.Context
 import androidx.work.Constraints
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import com.google.android.fhir.sync.PeriodicSyncConfiguration
@@ -57,6 +59,7 @@ constructor(
   val fhirEngine: FhirEngine,
   val syncListenerManager: SyncListenerManager,
   val dispatcherProvider: DispatcherProvider,
+  val workManager: WorkManager,
   @ApplicationContext val context: Context,
 ) {
 
@@ -64,9 +67,17 @@ constructor(
    * Run one time sync. The [SyncJobStatus] will be broadcast to all the registered [OnSyncListener]
    * 's
    */
-  suspend fun runOneTimeSync() = coroutineScope {
+  suspend fun runOneTimeSync(): Unit = coroutineScope {
     Timber.i("Running one time sync...")
     Sync.oneTimeSync<AppSyncWorker>(context).handleOneTimeSyncJobStatus(this)
+
+    workManager.enqueue(
+      OneTimeWorkRequestBuilder<CustomSyncWorker>()
+        .setConstraints(
+          Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build(),
+        )
+        .build(),
+    )
   }
 
   /**
