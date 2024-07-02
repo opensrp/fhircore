@@ -29,7 +29,6 @@ import io.mockk.mockk
 import io.mockk.spyk
 import java.util.UUID
 import javax.inject.Inject
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert

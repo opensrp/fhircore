@@ -50,6 +50,7 @@ import org.smartregister.fhircore.geowidget.model.Coordinates
 import org.smartregister.fhircore.geowidget.model.Feature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import timber.log.Timber
 
 @HiltViewModel
 class GeoWidgetLauncherViewModel
@@ -66,6 +67,9 @@ constructor(
 
   private val _locationsFlow: MutableStateFlow<Set<Feature>> = MutableStateFlow(setOf())
   val locationsFlow: StateFlow<Set<Feature>> = _locationsFlow
+
+  private val _shouldTriggerSearchQuery: MutableStateFlow<Int> = MutableStateFlow(0)
+  val shouldTriggerSearchQuery: StateFlow<Int> = _shouldTriggerSearchQuery
 
   private val _locationDialog = MutableLiveData<String>()
   val locationDialog: LiveData<String>
@@ -121,7 +125,13 @@ constructor(
               properties = servicePointProperties,
             )
           addLocationToFlow(feature)
+          Timber.i("GeoWidgetLauncherViewModel:addLocationToMap")
         }
+      }
+      //once data is loaded to map, its time to pass the searchQuery to get invoked
+      if (repositoryResourceDataList.isNotEmpty()) {
+        Timber.i("GeoWidgetLauncherViewModel:searchQuery")
+        _shouldTriggerSearchQuery.value++
       }
     }
   }

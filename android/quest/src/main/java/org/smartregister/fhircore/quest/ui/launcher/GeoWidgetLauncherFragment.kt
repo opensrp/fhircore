@@ -169,8 +169,24 @@ class GeoWidgetLauncherFragment : Fragment() {
     showSetLocationDialog()
     setOnQuestionnaireSubmissionListener()
     setLocationFromDbCollector()
+    shouldTriggerSearchQuery()
     geoWidgetLauncherViewModel.checkSelectedLocation(geoWidgetConfiguration)
     Timber.i("GeoWidgetLauncherFragment onViewCreated")
+  }
+
+  private fun shouldTriggerSearchQuery() {
+    viewLifecycleOwner.lifecycleScope.launch {
+      geoWidgetLauncherViewModel.shouldTriggerSearchQuery
+        .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+        .collect {
+          // Ensure the fragment is attached and the ViewModel is accessible
+          geoWidgetFragment.viewLifecycleOwnerLiveData.observe(viewLifecycleOwner) { owner ->
+            if (owner != null) {
+              geoWidgetLauncherViewModel.searchText.value = navArgs.searchQuery ?: ""
+            }
+          }
+        }
+    }
   }
 
   private fun buildGeoWidgetFragment() {

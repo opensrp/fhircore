@@ -91,7 +91,12 @@ fun GeoWidgetLauncherScreen(
               }
             ToolbarClickEvent.FilterData -> {}
             is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(navController = navController)
+              event.actions.apply {
+                if (searchText.value.isNotEmpty()) {
+                  first().dynamicValue = searchText.value
+                }
+                handleClickEvent(navController)
+              }
             }
           }
         }

@@ -120,9 +120,13 @@ fun RegisterScreen(
               filterActions?.handleClickEvent(navController)
             }
             is ToolbarClickEvent.Actions -> {
-              event.actions.handleClickEvent(
-                navController = navController,
-              )
+              event.actions.apply {
+                if (searchText.value.isNotEmpty()) {
+                  first().dynamicValue = null
+                  first().dynamicValue = searchText.value
+                }
+                handleClickEvent(navController)
+              }
             }
           }
         }

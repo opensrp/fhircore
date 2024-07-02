@@ -61,6 +61,7 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 import org.smartregister.fhircore.quest.data.register.RegisterPagingSource
 import org.smartregister.fhircore.quest.data.register.model.RegisterPagingSourceState
+import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.util.extensions.toParamDataMap
 import timber.log.Timber
 
@@ -425,6 +426,7 @@ constructor(
   fun retrieveRegisterUiState(
     registerId: String,
     screenTitle: String,
+    searchQuery: String? = null,
     params: Array<ActionParameter>? = emptyArray(),
     clearCache: Boolean,
   ) {
@@ -445,8 +447,6 @@ constructor(
               fhirResourceConfig = registerFilterState.value.fhirResourceConfig,
             )
         }
-
-        paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
 
         registerUiState.value =
           RegisterUiState(
@@ -478,8 +478,22 @@ constructor(
             isSyncUpload = _isUploadSync,
             params = paramsMap,
           )
+
+        applySearchQueryIfExists(searchQuery, registerId, clearCache)
       }
     }
+  }
+
+  private fun applySearchQueryIfExists(
+    searchQueryParam: String?,
+    registerId: String,
+    clearCache: Boolean
+  ) {
+     if (searchQueryParam.isNullOrEmpty()) {
+       paginateRegisterData(registerId, loadAll = false, clearCache = clearCache)
+     } else {
+       onEvent(RegisterEvent.SearchRegister(searchQueryParam))
+     }
   }
 
   suspend fun emitSnackBarState(snackBarMessageConfig: SnackBarMessageConfig) {
