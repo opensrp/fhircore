@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
@@ -56,6 +57,7 @@ import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
+import org.smartregister.fhircore.quest.ui.pdf.PdfLauncherFragment
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
 import org.smartregister.p2p.utils.startP2PScreen
 
@@ -203,6 +205,12 @@ fun List<ActionConfig>.handleClickEvent(
             NavigationArg.MULTI_SELECT_VIEW_CONFIG to actionConfig.multiSelectViewConfig,
           )
         navController.navigate(MainNavigationScreen.LocationSelector.route, args)
+      }
+      ApplicationWorkflow.LAUNCH_PDF_GENERATION -> {
+        val questionnaireConfig = actionConfig.questionnaire ?: return
+        val questionnaireConfigInterpolated = questionnaireConfig.interpolate(computedValuesMap)
+        val appCompatActivity = (navController.context as AppCompatActivity)
+        PdfLauncherFragment.launch(appCompatActivity, questionnaireConfigInterpolated.encodeJson())
       }
       else -> return
     }
