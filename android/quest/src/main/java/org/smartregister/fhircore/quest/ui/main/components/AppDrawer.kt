@@ -16,29 +16,39 @@
 
 package org.smartregister.fhircore.quest.ui.main.components
 
+import SubsequentSyncDetailsBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,11 +57,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_LOCAL
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -62,18 +75,20 @@ import org.smartregister.fhircore.engine.domain.model.Language
 import org.smartregister.fhircore.engine.ui.theme.AppTitleColor
 import org.smartregister.fhircore.engine.ui.theme.MenuActionButtonTextColor
 import org.smartregister.fhircore.engine.ui.theme.MenuItemColor
-import org.smartregister.fhircore.engine.ui.theme.SideMenuBottomItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SideMenuTopItemDarkColor
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
+import org.smartregister.fhircore.engine.ui.theme.SuccessColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
 import org.smartregister.fhircore.engine.util.extension.appVersion
 import org.smartregister.fhircore.quest.R
 import org.smartregister.fhircore.quest.ui.main.AppMainEvent
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
+import org.smartregister.fhircore.quest.ui.main.SyncStatus
 import org.smartregister.fhircore.quest.ui.main.appMainUiStateOf
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
+import timber.log.Timber
 
 const val SIDE_MENU_ICON = "sideMenuIcon"
 const val NAV_TOP_SECTION_TEST_TAG = "navTopSectionTestTag"
@@ -99,8 +114,9 @@ fun AppDrawer(
 ) {
   val context = LocalContext.current
   val (versionCode, versionName) = remember { appVersionPair ?: context.appVersion() }
-
+  Timber.d("AppDrawer : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}")
   val navigationConfiguration = appUiState.navigationConfiguration
+
   Scaffold(
     topBar = {
       Column(modifier = modifier.background(SideMenuDarkColor)) {
@@ -187,29 +203,84 @@ fun AppDrawer(
 
 @Composable
 private fun NavBottomSection(
-  modifier: Modifier,
+  modifier: Modifier = Modifier,
   appUiState: AppMainUiState,
   onSideMenuClick: (AppMainEvent) -> Unit,
   openDrawer: (Boolean) -> Unit,
 ) {
   val context = LocalContext.current
-  Box(
-    modifier =
-      modifier
-        .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
-        .background(SideMenuBottomItemDarkColor)
-        .padding(horizontal = 16.dp, vertical = 4.dp),
-  ) {
-    SideMenuItem(
-      modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
-      imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
-      title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
-      endText = appUiState.lastSyncTime,
-      showEndText = true,
-      endTextColor = SubtitleTextColor,
+  val coroutineScope = rememberCoroutineScope()
+
+  var showSyncBar by remember { mutableStateOf(false) }
+  var backgroundColor by remember { mutableStateOf(SideMenuTopItemDarkColor) }
+  LaunchedEffect(appUiState.isSyncCompleted, appUiState.progressPercentage) {
+    if (
+      appUiState.isSyncCompleted == SyncStatus.SUCCEEDED && appUiState.progressPercentage == 100
     ) {
+      backgroundColor = Color(0xFF1DB11B)
+      showSyncBar = true
+      coroutineScope.launch {
+        delay(60000L)
+        showSyncBar = false
+        backgroundColor = SideMenuTopItemDarkColor
+      }
+    } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
+      backgroundColor = Color(0xFFDF0E1A)
+    }
+  }
+
+  if (!appUiState.isSyncUpload) {
+    Box(
+      modifier =
+        modifier
+          .testTag(NAV_BOTTOM_SECTION_MAIN_BOX_TEST_TAG)
+          .background(backgroundColor)
+          .background(
+            if (showSyncBar || appUiState.isSyncCompleted == SyncStatus.FAILED) {
+              Color.White.copy(alpha = 0.83f)
+            } else {
+              Color.Transparent
+            },
+          )
+          .padding(horizontal = 16.dp, vertical = 4.dp),
+    ) {
+      if (showSyncBar) {
+        SyncCompleteStatus(
+          modifier = modifier,
+          imageConfig = ImageConfig(type = "local", "ic_sync_success"),
+          title = "Sync Complete",
+          showEndText = false,
+          onCancelButtonClick = {},
+        )
+      } else if (appUiState.isSyncCompleted == SyncStatus.FAILED) {
+        SyncCompleteStatus(
+          modifier = modifier,
+          imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
+          title = "Sync error",
+          syncSuccess = false,
+          showEndText = true,
+        ) {
+          openDrawer(false)
+          onSideMenuClick(AppMainEvent.SyncData(context))
+        }
+      } else {
+        SideMenuItem(
+          modifier.testTag(NAV_BOTTOM_SECTION_SIDE_MENU_ITEM_TEST_TAG),
+          imageConfig = ImageConfig(type = ICON_TYPE_LOCAL, "ic_sync"),
+          title = stringResource(org.smartregister.fhircore.engine.R.string.sync),
+          endText = appUiState.lastSyncTime,
+          showEndText = true,
+          endTextColor = SubtitleTextColor,
+        ) {
+          openDrawer(false)
+          onSideMenuClick(AppMainEvent.SyncData(context))
+        }
+      }
+    }
+  } else {
+    SubsequentSyncDetailsBar(appUiState = appUiState) {
+      onSideMenuClick(AppMainEvent.CancelSyncData(context))
       openDrawer(false)
-      onSideMenuClick(AppMainEvent.SyncData(context))
     }
   }
 }
@@ -375,11 +446,79 @@ private fun SideMenuItem(
 }
 
 @Composable
-private fun SideMenuItemText(title: String, textColor: Color) {
+fun SyncCompleteStatus(
+  modifier: Modifier,
+  imageConfig: ImageConfig? = null,
+  title: String,
+  showEndText: Boolean,
+  showImage: Boolean = true,
+  syncSuccess: Boolean = true,
+  description: String? = null,
+  onCancelButtonClick: () -> Unit,
+) {
+  Row(
+    horizontalArrangement = Arrangement.SpaceBetween,
+    modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Row(
+      modifier = modifier.testTag(SIDE_MENU_ITEM_INNER_ROW_TEST_TAG).padding(vertical = 10.dp),
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      if (showImage) {
+        Image(
+          paddingEnd = 10,
+          imageProperties = ImageProperties(imageConfig = imageConfig, size = 40),
+          tint = if (syncSuccess) SuccessColor else Color(0xFFDF0E1A),
+          navController = rememberNavController(),
+        )
+      }
+      val syncTextStatusSize = if (showImage) 18 else 13
+      Column { // Wrap SideMenuItemText and description in a Column
+        SideMenuItemText(
+          title = title,
+          textColor = Color(0xFF282828),
+          syncTextStatusSize,
+          boldText = true,
+        )
+        // Check if the description is not null and then display it
+        if (description != null) {
+          Text(
+            text = description,
+            color = Color.Gray,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(top = 4.dp), // Add some padding at the top
+          )
+        }
+      }
+      // TODO add a n additional descriptive text below the SideMenuItemText
+      // kinda like a description
+      // however this will be shown under only certain condition
+    }
+    Spacer(modifier = Modifier.width(16.dp))
+    if (showEndText) {
+      TextButton(
+        onClick = { onCancelButtonClick() },
+        colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF0077CC)),
+      ) {
+        Text(text = "RETRY")
+      }
+    }
+  }
+}
+
+@Composable
+private fun SideMenuItemText(
+  title: String,
+  textColor: Color,
+  textSize: Int = 18,
+  boldText: Boolean = false,
+) {
   Text(
     text = title,
     color = textColor,
-    fontSize = 18.sp,
+    fontSize = textSize.sp,
+    fontWeight = if (boldText) FontWeight.Bold else FontWeight.Normal,
     modifier = Modifier.testTag(SIDE_MENU_ITEM_TEXT_TEST_TAG),
   )
 }
