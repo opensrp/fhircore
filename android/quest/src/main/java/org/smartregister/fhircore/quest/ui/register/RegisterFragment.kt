@@ -217,13 +217,13 @@ class RegisterFragment : Fragment(), OnSyncListener {
       is CurrentSyncJobStatus.Succeeded -> {
         refreshRegisterData()
         lifecycleScope.launch {
-          registerViewModel.emitSnackBarState(
-            SnackBarMessageConfig(
-              message = getString(R.string.sync_completed),
-              actionLabel = getString(R.string.ok).uppercase(),
-              duration = SnackbarDuration.Long,
-            ),
-          )
+          //          registerViewModel.emitSnackBarState(
+          //            SnackBarMessageConfig(
+          //              message = getString(R.string.sync_completed),
+          //              actionLabel = getString(R.string.ok).uppercase(),
+          //              duration = SnackbarDuration.Long,
+          //            ),
+          //          )
           appMainViewModel.trackSyncStatus(false, SyncStatus.SUCCEEDED)
         }
       }

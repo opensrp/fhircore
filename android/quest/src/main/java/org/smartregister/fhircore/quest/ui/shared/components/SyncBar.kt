@@ -34,12 +34,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.ui.theme.SubtitleTextColor
 import org.smartregister.fhircore.quest.ui.main.AppMainUiState
 import timber.log.Timber
+
+const val MAX_PROGRESS = 100
 
 @Composable
 fun SubsequentSyncDetailsBar(
@@ -48,10 +52,13 @@ fun SubsequentSyncDetailsBar(
   hideExtraInformation: Boolean = true,
   onCancelButtonClick: () -> Unit,
 ) {
+  val context = LocalContext.current
   Timber.d(
     "AppDrawer SubsequentSyncDetailsBar : ${appUiState.isSyncUpload}  ${appUiState.progressPercentage}",
   )
-  val progress by remember { mutableFloatStateOf(appUiState.progressPercentage.toFloat() / 100) }
+  val progress by remember {
+    mutableFloatStateOf(appUiState.progressPercentage.toFloat() / MAX_PROGRESS)
+  }
   val backgroundColor = Color(0xFF002B4A)
 
   Box(
@@ -74,7 +81,7 @@ fun SubsequentSyncDetailsBar(
       ) {
         if (hideExtraInformation) {
           Text(
-            text = "${(progress * 100).toInt()}% Syncing...",
+            text = "${(progress * 100).toInt()}% ${context.getString(R.string.sync_inprogress)}",
             color = Color.White,
             fontSize = 16.sp,
             modifier = Modifier.padding(bottom = 8.dp).align(Alignment.Start),
@@ -88,7 +95,7 @@ fun SubsequentSyncDetailsBar(
         )
         if (hideExtraInformation) {
           Text(
-            text = "Calculating mins remaining...",
+            text = context.getString(R.string.minutes_remaining),
             color = SubtitleTextColor,
             fontSize = 15.sp,
             textAlign = TextAlign.Center,
@@ -102,9 +109,11 @@ fun SubsequentSyncDetailsBar(
           onClick = { onCancelButtonClick() },
           colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFF28B8F9)),
         ) {
-          Text(text = "CANCEL")
+          Text(text = context.getString(R.string.cancel_sync))
         }
       }
     }
   }
 }
+
+// 330545

@@ -330,7 +330,7 @@ fun RegisterScreen(
               SyncCompleteStatus(
                 modifier = modifier,
                 imageConfig = ImageConfig(type = "local", "ic_sync_success"),
-                title = "Sync Complete",
+                title = context.getString(R.string.sync_completed),
                 showEndText = false,
                 showImage = syncNotificationBarExpanded,
                 onCancelButtonClick = {},
@@ -358,7 +358,7 @@ fun RegisterScreen(
               SyncCompleteStatus(
                 modifier = modifier.testTag(SYNC_ERROR_TAG),
                 imageConfig = ImageConfig(type = "local", "ic_sync_fail"),
-                title = "Sync error",
+                title = context.getString(R.string.sync_error),
                 showEndText = false,
                 showImage = syncNotificationBarExpanded,
                 onCancelButtonClick = {},
