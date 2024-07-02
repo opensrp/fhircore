@@ -535,7 +535,6 @@ class QuestionnaireViewModelTest : RobolectricTest() {
     val questionnaire =
       questionnaireViewModel.retrieveQuestionnaire(
         questionnaireConfig = questionnaireConfig,
-        actionParameters = emptyList(),
       )
 
     Assert.assertNotNull(questionnaire)
@@ -543,7 +542,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun testRetrieveQuestionnaireShouldReturnPrePopulatedQuestionnaire() = runTest {
+  fun testPopulateQuestionnaireShouldPrePopulatedQuestionnaireWithComputedValues() = runTest {
     val patientAgeLinkId = "patient-age"
     val newQuestionnaireConfig =
       questionnaireConfig.copy(
@@ -586,13 +585,13 @@ class QuestionnaireViewModelTest : RobolectricTest() {
           value = "20",
         ),
       )
-
-    val questionnaire =
-      questionnaireViewModel.retrieveQuestionnaire(
-        questionnaireConfig = newQuestionnaireConfig,
-        actionParameters = actionParameter,
-      )
+    val questionnaire = questionnaireViewModel.retrieveQuestionnaire(newQuestionnaireConfig)
     Assert.assertNotNull(questionnaire)
+    questionnaireViewModel.populateQuestionnaire(
+      questionnaire!!,
+      newQuestionnaireConfig,
+      actionParameter,
+    )
 
     // Questionnaire.item pre-populated
     val questionnairePatientAgeItem = questionnaire?.find(patientAgeLinkId)
@@ -602,7 +601,7 @@ class QuestionnaireViewModelTest : RobolectricTest() {
 
     // Barcode linkId updated
     val questionnaireBarcodeItem =
-      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire?.find(it) }
+      newQuestionnaireConfig.barcodeLinkId?.let { questionnaire.find(it) }
     val barCodeItemValue: Type? = questionnaireBarcodeItem?.initial?.firstOrNull()?.value
     Assert.assertFalse(barCodeItemValue is StringType)
     Assert.assertNull(
