@@ -140,95 +140,99 @@ constructor(
 
   /**
    * This function retrieves the [Questionnaire] as configured via the [QuestionnaireConfig]. The
-   * retrieved [Questionnaire] can be pre-populated with computed values from the Rules engine as
-   * well as include initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
-   * [QuestionnaireConfig.uniqueIdAssignment] properties.
+   * retrieved [Questionnaire] can then be pre-populated.
    */
   suspend fun retrieveQuestionnaire(
     questionnaireConfig: QuestionnaireConfig,
-    actionParameters: List<ActionParameter>?,
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
+    return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
+  }
+
+  /**
+   * Pre-populates questionnaire with computed values from the Rules engine as well as include
+   * initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
+   * [QuestionnaireConfig.uniqueIdAssignment] properties.
+   */
+  private suspend fun Questionnaire.prepopulateWithComputeConfigValues(
+    config: QuestionnaireConfig,
+    actionParameters: List<ActionParameter>?,
+  ) {
+    require(config.id.isNotBlank())
 
     // Compute questionnaire config rules and add extra questionnaire params to action parameters
     val questionnaireComputedValues =
-      questionnaireConfig.configRules?.let {
+      config.configRules?.let {
         resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
       } ?: emptyMap()
 
     val allActionParameters =
       actionParameters?.plus(
-        questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
-          ?: emptyList(),
+        config.extraParams?.map { it.interpolate(questionnaireComputedValues) } ?: emptyList(),
       )
 
-    val questionnaire =
-      defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)?.apply {
-        if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-          item.prepareQuestionsForReadingOrEditing(
-            readOnly = questionnaireConfig.isReadOnly(),
-            readOnlyLinkIds =
-              questionnaireConfig.readOnlyLinkIds
-                ?: questionnaireConfig.linkIds
-                  ?.filter { it.type == LinkIdType.READ_ONLY }
-                  ?.map { it.linkId },
-          )
-        }
+    if (config.isReadOnly() || config.isEditable()) {
+      item.prepareQuestionsForReadingOrEditing(
+        readOnly = config.isReadOnly(),
+        readOnlyLinkIds =
+          config.readOnlyLinkIds
+            ?: config.linkIds?.filter { it.type == LinkIdType.READ_ONLY }?.map { it.linkId },
+      )
+    }
 
-        if (questionnaireConfig.isEditable()) {
-          item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
-        }
+    if (config.isEditable()) {
+      item.prepareQuestionsForEditing(readOnlyLinkIds = config.readOnlyLinkIds)
+    }
 
-        // Pre-populate questionnaire items with configured values
-        allActionParameters
-          ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
-          ?.let { actionParam ->
-            item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
-          }
-
-        // Set barcode to the configured linkId default: "patient-barcode"
-        if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-          (questionnaireConfig.barcodeLinkId
-              ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
-            ?.let { barcodeLinkId ->
-              find(barcodeLinkId)?.apply {
-                initial =
-                  mutableListOf(
-                    Questionnaire.QuestionnaireItemInitialComponent()
-                      .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-                  ) // TODO should this be resource identifier or OpenSrp unique ID?
-                readOnly = true
-              }
-            }
-        }
-
-        // Set configured OpenSRPId on Questionnaire
-        questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
-          find(uniqueIdAssignmentConfig.linkId)?.apply {
-            // Extract ID from a Group, should be modified in future to support other resources
-            val uniqueIdResource =
-              defaultRepository.retrieveUniqueIdAssignmentResource(
-                questionnaireConfig.uniqueIdAssignment,
-                questionnaireComputedValues,
-              )
-
-            val extractedId =
-              fhirPathDataExtractor.extractValue(
-                base = uniqueIdResource,
-                expression = uniqueIdAssignmentConfig.idFhirPathExpression,
-              )
-            if (uniqueIdResource != null && extractedId.isNotEmpty()) {
-              initial =
-                mutableListOf(
-                  Questionnaire.QuestionnaireItemInitialComponent()
-                    .setValue(StringType(extractedId)),
-                )
-            }
-            readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
-          }
-        }
+    // Pre-populate questionnaire items with configured values
+    allActionParameters
+      ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
+      ?.let { actionParam ->
+        item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
       }
-    return questionnaire
+
+    // Set barcode to the configured linkId default: "patient-barcode"
+    if (!config.resourceIdentifier.isNullOrEmpty()) {
+      (config.barcodeLinkId
+          ?: config.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+        ?.let { barcodeLinkId ->
+          find(barcodeLinkId)?.apply {
+            initial =
+              mutableListOf(
+                Questionnaire.QuestionnaireItemInitialComponent()
+                  .setValue(StringType(config.resourceIdentifier)),
+              ) // TODO should this be resource identifier or OpenSrp unique ID?
+            readOnly = true
+          }
+        }
+    }
+
+    // Set configured OpenSRPId on Questionnaire
+    config.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
+      find(uniqueIdAssignmentConfig.linkId)?.apply {
+        if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
+
+        // Extract ID from a Group, should be modified in future to support other resources
+        val uniqueIdResource =
+          defaultRepository.retrieveUniqueIdAssignmentResource(
+            config.uniqueIdAssignment,
+            questionnaireComputedValues,
+          )
+
+        val extractedId =
+          fhirPathDataExtractor.extractValue(
+            base = uniqueIdResource,
+            expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+          )
+        if (uniqueIdResource != null && extractedId.isNotEmpty()) {
+          initial =
+            mutableListOf(
+              Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(extractedId)),
+            )
+        }
+        readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
+      }
+    }
   }
 
   /**
@@ -1096,6 +1100,8 @@ constructor(
       questionnaire,
       launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
     )
+
+    questionnaire.prepopulateWithComputeConfigValues(questionnaireConfig, actionParameters)
 
     // Populate questionnaire with latest QuestionnaireResponse
     val questionnaireResponse =
