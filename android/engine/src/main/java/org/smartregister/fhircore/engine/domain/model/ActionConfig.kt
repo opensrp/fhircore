@@ -42,6 +42,7 @@ data class ActionConfig(
   val toolBarHomeNavigation: ToolBarHomeNavigation = ToolBarHomeNavigation.OPEN_DRAWER,
   val popNavigationBackStack: Boolean? = null,
   val multiSelectViewConfig: MultiSelectViewConfig? = null,
+  var dynamicValue: String? = null
 ) : Parcelable, java.io.Serializable {
   fun paramsBundle(computedValuesMap: Map<String, Any> = emptyMap()): Bundle =
     Bundle().apply {

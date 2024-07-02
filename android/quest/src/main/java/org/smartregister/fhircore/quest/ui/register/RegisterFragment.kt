@@ -94,6 +94,7 @@ class RegisterFragment : Fragment(), OnSyncListener {
         registerViewModel.retrieveRegisterUiState(
           registerId = registerId,
           screenTitle = screenTitle,
+          searchQuery = searchQuery,
           params = params,
           clearCache = false,
         )

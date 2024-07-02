@@ -128,6 +128,7 @@ fun List<ActionConfig>.handleClickEvent(
             Pair(NavigationArg.SCREEN_TITLE, actionConfig.display ?: navMenu?.display ?: ""),
             Pair(NavigationArg.TOOL_BAR_HOME_NAVIGATION, actionConfig.toolBarHomeNavigation),
             Pair(NavigationArg.PARAMS, interpolatedParams.toTypedArray()),
+            Pair(NavigationArg.SEARCH_QUERY, actionConfig.dynamicValue)
           )
 
         // If value != null, we are navigating FROM a register; disallow same register navigation
@@ -173,7 +174,7 @@ fun List<ActionConfig>.handleClickEvent(
         } else {
           navController.navigate(
             resId = mapFragmentDestination,
-            args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id),
+            args = bundleOf(NavigationArg.GEO_WIDGET_ID to actionConfig.id, NavigationArg.SEARCH_QUERY to actionConfig.dynamicValue),
             navOptions = navOptions(mapFragmentDestination, inclusive = true, singleOnTop = true),
           )
         }
