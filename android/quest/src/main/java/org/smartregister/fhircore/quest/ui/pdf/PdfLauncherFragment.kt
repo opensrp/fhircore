@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.pdf
+package org.smartregister.fhircore.quest.ui.pdf
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -28,8 +28,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
+import org.smartregister.fhircore.engine.pdf.HtmlPopulator
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 
@@ -43,11 +45,11 @@ import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
 class PdfLauncherFragment : DialogFragment() {
 
   private val pdfLauncherViewModel by viewModels<PdfLauncherViewModel>()
-  private lateinit var pdfGenerator: PdfGenerator
+  lateinit var pdfGenerator: PdfGenerator
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    pdfGenerator = PdfGenerator(requireContext())
+    if (!this::pdfGenerator.isInitialized) pdfGenerator = PdfGenerator(requireContext())
 
     val questionnaireConfig = getQuestionnaireConfig()
 
@@ -120,10 +122,13 @@ class PdfLauncherFragment : DialogFragment() {
      */
     fun launch(appCompatActivity: AppCompatActivity, questionnaireConfigJson: String) {
       PdfLauncherFragment()
-        .apply { arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson) }
+        .apply {
+          arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson)
+          pdfGenerator = PdfGenerator(requireContext())
+        }
         .show(appCompatActivity.supportFragmentManager, PdfLauncherFragment::class.java.simpleName)
     }
 
-    private const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
+     @VisibleForTesting const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
   }
 }

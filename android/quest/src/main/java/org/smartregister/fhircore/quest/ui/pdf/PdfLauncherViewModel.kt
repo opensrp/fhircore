@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.pdf
+package org.smartregister.fhircore.quest.ui.pdf
 
 import androidx.lifecycle.ViewModel
 import com.google.android.fhir.search.Search
@@ -24,7 +24,6 @@ import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
-import org.smartregister.fhircore.engine.util.DispatcherProvider
 
 /**
  * ViewModel for managing PDF generation related operations.
@@ -33,14 +32,12 @@ import org.smartregister.fhircore.engine.util.DispatcherProvider
  * required for generating PDFs.
  *
  * @param defaultRepository The repository for accessing local data.
- * @param dispatcherProvider The dispatcher provider for coroutine context management.
  */
 @HiltViewModel
 class PdfLauncherViewModel
 @Inject
 constructor(
   val defaultRepository: DefaultRepository,
-  val dispatcherProvider: DispatcherProvider,
 ) : ViewModel() {
 
   /**
