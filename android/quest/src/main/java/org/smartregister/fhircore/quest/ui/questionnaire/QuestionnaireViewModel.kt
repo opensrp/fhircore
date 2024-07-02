@@ -202,13 +202,15 @@ constructor(
             }
         }
 
-        // Set configured openSrpId on Questionnaire
+        // Set configured OpenSRPId on Questionnaire
+        if (questionnaire )
         questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
           find(uniqueIdAssignmentConfig.linkId)?.apply {
             // Extract ID from a Group, should be modified in future to support other resources
             val uniqueIdResource =
               defaultRepository.retrieveUniqueIdAssignmentResource(
                 questionnaireConfig.uniqueIdAssignment,
+                questionnaireComputedValues,
               )
 
             val extractedId =
