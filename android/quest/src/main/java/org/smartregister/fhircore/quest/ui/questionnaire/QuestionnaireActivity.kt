@@ -97,7 +97,9 @@ open class QuestionnaireActivity : BaseMultiLanguageActivity(), View.OnClickList
   open val questionnaireViewModel: QuestionnaireViewModel by viewModels()
   private lateinit var questionnaire: Questionnaire
   private var questionnaireLaunchContextMap: Map<String, Resource>? = null
-  private var questionnaireItemParentMap: Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
+  private var questionnaireItemParentMap:
+    Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> =
+    mutableMapOf()
   internal lateinit var fragment: QuestionnaireFragment
   private lateinit var saveProcessingAlertDialog: AlertDialog
   private lateinit var questionnaireConfig: QuestionnaireConfig

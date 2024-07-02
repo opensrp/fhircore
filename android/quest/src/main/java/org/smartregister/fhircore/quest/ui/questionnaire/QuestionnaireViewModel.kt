@@ -126,7 +126,8 @@ constructor(
   }
 
   private var questionnaireItemParentMap:
-          Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> = mutableMapOf()
+    Map<Questionnaire.QuestionnaireItemComponent, Questionnaire.QuestionnaireItemComponent> =
+    mutableMapOf()
 
   private val questionnaireLaunchContextMap: Map<String, Resource>? = null
 
@@ -458,12 +459,12 @@ constructor(
 
     questionnaireConfig.planDefinitions?.forEach { planId ->
       if (planId.isNotEmpty())
-          kotlin
-            .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
-            .onFailure {
-              Timber.e(it)
-              extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
-            }
+        kotlin
+          .runCatching { fhirCarePlanGenerator.generateOrUpdateCarePlan(planId, subject, data) }
+          .onFailure {
+            Timber.e(it)
+            extractionProgressMessage.postValue("Error extracting care plan. ${it.message}")
+          }
     }
 
     fhirCarePlanGenerator.conditionallyUpdateResourceStatus(questionnaireConfig, subject, data)
