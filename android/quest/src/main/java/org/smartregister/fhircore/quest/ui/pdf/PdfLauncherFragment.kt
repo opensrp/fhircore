@@ -129,6 +129,6 @@ class PdfLauncherFragment : DialogFragment() {
         .show(appCompatActivity.supportFragmentManager, PdfLauncherFragment::class.java.simpleName)
     }
 
-     @VisibleForTesting const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
+    @VisibleForTesting const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
   }
 }

@@ -19,5 +19,4 @@ package org.smartregister.fhircore.quest.app.fakes
 import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
-class HiltTestActivity : AppCompatActivity()
+@AndroidEntryPoint class HiltTestActivity : AppCompatActivity()
