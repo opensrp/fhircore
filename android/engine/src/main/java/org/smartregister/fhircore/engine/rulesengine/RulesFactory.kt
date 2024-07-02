@@ -23,6 +23,7 @@ import com.google.android.fhir.search.Order
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
+import com.jayway.jsonpath.PathNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -587,15 +588,15 @@ constructor(
     fun updateResource(
       resource: Resource?,
       path: String?,
-      value: Any,
-      purgeAffectedResources: Boolean = true,
-      createLocalChangeEntitiesAfterPurge: Boolean = false
+      value: Any?,
+      purgeAffectedResources: Boolean = false,
+      createLocalChangeEntitiesAfterPurge: Boolean = true
     ) {
       if (resource == null || path.isNullOrEmpty()) return
 
       val jsonParse = JsonPath.using(conf).parse(resource.encodeResourceToString())
 
-      val updatedResourceDocument =
+      val updatedResourceDocument = try {
         jsonParse.apply {
           // Expression stars with '$' (JSONPath) or ResourceType like in FHIRPath
           if (path.startsWith("\$") && value != null) {
@@ -611,7 +612,16 @@ constructor(
               value,
             )
           }
+
+          if (resource.id.startsWith("#")) {
+            val idPath = "\$.id"
+            set(idPath, resource.id.replace("#", ""))
+          }
         }
+      } catch (e: PathNotFoundException) {
+        Timber.e(e, "Path $path not found")
+        jsonParse
+      }
 
       val resourceDefinition: Class<out IBaseResource>? =
         FhirContext.forR4Cached().getResourceDefinition(resource).implementingClass
