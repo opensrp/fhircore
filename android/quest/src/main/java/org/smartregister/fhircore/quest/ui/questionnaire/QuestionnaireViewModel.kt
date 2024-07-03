@@ -154,34 +154,37 @@ constructor(
    * initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
    * [QuestionnaireConfig.uniqueIdAssignment] properties.
    */
-  private suspend fun Questionnaire.prepopulateWithComputeConfigValues(
-    config: QuestionnaireConfig,
+  private suspend fun Questionnaire.prepopulateWithComputedConfigValues(
+    questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>?,
   ) {
-    require(config.id.isNotBlank())
+    require(questionnaireConfig.id.isNotBlank())
 
     // Compute questionnaire config rules and add extra questionnaire params to action parameters
     val questionnaireComputedValues =
-      config.configRules?.let {
+      questionnaireConfig.configRules?.let {
         resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
       } ?: emptyMap()
 
     val allActionParameters =
       actionParameters?.plus(
-        config.extraParams?.map { it.interpolate(questionnaireComputedValues) } ?: emptyList(),
+        questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
+          ?: emptyList(),
       )
 
-    if (config.isReadOnly() || config.isEditable()) {
+    if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
       item.prepareQuestionsForReadingOrEditing(
-        readOnly = config.isReadOnly(),
+        readOnly = questionnaireConfig.isReadOnly(),
         readOnlyLinkIds =
-          config.readOnlyLinkIds
-            ?: config.linkIds?.filter { it.type == LinkIdType.READ_ONLY }?.map { it.linkId },
+          questionnaireConfig.readOnlyLinkIds
+            ?: questionnaireConfig.linkIds
+              ?.filter { it.type == LinkIdType.READ_ONLY }
+              ?.map { it.linkId },
       )
     }
 
-    if (config.isEditable()) {
-      item.prepareQuestionsForEditing(readOnlyLinkIds = config.readOnlyLinkIds)
+    if (questionnaireConfig.isEditable()) {
+      item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
     }
 
     // Pre-populate questionnaire items with configured values
@@ -192,15 +195,15 @@ constructor(
       }
 
     // Set barcode to the configured linkId default: "patient-barcode"
-    if (!config.resourceIdentifier.isNullOrEmpty()) {
-      (config.barcodeLinkId
-          ?: config.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
+    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
+      (questionnaireConfig.barcodeLinkId
+          ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
         ?.let { barcodeLinkId ->
           find(barcodeLinkId)?.apply {
             initial =
               mutableListOf(
                 Questionnaire.QuestionnaireItemInitialComponent()
-                  .setValue(StringType(config.resourceIdentifier)),
+                  .setValue(StringType(questionnaireConfig.resourceIdentifier)),
               ) // TODO should this be resource identifier or OpenSrp unique ID?
             readOnly = true
           }
@@ -208,14 +211,14 @@ constructor(
     }
 
     // Set configured OpenSRPId on Questionnaire
-    config.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
+    questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
       find(uniqueIdAssignmentConfig.linkId)?.apply {
         if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
 
         // Extract ID from a Group, should be modified in future to support other resources
         val uniqueIdResource =
           defaultRepository.retrieveUniqueIdAssignmentResource(
-            config.uniqueIdAssignment,
+            questionnaireConfig.uniqueIdAssignment,
             questionnaireComputedValues,
           )
 
@@ -1101,7 +1104,7 @@ constructor(
       launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
     )
 
-    questionnaire.prepopulateWithComputeConfigValues(questionnaireConfig, actionParameters)
+    questionnaire.prepopulateWithComputedConfigValues(questionnaireConfig, actionParameters)
 
     // Populate questionnaire with latest QuestionnaireResponse
     val questionnaireResponse =
