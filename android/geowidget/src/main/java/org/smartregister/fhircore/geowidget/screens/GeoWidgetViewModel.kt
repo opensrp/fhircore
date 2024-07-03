@@ -16,11 +16,11 @@
 
 package org.smartregister.fhircore.geowidget.screens
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.LinkedList
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.ServicePointType
@@ -29,7 +29,7 @@ import org.smartregister.fhircore.geowidget.model.ServicePointType
 class GeoWidgetViewModel @Inject constructor(val dispatcherProvider: DispatcherProvider) :
   ViewModel() {
 
-  val features = MutableStateFlow<List<GeoJsonFeature>>(LinkedList())
+  val features = MutableLiveData<List<GeoJsonFeature>>(LinkedList())
 
   fun getServicePointKeyToType(): Map<String, ServicePointType> {
     val map: MutableMap<String, ServicePointType> = HashMap()

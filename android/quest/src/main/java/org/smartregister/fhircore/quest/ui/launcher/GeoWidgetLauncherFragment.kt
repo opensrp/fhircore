@@ -168,7 +168,7 @@ class GeoWidgetLauncherFragment : Fragment() {
                         searchText = searchText,
                       )
                     if (geoJsonFeatures.isNotEmpty()) {
-                      geoWidgetViewModel.features.emit(geoJsonFeatures)
+                      geoWidgetViewModel.features.postValue(geoJsonFeatures)
                     } else {
                       geoWidgetLauncherViewModel.emitSnackBarState(
                         SnackBarMessageConfig(
@@ -191,21 +191,24 @@ class GeoWidgetLauncherFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     showSetLocationDialog()
     lifecycleScope.launch(dispatcherProvider.io()) {
-      val geoJsonFeatures =
-        geoWidgetLauncherViewModel.retrieveLocations(
-          geoWidgetConfig = geoWidgetConfiguration,
-          searchText = searchViewModel.searchText.value,
-        )
-      if (geoJsonFeatures.isNotEmpty()) {
-        geoWidgetViewModel.features.emit(geoJsonFeatures)
-      } else {
-        // TODO Show dialog for location selection
+      // Retrieve if searchText is null; filter will be triggered automatically if text is not empty
+      if (searchViewModel.searchText.value.isEmpty()) {
+        val geoJsonFeatures =
+          geoWidgetLauncherViewModel.retrieveLocations(
+            geoWidgetConfig = geoWidgetConfiguration,
+            searchText = searchViewModel.searchText.value,
+          )
+        if (geoJsonFeatures.isNotEmpty()) {
+          geoWidgetViewModel.features.postValue(geoJsonFeatures)
+        } else {
+          // TODO Show dialog for location selection
+        }
       }
     }
 
     setOnQuestionnaireSubmissionListener {
       lifecycleScope.launch {
-        geoWidgetViewModel.features.emit(geoWidgetViewModel.features.value.plus(it))
+        geoWidgetViewModel.features.postValue(geoWidgetViewModel.features.value?.plus(it))
       }
     }
   }

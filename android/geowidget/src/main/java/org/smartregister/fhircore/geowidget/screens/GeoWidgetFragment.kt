@@ -133,7 +133,7 @@ class GeoWidgetFragment : Fragment() {
 
   private fun setupMapFeatures() {
     viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetViewModel.features.collect { result ->
+      geoWidgetViewModel.features.observe(viewLifecycleOwner) { result ->
         zoomToLocationsOnMap(result.map { it.toFeature() })
       }
     }
@@ -142,7 +142,9 @@ class GeoWidgetFragment : Fragment() {
   private fun setupViews(): LinearLayout {
     mapView = setUpMapView()
     featureCollection =
-      FeatureCollection.fromFeatures(geoWidgetViewModel.features.value.map { it.toFeature() })
+      FeatureCollection.fromFeatures(
+        geoWidgetViewModel.features.value?.map { it.toFeature() } ?: listOf(),
+      )
     return LinearLayout(requireContext()).apply {
       orientation = LinearLayout.VERTICAL
       addView(mapView)
