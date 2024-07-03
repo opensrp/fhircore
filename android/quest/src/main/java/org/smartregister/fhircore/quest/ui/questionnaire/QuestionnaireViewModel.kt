@@ -154,7 +154,8 @@ constructor(
    * initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
    * [QuestionnaireConfig.uniqueIdAssignment] properties.
    */
-  private suspend fun Questionnaire.prepopulateWithComputedConfigValues(
+  private suspend fun prepopulateQuestionnaireWithComputedConfigValues(
+    questionnaire: Questionnaire,
     questionnaireConfig: QuestionnaireConfig,
     actionParameters: List<ActionParameter>?,
   ) {
@@ -173,7 +174,7 @@ constructor(
       )
 
     if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-      item.prepareQuestionsForReadingOrEditing(
+      questionnaire.item.prepareQuestionsForReadingOrEditing(
         readOnly = questionnaireConfig.isReadOnly(),
         readOnlyLinkIds =
           questionnaireConfig.readOnlyLinkIds
@@ -184,14 +185,16 @@ constructor(
     }
 
     if (questionnaireConfig.isEditable()) {
-      item.prepareQuestionsForEditing(readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds)
+      questionnaire.item.prepareQuestionsForEditing(
+        readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
+      )
     }
 
     // Pre-populate questionnaire items with configured values
     allActionParameters
       ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
       ?.let { actionParam ->
-        item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
+        questionnaire.item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
       }
 
     // Set barcode to the configured linkId default: "patient-barcode"
@@ -199,7 +202,7 @@ constructor(
       (questionnaireConfig.barcodeLinkId
           ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
         ?.let { barcodeLinkId ->
-          find(barcodeLinkId)?.apply {
+          questionnaire.find(barcodeLinkId)?.apply {
             initial =
               mutableListOf(
                 Questionnaire.QuestionnaireItemInitialComponent()
@@ -212,7 +215,7 @@ constructor(
 
     // Set configured OpenSRPId on Questionnaire
     questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
-      find(uniqueIdAssignmentConfig.linkId)?.apply {
+      questionnaire.find(uniqueIdAssignmentConfig.linkId)?.apply {
         if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
 
         // Extract ID from a Group, should be modified in future to support other resources
@@ -1104,7 +1107,11 @@ constructor(
       launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
     )
 
-    questionnaire.prepopulateWithComputedConfigValues(questionnaireConfig, actionParameters)
+    prepopulateQuestionnaireWithComputedConfigValues(
+      questionnaire,
+      questionnaireConfig,
+      actionParameters,
+    )
 
     // Populate questionnaire with latest QuestionnaireResponse
     val questionnaireResponse =
