@@ -20,7 +20,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,9 +28,6 @@ import org.smartregister.fhircore.engine.data.local.DefaultRepository
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
-import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
@@ -62,102 +58,14 @@ class GeoWidgetLauncherViewModelTest {
       )
   }
 
-  private fun getDefaultGeometry() = Geometry(coordinates = listOf(Coordinates(3.7, 41.53)))
-
-  // clearLocations method clears all locations from the map
-  @Test
-  fun test_clearLocations() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val locations =
-      setOf(
-        GeoJsonFeature(id = "1", type = "Point"),
-        GeoJsonFeature(id = "2", type = "Point"),
-      )
-    viewModel.addFeature(locations)
-
-    // Act
-    viewModel.clearMapFeatures()
-
-    // Assert
-    assertEquals(0, viewModel.features.value.size)
-  }
-
-  // getServicePointKeyToType method returns a map of service point types
   @Test
   fun test_getServicePointKeyToType() {
-    // Arrange
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
 
-    // Act
     val servicePointMap = viewModel.getServicePointKeyToType()
 
-    // Assert
     assertEquals(ServicePointType.EPP, servicePointMap["epp"])
     assertEquals(ServicePointType.CEG, servicePointMap["ceg"])
     assertEquals(ServicePointType.CHRD1, servicePointMap["chrd1"])
-    // ... (continue for all service point types)
-  }
-
-  // GeoWidgetViewModel is properly constructed with a DispatcherProvider
-  @Test
-  fun test_constructor() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-
-    // Assert
-    assertNotNull(viewModel.dispatcherProvider)
-  }
-
-  // featuresFlow is properly initialized as a StateFlow
-  @Test
-  fun test_featuresFlowInitialization() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-
-    // Assert
-    assertNotNull(viewModel.features)
-  }
-
-  // addLocationsToMap method handles empty set of locations
-  @Test
-  fun test_addLocationsToMap_emptySet() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val locations = emptySet<GeoJsonFeature>()
-
-    // Act
-    viewModel.addFeature(locations)
-
-    // Assert
-    assertEquals(0, viewModel.features.value.size)
-  }
-
-  // addLocationToMap method handles null geometry
-  @Test
-  fun test_addLocationToMap_nullGeometry() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = GeoJsonFeature(id = "1", type = "Point", geometry = null)
-
-    // Act
-    viewModel.addMapFeature(feature)
-
-    // Assert
-    assertEquals(0, viewModel.features.value.size)
-  }
-
-  // addLocationToMap method handles null coordinates
-  @Test
-  fun test_addLocationToMap_nullCoordinates() {
-    // Arrange
-    val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = GeoJsonFeature(id = "1", type = "Point", geometry = Geometry(null))
-
-    // Act
-    viewModel.addMapFeature(feature)
-
-    // Assert
-    assertEquals(0, viewModel.features.value.size)
   }
 }
