@@ -30,7 +30,7 @@ import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.geowidget.model.Coordinates
-import org.smartregister.fhircore.geowidget.model.Feature
+import org.smartregister.fhircore.geowidget.model.GeoJsonFeature
 import org.smartregister.fhircore.geowidget.model.Geometry
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
@@ -71,16 +71,16 @@ class GeoWidgetLauncherViewModelTest {
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
     val locations =
       setOf(
-        Feature(id = "1", type = "Point"),
-        Feature(id = "2", type = "Point"),
+        GeoJsonFeature(id = "1", type = "Point"),
+        GeoJsonFeature(id = "2", type = "Point"),
       )
-    viewModel.addLocationsToMap(locations)
+    viewModel.addFeature(locations)
 
     // Act
-    viewModel.clearLocations()
+    viewModel.clearMapFeatures()
 
     // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+    assertEquals(0, viewModel.features.value.size)
   }
 
   // getServicePointKeyToType method returns a map of service point types
@@ -116,7 +116,7 @@ class GeoWidgetLauncherViewModelTest {
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
 
     // Assert
-    assertNotNull(viewModel.featuresFlow)
+    assertNotNull(viewModel.features)
   }
 
   // addLocationsToMap method handles empty set of locations
@@ -124,13 +124,13 @@ class GeoWidgetLauncherViewModelTest {
   fun test_addLocationsToMap_emptySet() {
     // Arrange
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val locations = emptySet<Feature>()
+    val locations = emptySet<GeoJsonFeature>()
 
     // Act
-    viewModel.addLocationsToMap(locations)
+    viewModel.addFeature(locations)
 
     // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+    assertEquals(0, viewModel.features.value.size)
   }
 
   // addLocationToMap method handles null geometry
@@ -138,13 +138,13 @@ class GeoWidgetLauncherViewModelTest {
   fun test_addLocationToMap_nullGeometry() {
     // Arrange
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = Feature(id = "1", type = "Point", geometry = null)
+    val feature = GeoJsonFeature(id = "1", type = "Point", geometry = null)
 
     // Act
-    viewModel.addLocationToMap(feature)
+    viewModel.addMapFeature(feature)
 
     // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+    assertEquals(0, viewModel.features.value.size)
   }
 
   // addLocationToMap method handles null coordinates
@@ -152,12 +152,12 @@ class GeoWidgetLauncherViewModelTest {
   fun test_addLocationToMap_nullCoordinates() {
     // Arrange
     val viewModel = GeoWidgetViewModel(mockDispatcherProvider)
-    val feature = Feature(id = "1", type = "Point", geometry = Geometry(null))
+    val feature = GeoJsonFeature(id = "1", type = "Point", geometry = Geometry(null))
 
     // Act
-    viewModel.addLocationToMap(feature)
+    viewModel.addMapFeature(feature)
 
     // Assert
-    assertEquals(0, viewModel.featuresFlow.value.size)
+    assertEquals(0, viewModel.features.value.size)
   }
 }
