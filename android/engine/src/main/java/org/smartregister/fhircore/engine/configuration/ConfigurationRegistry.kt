@@ -453,15 +453,6 @@ constructor(
     }
   }
 
-  fun fetchURLForCustomResource(): List<String> {
-    val syncConfig = retrieveResourceConfiguration<Parameters>(ConfigType.Sync)
-    syncConfig.parameter
-      .map { it.resource as SearchParameter }
-      .filter { it.type == Enumerations.SearchParamType.SPECIAL }
-      .forEach { sp -> }
-    return emptyList()
-  }
-
   suspend fun fetchRemoteImplementationGuideByAppId(
     appId: String?,
     appVersionCode: Int?,
