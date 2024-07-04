@@ -28,9 +28,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v1
@@ -52,15 +50,15 @@ jobs:
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
-      - name: Setup Gradle cache
-        uses: gradle/gradle-build-action@v2
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Spotless check engine module
         run: ./gradlew -PlocalPropertiesFile=local.properties :engine:spotlessCheck :engine:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
@@ -108,9 +106,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v1
@@ -132,15 +128,15 @@ jobs:
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
-      - name: Setup Gradle cache
-        uses: gradle/gradle-build-action@v2
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Spotless check geowidget module
         run: ./gradlew -PlocalPropertiesFile=local.properties :geowidget:spotlessCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
@@ -187,9 +183,7 @@ jobs:
         with:
           access_token: ${{ github.token }}
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v1
@@ -211,15 +205,15 @@ jobs:
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties && cat ~/.gradle/gradle.properties
 
-      - name: Setup Gradle cache
-        uses: gradle/gradle-build-action@v2
+      - name: Gradle cache
+        uses: gradle/actions/setup-gradle@v3
  
       - name: Spotless check quest application
         run: ./gradlew -PlocalPropertiesFile=local.properties :quest:spotlessCheck --stacktrace :quest:ktlintCheck --stacktrace
         working-directory: android 
       
       - name: Load AVD cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: avd-cache
         with:
           path: |
@@ -245,11 +239,11 @@ jobs:
           working-directory: android
           api-level: ${{ matrix.api-level }}
           arch: x86_64
-          force-avd-creation: true
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
-          # ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebugAndroidTest --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/opensrp/debug/quest-opensrp-debug-androidTest.apk && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebug --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w -e package org.smartregister.fhircore.quest.ui.profile -e coverage "true" org.smartregister.opensrp.test/org.smartregister.fhircore.quest.QuestTestRunner && /Users/runner/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp cat "/data/user/0/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
+          //script: ./gradlew clean  -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace -Pandroid.testInstrumentationRunnerArguments.notPackage=org.smartregister.fhircore.quest.performance
+          script: ./gradlew -PlocalPropertiesFile=local.properties :quest:clean && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebugAndroidTest --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/androidTest/opensrp/debug/quest-opensrp-debug-androidTest.apk && ./gradlew -PlocalPropertiesFile=local.properties :quest:assembleOpensrpDebug --stacktrace && /Users/runner/Library/Android/sdk/platform-tools/adb install quest/build/outputs/apk/opensrp/debug/quest-opensrp-debug.apk && /Users/runner/Library/Android/sdk/platform-tools/adb shell am instrument -w -e package org.smartregister.fhircore.quest.ui.profile -e coverage "true" org.smartregister.opensrp.test/org.smartregister.fhircore.quest.QuestTestRunner && /Users/runner/Library/Android/sdk/platform-tools/adb shell run-as org.smartregister.opensrp cat "/data/user/0/org.smartregister.opensrp/files/coverage.ec" > quest/coverage.ec && ./gradlew -PlocalPropertiesFile=local.properties :quest:fhircoreJacocoReport --stacktrace
 
       - name: Upload Quest module test coverage report to Codecov
         if: matrix.api-level == 30 # Only upload coverage on API level 30
