@@ -219,7 +219,7 @@ constructor(
         if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
 
         // Extract ID from a Group, should be modified in future to support other resources
-        val uniqueIdResource =
+        uniqueIdResource =
           defaultRepository.retrieveUniqueIdAssignmentResource(
             questionnaireConfig.uniqueIdAssignment,
             questionnaireComputedValues,
