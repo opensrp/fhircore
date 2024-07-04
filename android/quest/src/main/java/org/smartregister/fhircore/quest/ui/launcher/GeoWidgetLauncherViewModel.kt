@@ -26,7 +26,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import org.hl7.fhir.r4.model.Enumerations
 import org.hl7.fhir.r4.model.IdType
@@ -82,7 +81,7 @@ constructor(
           ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
           params = emptyMap(),
         )
-      val servicePointProperties = mutableMapOf<String, JsonElement>()
+      val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
       geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
         servicePointProperties[key] =
           JsonPrimitive(value.interpolate(resourceData.computedValuesMap))

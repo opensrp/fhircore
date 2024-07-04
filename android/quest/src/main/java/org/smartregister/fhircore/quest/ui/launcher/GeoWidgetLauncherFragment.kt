@@ -247,7 +247,11 @@ class GeoWidgetLauncherFragment : Fragment() {
           ->
           SummaryBottomSheetFragment(
               geoWidgetConfiguration.summaryBottomSheetConfig!!,
-              ResourceData(feature.id, ResourceType.Location, feature.properties),
+              ResourceData(
+                baseResourceId = feature.id,
+                baseResourceType = ResourceType.Location,
+                computedValuesMap = feature.properties.mapValues { it.value.content },
+              ),
             )
             .run { show(parentFragmentManager, SummaryBottomSheetFragment.TAG) }
         }

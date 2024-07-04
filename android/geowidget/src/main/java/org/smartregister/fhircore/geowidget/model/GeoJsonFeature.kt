@@ -18,7 +18,7 @@ package org.smartregister.fhircore.geowidget.model
 
 import com.mapbox.geojson.Feature
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 import org.smartregister.fhircore.engine.util.extension.encodeJson
 
 const val TYPE = "type"
@@ -29,7 +29,7 @@ const val FEATURE = "Feature"
 data class GeoJsonFeature(
   val geometry: Geometry? = null,
   val id: String = "",
-  val properties: Map<String, JsonElement> = emptyMap(),
+  val properties: Map<String, JsonPrimitive> = emptyMap(),
   val type: String = FEATURE,
   val serverVersion: Int = 0,
 ) : java.io.Serializable {
