@@ -23,6 +23,8 @@ project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
     html.required.set(true)
   }
 
+  val includePath = "**/org/smartregister/fhircore/*"
+
   val excludes =
     listOf(
       // Android
@@ -95,9 +97,12 @@ project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
   val moduleVariant = if(isApplication) "${actualProjectName}Debug" else "debug"
   val javaDebugTree =
     fileTree(baseDir = "${project.layout.buildDirectory.get()}/intermediates/javac/${moduleVariant}/classes/")
+      .include(includePath)
       .exclude(excludes)
   val kotlinDebugTree =
-    fileTree(baseDir = "${project.layout.buildDirectory.get()}/tmp/kotlin-classes/${moduleVariant}").exclude(excludes)
+    fileTree(baseDir = "${project.layout.buildDirectory.get()}/tmp/kotlin-classes/${moduleVariant}")
+      .include(includePath)
+      .exclude(excludes)
   val mainSrc = "${project.projectDir}/src/main/java"
   val kotlinSrc = "${project.projectDir}/src/main/kotlin"
 
