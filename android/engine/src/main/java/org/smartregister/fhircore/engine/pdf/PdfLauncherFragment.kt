@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Google LLC
+ * Copyright 2021-2024 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,28 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.jetbrains.annotations.VisibleForTesting
 import org.smartregister.fhircore.engine.R
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.util.extension.decodeJson
 import org.smartregister.fhircore.engine.util.extension.extractLogicalIdUuid
+import org.smartregister.fhircore.quest.ui.pdf.PdfGenerator
 
+/**
+ * A fragment for generating and displaying a PDF based on a questionnaire response.
+ *
+ * This fragment uses the provided [QuestionnaireConfig] to retrieve a questionnaire response,
+ * populate an HTML template with the response data, and generate a PDF.
+ */
 @AndroidEntryPoint
 class PdfLauncherFragment : DialogFragment() {
 
   private val pdfLauncherViewModel by viewModels<PdfLauncherViewModel>()
+  lateinit var pdfGenerator: PdfGenerator
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    if (!this::pdfGenerator.isInitialized) pdfGenerator = PdfGenerator(requireContext())
 
     val questionnaireConfig = getQuestionnaireConfig()
 
@@ -50,9 +60,12 @@ class PdfLauncherFragment : DialogFragment() {
     val htmlTitle = questionnaireConfig.htmlTitle ?: getString(R.string.default_html_title)
 
     lifecycleScope.launch(Dispatchers.IO) {
-      val questionnaireResponse = pdfLauncherViewModel.retrieveQuestionnaireResponse(
-        questionnaireId, subjectId, subjectType
-      )
+      val questionnaireResponse =
+        pdfLauncherViewModel.retrieveQuestionnaireResponse(
+          questionnaireId,
+          subjectId,
+          subjectType,
+        )
       val htmlBinary = pdfLauncherViewModel.retrieveBinary(htmlBinaryId)
       generatePdf(questionnaireResponse, htmlBinary, htmlTitle)
     }
@@ -65,8 +78,9 @@ class PdfLauncherFragment : DialogFragment() {
    * @throws IllegalArgumentException if the questionnaire config is not found in arguments.
    */
   private fun getQuestionnaireConfig(): QuestionnaireConfig {
-    val jsonConfig = requireArguments().getString(EXTRA_QUESTIONNAIRE_CONFIG_KEY)
-      ?: throw IllegalArgumentException("Questionnaire config not found in arguments")
+    val jsonConfig =
+      requireArguments().getString(EXTRA_QUESTIONNAIRE_CONFIG_KEY)
+        ?: throw IllegalArgumentException("Questionnaire config not found in arguments")
     return jsonConfig.decodeJson()
   }
 
@@ -80,7 +94,7 @@ class PdfLauncherFragment : DialogFragment() {
   private suspend fun generatePdf(
     questionnaireResponse: QuestionnaireResponse?,
     htmlBinary: Binary?,
-    htmlTitle: String
+    htmlTitle: String,
   ) {
     if (questionnaireResponse == null || htmlBinary == null) {
       dismiss()
@@ -91,7 +105,7 @@ class PdfLauncherFragment : DialogFragment() {
     val populatedHtml = HtmlPopulator(questionnaireResponse).populateHtml(htmlContent)
 
     withContext(Dispatchers.Main) {
-      PdfGenerator().generatePdfWithHtml(requireContext(), populatedHtml, htmlTitle) { dismiss() }
+      pdfGenerator.generatePdfWithHtml(populatedHtml, htmlTitle) { dismiss() }
     }
   }
 
@@ -100,19 +114,20 @@ class PdfLauncherFragment : DialogFragment() {
     /**
      * Launches the PdfLauncherFragment.
      *
-     * This method creates a new instance of PdfLauncherFragment, sets the provided
-     * questionnaire configuration JSON as an argument, and displays the fragment.
+     * This method creates a new instance of PdfLauncherFragment, sets the provided questionnaire
+     * configuration JSON as an argument, and displays the fragment.
      *
      * @param appCompatActivity The activity from which the fragment is launched.
      * @param questionnaireConfigJson The JSON string representing the questionnaire configuration.
      */
     fun launch(appCompatActivity: AppCompatActivity, questionnaireConfigJson: String) {
       PdfLauncherFragment()
-        .apply { arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson) }
+        .apply {
+          arguments = bundleOf(EXTRA_QUESTIONNAIRE_CONFIG_KEY to questionnaireConfigJson)
+        }
         .show(appCompatActivity.supportFragmentManager, PdfLauncherFragment::class.java.simpleName)
     }
 
-    private const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
+    @VisibleForTesting const val EXTRA_QUESTIONNAIRE_CONFIG_KEY = "questionnaire_config"
   }
 }
-
