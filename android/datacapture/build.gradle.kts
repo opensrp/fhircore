@@ -36,6 +36,16 @@ android {
   buildFeatures { viewBinding = true }
 
   buildTypes {
+    
+    create("debugNonProxy") {
+      initWith(getByName("debug"))
+      buildConfigField(
+        "boolean",
+        "IS_NON_PROXY_APK",
+        "true",
+      )
+    }
+
     getByName("release") {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
