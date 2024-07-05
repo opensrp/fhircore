@@ -57,7 +57,7 @@ class PdfLauncherFragment : DialogFragment() {
     val subjectId = questionnaireConfig.resourceIdentifier!!.extractLogicalIdUuid()
     val subjectType = questionnaireConfig.resourceType!!
     val htmlBinaryId = questionnaireConfig.htmlBinaryId!!.extractLogicalIdUuid()
-    val htmlTitle = questionnaireConfig.htmlTitle ?: getString(R.string.default_html_title)
+    var htmlTitle = questionnaireConfig.htmlTitle ?: getString(R.string.default_html_title)
 
     lifecycleScope.launch(Dispatchers.IO) {
       val questionnaireResponse =
@@ -67,6 +67,10 @@ class PdfLauncherFragment : DialogFragment() {
           subjectType,
         )
       val htmlBinary = pdfLauncherViewModel.retrieveBinary(htmlBinaryId)
+
+      val patient = pdfLauncherViewModel.retrievePatient(subjectId)
+      if (patient != null) htmlTitle = " - $htmlTitle ${patient.nameFirstRep.given} ${patient.nameFirstRep.family}"
+
       generatePdf(questionnaireResponse, htmlBinary, htmlTitle)
     }
   }

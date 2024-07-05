@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModel
 import com.google.android.fhir.search.Search
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.hl7.fhir.r4.model.Binary
+import org.hl7.fhir.r4.model.Patient
 import javax.inject.Inject
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.ResourceType
@@ -80,5 +81,15 @@ constructor(
    */
   suspend fun retrieveBinary(binaryId: String): Binary? {
     return defaultRepository.loadResource<Binary>(binaryId)
+  }
+
+  /**
+   * Retrieve the Patient resource for the given patient ID.
+   *
+   * @param patientId The ID of the binary resource.
+   * @return The Patient resource if found, otherwise null.
+   */
+  suspend fun retrievePatient(patientId: String): Patient? {
+    return defaultRepository.loadResource<Patient>(patientId)
   }
 }
