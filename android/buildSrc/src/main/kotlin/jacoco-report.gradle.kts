@@ -94,7 +94,7 @@ project.tasks.create("fhircoreJacocoReport", JacocoReport::class.java) {
 
   val moduleVariant = if(isApplication) "${actualProjectName}Debug" else "debug"
   val javaDebugTree =
-    fileTree(baseDir = "${project.layout.buildDirectory.get()}/intermediates/javac/${moduleVariant}/classes/")
+    fileTree(baseDir = "${project.layout.buildDirectory.get()}/intermediates/javac/${moduleVariant}/compile${moduleVariant.capitalize()}JavaWithJavac/classes/")
       .exclude(excludes)
   val kotlinDebugTree =
     fileTree(baseDir = "${project.layout.buildDirectory.get()}/tmp/kotlin-classes/${moduleVariant}").exclude(excludes)
