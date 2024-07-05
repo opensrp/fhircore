@@ -64,9 +64,9 @@ constructor(
   private val _locationsFlow: MutableStateFlow<Set<Feature>> = MutableStateFlow(setOf())
   val locationsFlow: StateFlow<Set<Feature>> = _locationsFlow
 
-  private val _locationDialog = MutableLiveData<String>()
-  val locationDialog: LiveData<String>
-    get() = _locationDialog
+  private val _noLocationFoundDialog = MutableLiveData<Boolean>()
+  val noLocationFoundDialog: LiveData<Boolean>
+    get() = _noLocationFoundDialog
 
   // TODO: use List or Linkage resource to connect Location with Group/Patient/etc
   private fun retrieveLocations(geoWidgetConfig: GeoWidgetConfiguration) {
@@ -82,40 +82,44 @@ constructor(
           filterByRelatedEntityLocationMetaTag = false,
         )
 
-      repositoryResourceDataList.forEach { repositoryResourceData ->
-        val location = repositoryResourceData.resource as Location
-        val resourceData =
-          resourceDataRulesExecutor.processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
-            params = emptyMap(),
-          )
-        val servicePointProperties = mutableMapOf<String, Any>()
-        geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
-          servicePointProperties[key] = value.interpolate(resourceData.computedValuesMap)
-        }
-        if (
-          location.hasPosition() &&
+      if (repositoryResourceDataList.isNotEmpty()) {
+        repositoryResourceDataList.forEach { repositoryResourceData ->
+          val location = repositoryResourceData.resource as Location
+          val resourceData =
+            resourceDataRulesExecutor.processResourceData(
+              repositoryResourceData = repositoryResourceData,
+              ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
+              params = emptyMap(),
+            )
+          val servicePointProperties = mutableMapOf<String, Any>()
+          geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+            servicePointProperties[key] = value.interpolate(resourceData.computedValuesMap)
+          }
+          if (
+            location.hasPosition() &&
             location.position.hasLatitude() &&
             location.position.hasLongitude()
-        ) {
-          val feature =
-            Feature(
-              id = location.idElement.idPart,
-              geometry =
+          ) {
+            val feature =
+              Feature(
+                id = location.idElement.idPart,
+                geometry =
                 Geometry(
                   coordinates =
-                    arrayListOf(
-                      Coordinates(
-                        latitude = location.position.latitude.toDouble(),
-                        longitude = location.position.longitude.toDouble(),
-                      ),
+                  arrayListOf(
+                    Coordinates(
+                      latitude = location.position.latitude.toDouble(),
+                      longitude = location.position.longitude.toDouble(),
                     ),
+                  ),
                 ),
-              properties = servicePointProperties,
-            )
-          addLocationToFlow(feature)
+                properties = servicePointProperties,
+              )
+            addLocationToFlow(feature)
+          }
         }
+      } else {
+        _noLocationFoundDialog.postValue(true)
       }
     }
   }
