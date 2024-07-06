@@ -59,12 +59,10 @@ import org.hl7.fhir.r4.model.QuestionnaireResponse.QuestionnaireResponseItemComp
 import org.hl7.fhir.r4.model.RelatedPerson
 import org.hl7.fhir.r4.model.Resource
 import org.hl7.fhir.r4.model.ResourceType
-import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.engine.BuildConfig
 import org.smartregister.fhircore.engine.configuration.ConfigType
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.GroupResourceConfig
-import org.smartregister.fhircore.engine.configuration.LinkIdType
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.app.ApplicationConfiguration
 import org.smartregister.fhircore.engine.configuration.app.CodingSystemUsage
@@ -78,7 +76,6 @@ import org.smartregister.fhircore.engine.task.FhirCarePlanGenerator
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
-import org.smartregister.fhircore.engine.util.extension.DEFAULT_PLACEHOLDER_PREFIX
 import org.smartregister.fhircore.engine.util.extension.appendOrganizationInfo
 import org.smartregister.fhircore.engine.util.extension.appendPractitionerInfo
 import org.smartregister.fhircore.engine.util.extension.appendRelatedEntityLocation
@@ -92,9 +89,7 @@ import org.smartregister.fhircore.engine.util.extension.find
 import org.smartregister.fhircore.engine.util.extension.generateMissingId
 import org.smartregister.fhircore.engine.util.extension.isIn
 import org.smartregister.fhircore.engine.util.extension.packRepeatedGroups
-import org.smartregister.fhircore.engine.util.extension.prePopulateInitialValues
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForEditing
-import org.smartregister.fhircore.engine.util.extension.prepareQuestionsForReadingOrEditing
+import org.smartregister.fhircore.engine.util.extension.prepopulateWithComputedConfigValues
 import org.smartregister.fhircore.engine.util.extension.showToast
 import org.smartregister.fhircore.engine.util.extension.updateLastUpdated
 import org.smartregister.fhircore.engine.util.fhirpath.FhirPathDataExtractor
@@ -147,98 +142,6 @@ constructor(
   ): Questionnaire? {
     if (questionnaireConfig.id.isEmpty() || questionnaireConfig.id.isBlank()) return null
     return defaultRepository.loadResource<Questionnaire>(questionnaireConfig.id)
-  }
-
-  /**
-   * Pre-populates questionnaire with computed values from the Rules engine as well as include
-   * initial values set on configured [QuestionnaireConfig.barcodeLinkId] or
-   * [QuestionnaireConfig.uniqueIdAssignment] properties.
-   */
-  private suspend fun prepopulateQuestionnaireWithComputedConfigValues(
-    questionnaire: Questionnaire,
-    questionnaireConfig: QuestionnaireConfig,
-    actionParameters: List<ActionParameter>?,
-  ) {
-    require(questionnaireConfig.id.isNotBlank())
-
-    // Compute questionnaire config rules and add extra questionnaire params to action parameters
-    val questionnaireComputedValues =
-      questionnaireConfig.configRules?.let {
-        resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap())
-      } ?: emptyMap()
-
-    val allActionParameters =
-      actionParameters?.plus(
-        questionnaireConfig.extraParams?.map { it.interpolate(questionnaireComputedValues) }
-          ?: emptyList(),
-      )
-
-    if (questionnaireConfig.isReadOnly() || questionnaireConfig.isEditable()) {
-      questionnaire.item.prepareQuestionsForReadingOrEditing(
-        readOnly = questionnaireConfig.isReadOnly(),
-        readOnlyLinkIds =
-          questionnaireConfig.readOnlyLinkIds
-            ?: questionnaireConfig.linkIds
-              ?.filter { it.type == LinkIdType.READ_ONLY }
-              ?.map { it.linkId },
-      )
-    }
-
-    if (questionnaireConfig.isEditable()) {
-      questionnaire.item.prepareQuestionsForEditing(
-        readOnlyLinkIds = questionnaireConfig.readOnlyLinkIds,
-      )
-    }
-
-    // Pre-populate questionnaire items with configured values
-    allActionParameters
-      ?.filter { (it.paramType == ActionParameterType.PREPOPULATE && it.value.isNotEmpty()) }
-      ?.let { actionParam ->
-        questionnaire.item.prePopulateInitialValues(DEFAULT_PLACEHOLDER_PREFIX, actionParam)
-      }
-
-    // Set barcode to the configured linkId default: "patient-barcode"
-    if (!questionnaireConfig.resourceIdentifier.isNullOrEmpty()) {
-      (questionnaireConfig.barcodeLinkId
-          ?: questionnaireConfig.linkIds?.firstOrNull { it.type == LinkIdType.BARCODE }?.linkId)
-        ?.let { barcodeLinkId ->
-          questionnaire.find(barcodeLinkId)?.apply {
-            initial =
-              mutableListOf(
-                Questionnaire.QuestionnaireItemInitialComponent()
-                  .setValue(StringType(questionnaireConfig.resourceIdentifier)),
-              ) // TODO should this be resource identifier or OpenSrp unique ID?
-            readOnly = true
-          }
-        }
-    }
-
-    // Set configured OpenSRPId on Questionnaire
-    questionnaireConfig.uniqueIdAssignment?.let { uniqueIdAssignmentConfig ->
-      questionnaire.find(uniqueIdAssignmentConfig.linkId)?.apply {
-        if (initial.isNotEmpty() && !initial.first().isEmpty) return@apply
-
-        // Extract ID from a Group, should be modified in future to support other resources
-        uniqueIdResource =
-          defaultRepository.retrieveUniqueIdAssignmentResource(
-            questionnaireConfig.uniqueIdAssignment,
-            questionnaireComputedValues,
-          )
-
-        val extractedId =
-          fhirPathDataExtractor.extractValue(
-            base = uniqueIdResource,
-            expression = uniqueIdAssignmentConfig.idFhirPathExpression,
-          )
-        if (uniqueIdResource != null && extractedId.isNotEmpty()) {
-          initial =
-            mutableListOf(
-              Questionnaire.QuestionnaireItemInitialComponent().setValue(StringType(extractedId)),
-            )
-        }
-        readOnly = extractedId.isNotEmpty() && uniqueIdAssignmentConfig.readOnly
-      }
-    }
   }
 
   /**
@@ -1107,10 +1010,23 @@ constructor(
       launchContexts = launchContextResources.associateBy { it.resourceType.name.lowercase() },
     )
 
-    prepopulateQuestionnaireWithComputedConfigValues(
-      questionnaire,
+    questionnaire.prepopulateWithComputedConfigValues(
       questionnaireConfig,
       actionParameters,
+      { resourceDataRulesExecutor.computeResourceDataRules(it, null, emptyMap()) },
+      { uniqueIdAssignmentConfig, computedValues ->
+        // Extract ID from a Group, should be modified in future to support other resources
+        uniqueIdResource =
+          defaultRepository.retrieveUniqueIdAssignmentResource(
+            uniqueIdAssignmentConfig,
+            computedValues,
+          )
+
+        fhirPathDataExtractor.extractValue(
+          base = uniqueIdResource,
+          expression = uniqueIdAssignmentConfig.idFhirPathExpression,
+        )
+      },
     )
 
     // Populate questionnaire with latest QuestionnaireResponse
