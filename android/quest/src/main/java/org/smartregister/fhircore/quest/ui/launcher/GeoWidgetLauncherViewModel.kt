@@ -73,63 +73,61 @@ constructor(
     val geoJsonFeatures = mutableListOf<GeoJsonFeature>()
     val repositoryResourceDataList = retrieveResources(geoWidgetConfig)
 
-    if (repositoryResourceDataList.isNotEmpty()) {
-      repositoryResourceDataList.forEach { repositoryResourceData ->
-        val location = repositoryResourceData.resource as Location
-        val resourceData =
-          resourceDataRulesExecutor.processResourceData(
-            repositoryResourceData = repositoryResourceData,
-            ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
-            params = emptyMap(),
+    repositoryResourceDataList.forEach { repositoryResourceData ->
+      val location = repositoryResourceData.resource as Location
+      val resourceData =
+        resourceDataRulesExecutor.processResourceData(
+          repositoryResourceData = repositoryResourceData,
+          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
+          params = emptyMap(),
+        )
+      val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
+      geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+        servicePointProperties[key] =
+          JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
+      }
+
+      if (
+        location.hasPosition() &&
+          location.position.hasLatitude() &&
+          location.position.hasLongitude()
+      ) {
+        val feature =
+          GeoJsonFeature(
+            id = location.idElement.idPart,
+            geometry =
+              Geometry(
+                coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
+                listOf(
+                    location.position.longitude.toDouble(),
+                    location.position.latitude.toDouble(),
+                  ),
+              ),
+            properties = servicePointProperties,
           )
-        val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
-        geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
-          servicePointProperties[key] =
-            JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
-        }
 
-        if (
-          location.hasPosition() &&
-            location.position.hasLatitude() &&
-            location.position.hasLongitude()
-        ) {
-          val feature =
-            GeoJsonFeature(
-              id = location.idElement.idPart,
-              geometry =
-                Geometry(
-                  coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
-                  listOf(
-                      location.position.longitude.toDouble(),
-                      location.position.latitude.toDouble(),
-                    ),
-                ),
-              properties = servicePointProperties,
-            )
+        val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
 
-          val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
-
-          if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
-            val addFeature =
-              keys.any { key ->
-                servicePointProperties[key]
-                  .toString()
-                  .contains(other = searchText, ignoreCase = true)
-              }
-            if (addFeature) {
-              geoJsonFeatures.add(feature)
+        if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
+          val addFeature =
+            keys.any { key ->
+              servicePointProperties[key].toString().contains(other = searchText, ignoreCase = true)
             }
-          }
-
-          if (searchText.isNullOrEmpty()) {
+          if (addFeature) {
             geoJsonFeatures.add(feature)
           }
         }
+
+        if (searchText.isNullOrEmpty()) {
+          geoJsonFeatures.add(feature)
+        }
       }
-    } else {
-      _noLocationFoundDialog.postValue(true)
     }
     return geoJsonFeatures
+  }
+
+  fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
+    geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
   }
 
   private suspend fun retrieveResources(

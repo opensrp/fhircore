@@ -204,7 +204,7 @@ class GeoWidgetLauncherFragment : Fragment() {
         if (geoJsonFeatures.isNotEmpty()) {
           geoWidgetViewModel.features.postValue(geoJsonFeatures)
         } else {
-          // TODO Show dialog for location selection
+          geoWidgetLauncherViewModel.showNoLocationDialog(geoWidgetConfiguration)
         }
       }
     }
