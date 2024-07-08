@@ -60,9 +60,9 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
-  private val _locationDialog = MutableLiveData<String>()
-  val locationDialog: LiveData<String>
-    get() = _locationDialog
+  private val _noLocationFoundDialog = MutableLiveData<Boolean>()
+  val noLocationFoundDialog: LiveData<Boolean>
+    get() = _noLocationFoundDialog
 
   private lateinit var repositoryResourceDataList: List<RepositoryResourceData>
 
@@ -73,55 +73,61 @@ constructor(
     val geoJsonFeatures = mutableListOf<GeoJsonFeature>()
     val repositoryResourceDataList = retrieveResources(geoWidgetConfig)
 
-    repositoryResourceDataList.forEach { repositoryResourceData ->
-      val location = repositoryResourceData.resource as Location
-      val resourceData =
-        resourceDataRulesExecutor.processResourceData(
-          repositoryResourceData = repositoryResourceData,
-          ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
-          params = emptyMap(),
-        )
-      val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
-      geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
-        servicePointProperties[key] =
-          JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
-      }
-
-      if (
-        location.hasPosition() &&
-          location.position.hasLatitude() &&
-          location.position.hasLongitude()
-      ) {
-        val feature =
-          GeoJsonFeature(
-            id = location.idElement.idPart,
-            geometry =
-              Geometry(
-                coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
-                listOf(
-                    location.position.longitude.toDouble(),
-                    location.position.latitude.toDouble(),
-                  ),
-              ),
-            properties = servicePointProperties,
+    if (repositoryResourceDataList.isNotEmpty()) {
+      repositoryResourceDataList.forEach { repositoryResourceData ->
+        val location = repositoryResourceData.resource as Location
+        val resourceData =
+          resourceDataRulesExecutor.processResourceData(
+            repositoryResourceData = repositoryResourceData,
+            ruleConfigs = geoWidgetConfig.servicePointConfig?.rules!!,
+            params = emptyMap(),
           )
+        val servicePointProperties = mutableMapOf<String, JsonPrimitive>()
+        geoWidgetConfig.servicePointConfig?.servicePointProperties?.forEach { (key, value) ->
+          servicePointProperties[key] =
+            JsonPrimitive(value.interpolate(resourceData.computedValuesMap))
+        }
 
-        val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
+        if (
+          location.hasPosition() &&
+            location.position.hasLatitude() &&
+            location.position.hasLongitude()
+        ) {
+          val feature =
+            GeoJsonFeature(
+              id = location.idElement.idPart,
+              geometry =
+                Geometry(
+                  coordinates = // MapBox coordinates are represented as Long,Lat (NOT Lat,Long)
+                  listOf(
+                      location.position.longitude.toDouble(),
+                      location.position.latitude.toDouble(),
+                    ),
+                ),
+              properties = servicePointProperties,
+            )
 
-        if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
-          val addFeature =
-            keys.any { key ->
-              servicePointProperties[key].toString().contains(other = searchText, ignoreCase = true)
+          val keys = geoWidgetConfig.topScreenSection?.searchBar?.computedRules
+
+          if (!keys.isNullOrEmpty() && !searchText.isNullOrEmpty()) {
+            val addFeature =
+              keys.any { key ->
+                servicePointProperties[key]
+                  .toString()
+                  .contains(other = searchText, ignoreCase = true)
+              }
+            if (addFeature) {
+              geoJsonFeatures.add(feature)
             }
-          if (addFeature) {
+          }
+
+          if (searchText.isNullOrEmpty()) {
             geoJsonFeatures.add(feature)
           }
         }
-
-        if (searchText.isNullOrEmpty()) {
-          geoJsonFeatures.add(feature)
-        }
       }
+    } else {
+      _noLocationFoundDialog.postValue(true)
     }
     return geoJsonFeatures
   }

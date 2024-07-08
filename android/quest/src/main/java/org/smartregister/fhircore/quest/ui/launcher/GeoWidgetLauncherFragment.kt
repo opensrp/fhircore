@@ -39,6 +39,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -52,6 +53,7 @@ import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfig
 import org.smartregister.fhircore.engine.domain.model.ResourceData
 import org.smartregister.fhircore.engine.domain.model.SnackBarMessageConfig
 import org.smartregister.fhircore.engine.ui.base.AlertDialogue
+import org.smartregister.fhircore.engine.ui.base.AlertIntent
 import org.smartregister.fhircore.engine.ui.theme.AppTheme
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
 import org.smartregister.fhircore.engine.util.extension.showToast
@@ -69,6 +71,7 @@ import org.smartregister.fhircore.quest.ui.main.AppMainViewModel
 import org.smartregister.fhircore.quest.ui.main.components.AppDrawer
 import org.smartregister.fhircore.quest.ui.shared.components.SnackBarMessage
 import org.smartregister.fhircore.quest.ui.shared.viewmodels.SearchViewModel
+import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 import org.smartregister.fhircore.quest.util.extensions.hookSnackBar
 import org.smartregister.fhircore.quest.util.extensions.rememberLifecycleEvent
 import timber.log.Timber
@@ -282,14 +285,24 @@ class GeoWidgetLauncherFragment : Fragment() {
 
   private fun showSetLocationDialog() {
     viewLifecycleOwner.lifecycleScope.launch {
-      geoWidgetLauncherViewModel.locationDialog.observe(requireActivity()) {
-        AlertDialogue.showConfirmAlert(
-          context = requireContext(),
-          message = R.string.message_location_set,
-          title = R.string.title_no_location_set,
-          confirmButtonListener = {},
-          confirmButtonText = R.string.positive_button_location_set,
-        )
+      geoWidgetLauncherViewModel.noLocationFoundDialog.observe(requireActivity()) { show ->
+        if (show) {
+          AlertDialogue.showAlert(
+            context = requireContext(),
+            alertIntent = AlertIntent.INFO,
+            message = geoWidgetConfiguration.noResults?.message!!,
+            title = geoWidgetConfiguration.noResults?.title!!,
+            confirmButtonListener = {
+              geoWidgetConfiguration.noResults
+                ?.actionButton
+                ?.actions
+                ?.handleClickEvent(findNavController())
+            },
+            confirmButtonText = R.string.positive_button_location_set,
+            cancellable = true,
+            neutralButtonListener = {},
+          )
+        }
       }
     }
   }
