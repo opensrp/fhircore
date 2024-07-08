@@ -57,7 +57,6 @@ okhttp-logging-interceptor = "4.11.0"
 orchestrator = "1.4.2"
 p2p-lib = "0.6.9-SNAPSHOT"
 androidx-paging = "3.2.0"
-playServicesLocation = "19.0.1"
 preference-ktx = "1.2.1"
 prettytime = "5.0.2.Final"
 retrofit = "2.9.0"
@@ -143,6 +142,7 @@ kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", vers
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-playservices = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 ktlint-main = { group = "com.pinterest", name = "ktlint", version.ref = "ktlint"}
@@ -171,7 +171,6 @@ orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "
 p2p-lib = { group = "org.smartregister", name = "p2p-lib", version.ref = "p2p-lib" }
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidx-paging" }
 paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
-play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 preference-ktx = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference-ktx" }
 prettytime = { group = "org.ocpsoft.prettytime", name = "prettytime", version.ref = "prettytime" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -222,7 +221,7 @@ klint = ["ktlint-cli-ruleset", "ktlint-rule-engine-core"]
 compose = ["activity-compose","activity-ktx", "ui", "ui-tooling-preview", "constraintlayout-compose", "foundation","runtime-livedata"]
 navigation = ["navigation-compose", "navigation-fragment-ktx", "navigation-ui-ktx"]
 junit-test = ["junit-ktx", "junit"]
-coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
+coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android", "kotlinx-coroutines-playservices"]
 compose-ui-test = ["ui-test-junit4","ui-test-manifest"]
 junit-jupiter-runtime = ["junit-jupiter-engine","junit-vintage-engine"]
 

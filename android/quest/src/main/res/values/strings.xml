@@ -119,5 +119,7 @@
     <string name="location_services_disabled">Location services are disabled. Do you want to enable them?</string>
     <string name="copy_text_success_message">Link %1$s copied successfully</string>
     <string name="submit_questionnaire">Submit</string>
+    <string name="qr_code" translatable="false">qr_code</string>
+    <string name="barcode_camera_permission_denied">Camera permission request denied. Barcode may not work as expected</string>
 
 </resources>

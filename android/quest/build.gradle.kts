@@ -416,7 +416,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.dagger.hilt.android)
   implementation(libs.hilt.work)
-  implementation(libs.play.services.location)
+  implementation(libs.gms.play.services.location)
 
   // Annotation processors
   kapt(libs.hilt.compiler)
