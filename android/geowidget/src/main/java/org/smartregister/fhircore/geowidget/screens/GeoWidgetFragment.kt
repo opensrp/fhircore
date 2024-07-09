@@ -38,6 +38,8 @@ import com.mapbox.mapboxsdk.exceptions.MapboxConfigurationException
 import com.mapbox.mapboxsdk.geometry.LatLngBounds
 import com.mapbox.mapboxsdk.maps.Style
 import com.mapbox.mapboxsdk.style.expressions.Expression
+import com.mapbox.mapboxsdk.style.layers.Property
+import com.mapbox.mapboxsdk.style.layers.Property.TEXT_ANCHOR_TOP
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource
@@ -48,7 +50,6 @@ import io.ona.kujaku.plugin.switcher.BaseLayerSwitcherPlugin
 import io.ona.kujaku.plugin.switcher.layer.StreetsBaseLayer
 import io.ona.kujaku.utils.CoordinateUtils
 import io.ona.kujaku.views.KujakuMapView
-import java.util.LinkedList
 import kotlinx.coroutines.launch
 import org.jetbrains.annotations.VisibleForTesting
 import org.json.JSONObject
@@ -67,6 +68,7 @@ import org.smartregister.fhircore.geowidget.util.ResourceUtils
 import org.smartregister.fhircore.geowidget.util.extensions.featureProperties
 import org.smartregister.fhircore.geowidget.util.extensions.geometry
 import timber.log.Timber
+import java.util.LinkedList
 
 @AndroidEntryPoint
 class GeoWidgetFragment : Fragment() {
@@ -185,10 +187,18 @@ class GeoWidgetFragment : Fragment() {
             getString(R.string.data_set_quest),
           )
         symbolLayer.setProperties(
-          PropertyFactory.iconImage(key),
+
           PropertyFactory.iconSize(dynamicIconSize),
           PropertyFactory.iconIgnorePlacement(false),
           PropertyFactory.iconAllowOverlap(false),
+
+          // Add these properties for the text field
+          PropertyFactory.textField(Expression.get("number")), // Assuming your data source has a "number" property
+          PropertyFactory.textFont(arrayOf("Open Sans Bold", "Arial Unicode MS Bold")),
+          PropertyFactory.textSize(24f),
+          PropertyFactory.textOffset(arrayOf()), // Adjust the offset as needed
+          PropertyFactory.textAnchor(Property.TEXT_ANCHOR_CENTER),
+          PropertyFactory.textColor(Expression.get("numberColor"))
         )
         symbolLayer.setFilter(
           Expression.eq(
