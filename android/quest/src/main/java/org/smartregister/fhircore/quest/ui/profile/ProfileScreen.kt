@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -88,6 +89,7 @@ fun ProfileScreen(
   navController: NavController,
   profileUiState: ProfileUiState,
   snackStateFlow: SharedFlow<SnackBarMessageConfig>,
+  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
   onEvent: (ProfileEvent) -> Unit,
 ) {
   val scaffoldState = rememberScaffoldState()
@@ -170,6 +172,7 @@ fun ProfileScreen(
             resourceData =
               profileUiState.resourceData ?: ResourceData("", ResourceType.Patient, emptyMap()),
             navController = navController,
+            decodedImageMap = profileUiState.decodedImageMap,
           )
         }
       }

@@ -42,6 +42,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
 import org.smartregister.fhircore.engine.configuration.navigation.ImageConfig
@@ -81,6 +82,8 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Inject lateinit var defaultRepository: DefaultRepository
 
   @Inject lateinit var registerRepository: RegisterRepository
+
+  @Inject lateinit var configurationRegistry: ConfigurationRegistry
 
   private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
@@ -678,8 +681,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       profileConfiguration.views,
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
@@ -690,8 +694,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties),
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
@@ -702,8 +707,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(cardViewProperties.content[0]),
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
@@ -715,8 +721,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(listViewProperties.registerCard.views[0]),
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
@@ -729,8 +736,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     defaultRepository.create(addResourceTags = true, binaryImage)
     loadRemoteImagesBitmaps(
       listOf(columnProperties.children[0]),
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
@@ -742,8 +750,9 @@ class ConfigExtensionsTest : RobolectricTest() {
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
     loadRemoteImagesBitmaps(
       listOf(columnProperties.children[0]),
-      computedValuesMap = emptyMap(),
       registerRepository = registerRepository,
+      computedValuesMap = emptyMap(),
+      configurationRegistry.decodedImageMap,
     )
 
     assertNotNull("Bitmap should be decoded and set correctly")

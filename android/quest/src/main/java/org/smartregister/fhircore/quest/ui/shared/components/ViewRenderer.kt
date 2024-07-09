@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -47,6 +48,7 @@ fun ViewRenderer(
   viewProperties: List<ViewProperties>,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
 ) {
   viewProperties.forEach { properties ->
     GenerateView(
@@ -54,6 +56,7 @@ fun ViewRenderer(
       properties = properties.interpolate(resourceData.computedValuesMap),
       resourceData = resourceData,
       navController = navController,
+      decodedImageMap = decodedImageMap,
     )
   }
 }

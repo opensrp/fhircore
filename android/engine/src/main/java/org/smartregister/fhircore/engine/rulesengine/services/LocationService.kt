@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.engine.rulesengine.services
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import com.google.android.gms.location.LocationServices
@@ -113,6 +114,7 @@ constructor(
     return results[0]
   }
 
+  @SuppressLint("DefaultLocale")
   private fun formatDistance(distanceInMeters: Float): String {
     return if (distanceInMeters < METERS_IN_A_KILOMETER) {
       String.format("%.2f mtrs", distanceInMeters)

@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.shared.components
 
+import android.graphics.Bitmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,7 @@ fun CardView(
   viewProperties: CardViewProperties,
   resourceData: ResourceData,
   navController: NavController,
+  decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
 ) {
   // Check if card is visible
   if (viewProperties.visible.toBoolean()) {
@@ -109,6 +111,7 @@ fun CardView(
             viewProperties = viewProperties.content,
             resourceData = resourceData,
             navController = navController,
+            decodedImageMap = decodedImageMap,
           )
         }
       }

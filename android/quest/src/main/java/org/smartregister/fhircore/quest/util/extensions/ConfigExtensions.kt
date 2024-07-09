@@ -20,6 +20,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -264,6 +265,7 @@ suspend fun loadRemoteImagesBitmaps(
   views: List<ViewProperties>,
   registerRepository: RegisterRepository,
   computedValuesMap: Map<String, Any>,
+  decodedImageMap: MutableMap<String, Bitmap>,
 ) {
   suspend fun ViewProperties.loadIcons() {
     when (this.viewType) {
@@ -282,7 +284,7 @@ suspend fun loadRemoteImagesBitmaps(
 
             if (resourceId != null) {
               registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
-                imageProps.imageConfig?.decodedBitmap = binary.data.decodeToBitmap()
+                decodedImageMap[resourceId] = binary.data.decodeToBitmap()
               }
             } else {
               Timber.e("Failed to decode image: Resource ID is null.")

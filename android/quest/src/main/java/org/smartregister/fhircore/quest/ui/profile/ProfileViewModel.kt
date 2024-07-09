@@ -127,6 +127,7 @@ constructor(
           profileConfiguration = profileConfigs,
           snackBarTheme = applicationConfiguration.snackBarTheme,
           showDataLoadProgressIndicator = false,
+          decodedImageMap = configurationRegistry.decodedImageMap,
         )
 
       profileConfigs.views.retrieveListProperties().forEach { listProperties ->
@@ -140,15 +141,13 @@ constructor(
           listResourceDataStateMap[listProperties.id] != null &&
             listResourceDataStateMap[listProperties.id]?.size!! > 0
         ) {
-          val computedMap = listResourceDataStateMap[listProperties.id]?.get(0)?.computedValuesMap
-          viewModelScope.launch(dispatcherProvider.io()) {
-            if (computedMap != null) {
-              loadRemoteImagesBitmaps(
-                profileConfiguration.views,
-                registerRepository,
-                computedMap,
-              )
-            }
+          listResourceDataStateMap[listProperties.id]?.forEach { resourceData ->
+            loadRemoteImagesBitmaps(
+              profileConfiguration.views,
+              registerRepository,
+              resourceData.computedValuesMap,
+              configurationRegistry.decodedImageMap,
+            )
           }
         }
       }

@@ -18,6 +18,7 @@ package org.smartregister.fhircore.engine.configuration
 
 import android.content.Context
 import android.database.SQLException
+import android.graphics.Bitmap
 import ca.uhn.fhir.context.ConfigurationException
 import ca.uhn.fhir.context.FhirContext
 import ca.uhn.fhir.parser.DataFormatException
@@ -97,6 +98,7 @@ constructor(
 
   val configsJsonMap = mutableMapOf<String, String>()
   val configCacheMap = mutableMapOf<String, Configuration>()
+  val decodedImageMap = mutableMapOf<String, Bitmap>()
   val localizationHelper: LocalizationHelper by lazy { LocalizationHelper(this) }
   private val supportedFileExtensions = listOf("json", "properties")
   private var _isNonProxy = BuildConfig.IS_NON_PROXY_APK

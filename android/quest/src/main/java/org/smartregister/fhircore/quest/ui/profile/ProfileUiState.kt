@@ -16,6 +16,7 @@
 
 package org.smartregister.fhircore.quest.ui.profile
 
+import android.graphics.Bitmap
 import org.smartregister.fhircore.engine.configuration.app.SnackBarThemeConfig
 import org.smartregister.fhircore.engine.configuration.profile.ProfileConfiguration
 import org.smartregister.fhircore.engine.domain.model.ResourceData
@@ -25,4 +26,5 @@ data class ProfileUiState(
   val profileConfiguration: ProfileConfiguration? = null,
   val snackBarTheme: SnackBarThemeConfig = SnackBarThemeConfig(),
   val showDataLoadProgressIndicator: Boolean = true,
+  val decodedImageMap: MutableMap<String, Bitmap> = mutableMapOf(),
 )
