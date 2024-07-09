@@ -30,6 +30,7 @@ import com.google.android.fhir.sync.download.ResourceSearchParams
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.InputStreamReader
 import java.net.UnknownHostException
 import java.util.LinkedList
 import java.util.Locale
@@ -187,7 +188,9 @@ constructor(
     val resourceBundle =
       configsJsonMap[bundleName.camelCase()] // Convention for config map keys is camelCase
     if (resourceBundle != null) {
-      return PropertyResourceBundle(resourceBundle.byteInputStream())
+      return PropertyResourceBundle(
+        InputStreamReader(resourceBundle.byteInputStream(), Charsets.UTF_8),
+      )
     }
     if (bundleName.contains("_")) {
       return retrieveResourceBundleConfiguration(
