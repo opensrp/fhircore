@@ -19,6 +19,7 @@ package org.smartregister.fhircore.quest.ui.geowidget
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.mockk.mockk
+import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -36,7 +37,6 @@ import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.geowidget.model.ServicePointType
 import org.smartregister.fhircore.geowidget.screens.GeoWidgetViewModel
 import org.smartregister.fhircore.quest.ui.launcher.GeoWidgetLauncherViewModel
-import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
 class GeoWidgetLauncherViewModelTest {
@@ -77,7 +77,7 @@ class GeoWidgetLauncherViewModelTest {
 
   @Test
   fun `showNoLocationDialog() should not set noLocationFoundDialog value when noResults in geoWidgetConfiguration is null`() {
-    val geoWidgetConfiguration : GeoWidgetConfiguration = mockk(relaxed = true)
+    val geoWidgetConfiguration: GeoWidgetConfiguration = mockk(relaxed = true)
 
     every { geoWidgetConfiguration.noResults } returns null
 
@@ -89,7 +89,7 @@ class GeoWidgetLauncherViewModelTest {
 
   @Test
   fun `showNoLocationDialog() should set noLocationFoundDialog value when noResults in geoWidgetConfiguration is not null`() {
-    val geoWidgetConfiguration : GeoWidgetConfiguration = mockk(relaxed = true)
+    val geoWidgetConfiguration: GeoWidgetConfiguration = mockk(relaxed = true)
 
     every { geoWidgetConfiguration.noResults } returns NoResultsConfig()
 
