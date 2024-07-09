@@ -187,7 +187,7 @@ class GeoWidgetFragment : Fragment() {
             getString(R.string.data_set_quest),
           )
         symbolLayer.setProperties(
-
+          PropertyFactory.iconImage(key),
           PropertyFactory.iconSize(dynamicIconSize),
           PropertyFactory.iconIgnorePlacement(false),
           PropertyFactory.iconAllowOverlap(false),
