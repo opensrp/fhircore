@@ -183,7 +183,7 @@ fun ClickableImageIcon(
         }
       }
       ICON_TYPE_REMOTE ->
-        if (true) {
+        if (decodedImageMap.isNotEmpty()) {
           val imageType = imageProperties.imageConfig?.imageType
           val colorFilter =
             if (imageType == ImageType.SVG || imageType == ImageType.PNG) tint else null
