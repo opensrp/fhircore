@@ -22,6 +22,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -55,6 +56,8 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
   @BindValue var configurationRegistry = Faker.buildTestConfigurationRegistry()
 
   @Inject lateinit var testDispatcherProvider: DispatcherProvider
+
+  @Inject lateinit var workManager: WorkManager
   private val navController = TestNavHostController(ApplicationProvider.getApplicationContext())
   private val context = ApplicationProvider.getApplicationContext<HiltTestApplication>()
   private val resourceService: FhirResourceService = mockk()
@@ -86,6 +89,7 @@ class UserInsightScreenFragmentTest : RobolectricTest() {
         fhirEngine = mockk(),
         dispatcherProvider = testDispatcherProvider,
         syncListenerManager = mockk(relaxed = true),
+        workManager = workManager,
         context = application,
       )
 

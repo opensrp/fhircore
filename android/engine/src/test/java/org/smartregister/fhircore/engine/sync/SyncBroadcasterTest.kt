@@ -17,6 +17,7 @@
 package org.smartregister.fhircore.engine.sync
 
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.WorkManager
 import com.google.android.fhir.FhirEngine
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -37,7 +38,6 @@ import org.smartregister.fhircore.engine.configuration.app.ConfigService
 import org.smartregister.fhircore.engine.robolectric.RobolectricTest
 import org.smartregister.fhircore.engine.rule.CoroutineTestRule
 import org.smartregister.fhircore.engine.util.DefaultDispatcherProvider
-import org.smartregister.fhircore.engine.util.SharedPreferenceKey
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
 import org.smartregister.fhircore.engine.util.extension.isIn
 
@@ -54,7 +54,9 @@ class SyncBroadcasterTest : RobolectricTest() {
   @Inject lateinit var configService: ConfigService
 
   @Inject lateinit var dispatcherProvider: DefaultDispatcherProvider
-  private val configurationRegistry: ConfigurationRegistry = Faker.buildTestConfigurationRegistry()
+
+  @Inject lateinit var workManager: WorkManager
+  private lateinit var configurationRegistry: ConfigurationRegistry
   private val fhirEngine = mockk<FhirEngine>()
   private lateinit var syncListenerManager: SyncListenerManager
   private lateinit var syncBroadcaster: SyncBroadcaster
@@ -64,6 +66,8 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun setup() {
     hiltAndroidRule.inject()
     MockKAnnotations.init(this)
+    configurationRegistry =
+      Faker.buildTestConfigurationRegistry(sharedPreferencesHelper, dispatcherProvider)
     syncListenerManager =
       SyncListenerManager(
         configService = configService,
@@ -80,6 +84,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           fhirEngine = fhirEngine,
           dispatcherProvider = dispatcherProvider,
           syncListenerManager = syncListenerManager,
+          workManager = workManager,
           context = context,
         ),
       )
@@ -90,26 +95,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf("1"))
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf("2"))
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
-    sharedPreferencesHelper.write(
-      SharedPreferenceKey.REMOTE_SYNC_RESOURCES.name,
-      arrayOf(
-          ResourceType.CarePlan.name,
-          ResourceType.Condition.name,
-          ResourceType.Encounter.name,
-          ResourceType.Group.name,
-          ResourceType.Library.name,
-          ResourceType.Observation.name,
-          ResourceType.Patient.name,
-          ResourceType.PlanDefinition.name,
-          ResourceType.Questionnaire.name,
-          ResourceType.QuestionnaireResponse.name,
-          ResourceType.StructureMap.name,
-          ResourceType.Task.name,
-        )
-        .sorted(),
-    )
-
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 
@@ -120,6 +106,7 @@ class SyncBroadcasterTest : RobolectricTest() {
           ResourceType.Encounter,
           ResourceType.Group,
           ResourceType.Library,
+          ResourceType.Measure,
           ResourceType.Observation,
           ResourceType.Patient,
           ResourceType.PlanDefinition,
@@ -175,7 +162,7 @@ class SyncBroadcasterTest : RobolectricTest() {
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf("3"))
     sharedPreferencesHelper.resetSharedPrefs()
 
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
 
@@ -204,7 +191,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveOrganizationId() {
     val organizationId = "organization-id"
     sharedPreferencesHelper.write(ResourceType.Organization.name, listOf(organizationId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     // Resource types that can be filtered based on Organization
     val resourceTypes =
@@ -232,7 +219,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldHaveCareTeamIdNotSupported() {
     val careTeamId = "care-team-id"
     sharedPreferencesHelper.write(ResourceType.CareTeam.name, listOf(careTeamId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(careTeamId)) }
@@ -243,7 +230,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHaveLocationIdNotSupported() {
     val locationId = "location-id"
     sharedPreferencesHelper.write(ResourceType.Location.name, listOf(locationId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(locationId)) }
@@ -254,7 +241,7 @@ class SyncBroadcasterTest : RobolectricTest() {
   fun loadSyncParamsShouldNotHavePractitionerIdNotSupported() {
     val practitionerId = "practitioner-id"
     sharedPreferencesHelper.write(ResourceType.Practitioner.name, listOf(practitionerId))
-    val syncParam = syncBroadcaster.syncListenerManager.loadSyncParams()
+    val syncParam = syncBroadcaster.syncListenerManager.loadResourceSearchParams()
 
     Assert.assertTrue(syncParam.isNotEmpty())
     syncParam.values.forEach { Assert.assertFalse(it.containsValue(practitionerId)) }
