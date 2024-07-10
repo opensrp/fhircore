@@ -16,7 +16,6 @@
 
 package org.smartregister.fhircore.engine.rulesengine.services
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
 import com.google.android.gms.location.LocationServices
