@@ -52,5 +52,4 @@ enum class ServicePointType(
   ECOLE_COMMUNAUTAIRE(R.drawable.ic_epp_service_point, "Ecole Communautaire"),
   ECOLE_PRIVÉ(R.drawable.ic_epp_service_point, "Ecole Privé"),
   LYCÉE(R.drawable.ic_epp_service_point, "Lycée"),
-  CHU(R.drawable.ic_hospital, "CHU"),
 }
