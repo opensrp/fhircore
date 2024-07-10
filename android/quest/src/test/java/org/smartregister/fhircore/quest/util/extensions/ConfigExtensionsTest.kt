@@ -757,32 +757,6 @@ class ConfigExtensionsTest : RobolectricTest() {
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
 
-  //  @Test
-  //  fun testNullCasesUpdatedCorrectlyGivenRowProperty(): Unit = runTest {
-  //    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
-  //    val listViewProperties = cardViewProperties.content[0] as ListProperties
-  //    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
-  //    val rowProperties = (columnProperties.children[0] as RowProperties).copy(
-  //      children = listOf(
-  //        ImageProperties(
-  //          imageConfig =
-  //          ImageConfig(
-  //            type = ICON_TYPE_REMOTE,
-  //            reference = "null Reference",
-  //          ),
-  //        )
-  //      )
-  //    )
-  //    defaultRepository.create(addResourceTags = true, binaryImage)
-  //    loadRemoteImagesBitmaps(
-  //      listOf(rowProperties),
-  //      registerRepository = registerRepository,
-  //      computedValuesMap = emptyMap(),
-  //      configurationRegistry.decodedImageMap,
-  //    )
-  //    println("hello")
-  //  }
-
   @Test
   fun testImageMapNotUpdatedWhenReferenceIsNull() = runTest {
     // Setup
