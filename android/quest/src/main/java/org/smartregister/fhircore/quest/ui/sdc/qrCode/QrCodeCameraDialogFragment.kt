@@ -17,20 +17,30 @@
 package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
 import android.Manifest
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.setFragmentResult
-import kotlinx.coroutines.launch
+import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import org.smartregister.fhircore.engine.util.location.PermissionUtils
 import org.smartregister.fhircore.quest.R
 
-class CameraPermissionDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
+class QrCodeCameraDialogFragment : DialogFragment(R.layout.fragment_camera_permission) {
 
   private val cameraPermissionRequest =
     registerForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
-      setFragmentResult(RESULT_REQUEST_KEY, bundleOf(RESULT_REQUEST_KEY to permissionGranted))
-      dismiss()
+      if (permissionGranted) {
+        showBarcodeScanner()
+      } else {
+        Toast.makeText(
+            requireContext(),
+            requireContext().getString(R.string.barcode_camera_permission_denied),
+            Toast.LENGTH_SHORT,
+          )
+          .show()
+        dismiss()
+      }
     }
 
   override fun onResume() {
@@ -38,14 +48,39 @@ class CameraPermissionDialogFragment : DialogFragment(R.layout.fragment_camera_p
 
     when {
       PermissionUtils.checkPermissions(requireContext(), listOf(Manifest.permission.CAMERA)) -> {
-        setFragmentResult(RESULT_REQUEST_KEY, bundleOf(RESULT_REQUEST_KEY to true))
-        dismiss()
+        showBarcodeScanner()
       }
       else -> {
         cameraPermissionRequest.launch(Manifest.permission.CAMERA)
       }
     }
   }
+
+  private fun showBarcodeScanner() =
+    parentFragmentManager.apply {
+      setFragmentResultListener(
+        LiveBarcodeScanningFragment.RESULT_REQUEST_KEY,
+        requireActivity(),
+      ) { _, result ->
+        val barcode = result.getString(LiveBarcodeScanningFragment.RESULT_REQUEST_KEY)?.trim()
+        this.setFragmentResult(
+          RESULT_REQUEST_KEY,
+          bundleOf(RESULT_REQUEST_KEY to barcode),
+        )
+      }
+
+      val barcodeScannerFragment =
+        this.findFragmentByTag(QrCodeCameraDialogFragment::class.java.simpleName)
+      if (barcodeScannerFragment == null) {
+        LiveBarcodeScanningFragment()
+          .show(
+            this@apply,
+            QrCodeCameraDialogFragment::class.java.simpleName,
+          )
+      }
+
+      dismiss()
+    }
 
   companion object {
     const val RESULT_REQUEST_KEY = "qr-code-result"

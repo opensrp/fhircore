@@ -16,13 +16,12 @@
 
 package org.smartregister.fhircore.quest.ui.sdc.qrCode
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Editable
 import android.text.InputType
+import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import com.google.android.fhir.datacapture.contrib.views.barcode.mlkit.md.LiveBarcodeScanningFragment
 import com.google.android.fhir.datacapture.extensions.asStringValue
 import com.google.android.fhir.datacapture.extensions.getValidationErrorMessage
 import com.google.android.fhir.datacapture.extensions.tryUnwrapContext
@@ -44,6 +43,7 @@ object EditTextQrCodeViewHolderFactory :
       QuestionnaireItemEditTextViewHolderDelegate(
         InputType.TYPE_NULL,
       ) {
+      @SuppressLint("ClickableViewAccessibility")
       override fun init(itemView: View) {
         super.init(itemView)
 
@@ -51,28 +51,14 @@ object EditTextQrCodeViewHolderFactory :
           it.tryUnwrapContext()?.let { context ->
             context.supportFragmentManager.apply {
               setFragmentResultListener(
-                CameraPermissionDialogFragment.RESULT_REQUEST_KEY,
+                QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
                 context,
               ) { _, result ->
-                val permissionGranted =
-                  result.getBoolean(CameraPermissionDialogFragment.RESULT_REQUEST_KEY, false)
-                if (permissionGranted) {
-                  showBarcodeScanner(context) { barcode ->
-                    itemView
-                      .findViewById<TextInputEditText>(R.id.text_input_edit_text)
-                      .setText(barcode)
-                  }
-                } else {
-                  Toast.makeText(
-                      context,
-                      context.getString(R.string.barcode_camera_permission_denied),
-                      Toast.LENGTH_SHORT,
-                    )
-                    .show()
-                }
+                val barcode = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
+                itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).setText(barcode)
               }
 
-              CameraPermissionDialogFragment()
+              QrCodeCameraDialogFragment()
                 .show(this@apply, EditTextQrCodeViewHolderFactory::class.java.simpleName)
             }
           }
@@ -80,11 +66,12 @@ object EditTextQrCodeViewHolderFactory :
 
         itemView.findViewById<TextInputLayout>(R.id.text_input_layout).apply {
           setEndIconOnClickListener { onQrCodeIconClickListener.invoke(it.context) }
-          findViewById<TextInputEditText>(R.id.text_input_edit_text).setOnFocusChangeListener {
-            view,
-            hasFocus,
+          findViewById<TextInputEditText>(R.id.text_input_edit_text).setOnTouchListener { v, event,
             ->
-            if (hasFocus) onQrCodeIconClickListener.invoke(view.context)
+            if (event.action == MotionEvent.ACTION_UP) {
+              onQrCodeIconClickListener(v.context)
+            }
+            return@setOnTouchListener false
           }
         }
       }
@@ -128,28 +115,6 @@ object EditTextQrCodeViewHolderFactory :
             questionnaireViewItem,
             questionnaireViewItem.validationResult,
           )
-      }
-
-      private fun showBarcodeScanner(
-        activity: AppCompatActivity,
-        onBarcodeReceived: (String) -> Unit,
-      ) {
-        activity.supportFragmentManager.apply {
-          setFragmentResultListener(
-            LiveBarcodeScanningFragment.RESULT_REQUEST_KEY,
-            activity,
-          ) { _, result ->
-            val barcode = result.getString(LiveBarcodeScanningFragment.RESULT_REQUEST_KEY)?.trim()
-            if (!barcode.isNullOrBlank()) {
-              onBarcodeReceived.invoke(barcode)
-            }
-          }
-          LiveBarcodeScanningFragment()
-            .show(
-              this@apply,
-              EditTextQrCodeViewHolderFactory::class.java.simpleName,
-            )
-        }
       }
     }
 
