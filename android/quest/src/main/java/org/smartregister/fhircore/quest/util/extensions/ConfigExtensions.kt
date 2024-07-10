@@ -286,8 +286,6 @@ suspend fun loadRemoteImagesBitmaps(
               registerRepository.loadResource<Binary>(resourceId)?.let { binary ->
                 decodedImageMap[resourceId] = binary.data.decodeToBitmap()
               }
-            } else {
-              Timber.e("Failed to decode image: Resource ID is null.")
             }
           } catch (nullPointerException: NullPointerException) {
             Timber.e("Failed to decode image due to a null value: ${nullPointerException.message}")

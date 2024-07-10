@@ -195,8 +195,6 @@ fun ClickableImageIcon(
                 ?.interpolate(resourceData!!.computedValuesMap)
                 ?.extractLogicalIdUuid(),
             ]
-          //
-          // imageConfig.decodedImageMap[imageConfig.reference?.interpolate(resourceData!!.computedValuesMap)?.extractLogicalIdUuid()]
           if (decodedImage != null) {
             Image(
               modifier =

@@ -19,29 +19,37 @@ package org.smartregister.fhircore.quest.util.extensions
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
+import ca.uhn.fhir.parser.IParser
+import com.google.android.fhir.FhirEngine
 import com.google.android.fhir.datacapture.extensions.logicalId
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import javax.inject.Inject
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertTrue
 import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.hl7.fhir.r4.model.Binary
 import org.hl7.fhir.r4.model.ContactPoint
 import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
 import org.smartregister.fhircore.engine.configuration.ConfigurationRegistry
 import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.navigation.ICON_TYPE_REMOTE
@@ -74,6 +82,7 @@ import org.smartregister.fhircore.quest.navigation.MainNavigationScreen
 import org.smartregister.fhircore.quest.navigation.NavigationArg
 import org.smartregister.fhircore.quest.robolectric.RobolectricTest
 import org.smartregister.fhircore.quest.ui.shared.QuestionnaireHandler
+import timber.log.Timber
 
 @HiltAndroidTest
 class ConfigExtensionsTest : RobolectricTest() {
@@ -84,6 +93,10 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Inject lateinit var registerRepository: RegisterRepository
 
   @Inject lateinit var configurationRegistry: ConfigurationRegistry
+
+  @Inject lateinit var parser: IParser
+
+  @Inject lateinit var fhirEngine: FhirEngine
 
   private val navController = mockk<NavController>(relaxUnitFun = true, relaxed = true)
   private val context = mockk<Context>(relaxUnitFun = true, relaxed = true)
@@ -181,6 +194,7 @@ class ConfigExtensionsTest : RobolectricTest() {
   @Before
   fun setUp() {
     hiltAndroidRule.inject()
+    Timber.plant(TestTree())
     every { navController.context } returns context
   }
 
@@ -743,18 +757,128 @@ class ConfigExtensionsTest : RobolectricTest() {
     assertNotNull(imageProperties.imageConfig?.decodedBitmap)
   }
 
+  //  @Test
+  //  fun testNullCasesUpdatedCorrectlyGivenRowProperty(): Unit = runTest {
+  //    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+  //    val listViewProperties = cardViewProperties.content[0] as ListProperties
+  //    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+  //    val rowProperties = (columnProperties.children[0] as RowProperties).copy(
+  //      children = listOf(
+  //        ImageProperties(
+  //          imageConfig =
+  //          ImageConfig(
+  //            type = ICON_TYPE_REMOTE,
+  //            reference = "null Reference",
+  //          ),
+  //        )
+  //      )
+  //    )
+  //    defaultRepository.create(addResourceTags = true, binaryImage)
+  //    loadRemoteImagesBitmaps(
+  //      listOf(rowProperties),
+  //      registerRepository = registerRepository,
+  //      computedValuesMap = emptyMap(),
+  //      configurationRegistry.decodedImageMap,
+  //    )
+  //    println("hello")
+  //  }
+
   @Test
-  fun testNullCasesUpdatedCorrectlyGivenRowProperty(): Unit = runBlocking {
+  fun testImageMapNotUpdatedWhenReferenceIsNull() = runTest {
+    // Setup
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
-    loadRemoteImagesBitmaps(
-      listOf(columnProperties.children[0]),
-      registerRepository = registerRepository,
-      computedValuesMap = emptyMap(),
-      configurationRegistry.decodedImageMap,
+    val rowProperties =
+      (columnProperties.children[0] as RowProperties).copy(
+        children =
+          listOf(
+            ImageProperties(
+              imageConfig =
+                ImageConfig(
+                  type = ICON_TYPE_REMOTE,
+                  reference = null,
+                ),
+            ),
+          ),
+      )
+    val emptyComputedValuesMap = mutableMapOf<String, String>()
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
+
+    val logMessages = mutableListOf<String>()
+    Timber.plant(
+      object : Timber.Tree() {
+        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+          logMessages.add(message)
+        }
+      },
     )
 
-    assertNotNull("Bitmap should be decoded and set correctly")
+    loadRemoteImagesBitmaps(
+      listOf(rowProperties),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyComputedValuesMap,
+      decodedImageMap = decodedImageMap,
+    )
+
+    assertTrue(logMessages.isEmpty())
+    assertTrue(decodedImageMap.isEmpty())
+  }
+
+  @Test
+  fun testExceptionCaughtOnDecodingBitmap() = runTest {
+    val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
+    val listViewProperties = cardViewProperties.content[0] as ListProperties
+    val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
+    val rowProperties =
+      (columnProperties.children[0] as RowProperties).copy(
+        children =
+          listOf(
+            ImageProperties(
+              imageConfig =
+                ImageConfig(
+                  type = ICON_TYPE_REMOTE,
+                  reference = "null Reference",
+                ),
+            ),
+          ),
+      )
+    val emptyComputedValuesMap = mutableMapOf<String, String>()
+    val decodedImageMap = mutableMapOf<String, Bitmap>()
+
+    coEvery { defaultRepository.loadResource<Binary>(anyString()) } returns
+      Binary().apply {
+        this.id = "null Reference"
+        this.contentType = "image/jpeg"
+        this.data = "gibberish value".toByteArray()
+      }
+
+    val logMessages = mutableListOf<String>()
+    Timber.plant(
+      object : Timber.Tree() {
+        override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+          logMessages.add(message)
+        }
+      },
+    )
+
+    loadRemoteImagesBitmaps(
+      listOf(rowProperties),
+      registerRepository = registerRepository,
+      computedValuesMap = emptyComputedValuesMap,
+      decodedImageMap = decodedImageMap,
+    )
+
+    assertTrue(logMessages.isNotEmpty())
+    assertTrue(logMessages.any { it.contains("Failed to decode image with error") })
+    assertTrue(decodedImageMap.isEmpty())
+  }
+
+  class TestTree : Timber.Tree() {
+    private val logMessages = mutableListOf<String>()
+
+    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+      logMessages.add(message)
+    }
   }
 }
