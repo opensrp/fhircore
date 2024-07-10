@@ -369,17 +369,20 @@ class ViewGeneratorTest {
   @Test
   fun testImageIsRenderedFromDecodedBitmap() {
     composeRule.setContent {
+      val decodedImageMap = mutableMapOf<String, Bitmap>()
+      decodedImageMap["testImageReference"] = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888)
       GenerateView(
         properties =
           ImageProperties(
             imageConfig =
               ImageConfig(
                 ICON_TYPE_REMOTE,
-                decodedBitmap = Bitmap.createBitmap(100, 16, Bitmap.Config.ARGB_8888),
+                reference = "testImageReference",
               ),
           ),
         resourceData = resourceData,
         navController = TestNavHostController(LocalContext.current),
+        decodedImageMap = decodedImageMap,
       )
     }
     composeRule
