@@ -114,7 +114,6 @@ constructor(
     return results[0]
   }
 
-  @SuppressLint("DefaultLocale")
   private fun formatDistance(distanceInMeters: Float): String {
     return if (distanceInMeters < METERS_IN_A_KILOMETER) {
       String.format("%.2f mtrs", distanceInMeters)
