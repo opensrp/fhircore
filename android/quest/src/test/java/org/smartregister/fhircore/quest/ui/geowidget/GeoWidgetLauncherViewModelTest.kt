@@ -21,6 +21,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.hl7.fhir.r4.model.ResourceType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -28,9 +29,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
+import org.smartregister.fhircore.engine.configuration.QuestionnaireConfig
 import org.smartregister.fhircore.engine.configuration.geowidget.GeoWidgetConfiguration
 import org.smartregister.fhircore.engine.configuration.register.NoResultsConfig
 import org.smartregister.fhircore.engine.data.local.DefaultRepository
+import org.smartregister.fhircore.engine.domain.model.FhirResourceConfig
+import org.smartregister.fhircore.engine.domain.model.ResourceConfig
 import org.smartregister.fhircore.engine.rulesengine.ResourceDataRulesExecutor
 import org.smartregister.fhircore.engine.util.DispatcherProvider
 import org.smartregister.fhircore.engine.util.SharedPreferencesHelper
@@ -77,9 +81,18 @@ class GeoWidgetLauncherViewModelTest {
 
   @Test
   fun `showNoLocationDialog() should not set noLocationFoundDialog value when noResults in geoWidgetConfiguration is null`() {
-    val geoWidgetConfiguration: GeoWidgetConfiguration = mockk(relaxed = true)
-
-    every { geoWidgetConfiguration.noResults } returns null
+    val geoWidgetConfiguration =
+      GeoWidgetConfiguration(
+        appId = "appId",
+        id = "id",
+        registrationQuestionnaire =
+          QuestionnaireConfig(
+            id = "id",
+          ),
+        resourceConfig =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Location)),
+        servicePointConfig = null,
+      )
 
     viewModel.showNoLocationDialog(geoWidgetConfiguration)
 
@@ -89,9 +102,23 @@ class GeoWidgetLauncherViewModelTest {
 
   @Test
   fun `showNoLocationDialog() should set noLocationFoundDialog value when noResults in geoWidgetConfiguration is not null`() {
-    val geoWidgetConfiguration: GeoWidgetConfiguration = mockk(relaxed = true)
-
-    every { geoWidgetConfiguration.noResults } returns NoResultsConfig()
+    val geoWidgetConfiguration =
+      GeoWidgetConfiguration(
+        appId = "appId",
+        id = "id",
+        registrationQuestionnaire =
+          QuestionnaireConfig(
+            id = "id",
+          ),
+        resourceConfig =
+          FhirResourceConfig(baseResource = ResourceConfig(resource = ResourceType.Location)),
+        servicePointConfig = null,
+        noResults =
+          NoResultsConfig(
+            title = "Message Title",
+            message = "Message text",
+          ),
+      )
 
     viewModel.showNoLocationDialog(geoWidgetConfiguration)
 
