@@ -60,9 +60,9 @@ constructor(
   private val _snackBarStateFlow = MutableSharedFlow<SnackBarMessageConfig>()
   val snackBarStateFlow = _snackBarStateFlow.asSharedFlow()
 
-  private val _locationDialog = MutableLiveData<String>()
-  val locationDialog: LiveData<String>
-    get() = _locationDialog
+  private val _noLocationFoundDialog = MutableLiveData<Boolean>()
+  val noLocationFoundDialog: LiveData<Boolean>
+    get() = _noLocationFoundDialog
 
   private lateinit var repositoryResourceDataList: List<RepositoryResourceData>
 
@@ -124,6 +124,10 @@ constructor(
       }
     }
     return geoJsonFeatures
+  }
+
+  fun showNoLocationDialog(geoWidgetConfiguration: GeoWidgetConfiguration) {
+    geoWidgetConfiguration.noResults?.let { _noLocationFoundDialog.postValue(true) }
   }
 
   private suspend fun retrieveResources(
