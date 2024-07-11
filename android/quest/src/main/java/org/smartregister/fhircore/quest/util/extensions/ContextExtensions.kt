@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package org.smartregister.fhircore.engine.configuration.register
+package org.smartregister.fhircore.quest.util.extensions
 
-import kotlinx.serialization.Serializable
-import org.smartregister.fhircore.engine.domain.model.RuleConfig
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.appcompat.app.AppCompatActivity
 
-@Serializable
-data class RegisterContentConfig(
-  val separator: String? = null,
-  val display: String? = null,
-  val rules: List<RuleConfig>? = null,
-  val visible: Boolean? = null,
-  val computedRules: List<String>? = null,
-  val searchByBarcode: Boolean? = false,
-)
+fun Context.getActivity(): AppCompatActivity? {
+  var currentContext = this
+  while (currentContext is ContextWrapper) {
+    if (currentContext is AppCompatActivity) {
+      return currentContext
+    }
+    currentContext = currentContext.baseContext
+  }
+  return null
+}
