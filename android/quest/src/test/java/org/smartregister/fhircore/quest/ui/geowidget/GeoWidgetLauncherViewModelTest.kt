@@ -17,7 +17,6 @@
 package org.smartregister.fhircore.quest.ui.geowidget
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
