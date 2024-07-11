@@ -35,6 +35,7 @@ import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
 import org.hl7.fhir.r4.model.StringType
 import org.smartregister.fhircore.quest.R
+import org.smartregister.fhircore.quest.util.QrCodeScanUtils
 
 object EditTextQrCodeViewHolderFactory :
   QuestionnaireItemViewHolderFactory(R.layout.edit_text_single_line_qr_code_view) {
@@ -48,18 +49,9 @@ object EditTextQrCodeViewHolderFactory :
         super.init(itemView)
 
         val onQrCodeIconClickListener: (Context) -> Unit = {
-          it.tryUnwrapContext()?.let { context ->
-            context.supportFragmentManager.apply {
-              setFragmentResultListener(
-                QrCodeCameraDialogFragment.RESULT_REQUEST_KEY,
-                context,
-              ) { _, result ->
-                val barcode = result.getString(QrCodeCameraDialogFragment.RESULT_REQUEST_KEY)
-                itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).setText(barcode)
-              }
-
-              QrCodeCameraDialogFragment()
-                .show(this@apply, EditTextQrCodeViewHolderFactory::class.java.simpleName)
+          it.tryUnwrapContext()?.let { appCompatActivity ->
+            QrCodeScanUtils.scanBarcode(appCompatActivity) { code ->
+              itemView.findViewById<TextInputEditText>(R.id.text_input_edit_text).setText(code)
             }
           }
         }
