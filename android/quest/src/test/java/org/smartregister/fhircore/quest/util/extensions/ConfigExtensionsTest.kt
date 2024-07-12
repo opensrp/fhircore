@@ -759,7 +759,6 @@ class ConfigExtensionsTest : RobolectricTest() {
 
   @Test
   fun testImageMapNotUpdatedWhenReferenceIsNull() = runTest {
-    // Setup
     val cardViewProperties = profileConfiguration.views[0] as CardViewProperties
     val listViewProperties = cardViewProperties.content[0] as ListProperties
     val columnProperties = listViewProperties.registerCard.views[0] as ColumnProperties
