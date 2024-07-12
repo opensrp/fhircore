@@ -65,10 +65,10 @@ import org.smartregister.fhircore.engine.domain.model.ToolBarHomeNavigation
 import org.smartregister.fhircore.engine.domain.model.TopScreenSectionConfig
 import org.smartregister.fhircore.engine.ui.theme.GreyTextColor
 import org.smartregister.fhircore.engine.util.annotation.PreviewWithBackgroundExcludeGenerated
+import org.smartregister.fhircore.engine.util.extension.getActivity
 import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.shared.components.Image
 import org.smartregister.fhircore.quest.util.QrCodeScanUtils
-import org.smartregister.fhircore.quest.util.extensions.getActivity
 
 const val DRAWER_MENU = "Drawer Menu"
 const val SEARCH = "Search"
@@ -195,20 +195,6 @@ fun TopScreenSection(
         },
         trailingIcon = {
           Row(verticalAlignment = Alignment.CenterVertically) {
-            if (searchText.isNotEmpty()) {
-              IconButton(
-                onClick = { onSearchTextChanged("") },
-                modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
-              ) {
-                Icon(
-                  imageVector = Icons.Filled.Clear,
-                  CLEAR,
-                  tint = Color.Gray,
-                  modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
-                )
-              }
-            }
-
             if (showSearchByBarcode) {
               IconButton(
                 onClick = {
@@ -225,6 +211,20 @@ fun TopScreenSection(
                     stringResource(
                       id = org.smartregister.fhircore.quest.R.string.qr_code,
                     ),
+                )
+              }
+            }
+
+            if (searchText.isNotEmpty()) {
+              IconButton(
+                onClick = { onSearchTextChanged("") },
+                modifier = modifier.testTag(TRAILING_ICON_BUTTON_TEST_TAG),
+              ) {
+                Icon(
+                  imageVector = Icons.Filled.Clear,
+                  CLEAR,
+                  tint = Color.Gray,
+                  modifier = modifier.testTag(TRAILING_ICON_TEST_TAG),
                 )
               }
             }
