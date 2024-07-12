@@ -103,9 +103,16 @@ task.start.date=Siku ya kuanza: @{taskStartDate}
 
 
 ## Translation Process via Transifex
-We use the Transifex service to manage the translation process. [Transifex](https://www.transifex.com/) is a well known platform that supports localization for many stacks including Android and is able to process files in different formats. You can upload the default language files in their `xml`, `properties` formats and then translators perform the localiztion on Transifex. The files are then synced back to the codebase for versioning.
+We use the Transifex service to manage the translation process. [Transifex](https://www.transifex.com/) is a well known platform that supports localization for many stacks including Android and is able to process files in different formats. You can upload the default language files in their `xml`, `properties` formats and then translators perform the localization on Transifex. The files are then synced back to the codebase for versioning.
 
 
 ## Tooling
-- Efsity - FHIR Core Tooling supports the localization process for the App and Content configs by automating some aspects of it. For more see [the documentation](https://github.com/onaio/fhir-tooling/tree/main/efsity#localization).
-- [Transifex](https://www.transifex.com/) - This is the tool describe in the above section.
+The efsity localization tool is designed to support localization through a translation extension, facilitating the extraction and merging of translation files for project resources. The tool's primary functions are extraction and merging, each tailored to streamline localization tasks.
+
+Extraction involves pulling specific fields from a resource or an entire directory and generating a `strings_default.properties` file, typically placed in the translation folder. Users can specify a different location for the translation file using the appropriate flag. This process is optimized when the project's directory structure is consistent, ensuring that all relevant text and display fields are captured accurately. Options available during extraction allow users to define the mode (either extraction or merging), the path to the resource file or directory, and the type of extraction (such as all files, configuration files, or FHIR content files).
+
+Merging, on the other hand, is used to integrate translated fields from a provided translation file back into the original resources or directories. This functionality is crucial for updating project files with the latest translations, ensuring that localized content is correctly populated. Similar to extraction, merging operates most effectively within a consistent project structure. Users can specify the mode, the resource file or directory path, the translation file path, and the translation locale.
+
+Overall, the localization tool enhances the management of translations within a project, providing clear commands and options to extract and merge localization files efficiently. By adhering to a consistent directory structure, users can ensure smooth and accurate localization processes, ultimately supporting the delivery of localized content across different environments and applications.
+
+For a step-by-step on how to use the localization tool to support translations please read more [here](https://github.com/onaio/fhir-tooling/tree/main/efsity#localization)
