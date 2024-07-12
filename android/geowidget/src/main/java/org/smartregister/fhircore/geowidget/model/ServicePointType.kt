@@ -47,4 +47,9 @@ enum class ServicePointType(
   BSD(R.drawable.ic_gov, "bsd"),
   MEN(R.drawable.ic_men_service_point, "men"),
   DREN(R.drawable.ic_epp_service_point, "dren"),
+  DISTRICT_PPSPF(R.drawable.ic_gov, "District PPSPF"),
+  MAIRIE(R.drawable.ic_csb_service_point, "Mairie"),
+  ECOLE_COMMUNAUTAIRE(R.drawable.ic_epp_service_point, "Ecole Communautaire"),
+  ECOLE_PRIVÉ(R.drawable.ic_epp_service_point, "Ecole Privé"),
+  LYCÉE(R.drawable.ic_epp_service_point, "Lycée"),
 }
