@@ -81,6 +81,9 @@ class TransformSupportServices @Inject constructor(val simpleWorkerContext: Simp
       "Task_Output" -> Task.TaskOutputComponent()
       "Task_Restriction" -> Task.TaskRestrictionComponent()
       "AdverseEvent_SuspectEntity" -> AdverseEvent.AdverseEventSuspectEntityComponent()
+      // TODO Needed
+      "AdverseEvent_SuspectEntityCausality" ->
+        AdverseEvent.AdverseEventSuspectEntityCausalityComponent()
       "Location_Position" -> Location.LocationPositionComponent()
       "List_Entry" -> ListResource.ListEntryComponent()
       else -> ResourceFactory.createResourceOrType(name)
