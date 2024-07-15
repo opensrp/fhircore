@@ -69,7 +69,7 @@ fun GeoWidgetLauncherScreen(
           isSearchBarVisible = geoWidgetConfiguration.topScreenSection?.searchBar?.visible ?: true,
           searchPlaceholder = geoWidgetConfiguration.topScreenSection?.searchBar?.display,
           showSearchByBarcode =
-            geoWidgetConfiguration.topScreenSection?.searchBar?.searchByBarcode ?: false,
+            geoWidgetConfiguration.topScreenSection?.searchBar?.searchByQrCode?.isEnabled ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { uiSearchQuery ->
             onEvent(GeoWidgetEvent.SearchServicePoints(searchQuery = uiSearchQuery))

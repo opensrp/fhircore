@@ -55,6 +55,7 @@ import org.smartregister.fhircore.quest.event.ToolbarClickEvent
 import org.smartregister.fhircore.quest.ui.main.components.TopScreenSection
 import org.smartregister.fhircore.quest.ui.register.components.RegisterCardList
 import org.smartregister.fhircore.quest.ui.shared.components.ExtendedFab
+import org.smartregister.fhircore.quest.ui.shared.models.UiSearchMode
 import org.smartregister.fhircore.quest.ui.shared.models.UiSearchQuery
 import org.smartregister.fhircore.quest.util.extensions.handleClickEvent
 
@@ -102,7 +103,7 @@ fun RegisterScreen(
           isSearchBarVisible = registerUiState.registerConfiguration?.searchBar?.visible ?: true,
           searchPlaceholder = registerUiState.registerConfiguration?.searchBar?.display,
           showSearchByBarcode =
-            registerUiState.registerConfiguration?.searchBar?.searchByBarcode ?: false,
+            registerUiState.registerConfiguration?.searchBar?.searchByQrCode?.isEnabled ?: false,
           toolBarHomeNavigation = toolBarHomeNavigation,
           onSearchTextChanged = { uiSearchQuery ->
             onEvent(RegisterEvent.SearchRegister(searchText = uiSearchQuery))
@@ -171,6 +172,12 @@ fun RegisterScreen(
           registerUiState = registerUiState,
           currentPage = currentPage,
           showPagination = searchQuery.value.isEmpty(),
+          scanProfileLaunch =
+            if (!searchQuery.value.isBlank() && searchQuery.value.mode == UiSearchMode.QrCodeScan) {
+              registerUiState.registerConfiguration.searchBar?.searchByQrCode?.profileLaunch
+            } else {
+              null
+            },
         )
       } else {
         registerUiState.registerConfiguration?.noResults?.let { noResultConfig ->
